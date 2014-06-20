@@ -1,0 +1,48 @@
+// = Complete Application
+//  = client side (C)
+  = NodeJS side
+  = Test...
+
+//  = Clean up existing code
+
+= Function call
+  = Client to Cloud
+  = Cloud to Client
+  = Client to Web
+  = Web to Client
+  = Cloud to Web
+  = Web to Cloud
+
+= Automate the web interface management
+  = Link web to the application, web interface is just a UI for the application.
+  = Use a templating library? How would this impact with SpaceOS?
+  = Can we use XML or XHTML for templating? Examine the pros and cons
+
+= Live Variables
+  = Use UDP versus TCP for function calls?
+  = Where would the reliability model be specified? Part of the application properties?
+
+= Data Streaming
+
+= Event Distribution
+  = Application local events
+  = Application to application events
+  = To all devices (running the same application)
+  = A particular device running a given application
+
+= Debugging and Tracing Framework
+  = Use this to demonstrate the framework
+  = Visualize the interactions using the tracing framework
+
+= Things in JavaScript
+	= Provide JavaScript interfaces for real world objects
+	= Objects are not going to run NodeJS
+	= Objects are running Jam runtime.
+	= Jam provides a way to run a program that has C + JavaScript + XML
+		= JavaScript runs on a SpaceOS/POM server
+		= Messages are sent from that server to the actual object that implements the actual routine
+	
+// This is super vague.. we need to refine this
+= Architecture design...
+  = Break the architecture into small components...
+  = Implement it!
