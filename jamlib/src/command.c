@@ -63,7 +63,7 @@ Command *command_format_json(const char *name,const char *format, ...)
     int i;
     char buf[BUFSIZE];
     char *json;
-    char json_format[] = "{\"name\":\"%s\", \"args\":[%s], \"sign\":\"%s\"}";
+    char json_format[] = "{\"name\":\"%s\", \"args\":[%s], \"sign\":\"%s\"}\n";
     int ret;
     Command *cmd = NULL;
     char* new_format;
@@ -114,9 +114,6 @@ Command *command_format_json(const char *name,const char *format, ...)
     if (json <= 0)
         return NULL;
 
-    json[ret] = '\n';
-    json[ret + 1] = '\0';
-    
     cmd = (Command *) calloc(1, sizeof(Command));               // allocates and initialized to 0 - 1 unit of Command
     cmd->max_params = MAX_PARAMS;
     cmd->param_count = 0;
@@ -138,14 +135,39 @@ Command *command_format_jsonk(const char *name, const char *format, va_list args
 {
     char buf[BUFSIZE];
     char *json;
-    char json_format[] = "{\"name\":\"%s\", \"args\":[%s], \"sign\":\"%s\"}";
-    int ret;
+    char *new_format;
+    char json_format[] = "{\"name\":\"%s\", \"args\":[%s], \"sign\":\"%s\"}\n";
+    int ret, i;
     Command *cmd = NULL;
 
     if (format == NULL)
         return NULL;
+
+    /* 
+     * Strings NEED to be properly quoted, return NULL if we
+     * find an unquoted string.
+     * 
+     */
+
+    for(i = 0; i < strlen(format); i++) {
+	if (format[i] == '%' && format[i+1] == 's') {
+	    if (format[i-1] != '"' || format[i+2] != '"') {
+		return NULL;
+	    }
+	}
+    }
+
+    /* Format is const so make a usable copy of it to play with */
+    new_format = strdup(format);
     
-    ret = vsnprintf(buf, BUFSIZE, format, args);
+    /* Replace spaces by commas. This will help for json formatting */
+    for(i = 0; i < strlen(new_format); i++) {
+        if (new_format[i] == ' ') {
+            new_format[i] = ',';
+        }
+    }
+    
+    ret = vsnprintf(buf, BUFSIZE, new_format, args);
     
     json = calloc((strlen(json_format) + strlen(name) + BUFSIZE), sizeof(char));
     ret = sprintf(json, json_format, name, buf, "");
@@ -153,9 +175,6 @@ Command *command_format_jsonk(const char *name, const char *format, va_list args
     if (json <= 0)
         return NULL;
 
-    json[ret] = '\n';
-    json[ret + 1] = '\0';
-    
     cmd = (Command *) calloc(1, sizeof(Command));               // allocates and initialized to 0 - 1 unit of Command
     cmd->max_params = MAX_PARAMS;
     cmd->param_count = 0;

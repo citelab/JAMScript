@@ -53,6 +53,7 @@ Application *create_application(char *appname);
 Application *open_application(char *appname);
 int close_application(Application *app);
 int remove_application(Application *app);
+void print_application(Application *app);
 
 #endif
 

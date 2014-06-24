@@ -1,15 +1,13 @@
-var q = "One";
 
-switch (q) {
-	case "zero":
-	console.log("Zero...");
-	break;
-	case "one":
-	console.log("One...");
-	break;
-	case "two":
-	console.log("Two...");
-	break;
-	default:
-	console.log("Matching none..");
-}
+var net = require('net');
+
+
+var server = net.createServer(function (socket) {
+  socket.end("goodbye\n");
+});
+
+// grab a random port.
+server.listen(0, "127.0.0.1", function() {
+  address = server.address();
+  console.log("opened server on %j", address);
+});
