@@ -4,14 +4,14 @@
 
 module.exports = ({
 
-	isregistered: function(appname) {
+	isregistered: function(appname, callback) {
 		// if the appname is uniquely found in the database then return appid,
 		// otherwise return 0 - indicating 'notregistered'
 		this.db.find({appname: appname}, function(err, docs) {
-			if (docs.length === 1)
-				return docs[0].appid;
+			if (docs.length === 1) 
+				callback(docs[0].appid);
 			else
-				return 0;
+				callback(0);
 		});
 	},
 
@@ -26,19 +26,20 @@ module.exports = ({
 				// save the next value for appid..
 				that.db.update({maxappid: appid}, {maxappid: (appid + 1)}, function(err, numReplaced) {
 					// numReplaced === 1 here...
+					if (numReplaced === 1) {
+						callback(appid);
+					}
 				});
-				// start the service... using the callback..
-				var service = callback(appid);
-
-				if (service !== null) {
-					// insert the database entry..
-					that.db.insert({appid: appid, appname: appname, server: service.server, port: service.port, state: 1}, 
-						function(err, docs) {
-						});
-					return true;
-				}
+			} else {
+				callback(undefined);
 			}
-			return false;
+
+		});
+	},
+
+	finalizeregister: function(dentry) {
+		this.db.insert(dentry, function(err, docs) {
+			// we are not checking this insertion... assuming to go through..
 		});
 	},
 
@@ -71,8 +72,9 @@ module.exports = ({
 				var status = callback(appid);				
 				// update the status..
 				if (status) {
-					that.db.update({appid: appid}, {state: 0}, function(err, numReplaced) {
+					that.db.update({appid: appid}, {state: 1}, function(err, numReplaced) {
 						// numReplaced === 1 here...
+
 					});
 					return true;
 				}
@@ -82,16 +84,23 @@ module.exports = ({
 	},
 
 	removeapp: function(appid, callback) {
-		var that = this;
-		
+		this.db.remove({appid: appid}, function(err, docs) {
+			if (docs.length === 1) {
+				callback(appid);
+			} else {
+				callback(0);
+			}
+		});
 	},
 
 
 	// return the appinfo as a hashtable in JSON object..
-	getappinfo: function(appid) {
+	getappinfo: function(appid, callback) {
 		this.db.find({appid: appid}, function(err, docs) {
 			if (docs.length === 1) {
-				return docs[0];
+				callback(docs[0]);
+			} else {
+				callback(undefined);
 			}
 		});
 	},

@@ -1,13 +1,12 @@
-var module = require('module'),
-	events = require('events'),
+var events = require('events'),
 	util = require('util');
 
-module.exports = function() {
-	console.log("hello");
-}
+module.exports = function(stream) {
+	return new Message(stream);
+};
 
 
-var Message = function (stream) {
+function Message(stream) {
 	events.EventEmitter.call(this);
 	var self = this, buffer = '';
 	stream.on('data', function(data) {

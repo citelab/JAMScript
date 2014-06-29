@@ -1,0 +1,523 @@
+Active Internet connections
+Proto Recv-Q Send-Q  Local Address          Foreign Address        (state)    
+tcp4       0      0  10.216.188.229.62702   p06-imap-old.mai.imaps ESTABLISHED
+tcp4      27      0  10.216.188.229.62701   r-199-59-150-46..https CLOSE_WAIT 
+tcp4       0      0  10.216.188.229.62581   pr.pbp.vip.bf1.y.https FIN_WAIT_2 
+tcp4       0      0  10.216.188.229.62500   8.39.37.21.http        LAST_ACK   
+tcp4       0      0  10.216.188.229.62472   157.166.248.13.http    LAST_ACK   
+tcp4       0     90  10.216.188.229.62449   mail.cs.mcgill.c.imaps ESTABLISHED
+tcp4       0      0  10.216.188.229.62448   mail.cs.mcgill.c.imaps ESTABLISHED
+tcp4       0      0  10.216.188.229.62447   mail.cs.mcgill.c.imaps ESTABLISHED
+tcp4       0      0  10.216.188.229.62445   mail.cs.mcgill.c.imaps ESTABLISHED
+tcp4       0     82  10.216.188.229.62406   17.172.34.114.imaps    ESTABLISHED
+tcp4       0     38  10.216.188.229.62315   17.172.34.111.imaps    ESTABLISHED
+tcp4       0     56  10.216.188.229.61963   p06-imap-old.mai.imaps FIN_WAIT_1 
+tcp4       0      0  10.216.188.229.61962   p06-imap-old.mai.imaps ESTABLISHED
+tcp4       0      0  10.216.188.229.61441   ni-in-f125.1e100.jabbe ESTABLISHED
+tcp4       0      0  10.216.188.229.61433   17.149.36.191.5223     ESTABLISHED
+udp4       0      0  *.60207                *.*                               
+udp4       0      0  *.54718                *.*                               
+udp4       0      0  *.54975                *.*                               
+udp4       0      0  muthucumarus-mac.ntp   *.*                               
+udp4       0      0  192.168.2.1.ntp        *.*                               
+udp6       0      0  *.54486                *.*                               
+udp4       0      0  *.54486                *.*                               
+udp6       0      0  *.54134                *.*                               
+udp4       0      0  *.54134                *.*                               
+udp6       0      0  *.65330                *.*                               
+udp4       0      0  *.65330                *.*                               
+udp4       0      0  192.168.2.1.nat-pmp    *.*                               
+udp6       0      0  *.domain               *.*                               
+udp4       0      0  *.domain               *.*                               
+udp6       0      0  *.51477                *.*                               
+udp4       0      0  *.51477                *.*                               
+udp6       0      0  *.50966                *.*                               
+udp4       0      0  *.50966                *.*                               
+udp6       0      0  *.65267                *.*                               
+udp4       0      0  *.65267                *.*                               
+udp4       0      0  10.216.188.229.ntp     *.*                               
+udp4       0      0  *.*                    *.*                               
+udp4       0      0  *.*                    *.*                               
+udp46      0      0  *.*                    *.*                               
+udp46      0      0  *.*                    *.*                               
+udp46      0      0  *.*                    *.*                               
+udp4       0      0  *.bootps               *.*                               
+udp4       0      0  *.*                    *.*                               
+udp4       0      0  *.*                    *.*                               
+udp4       0      0  *.*                    *.*                               
+udp6       0      0  muthucumarus-mac.ntp   *.*                               
+udp4       0      0  localhost.ntp          *.*                               
+udp6       0      0  localhost.ntp          *.*                               
+udp6       0      0  *.ntp                  *.*                               
+udp4       0      0  *.ntp                  *.*                               
+udp4       0      0  *.*                    *.*                               
+udp4       0      0  *.*                    *.*                               
+udp4       0      0  *.*                    *.*                               
+udp4       0      0  *.*                    *.*                               
+udp4       0      0  *.*                    *.*                               
+udp4       0      0  *.*                    *.*                               
+udp46      0      0  *.*                    *.*                               
+udp4       0      0  *.*                    *.*                               
+udp4       0      0  *.*                    *.*                               
+udp4       0      0  *.kerberos             *.*                               
+udp6       0      0  *.kerberos             *.*                               
+udp4       0      0  *.*                    *.*                               
+udp6       0      0  *.mdns                 *.*                               
+udp4       0      0  *.mdns                 *.*                               
+udp4       0      0  *.*                    *.*                               
+udp4       0      0  *.netbios-dgm          *.*                               
+udp4       0      0  *.netbios-ns           *.*                               
+icm6       0      0  *.*                    *.*                               
+Active LOCAL (UNIX) domain sockets
+Address          Type   Recv-Q Send-Q            Inode             Conn             Refs          Nextref Addr
+3866dc466062b0e3 stream      0      0                0 3866dc466062971b                0                0 /var/run/mDNSResponder
+3866dc466062971b stream      0      0                0 3866dc466062b0e3                0                0
+3866dc466062b97b stream      0      0                0 3866dc46651d6c2b                0                0 /var/run/mDNSResponder
+3866dc46651d6c2b stream      0      0                0 3866dc466062b97b                0                0
+3866dc46651d6b63 stream      0      0                0 3866dc4657bce58b                0                0 /var/run/mDNSResponder
+3866dc4657bce58b stream      0      0                0 3866dc46651d6b63                0                0
+3866dc4660629eeb stream      0      0                0 3866dc4657bd0723                0                0
+3866dc4657bd0723 stream      0      0                0 3866dc4660629eeb                0                0
+3866dc46599b9143 stream      0      0                0 3866dc4664d07143                0                0
+3866dc4664d07143 stream      0      0                0 3866dc46599b9143                0                0
+3866dc46599b858b stream      0      0                0 3866dc46651d8f53                0                0
+3866dc46651d8f53 stream      0      0                0 3866dc46599b858b                0                0
+3866dc46599b87e3 stream      0      0                0 3866dc4657bce3fb                0                0 /var/run/mDNSResponder
+3866dc4657bce3fb stream      0      0                0 3866dc46599b87e3                0                0
+3866dc4660629333 stream      0      0                0 3866dc46599b81a3                0                0
+3866dc46599b81a3 stream      0      0                0 3866dc4660629333                0                0
+3866dc466062b33b stream      0      0                0 3866dc4660629e23                0                0
+3866dc4660629e23 stream      0      0                0 3866dc466062b33b                0                0
+3866dc465754cc93 stream      0      0                0 3866dc4664d0865b                0                0
+3866dc4664d0865b stream      0      0                0 3866dc465754cc93                0                0
+3866dc46606298ab stream      0      0                0 3866dc4657bce0db                0                0 /var/run/mDNSResponder
+3866dc4657bce0db stream      0      0                0 3866dc46606298ab                0                0
+3866dc46599b9dc3 stream      0      0                0 3866dc46599b8e23                0                0
+3866dc46599b8e23 stream      0      0                0 3866dc46599b9dc3                0                0
+3866dc466062a463 stream      0      0                0 3866dc46599b80db                0                0
+3866dc46599b80db stream      0      0                0 3866dc466062a463                0                0
+3866dc4664d0626b stream      0      0                0 3866dc46575df39b                0                0
+3866dc46575df39b stream      0      0                0 3866dc4664d0626b                0                0
+3866dc4657bcf2d3 stream      0      0                0 3866dc46651d8913                0                0
+3866dc46651d8913 stream      0      0                0 3866dc4657bcf2d3                0                0
+3866dc4657bcda9b stream      0      0                0 3866dc46651d852b                0                0
+3866dc46651d852b stream      0      0                0 3866dc4657bcda9b                0                0
+3866dc4657679333 stream      0      0                0 3866dc46651d6cf3                0                0
+3866dc46651d6cf3 stream      0      0                0 3866dc4657679333                0                0
+3866dc466062a6bb stream      0      0                0 3866dc4657bd00e3                0                0
+3866dc4657bd00e3 stream      0      0                0 3866dc466062a6bb                0                0
+3866dc466062a5f3 stream      0      0                0 3866dc4657bcdb63                0                0 /var/run/mDNSResponder
+3866dc4657bcdb63 stream      0      0                0 3866dc466062a5f3                0                0
+3866dc4660629a3b stream      0      0                0 3866dc466062a913                0                0 /var/run/mDNSResponder
+3866dc466062a913 stream      0      0                0 3866dc4660629a3b                0                0
+3866dc466062b8b3 stream      0      0                0 3866dc46606291a3                0                0 /var/run/mDNSResponder
+3866dc46606291a3 stream      0      0                0 3866dc466062b8b3                0                0
+3866dc46651d7333 stream      0      0                0 3866dc46599b84c3                0                0 /var/run/mDNSResponder
+3866dc46599b84c3 stream      0      0                0 3866dc46651d7333                0                0
+3866dc465767926b stream      0      0                0 3866dc46599b7e83                0                0 /var/run/mDNSResponder
+3866dc46599b7e83 stream      0      0                0 3866dc465767926b                0                0
+3866dc465767a2d3 stream      0      0                0 3866dc466062a783                0                0
+3866dc466062a783 stream      0      0                0 3866dc465767a2d3                0                0
+3866dc4657bd01ab stream      0      0                0 3866dc4660629c93                0                0
+3866dc4660629c93 stream      0      0                0 3866dc4657bd01ab                0                0
+3866dc4664d072d3 stream      0      0                0 3866dc466062b723                0                0
+3866dc466062b723 stream      0      0                0 3866dc4664d072d3                0                0
+3866dc4657bcf143 stream      0      0                0 3866dc466062adc3                0                0
+3866dc466062adc3 stream      0      0                0 3866dc4657bcf143                0                0
+3866dc46599b7dbb stream      0      0                0 3866dc465754de8b                0                0
+3866dc465754de8b stream      0      0                0 3866dc46599b7dbb                0                0
+3866dc4664d05e83 stream      0      0                0 3866dc46651d8783                0                0
+3866dc46651d8783 stream      0      0                0 3866dc4664d05e83                0                0
+3866dc4664d0833b stream      0      0                0 3866dc4657bcfe8b                0                0 /var/run/mDNSResponder
+3866dc4657bcfe8b stream      0      0                0 3866dc4664d0833b                0                0
+3866dc46651d8143 stream      0      0 3866dc4661734d6b                0                0                0 /var/folders/mk/zlm57jh17q7fx7sgs9dq09t80000gn/T/ics48606
+3866dc4656177c2b stream      0      0                0 3866dc4657bcebcb                0                0 /var/run/mDNSResponder
+3866dc4657bcebcb stream      0      0                0 3866dc4656177c2b                0                0
+3866dc46599b9aa3 stream      0      0                0 3866dc4657bcf20b                0                0 /var/run/mDNSResponder
+3866dc4657bcf20b stream      0      0                0 3866dc46599b9aa3                0                0
+3866dc4657bd0593 stream      0      0                0 3866dc4664d05dbb                0                0 /var/run/mDNSResponder
+3866dc4664d05dbb stream      0      0                0 3866dc4657bd0593                0                0
+3866dc46599ba01b stream      0      0                0 3866dc465767adc3                0                0 /var/run/mDNSResponder
+3866dc465767adc3 stream      0      0                0 3866dc46599ba01b                0                0
+3866dc46599b7c2b stream      0      0                0 3866dc4657bce4c3                0                0 /tmp/launchd-290.9LGXx4/sock
+3866dc4657bce4c3 stream      0      0                0 3866dc46599b7c2b                0                0
+3866dc46651d6dbb stream      0      0                0 3866dc4657bd08b3                0                0 /var/run/mDNSResponder
+3866dc4657bd08b3 stream      0      0                0 3866dc46651d6dbb                0                0
+3866dc4657bce71b stream      0      0                0 3866dc46599b8653                0                0 /var/run/mDNSResponder
+3866dc46599b8653 stream      0      0                0 3866dc4657bce71b                0                0
+3866dc465754c3fb stream      0      0                0 3866dc4664d060db                0                0 /var/run/mDNSResponder
+3866dc4664d060db stream      0      0                0 3866dc465754c3fb                0                0
+3866dc46599ba7eb stream      0      0                0 3866dc465754c0db                0                0
+3866dc465754c0db stream      0      0                0 3866dc46599ba7eb                0                0
+3866dc4664d076bb stream      0      0                0 3866dc46651d758b                0                0
+3866dc46651d758b stream      0      0                0 3866dc4664d076bb                0                0
+3866dc4657bcf463 stream      0      0                0 3866dc4657bcf84b                0                0
+3866dc4657bcf84b stream      0      0                0 3866dc4657bcf463                0                0
+3866dc46599b9f53 stream      0      0                0 3866dc4664d06333                0                0
+3866dc4664d06333 stream      0      0                0 3866dc46599b9f53                0                0
+3866dc4664d075f3 stream      0      0                0 3866dc4657678c2b                0                0
+3866dc4657678c2b stream      0      0                0 3866dc4664d075f3                0                0
+3866dc4664d0707b stream      0      0                0 3866dc4657bceb03                0                0 /var/run/usbmuxd
+3866dc4657bceb03 stream      0      0                0 3866dc4664d0707b                0                0
+3866dc465754cbcb stream      0      0                0 3866dc4664d0801b                0                0 /var/run/mDNSResponder
+3866dc4664d0801b stream      0      0                0 3866dc465754cbcb                0                0
+3866dc465754e273 stream      0      0                0 3866dc465754e33b                0                0
+3866dc465754e33b stream      0      0                0 3866dc465754e273                0                0
+3866dc4664d079db stream      0      0                0 3866dc4657bcf913                0                0
+3866dc4657bcf913 stream      0      0                0 3866dc4664d079db                0                0
+3866dc4657679c93 stream      0      0                0 3866dc4657bcfb6b                0                0
+3866dc4657bcfb6b stream      0      0                0 3866dc4657679c93                0                0
+3866dc4657bd07eb stream      0      0                0 3866dc4657bcf5f3                0                0
+3866dc4657bcf5f3 stream      0      0                0 3866dc4657bd07eb                0                0
+3866dc46599b826b stream      0      0                0 3866dc46651d7d5b                0                0
+3866dc46651d7d5b stream      0      0                0 3866dc46599b826b                0                0
+3866dc46599ba0e3 stream      0      0                0 3866dc4657bd065b                0                0
+3866dc4657bd065b stream      0      0                0 3866dc46599ba0e3                0                0
+3866dc46599b952b stream      0      0                0 3866dc4664d08593                0                0 /tmp/launchd-290.9LGXx4/sock
+3866dc4664d08593 stream      0      0                0 3866dc46599b952b                0                0
+3866dc46599b7a9b stream      0      0                0 3866dc4657bce8ab                0                0
+3866dc4657bce8ab stream      0      0                0 3866dc46599b7a9b                0                0
+3866dc46651d7653 stream      0      0                0 3866dc4657679b03                0                0
+3866dc4657679b03 stream      0      0                0 3866dc46651d7653                0                0
+3866dc465754e4cb stream      0      0                0 3866dc46599b920b                0                0
+3866dc46599b920b stream      0      0                0 3866dc465754e4cb                0                0
+3866dc46651d6e83 stream      0      0                0 3866dc4664d06bcb                0                0 /tmp/launchd-290.9LGXx4/sock
+3866dc4664d06bcb stream      0      0                0 3866dc46651d6e83                0                0
+3866dc4657bce1a3 stream      0      0                0 3866dc46599b9b6b                0                0 /var/run/mDNSResponder
+3866dc46599b9b6b stream      0      0                0 3866dc4657bce1a3                0                0
+3866dc4657bcf52b stream      0      0                0 3866dc4664d06013                0                0
+3866dc4664d06013 stream      0      0                0 3866dc4657bcf52b                0                0
+3866dc4657bd033b stream      0      0 3866dc465cdf68ab                0                0                0 /tmp/launchd-23888.rGzmNO/sock
+3866dc46599b8973 stream      0      0                0 3866dc4657bd0403                0                0
+3866dc4657bd0403 stream      0      0                0 3866dc46599b8973                0                0
+3866dc4664d07913 stream      0      0                0 3866dc4657bcf07b                0                0 /var/run/mDNSResponder
+3866dc4657bcf07b stream      0      0                0 3866dc4664d07913                0                0
+3866dc46599b8eeb stream      0      0                0 3866dc46599b95f3                0                0
+3866dc46599b95f3 stream      0      0                0 3866dc46599b8eeb                0                0
+3866dc46599b7b63 stream      0      0                0 3866dc46599b8333                0                0
+3866dc46599b8333 stream      0      0                0 3866dc46599b7b63                0                0
+3866dc46599ba593 stream      0      0                0 3866dc46599ba8b3                0                0 /tmp/launchd-290.9LGXx4/sock
+3866dc46599ba8b3 stream      0      0                0 3866dc46599ba593                0                0
+3866dc4664d088b3 stream      0      0                0 3866dc46599ba273                0                0
+3866dc46599ba273 stream      0      0                0 3866dc4664d088b3                0                0
+3866dc46599b7cf3 stream      0      0                0 3866dc465767b403                0                0
+3866dc465767b403 stream      0      0                0 3866dc46599b7cf3                0                0
+3866dc4657bd001b stream      0      0                0 3866dc4664d084cb                0                0
+3866dc4664d084cb stream      0      0                0 3866dc4657bd001b                0                0
+3866dc465754bc2b stream      0      0                0 3866dc465754d52b                0                0 /tmp/launchd-290.9LGXx4/sock
+3866dc465754d52b stream      0      0                0 3866dc465754bc2b                0                0
+3866dc46651d807b stream      0      0                0 3866dc46651d9273                0                0
+3866dc46651d9273 stream      0      0                0 3866dc46651d807b                0                0
+3866dc46599ba1ab stream      0      0                0 3866dc46599b96bb                0                0 /var/run/mDNSResponder
+3866dc46599b96bb stream      0      0                0 3866dc46599ba1ab                0                0
+3866dc46651d771b stream      0      0                0 3866dc465754e7eb                0                0
+3866dc465754e7eb stream      0      0                0 3866dc46651d771b                0                0
+3866dc46651d8b6b stream      0      0                0                0                0                0
+3866dc46651d90e3 stream      0      0                0 3866dc46651d933b                0                0
+3866dc46651d933b stream      0      0                0 3866dc46651d90e3                0                0
+3866dc46576794c3 stream      0      0                0 3866dc46651d7eeb                0                0
+3866dc46651d7eeb stream      0      0                0 3866dc46576794c3                0                0
+3866dc4657679a3b stream      0      0                0 3866dc46651d901b                0                0
+3866dc46651d901b stream      0      0                0 3866dc4657679a3b                0                0
+3866dc4657679bcb stream      0      0                0 3866dc46599b8d5b                0                0
+3866dc46599b8d5b stream      0      0                0 3866dc4657679bcb                0                0
+3866dc46651d7c93 stream      0      0                0 3866dc46651d7fb3                0                0
+3866dc46651d7fb3 stream      0      0                0 3866dc46651d7c93                0                0
+3866dc46651d7e23 stream      0      0                0 3866dc46651d8e8b                0                0
+3866dc46651d8e8b stream      0      0                0 3866dc46651d7e23                0                0
+3866dc46651d839b stream      0      0                0 3866dc46651d9403                0                0
+3866dc46651d9403 stream      0      0                0 3866dc46651d839b                0                0
+3866dc46651d82d3 stream      0      0                0 3866dc46651d91ab                0                0 /var/tmp/launchd/sock
+3866dc46651d91ab stream      0      0                0 3866dc46651d82d3                0                0
+3866dc46599b9463 stream      0      0                0 3866dc46599b9783                0                0
+3866dc46599b9783 stream      0      0                0 3866dc46599b9463                0                0
+3866dc46599b92d3 stream      0      0                0 3866dc465754ca3b                0                0
+3866dc465754ca3b stream      0      0                0 3866dc46599b92d3                0                0
+3866dc46599b939b stream      0      0                0 3866dc46599b8bcb                0                0
+3866dc46599b8bcb stream      0      0                0 3866dc46599b939b                0                0
+3866dc46599b907b stream      0      0                0 3866dc46599b88ab                0                0 /tmp/launchd-290.9LGXx4/sock
+3866dc46599b88ab stream      0      0                0 3866dc46599b907b                0                0
+3866dc46599b984b stream      0      0                0 3866dc46599b9913                0                0
+3866dc46599b9913 stream      0      0                0 3866dc46599b984b                0                0
+3866dc46599ba65b stream      0      0                0 3866dc46599ba723                0                0
+3866dc46599ba723 stream      0      0                0 3866dc46599ba65b                0                0
+3866dc46599ba97b stream      0      0                0 3866dc46651d6a9b                0                0
+3866dc46651d6a9b stream      0      0                0 3866dc46599ba97b                0                0
+3866dc46651d7973 stream      0      0                0 3866dc46651d7a3b                0                0
+3866dc46651d7a3b stream      0      0                0 3866dc46651d7973                0                0
+3866dc46651d7bcb stream      0      0                0 3866dc46651d7b03                0                0
+3866dc46651d7b03 stream      0      0                0 3866dc46651d7bcb                0                0
+3866dc46651d85f3 stream      0      0                0 3866dc46651d86bb                0                0
+3866dc46651d86bb stream      0      0                0 3866dc46651d85f3                0                0
+3866dc46651d8dc3 stream      0      0                0 3866dc46651d8cfb                0                0
+3866dc46651d8cfb stream      0      0                0 3866dc46651d8dc3                0                0
+3866dc46651d9593 stream      0      0                0 3866dc46651d94cb                0                0 /var/run/mDNSResponder
+3866dc46651d94cb stream      0      0                0 3866dc46651d9593                0                0
+3866dc46651d9723 stream      0      0                0 3866dc46651d965b                0                0
+3866dc46651d965b stream      0      0                0 3866dc46651d9723                0                0
+3866dc4664d05b63 stream      0      0                0 3866dc4664d05a9b                0                0
+3866dc4664d05a9b stream      0      0                0 3866dc4664d05b63                0                0
+3866dc4664d064c3 stream      0      0                0 3866dc4664d063fb                0                0 /var/run/mDNSResponder
+3866dc4664d063fb stream      0      0                0 3866dc4664d064c3                0                0
+3866dc4664d05c2b stream      0      0                0 3866dc4664d05cf3                0                0
+3866dc4664d05cf3 stream      0      0                0 3866dc4664d05c2b                0                0
+3866dc4664d0658b stream      0      0                0 3866dc4664d06653                0                0
+3866dc4664d06653 stream      0      0                0 3866dc4664d0658b                0                0
+3866dc46575dfdc3 stream      0      0                0 3866dc465754e01b                0                0
+3866dc465754e01b stream      0      0                0 3866dc46575dfdc3                0                0
+3866dc4664d06a3b stream      0      0                0 3866dc4664d0671b                0                0
+3866dc4664d0671b stream      0      0                0 3866dc4664d06a3b                0                0
+3866dc4664d067e3 stream      0      0                0 3866dc4664d068ab                0                0
+3866dc4664d068ab stream      0      0                0 3866dc4664d067e3                0                0
+3866dc4664d06e23 stream      0      0                0 3866dc4664d06d5b                0                0
+3866dc4664d06d5b stream      0      0                0 3866dc4664d06e23                0                0
+3866dc4664d06fb3 stream      0      0                0 3866dc4664d06eeb                0                0
+3866dc4664d06eeb stream      0      0                0 3866dc4664d06fb3                0                0
+3866dc4664d0739b stream      0      0                0 3866dc4664d07463                0                0
+3866dc4664d07463 stream      0      0                0 3866dc4664d0739b                0                0
+3866dc4664d07cfb stream      0      0                0 3866dc4664d07dc3                0                0
+3866dc4664d07dc3 stream      0      0                0 3866dc4664d07cfb                0                0
+3866dc4664d07f53 stream      0      0                0 3866dc4664d081ab                0                0
+3866dc4664d081ab stream      0      0                0 3866dc4664d07f53                0                0
+3866dc46576797e3 stream      0      0                0 3866dc465767971b                0                0 /var/run/mDNSResponder
+3866dc465767971b stream      0      0                0 3866dc46576797e3                0                0
+3866dc4664d080e3 stream      0      0                0 3866dc4664d08273                0                0
+3866dc4664d08273 stream      0      0                0 3866dc4664d080e3                0                0
+3866dc4664d08403 stream      0      0 3866dc465a587f4b                0                0                0 /var/folders/mk/zlm57jh17q7fx7sgs9dq09t80000gn/T/icssuis501
+3866dc4664d08723 stream      0      0                0 3866dc4664d087eb                0                0
+3866dc4664d087eb stream      0      0                0 3866dc4664d08723                0                0
+3866dc4657678cf3 stream      0      0                0 3866dc4664d0897b                0                0 /tmp/launchd-290.9LGXx4/sock
+3866dc4664d0897b stream      0      0                0 3866dc4657678cf3                0                0
+3866dc4657678a9b stream      0      0                0 3866dc4657678b63                0                0
+3866dc4657678b63 stream      0      0                0 3866dc4657678a9b                0                0
+3866dc4657678e83 stream      0      0                0 3866dc4657678dbb                0                0
+3866dc4657678dbb stream      0      0                0 3866dc4657678e83                0                0
+3866dc4657678f4b stream      0      0                0 3866dc4657679013                0                0
+3866dc4657679013 stream      0      0                0 3866dc4657678f4b                0                0
+3866dc46576791a3 stream      0      0                0 3866dc46576790db                0                0 /var/run/mDNSResponder
+3866dc46576790db stream      0      0                0 3866dc46576791a3                0                0
+3866dc4657679d5b stream      0      0                0 3866dc465767a07b                0                0 /var/run/mDNSResponder
+3866dc4657679fb3 stream      0      0                0 3866dc4657679eeb                0                0 /var/run/mDNSResponder
+3866dc4657679eeb stream      0      0                0 3866dc4657679fb3                0                0
+3866dc465767a07b stream      0      0                0 3866dc4657679d5b                0                0
+3866dc465767a20b stream      0      0                0 3866dc465767a143                0                0
+3866dc465767a143 stream      0      0                0 3866dc465767a20b                0                0
+3866dc465767a52b stream      0      0                0 3866dc465767a463                0                0
+3866dc465767a463 stream      0      0                0 3866dc465767a52b                0                0
+3866dc465767a5f3 stream      0      0                0 3866dc465767a6bb                0                0
+3866dc465767a6bb stream      0      0                0 3866dc465767a5f3                0                0
+3866dc465767a9db stream      0      0                0 3866dc465767a783                0                0 /tmp/launchd-290.9LGXx4/sock
+3866dc465767a783 stream      0      0                0 3866dc465767a9db                0                0
+3866dc465767a84b stream      0      0                0 3866dc465754d39b                0                0
+3866dc465754d39b stream      0      0                0 3866dc465767a84b                0                0
+3866dc46575ddb63 stream      0      0                0 3866dc46575dda9b                0                0
+3866dc46575dda9b stream      0      0                0 3866dc46575ddb63                0                0
+3866dc46575de013 stream      0      0                0 3866dc46575df20b                0                0
+3866dc46575df20b stream      0      0                0 3866dc46575de013                0                0
+3866dc4656179cfb stream      0      0                0 3866dc46575debcb                0                0
+3866dc46575debcb stream      0      0                0 3866dc4656179cfb                0                0
+3866dc46575df463 stream      0      0                0 3866dc465754bcf3                0                0
+3866dc465754bcf3 stream      0      0                0 3866dc46575df463                0                0
+3866dc46575e033b stream      0      0                0 3866dc4656177f4b                0                0
+3866dc4656177f4b stream      0      0                0 3866dc46575e033b                0                0
+3866dc46575e00e3 stream      0      0                0 3866dc465754d6bb                0                0
+3866dc465754d6bb stream      0      0                0 3866dc46575e00e3                0                0
+3866dc4656177e83 stream      0      0                0 3866dc465754dcfb                0                0
+3866dc465754dcfb stream      0      0                0 3866dc4656177e83                0                0
+3866dc46575dee23 stream      0      0                0 3866dc465754d07b                0                0
+3866dc465754d07b stream      0      0                0 3866dc46575dee23                0                0
+3866dc46575ddf4b stream      0      0                0 3866dc465754cd5b                0                0
+3866dc465754cd5b stream      0      0                0 3866dc46575ddf4b                0                0
+3866dc465754d9db stream      0      0 3866dc46598e54eb                0                0                0 /tmp/launch-LG1VrR/Listeners
+3866dc465754ceeb stream      0      0 3866dc465991c4eb                0                0                0 /tmp/launch-0UF0N5/Render
+3866dc465754db6b stream      0      0 3866dc46599083fb                0                0                0 /var/tmp/filesystemui.socket
+3866dc465754e1ab stream      0      0 3866dc465679f3fb                0                0                0 /tmp/launch-VIgRoG/org.macosforge.xquartz:0
+3866dc465754bb63 stream      0      0                0 3866dc46575e04cb                0                0
+3866dc46575e04cb stream      0      0                0 3866dc465754bb63                0                0
+3866dc4656179c33 stream      0      0                0 3866dc46575de8ab                0                0
+3866dc46575de8ab stream      0      0                0 3866dc4656179c33                0                0
+3866dc46575df143 stream      0      0                0 3866dc465767b8b3                0                0
+3866dc465767b8b3 stream      0      0                0 3866dc46575df143                0                0
+3866dc46575ddcf3 stream      0      0                0 3866dc46575de3fb                0                0
+3866dc46575de3fb stream      0      0                0 3866dc46575ddcf3                0                0
+3866dc4656178013 stream      0      0 3866dc46615b8f4b                0                0                0 /tmp/launchd-290.9LGXx4/sock
+3866dc46575df2d3 stream      0      0 3866dc46615b95db                0                0                0 /tmp/launchd-289.Q3O7x7/sock
+3866dc46575ded5b stream      0      0                0 3866dc46575df07b                0                0
+3866dc46575df07b stream      0      0                0 3866dc46575ded5b                0                0
+3866dc46575dddbb stream      0      0                0 3866dc46575dde83                0                0
+3866dc46575dde83 stream      0      0                0 3866dc46575dddbb                0                0
+3866dc465754c26b stream      0      0                0 3866dc465754c1a3                0                0 /var/run/mDNSResponder
+3866dc465754c1a3 stream      0      0                0 3866dc465754c26b                0                0
+3866dc465754d463 stream      0      0                0                0                0                0
+3866dc465754c013 stream      0      0                0                0                0                0
+3866dc4656177b63 stream      0      0                0 3866dc465754bdbb                0                0
+3866dc465754bdbb stream      0      0                0 3866dc4656177b63                0                0
+3866dc46575e08b3 stream      0      0                0 3866dc46575e0403                0                0
+3866dc46575e0403 stream      0      0                0 3866dc46575e08b3                0                0
+3866dc46575dfc33 stream      0      0                0 3866dc46575df5f3                0                0
+3866dc46575df5f3 stream      0      0                0 3866dc46575dfc33                0                0
+3866dc46575df913 stream      0      0                0                0                0                0
+3866dc465767acfb stream      0      0                0 3866dc465767b4cb                0                0 /var/run/mDNSResponder
+3866dc465767b4cb stream      0      0                0 3866dc465767acfb                0                0
+3866dc465767b7eb stream      0      0                0 3866dc465767ab6b                0                0 /var/tmp/launchd/sock
+3866dc465767ab6b stream      0      0                0 3866dc465767b7eb                0                0
+3866dc46575de4c3 stream      0      0                0 3866dc46575de1a3                0                0 /var/run/mDNSResponder
+3866dc46575de1a3 stream      0      0                0 3866dc46575de4c3                0                0
+3866dc46575de653 stream      0      0                0 3866dc46575de333                0                0
+3866dc46575de333 stream      0      0                0 3866dc46575de653                0                0
+3866dc465754cfb3 stream      0      0                0 3866dc465767ae8b                0                0 /var/run/mDNSResponder
+3866dc465767ae8b stream      0      0                0 3866dc465754cfb3                0                0
+3866dc465754ce23 stream      0      0                0 3866dc465767b1ab                0                0 /var/run/mDNSResponder
+3866dc465767b1ab stream      0      0                0 3866dc465754ce23                0                0
+3866dc465754ddc3 stream      0      0                0 3866dc465754be83                0                0 /var/run/mDNSResponder
+3866dc465754be83 stream      0      0                0 3866dc465754ddc3                0                0
+3866dc465754df53 stream      0      0                0 3866dc4656177a9b                0                0
+3866dc4656177a9b stream      0      0                0 3866dc465754df53                0                0
+3866dc465754dc33 stream      0      0                0 3866dc465754e723                0                0
+3866dc465754e723 stream      0      0                0 3866dc465754dc33                0                0
+3866dc465754d5f3 stream      0      0                0 3866dc46575e07eb                0                0
+3866dc46575e07eb stream      0      0                0 3866dc465754d5f3                0                0
+3866dc465754d913 stream      0      0                0 3866dc465754d2d3                0                0
+3866dc465754d2d3 stream      0      0                0 3866dc465754d913                0                0
+3866dc465754c973 stream      0      0                0 3866dc465754cb03                0                0 /var/run/mDNSResponder
+3866dc465754cb03 stream      0      0                0 3866dc465754c973                0                0
+3866dc465754bf4b stream      0      0                0 3866dc46575dfb6b                0                0
+3866dc46575dfb6b stream      0      0                0 3866dc465754bf4b                0                0
+3866dc465767b0e3 stream      0      0                0 3866dc465754c653                0                0 /var/run/mDNSResponder
+3866dc465754c653 stream      0      0                0 3866dc465767b0e3                0                0
+3866dc46575e001b stream      0      0                0 3866dc46575df84b                0                0 /var/run/mDNSResponder
+3866dc46575df84b stream      0      0                0 3866dc46575e001b                0                0
+3866dc46575df52b stream      0      0                0 3866dc46575dfcfb                0                0
+3866dc46575dfcfb stream      0      0                0 3866dc46575df52b                0                0
+3866dc465754e403 stream      0      0                0 3866dc46575de26b                0                0
+3866dc46575de26b stream      0      0                0 3866dc465754e403                0                0
+3866dc46575de0db stream      0      0                0 3866dc465767ac33                0                0 /var/tmp/launchd/sock
+3866dc465767ac33 stream      0      0                0 3866dc46575de0db                0                0
+3866dc465767af53 stream      0      0                0 3866dc465767b01b                0                0
+3866dc465767b01b stream      0      0                0 3866dc465767af53                0                0
+3866dc465767b273 stream      0      0                0 3866dc465767b33b                0                0
+3866dc465767b33b stream      0      0                0 3866dc465767b273                0                0
+3866dc465767b593 stream      0      0                0 3866dc465767b65b                0                0
+3866dc465767b65b stream      0      0                0 3866dc465767b593                0                0
+3866dc46575de71b stream      0      0                0 3866dc46575de7e3                0                0
+3866dc46575de7e3 stream      0      0                0 3866dc46575de71b                0                0
+3866dc46575dea3b stream      0      0                0 3866dc46575deb03                0                0
+3866dc46575deb03 stream      0      0                0 3866dc46575dea3b                0                0
+3866dc46575df6bb stream      0      0                0 3866dc46575df783                0                0
+3866dc46575df783 stream      0      0                0 3866dc46575df6bb                0                0
+3866dc46575df9db stream      0      0                0 3866dc46575dfaa3                0                0
+3866dc46575dfaa3 stream      0      0                0 3866dc46575df9db                0                0
+3866dc46575dfe8b stream      0      0                0 3866dc46575dff53                0                0
+3866dc46575dff53 stream      0      0                0 3866dc46575dfe8b                0                0
+3866dc46575e01ab stream      0      0                0 3866dc46575e0273                0                0
+3866dc46575e0273 stream      0      0                0 3866dc46575e01ab                0                0
+3866dc46575e065b stream      0      0                0 3866dc46575e0723                0                0
+3866dc46575e0723 stream      0      0                0 3866dc46575e065b                0                0
+3866dc46575e097b stream      0      0                0 3866dc465754ba9b                0                0
+3866dc465754ba9b stream      0      0                0 3866dc46575e097b                0                0
+3866dc465754c4c3 stream      0      0                0 3866dc465754c58b                0                0
+3866dc465754c58b stream      0      0                0 3866dc465754c4c3                0                0
+3866dc465754c7e3 stream      0      0                0 3866dc465754c8ab                0                0
+3866dc465754c8ab stream      0      0                0 3866dc465754c7e3                0                0
+3866dc465754d143 stream      0      0                0 3866dc465754d20b                0                0
+3866dc465754d20b stream      0      0                0 3866dc465754d143                0                0
+3866dc465754d783 stream      0      0                0 3866dc465754d84b                0                0
+3866dc465754d84b stream      0      0                0 3866dc465754d783                0                0
+3866dc465754e593 stream      0      0                0 3866dc465754e65b                0                0
+3866dc465754e65b stream      0      0                0 3866dc465754e593                0                0
+3866dc465754e8b3 stream      0      0                0 3866dc465754e97b                0                0
+3866dc465754e97b stream      0      0                0 3866dc465754e8b3                0                0
+3866dc46561781a3 stream      0      0                0 3866dc46561780db                0                0
+3866dc46561780db stream      0      0                0 3866dc46561781a3                0                0
+3866dc465617826b stream      0      0                0 3866dc46561783fb                0                0
+3866dc46561783fb stream      0      0                0 3866dc465617826b                0                0
+3866dc4656178333 stream      0      0 3866dc4656bc5b8b                0                0                0 /var/run/pppconfd
+3866dc465617858b stream      0      0                0 3866dc4656178653                0                0
+3866dc4656178653 stream      0      0                0 3866dc465617858b                0                0
+3866dc4656178b03 stream      0      0                0 3866dc4656178c93                0                0
+3866dc4656178c93 stream      0      0                0 3866dc4656178b03                0                0
+3866dc465617871b stream      0      0                0 3866dc46561788ab                0                0
+3866dc46561788ab stream      0      0                0 3866dc465617871b                0                0
+3866dc4656178a3b stream      0      0                0 3866dc4656178973                0                0
+3866dc4656178973 stream      0      0                0 3866dc4656178a3b                0                0
+3866dc4656178e23 stream      0      0                0 3866dc4656178bcb                0                0 /var/tmp/launchd/sock
+3866dc4656178bcb stream      0      0                0 3866dc4656178e23                0                0
+3866dc4656178d5b stream      0      0                0 3866dc4656178fb3                0                0
+3866dc4656178fb3 stream      0      0                0 3866dc4656178d5b                0                0
+3866dc4656179143 stream      0      0                0 3866dc4656178eeb                0                0
+3866dc4656178eeb stream      0      0                0 3866dc4656179143                0                0
+3866dc465617907b stream      0      0                0 3866dc465617920b                0                0
+3866dc465617920b stream      0      0                0 3866dc465617907b                0                0
+3866dc46561792d3 stream      0      0                0 3866dc465617939b                0                0
+3866dc465617939b stream      0      0                0 3866dc46561792d3                0                0
+3866dc46561795f3 stream      0      0                0 3866dc4656179463                0                0 /var/tmp/launchd/sock
+3866dc4656179463 stream      0      0                0 3866dc46561795f3                0                0
+3866dc465617952b stream      0      0                0 3866dc4656179b6b                0                0
+3866dc4656179b6b stream      0      0                0 3866dc465617952b                0                0
+3866dc4656179783 stream      0      0                0 3866dc46561796bb                0                0
+3866dc46561796bb stream      0      0                0 3866dc4656179783                0                0
+3866dc465617984b stream      0      0                0 3866dc4656179aa3                0                0
+3866dc4656179aa3 stream      0      0                0 3866dc465617984b                0                0
+3866dc4656179913 stream      0      0                0 3866dc46561799db                0                0
+3866dc46561799db stream      0      0                0 3866dc4656179913                0                0
+3866dc4656179dc3 stream      0      0 3866dc46567c721b                0                0                0 /var/tmp/launchd/sock
+3866dc4656179e8b stream      0      0 3866dc46567c73fb                0                0                0 /private/var/run/cupsd
+3866dc4656179f53 stream      0      0 3866dc46567c74eb                0                0                0 /var/run/usbmuxd
+3866dc465617a01b stream      0      0 3866dc46567c75db                0                0                0 /var/run/systemkeychaincheck.socket
+3866dc465617a1ab stream      0      0 3866dc46567c77bb                0                0                0 /var/run/portmap.socket
+3866dc465617a273 stream      0      0 3866dc46567c78ab                0                0                0 /var/run/vpncontrol.sock
+3866dc465617a33b stream      0      0 3866dc46567c799b                0                0                0 /var/rpc/ncalrpc/wkssvc
+3866dc465617a403 stream      0      0 3866dc46567b0a9b                0                0                0 /var/rpc/ncacn_np/wkssvc
+3866dc465617a4cb stream      0      0 3866dc46567b0b8b                0                0                0 /var/rpc/ncalrpc/srvsvc
+3866dc465617a593 stream      0      0 3866dc46567b0c7b                0                0                0 /var/rpc/ncacn_np/srvsvc
+3866dc465617a65b stream      0      0 3866dc46567b0d6b                0                0                0 /var/rpc/ncalrpc/NETLOGON
+3866dc465617a723 stream      0      0 3866dc46567b0e5b                0                0                0 /var/rpc/ncacn_np/mdssvc
+3866dc465617a7eb stream      0      0 3866dc46567b0f4b                0                0                0 /var/rpc/ncalrpc/lsarpc
+3866dc465617a97b stream      0      0 3866dc46567b112b                0                0                0 /var/rpc/ncacn_np/lsarpc
+3866dc465617a8b3 stream      0      0 3866dc46567b13fb                0                0                0 /var/run/mDNSResponder
+3866dc4664d07783 dgram       0      0                0 3866dc4664d0752b 3866dc4664d0752b                0
+3866dc4664d0752b dgram       0      0                0 3866dc4664d07783 3866dc4664d07783                0
+3866dc46606290db dgram       0      0                0 3866dc46575defb3 3866dc46575defb3                0
+3866dc46575defb3 dgram       0      0                0 3866dc46606290db 3866dc46606290db                0
+3866dc466062ab6b dgram       0      0                0 3866dc46599b8fb3 3866dc46599b8fb3                0
+3866dc46599b8fb3 dgram       0      0                0 3866dc466062ab6b 3866dc466062ab6b                0
+3866dc4657bcee23 dgram       0      0                0 3866dc465767a913 3866dc465767a913                0
+3866dc465767a913 dgram       0      0                0 3866dc4657bcee23 3866dc4657bcee23                0
+3866dc465767958b dgram       0      0                0 3866dc46651d74c3 3866dc46651d74c3                0
+3866dc46651d74c3 dgram       0      0                0 3866dc465767958b 3866dc465767958b                0
+3866dc4657bcfcfb dgram       0      0                0 3866dc46651d89db 3866dc46651d89db                0
+3866dc46651d89db dgram       0      0                0 3866dc4657bcfcfb 3866dc4657bcfcfb                0
+3866dc4657bce7e3 dgram       0      0                0 3866dc4657bcfaa3 3866dc4657bcfaa3                0
+3866dc4657bcfaa3 dgram       0      0                0 3866dc4657bce7e3 3866dc4657bce7e3                0
+3866dc4657bcf39b dgram       0      0                0 3866dc4657bce013 3866dc4657bce013                0
+3866dc4657bce013 dgram       0      0                0 3866dc4657bcf39b 3866dc4657bcf39b                0
+3866dc46651d6f4b dgram       0      0                0 3866dc46599ba403 3866dc46599ba403                0
+3866dc46599ba403 dgram       0      0                0 3866dc46651d6f4b 3866dc46651d6f4b                0
+3866dc465754daa3 dgram       0      0                0 3866dc465754c333 3866dc465754c333                0
+3866dc465754c333 dgram       0      0                0 3866dc465754daa3 3866dc465754daa3                0
+3866dc4657bcdf4b dgram       0      0                0 3866dc46651d8aa3 3866dc46651d8aa3                0
+3866dc46651d8aa3 dgram       0      0                0 3866dc4657bcdf4b 3866dc4657bcdf4b                0
+3866dc4657bcfc33 dgram       0      0                0 3866dc465617a0e3                0 3866dc46651d98b3
+3866dc46651d8c33 dgram       0      0                0 3866dc4657bd0273 3866dc4657bd0273                0
+3866dc4657bd0273 dgram       0      0                0 3866dc46651d8c33 3866dc46651d8c33                0
+3866dc46599b8c93 dgram       0      0                0 3866dc46599b8b03 3866dc46599b8b03                0
+3866dc46599b8b03 dgram       0      0                0 3866dc46599b8c93 3866dc46599b8c93                0
+3866dc4656177cf3 dgram       0      0                0 3866dc4656177dbb 3866dc4656177dbb                0
+3866dc4656177dbb dgram       0      0                0 3866dc4656177cf3 3866dc4656177cf3                0
+3866dc46651d97eb dgram       0      0                0 3866dc46576793fb 3866dc46576793fb                0
+3866dc46576793fb dgram       0      0                0 3866dc46651d97eb 3866dc46651d97eb                0
+3866dc46599b99db dgram       0      0                0 3866dc46599ba33b 3866dc46599ba33b                0
+3866dc46599ba33b dgram       0      0                0 3866dc46599b99db 3866dc46599b99db                0
+3866dc46651d98b3 dgram       0      0                0 3866dc465617a0e3                0                0
+3866dc4664d07c33 dgram       0      0                0 3866dc4664d07b6b 3866dc4664d07b6b                0
+3866dc4664d07b6b dgram       0      0                0 3866dc4664d07c33 3866dc4664d07c33                0
+3866dc4657679973 dgram       0      0                0 3866dc46576798ab 3866dc46576798ab                0
+3866dc46576798ab dgram       0      0                0 3866dc4657679973 3866dc4657679973                0
+3866dc46575de973 dgram       0      0                0 3866dc46575dec93 3866dc46575dec93                0
+3866dc46575dec93 dgram       0      0                0 3866dc46575de973 3866dc46575de973                0
+3866dc465767b97b dgram       0      0                0                0                0                0
+3866dc46575ddc2b dgram       0      0                0 3866dc465767aaa3 3866dc465767aaa3                0
+3866dc465767aaa3 dgram       0      0                0 3866dc46575ddc2b 3866dc46575ddc2b                0
+3866dc46561784c3 dgram       0      0                0 3866dc46561787e3 3866dc46561787e3                0
+3866dc46561787e3 dgram       0      0                0 3866dc46561784c3 3866dc46561784c3                0
+3866dc465617a0e3 dgram       0      0 3866dc46567c76cb                0 3866dc4657bcfc33                0 /var/run/syslog

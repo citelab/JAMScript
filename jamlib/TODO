@@ -1,7 +1,24 @@
-// = Complete Application
+//  = Complete Application
 //  = client side (C)
   = NodeJS side
   = Test...
+      = Match return values, fix code
+      = 
+
+  = Kernel - emulated by a kernel servlet 
+     = kernel servlet could be replicated
+     = kernel servlet is running kernel services
+
+  = 
+
+
+  = Service verus application
+     = services only run on the cloud and thing - no web component - can still be written in JAM
+     = services have a JavaScript interface - support JavaScript functions
+
+  = Create user-defined-function signatures
+  = Send the signatures at servlet creation
+  = Servlets should be capable of running the functions
 
 //  = Clean up existing code
 

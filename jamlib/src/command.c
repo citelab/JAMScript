@@ -234,6 +234,7 @@ Command *command_read(Socket *socket)
     line = socket_readline(socket, "\n");
 
     cmd = _command_from_json(line);
+    printf("Line %s\n", line);
     free(line);
 
     return cmd;

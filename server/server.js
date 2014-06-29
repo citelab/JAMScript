@@ -1,7 +1,8 @@
 var net = require('net'),
 	events = require('events'),
 	util = require('util'),
-	appdb = require('appdb.js'),
+	getmessage = require('./message.js'),
+	appdb = require('./appdb.js'),
 	svlmanager = require('./svlmanager.js');
 
 
@@ -11,10 +12,9 @@ var SERVER = "localhost";
 var svlmgr = svlmanager.init(SERVER);
 
 var server = net.createServer(function(c) {
-
-	var message = new Message(c);
+	var message = getmessage(c);
 	message.on('message', function(msg) {
-		svlmgr.processmsg(msg, c);
+		processmsg(msg, c);
 	});
 }).listen(PORT, SERVER);
 
@@ -28,25 +28,6 @@ server.on('error', function (e) {
 	}
 });
 
-var Message = function (stream) {
-	events.EventEmitter.call(this);
-	var self = this, buffer = '';
-	stream.on('data', function(data) {
-		buffer += data;
-		console.log("Buffer " + buffer);
-		// We use '\n' (newline) as the message delimiter...
-		var boundary = buffer.indexOf('\n');
-		while (boundary !== -1) {
-			var input = buffer.substr(0, boundary);
-			buffer = buffer.substr(boundary + 1);
-			self.emit('message', JSON.parse(input));
-			boundary = buffer.indexOf('\n');
-		}
-	});
-};
-util.inherits(Message, events.EventEmitter);
-
-
 // This is a function that is called synchronously?.. bad??
 // However, nothing time consuming is happening inside here..
 //
@@ -54,7 +35,7 @@ util.inherits(Message, events.EventEmitter);
 // This can facilitate dynamic function loading and unloading... 
 // we could get rid of USER_DEF_FUNC??
 //
-function processMessage(message, socket) {
+function processmsg(message, socket) {
 
 	var appname = "",
 	    appid = 0,
@@ -62,7 +43,6 @@ function processMessage(message, socket) {
 	
 	var cmd = message.name;
 	switch (cmd) {
-
 		case "PING":  // PING: seqnum - reply should have (seqnum + 1)
 		var seqnum = message.args[0];
 		reply = JSON.stringify({name:"PINGR", args:[(seqnum + 1)]}) + "\n";
@@ -71,29 +51,36 @@ function processMessage(message, socket) {
 
 		case "CHKREG":
 		appname = message.args[0];
-		appid = appdb.isregistered(appname);
-		reply = JSON.stringify({name:"APPSTAT", args:[appid]}) + "\n";
-		socket.write(reply);
+		appdb.isregistered(appname, function(appid) {
+			console.log("Returned appid " + appid);
+			reply = JSON.stringify({name:"APPSTAT", args:[appid]}) + "\n";
+			socket.write(reply);
+		});
 		break;
 
 		case "REGAPP":
 		appname = message.args[0];
-		var status = appdb.register(appname, function(appid) {
-			// start the servlet... for appid..
-			var servinfo = svlmgr.createservlet(appid);
-			// get information and return {server, port} 
-			return servinfo;
+		appdb.register(appname, function(appid) {
+			if (appid !== undefined) {
+				// start the servlet... for appid..
+				var servinfo = svlmgr.createservlet(appid);
+				// get information and return {server, port} 
+
+				console.log(servinfo);
+				var dentry = {appname: appname, appid: appid, server: servinfo.server, port: servinfo.port, state: 1};
+				appdb.finalizeregister(dentry);
+				reply = JSON.stringify({name:"APPSTAT", args:[appid]}) + "\n";
+				socket.write(reply);
+			} else {
+				reply = JSON.stringify({name:"APPSTAT", args:[0]}) + "\n";			
+				socket.write(reply);						
+			}
 		});
-		if (status) 
-			reply = JSON.stringify({name:"APPSTAT", args:[appid]}) + "\n";
-		else
-			reply = JSON.stringify({name:"APPSTAT", args:[0]}) + "\n";
-		socket.write(reply);
 		break;
 
 		case "OPNAPP":
 		appid = message.args[0];
-		var status = appdb.openapp(appid, function(appid) {
+		appdb.openapp(appid, function(appid) {
 			// start the servlet... for appid..
 			var servinfo = svlmgr.createservlet(appid);
 			// get information and return {server, port} 
@@ -118,19 +105,32 @@ function processMessage(message, socket) {
 		else
 			reply = JSON.stringify({name:"APPSTAT", args:[appid]}) + "\n";
 		socket.write(reply);		
-
 		break;
 
 		case "REMAPP":
-
-
+		appid = message.args[0];
+		var status = appdb.removeapp(appid, function(appid) {
+			// destroy the servlet... for appid.. this runs only if the app is still running..
+			return svlmgr.destroyservlet(appid);
+		});
+		// returns 0 if the app with appid is removed successfully.. otherwise return appid
+		if (status) 
+			reply = JSON.stringify({name:"APPSTAT", args:[0]}) + "\n";
+		else
+			reply = JSON.stringify({name:"APPSTAT", args:[appid]}) + "\n";
+		socket.write(reply);		
 		break;
 
 		case "GAPPINFO":
-		
-
+		appid = message.args[0];
+		appdb.getappinfo(appid, function(ainfo) {
+			if (ainfo !== undefined)
+				reply = JSON.stringify({name: "APPSTAT", args:[ainfo]}) + "\n";
+			else
+				reply = JSON.stringify({name: "APPSTAT", args:[null]}) + "\n";				
+			socket.write(reply);
+		});
 		break;
-
 
 		default:
 		console.log("Command = " + message["name"] + ".. received");

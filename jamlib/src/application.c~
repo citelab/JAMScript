@@ -81,7 +81,7 @@ Application *create_application(char *appname)
 	printf("Trying to create the application %s\n", appname);
 	appid = _register_application(appname);
     }
-    printf("_process application \n");
+
     return _process_application(appid);
 }
 
