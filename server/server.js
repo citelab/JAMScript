@@ -63,14 +63,17 @@ function processmsg(message, socket) {
 		appdb.register(appname, function(appid) {
 			if (appid !== undefined) {
 				// start the servlet... for appid..
-				var servinfo = svlmgr.createservlet(appid);
-				// get information and return {server, port} 
-
-				console.log(servinfo);
-				var dentry = {appname: appname, appid: appid, server: servinfo.server, port: servinfo.port, state: 1};
-				appdb.finalizeregister(dentry);
-				reply = JSON.stringify({name:"APPSTAT", args:[appid]}) + "\n";
-				socket.write(reply);
+				svlmgr.createservlet(appid, {}, function(servinfo) {
+					if (servinfo !== undefined) {
+						var dentry = {appname: appname, appid: appid, server: servinfo.server, port: servinfo.port, state: 1};
+						appdb.finalizeregister(dentry);
+						reply = JSON.stringify({name:"APPSTAT", args:[appid]}) + "\n";
+						socket.write(reply);
+					} else {
+						reply = JSON.stringify({name:"APPSTAT", args:[0]}) + "\n";			
+						socket.write(reply);				
+					}
+				});
 			} else {
 				reply = JSON.stringify({name:"APPSTAT", args:[0]}) + "\n";			
 				socket.write(reply);						
@@ -125,9 +128,9 @@ function processmsg(message, socket) {
 		appid = message.args[0];
 		appdb.getappinfo(appid, function(ainfo) {
 			if (ainfo !== undefined)
-				reply = JSON.stringify({name: "APPSTAT", args:[ainfo]}) + "\n";
+				reply = JSON.stringify({name: "APPINFO", args:[ainfo]}) + "\n";
 			else
-				reply = JSON.stringify({name: "APPSTAT", args:[null]}) + "\n";				
+				reply = JSON.stringify({name: "APPINFO", args:[null]}) + "\n";				
 			socket.write(reply);
 		});
 		break;

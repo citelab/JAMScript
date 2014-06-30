@@ -53,7 +53,7 @@ int _register_application(char *appname);
 int _open_application(char *appname);
 int _close_application(int appid);
 int _remove_application(int appid);
-int _get_app_info(int appid, char *appinfo);
+int _get_app_info(int appid, char **appinfo);
 Application *_process_application(int appid);
 Application *_application_from_json(char *ainfo);
 
@@ -359,7 +359,7 @@ int _remove_application(int appid)
  * returns 0 on failure to return value, otherwise returns 1.
  */
 
-int _get_app_info(int appid, char *appinfo)
+int _get_app_info(int appid, char **appinfo)
 {
     Command *cmd;
 
@@ -379,9 +379,12 @@ int _get_app_info(int appid, char *appinfo)
     if (cmd == NULL)
 	printf("ERROR! Unable to get the reply.. \n");
 
+    printf("Appinfo %s\n", cmd->params[0].svar);
+
     if (strcmp(cmd->name, "APPINFO") == 0) {
-	appinfo = strdup(cmd->params[0].svar);
+	*appinfo = strdup(cmd->params[0].svar);
 	command_free(cmd);
+	printf("HeLLLLLLOOO \n");
 	return 1;
     } else {
 	command_free(cmd);
@@ -397,16 +400,21 @@ Application *_process_application(int appid)
     char *port_buf = NULL;
     char *appinfo = NULL;
 
+    printf("Step 1\n");
     // get information on application
-    if (_get_app_info(appid, appinfo)) {
+    if (_get_app_info(appid, &appinfo)) {
+	printf("Converting from json.. \n");
 	app = _application_from_json(appinfo);
     }
 
+    print_application(app);
+    printf("Step 2\n");
     // Connect socket to application service on server
     port_buf = int_to_string(app->port);
     if (port_buf == NULL)
         return NULL;
 
+    printf("Step 3\n");
     socket = socket_new(Socket_Blocking);
     if (socket_connect(app->socket, app->server, port_buf) != 0) {
         socket_free(app->socket);
@@ -414,6 +422,7 @@ Application *_process_application(int appid)
         return NULL;
     }
 
+    printf("Step 4\n");
     free(port_buf);
     app->callbacks = callbacks_new(); 
     
@@ -442,11 +451,13 @@ Application *_application_from_json(char *ainfo)
     if (length < 5)
 	return NULL;
 
+    printf("Allocating. app \n");
     app = (Application *) calloc(1, sizeof(Application));
     app->ainfo = strdup(ainfo);
 
     init_parse(app->ainfo);
 
+    printf("Begin parse \n");
     if (parse_begin_obj()) {
 	do {
 	    if (parse_string(&key) && strcmp(key, "appid") == 0) {
@@ -473,6 +484,8 @@ Application *_application_from_json(char *ainfo)
 	} while (parse_comma());
 	parse_end_obj();
     }
+
+    printf("Returning.. app\n");
     return app;
 }
 	    

@@ -279,10 +279,14 @@ static Command *_command_from_json(char *json)
 		if (parse_colon()) {
 		    parse_begin_arr();
 		    do {
+			printf("BLAHHH \n");
+			print_string();
 			if (parse_string(&(cmd->params[cmd->param_count].svar))) {
+			    printf("String type found \n");
 			    cmd->param_type[cmd->param_count] = STRING_TYPE;
 			    cmd->param_count++;
 			} else if (parse_int(&(cmd->params[cmd->param_count].ivar))) {
+			    printf("Int type found \n");
 			    cmd->param_type[cmd->param_count] = INT_TYPE;
 			    cmd->param_count++;
 			}

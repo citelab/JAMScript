@@ -9,17 +9,20 @@
 
 module.exports = {
 
-	createservlet: function(appid, cmdobj) {
+	createservlet: function(appid, cmdobj, callback) {
 		// initialize the servlet with the given command object..
 		var svlet = new this.Servlet(this.host, cmdobj);
+		var self = this;
+		console.log("Servlet " + svlet.host);
 		if (svlet !== undefined) {
 			// the servlet is already running if it is successfully created..
-
-			// save the servelet in the table indexed by the appid
-			this.servlets[appid] = svlet;
-			return {server: svlet.getserver(), port: svlet.getport()};
-		}
-		return undefined;
+			svlet.run(function(addr) {
+				// save the servelet in the table indexed by the appid
+				self.servlets[appid] = svlet;
+				callback({server: addr.address, port: addr.port});
+			});
+		} else 
+			callback(undefined);
 	},
 
 	destroyservlet: function(appid) {

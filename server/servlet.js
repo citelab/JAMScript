@@ -7,6 +7,34 @@ module.exports = function(host, cmdobj) {
 
 	var commands = {};
 
+	// set some parameters and methods
+	this.host = host;
+
+	this.stopservlet =  function() {
+		this.server.close();
+	};
+
+	this.getserver =  function() {
+		return this.address;
+	};
+
+	this.getport = function() {
+		return this.port;
+	};
+
+	this.isrunning = function() {
+		return this.running;
+	};
+
+	this.run = function(callback) {
+
+		var self = this;
+		this.server.listen(0, this.host, function() {
+			self.running = true;
+			callback(self.server.address());
+		});
+	}
+
 	// initialize the 'PING' command in the table..
 	commands["PING"] = function(msg, sock) {
 		var seqnum = msg.args[0];
@@ -22,7 +50,7 @@ module.exports = function(host, cmdobj) {
 	}
 
 	// this function is a contructor.. so modifies 'this' object
-	var server = net.createServer(function(c) {
+	this.server = net.createServer(function(c) {
 		var message = getmessage(c);
 
 		message.on('message', function(msg) {
@@ -31,32 +59,11 @@ module.exports = function(host, cmdobj) {
 				handler(message, c);
 			}
 		});
-	}).listen(0, host, function() {
-		this.running = true;
-		console.log("Blah============" + server.address().port + "====" + server.address().address);
 	});
 
-	server.on('error', function(e) {
+	this.server.on('error', function(e) {
 		this.running = false;
 	});
 
-	// returns an object with accessor functions that use closure to 
-	// access variables local to the servlet..
-	return {
-		stopservlet: function() {
-			server.close();
-		},
-
-		getserver: function() {
-			return this.address;
-		},
-
-		getport: function() {
-			return this.port;
-		},
-
-		isrunning: function() {
-			return this.running;
-		}
-	}
+	return this;
 }
