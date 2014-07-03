@@ -4,7 +4,8 @@ CC = gcc
 CFLAGS = -Wall -g 
 
 
-OBJECTS = socket.o command.o event.o callback.o jamlib.o application.o jparser.o utils.o web.o
+OBJECTS = socket.o command.o event.o callback.o jamlib.o \
+application.o jparser.o utils.o web.o json.o jparser.o
 
 all: $(PROJECT)
 
@@ -19,9 +20,11 @@ application.o: application.h
 jparser.o: jparser.h
 utils.o: utils.h
 web.o: web.h
-jamlib.o: socket.h command.h event.h callback.h jamlib.h application.h jparser.h utils.h web.h
+jparser.o: jparser.h
+json.o: json.h
+jamlib.o: socket.h command.h event.h callback.h jamlib.h \
+application.h jparser.h utils.h web.h json.h jparser.h
 
 .PHONY : clean
 clean :
-	rm -f $(PROJECT) $(OBJECTS) *~
-
+	rm -f $(PROJECT) $(OBJECTS) *~ a.out

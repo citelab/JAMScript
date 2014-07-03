@@ -9,8 +9,8 @@
      = kernel servlet could be replicated
      = kernel servlet is running kernel services
 
-  = 
-
+  = JSON parsing done properly.. in the client
+  = Hook the JSON parser into the Client code
 
   = Service verus application
      = services only run on the cloud and thing - no web component - can still be written in JAM
@@ -83,5 +83,3 @@ Unresolved issues
 1. How to handle the web? Templating?
 2. All three point interactions.. how to handle them?
 3. Securing the interactions.. how to perform the authentication and authorization?
-4. 
-

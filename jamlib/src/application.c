@@ -364,6 +364,7 @@ int _get_app_info(int appid, char **appinfo)
     Command *cmd;
 
     // Register the application
+    //
     cmd = command_format_json("GAPPINFO", "%d", appid);
     if (cmd == NULL)
 	return 0;
@@ -400,21 +401,21 @@ Application *_process_application(int appid)
     char *port_buf = NULL;
     char *appinfo = NULL;
 
-    printf("Step 1\n");
+    printf("Step .. 1\n");
     // get information on application
     if (_get_app_info(appid, &appinfo)) {
-	printf("Converting from json.. \n");
+	printf("Converting from json.. %s\n", appinfo);
 	app = _application_from_json(appinfo);
     }
 
     print_application(app);
-    printf("Step 2\n");
+    printf("Step .. 2\n");
     // Connect socket to application service on server
     port_buf = int_to_string(app->port);
     if (port_buf == NULL)
         return NULL;
 
-    printf("Step 3\n");
+    printf("Step .. 3\n");
     socket = socket_new(Socket_Blocking);
     if (socket_connect(app->socket, app->server, port_buf) != 0) {
         socket_free(app->socket);
@@ -457,26 +458,33 @@ Application *_application_from_json(char *ainfo)
 
     init_parse(app->ainfo);
 
-    printf("Begin parse \n");
+    printf("Begin parse .. %s\n", app->ainfo);
+    print_string();
     if (parse_begin_obj()) {
 	do {
+	    printf("Iterating... \n");
 	    if (parse_string(&key) && strcmp(key, "appid") == 0) {
+		printf("Found appid \n");
 		if (parse_colon()) {
 		    parse_int(&(app->appid));
 		}
 	    } else if (parse_string(&key) && strcmp(key, "state") == 0) {
+		printf("Found state \n");
 		if (parse_colon()) {
 		    parse_int(&(app->state));
 		}
 	    } else if (parse_string(&key) && strcmp(key, "appname") == 0) {
+		printf("Found appname \n");
 		if (parse_colon()) {
 		    parse_string(&(app->appname));
 		}
 	    } else if (parse_string(&key) && strcmp(key, "server") == 0) {
+		printf("Found server \n");
 		if (parse_colon()) {
 		    parse_string(&(app->server));
 		}
 	    } else if (parse_string(&key) && strcmp(key, "port") == 0) {
+		printf("Found port \n");
 		if (parse_colon()) {
 		    parse_int(&(app->port));
 		}

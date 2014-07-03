@@ -33,21 +33,39 @@ extern "C" {
 #ifndef _JPARSER_H
 #define _JPARSER_H
 
-    
-#define MAX_PBUF_SIZE 16
+
+typedef enum
+{
+    ERROR = 100,
+    VALID_VALUE,
+    TRUE_VALUE,
+    FALSE_VALUE,
+    NULL_VALUE,
+    COLON_VALUE,
+    COMMA_VALUE,
+    BEGIN_ARRAY,
+    END_ARRAY,
+    BEGIN_OBJECT,
+    END_OBJECT,
+    ARRAY_VALUE,
+    OBJECT_VALUE,
+    QUOTE_VALUE,
+    STRING_VALUE,
+    NUMBER_VALUE
+} ReturnTypes;
+
 
 void init_parse(char *str);
+int parse_value();
 void print_string();
-int parse_begin_obj();
-int parse_end_obj();
-int parse_begin_arr();
-int parse_end_arr();
-int parse_colon();
-int parse_comma();
-int parse_string(char **str);
-int parse_int(int *val);
-int parse_float(float *val);
-int parse_double(double *val);
+void print_value();
+int parse_true();
+int parse_false();
+int parse_null();
+int parse_array();
+int parse_object();
+int parse_string();
+int parse_number();
 
 
 #endif /* _JPARSER_H */

@@ -20,10 +20,6 @@ int main()
 	close_application(app);
     }
 
-		
-		
-	
-
     // Make function call on the cloud test call_user_def
     // make a reverse call... cloud to thing
 

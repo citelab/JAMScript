@@ -25,19 +25,37 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "jparser.h"
+#include "json.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
+
 
 static char *_parse_str;
 static int _loc;
 static int _len;
+static JSONValue *rval;
+
+int _peek_value();
+void _consume_char();
+void _parse_white();
+int _char_in_string();
+int _parse_colon();
+int _parse_quote();
+int _parse_comma();
+int _parse_eobj();
+int _parse_bobj();
+int _parse_earr();
+int _parse_barr();
+char *_get_char();
 
 
 /*
  * Setup the parse process... 
  */
+
 void init_parse(char *str)
 {
     _parse_str = str;
@@ -45,193 +63,447 @@ void init_parse(char *str)
     _len = strlen(str);
 }
 
+
+/*
+ * Global variables rval, sval are set by the 'parse_' functions called here.
+ * There is no need to manipulate those variable here.. we just need to pass 
+ * along to the next iteration..
+ */
+int parse_value() 
+{
+    printf("Parsing values...\n");
+
+    _parse_white();
+    int nextchar = _peek_value();
+
+    switch(nextchar) 
+	{
+	case ' ': 
+	    _consume_char();
+	    break;
+	case 't':
+	    return (parse_true() == ERROR) ? ERROR : VALID_VALUE;
+	case 'f':
+	    return (parse_false() == ERROR) ? ERROR : VALID_VALUE;
+	case 'n':
+	    return (parse_null() == ERROR) ? ERROR : VALID_VALUE;
+	case '[':
+	    return (parse_array() == ERROR) ? ERROR : VALID_VALUE;
+	case '{':
+	    return (parse_object() == ERROR) ? ERROR : VALID_VALUE;
+	case '"':
+	    return (parse_string() == ERROR) ? ERROR : VALID_VALUE;
+	case '-':
+	    return (parse_number() == ERROR) ? ERROR : VALID_VALUE;
+	default:
+	    if ((nextchar >= '0') && (nextchar <= '9')) 
+		return (parse_number() == ERROR) ? ERROR : VALID_VALUE;
+	}
+    return ERROR;
+}    
+
+
 void print_string()
 {
     printf("Parse string %s\n", &_parse_str[_loc]);
 }
 
-
-int parse_begin_obj()
+void print_value2(JSONValue *val)
 {
-    // eat white space
+    switch (val->type) {
+    case UNDEFINED:
+	printf(" Undefined ");
+	break;
+    case JFALSE:
+	printf(" False ");
+	break;
+    case JTRUE:
+	printf(" True ");
+	break;
+    case JNULL:
+	printf(" Null ");
+	break;
+    case INTEGER:
+	printf (" %d ", val->val.ival);
+	break;
+    case DOUBLE:
+	printf (" %f ", val->val.dval);
+	break;
+    case STRING:
+	printf (" %s ", val->val.sval);
+	break;
+    case ARRAY:
+	printf("[");
+	for (int i = 0; i < val->val.aval->length; i++) 
+	    print_value2(&(val->val.aval->elems[i]));
+	printf("]");
+	break;
+    case OBJECT:
+	printf("{");
+	for (int i = 0; i < val->val.oval->count; i++) {
+	    printf(" %s :", val->val.oval->properties[i].name);
+	    print_value2(val->val.oval->properties[i].value);
+	}
+	printf("}");
+	break;
+    default:
+	printf("<< other type >>");
+    }
+}
+
+
+void print_value()
+{
+    JSONValue *val = rval;
+
+    switch (val->type) {
+    case UNDEFINED:
+	printf(" Undefined ");
+	break;
+    case JFALSE:
+	printf(" False ");
+	break;
+    case JTRUE:
+	printf(" True ");
+	break;
+    case JNULL:
+	printf(" Null ");
+	break;
+    case INTEGER:
+	printf ("integer %d ", val->val.ival);
+	break;
+    case DOUBLE:
+	printf (" %f ", val->val.dval);
+	break;
+    case STRING:
+	printf (" %s ", val->val.sval);
+	break;
+    case ARRAY:
+	printf("[");
+	for (int i = 0; i < val->val.aval->length; i++) 
+	    print_value2(&(val->val.aval->elems[i]));
+	printf("]");
+	break;
+    case OBJECT:
+	printf("{");
+	for (int i = 0; i < val->val.oval->count; i++) {
+	    printf(" %s :", val->val.oval->properties[i].name);
+	    print_value2(val->val.oval->properties[i].value);
+	}
+	printf("}");
+	break;
+    }
+}
+
+
+int parse_true()
+{
+    int sloc = _loc;
+    JSONValue *val = create_value();
+
+    _parse_white();
+    if ((_parse_str[_loc++] == 't') &&
+	(_parse_str[_loc++] == 'r') &&
+	(_parse_str[_loc++] == 'u') &&
+	(_parse_str[_loc++] == 'e')) {
+	set_true(val);
+	rval = val;
+	return TRUE_VALUE;
+    } else {
+	free(val);
+	_loc = sloc;
+	return ERROR;
+    }	
+}
+
+
+int parse_false()
+{
+    int sloc = _loc;
+    JSONValue *val = create_value();
+
+    _parse_white();
+    if ((_parse_str[_loc++] == 'f') &&
+	(_parse_str[_loc++] == 'a') &&
+	(_parse_str[_loc++] == 'l') &&
+	(_parse_str[_loc++] == 's') &&
+	(_parse_str[_loc++] == 'e')) {
+	set_false(val);
+	rval = val;
+	return FALSE_VALUE;
+    } else {
+	free(val);
+	_loc = sloc;
+	return ERROR;
+    }
+}
+
+
+int parse_null()
+{
+    int sloc = _loc;
+    JSONValue *val = create_value();
+
+    _parse_white();
+    if ((_parse_str[_loc++] == 'n') &&
+	(_parse_str[_loc++] == 'u') &&
+	(_parse_str[_loc++] == 'l') &&
+	(_parse_str[_loc++] == 'l')) {
+	set_null(val);
+	rval = val;
+	return NULL_VALUE;
+    } else {
+	free(val);
+	_loc = sloc;
+	return ERROR;
+    }
+}
+
+
+int parse_array()
+{
+    printf("Parsing array...\n");
+    JSONValue *val = create_value();
+    JSONArray *arr = create_array();
+    set_array(val, arr);
+
+    if (_parse_barr() == BEGIN_ARRAY) {
+	do {
+	    if (parse_value() == ERROR) return ERROR;
+	    add_element(arr, rval);
+	} while (_parse_comma() == COMMA_VALUE);
+	finalize_array(arr);
+	rval = val;
+	return _parse_earr() == END_ARRAY ? ARRAY_VALUE : ERROR;
+    }
+    return ERROR;
+}
+
+
+int parse_object()
+{
+    JSONValue *savedval;
+    JSONValue *val = create_value();
+    JSONObject *obj = create_object();
+    set_object(val, obj);
+
+    printf("Parsing object...\n");
+
+    if (_parse_bobj() == BEGIN_OBJECT) {
+	do {
+	    printf("Looping..\n");
+	    if (parse_string() == ERROR) return ERROR;
+	    savedval = rval;
+	    if (_parse_colon() == ERROR) return ERROR;
+	    if (parse_value() == ERROR) return ERROR;
+	    if (savedval->type != STRING) return ERROR;
+	    add_property(obj, savedval->val.sval, rval);
+	    free(savedval); // we need to free this.. the string is freed later
+	} while (_parse_comma() == COMMA_VALUE);
+	printf("Quit loop \n");
+	finalize_object(obj);
+	rval = val;
+	return _parse_eobj() == END_OBJECT ? OBJECT_VALUE : ERROR;
+    }
+    return ERROR;
+}
+
+
+int parse_string()
+{
+    JSONValue *val = create_value();
+    char buf[128];
+    int j = 0;
+    printf("Parsing string...\n");
+
+    _parse_white();
+    if (_parse_quote() == QUOTE_VALUE) {
+	while (_char_in_string()) 
+	    buf[j++] = *_get_char();
+	buf[j] = '\0';
+	val->val.sval = strdup(buf);
+	val->type = STRING;
+	rval = val;
+	return (_parse_quote() == QUOTE_VALUE) ? STRING_VALUE : ERROR;
+    }
+    return ERROR;
+}
+
+
+/*
+ * This needs to expanded and tested for all possible number formats..
+ * particularly fixed and floating pointing formats are not handled properly 
+ * or correctly...
+ */
+int parse_number()
+{
+    JSONValue *val = create_value();
+    char buf[64];
+    int j = 0;
+
+    printf("Parsing number...\n");
+
+    _parse_white();
+
+    while (isdigit(_parse_str[_loc]))
+	buf[j++] = *(_get_char());
+
+    if (_parse_str[_loc] == '.') {
+	buf[j++] = *(_get_char());
+	while (isdigit(_parse_str[_loc])) 
+	    buf[j++] = *(_get_char());
+	buf[j] = '\0';
+	val->val.dval = atof(buf);
+	val->type = DOUBLE;
+	rval = val;
+	return NUMBER_VALUE;
+    } else {
+	buf[j] = '\0';
+	val->val.ival = atoi(buf);
+	val->type = INTEGER;
+	rval = val;
+	return NUMBER_VALUE;
+    }
+}
+
+
+/*
+ * Private functions...
+ */
+
+int _peek_value()
+{
+    return _parse_str[_loc];
+}
+
+
+void _consume_char()
+{
+    _loc++;
+}
+
+
+void _parse_white()
+{
     while (_loc < _len && _parse_str[_loc] == ' ')
 	_loc++;
+}
 
-    // check if the next char is '{' 
-    if (_loc < _len && _parse_str[_loc] == '{') {
-	_loc++;
-	return 1;
-    } else {
+
+int _parse_colon()
+{
+    _parse_white();
+    if (_parse_str[_loc++] == ':')
+	return COLON_VALUE;
+    else {
 	_loc--;
-	return 0;
+	return ERROR;
     }
 }
 
-int parse_end_obj()
-{
-    // eat white space
-    while (_loc < _len && _parse_str[_loc] == ' ')
-	_loc++;
 
-    // check if the next char is '}' 
-    if (_loc < _len && _parse_str[_loc] == '}') {
-	_loc++;
-	return 1;
-    } else {
+int _parse_comma()
+{
+    _parse_white();
+    if (_parse_str[_loc++] == ',')
+	return COMMA_VALUE;
+    else {
 	_loc--;
-	return 0;
+	return ERROR;
     }
 }
 
-int parse_begin_arr()
-{
-    // eat white space
-    while (_loc < _len && _parse_str[_loc] == ' ')
-	_loc++;
 
-    // check if the next char is '[' 
-    if (_loc < _len && _parse_str[_loc] == '[') {
-	_loc++;
-	return 1;
-    } else {
+int _parse_barr()
+{
+    _parse_white();
+    if (_parse_str[_loc++] == '[')
+	return BEGIN_ARRAY;
+    else {
 	_loc--;
-	return 0;
+	return ERROR;
     }
 }
 
-int parse_end_arr()
-{
-    // eat white space
-    while (_loc < _len && _parse_str[_loc] == ' ')
-	_loc++;
 
-    // check if the next char is ']' 
-    if (_loc < _len && _parse_str[_loc] == ']') {
-	_loc++;
-	return 1;
-    } else {
+int _parse_earr()
+{
+    _parse_white();
+    if (_parse_str[_loc++] == ']')
+	return END_ARRAY;
+    else {
 	_loc--;
-	return 0;
+	return ERROR;
     }
 }
 
 
-int parse_colon()
+int _parse_bobj()
 {
-    // eat white space
-    while (_loc < _len && _parse_str[_loc] == ' ')
-	_loc++;
-
-    // check if the next char is ':' 
-    if (_loc < _len && _parse_str[_loc] == ':') {
-	_loc++;
-	return 1;
-    } else {
+    _parse_white();
+    if (_parse_str[_loc++] == '{')
+	return BEGIN_OBJECT;
+    else {
 	_loc--;
-	return 0;
+	return ERROR;
     }
 }
 
-int parse_comma()
-{
-    // eat white space
-    while (_loc < _len && _parse_str[_loc] == ' ')
-	_loc++;
 
-    // check if the next char is ',' 
-    if (_loc < _len && _parse_str[_loc] == ',') {
-	_loc++;
-	return 1;
-    } else {
+int _parse_eobj()
+{
+    _parse_white();
+    if (_parse_str[_loc++] == '}')
+	return END_OBJECT;
+    else {
 	_loc--;
-	return 0;
+	return ERROR;
+    }
+}
+
+int _parse_quote()
+{
+    _parse_white();
+    if (_parse_str[_loc++] == '"')
+	return QUOTE_VALUE;
+    else {
+	_loc--;
+	return ERROR;
     }
 }
 
 
-int parse_string(char **str)
+int _char_in_string()
 {
-    char *beginstr;
+    int curchar = _parse_str[_loc];
+    
+    if (isalnum(curchar) || 
+	curchar == '-' || 
+	curchar == '.' ||
+	curchar == '_' ||
+	curchar == '*' ||
+	curchar == '$' ||
+	curchar == '@' ||
+	curchar == '#' ||
 
-    // eat white space
-    while (_loc < _len && _parse_str[_loc] == ' ')
-	_loc++;
+	curchar == '$' ||
+	curchar == '%' ||
+	curchar == '&' ||
 
-    // look for begin quote
-    if (_loc < _len && _parse_str[_loc] == '"') {
-	_loc++;
-	beginstr = &(_parse_str[_loc]);
-	while (_loc < _len && _parse_str[_loc] != '"')
-	    _loc++;
-	if (_parse_str[_loc] == '"') {
-	    _parse_str[_loc] = '\0';
-	    _loc++;
-	    *str = beginstr;
-	    return 1;
-	} else
-	    return 0;
-    }
-    return 0;
-}
-
-
-int parse_int(int *val)
-{
-    char *begin;
-    char buf[MAX_PBUF_SIZE];
-    int l;
-
-    // eat white space
-    while (_loc < _len && _parse_str[_loc] == ' ')
-	_loc++;
-
-    begin = &_parse_str[_loc];
-    l = 0;
-    while (_loc < _len && (_parse_str[_loc] >= '0' && _parse_str[_loc] <= '9')) {
-	_loc++;
-	l++;
-    }
-
-    if (l > 0) {
-	strncpy(buf, begin, l);
-	buf[l] = '\0';
-	*val = atoi(buf);
+	curchar == '(' ||
+	curchar == ')' ||
+	curchar == '=' ||
+	curchar == '+' ||
+	curchar == '[' ||
+	curchar == ']' ||
+	curchar == '|')
 	return 1;
-    } else {
-	*val = 0;
+    else
 	return 0;
-    }
-
-    return 0;
 }
 
 
-int parse_float(float *val)
+char *_get_char()
 {
-    char *begin;
-    char buf[MAX_PBUF_SIZE];
-    int l;
-
-    // eat white space
-    while (_loc < _len && _parse_str[_loc] == ' ')
-	_loc++;
-
-    begin = &_parse_str[_loc];
-    l = 0;
-    while (_loc < _len && ((_parse_str[_loc] >= '0' && _parse_str[_loc] <= '9') || _parse_str[_loc] == '.')) {
-	_loc++;
-	l++;
-    }
-
-    if (l > 0) {
-	strncpy(buf, begin, l);
-	buf[l] = '\0';
-	*val = atof(buf);
-	return 1;
-    } else {
-	*val = 0;
-	return 0;
-    }
-
-    return 0;
+    return &(_parse_str[_loc++]);
 }

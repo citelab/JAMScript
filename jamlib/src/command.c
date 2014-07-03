@@ -278,9 +278,8 @@ static Command *_command_from_json(char *json)
 	    if (parse_string(&key) && strcmp(key, "args") == 0) {
 		if (parse_colon()) {
 		    parse_begin_arr();
+		    parse_begin_obj();
 		    do {
-			printf("BLAHHH \n");
-			print_string();
 			if (parse_string(&(cmd->params[cmd->param_count].svar))) {
 			    printf("String type found \n");
 			    cmd->param_type[cmd->param_count] = STRING_TYPE;
@@ -291,6 +290,7 @@ static Command *_command_from_json(char *json)
 			    cmd->param_count++;
 			}
 		    } while (parse_comma());
+		    parse_begin_obj();
 		    parse_begin_arr();
 		}
 	    }
