@@ -25,9 +25,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "json.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdarg.h>
+
 
 /*
  * JSONObject methods...
@@ -152,7 +155,6 @@ int finalize_array(JSONArray *jarr)
 }
 
 
-
 JSONValue *find_element(JSONArray *arr, int index)
 {
     if (index < arr->length) 
@@ -161,9 +163,54 @@ JSONValue *find_element(JSONArray *arr, int index)
 	return create_value();
 }
 
+
 /*
  * JSONValue methods...
  */
+void print_value(JSONValue *val)
+{
+    switch (val->type) {
+    case UNDEFINED:
+	printf(" Undefined ");
+	break;
+    case JFALSE:
+	printf(" False ");
+	break;
+    case JTRUE:
+	printf(" True ");
+	break;
+    case JNULL:
+	printf(" Null ");
+	break;
+    case INTEGER:
+	printf (" %d ", val->val.ival);
+	break;
+    case DOUBLE:
+	printf (" %f ", val->val.dval);
+	break;
+    case STRING:
+	printf (" %s ", val->val.sval);
+	break;
+    case ARRAY:
+	printf("[");
+	for (int i = 0; i < val->val.aval->length; i++) 
+	    print_value(&(val->val.aval->elems[i]));
+	printf("]");
+	break;
+    case OBJECT:
+	printf("{");
+	for (int i = 0; i < val->val.oval->count; i++) {
+	    printf(" %s :", val->val.oval->properties[i].name);
+	    print_value(val->val.oval->properties[i].value);
+	}
+	printf("}");
+	break;
+    default:
+	printf("<< other type >>");
+    }
+}
+
+
 JSONValue *create_value()
 {
     JSONValue *jval = (JSONValue *)calloc(1, sizeof(JSONValue));
@@ -205,30 +252,38 @@ void set_object(JSONValue *jval, JSONObject *obj)
 }
 
 
-void free_value(JSONValue *jval)
+void free_value(JSONValue *jval, int freeme)
 {
     switch (jval->type) {
     case STRING:
+	printf("Freeing a string.. \n");
 	free(jval->val.sval);
 	break;
-    case ARRAY:
+    case ARRAY:	
+	printf("Freeing an array.. \n");
 	free_array(jval->val.aval);
 	break;
     case OBJECT:
+	printf("Freeing an object.. \n");
 	free_object(jval->val.oval);
 	break;
     default:
 	break;
     }
-    free(jval);
+    if (freeme)
+	free(jval);
 }
+
 
 void free_array(JSONArray *arr)
 {
     int i;
-    for(i = 0; i < arr->length; i++)
-	free_value(&(arr->elems[i]));
+    for(i = 0; i < arr->length; i++) 
+	free_value(&(arr->elems[i]), 0);
+
+    printf("After freeing the array...\n");
     free(arr->elems);
+    printf("After freeing the array...\n");
     free(arr);
 }
 
@@ -237,9 +292,52 @@ void free_object(JSONObject *obj)
 {
     int i;
     for(i = 0; i < obj->count; i++) {
-	free_value(obj->properties[i].value);
+	free_value(obj->properties[i].value, 1);
 	free(obj->properties[i].name);
     }
     free(obj->properties);
     free(obj);
+}
+
+
+/*
+ * query_value(jval, "sdsd", name, index, name, index)
+ * format should be "s" or "d" - s for object property and d - for array index
+ */
+JSONValue *query_value(JSONValue *jval, char *fmt, ...)
+{
+    va_list args;
+    JSONValue *cval = jval;
+    JSONValue *rval = create_value();
+    char *str;
+    int indx;
+
+    va_start(args, fmt);
+    while (*fmt) {
+	switch (*fmt++) {
+	case 's':
+	    // if not an object, return the 'undefined'
+	    if (cval->type != OBJECT) return rval;
+	    str = va_arg(args, char *);
+	    cval = find_property(cval->val.oval, str);
+	    break;
+	case 'd':
+	    if (cval->type != ARRAY) return rval;
+	    indx = va_arg(args, int);
+	    cval = find_element(cval->val.aval, indx);
+	    break;
+	}
+    }
+    va_end(args);
+    return cval;
+}
+
+
+/*
+ * Dispose only frees a value of UNDEFINED type
+ */
+void dispose_value(JSONValue *val)
+{
+    if (val->type == UNDEFINED)
+	free(val);
 }

@@ -33,6 +33,8 @@ extern "C" {
 #ifndef _JPARSER_H
 #define _JPARSER_H
 
+#include "json.h"
+
 
 typedef enum
 {
@@ -54,11 +56,13 @@ typedef enum
     NUMBER_VALUE
 } ReturnTypes;
 
-
+// Primary parser interface functions..
 void init_parse(char *str);
+JSONValue *get_value();
 int parse_value();
 void print_string();
-void print_value();
+
+// Secondary parser interface functions.. could be rarely used
 int parse_true();
 int parse_false();
 int parse_null();
@@ -66,7 +70,6 @@ int parse_array();
 int parse_object();
 int parse_string();
 int parse_number();
-
 
 #endif /* _JPARSER_H */
 

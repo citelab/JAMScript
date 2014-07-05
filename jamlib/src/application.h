@@ -35,7 +35,6 @@ extern "C" {
 #include "event.h"
 #include "callback.h"
 
-
 typedef struct Application
 {
     int appid;
@@ -44,7 +43,6 @@ typedef struct Application
     char *server;
     int port;
     Socket *socket;
-    char *ainfo;
     Callbacks *callbacks;
 } Application;
 

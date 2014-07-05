@@ -7,15 +7,21 @@
 int main() 
 {
     int res;
-    Application *app;
+    Application *app = NULL;
 
     res = init_jam("localhost", 2500);
     printf("\nReturn code %d \n\n", res);
     
     if (res >= 0) {
 	// Register application
-	if ((app = create_application("testapp"))) {
+	if ((app = create_application("app1"))) {
 	    print_application(app);
+	} else {
+	    app = open_application("app1");
+	    if (app != NULL) {
+		print_application(app);
+		printf("Successfully opened the application \n");
+	    }
 	}
 	close_application(app);
     }

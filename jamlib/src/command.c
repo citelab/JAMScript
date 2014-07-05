@@ -26,7 +26,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 /* 
- * Handle the Jam protocol 
+ * Handles the JAM protocol .. uses a JSON parser..
  */
 
 #include <stdlib.h>
@@ -56,7 +56,6 @@ static Command *_command_from_json(char *str);
  * not meant for sending for arbitrary data!
  *
  */
-
 Command *command_format_json(const char *name,const char *format, ...)
 {
     va_list args;
@@ -104,9 +103,9 @@ Command *command_format_json(const char *name,const char *format, ...)
         }
     }
     
-    va_start (args, format);
+    va_start(args, format);
     ret = vsnprintf(buf, BUFSIZE, new_format, args);
-    va_end (args);
+    va_end(args);
     
     json = calloc((strlen(json_format) + strlen(name) + BUFSIZE), sizeof(char));
     ret = sprintf(json, json_format, name, buf, "");
@@ -121,6 +120,7 @@ Command *command_format_json(const char *name,const char *format, ...)
 
     cmd->command = strdup(json);
     free(json);
+    free(new_format);
 
     return cmd;
 }
@@ -130,7 +130,6 @@ Command *command_format_json(const char *name,const char *format, ...)
  * Slightly edited version of the above function.. used only
  * in User defined functions..
  */
-
 Command *command_format_jsonk(const char *name, const char *format, va_list args)
 {
     char buf[BUFSIZE];
@@ -191,15 +190,15 @@ void command_free(Command *cmd)
 {
     if (cmd == NULL)
         return;
-
-    if (cmd->pdata != NULL)
-        free(cmd->pdata);
-
+    printf("Helloo..4 \n");
+    if (cmd->parsedCmd != NULL)
+        free_value(cmd->parsedCmd, 1);
+    printf("Helloo..5 \n");
     if (cmd->command != NULL)
         free (cmd->command);
 
+    printf("Last free\n");
     free (cmd);
-
     return;
 }
 
@@ -234,9 +233,9 @@ Command *command_read(Socket *socket)
     line = socket_readline(socket, "\n");
 
     cmd = _command_from_json(line);
-    printf("Line %s\n", line);
+    printf("\nLine %s\n", line);
     free(line);
-
+    printf("After.. \n");
     return cmd;
 }
 
@@ -244,67 +243,44 @@ Command *command_read(Socket *socket)
 static Command *_command_from_json(char *json)
 {
     Command *cmd = NULL;
-    char *tmpstr = NULL;
-    char *key = NULL;
-    int length = 0;
+    JSONValue *jval = NULL;
 
     if (json == NULL)
 	return NULL;
 
-    length = strlen(json);
-    // We cannot have a valid message with less than 5 characters
-    if (length < 5)
-	return NULL;
+    // parse the json string.. if the parser reports an ERROR, we
+    // return NULL for the Command structure
+    init_parse(json);
+
+    if (parse_value() == ERROR) return NULL; // we have invalid JSON, return NULL
+    // Now.. string has been parsed into JSON
 
     cmd = (Command *) calloc(1, sizeof(Command));
     cmd->max_params = MAX_PARAMS;
     cmd->param_count = 0;
+    // Get a handle to the parsed JSON value..
+    jval = get_value();
 
-    cmd->command = strdup(json);
-    
-    tmpstr = strdup(json);
+    JSONValue *nval = query_value(jval, "s", "name");
+    JSONValue *aval = query_value(jval, "s", "args");
 
-    // setup the parser
-    init_parse(tmpstr);
+    // fill up the Command structure.. the memory is NOT held by the Command structure
+    // it is still held in the JSON object... we free memory be deallocing the JSON object
+    if (nval->type != STRING) return NULL;
+    cmd->name = nval->val.sval;
+
+    // fill up the parameter list...
+    if (aval->type != ARRAY) return NULL; // second parameter SHOULD be an ARRAY.. otherwise we reject
     
-    if (parse_begin_obj()) {
-	if (parse_string(&key) && strcmp(key, "name") == 0) {
-	    if (parse_colon()) {
-		parse_string(&(cmd->name));
-	    }
-	}
-	if (parse_comma()) {
-	    
-	    if (parse_string(&key) && strcmp(key, "args") == 0) {
-		if (parse_colon()) {
-		    parse_begin_arr();
-		    parse_begin_obj();
-		    do {
-			if (parse_string(&(cmd->params[cmd->param_count].svar))) {
-			    printf("String type found \n");
-			    cmd->param_type[cmd->param_count] = STRING_TYPE;
-			    cmd->param_count++;
-			} else if (parse_int(&(cmd->params[cmd->param_count].ivar))) {
-			    printf("Int type found \n");
-			    cmd->param_type[cmd->param_count] = INT_TYPE;
-			    cmd->param_count++;
-			}
-		    } while (parse_comma());
-		    parse_begin_obj();
-		    parse_begin_arr();
-		}
-	    }
-	}
-	if (parse_comma()) {
-	    if (parse_string(&key) && strcmp(key, "sign") == 0) {
-		if (parse_colon()) {	    
-		    parse_string(&(cmd->signature));
-		}
-	    }
-	}
-	parse_end_obj();
+    JSONArray *arr = aval->val.aval;
+    cmd->param_count = arr->length;
+    for (int i = 0; i < arr->length; i++) {
+	cmd->params[i] = arr->elems[i];
     }
-    cmd->pdata = tmpstr;
+    
+    cmd->parsedCmd = jval;
+    dispose_value(nval);
+    dispose_value(aval);
     
     return cmd;
 }

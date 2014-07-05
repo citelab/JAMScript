@@ -32,42 +32,32 @@ extern "C" {
 #define _COMMAND_H
 
 #include "socket.h"
+#include "json.h"
 
 #include <stdarg.h>
 
-
 #define MAX_PARAMS                   16
 
-enum ParamType
-{
-    STRING_TYPE,
-    INT_TYPE,
-    FLOAT_TYPE,
-    DOUBLE_TYPE,
-    OBJECT_TYPE
-};
-
-union Param
-{
-    int ivar;
-    float fvar;
-    double dvar;
-    long lvar;
-    char *ovar;
-    char *svar;
-};
+/*
+ * A structure to hold the outgoing and incoming command. An incoming command (in JSON format) is parsed
+ * and the values are populated in 'name' and 'params'. The param_type holds the type of the parameter.
+ * We do only a level one parse. We assume the following format for the incoming message.
+ * {name: NAME, args: ARRAY of ARGS, sign: SIGNATURE}
+ * The ARRAY of ARGS could hold other objects as well. In that case, they are not parsed any further.
+ * It is better to use the parsedCmd to descipher the message further.
+ */
 
 typedef struct _Command
 {
     char *name;                             // Name of the command 
-    union Param params[MAX_PARAMS];         // Parameters 
-    int param_type[MAX_PARAMS];             // Parameter type
+    JSONValue params[MAX_PARAMS];         // Parameters 
     char *command;                          // The full command 
     unsigned int param_count;               // Number of parameters 
     unsigned int max_params;
     char *signature;
-    char *pdata;                            // Payload data
+    JSONValue *parsedCmd;                   // Parsed command - full JSON - should be freed - only for incoming
 } Command;
+
 
 Command *command_format(const char *format, ...);
 Command *command_format_json(const char *name, const char *format, ...);

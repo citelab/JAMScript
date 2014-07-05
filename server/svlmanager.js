@@ -25,7 +25,7 @@ module.exports = {
 			callback(undefined);
 	},
 
-	destroyservlet: function(appid) {
+	destroyservlet: function(appid, callback) {
 
 		// find the servlet corresponding to the appid
 		var svlet = this.servlets[appid];
@@ -35,9 +35,9 @@ module.exports = {
 
 			// delete the element.
 			delete(this.servlets[appid]);
-			return true;
+			callback(appid);
 		}
-		return false;
+		callback(undefined);
 	},
 
 	init: function(host) {

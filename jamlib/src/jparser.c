@@ -32,7 +32,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdlib.h>
 #include <ctype.h>
 
-
 static char *_parse_str;
 static int _loc;
 static int _len;
@@ -55,7 +54,6 @@ char *_get_char();
 /*
  * Setup the parse process... 
  */
-
 void init_parse(char *str)
 {
     _parse_str = str;
@@ -65,13 +63,21 @@ void init_parse(char *str)
 
 
 /*
- * Global variables rval, sval are set by the 'parse_' functions called here.
- * There is no need to manipulate those variable here.. we just need to pass 
+ * Return a pointer to the global variable holding the parsed JSON value..
+ */
+JSONValue *get_value()
+{
+    return rval;
+}
+
+
+/*
+ * Global variable rval is set by the 'parse_' functions called here.
+ * There is no need to manipulate that variable here.. we just need to pass 
  * along to the next iteration..
  */
 int parse_value() 
 {
-    printf("Parsing values...\n");
 
     _parse_white();
     int nextchar = _peek_value();
@@ -106,93 +112,6 @@ int parse_value()
 void print_string()
 {
     printf("Parse string %s\n", &_parse_str[_loc]);
-}
-
-void print_value2(JSONValue *val)
-{
-    switch (val->type) {
-    case UNDEFINED:
-	printf(" Undefined ");
-	break;
-    case JFALSE:
-	printf(" False ");
-	break;
-    case JTRUE:
-	printf(" True ");
-	break;
-    case JNULL:
-	printf(" Null ");
-	break;
-    case INTEGER:
-	printf (" %d ", val->val.ival);
-	break;
-    case DOUBLE:
-	printf (" %f ", val->val.dval);
-	break;
-    case STRING:
-	printf (" %s ", val->val.sval);
-	break;
-    case ARRAY:
-	printf("[");
-	for (int i = 0; i < val->val.aval->length; i++) 
-	    print_value2(&(val->val.aval->elems[i]));
-	printf("]");
-	break;
-    case OBJECT:
-	printf("{");
-	for (int i = 0; i < val->val.oval->count; i++) {
-	    printf(" %s :", val->val.oval->properties[i].name);
-	    print_value2(val->val.oval->properties[i].value);
-	}
-	printf("}");
-	break;
-    default:
-	printf("<< other type >>");
-    }
-}
-
-
-void print_value()
-{
-    JSONValue *val = rval;
-
-    switch (val->type) {
-    case UNDEFINED:
-	printf(" Undefined ");
-	break;
-    case JFALSE:
-	printf(" False ");
-	break;
-    case JTRUE:
-	printf(" True ");
-	break;
-    case JNULL:
-	printf(" Null ");
-	break;
-    case INTEGER:
-	printf ("integer %d ", val->val.ival);
-	break;
-    case DOUBLE:
-	printf (" %f ", val->val.dval);
-	break;
-    case STRING:
-	printf (" %s ", val->val.sval);
-	break;
-    case ARRAY:
-	printf("[");
-	for (int i = 0; i < val->val.aval->length; i++) 
-	    print_value2(&(val->val.aval->elems[i]));
-	printf("]");
-	break;
-    case OBJECT:
-	printf("{");
-	for (int i = 0; i < val->val.oval->count; i++) {
-	    printf(" %s :", val->val.oval->properties[i].name);
-	    print_value2(val->val.oval->properties[i].value);
-	}
-	printf("}");
-	break;
-    }
 }
 
 
@@ -262,7 +181,6 @@ int parse_null()
 
 int parse_array()
 {
-    printf("Parsing array...\n");
     JSONValue *val = create_value();
     JSONArray *arr = create_array();
     set_array(val, arr);
@@ -287,11 +205,8 @@ int parse_object()
     JSONObject *obj = create_object();
     set_object(val, obj);
 
-    printf("Parsing object...\n");
-
     if (_parse_bobj() == BEGIN_OBJECT) {
 	do {
-	    printf("Looping..\n");
 	    if (parse_string() == ERROR) return ERROR;
 	    savedval = rval;
 	    if (_parse_colon() == ERROR) return ERROR;
@@ -300,7 +215,6 @@ int parse_object()
 	    add_property(obj, savedval->val.sval, rval);
 	    free(savedval); // we need to free this.. the string is freed later
 	} while (_parse_comma() == COMMA_VALUE);
-	printf("Quit loop \n");
 	finalize_object(obj);
 	rval = val;
 	return _parse_eobj() == END_OBJECT ? OBJECT_VALUE : ERROR;
@@ -314,7 +228,6 @@ int parse_string()
     JSONValue *val = create_value();
     char buf[128];
     int j = 0;
-    printf("Parsing string...\n");
 
     _parse_white();
     if (_parse_quote() == QUOTE_VALUE) {
@@ -340,8 +253,6 @@ int parse_number()
     JSONValue *val = create_value();
     char buf[64];
     int j = 0;
-
-    printf("Parsing number...\n");
 
     _parse_white();
 

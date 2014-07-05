@@ -34,7 +34,6 @@ extern "C" {
 
 #define ALLOCED_NUM                      16
 
-
 typedef enum JSONType
 {
     UNDEFINED,
@@ -51,16 +50,18 @@ typedef enum JSONType
 typedef struct JSONArray JSONArray;
 typedef struct JSONObject JSONObject;
 
+union DataValueType {
+    int ival;
+    double dval;
+    char *sval;
+    JSONArray *aval;
+    JSONObject *oval;
+} val;
+
 typedef struct JSONValue
 {
     JSONType type;
-    union DataValue {
-	int ival;
-	double dval;
-	char *sval;
-	JSONArray *aval;
-	JSONObject *oval;
-    } val;
+    union DataValueType val;
 } JSONValue;
 
 struct JSONArray
@@ -84,7 +85,7 @@ struct JSONObject
 };
 
 /*
- * JSONObject methods...
+ * JSONObject methods..
  */
 JSONObject *create_object();
 int add_property(JSONObject *jobj, char *name, JSONValue *val);
@@ -93,7 +94,7 @@ JSONValue *find_property(JSONObject *jobj, char *name);
 
 
 /*
- * JSONArray methods...
+ * JSONArray methods..
  */
 JSONArray *create_array();
 int add_element(JSONArray *jarr, JSONValue *elem);
@@ -102,8 +103,10 @@ JSONValue *find_element(JSONArray *jarr, int index);
 
 
 /*
- * JSONValue methods...
+ * JSONValue methods..
  */
+JSONValue *query_value(JSONValue *jval, char *fmt, ...);
+void print_value();
 JSONValue *create_value();
 void set_true(JSONValue *jval);
 void set_false(JSONValue *jval);
@@ -111,9 +114,10 @@ void set_null(JSONValue *jval);
 void set_string(JSONValue *jval, char *str);
 void set_array(JSONValue *jval, JSONArray *arr);
 void set_object(JSONValue *jval, JSONObject *obj);
-void free_value(JSONValue *jval);
+void free_value(JSONValue *jval, int freeme);
 void free_array(JSONArray *arr);
 void free_object(JSONObject *obj);
+void dispose_value(JSONValue *val);
 
 
 #endif /* _JSON_H */

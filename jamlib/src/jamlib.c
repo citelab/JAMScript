@@ -91,7 +91,7 @@ int init_jam(char *jam_server, int port)
     if (command_send(cmd, jsocket) != 0) {
 	command_free(cmd);
 	return -1;
-    } 
+    }
 
     // Release the memory for Command.. not needed now
     command_free(cmd);
@@ -101,9 +101,12 @@ int init_jam(char *jam_server, int port)
     if (cmd == NULL)
 	printf("ERROR! Unable to get the reply.. \n");
 
+    printf("Helloo..\n");
+
     // Check if reply is correct.. then we are talking to the correct server.
-    if (strcmp(cmd->name, "PINGR") == 0 && cmd->params[0].ivar == seqnum + 1) {
+    if (strcmp(cmd->name, "PINGR") == 0 && cmd->params[0].val.ival == seqnum + 1) {
 	command_free(cmd);
+	printf("Helloo.. 2 \n");
 	return 0;
     } else {
 	command_free(cmd);
@@ -241,27 +244,27 @@ Event *get_event(Application *app)
 	return _event_setup(app, cmd);
     }
     else if (len == 5 && strncmp(cmd->name, "CLICK", 5) == 0) {
-	e = event_click_new(cmd->params[0].ivar, cmd->params[1].ivar, cmd->params[2].ivar);
+	e = event_click_new(cmd->params[0].val.ival, cmd->params[1].val.ival, cmd->params[2].val.ival);
         return e;
     }
     else if (len == 5 && strncmp(cmd->name, "MDOWN", 5) == 0) {
-        e = event_mousedown_new(cmd->params[0].ivar, cmd->params[1].ivar, cmd->params[2].ivar);
+        e = event_mousedown_new(cmd->params[0].val.ival, cmd->params[1].val.ival, cmd->params[2].val.ival);
         return e;
     }
     else if (len == 5 && strncmp(cmd->name, "MMOVE", 5) == 0) {
-	e = event_mousemove_new(cmd->params[0].ivar, cmd->params[1].ivar, cmd->params[2].ivar, cmd->params[3].ivar);
+	e = event_mousemove_new(cmd->params[0].val.ival, cmd->params[1].val.ival, cmd->params[2].val.ival, cmd->params[3].val.ival);
         return e;
     }
     else if (len == 6 && strncmp(cmd->name, "BCLICK", 6) == 0) {
-	e = event_buttonclick_new(cmd->params[0].svar);
+	e = event_buttonclick_new(cmd->params[0].val.sval);
         return e;
     }
     else if (len == 5 && strncmp(cmd->name, "MDRAG", 5) == 0) {
-        e = event_mousedrag_new(cmd->params[0].ivar, cmd->params[1].ivar, cmd->params[2].ivar, cmd->params[3].ivar, cmd->params[4].ivar);
+        e = event_mousedrag_new(cmd->params[0].val.ival, cmd->params[1].val.ival, cmd->params[2].val.ival, cmd->params[3].val.ival, cmd->params[4].val.ival);
         return e;
     }
     else if (len == 8 && strncmp(cmd->name, "MDRAGOUT", 8) == 0) {
-        e = event_mousedragout_new(cmd->params[0].ivar, cmd->params[1].ivar, cmd->params[2].ivar, cmd->params[3].ivar, cmd->params[4].ivar);
+        e = event_mousedragout_new(cmd->params[0].val.ival, cmd->params[1].val.ival, cmd->params[2].val.ival, cmd->params[3].val.ival, cmd->params[4].val.ival);
         return e;
     }
     else if (len == 7 && strncmp(cmd->name, "PRELOAD", 7) == 0) {
@@ -269,19 +272,19 @@ Event *get_event(Application *app)
         return e;
     }
     else if (len == 6 && strncmp(cmd->name, "RESIZE", 6) == 0) {
-        e = event_resize_new(cmd->params[0].ivar, cmd->params[1].ivar);
+        e = event_resize_new(cmd->params[0].val.ival, cmd->params[1].val.ival);
         return e;
     }
     else if (len == 8 && strncmp(cmd->name, "KEYTYPED", 8) == 0) {
-        e = event_key_typed_new(cmd->params[0].ivar);	
+        e = event_key_typed_new(cmd->params[0].val.ival);	
         return e;
     }
     else if (len == 10 && strncmp(cmd->name, "KEYPRESSED", 10)  == 0) {
-        e = event_key_pressed_new(cmd->params[0].ivar);	
+        e = event_key_pressed_new(cmd->params[0].val.ival);	
         return e;
     }
     else if (len == 11 && strncmp(cmd->name, "KEYRELEASED", 11) == 0) {
-        e = event_key_released_new(cmd->params[0].ivar);	
+        e = event_key_released_new(cmd->params[0].val.ival);	
         return e;
     }
     else if (len == 4 && strncmp(cmd->name, "DROP", 4) == 0) {
@@ -300,7 +303,7 @@ Event *_event_setup(Application *app, Command *cmd)
     char *str = NULL;
     Event *e;
 
-    e = event_setup_new(cmd->params[0].ivar, cmd->params[1].ivar);
+    e = event_setup_new(cmd->params[0].val.ival, cmd->params[1].val.ival);
 
     /* 
      * Check the app's callbacks and send registration 
@@ -388,15 +391,15 @@ Event *_event_drop(Command *cmd)
      * Final Message format:
      *         EVENT DROP END <filename> <filetype> <filesize>
      */
-    char *name    = strdup(cmd->params[1].svar);
-    char *type    = strdup(cmd->params[2].svar);
-    unsigned int size    = cmd->params[3].ivar;
+    char *name    = strdup(cmd->params[1].val.sval);
+    char *type    = strdup(cmd->params[2].val.sval);
+    unsigned int size    = cmd->params[3].val.ival;
     unsigned int nchunks    = CEIL((double)(size / CHUNKSIZE));
 
-    if ( (strlen(cmd->params[0].svar) == 5) && strncmp(cmd->params[0].svar, "CHUNK", 5) == 0 ) {
+    if ( (strlen(cmd->params[0].val.sval) == 5) && strncmp(cmd->params[0].val.sval, "CHUNK", 5) == 0 ) {
 	/* This is a filechunk pair */
-	unsigned int chunk_size    = cmd->params[4].ivar;
-	unsigned int cur_chunk    = cmd->params[5].ivar;
+	unsigned int chunk_size    = cmd->params[4].val.ival;
+	unsigned int cur_chunk    = cmd->params[5].val.ival;
 	char buf[CHUNKSIZE];
 	//int ret = 0;
 
@@ -404,7 +407,7 @@ Event *_event_drop(Command *cmd)
 
 	e = event_filedrop_chunk_new(name, type, size, nchunks, chunk_size, cur_chunk, buf);
 	return e;
-    } else if ( (strlen(cmd->params[0].svar) == 3) && strncmp(cmd->params[0].svar, "END", 3) == 0 ) {
+    } else if ( (strlen(cmd->params[0].val.sval) == 3) && strncmp(cmd->params[0].val.sval, "END", 3) == 0 ) {
 	/* This is the end of the transfer */
 	e = event_filedrop_end_new(name, type, size, nchunks);
 	return e;
@@ -422,15 +425,15 @@ Event *_event_drop64(Command *cmd)
 
     /* The client application is responsible for base64 decoding
      */
-    char *name    = strdup(cmd->params[1].svar);
-    char *type    = strdup(cmd->params[2].svar);
-    unsigned int o_size    = cmd->params[3].ivar;
+    char *name    = strdup(cmd->params[1].val.sval);
+    char *type    = strdup(cmd->params[2].val.sval);
+    unsigned int o_size    = cmd->params[3].val.ival;
 
-    if ( (strlen(cmd->params[0].svar) == 5) && strncmp(cmd->params[0].svar, "CHUNK", 5) == 0 ) {
+    if ( (strlen(cmd->params[0].val.sval) == 5) && strncmp(cmd->params[0].val.sval, "CHUNK", 5) == 0 ) {
 	/* This is a filechunk pair */
-	unsigned int e_size    = cmd->params[4].ivar;
-	unsigned int chunk_size    = cmd->params[5].ivar;
-	unsigned int cur_chunk    = cmd->params[6].ivar;
+	unsigned int e_size    = cmd->params[4].val.ival;
+	unsigned int chunk_size    = cmd->params[5].val.ival;
+	unsigned int cur_chunk    = cmd->params[6].val.ival;
 
 	unsigned int nchunks    = CEIL((double)(e_size / CHUNKSIZE));
 
@@ -441,9 +444,9 @@ Event *_event_drop64(Command *cmd)
 
 	e = event_filedrop64_chunk_new(name, type, o_size, e_size, nchunks, chunk_size, cur_chunk, buf);
 	return e;
-    } else if ( (strlen(cmd->params[0].svar) == 3) && strncmp(cmd->params[0].svar, "END", 3) == 0 ) {
+    } else if ( (strlen(cmd->params[0].val.sval) == 3) && strncmp(cmd->params[0].val.sval, "END", 3) == 0 ) {
 	/* This is the end of the transfer */
-	unsigned int e_size    = cmd->params[4].ivar;
+	unsigned int e_size    = cmd->params[4].val.ival;
 	unsigned int nchunks    = CEIL((double)(e_size / CHUNKSIZE));
 	e = event_filedrop64_end_new(name, type, o_size, e_size, nchunks);
 	return e;

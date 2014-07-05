@@ -46,18 +46,17 @@ module.exports = ({
 	// remove the 'service' attached with the app
 	// change the 'state' variable 
 	closeapp: function(appid, callback) {
-		var that = this;
 		this.db.find({appid: appid}, function(err, docs) {
-			if (docs.length === 1) {
-				var status = callback(appid);
-				if (status) {
-					that.db.update({appid: appid}, {state: 0}, function(err, numReplaced) {
+			if (docs.length === 1) 
+				callback(appid);
+			else
+				callback(undefined);
+		});
+	},
+
+	finalizeclose: function(appid) {
+		this.db.update({appid: appid}, {state: 0}, function(err, numReplaced) {
 						// numReplaced === 1 here...
-					});
-					return true;
-				}
-			}
-			return false;
 		});
 	},
 
@@ -65,21 +64,20 @@ module.exports = ({
 	// start the 'service'	
 	// change the 'state' variable in the db
 	openapp: function(appid, callback) {
-		var that = this;
 		this.db.find({appid: appid, status: 0}, function(err, docs) {
 			if (docs.length === 1) {
 				// open the app using the callback
-				var status = callback(appid);				
-				// update the status..
-				if (status) {
-					that.db.update({appid: appid}, {state: 1}, function(err, numReplaced) {
-						// numReplaced === 1 here...
-
-					});
-					return true;
-				}
+				callback(appid);
+			} else {
+				callback(undefined);
 			}
-			return false;
+		});
+	},
+
+	finalizeopen: function(appid) {
+		// update the status..
+		this.db.update({appid: appid}, {state: 1}, function(err, numReplaced) {
+			// numReplaced === 1 here... not checking the update .. assumed to go through
 		});
 	},
 
@@ -92,6 +90,7 @@ module.exports = ({
 			}
 		});
 	},
+
 
 
 	// return the appinfo as a hashtable in JSON object..

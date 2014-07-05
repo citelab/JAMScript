@@ -53,9 +53,9 @@ int _register_application(char *appname);
 int _open_application(char *appname);
 int _close_application(int appid);
 int _remove_application(int appid);
-int _get_app_info(int appid, char **appinfo);
+Application *_get_app_info(int appid);
 Application *_process_application(int appid);
-Application *_application_from_json(char *ainfo);
+Application *_application_from_json(JSONValue *val);
 
 
 
@@ -113,15 +113,16 @@ Application *open_application(char *appname)
 
 int close_application(Application *app)
 {
-    if (app == NULL)
+    printf("Closing... 1 \n");
+     if (app == NULL)
         return 0;
-
+    printf("Closing... 2 \n");
     // Ask server to close the app...
-    if (_close_application(app->appid)) {
+    if (!_close_application(app->appid)) {
 	printf("ERROR! Unable to close application %s\n", app->appname);
 	return 0;
     }
-
+    printf("Closing... 3 \n");
     // Release local resources...
     printf("Closing application.. %s\n", app->appname);
     if (app->callbacks != NULL)
@@ -199,7 +200,7 @@ int _is_app_registered(char *appname)
     printf("Check server.. 4 \n");
     // we get (appID > 0) from the server if the app is already registered
     if (strcmp(cmd->name, "APPSTAT") == 0) {
-	state = cmd->params[0].ivar;
+	state = cmd->params[0].val.ival;
 	command_free(cmd);
 	return state;
     } else {
@@ -235,7 +236,7 @@ int _register_application(char *appname)
 	printf("ERROR! Unable to get the reply.. \n");
 
     if (strcmp(cmd->name, "APPSTAT") == 0) {
-	state = cmd->params[0].ivar;
+	state = cmd->params[0].val.ival;
 	command_free(cmd);
 	return state;
     } else {
@@ -252,7 +253,6 @@ int _register_application(char *appname)
  * Returns (appid > 0) if success or 0 if error (including the app
  * is already open)
  */
-
 int _open_application(char *appname) 
 {
     Command *cmd;
@@ -275,7 +275,7 @@ int _open_application(char *appname)
 	printf("ERROR! Unable to get the reply.. \n");
 
     if (strcmp(cmd->name, "APPSTAT") == 0) {
-	state = cmd->params[0].ivar;
+	state = cmd->params[0].val.ival;
 	command_free(cmd);
 	return state;
     } else {
@@ -284,6 +284,11 @@ int _open_application(char *appname)
     }
 }
 
+
+/*
+ * Returns 1 (non zero), if successful in closing..
+ * Returns 0 if failed to close the app at the server..
+ */
 
 int _close_application(int appid)
 {
@@ -308,7 +313,7 @@ int _close_application(int appid)
     // Server returns 0 if the app is closed.. the function
     // returns 1 if the app is actually closed.
     if (strcmp(cmd->name, "APPSTAT") == 0) {
-	state = cmd->params[0].ivar;
+	state = cmd->params[0].val.ival;
 	command_free(cmd);
 	return !state;
     } else {
@@ -342,7 +347,7 @@ int _remove_application(int appid)
     // Server returns 0 if the app is closed.. the function
     // returns 1 if the app is actually closed.
     if (strcmp(cmd->name, "APPSTAT") == 0) {
-	state = cmd->params[0].ivar;
+	state = cmd->params[0].val.ival;
 	command_free(cmd);
 	return !state;
     } else {
@@ -359,19 +364,20 @@ int _remove_application(int appid)
  * returns 0 on failure to return value, otherwise returns 1.
  */
 
-int _get_app_info(int appid, char **appinfo)
+Application *_get_app_info(int appid)
 {
     Command *cmd;
+    Application *app;
 
     // Register the application
     //
     cmd = command_format_json("GAPPINFO", "%d", appid);
     if (cmd == NULL)
-	return 0;
+	return NULL;
 
     if (command_send(cmd, jsocket) != 0) {
 	command_free(cmd);
-	return 0;
+	return NULL;
     } 
     command_free(cmd);
 
@@ -380,16 +386,16 @@ int _get_app_info(int appid, char **appinfo)
     if (cmd == NULL)
 	printf("ERROR! Unable to get the reply.. \n");
 
-    printf("Appinfo %s\n", cmd->params[0].svar);
+    printf("Appinfo %s\n", cmd->params[0].val.sval);
 
     if (strcmp(cmd->name, "APPINFO") == 0) {
-	*appinfo = strdup(cmd->params[0].svar);
+	app = _application_from_json(cmd->parsedCmd);
 	command_free(cmd);
 	printf("HeLLLLLLOOO \n");
-	return 1;
+	return app;
     } else {
 	command_free(cmd);
-	return 0;
+	return NULL;
     }
 }
 
@@ -397,26 +403,25 @@ int _get_app_info(int appid, char **appinfo)
 Application *_process_application(int appid)
 {
     Application *app = NULL;
-    Socket *socket = NULL;
     char *port_buf = NULL;
-    char *appinfo = NULL;
 
     printf("Step .. 1\n");
     // get information on application
-    if (_get_app_info(appid, &appinfo)) {
-	printf("Converting from json.. %s\n", appinfo);
-	app = _application_from_json(appinfo);
+    app = _get_app_info(appid);
+    if (app == NULL) {
+	printf("ERROR! Unable to get information on application.\n");
+	return NULL;
     }
 
-    print_application(app);
     printf("Step .. 2\n");
     // Connect socket to application service on server
     port_buf = int_to_string(app->port);
     if (port_buf == NULL)
         return NULL;
 
-    printf("Step .. 3\n");
-    socket = socket_new(Socket_Blocking);
+    printf("Step .. 3 opening %s to port %s\n", app->server, port_buf);
+
+    app->socket = socket_new(Socket_Blocking);
     if (socket_connect(app->socket, app->server, port_buf) != 0) {
         socket_free(app->socket);
         free(port_buf);
@@ -437,63 +442,46 @@ Application *_process_application(int appid)
  * are available in the JSON
  *
  */
-
-Application *_application_from_json(char *ainfo)
+Application *_application_from_json(JSONValue *jval)
 {
     Application *app = NULL;
-    int length = 0;
-    char *key = NULL;
+    JSONValue *tval;
     
-    if (ainfo == NULL)
-	return NULL;
-
-    length = strlen(ainfo);
-    // We cannot have a valid appinfo with less than 5 characters
-    if (length < 5)
-	return NULL;
-
-    printf("Allocating. app \n");
+    // Allocate the data structure for application..
     app = (Application *) calloc(1, sizeof(Application));
-    app->ainfo = strdup(ainfo);
 
-    init_parse(app->ainfo);
+    // copy the value into the application structure.. memory will be held by Application
 
-    printf("Begin parse .. %s\n", app->ainfo);
-    print_string();
-    if (parse_begin_obj()) {
-	do {
-	    printf("Iterating... \n");
-	    if (parse_string(&key) && strcmp(key, "appid") == 0) {
-		printf("Found appid \n");
-		if (parse_colon()) {
-		    parse_int(&(app->appid));
-		}
-	    } else if (parse_string(&key) && strcmp(key, "state") == 0) {
-		printf("Found state \n");
-		if (parse_colon()) {
-		    parse_int(&(app->state));
-		}
-	    } else if (parse_string(&key) && strcmp(key, "appname") == 0) {
-		printf("Found appname \n");
-		if (parse_colon()) {
-		    parse_string(&(app->appname));
-		}
-	    } else if (parse_string(&key) && strcmp(key, "server") == 0) {
-		printf("Found server \n");
-		if (parse_colon()) {
-		    parse_string(&(app->server));
-		}
-	    } else if (parse_string(&key) && strcmp(key, "port") == 0) {
-		printf("Found port \n");
-		if (parse_colon()) {
-		    parse_int(&(app->port));
-		}
-	    }
-	} while (parse_comma());
-	parse_end_obj();
-    }
+    tval = query_value(jval, "sds", "args", 0, "appid");
+    if (tval->type == INTEGER)
+	app->appid = tval->val.ival;
+    else
+	dispose_value(tval);
 
-    printf("Returning.. app\n");
+    tval = query_value(jval, "sds", "args", 0, "state");
+    if (tval->type == INTEGER)
+	app->state = tval->val.ival;
+    else
+	dispose_value(tval);
+
+    tval = query_value(jval, "sds", "args", 0, "appname");
+    if (tval->type == STRING)
+	app->appname = strdup(tval->val.sval);
+    else
+	dispose_value(tval);
+
+    tval = query_value(jval, "sds", "args", 0, "server");
+    if (tval->type == STRING)
+	app->server = strdup(tval->val.sval);
+    else
+	dispose_value(tval);
+
+    tval = query_value(jval, "sds", "args", 0, "port");
+    if (tval->type == INTEGER)
+	app->port = tval->val.ival;
+    else
+	dispose_value(tval);
+
     return app;
 }
 	    

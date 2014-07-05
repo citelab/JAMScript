@@ -83,45 +83,58 @@ function processmsg(message, socket) {
 
 		case "OPNAPP":
 		appid = message.args[0];
-		appdb.openapp(appid, function(appid) {
-			// start the servlet... for appid..
-			var servinfo = svlmgr.createservlet(appid);
-			// get information and return {server, port} 
-			return servinfo;
+		appdb.openapp(appid, function(rappid) {
+			if (rappid !== undefined) {
+				// start the servlet for rappid..
+				svlmgr.createservlet(rappid, {}, function(servinfo) {
+					if (servinfo !== undefined) {
+						appdb.finalizeopen();
+						reply = JSON.stringify({name:"APPSTAT", args:[rappid]}) + "\n";
+						socket.write(reply);
+					} else {
+						reply = JSON.stringify({name:"APPSTAT", args:[0]}) + "\n";			
+						socket.write(reply);
+					}
+				});
+			} else {
+				reply = JSON.stringify({name:"APPSTAT", args:[0]}) + "\n";			
+				socket.write(reply);						
+			}
 		});
-		if (status) 
-			reply = JSON.stringify({name:"APPSTAT", args:[appid]}) + "\n";
-		else
-			reply = JSON.stringify({name:"APPSTAT", args:[0]}) + "\n";
-		socket.write(reply);
 		break;
 
 		case "CLOSAPP":
 		appid = message.args[0];
-		var status = appdb.closeapp(appid, function(appid) {
-			// destroy the servlet... for appid..
-			return svlmgr.destroyservlet(appid);
+		appdb.closeapp(appid, function(rappid) {
+			// destroy the servlet... for rappid..
+			svlmgr.destroyservlet(rappid, function(aid) {
+				if (aid !== undefined) {
+					appdb.finalizeclose(aid);
+					console.log("Closing app.. return 0");
+					reply = JSON.stringify({name:"APPSTAT", args:[0]}) + "\n";			
+					socket.write(reply);
+				} else {
+					reply = JSON.stringify({name:"APPSTAT", args:[rappid]}) + "\n";			
+					socket.write(reply);
+				}
+			});
 		});
-		// returns 0 if the app with appid is closed successfully.. otherwise return appid
-		if (status) 
-			reply = JSON.stringify({name:"APPSTAT", args:[0]}) + "\n";
-		else
-			reply = JSON.stringify({name:"APPSTAT", args:[appid]}) + "\n";
-		socket.write(reply);		
 		break;
 
 		case "REMAPP":
 		appid = message.args[0];
-		var status = appdb.removeapp(appid, function(appid) {
+		appdb.removeapp(appid, function(rappid) {
 			// destroy the servlet... for appid.. this runs only if the app is still running..
-			return svlmgr.destroyservlet(appid);
-		});
-		// returns 0 if the app with appid is removed successfully.. otherwise return appid
-		if (status) 
-			reply = JSON.stringify({name:"APPSTAT", args:[0]}) + "\n";
-		else
-			reply = JSON.stringify({name:"APPSTAT", args:[appid]}) + "\n";
-		socket.write(reply);		
+			svlmgr.destroyservlet(appid, function(aid) {
+				if (aid !== undefined) {
+					reply = JSON.stringify({name:"APPSTAT", args:[0]}) + "\n";			
+					socket.write(reply);
+				} else {
+					reply = JSON.stringify({name:"APPSTAT", args:[rappid]}) + "\n";			
+					socket.write(reply);
+				}
+			});
+		});	
 		break;
 
 		case "GAPPINFO":

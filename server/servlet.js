@@ -1,7 +1,8 @@
 // Servlet
 // Create a servlet constructor..
 
-var net = require('net');
+var net = require('net'),
+	getmessage = require('./message.js');
 
 module.exports = function(host, cmdobj) {
 
@@ -54,9 +55,9 @@ module.exports = function(host, cmdobj) {
 		var message = getmessage(c);
 
 		message.on('message', function(msg) {
-			var handler = commands[message.name];
+			var handler = commands[msg.name];
 			if (handler !== undefined) {
-				handler(message, c);
+				handler(msg, c);
 			}
 		});
 	});
