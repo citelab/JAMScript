@@ -211,6 +211,8 @@ int command_send(Command *cmd, Socket *sock)
     if (cmd == NULL || sock == NULL)
         return -1;
 
+    printf("Transmitting Command name -- %s\n", cmd->command);
+
     len = strlen(cmd->command);
     ret = socket_write(sock, cmd->command, len);
 

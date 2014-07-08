@@ -4,12 +4,12 @@
 var net = require('net'),
 	getmessage = require('./message.js');
 
-module.exports = function(host, cmdobj) {
+module.exports = function(sinfo, cmdobj) {
 
 	var commands = {};
 
 	// set some parameters and methods
-	this.host = host;
+	this.servinfo = sinfo;
 
 	this.stopservlet =  function() {
 		this.server.close();
@@ -30,7 +30,7 @@ module.exports = function(host, cmdobj) {
 	this.run = function(callback) {
 
 		var self = this;
-		this.server.listen(0, this.host, function() {
+		this.server.listen(this.servinfo.port, this.servinfo.server, function() {
 			self.running = true;
 			callback(self.server.address());
 		});

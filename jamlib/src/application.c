@@ -101,7 +101,7 @@ Application *open_application(char *appname)
     int appid;
 
     // Open application .. return code indicates success or not
-    if ((appid = _open_application(appname))) {
+    if ((appid = _open_application(appname)) == 0) {
 	printf("ERROR! Unable to open application %s\n", appname);
 	return NULL;
     }
@@ -289,7 +289,6 @@ int _open_application(char *appname)
  * Returns 1 (non zero), if successful in closing..
  * Returns 0 if failed to close the app at the server..
  */
-
 int _close_application(int appid)
 {
     Command *cmd;
@@ -305,6 +304,7 @@ int _close_application(int appid)
 	return 0;
     } 
     command_free(cmd);
+
     // Read the reply from the server...
     cmd = command_read(jsocket);
     if (cmd == NULL)
@@ -382,6 +382,7 @@ Application *_get_app_info(int appid)
     command_free(cmd);
 
     // Read the reply from the server...
+    printf("Reading the reply from the server........................\n");
     cmd = command_read(jsocket);
     if (cmd == NULL)
 	printf("ERROR! Unable to get the reply.. \n");
@@ -489,18 +490,19 @@ Application *_application_from_json(JSONValue *jval)
 /*
  * Release the memory associated with the struct 'Application'
  */
-
 void application_free(Application *app)
 {
-    
-
+    free(app->appname);
+    free(app->server);
+    socket_free(app->socket);
+    callbacks_free(app->callbacks);
+    free(app);
 }
 
 
 /*
  * Print the application information..
  */
-
 void print_application(Application *app)
 {
     printf("\nApplication - name:    %s\n", app->appname);

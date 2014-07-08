@@ -55,19 +55,24 @@ module.exports = ({
 	},
 
 	finalizeclose: function(appid) {
-		this.db.update({appid: appid}, {state: 0}, function(err, numReplaced) {
-						// numReplaced === 1 here...
+		this.db.update({appid: appid}, {$set: {state: 0}}, function(err, numReplaced) {
+			// numReplaced === 1 here...
+			console.log("numReplaced" + numReplaced);
 		});
 	},
 
 	// if app with the given appid is closed, then open it
 	// start the 'service'	
 	// change the 'state' variable in the db
-	openapp: function(appid, callback) {
-		this.db.find({appid: appid, status: 0}, function(err, docs) {
+	openapp: function(appname, callback) {
+		this.db.find({appname: appname}, function(err, docs) {
+			console.log("Docs " + docs);
+			console.log("Appname " + appname);
+
 			if (docs.length === 1) {
+				var appid = docs[0].appid;
 				// open the app using the callback
-				callback(appid);
+				callback({appid: appid, address: docs[0].server, port: docs[0].port});
 			} else {
 				callback(undefined);
 			}
@@ -76,7 +81,7 @@ module.exports = ({
 
 	finalizeopen: function(appid) {
 		// update the status..
-		this.db.update({appid: appid}, {state: 1}, function(err, numReplaced) {
+		this.db.update({appid: appid}, {$set: {state: 1}}, function(err, numReplaced) {
 			// numReplaced === 1 here... not checking the update .. assumed to go through
 		});
 	},
@@ -96,6 +101,7 @@ module.exports = ({
 	// return the appinfo as a hashtable in JSON object..
 	getappinfo: function(appid, callback) {
 		this.db.find({appid: appid}, function(err, docs) {
+			console.log("Docs " + docs[0].appid);
 			if (docs.length === 1) {
 				callback(docs[0]);
 			} else {

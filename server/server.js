@@ -54,6 +54,7 @@ function processmsg(message, socket) {
 		appdb.isregistered(appname, function(appid) {
 			console.log("Returned appid " + appid);
 			reply = JSON.stringify({name:"APPSTAT", args:[appid]}) + "\n";
+			console.log("------11----APPSTAT");
 			socket.write(reply);
 		});
 		break;
@@ -68,36 +69,45 @@ function processmsg(message, socket) {
 						var dentry = {appname: appname, appid: appid, server: servinfo.server, port: servinfo.port, state: 1};
 						appdb.finalizeregister(dentry);
 						reply = JSON.stringify({name:"APPSTAT", args:[appid]}) + "\n";
+						console.log("-----10-----APPSTAT");
 						socket.write(reply);
 					} else {
 						reply = JSON.stringify({name:"APPSTAT", args:[0]}) + "\n";			
+						console.log("-------8---APPSTAT");
 						socket.write(reply);				
 					}
 				});
 			} else {
-				reply = JSON.stringify({name:"APPSTAT", args:[0]}) + "\n";			
+				reply = JSON.stringify({name:"APPSTAT", args:[0]}) + "\n";	
+				console.log("------9----APPSTAT");		
 				socket.write(reply);						
 			}
 		});
 		break;
 
 		case "OPNAPP":
-		appid = message.args[0];
-		appdb.openapp(appid, function(rappid) {
-			if (rappid !== undefined) {
+		appname = message.args[0];
+		appdb.openapp(appname, function(sinfo) {
+			if (sinfo !== undefined) {
 				// start the servlet for rappid..
-				svlmgr.createservlet(rappid, {}, function(servinfo) {
+				svlmgr.recreateservlet(sinfo.appid, {server: sinfo.server, port: sinfo.port}, {}, function(servinfo) {
 					if (servinfo !== undefined) {
+						console.log("Finalizing open" + servinfo.server + servinfo.port);
 						appdb.finalizeopen();
-						reply = JSON.stringify({name:"APPSTAT", args:[rappid]}) + "\n";
+						reply = JSON.stringify({name:"APPSTAT", args:[sinfo.appid]}) + "\n";
+									console.log("-------7---APPSTAT");
 						socket.write(reply);
 					} else {
-						reply = JSON.stringify({name:"APPSTAT", args:[0]}) + "\n";			
+						console.log("===================== 1");
+						reply = JSON.stringify({name:"APPSTAT", args:[0]}) + "\n";	
+									console.log("-------5---APPSTAT");		
 						socket.write(reply);
 					}
 				});
 			} else {
-				reply = JSON.stringify({name:"APPSTAT", args:[0]}) + "\n";			
+				console.log("===================== 2");
+				reply = JSON.stringify({name:"APPSTAT", args:[0]}) + "\n";	
+							console.log("--------6--APPSTAT");		
 				socket.write(reply);						
 			}
 		});
@@ -107,14 +117,19 @@ function processmsg(message, socket) {
 		appid = message.args[0];
 		appdb.closeapp(appid, function(rappid) {
 			// destroy the servlet... for rappid..
+			console.log("Destroy servlet..");
 			svlmgr.destroyservlet(rappid, function(aid) {
+				console.log("Inside the callback...");
 				if (aid !== undefined) {
+					console.log("======= Closing " + aid);
 					appdb.finalizeclose(aid);
 					console.log("Closing app.. return 0");
-					reply = JSON.stringify({name:"APPSTAT", args:[0]}) + "\n";			
+					reply = JSON.stringify({name:"APPSTAT", args:[0]}) + "\n";	
+								console.log("---------1--APPSTAT");		
 					socket.write(reply);
 				} else {
-					reply = JSON.stringify({name:"APPSTAT", args:[rappid]}) + "\n";			
+					reply = JSON.stringify({name:"APPSTAT", args:[rappid]}) + "\n";		
+								console.log("--------2---APPSTAT");	
 					socket.write(reply);
 				}
 			});
@@ -127,10 +142,12 @@ function processmsg(message, socket) {
 			// destroy the servlet... for appid.. this runs only if the app is still running..
 			svlmgr.destroyservlet(appid, function(aid) {
 				if (aid !== undefined) {
-					reply = JSON.stringify({name:"APPSTAT", args:[0]}) + "\n";			
+					reply = JSON.stringify({name:"APPSTAT", args:[0]}) + "\n";	
+								console.log("--------3--APPSTAT");		
 					socket.write(reply);
 				} else {
-					reply = JSON.stringify({name:"APPSTAT", args:[rappid]}) + "\n";			
+					reply = JSON.stringify({name:"APPSTAT", args:[rappid]}) + "\n";		
+								console.log("--------4--APPSTAT");	
 					socket.write(reply);
 				}
 			});
@@ -139,11 +156,15 @@ function processmsg(message, socket) {
 
 		case "GAPPINFO":
 		appid = message.args[0];
+		console.log("Appid = " + appid);
 		appdb.getappinfo(appid, function(ainfo) {
-			if (ainfo !== undefined)
+			if (ainfo !== undefined) {
+				console.log("Ainfo.... " + ainfo);
 				reply = JSON.stringify({name: "APPINFO", args:[ainfo]}) + "\n";
-			else
-				reply = JSON.stringify({name: "APPINFO", args:[null]}) + "\n";				
+			} else
+				reply = JSON.stringify({name: "APPINFO", args:[null]}) + "\n";	
+			console.log("Writing:  "+ reply);
+
 			socket.write(reply);
 		});
 		break;

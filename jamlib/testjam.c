@@ -1,40 +1,40 @@
 #include "jamlib.h"
 #include "application.h"
-
 #include <stdio.h>
-
+#include <stdlib.h>
 
 int main() 
 {
     int res;
+    int code;
     Application *app = NULL;
 
     res = init_jam("localhost", 2500);
     printf("\nReturn code %d \n\n", res);
     
     if (res >= 0) {
-	// Register application
-	if ((app = create_application("app1"))) {
-	    print_application(app);
-	} else {
-	    app = open_application("app1");
-	    if (app != NULL) {
-		print_application(app);
-		printf("Successfully opened the application \n");
+	while(1) {
+	    printf("\n1 - Create application \n2 - Open application \n3 - Close application \n4 - Quit\n");
+	    scanf("%d", &code);
+	    switch (code) {
+	    case 1:
+		// Register application
+		if ((app = create_application("app2")))
+		    print_application(app);
+		break;
+	    case 2:
+		if ((app = open_application("app2")))
+		    print_application(app);
+		break;
+
+	    case 3:
+		close_application(app);
+		break;
+	    default:
+		exit(0);
 	    }
 	}
-	close_application(app);
     }
-
-    // Make function call on the cloud test call_user_def
-    // make a reverse call... cloud to thing
-
-    // How about the asynch nature of the call?
-
-    // .. how to handle failure or exceptional behavior after function call??
-    // .. jadef c_function() {
-
-    // How about thing - cloud, thing - web, web - cloud, cloud - web,
 
     return 0;
 }
