@@ -1,0 +1,9 @@
+
+= Server
+  = Need credentials to start, stop, or make any changes to servlets
+
+= Servlet
+  = Lightweight verification on all calls to servlets
+  = All responses from servlets are also verifiable
+  = What is the lightweight verification mechanism?
+

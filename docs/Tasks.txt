@@ -1,0 +1,37 @@
+
+1. JAMScript Tasks
+
+   (a) Extend JADE (from the paper) to create JAMScript 1.0
+   (b) Extend and polish the translator to handle JAMScript 1.0
+   (c) Develop a loader to push the compiled components of JAMScript to
+       the correct locations
+
+2. JAMLib Tasks
+
+   (a) Complete the development of the C version of JAMLib (.. we are almost there ..)
+   (b) Complete the JavaScript portions (evolved from JADE/W12)
+
+3. POM Tasks
+
+   (a) Design the physical object model (POM) component
+       = POM has three partitions: structure, control, and behavior. Refine this partitioning
+       = Focus on the 'structure' partition exclusively.. no need to be concerned about 'control' and 'behavior'
+       = 
+      s
+       = POM definition - we should be able to upload the definition as an XML document
+       = POM definition should be parsed and it should create a 'state'
+       = 'State' created by the POM is the model of the physical space where the object(s) is(are).
+       = An object should be able to listen to specific events on a 'state'
+
+   (b) 
+
+4. Server Tasks
+
+   (a) dddd
+   (b) fdfdfsdf dfsdfsdf
+
+5. Integration and Testing
+
+   (a) dddd
+   (b) sdsds
+
