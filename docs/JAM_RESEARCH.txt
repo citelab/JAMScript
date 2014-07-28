@@ -1,12 +1,51 @@
 
-JAM - what are the issues?
+1. Why use containers?
+   
+   We have developer supplied code for execution in the cloud. Also, this developer supplied
+   code is running on the web. 
 
-JSTI - JavaScript Services and Thing Interface
+   So we need to limit the application's resource usage. By having a container running a particular
+   application instance, we can precisely control application resource usage. Also, accounting
+   is done properly too.
+
+   Data isolation is another reason to use containers. 
+
+   How about different ways of application sharing - concurrent application usage?
+   How does data get protected then?
+
+   Also, what happens when the application needs to use other external services to data
+   exchange? Like accessing social data from OSN services that are maintained by outside 
+   providers. 
+   
+   = How to authenticate to such services?
+   = How to authorize actions?
+   = What credentials to use
+
+2. What is the notion of users?
+
+   An instance of an application is actually on a per user basis. That is, an instance of
+   an application is denoted by a 'thing' or 'user controlled service'. The user is
+   assumed to be control of this device or service. So there is a 'what you have' factor.
+   Also, there may be a 'what you know' factor because the device or service might have
+   local security measure.
+
+   When a user activates an application instance, it starts running in the cloud and has
+   a 'face' on the web as well. By default we have a single face on the web. How does this
+   face or the web browser authenticate or authorize access?
+   
+   = Web browser needs authentication of the user trying get access is around.
+   = A sound-based authentication protocol is ideal for this -- we assume 'connected mobile' here.
+   = Could there be a situation where we have multiple faces? I am not sure whether there
+     is a compelling use case for this situation.
 
 
-Physical Object Model (POM)
-	 	 
+3. How do we protect against device loss?
+   
+   Like Knox, we could have a mandatory local credential - password, fingerprint scan,
+   etc to validate the user. This could be done per session to increase the level of
+   trust that can be placed on the device.
 
+   
 
 
     

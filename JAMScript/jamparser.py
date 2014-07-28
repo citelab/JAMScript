@@ -22,12 +22,14 @@ jamrequirecont = False
 scope = 0
 savedl = ''
 
+ofp = None
 
 def parsejamdef(l, cfp, jsfp):
 	global functionType
 	global jamdefcont
 	global scope
 	global savedl
+	global ofp
 	
 	functionType = 'jamdef'
 	jamdefcont = True
@@ -53,8 +55,8 @@ def parsejamdef(l, cfp, jsfp):
 	header.parseheader()
 	jsfp.write(header.makejsfunction())
 	ofp = jsfp
-	print header.params
-	print header.funcname
+	print header.head.params
+	print header.head.funcname
 	cfp.write(header.makecheader())
 	cfp.write(header.makeuserdefcall())
 
@@ -84,8 +86,10 @@ def parseonreturn(l, cfp):
 			return
 	# onreturn function processing...
 
-def processclosebrackets(l):
+def processclosebrackets(l, cfp, jsfp):
 	global scope
+	global functionType
+	global ofp
 
 	# Catch close brackets
 	if re.match(r'(.*)}(.*)', l):
@@ -136,6 +140,8 @@ def jamparser(ifp, cfp, jsfp):
 	global jamlistencont
 	global jamsaycont
 
+	global ofp
+
 	incomment = False
 	# start with C as the default file.. all output goes there
 	ofp = cfp
@@ -183,7 +189,7 @@ def jamparser(ifp, cfp, jsfp):
 		if re.match(r'(.*){(.*)', l):
 			scope += 1
 
-		processclosebrackets(l)
+		processclosebrackets(l, cfp, jsfp)
 
 		# Output the line to the default output..
 		ofp.write(l)

@@ -1,4 +1,4 @@
-jamdef add(int a, int b) {
+jamdef  void   add(int a, int b) {
        // somthing here
        // another thing here
 }

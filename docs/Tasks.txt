@@ -5,11 +5,20 @@
    (b) Extend and polish the translator to handle JAMScript 1.0
    (c) Develop a loader to push the compiled components of JAMScript to
        the correct locations
+       ====
+       1. Symbol table for functions
+       2. Check for simple error conditions - C/JS interface
+       3. Check XML definitions -- what can this achieve?
+       4. Securing the injected code - using JS minifiers and chaotically encrypting the files
+       
 
 2. JAMLib Tasks
 
    (a) Complete the development of the C version of JAMLib (.. we are almost there ..)
    (b) Complete the JavaScript portions (evolved from JADE/W12)
+       ======
+       1. Get all sides of the JAMScript working
+       2. Cache working for scripts
 
 3. POM Tasks
 
@@ -25,10 +34,10 @@
 
    (b) 
 
-4. Server Tasks
+4. Security and Trust Management Tasks
 
-   (a) dddd
-   (b) fdfdfsdf dfsdfsdf
+   (a) Application level security and trust
+
 
 5. Integration and Testing
 

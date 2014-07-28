@@ -33,12 +33,6 @@ class jamdefheader:
 		self.head = headerparser(self.cline)
 		# parse the line.. now the values are loaded properly
 		self.head.parse()
-		
-		# TODO: do something with the header options
-
-		# TODO: Parse the body of the function.. check for parameter use
-		# TODO: Check for JavaScript use... if it is not JavaScript, we need to report ERROR
-		
 
 	def getreturntype(self):
 		return dict(type=self.head.rettype, ispointer= not self.head.isrettypevalue)

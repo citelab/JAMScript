@@ -28,7 +28,7 @@ class headerparser:
 	def __init__(self, li):
 		self.constname = ""
 		self.funcname = ""
-		self.rettype
+		self.rettype = None
 		self.isrettypevalue = True
 		self.params = []
 		self.cline = li.strip()
@@ -60,14 +60,18 @@ class headerparser:
 			pointparse = pointerpat.search(consthead)
 			if pointparse == None:
 				# just split based on ' '.. and this will give us the constructs and parameters
-				pvalues = consthead.split(' ')
-				self.constname = pvalues[0]
-				self.rettype = pvalues[1]
-				self.funcname = pvalues[2]
+				pvalues = consthead.split()
+				if len(pvalues) == 3:
+					self.constname = pvalues[0]
+					self.rettype = pvalues[1]
+					self.funcname = pvalues[2]
+				else:
+					print "ERROR! Format invalid. (invalid return type spec.) " + self.cline
+					exit(0)
 			else:
 				# pointer return type
 				self.isrettypevalue = False
-				pvalues = pointparse.group(1).split(' ')
+				pvalues = pointparse.group(1).split()
 				self.constname = pvalues[0]
 				self.rettype = pvalues[1]
 				self.funcname = pointparse.group(2)
@@ -83,7 +87,7 @@ class headerparser:
 			# check if the return_type has a pointer_type
 			pointparse = pointerpat.search(optparse.group(3))
 			if pointparse == None:
-				pvalues = optparse.group(3).split(' ')
+				pvalues = optparse.group(3).split()
 				self.rettype = pvalues[0]
 				self.funcname = pvalues[1]
 			else:
@@ -93,9 +97,10 @@ class headerparser:
 		# we have parsed up to and including the function_name
 		# now we parse the param list
 		for pdec in parampat.finditer(param):
-			pointparse = pointerpat.search(pdec)
+			pstr = pdec.group()
+			pointparse = pointerpat.search(pstr)
 			if pointparse == None:
-				pvalues = pdec.split(' ')
+				pvalues = pstr.split()
 				self.params.append({'type':pvalues[0], 'name':pvalues[1], 'value':True})
 			else:
 				self.params.append({'type':pointparse.group(1), 'name':pointparse.group(2), 'value':False})
