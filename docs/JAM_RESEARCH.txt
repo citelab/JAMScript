@@ -21,6 +21,7 @@
    = How to authorize actions?
    = What credentials to use
 
+
 2. What is the notion of users?
 
    An instance of an application is actually on a per user basis. That is, an instance of
