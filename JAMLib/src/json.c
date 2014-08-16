@@ -62,7 +62,7 @@ int add_property(JSONObject *jobj, char *name, JSONValue *val)
     }
     // Now add the actual property...
     jobj->properties[jobj->count].name = strdup(name);
-    jobj->properties[jobj->count].value = val;
+    jobj->properties[jobj->count].value = copy_value(val);
     jobj->count++;
 
     return 0;
@@ -167,49 +167,6 @@ JSONValue *find_element(JSONArray *arr, int index)
 /*
  * JSONValue methods...
  */
-void print_value(JSONValue *val)
-{
-    switch (val->type) {
-    case UNDEFINED:
-	printf(" Undefined ");
-	break;
-    case JFALSE:
-	printf(" False ");
-	break;
-    case JTRUE:
-	printf(" True ");
-	break;
-    case JNULL:
-	printf(" Null ");
-	break;
-    case INTEGER:
-	printf (" %d ", val->val.ival);
-	break;
-    case DOUBLE:
-	printf (" %f ", val->val.dval);
-	break;
-    case STRING:
-	printf (" %s ", val->val.sval);
-	break;
-    case ARRAY:
-	printf("[");
-	for (int i = 0; i < val->val.aval->length; i++) 
-	    print_value(&(val->val.aval->elems[i]));
-	printf("]");
-	break;
-    case OBJECT:
-	printf("{");
-	for (int i = 0; i < val->val.oval->count; i++) {
-	    printf(" %s :", val->val.oval->properties[i].name);
-	    print_value(val->val.oval->properties[i].value);
-	}
-	printf("}");
-	break;
-    default:
-	printf("<< other type >>");
-    }
-}
-
 
 JSONValue *create_value()
 {
@@ -219,6 +176,16 @@ JSONValue *create_value()
     return jval;
 }
 
+// Make a shallow copy of the value given by 'val'
+// Shallow copy means.. elements linked by the val is not copied
+JSONValue *copy_value(JSONValue *val)
+{
+    JSONValue *nval = create_value();
+    nval->type = val->type;
+    nval->val = val->val;
+
+    return nval;
+}
 
 void set_true(JSONValue *jval)
 {
@@ -235,6 +202,13 @@ void set_false(JSONValue *jval)
 void set_null(JSONValue *jval)
 {
     jval->type = JNULL;
+}
+
+
+void set_string(JSONValue *jval, char *str)
+{
+    jval->type = STRING;
+    jval->val.sval = strdup(str);
 }
 
 
@@ -340,4 +314,91 @@ void dispose_value(JSONValue *val)
 {
     if (val->type == UNDEFINED)
 	free(val);
+}
+
+
+/*
+ * JSONValue printing methods...
+ */
+
+/*
+ * Converts a JSON value to string. We give it a
+ * 'buf' that is big enough to contain the converted JSON
+ * object. The function writes the JSON object into this buffer.
+ * If it is NOT big enough, we return 0. Otherwise, we
+ * return the number of characters written into the buffer + 1.
+ */
+int val_to_string(char **buf, int buflen, JSONValue *val)
+{
+    int cnt;
+    char *nbuf;
+
+    switch (val->type) {
+    case UNDEFINED:
+	cnt = sprintf(*buf, " Undefined ");
+	break;
+    case JFALSE:
+	cnt = sprintf(*buf, " False ");
+	break;
+    case JTRUE:
+	cnt = sprintf(*buf, " True ");
+	break;
+    case JNULL:
+	cnt = sprintf(*buf, " Null ");
+	break;
+    case INTEGER:
+	cnt = sprintf(*buf, " %d ", val->val.ival);
+	break;
+    case DOUBLE:
+	cnt = sprintf(*buf, " %f ", val->val.dval);
+	break;
+    case STRING:
+	cnt = sprintf(*buf, " \"%s\" ", val->val.sval);
+	break;
+    case ARRAY:
+	cnt = sprintf(*buf, "[");
+	for (int i = 0; i < val->val.aval->length; i++) {
+	    nbuf = *buf + cnt;
+	    cnt += val_to_string(&nbuf, (buflen - cnt), &(val->val.aval->elems[i]));
+	    if (i < val->val.aval->length - 1) {
+		nbuf = *buf + cnt;
+		cnt += sprintf(nbuf, ", ");
+	    }
+	}
+	nbuf = *buf + cnt;
+	cnt += sprintf(nbuf, "]");
+	break;
+    case OBJECT:
+	cnt = sprintf(*buf, "{");
+	for (int i = 0; i < val->val.oval->count; i++) {
+	    nbuf = *buf + cnt;
+	    cnt += sprintf(nbuf, " \"%s\" :", val->val.oval->properties[i].name);
+	    nbuf = *buf + cnt;
+	    cnt += val_to_string(&nbuf, (buflen -cnt), val->val.oval->properties[i].value);
+	    if (i < val->val.aval->length - 1) {
+		nbuf = *buf + cnt;
+		cnt += sprintf(nbuf, ", ");
+	    }
+
+	}
+	nbuf = *buf + cnt;
+	cnt += sprintf(nbuf, "}");
+	break;
+    default:
+	cnt += sprintf(*buf, "<< other type >>");
+    }
+
+    // +1 to accomodate the '\0' trailing at the end
+    return (buflen < cnt + 1) ? 0 : cnt;
+}
+
+void print_value(JSONValue *val)
+{
+    char buf[MAX_PRINT_BUF];
+    char *pbuf = buf;
+
+    if (val_to_string(&pbuf, MAX_PRINT_BUF, val))
+	printf("%s\n", pbuf);
+    else
+	printf("Printing ERROR!\n");
 }

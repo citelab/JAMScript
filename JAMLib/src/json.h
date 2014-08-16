@@ -33,6 +33,7 @@ extern "C" {
 #define _JSON_H
 
 #define ALLOCED_NUM                      16
+#define MAX_PRINT_BUF                    256
 
 typedef enum JSONType
 {
@@ -88,6 +89,8 @@ struct JSONObject
  * JSONObject methods..
  */
 JSONObject *create_object();
+// Object owns the value after it is added as property
+// This means the 'val' can be changed later on...
 int add_property(JSONObject *jobj, char *name, JSONValue *val);
 int finalize_object(JSONObject *jobj);
 JSONValue *find_property(JSONObject *jobj, char *name);
@@ -97,6 +100,8 @@ JSONValue *find_property(JSONObject *jobj, char *name);
  * JSONArray methods..
  */
 JSONArray *create_array();
+// Array owns the value after it is inserted into the array
+// This means the value can be changed later on..
 int add_element(JSONArray *jarr, JSONValue *elem);
 int finalize_array(JSONArray *jarr);
 JSONValue *find_element(JSONArray *jarr, int index);
@@ -106,8 +111,8 @@ JSONValue *find_element(JSONArray *jarr, int index);
  * JSONValue methods..
  */
 JSONValue *query_value(JSONValue *jval, char *fmt, ...);
-void print_value();
 JSONValue *create_value();
+JSONValue *copy_value(JSONValue *val);
 void set_true(JSONValue *jval);
 void set_false(JSONValue *jval);
 void set_null(JSONValue *jval);
@@ -117,7 +122,16 @@ void set_object(JSONValue *jval, JSONObject *obj);
 void free_value(JSONValue *jval, int freeme);
 void free_array(JSONArray *arr);
 void free_object(JSONObject *obj);
+
+// Dispose only frees a value of UNDEFINED type
+// Different from free_value()
 void dispose_value(JSONValue *val);
+
+/*
+ * JSONValue printing methods...
+ */
+void print_value(JSONValue *val);
+int val_to_string(char **buf, int buflen, JSONValue *val);
 
 
 #endif /* _JSON_H */
