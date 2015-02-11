@@ -5,6 +5,8 @@
 #
 
 import re
+import json
+import random
 
 # 
 # header format:
@@ -21,23 +23,30 @@ import re
 # 
 # C { - very easy!
 # Optlist is actually optional!
+#
 
 
-class headerparser:
+class HeaderParser:
 
-	def __init__(self, li):
+    def __init__(self, li):
 		self.constname = ""
 		self.funcname = ""
 		self.rettype = None
 		self.isrettypevalue = True
 		self.params = []
 		self.cline = li.strip()
+		# select a random number as the id - may be this needs to change?
+		self.id = randint(1,99999999)
 
 	def parse(self):
 		# patterns to match...
+		# mainpat = xxx ( xxx ) xxx
 		mainpat = re.compile('(.*)\((.*)\)(.*)')
+		# pointerpat = xxx * xxx
 		pointerpat = re.compile('(.*)\*(.*)')
+		# parampat = any character sequence other than ','
 		parampat = re.compile('[^,]+')
+		# optionpat = xxx { xxx } xxx
 		optionpat = re.compile('(.*)\{(.*)\}(.*)')
 
 		# look for mainpat - this is a must.. not found report error and quit
@@ -108,9 +117,20 @@ class headerparser:
 		# we have completed the parsing now...
 		# the values are found are already available in the properties of this object..
 
+	def oparse(self):
+		parse()
+		
+		# trim the '} xxx' if it is present in the 'onxxx' string
+		leadpat = re.compile('(.*)\}(\s*)(.*)')
+		leadparse = leadpat.search(self.constname)
+		if leadparse != None:
+			# we have the leading ' } ' which needs to be removed
+			self.constname = leadparse.group(3)
+	# End oparse
+
 
 	# build a C version of the header...
-	def makecheader(self):
+	def makeCheader(self):
 		ostr = "("
 		for p in self.params:
 			if p["value"]:
@@ -123,10 +143,35 @@ class headerparser:
 				ostr = ostr + ", " + pstr
 		ostr = self.funcname + ostr + ") {\n" 
 		# assemble return type
+
 		if self.isrettypevalue:
-			retstr = self.rettype
+			retstr = self.rettype + " "
 		else:
 			retstr = self.rettype + " *"
 
 		return retstr + ostr
 
+	# build a JS version of the header
+	def makeJSheader(self):
+		ostr = "("
+		for p in self.params:
+			if ostr == "(":
+				ostr = ostr + p["name"]
+			else:
+				ostr = ostr + "," + p["name"]
+		return "function " + self.funcname + ostr + ") {\n"
+
+
+	# print the header..
+	def printheader(self):
+		print ""
+		if not self.constname == None:
+			print "Construct name: " + self.constname
+		if not self.funcname == None:
+			print "C function: " + self.funcname
+		if not self.rettype == None:
+			print "Return type: " + self.rettype
+		if not self.params == None:
+			print "Params: " + json.dumps(self.params)
+	# End printheader
+	

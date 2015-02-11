@@ -20,7 +20,7 @@ from jamparser import jamparser
 # No other extensions are valid for the input files.
 #
 def validate_inputs():
-	print "JAMScript Translator Version 0.2\n................\n"
+	print "JAMScript Translator Version 0.2"
 	if len(sys.argv) < 2:
 		print "No input files ... "
 		exit(0)
@@ -33,6 +33,7 @@ def validate_inputs():
 			if not arg.endswith(".ja"):
 				print "Error!! Files need .ja extension: " + arg
 				exit(0)
+	print "Translating..."
 
 #
 # C files (with .c extension) are skipped. 
@@ -43,6 +44,8 @@ def translate(jfile):
 	# just return if the source is already in C
 	if jfile.endswith(".c"):
 		return
+	# output current translation target
+	print "[" + jfile + "]"
 
 	# find filenames..
 	fname, fext = os.path.splitext(jfile)
@@ -82,3 +85,4 @@ if __name__ == "__main__":
 			translate(arg)
 # 
 # TODO: After the files are created, start the build process. Should we use scons?
+# 

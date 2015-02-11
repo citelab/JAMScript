@@ -1,4 +1,9 @@
-jamdef  void   add(int a, int b) {
+/*
+ * This is an example JAMScript input file. At this point, JAMScript only allows
+ * this style of comments. The C++ style of comments are not allowed by JAMScript.
+ */
+
+jamdef  double  add(int a, int* b) {
        // somthing here
        // another thing here
 }

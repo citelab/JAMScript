@@ -1,34 +1,18 @@
 # 
-# Create a jamdef header class.
-# Populate all the parameters of the command line
+# Create a jamdefheader class.
 #
-
-import re
-from headerparser import headerparser
-
-# 
-# parse the following jamdef header..
-# jamdef return_type function_name(param_list) {
-#
-# Use mainpat to match A {Optlist} (B) C
-# A includes jamdef return_type function_name - check if a pointer is there
-# if so, split and then first two are jamdef return_type (pointer)
-# last is function_name
-# if not, still the same but no pointer..
-#
-# B param_list - a little tricky - iterate on parameter pattern
-# check for pointer (use pointerpat on each param)
-#
-# C { - very easy!
-# Optlist is actually optional!
 
 
 class jamdefheader:
-	def __init__(self, li):
-		self.head = None
-		self.cline = li.strip()
-
-	def parseheader(self):
+	def __init__(self, header, cfp, jsfp):
+		# save all the parameters in 'member' values
+		self.header = header
+		self.cfp = cfp
+		self.jsfp = jsfp
+	
+	def outputcheader(self):
+		# this creates the C header and outputs to cfp
+		
 		# initialize an instance of a generic parser
 		self.head = headerparser(self.cline)
 		# parse the line.. now the values are loaded properly

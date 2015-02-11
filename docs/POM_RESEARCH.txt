@@ -4,6 +4,7 @@ Physical Object Model (POM) Research Notes
 
 What are the key research issues?
 
+How about integrating IFTTT into POM... this is a way to bring social services into the physical world?
 
 
 	 	 
