@@ -55,8 +55,21 @@ SUMMARY of JAMScript DESIGN
 
 2.  jamcall retval c_function(param_list) {
 
-    
+        // C function definition
     }
+
+    jamcall is responsible for linking a segment of C code to a JavaScript code. The reverse
+    of jamdef. Here we have a C function and want to make it available for calling from
+    JavaScript code. We could consider a situation where a C function is calling another C
+    function through JavaScript too. That is we have jamcall and jamdef in play here. What
+    benefits for doing this, I don't know!
+
+
+3.  jamtry c_function(param_list) {
+
+        // C function definition
+
+    } oncatch jamexception
 
 
 
