@@ -40,7 +40,7 @@ SUMMARY of JAMScript DESIGN
 
         // C function definition
 
-    } oncatch jamexception() c_function_decl(int ecode, char *emsg) {
+    } oncatch (jamexception *e) c_function_decl(int e->code, char e->msg) {
 
         // C function definition
     }
@@ -69,13 +69,41 @@ SUMMARY of JAMScript DESIGN
 
         // C function definition
 
-    } oncatch jamexception
+    } oncatch (jamexception *e) c_function_decl(int e->code, char e->msg) {
+
+    }
+
+    jamtry/oncatch is a way of adding exceptions to C language segments using the JAMScript
+    constructs. What we do here is to put all the C language segments that need exception
+    support into the c_function().
+
+
+EXAMPLE CODE
+
+1.  jamdef Examples
+
+
+    jamdef void c_func(int x) {
+
+        // JavaScript body.. just print the value of x..
+        console.log("Param x = %d ", x);
+    }
+
+    Here is a simple C function that is implemented in JavaScript. The value of x is passed 
+
+
+2.  jamcall Examples
 
 
 
-Runtime is responsible for setting up the exception parameters. The C function
-is called with the appropriate parameters. Do we provide any C exception functions
-as well? Any C based API to manipulate the SDM? This might be necessary as well.
+3.  jamtry Examples
+
+
+
+
+
+
+
 
 
 2.  jamcall retval c_function_decl(param_list) {
