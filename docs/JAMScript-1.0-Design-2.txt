@@ -4,7 +4,7 @@ JAMScript 1.0 Design Notes (Simplified Design)
 
 INTRODUCTION
 
-JAMScript is an extention of the JADE programming framework (see [1]).
+JAMScript is an extension of the JADE programming framework (see [1]).
 Several new features have been added to JADE to create JAMScript. In particular,
 the following extensions have been made to JADE as presented in [1].
     * Support for exceptions. Using exceptions we could improve the reliability
@@ -89,7 +89,62 @@ EXAMPLE CODE
         console.log("Param x = %d ", x);
     }
 
-    Here is a simple C function that is implemented in JavaScript. The value of x is passed 
+    The above example is the simplest possible jamdef construct. You just made a connection between
+    the C function and the JavaScript function. When the C function is called, the JavaScript function
+    is invoked. Here the invocation is asynchronous. The C function does not wait for the JavaScript
+    function to complete or expect any return value from it. There is no acknowledgement from the called
+    function. We don't even know whether the function got executed at the JavaScript side or not.
+
+    Here is another example. The C function expects the JavaScript function to respond with a value.
+    However, we should note that all function calls in JAMScript are asynchronous. That is, we don't
+    block on any function call waiting for a response. This is good in terms of performance. However,
+    we need to be careful with regard to reliability.
+
+    jamdef int c_function(int x, int y) {
+
+        // JavaScript body..
+        return x + y;
+
+    } onreturn ret_function(int rval) {
+
+        console.log("Return val: %d", rval);
+    }
+
+    The C function and the corresponding JavaScript function return an integer value. With the
+    jamdef, we have access to a C function called c_function(int x, int y); We call this function
+    from a C/C++ program and the callback ret_function(int rval) will be called after
+    the corresponding JavaScript function has completed its execution.
+
+    Still we don't have any notification if there is a problem with the invocation. For instance,
+    if there is an error of some sort that would not be known to the C side. We could use the
+    next form of the jamdef construct to handle the exception situation.
+
+    jamdef int c_function_could_fail(int z) {
+
+        // JavaScript body..
+
+    } onreturn ret_function(int rval) {
+
+        // C function implementation .. do something.. this is the callback
+        // only invoked when the JavaScript function that corresponds to the c_function
+        // has returned..
+
+    } oncatch
+
+
+    //
+
+
+
+    The C function we call and by extension the JavaScript function return an integer value.
+    The JAMScript construct shown above
+
+
+}
+
+
+
+
 
 
 2.  jamcall Examples

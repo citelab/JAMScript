@@ -1,0 +1,32 @@
+How do we incorporate fault tolerance into JAMScript?
+
+IDEA: Use some form of blocks. Use jamX blocks.
+
+IDEA: Use conditions in JAMScript language to conditionally
+execute the blocks.
+  = REPEAT blocks
+  = CONDITIONAL blocks
+  = CHECK blocks
+  = LOGGING blocks
+
+IDEA: Use Stack traces to specify where in the call stack the error happened.
+C would not support this natively. We need JAMScript runtime supporting call stacks
+and printing out stack traces. This might add fault locationing to the code.
+
+IDEA: Stick to RPC as the basic paradigm. Can we extend on the "jamdef" signature?
+This way the RPC call will be broken into a three stage pipeline. Client-Intermediate-Server.
+
+TODO: What can be done at the intermediate node? This can be programmed in JAMScript.
+So the intermediate is going to be solely JAMScript programmed.
+
+Using this model, we can make a C/C++ -> JavaScript or JavaScript -> C/C++ call through
+JAMScript. The JAMScript could do the following
+
+= Filtering of calls
+= Aggregation of calls
+= Transformation of calls or parameters
+= Replying to calls preemptively
+= Other possibilities
+
+== Can we improve the reliability of RPC using the intermediate model? At first glance,
+it seems using an intermediate node decreases the overall reliability. Is this actually true?
