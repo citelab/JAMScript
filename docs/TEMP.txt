@@ -34,3 +34,13 @@ it seems using an intermediate node decreases the overall reliability. Is this a
 TODO: Call stack tracing could be turned on as part of the machine definition. One part
 of the call stack tracing might be to log abnormal situations. Can we also use this for
 watch dog timer type of exceptions?
+
+
+TODO: Challenge #1
+JavaScript is a dynamically typed langauge and C/C++ is statically typed.
+Combining these two are bound to bring some very interesting problems which are yet
+to be fully investigated here. I guess we will sidestep these issues for now. However,
+we need to discuss them and ensure we are not looking at insurmountable problems down
+the road.
+
+If you have any thoughts on this challenge, please bring it to the discussion.
