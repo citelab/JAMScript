@@ -44,3 +44,16 @@ we need to discuss them and ensure we are not looking at insurmountable problems
 the road.
 
 If you have any thoughts on this challenge, please bring it to the discussion.
+
+
+IDEA: SDM and Global State
+The SDM is a distributed machine that contains the things - several independent computing
+devices and the cloud computer. We can have disconnection such that parts of the computing
+devices cannot talk with others. To deal with disconnection, we have to update or commit
+the state updates locally and then have a global consistency protocol that makes things
+consistent after the system has healed the disconnection.
+
+Challenge #2: This could be fairly involved. May be we don't need this right away.
+One way to address the consistency problem is to take a functional approach and version
+the updates. So we are not updating any shared values. We are just versioning the data
+with every update. May be we can repurpose a "git" program for this purpose.
