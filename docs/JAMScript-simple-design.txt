@@ -205,6 +205,78 @@ EXAMPLE CODE
     }
 
 
+    When the JAMScript translator processes it, we get a bunch of JavaScript and C functions.
+    Here are the C functions and the way they are hooked into the runtime.
+
+    double trigfunc(int a, double x) {
+
+        // JAMScript gives each construct a unique identifier
+        registerjamblock("f56abc345ab");
+
+        // create a JSON object with a & x.. let that JSON object be q
+        // invoke an RPC call with the function and arguments
+        jamremotecall("f56abc345ab", "trigfunc", q);
+    }
+
+
+    void printresult(double rval) {
+
+        // This is actually C code!
+        printf("Returned value %f", rval);
+    }
+
+
+    void callprintresult(JSONObject *o) {
+
+        // This is wrapper to call printresult. This is automatically generated.
+        // The purpose is for parameter marshalling and do some type checking
+
+        if (jsontype(o) == DOUBLE)
+            printresult((double)jsonvalue(o));
+    }
+
+    // the registered callback is invoked when a message is received by the
+    // runtime. The unique block-id is used to select the appropriate callback
+    jamregistercallback("f56abc345ab", callprintresult);
+
+    Here are the JavaScript functions and the way they are hooked into the runtime.
+
+
+    // TODO: Later, we could put some type checking glue code in here.
+    function trigfunc(a, x) {
+
+        // JavaScript code inside here..
+        require ('jamlib');
+
+        try {
+            res = a / sin(x);
+        } catch (e) {
+            if (e instanceof RangeError) {
+                // 105 here is just arbitary code.
+                // We could even extract a code from e
+                jamexception(105, "RangeError");
+            }
+        }
+        return res;
+    }
+
+
+    function error_redo(a, x, code, msg) {
+
+        // In this particular example, redoing does not make any sense.
+        // See NOTE below
+
+        console.log("Error! Evaluating the trig function");
+        return 0.0;
+    }
+
+
+    // TODO: there might be an issue on parameter passing and verification
+    // that needs to be fixed soon.
+    jamloadjsfunc("f56abc345ab", trigfunc);
+    jamloadexceptionfunc("f56abc345ab", error_redo);
+
+
 NOTE: In general it makes sense to redo the computation. Depending on the situation that
     generated the exception, we could be using a whole different approach in the second
     attempt. Also, exposing the exception conditions to JAMScript can benefit. We could
@@ -215,7 +287,9 @@ NOTE: In general it makes sense to redo the computation. Depending on the situat
 
 2.  jamcall Examples
 
-
+    OK we need examples like the above here too.
 
 
 3.  jamtry Examples
+
+    OK we need examples like the above here too.
