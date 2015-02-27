@@ -1,0 +1,11 @@
+SDM Project Thoughts
+
+1.  SDM is a distributed virtual machine. What does this mean?
+
+    Many distributed nodes could be within the same virtual machine.
+    What attributes
+
+2.  Who can be part of the SDM? Are guests allowed? What kind of authentication is
+    neccessary for the guests - given in the machine definition
+
+3.  
