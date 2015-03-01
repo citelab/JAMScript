@@ -66,4 +66,17 @@ jamcall
 jamtry
 
 
-dsdsds
+
+
+jamcall {thread-id} c_function_def(arg_list) {
+    // dfdsfdf
+
+
+}
+
+jamcall is providing a function implementation to be called by the JavaScript side.
+So the SDM is getting a whole bunch of devices, processes, or threads to get the work done
+-- all of that facility is accessible through the JavaScript interface. These JavaScript
+functions are loaded into the event-loop as interface functions.
+
+How do we enforce what?
