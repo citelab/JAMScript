@@ -1,6 +1,12 @@
 SDM Project Thoughts
 ====================
 
+Some Introductory Comments: I think with the notion of SDM we are generalizing the concept
+of server. Already servers are hosting scripts or scripting programs. We are generalizing
+this idea in SDM to span multiple machines and different types of programs. In fact, we are
+designing SDM to include event loop and many "threads". So machine at this point is designed
+to accommodate event-driven and threaded computations. However, there are no blocking calls
+in the machine. 
 
 1.  SDM is a distributed virtual "machine". So what does this mean?
 
@@ -107,3 +113,9 @@ SDM Project Thoughts
     For instance, when a slave is reconnected with the master, it might be delivered by with thousands of
     exception or error messages that were generated in the past when this node was offline. So messages
     that have expired should be purged or not played when they are delivered after the delay.
+
+Implementation Notes: I think we could use ZeroMQ as the messaging substrate. True that there is RabbitMQ
+with reliability. I like ZeroMQ's simplicity. Lets start with this and then in a subsequent work we could
+build reliability over it. Reliability cannot be built for arbitrary failures. There is always a failure
+model against which a system is reliable. ZeroMQ is already geared to address some of them with little
+bit of help.
