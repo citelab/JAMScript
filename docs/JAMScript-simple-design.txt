@@ -2,6 +2,7 @@
 JAMScript 1.0 Design Notes (Simplified Design)
 ==============================================
 
+
 INTRODUCTION
 
 JAMScript is an extension of the JADE programming framework (see [1]).
