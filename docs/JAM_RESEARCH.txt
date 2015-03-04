@@ -1,22 +1,23 @@
 
+
 1. Why use containers?
-   
+
    We have developer supplied code for execution in the cloud. Also, this developer supplied
-   code is running on the web. 
+   code is running on the web.
 
    So we need to limit the application's resource usage. By having a container running a particular
    application instance, we can precisely control application resource usage. Also, accounting
    is done properly too.
 
-   Data isolation is another reason to use containers. 
+   Data isolation is another reason to use containers.
 
    How about different ways of application sharing - concurrent application usage?
    How does data get protected then?
 
    Also, what happens when the application needs to use other external services to data
-   exchange? Like accessing social data from OSN services that are maintained by outside 
-   providers. 
-   
+   exchange? Like accessing social data from OSN services that are maintained by outside
+   providers.
+
    = How to authenticate to such services?
    = How to authorize actions?
    = What credentials to use
@@ -33,7 +34,7 @@
    When a user activates an application instance, it starts running in the cloud and has
    a 'face' on the web as well. By default we have a single face on the web. How does this
    face or the web browser authenticate or authorize access?
-   
+
    = Web browser needs authentication of the user trying get access is around.
    = A sound-based authentication protocol is ideal for this -- we assume 'connected mobile' here.
    = Could there be a situation where we have multiple faces? I am not sure whether there
@@ -41,14 +42,7 @@
 
 
 3. How do we protect against device loss?
-   
+
    Like Knox, we could have a mandatory local credential - password, fingerprint scan,
    etc to validate the user. This could be done per session to increase the level of
    trust that can be placed on the device.
-
-   
-
-
-    
-    
-
