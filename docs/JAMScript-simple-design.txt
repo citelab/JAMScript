@@ -1,4 +1,3 @@
-
 JAMScript 1.0 Design Notes (Simplified Design)
 ==============================================
 
