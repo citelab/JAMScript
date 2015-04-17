@@ -1,0 +1,349 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1.0in]{geometry}
+\usepackage[T1]{fontenc}
+% \usepackage{quattrocento}
+%\usepackage{gentium}
+\usepackage{libertine}
+\usepackage{courier}
+\usepackage{listings}
+
+\include{setup}
+
+\title{JAMScript: A Coordination Language for Clouds \\ and Internet of Things}
+\author{Muthucumaru Maheswaran \\ School of Computer Science \\ McGill University}
+
+\begin{document}
+
+\maketitle
+
+\section{Overview}
+
+The purpose of JAMScript is to create a programming language system for Internet
+of Things (IoT). IoT can have highly heterogeneous configurations ranging from
+highly resource constrained devices to fully fledged computing nodes. Therefore,
+in most deployments, the `things' that constitute the tiny devices cannot
+perform the required computations and storage all by themselves. This means
+programming IoT often involves programming a distributed collection of computing
+elements including the things and cloud-based virtual computers.
+
+The JAMScript presents a {\em single} node programming model to the programmer
+that will allow programming IoT and Cloud without explicitly dealing with
+program distribution and data transfers among the different computing elements.
+According to~\cite{Gelernter:1992hz}, a programming system is made up of a
+coordination language and a computation language. The coordination language is
+responsible for controlling the computation activities while the computation
+language is responsible for creating the code for performing the computations.
+
+In JAMScript, C and JavaScript are used as the computational languages. The C
+language is called upon to perform the computations very efficiently (i.e., with
+minimal overhead). So, C is suitable for programming the low-power devices or
+for running computationally intensive tasks in cloud supplied resources.
+JavaScript is suitable for tasks that could be hooking up to other services or
+are not computationally intensive.
+
+New constructs in JAMScript are introduced to coordinate the execution of the C
+and JavaScript components. In~\cite{Gelernter:1992hz}, Gelernter and Carriero
+argue that a computational language needs coordination to perform its
+activities. Because a computational language like C does not have facilities
+such as process creation, it relies on the ad hoc mechanisms provided by the
+operation systems (e.g., {\tt fork()} system calls).
+
+\section{JAMScript Design}
+
+According to Papadopoulos and Arbab~\cite{Papadopoulos:1998kf} coordination
+languages can be either data-driven or control-driven. The data-driven
+approaches for coordination create a shared dataspace through which the
+computation processes can communicate with each other. With data-driven
+coordination, the coordination language is explicitly involved in managing the
+data interaction between the computational processes. In the control-driven
+coordination approach, the coordination language provides constructs for
+managing the control flow among the processes without any concern for the data
+exchanges or the structure of the data being exchanged. The JAMScript is a
+hybrid coordination language that provides both data-driven and control-driven
+constructs.
+
+To perform the control-driven coordinations, JAMScript introduces a notion
+called {\em activity}. An activity is a piece of computation that can either run
+exclusively on the cloud, thing, or straddle both. By default an activity runs
+asychronously from the main thread of the JAMScript application. However,
+JAMScript provides constructs that can be used by the programmer to specify
+different execution patterns for the activities. The activity is spawned by the
+main thread of the JAMScript program, which itself could by running on the thing
+or the cloud. So an activity could be running on the cloud or thing.
+
+% An activity is a piece of computation invoked by the thing on the cloud or by the cloud on the thing.
+% JAMScript provides mechanisms to cancel an activity after it is launched or check it execution
+% status.
+%
+
+The constructs provided by JAMScript can be categorized into two groups: (i)
+activity definition and (ii) activity control. Listing~\ref{activity_def} shows
+the activity definition construct. An activity is made up of C and JavaScript
+program segments that are glued together by the JAMScript constructs. The
+JAMScript constructs specify the control flow among the different segments and
+also the format of the messages that are being passed between them. To maintain
+familiarity, we reuse C function declaration statements in the JAMScript
+constructs along with new additions introduced by the JAMScript language.
+
+An activity can have many different types of code segments. As shown in
+Listing~\ref{activity_def}, the primary segment of the activity is specified
+using the {\tt jamdef} keyword followed by a C function declaration. An optional
+{\em in} clause is used to specify the name space in which the activity should
+be posted. The primary segment of an activity could be defined in two different
+ways: using JavaScript statements for it entirity or C statements for its
+entirity. When the primary segment is defined using JavaScript, it compiles to a
+JavaScript function and a C stub function is inserted into the C program to
+invoke the newly created JavaScript function from the C side. On the JavaScript
+side, this function is posted in a prespecified namespace location (as specified
+using the optional {\em in} clause) and can be accessed by other JavaScript
+functions. When the primary segment is defined using C, a wrapper function is
+generated in JavaScript that can be used to invoke this function. Again the
+wrapper is made available in the namespace used to post other JAMScript
+generated JavaScript functions.
+
+% See Listings~\ref{activity_ex} and~\ref{res_code} for example JAMScript programs and their
+% C and JavaScript code segments.
+% Similarly, when the primary segment is defined in C, a JavaScript function is generated by the JAMScript
+% compiler. The C function can be invoked in the computing element where the JAMScript main is running
+% by calling the corresponding JavaScript function.
+%
+% In either case, the JavaScript functions generated by the compiler is accessible from other JavaScript
+% functions through a subspace of the JAMScript namespace. The subspace into which the JavaScript
+% function should be posted is specified by the optional {\em in} clause. If the {\em in} clause is
+% not specified, the JavaScript function will be posted in the root of the JAMScript namespace.
+
+An activity can have several different types of blocks associated with it
+besides the primary block. A primary block specification can list a set of
+arguments that are passed-by-value to the block at its invocation. The
+pass-by-value mechanism in JAMScript is different from the one in C. In C, with
+pointer arguments a function has the ability to manipulate values in the calling
+scope. In JAMScript, however, even pointers cannot get back to the values in the
+outer scope because the JAMScript runtime makes a copy of the invocation
+parameters such that the same values are available in case the activity needs to
+be restarted. Although the parameters are detached from the ones in the outer
+scope of the function, they are not immutable. The changes made to the formal
+parameters during an activity remain available for other blocks until the
+activity completes.
+% Discuss the oncomplete block
+
+The {\em oncomplete} block is the one that is executed by the JAMScript runtime
+on the successful completion of the primary block of the activity. Like other
+blocks of the activity, the {\em oncomplete} block also has access to the formal
+parameters that were passed into the primary block. In addition, the {\em
+oncomplete} block has access to the return parameters of the primary block. The
+arguments specified as the formal argument of the {\em oncomplete} block should
+match the return parameter of the primary block. One unique aspect of the {\em
+oncomplete} block is its capability to affect the variables in the outer scope
+of the activity.
+
+% TODO: Huge confusion on what runs where. We need clarification on the execution
+% location. What motivates the choice of location? Immunity from further
+% exceptions? Another concern is the 
+
+An activity can have several blocks and {\em oncomplete} is one of the blocks
+that is guaranteed to run on
+the same node as the calling function (could be the main thread of the JAMScript
+program or an activity itself).
+So activity starts with the main thread of JAMScript and ends at the main thread.
+We reduce the ``coupling'' between the activity and main thread by using
+a form of {\em snapshot isolation} to copy the formal parameters into the activity
+memory. Once the activity is in the {\em oncomplete} block we allow the activity
+to {\em synchronize} its copies of the memory variables with the corresponding
+copies in the main thread using the {\em jamsync()} function.
+
+% What are the benefits provided by using snapshot isolation?
+
+% Discuss the oncatch block
+
+An activity is meant to carry out a computational task encoded by the many
+blocks on the things and cloud. In carrying out the specified computational task,
+the activity can encounter many erroneous conditions that can trigger exceptions.
+An activity can have many {\em oncatch} blocks to handle the different exceptions
+that are possible during it execution. Like the The exception handling {\oncatch} blocks
+are always
+
+
+% Stack trace - activity, launcher, block with exception, etc
+
+% Discuss the oncancel block
+
+
+
+% Discuss the oncatch block
+% Where the exceptions could occur
+
+% oncancel
+
+
+
+\medskip
+
+\begin{lstlisting}[caption=Syntax of the activity definition construct, label=activity_def]
+jamdef rettype c_function_decl(args) [ in name_space ] {
+
+    // (a) JavaScript code here or (b) C code here
+    // this is the primary implementation for the c_function declared
+    // in the above prototype
+    // this runs on the primary device (the device that runs the primary impl.)
+
+    // return appropriate value that matches "rettype"
+
+} [ oncomplete [ optional_function_name ] (ret-type-args) {
+
+    // (a) C code here or (b) JavaScript code here
+    // this part is optional and runs in the complementary device
+    // to the device that runs the primary implementation
+
+
+} ] [ oncatch (jamexception e of typeX) [ optional_name_for_exc_handler ] (args_for_primary, error_info) {
+
+    // Retry the computation under the condition that exception of typeX occured
+    // when the primary implementation ran on the primary device.
+    // There could be many different retry blocks corresponding to different exceptions.
+
+}] [ oncancel [ optional_name_for_cancel_c_function ] (args) {
+
+    // Perform the operations to cancel the operations performed by the primary
+    // and/or the retry blocks.
+
+    // We need provide functions to detect which branches were already taken: primary alone
+    // or primary + retry
+
+}]
+\end{lstlisting}
+
+
+% Discuss the jamcall statement.
+
+% Simplest invocation of an activity ..
+% How could the control flow work in such a situation?
+
+% How does the simplest one compose? We have a chain of activities?
+
+% We need more control on how activities are launched and monitored
+
+
+
+
+We can compose using jamcall statements following at least two different
+patterns: iterative and recursive. In the iterative pattern, we make a jamcall
+blocking. Once a jamcall statement has completed, we can launch the second
+jamcall by putting them into a looping structure provided by the computational
+language. In the recursive pattern, the jamcall statements are chained such that
+the onreturn block of a jamcall statement can invoke the same jamcall statement
+or other jamcall statements. The recursive calls will end depending on the
+terminating condition.
+
+
+
+\begin{lstlisting}[caption=Syntax of the activity control construct, label=activity_control]
+jamcall void c_function_decl(args) [ at ( node_spec ) ] [ scope ( any|all ) ]
+                                   [ async ( true ) ] {
+
+    // Activity calls are here.
+    // An activity is called by invoking the corresponding c_function with parameters
+    // activities get launched in parallel at the target. If multiple nodes are
+    // specified, all activities listed here get launched on each node.
+
+    // The activity definition specifies the return parameter of each activity
+    // on successful completion we get a value of the specified type or we get
+    // NULL in the case of an error.
+
+    // The return "value" of the jamcall is an array of values (lets say we have m statements).
+    // Each value corresponds to an activity.
+
+} [ onreturn [ opt_func_name ] (arg_1, arg_2, arg_3, ... arg_m, char *status) {
+
+    // Once the actitives we have launched by the call-block have successfully completed
+    // or generated exception, we are here. If ANY is specified for the scope, then we can
+    // be here if at least one node has completed the activity or all nodes have generated
+    // the exceptions. If ALL is specified for the scope, we are here only when all nodes
+    // have reported success or generated exceptions.
+    // In the case of ANY, some pending activities will be cancelled
+
+} ]
+\end{lstlisting}
+
+
+
+
+\begin{lstlisting}[caption=An activity definition example,label=lst2]
+jamdef double trigfunc(int a, double x) {
+
+    // JavaScript code inside here..
+    require ('jamlib');
+    try {
+        res = a / sin(x);
+
+    } catch (e) {
+        if (e instanceof RangeError) {
+            // 105 here is just arbitary code.
+            // We could even extract a code from e
+            jamexception(105, "RangeError");
+        }
+
+    }
+    return res;
+
+} onreturn printresult(double rval) {
+
+    // This is actually C code!
+    printf("Returned value %f", rval);
+
+} oncatch (jamexception e) double error_redo(int a, double x, int code, char *msg) {
+
+    // In this particular example, redoing does not make any sense.
+    // See NOTE below
+
+    console.log("Error! Evaluating the trig function");
+    return 0.0;
+}
+\end{lstlisting}
+
+
+\section{Composing Activities}
+
+% What are the compositions that would work
+
+
+\section{Building Fault Tolerance}
+
+% Supervisors
+
+% What else?
+
+% Connect with Erlang or Akka
+
+
+
+
+\bibliographystyle{IEEEtran}
+% argument is your BibTeX string definitions and bibliography database(s)
+\bibliography{all_papers}
+
+
+% Should we extend the control-driven orchestration and include
+% data-driven orchestration too?
+
+% Data driven orchestration might be harder to analyze for fault tolerance?
+
+% Can we use other ideas besides supervisors for fault tolerance?
+
+% What do we do with exceptions that are generated by an activity
+% should we catch all of them?
+
+
+% oncomplete guaranteed to run in the same environment
+
+% 1. The primary block will get parameters which are basically a copy of the actual
+% parameters, (even pointers).
+%      ---so copy of a pointer means a deep copy right?.
+% 2. The primary block can only fiddle with the copies, so the calling scope remains
+% in-corrupted(even when malignant code is embedded).
+% 3. The On_Complete Block will have direct access to the pointers if at all
+% any of the outer scope, rather than a copy of it.
+
+
+
+\end{document}

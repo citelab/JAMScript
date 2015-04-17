@@ -1,4 +1,21 @@
+
+
+
+
 JAMScript Thoughts
+
+jamdef functionX();
+
+When we call
+
+jamstruct *handle = functionX();
+
+can we cancel the call on the handle?
+What are the ramifications?
+
+
+
+
 
 How do we incorporate fault tolerance into JAMScript?
 
