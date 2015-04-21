@@ -1,13 +1,13 @@
 # Fdb version 3
-["bibtex design_doc"] 1429465408 "design_doc.aux" "design_doc.bbl" "design_doc" 1429504598
+["bibtex design_doc"] 1429574469 "design_doc.aux" "design_doc.bbl" "design_doc" 1429582068
   "/usr/local/texlive/2014/texmf-dist/bibtex/bst/IEEEtran/IEEEtran.bst" 1222816716 59506 016987d9be15acf51cdd7252d40ecec2 ""
   "all_papers.bib" 1428288721 393206 b91b2634b6200699f26eb8a804012aee ""
-  "design_doc.aux" 1429504597 1056 5d53b799744c2a4c77a51cf7fa04728d ""
+  "design_doc.aux" 1429582067 1147 63599e027271191ac94bade060b7c9ec ""
   "design_doc.bcf" 0 -1 0 ""
   (generated)
-  "design_doc.bbl"
   "design_doc.blg"
-["pdflatex"] 1429504597 "design_doc.tex" "design_doc.pdf" "design_doc" 1429504598
+  "design_doc.bbl"
+["pdflatex"] 1429582066 "design_doc.tex" "design_doc.pdf" "design_doc" 1429582068
   "/usr/local/texlive/2014/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2014/texmf-dist/fonts/enc/dvips/libertine/lbtn_76gpa5.enc" 1354061736 3084 fca1079ded8e9e82dd71d9ec768687ab ""
   "/usr/local/texlive/2014/texmf-dist/fonts/enc/dvips/libertine/lbtn_7grukw.enc" 1354061736 3085 ece23fa68e433b1ee7e76fa7b71bf6d2 ""
@@ -18,6 +18,7 @@
   "/usr/local/texlive/2014/texmf-dist/fonts/tfm/adobe/courier/pcrr8r.tfm" 1136768653 1292 bd42be2f344128bff6d35d98474adfe3 ""
   "/usr/local/texlive/2014/texmf-dist/fonts/tfm/adobe/courier/pcrr8t.tfm" 1136768653 1384 4632f5e54900a7dadbb83f555bc61e56 ""
   "/usr/local/texlive/2014/texmf-dist/fonts/tfm/jknappen/ec/ecrm1095.tfm" 1136768653 3584 929cdff2b7a8c11bd4d49fd68cb0ae70 ""
+  "/usr/local/texlive/2014/texmf-dist/fonts/tfm/public/cm/cmmi10.tfm" 1136768653 1528 abec98dbc43e172678c11b3b9031252a ""
   "/usr/local/texlive/2014/texmf-dist/fonts/tfm/public/cm/cmmi12.tfm" 1136768653 1524 4414a8315f39513458b80dfc63bff03a ""
   "/usr/local/texlive/2014/texmf-dist/fonts/tfm/public/cm/cmmi6.tfm" 1136768653 1512 f21f83efb36853c0b70002322c1ab3ad ""
   "/usr/local/texlive/2014/texmf-dist/fonts/tfm/public/cm/cmmi8.tfm" 1136768653 1520 eccf95517727cb11801f4f1aee3a21b4 ""
@@ -34,6 +35,7 @@
   "/usr/local/texlive/2014/texmf-dist/fonts/tfm/public/libertine/LinLibertineTB-tlf-t1.tfm" 1354061736 19488 fdaf8f7930410e2fd6c1a713e78b88b3 ""
   "/usr/local/texlive/2014/texmf-dist/fonts/tfm/public/libertine/LinLibertineTI-tlf-t1--base.tfm" 1354061736 1932 d555ac1f3697253b2f8d1136289b68c3 ""
   "/usr/local/texlive/2014/texmf-dist/fonts/tfm/public/libertine/LinLibertineTI-tlf-t1.tfm" 1354061736 19920 3f1a89bae1bc8aa3010253190f779fde ""
+  "/usr/local/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb" 1248133631 36299 5f9df58c2139e7edcf37c8fca4bd384d ""
   "/usr/local/texlive/2014/texmf-dist/fonts/type1/public/libertine/LinLibertineT.pfb" 1354061736 614791 ea39341e4db76f25cb20c361802d3cd5 ""
   "/usr/local/texlive/2014/texmf-dist/fonts/type1/public/libertine/LinLibertineTB.pfb" 1354061736 538965 19c5c8b7f952ac97afb8565e9c21a82d ""
   "/usr/local/texlive/2014/texmf-dist/fonts/type1/public/libertine/LinLibertineTI.pfb" 1354061736 490980 e27f1e217a0902faea22205f197918d4 ""
@@ -80,12 +82,12 @@
   "/usr/local/texlive/2014/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1401025944 1445653 26a0aacf3d70032b1ec192e8c7792117 ""
   "/usr/local/texlive/2014/texmf-var/web2c/pdftex/pdflatex.fmt" 1401025990 3832012 904d82bdcc8abf2b1cd296990b82553b ""
   "/usr/local/texlive/2014/texmf.cnf" 1401025936 577 a59edbde8d3a8c549d0eeaab1739e2ff ""
-  "design_doc.aux" 1429504597 1056 5d53b799744c2a4c77a51cf7fa04728d ""
-  "design_doc.bbl" 1429465408 1238 48d3356e92a7a37bfa8224f6e576524e "bibtex design_doc"
-  "design_doc.tex" 1429504594 19322 5a365354990eff0dcdcad6cb0c97315e ""
-  "setup.tex" 1429278139 1101 4b0914ca793f72043672dc850ed45c09 ""
+  "design_doc.aux" 1429582067 1147 63599e027271191ac94bade060b7c9ec ""
+  "design_doc.bbl" 1429574469 1238 48d3356e92a7a37bfa8224f6e576524e "bibtex design_doc"
+  "design_doc.tex" 1429582058 22998 e05184f3b116ed058ba95894a4217afe ""
+  "setup.tex" 1429570551 1107 7017868fa5c8f4982e7ecaa8c7ccf53d ""
   (generated)
-  "design_doc.aux"
-  "design_doc.log"
-  "setup.aux"
   "design_doc.pdf"
+  "design_doc.aux"
+  "setup.aux"
+  "design_doc.log"

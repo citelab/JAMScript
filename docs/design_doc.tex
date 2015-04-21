@@ -170,11 +170,10 @@ exceptions.
 % FIXME: How recursive could exceptions be? Won't we have a chain of exceptions?
 
 
-
 \medskip
 
 \begin{lstlisting}[caption=Syntax of the activity definition construct, label=activity_def]
-jamdef rettype c_function_decl(args) [ in name_space ] {
+jamdef rettype c_function_decl(args) [cloneable] [ in name_space ]  {
 
     // (a) JavaScript code here or (b) C code here
     // this is the primary implementation for the c_function declared
@@ -218,21 +217,28 @@ exception or returns false, the cancellation request will fail. The {\em
 oncancel} block can be used by the programmer to undo the side-effects of the
 operations carried out by the activity up until the point of cancellation.
 
+Another important aspect of a JAMScript activity is whether it is cloneable or
+not as specified in Line 1 of Listing~\ref{activity_def}. If the {\tt cloneable}
+option is specified for an activity, the activity can be cloned to increase
+fault tolerance. Activities that do not have external side-effects such as
+changing mutable state can be declared as cloneable. The ultimate responsibility
+of declaring an activity as cloneable or not lies with the programmer. The
+JAMScript compiler and runtime do not provide any guidance in this regard.
+
 The simplest way to invoke an activity is to call it like any other C function
-as shown in Listing~\ref{activity_invoke}.
-The definition of the {\tt trig\_func()} invoked in Listing~\ref{activity_invoke} is
-shown in Listing~\ref{trig_func_def}. At completion, the activity {\tt trig\_func()} is
-supposed to return a double value. However, in Listing~\ref{activity_invoke}
-the invocation of {\tt trig\_func()} returns a handle to the JAMScript activity that
-was started by the invocation. Using the handle, we can cancel (Line 8), get the status
-(Line 10), or
-wait until the completion of the activity (Line 12).
-This simple form of JAMScript activity invocation already allows different
-ways of composing the activities. For example, we can chain the activities such that
-Activity B starts after Activity A completes. One way of codifying the dependency
-is to invoke Activity B in the {\em oncomplete} block of Activity A. Another way
-of codifying the pattern is to call {\tt jamwait()} after invoking Activity A to wait
-for its completion and start Activity B afterwards.
+as shown in Listing~\ref{activity_invoke}. The definition of the {\tt
+trig\_func()} invoked in Listing~\ref{activity_invoke} is shown in
+Listing~\ref{trig_func_def}. At completion, the activity {\tt trig\_func()} is
+supposed to return a double value. However, in Listing~\ref{activity_invoke} the
+invocation of {\tt trig\_func()} returns a handle to the JAMScript activity that
+was started by the invocation. Using the handle, we can cancel (Line 8), get the
+status (Line 10), or wait until the completion of the activity (Line 12). This
+simple form of JAMScript activity invocation already allows different ways of
+composing the activities. For example, we can chain the activities such that
+Activity B starts after Activity A completes. One way of codifying the
+dependency is to invoke Activity B in the {\em oncomplete} block of Activity A.
+Another way of codifying the pattern is to call {\tt jamwait()} after invoking
+Activity A to wait for its completion and start Activity B afterwards.
 
 
 \begin{lstlisting}[caption=Simple invocation of a JAMScript activity, label=activity_invoke]
@@ -276,23 +282,34 @@ generated an exception) or (b) the activity fails while {\tt jamwait()} is
 waiting on it.  In such a failure situation, the {\tt jamwait()} call will
 return with the error code JAMWAIT\_FAILED.
 
-
 % Discuss the need to advanced control of activities
 % What do we get using jamcall()
 
 The simple coordination patterns discussed above are rather limiting in the ways
 in which they could control the activities. In particular, we need flexibility
-in controlling multiple activities.
+in controlling multiple activities. The {\tt jamcall} construct given in
+Listing~\ref{jamcall_def} is a more general way of coordinating the execution of
+activities. Before using the {\tt jamcall} construct to coordinate the
+execution, we need to define the corresponding activites using the {\tt jamdef}
+construct. Like the {\tt jamdef}, the {\tt jamcall} takes a primary block and an
+{\em oncomplete} block.
 
-
-
-
-
-
-
-The coordination patterns for the activities presente
-The patterns
-
+The {\tt jamcall} specification has three important parameters: (a) node
+specification, (b) mapping method, and (c) blocking behavior. The node
+specification is the set of computing elements on which the activities should be
+executed. The addresses of the target computing elements are assumed to be
+obtained by some other means such as a call to the underlying runtime. The
+mapping method is one of the three: {\em on-all}, {\em on-one}, or {\em custom}.
+With {\em on-all}, each activity listed in the primary block of {\tt jamcall} is
+executed on each node. So an activity is mapped to all the nodes (or computing
+elements) listed in the node specification. With {\em on-one}, each activity is
+mapped to precisely one node. If the number of activities exceed the number of
+nodes, then some nodes would get more activities and others would receive less.
+The exact number of activities mapped onto a computing element also depends on
+the processing speed of the computing element. Faster devices that complete the
+activities quicker can be mapped with more tasks. The last parameter specifies
+whether the construct is blocking or non-blocking. By default, if nothing is
+specified, the {\tt jamcall} construct is blocking.
 
 
 We can compose using jamcall statements following at least two different
@@ -306,8 +323,8 @@ terminating condition.
 
 
 
-\begin{lstlisting}[caption=Syntax of the activity control construct, label=activity_control]
-jamcall void c_function_decl(args) [ at ( node_spec ) ] [ scope ( any|all ) ]
+\begin{lstlisting}[caption=Syntax of the activity control construct, label=jamcall_def]
+jamcall void c_function_decl(args) [ at ( node_spec ) ] [ map ( on-all | on-one | custom ) ]
                                    [ async ( true ) ] {
 
     // Activity calls are here.
@@ -322,7 +339,7 @@ jamcall void c_function_decl(args) [ at ( node_spec ) ] [ scope ( any|all ) ]
     // The return "value" of the jamcall is an array of values (lets say we have m statements).
     // Each value corresponds to an activity.
 
-} [ oncomplete [ opt_func_name ] (arg_1, arg_2, arg_3, ... arg_m, char *status) {
+} [ oncomplete [(any|all)] [ opt_func_name ] (arg_1, arg_2, arg_3, ... arg_m, char *status) {
 
     // Once the actitives we have launched by the call-block have successfully completed
     // or generated exception, we are here. If ANY is specified for the scope, then we can
@@ -375,8 +392,6 @@ jamdef double trigfunc(int a, double x) {
 
 
 
-
-
 % What are the compositions that would work
 
 
@@ -388,6 +403,40 @@ jamdef double trigfunc(int a, double x) {
 
 % Connect with Erlang or Akka
 
+
+\section{Questions/Concerns on the Document}
+
+\begin{enumerate}
+    \item
+    There is confusion on what runs where in terms of the blocks of an activity.
+    We need some clarity over there.
+
+    \item
+    How recursive could the exceptions go? For instance, could we have a chain of exceptions?
+
+    \item
+    Should we incorporate jamcancel, jamstatus, and jamwait into the language?
+    At this point they are part of the library. Can we redesign things a bit?
+
+    \item
+    Can we introduce an {\em onreport} construct into the activity? Using such a
+    construct we can provide a constant stream of updates. This is very similar to
+    Linda. We send a message and put a handler for the incoming message. The restriction
+    is that all of the transactions have to be within an activity.
+
+    We need to reconcile how the global (main thread) variables are going to be affected.
+    We keep the activity variables isolated from the main thread until it
+    reaches the {\em oncomplete} block.
+
+    \item
+    We have a problem with the {\em oncomplete} block in {\tt jamcall}. We can have many
+    nodes running the primary block -- i.e., the activities could be running at many different
+    nodes. So each activity can have $n$ results. The oncomplete block has a parameter for each
+    activity. How do we handle the $n$ number of copies? If it is just an array of values, then
+    it might mess up the program. Can we somehow keep that hidden from the programmer?
+    Can we examine one result at a time? What is the best solution?
+
+\end{enumerate}
 
 
 
