@@ -10,7 +10,13 @@ ometa CParser  {
   id              = iName:name ~isKeyword(name)                   -> [#id, name],
   keyword         = iName:kwd isKeyword(kwd)                      -> {console.log("Keyword: ", kwd); [kwd, kwd]},
 
-  const           = digit+:ds                                     -> [#const, parseInt(ds.join(''))],
+  num             = digit+:ds                                     -> [#const, parseInt(ds.join(''))],
+
+  escapeChar   = '\\' char:c                                      -> unescape('\\' + c),
+  str          = seq('"""')  (escapeChar | ~seq('"""') char)*:cs seq('"""')        -> [#string, cs.join('')]
+             | '\'' (escapeChar | ~'\'' char)*:cs '\''                             -> [#string, cs.join('')]
+             | '"'  (escapeChar | ~'"'  char)*:cs '"'                              -> [#string, cs.join('')]
+             | ('#' | '`') iName:n                                                 -> [#string, n],
 
   special         = ( ``...'' | ``>>='' | ``<<='' | ``+='' | ``-=''
                   | ``*='' | ``/='' | ``%='' | ``&='' | ``^=''
@@ -19,15 +25,15 @@ ometa CParser  {
                   | ``=='' | ``!='' | ';' | '{' | '}' | ','
                   | ':' | '=' | '(' | ')' | '[' | ']' | '.'
                   | '&' | '!' | '~' | '-' | '+' | '*' | '/'
-                  | '%' | '<' | '>' | '^' | '|' | '?' ):s     -> {console.log("Special:", s); [s, s]},
+                  | '%' | '<' | '>' | '^' | '|' | '?' ):s         -> {console.log("Special:", s); [s, s]},
 
-  scanner         = space* (id | const | special | keyword),
+  scanner         = space* (id | num | special | keyword | str),
   token :k        = scanner:t ?(t[0] == k)      -> t[1],
 
 
   primary_expr    = "id"            -> console.log("match id")
                   | "const"         -> console.log("match const")
-                  | "string"
+                  | "string"        -> console.log("Match String")
                   | "(" expression ")"    -> console.log("match (expr)"),
 
   postfix_expr    = postfix_expr "[" expression "]"
