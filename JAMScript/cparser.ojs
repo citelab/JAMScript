@@ -1,128 +1,166 @@
 
+/**
+ * Copyright (c) 2015-2016 Muthucumaru Maheswaran <mahes25@gmail.com>
+ *
+ * See the LICENCE file at the root of the project for the full licence.
+ *
+ * This parser borrows quite liberally from the awesome ES5Parser built by
+ * Jonathan Brachthäuser (http://b-studios.de). But, don't worry this implements
+ * a C grammar and not a JavaScript grammar as ES5!
+ */
+
+
+// Dependencies
+var _       = require('../nodes.js');
+
+
 ometa CParser  {
-  space           = ^space | fromTo('//', '\n') | fromTo('/*', '*/'),
-  isKeyword :x    = ?CParser._isKeyword(x),
-  nameFirst       = letter | '_',
-  nameRest        = nameFirst | digit,
-  iName           = <nameFirst nameRest*>,
-  id              = iName:name ~isKeyword(name)                   -> [#id, name],
-  keyword         = iName:kwd isKeyword(kwd)                      -> {console.log("Keyword: ", kwd); [kwd, kwd]},
 
-  num             = digit+:ds                                     -> [#const, parseInt(ds.join(''))],
+    // Helper Rules
+    //
+    isKeyword :x    = ?this.spec.isKeyword(x),
+    nameFirst       = letter | '_',
+    nameRest        = nameFirst | digit,
+    linebreak       = '\n',
+    floatSuff       = ('f' | 'F' | 'l' | 'L'),
+    intSuff         = ('u' | 'U' | 'l' | 'L'),
 
-  escapeChar   = '\\' char:c                                      -> unescape('\\' + c),
-  str          = seq('"""')  (escapeChar | ~seq('"""') char)*:cs seq('"""')        -> [#string, cs.join('')]
-             | '\'' (escapeChar | ~'\'' char)*:cs '\''                             -> [#string, cs.join('')]
-             | '"'  (escapeChar | ~'"'  char)*:cs '"'                              -> [#string, cs.join('')]
-             | ('#' | '`') iName:n                                                 -> [#string, n],
 
-  special         = ( ``...'' | ``>>='' | ``<<='' | ``+='' | ``-=''
+    // Comments
+    //
+    comment         = ``//'' (~linebreak char)* &linebreak,
+                    | fromTo('/*', '*/'),
+
+    space           = ^space | comment | linebreak,
+
+    // Identifiers and Names
+    //
+    iName           = <nameFirst nameRest*>,
+    id              = iName:name ~isKeyword(name)                   -> _.Id(name),
+    keyword         = iName:kwd isKeyword(kwd)                      -> _.Keyword(kwd),
+
+    // Numeric Literals
+    //
+    hexDigit        = digit | range('a', 'f') | range('A', 'F'),
+    hex             = <``0x''|``0X'' hexDigit+>:d intSuff?:s        -> _.Number(parseInt(d)).kind('hex', s),
+
+    decimalInt      = '0' | (~'0' digit) digit*,
+    expPart         = ('e' | 'E') ('+' | '-')? digit+,
+
+    octal           = <'0' digit+>:d intSuff?:s                     -> _.Number(parseInt(d,8)).kind('oct', s),
+
+    decimal         = <'-'? decimalInt ('.' digit+)? expPart?>:f floatSuff?:s       -> _.Number(f).kind('float', s)
+                    | <'-'? ('.' digit+) expPart?>:f                                -> _.Number(f).kind('float', s),
+
+    integer         = <'-'? decimalInt>:d intSuff?:s                -> _.Number(parseInt(d)).kind('int', s),
+
+    number          = hex | octal | decimal | integer,
+
+    // String Literals
+    //
+    escapeChar      = <'\\' char>:c                                 -> unescape(c),
+
+    string          = '"' (escapeChar | ~'"' char)*:cs '"'          -> _.String(cs.join(''))
+                    | ('#' | '`') iName:n                           -> _.String(cs.join('')),
+
+    // Special symbols
+    //
+    special         = ( ``...'' | ``>>='' | ``<<='' | ``+='' | ``-=''
                   | ``*='' | ``/='' | ``%='' | ``&='' | ``^=''
                   | ``|='' | ``>>'' | ``<<'' | ``++'' | ``--''
                   | ``->'' | ``&&'' | ``||'' | ``<='' | ``>=''
                   | ``=='' | ``!='' | ';' | '{' | '}' | ','
                   | ':' | '=' | '(' | ')' | '[' | ']' | '.'
                   | '&' | '!' | '~' | '-' | '+' | '*' | '/'
-                  | '%' | '<' | '>' | '^' | '|' | '?' ):s         -> {console.log("Special:", s); [s, s]},
-
-  scanner         = space* (id | num | special | keyword | str),
-  token :k        = scanner:t ?(t[0] == k)      -> t[1],
+                  | '%' | '<' | '>' | '^' | '|' | '?' ):s           -> _.Special(s),
 
 
-  primary_expr    = "id"            -> console.log("match id")
-                  | "const"         -> console.log("match const")
-                  | "string"        -> console.log("Match String")
-                  | "(" expression ")"    -> console.log("match (expr)"),
-
-  postfix_expr    = postfix_expr "[" expression "]"
-                  | postfix_expr "(" arg_expr_list* ")"
-                  | postfix_expr "." "id"
-                  | postfix_expr "->" "id"
-                  | postfix_expr "++"
-                  | postfix_expr "--"
-                  | primary_expr,
-
-  arg_expr_list   = arg_expr_list "," assign_expr     -> console.log("2 assign expr")
-                  | assign_expr       -> console.log("match assign_expr"),
-
-  unary_expr      = "++" unary_expr
-                  | "--" unary_expr
-                  | unary_operator cast_expr
-                  | "sizeof" unary_expr
-                  | "sizeof" "(" type_name ")"
-                  | postfix_expr,
-
-  unary_operator  = "&"
-                  | "*"     -> console.log("Unary *")
-                  | "+"     -> console.log("Unary +")
-                  | "-"     -> console.log("Unary -")
-                  | "~"
-                  | "!",
-
-//  cast_expr       = "(" type_name ")" cast_expr
-//                  | unary_expr,
-  cast_expr       = unary_expr,
+    token: tt       = spaces ( (special | keyword):t ?(t.value) == tt)              -> t
+                    | (id | number | string):t ?(t[0] == tt)                        -> t
+                    ),
 
 
-  mult_expr       = mult_expr "*" cast_expr
-                  | mult_expr "/" cast_expr
-                  | mult_expr "%" cast_expr
-                  | cast_expr,
+    // Expressions
+    //
+    // TODO: arg_expr_list .. is it just an alias to expression?
+    // FIXME: There could be a difference due to semantics..
 
-  add_expr        = add_expr "+" mult_expr
-                  | add_expr "-" mult_expr
-                  | mult_expr,
+    expression      = listOf(#assign_expr, ','):le                  -> _.(le.length > 1? _.SequenceExpr(le) : le[0]),
 
-  shift_expr      = shift_expr "<<" add_expr
-                  | shift_expr ">>" add_expr
-                  | add_expr,
+    assign_expr     = unary_expr:lhs assign_op:op assign_expr:rhs   -> _.AssignExpr(lhs, rhs).operator(op.value())
+                    | cond_expr,
 
-  relational_expr = relational_expr "<" shift_expr
-                  | relational_expr ">" shift_expr
-                  | relational_expr "<=" shift_expr
-                  | relational_expr ">=" shift_expr
-                  | shift_expr,
+    cond_expr       = lor_expr:e "?" expression:t ":" cond_expr:f   -> _.CondExpr(e, t, f)
+                    | lor_expr:e                                    -> e,
 
-  equality_expr   = equality_expr "==" relational_expr
-                  | equality_expr "!=" relational_expr
-                  | relational_expr,
+    // Binary operations
+    //
+    lor_expr        = lor_expr:x "||" lar_expr:y                    -> _.BinaryExpr(x, y).operator("||")
+                    | lar_expr,
+    lar_expr        = lar_expr:x "&&" ior_expr:y                    -> _.BinaryExpr(x, y).operator("||")
+                    | ior_expr,
+    ior_expr        = ior_expr:x "|" xor_expr:y                     -> _.BinaryExpr(x, y).operator("|")
+                    | xor_expr,
+    xor_expr        = xor_expr:x "^" and_expr:y                     -> _.BinaryExpr(x, y).operator("^")
+                    | and_expr,
+    and_expr        = and_expr:x "&" eq_expr:x                      -> _.BinaryExpr(x, y).operator("&")
+                    | eq_expr,
+    eq_expr         = eq_expr:x ( "==" | "!=" ):op rel_expr:y       -> _.BinaryExpr(x, y).operator(op.value())
+                    | rel_expr,
+    rel_expr        = rel_expr:x ( "<=" | "<"
+                                    | ">=" | ">"):op shift_expr:y   -> _.BinaryExpr(x, y).operator(op.value())
+                    | shift_expr,
+    shift_expr      = shift_expr:x ( "<<" | ">>" ):op add_expr:y    -> _.BinaryExpr(x, y).operator(op.value())
+                    | add_expr,
+    add_expr        = add_expr:x ( "+" | "-" ) mult_expr:y          -> _.BinaryExpr(x, y).operator(op.value())
+                    | mult_expr,
+    mult_expr       = mult_expr:x ( "*" | "/" | "%" ) prefix_expr:y -> _.BinaryExpr(x, y).operator(op.value())
+                    | prefix_expr
 
-  and_expr        = and_expr "&" equality_expr
-                  | equality_expr,
+    assign_op       = "=" | "*=" | "/=" | ">>=" | "<<=" | "+=" | "-="
+                    | "%=" | "&=" | "|=" | "^=",
 
-  xor_expr        = xor_expr "^" and_expr
-                  | and_expr,
+    // Unary operators
+    //
 
-  ior_expr        = ior_expr "|" xor_expr
-                  | xor_expr,
+    // TODO: Add the following rule: prefix_expr = "(" type_name ")" prefix_expr
+    //
+    prefix_expr     = ( "++" | "--" ):op spacesNoNl unary_expr:e    -> _.UpdateExpr(e).operator(op.value())
+                    | unary_expr,
 
-  lor_expr        = lor_expr "&&" ior_expr
-                  | ior_expr,
+    // TODO: Insert .. "sizeof" "(" type_name ")" in as an option after the first one
+    //
+    unary_expr      = ( "&" | "*" | "+" | "-"
+                            | "~" | "!" ):op prefix_expr:e          -> _.UnaryExpr(e).operator(op.value())
+                    | "sizeof" unary_expr:e
+                    | postfix_expr,
 
-  cond_expr       = lor_expr "?" expression ":" cond_expr
-                  | lor_expr,
+    postfix_expr    = left_expr:e spacesNoNl ( "++" | "--" ):op     -> _.UpdateExpr(e).operator(op.value()).prefix(false)
 
-  assign_expr     = unary_expr assign_op assign_expr  -> console.log("Unary expr")
-                  | cond_expr                         -> console.log("Cond expr"),
+    left_expr       = access_expr:p call_expr(p)
+                    | access_expr:p member_expr(p)
+                    | primary_expr,
 
-  assign_op       = "="
-                  | "*="
-                  | "/="
-                  | ">>="
-                  | "<<="
-                  | "+="
-                  | "-="
-                  | "%="
-                  | "&="
-                  | "|="
-                  | "^=",
+    call_expr :p    = "(" listOf(#assign_expr, ','):as ")"          -> _.CallExpr(p, as),
 
-  expression      = expression "," assign_expr   -> console.log("2nd expression")
-                  | assign_expr                   -> console.log("Assign expr"),
+    member_expr :p  = ( "[" expression:e "]"                        -> _.MemberExpr(p, e)
+                        |   "." "id":i                              -> _.MemberExpr(p).name(i.value())
+                        |   "->" "id":i                             -> _.PointerExpr(p).name(i.value())
+                      ),
 
-  const_expr      = cond_expr,
+    primary_expr    = "id"
+                    | "const"
+                    | "string"
+                    | "(" expression:e ")"                          -> _.GroupExpr(e),
 
-  declaration     = decl_specs init_decl* ";",
+    const_expr      = cond_expr,
+
+
+    // Declaration statements
+    // Statements that do "type" specification
+    //
+
+    declaration     = decl_specs init_decl* ";",
 
   decl_specs      = store_cl_spec decl_specs*
                   | type_spec decl_specs*
@@ -242,6 +280,10 @@ ometa CParser  {
   initializer_lst = listOf('initializer', ","),
 
 
+
+    // C Statements
+    //
+
   statement       = labeled_stmt            -> console.log("Labeled stmt")
                   | compound_stmt           -> console.log("Compound stmt")
                   | expression_stmt         -> console.log("Expression stmt")
@@ -294,7 +336,7 @@ ometa CParser  {
                   | declarator declaration_lst compound_stmt
                   | declarator compound_stmt,
 
-  top             = translation_u
+  topLevel             = translation_u spaces end
 }
 
 // Setup the keywords; we can add more keywords to this list in
@@ -310,5 +352,8 @@ for (var idx = 0; idx < keywords.length; idx++)
   CParser.keywords[keywords[idx]] = true;
 CParser._isKeyword = function(k) { return this.keywords.hasOwnProperty(k); }
 
+CParser.parse = function(input) {
+    return CParser.matchAll(input, 'topLevel');
+}
 
 module.exports = CParser
