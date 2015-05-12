@@ -166,8 +166,6 @@ ometa CParser  {
                   | type_spec decl_specs*
                   | type_qualifier decl_specs*,
 
-  init_decl_list  = listOf('init_decl', ","),
-
   init_decl       = declarator "=" initializer
                   | declarator,
 
@@ -339,21 +337,57 @@ ometa CParser  {
   topLevel             = translation_u spaces end
 }
 
-// Setup the keywords; we can add more keywords to this list in
-// an inherited parser that extends the C language!
-//
-CParser.keywords = {}
-keywords = ["auto", "break", "case", "char", "const", "continue", "default", "do",
-"double", "else", "enum", "extern", "float", "for", "goto", "if",
-  "int", "long", "register", "return", "short", "signed", "sizeof", "static",
-  "struct", "switch", "typedef", "union", "unsigned", "void", "volatile", "while"];
 
-for (var idx = 0; idx < keywords.length; idx++)
-  CParser.keywords[keywords[idx]] = true;
-CParser._isKeyword = function(k) { return this.keywords.hasOwnProperty(k); }
+// Configure position information callback
+CParser.position_info = function(input, from to) {
+
+    function position(pos) {
+        var line  = 1,
+        column = undefined;
+
+        // scroll backwards to next linebreak
+        for(var i=pos; i>=0; i--) {
+
+            if(input[i] === "\n") {
+                // only for the first time search column
+                if(typeof column == 'undefined')
+                    column = pos - i;
+
+                line++
+            }
+        }
+
+        if(line === 1)
+            column = pos;
+
+        return {
+            line: line,
+            column: column
+        }
+    }
+
+    return {
+        source: input.slice(from, to),
+        start: position(from),
+        end: position(to)
+    }
+};
+
+
+CParser.spec = {
+
+    keywords:   ["auto", "break", "case", "char", "const", "continue", "default",
+                 "do", "double", "else", "enum", "extern", "float", "for", "goto",
+                 "if", "int", "long", "register", "return", "short", "signed",
+                 "sizeof", "static", "struct", "switch", "typedef", "union",
+                 "unsigned", "void", "volatile", "while"];
+
+    isKeyword:  function(k) { return this.keywords.indexOf(k) != -1; }
+};
+
 
 CParser.parse = function(input) {
     return CParser.matchAll(input, 'topLevel');
-}
+};
 
 module.exports = CParser

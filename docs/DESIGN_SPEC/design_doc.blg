@@ -1,0 +1,66 @@
+This is BibTeX, Version 0.99d (TeX Live 2014)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: design_doc.aux
+The style file: IEEEtran.bst
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Database file #1: all_papers.bib
+I was expecting a `,' or a `}'---line 7041 of file all_papers.bib
+ : month = 10
+ :           {\textasciitilde}20,
+I'm skipping whatever remains of this entry
+I was expecting a `,' or a `}'---line 11937 of file all_papers.bib
+ : month = 7
+ :          {\textasciitilde}3,
+I'm skipping whatever remains of this entry
+-- IEEEtran.bst version 1.13 (2008/09/30) by Michael Shell.
+-- http://www.michaelshell.org/tex/ieeetran/bibtex/
+-- See the "IEEEtran_bst_HOWTO.pdf" manual for usage information.
+Warning--empty booktitle in Papadopoulos:1998kf
+
+Done.
+You've used 2 entries,
+            4039 wiz_defined-function locations,
+            825 strings with 7519 characters,
+and the built_in function-call counts, 1786 in all, are:
+= -- 138
+> -- 33
+< -- 19
++ -- 19
+- -- 4
+* -- 97
+:= -- 270
+add.period$ -- 5
+call.type$ -- 2
+change.case$ -- 2
+chr.to.int$ -- 45
+cite$ -- 3
+duplicate$ -- 117
+empty$ -- 135
+format.name$ -- 6
+if$ -- 393
+int.to.chr$ -- 0
+int.to.str$ -- 2
+missing$ -- 17
+newline$ -- 29
+num.names$ -- 2
+pop$ -- 40
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 2
+skip$ -- 133
+stack$ -- 0
+substring$ -- 106
+swap$ -- 100
+text.length$ -- 4
+text.prefix$ -- 0
+top$ -- 5
+type$ -- 2
+warning$ -- 1
+while$ -- 10
+width$ -- 3
+write$ -- 41
+(There were 2 error messages)
