@@ -14,21 +14,6 @@
 var _       = require('../nodes.js');
 
 
-/**
- * Reduced C: This parser accepts a subset of the C language.
- * I want to get the JAMScript up and running to hash out the many problems we
- * would encounter in deploying a 'bridge' language and understand what we could do
- * with it.
- *
- * Simplifications:
- * - no typedefs
- * - no complicated structures.. only primary types are included in structures
- * - only basic pointer patterns
- * - no suffix for constants like integers or floats
- * - no prefix for strings
-
- */
-
 ometa CParser  {
 
     // Helper Rules
@@ -37,6 +22,8 @@ ometa CParser  {
     nameFirst       = letter | '_',
     nameRest        = nameFirst | digit,
     linebreak       = '\n',
+    floatSuff       = ('f' | 'F' | 'l' | 'L'),
+    intSuff         = ('u' | 'U' | 'l' | 'L'),
 
 
     // Comments
@@ -55,17 +42,17 @@ ometa CParser  {
     // Numeric Literals
     //
     hexDigit        = digit | range('a', 'f') | range('A', 'F'),
-    hex             = <``0x''|``0X'' hexDigit+>:d                   -> _.Number(parseInt(d)).kind('hex'),
+    hex             = <``0x''|``0X'' hexDigit+>:d intSuff?:s        -> _.Number(parseInt(d)).kind('hex', s),
 
     decimalInt      = '0' | (~'0' digit) digit*,
     expPart         = ('e' | 'E') ('+' | '-')? digit+,
 
-    octal           = <'0' digit+>:d                                -> _.Number(parseInt(d,8)).kind('oct'),
+    octal           = <'0' digit+>:d intSuff?:s                     -> _.Number(parseInt(d,8)).kind('oct', s),
 
-    decimal         = <'-'? decimalInt ('.' digit+)? expPart?>:f    -> _.Number(f).kind('float')
-                    | <'-'? ('.' digit+) expPart?>:f                -> _.Number(f).kind('float'),
+    decimal         = <'-'? decimalInt ('.' digit+)? expPart?>:f floatSuff?:s       -> _.Number(f).kind('float', s)
+                    | <'-'? ('.' digit+) expPart?>:f                                -> _.Number(f).kind('float', s),
 
-    integer         = <'-'? decimalInt>:d                           -> _.Number(parseInt(d)).kind('int'),
+    integer         = <'-'? decimalInt>:d intSuff?:s                -> _.Number(parseInt(d)).kind('int', s),
 
     number          = hex | octal | decimal | integer,
 
@@ -98,7 +85,7 @@ ometa CParser  {
     // TODO: arg_expr_list .. is it just an alias to expression?
     // FIXME: There could be a difference due to semantics..
 
-    expr            = listOf(#assign_expr, ','):le                  -> _.(le.length > 1? _.SequenceExpr(le) : le[0]),
+    expression      = listOf(#assign_expr, ','):le                  -> _.(le.length > 1? _.SequenceExpr(le) : le[0]),
 
     assign_expr     = unary_expr:lhs assign_op:op assign_expr:rhs   -> _.AssignExpr(lhs, rhs).operator(op.value())
                     | cond_expr,
@@ -136,10 +123,12 @@ ometa CParser  {
     // Unary operators
     //
 
+    // TODO: Add the following rule: prefix_expr = "(" type_name ")" prefix_expr
     //
     prefix_expr     = ( "++" | "--" ):op spacesNoNl unary_expr:e    -> _.UpdateExpr(e).operator(op.value())
                     | unary_expr,
 
+    // TODO: Insert .. "sizeof" "(" type_name ")" in as an option after the first one
     //
     unary_expr      = ( "&" | "*" | "+" | "-"
                             | "~" | "!" ):op prefix_expr:e          -> _.UnaryExpr(e).operator(op.value())
@@ -148,8 +137,8 @@ ometa CParser  {
 
     postfix_expr    = left_expr:e spacesNoNl ( "++" | "--" ):op     -> _.UpdateExpr(e).operator(op.value()).prefix(false)
 
-    left_expr       = left_expr:p call_expr(p)
-                    | left_expr:p member_expr(p)
+    left_expr       = access_expr:p call_expr(p)
+                    | access_expr:p member_expr(p)
                     | primary_expr,
 
     call_expr :p    = "(" listOf(#assign_expr, ','):as ")"          -> _.CallExpr(p, as),
@@ -171,157 +160,181 @@ ometa CParser  {
     // Statements that do "type" specification
     //
 
-    declaration     = decl_specs:ds init_decl*:id ";"               -> _.ApplyDecls(id, ds),
+    declaration     = decl_specs init_decl* ";",
 
-    decl_specs      = store_cl_spec:s decl_specs*:ds                -> ds.concat(s)
-                    | type_spec:t decl_specs*:ds                    -> ds.concat(t)
-                    | type_qualifier:t decl_specs*:ds               -> ds.concat(t),
+  decl_specs      = store_cl_spec decl_specs*
+                  | type_spec decl_specs*
+                  | type_qualifier decl_specs*,
 
-    init_decl       = declarator "=" initializer
-                    | declarator,
+  init_decl       = declarator "=" initializer
+                  | declarator,
 
-    store_cl_spec   = "typedef"
-                    | "extern"
-                    | "static"
-                    | "auto"
-                    | "register",
+  store_cl_spec   = "typedef"
+                  | "extern"
+                  | "static"
+                  | "auto"
+                  | "register",
 
-    type_spec       = "void"
-                    | "char"
-                    | "short"
-                    | "int"
-                    | "long"
-                    | "float"
-                    | "double"
-                    | "signed"
-                    | "unsigned"
-                    | struct_uni_spec
-                    | enum_spec,
+  type_spec       = "void"
+                  | "char"
+                  | "short"
+                  | "int"
+                  | "long"
+                  | "float"
+                  | "double"
+                  | "signed"
+                  | "unsigned"
+                  | struct_uni_spec
+                  | enum_spec
+                  | "type_name",
 
-    struct_uni_spec = struct_o_uni "id" "{" struct_decl_lst "}"
-                    | struct_o_uni "{" struct_decl_lst "}"
-                    | struct_o_uni "id",
+  struct_uni_spec = struct_o_uni "id" "{" struct_decl_lst "}"
+                  | struct_o_uni "{" struct_decl_lst "}"
+                  | struct_o_uni "id",
 
-    struct_o_uni    = "struct"
-                    | "union",
+  struct_o_uni    = "struct"
+                  | "union",
 
-    struct_decl_lst = struct_decl+,
+  struct_decl_lst = struct_decl+,
 
-    struc_decl      = spec_qual_list struct_decl_lst ";",
+  struc_decl      = spec_qual_list struct_decl_lst ";",
 
-    spec_qual_list  = type_spec spec_qual_list
-                    | type_spec
-                    | type_qualifier spec_qual_list
-                    | type_qualifier,
+  spec_qual_list  = type_spec spec_qual_list
+                  | type_spec
+                  | type_qualifier spec_qual_list
+                  | type_qualifier,
 
-    struc_declr_lst = listOf(#struct_declr, ","),
+  struc_declr_lst = listOf('struct_declr', ","),
 
-    struct_declr    = declarator ":" const_expr
-                    | ":" const_expr
-                    | declarator,
+  struct_declr    = declarator ":" const_expr
+                  | ":" const_expr
+                  | declarator,
 
-    enum_spec       = "enum" "id" "{" enumratr_lst "}"
-                    | "enum" "{" enumratr_lst "}"
-                    | "enum" "id",
+  enum_spec       = "enum" "id" "{" enumratr_lst "}"
+                  | "enum" "{" enumratr_lst "}"
+                  | "enum" "id",
 
-    enumratr_lst    = listOf(#enumerator, ","),
+  enumratr_lst    = listOf('enumerator', ","),
 
-    enumerator      = "id" "=" const_expr
-                    | "id",
-
-
-    type_qualifier  = "const"
-                    | "volatile",
-
-    declarator      = pointer dir_declarator
-                    | dir_declarator,
-
-    dir_declarator  = dir_declarator:d member_decl(d) "[" const_expr "]"
-                    | dir_declarator "[" "]"
-                    | dir_declarator "(" param_type_lst ")"
-                    | dir_declarator "(" ident_lst ")"
-                    | dir_declarator "(" ")"
-                    | "(" declarator ")"
-                    | "id",
-
-    member_decl :p  = "[ const_expr:e ]"                            -> _.
+  enumerator      = "id" "=" const_expr
+                  | "id",
 
 
-    pointer         = "*" type_qual_list pointer
-                    | "*" type_qual_list
-                    | "*" pointer
-                    | "*",
+  type_qualifier  = "const"
+                  | "volatile",
 
-    type_qual_list  = type_qualifier+,
+  declarator      = pointer dir_declarator
+                  | dir_declarator,
 
-    param_type_lst  = param_list "," "..."
-                    | param_list,
+  dir_declarator  = dir_declarator "[" const_expr "]"
+                  | dir_declarator "[" "]"
+                  | dir_declarator "(" param_type_lst ")"
+                  | dir_declarator "(" ident_lst ")"
+                  | dir_declarator "(" ")"
+                  | "(" declarator ")"
+                  | "id",
 
-    param_list      = param_list "," param_decl
-                    | param_decl,
 
-    param_decl      = decl_specs declarator
-                    | decl_specs abstract_decl
-                    | decl_specs,
+  pointer         = "*" type_qual_list pointer
+                  | "*" type_qual_list
+                  | "*" pointer
+                  | "*",
 
-    abstract_decl   = pointer dir_abs_declr
-                    | dir_abs_declr
-                    | pointer,
+  type_qual_list  = type_qualifier+,
 
-    dir_abs_declr   = "(" abstract_decl ")"
-                    | "[" const_expr "]"
-                    | "[" "]"
-                    | dir_abs_declr "[" const_expr "]"
-                    dir_abs_declr "[" "]"
-                    | "(" param_type_lst ")"
-                    | "(" ")"
-                    | dir_abs_declr "(" param_type_lst ")"
-                    | dir_abs_declr "(" ")",
+  param_type_lst  = param_list "," "..."
+                  | param_list,
 
-    initializer     = "{" listOf(#initializer_lst, ",") "}"
-                    | assign_expr,
+  param_list      = param_list "," param_decl
+                  | param_decl,
 
-    initializer_lst = listOf(#initializer, ","),
+  param_decl      = decl_specs declarator
+                  | decl_specs abstract_decl
+                  | decl_specs,
+
+  ident_list      = ident_list "," "id"
+                  | "id",
+
+  type_name       = spec_qual_lst abstract_decl
+                  | spec_qual_lst,
+
+  abstract_decl   = pointer dir_abs_declr
+                  | dir_abs_declr
+                  | pointer,
+
+  dir_abs_declr   = "(" abstract_decl ")"
+                  | "[" const_expr "]"
+                  | "[" "]"
+                  | dir_abs_declr "[" const_expr "]"
+                  | dir_abs_declr "[" "]"
+                  | "(" param_type_lst ")"
+                  | "(" ")"
+                  | dir_abs_declr "(" param_type_lst ")"
+                  | dir_abs_declr "(" ")",
+
+  initializer     = "{" listOf('initializer_lst', ",") "}"
+                  | assign_expr,
+
+  initializer_lst = listOf('initializer', ","),
+
 
 
     // C Statements
     //
 
-    stmt            = labeled_stmt
-                    | compound_stmt
-                    | selection_stmt
-                    | iteration_stmt
-                    | jump_stmt
+  statement       = labeled_stmt            -> console.log("Labeled stmt")
+                  | compound_stmt           -> console.log("Compound stmt")
+                  | expression_stmt         -> console.log("Expression stmt")
+                  | selection_stmt          -> console.log("Selection stmt")
+                  | iteration_stmt          -> console.log("Iteration stmt")
+                  | jump_stmt               -> console.log("Jump stmt"),
 
-    labeled_stmt    = "id":l ":" stmt:s                                     -> _.LabeledStmt(l, s)
-                    | "case" const_expr:e ":" stmt:s                        -> _.CaseStmt(e, s)
-                    | "default" ":" stmt:s                                  -> _.DefaultStmt(s),
+  labeled_stmt    = "id" ":" statement
+                  | "case" const_expression ":" statement
+                  | "default" ":" statement,
 
-    compound_stmt   = "{" declaration*:d stmt*:s "}"                        -> _.CompoundStmt(d, s),
-
-    selection_stmt  = "if" "(" expr:e ")" stmt:s ( "else" stmt:f            -> _.IfStmt(e, s, f)
-                                                    | empty                 -> _.IfStmt(e, s)
-                                                 )
-                    | "switch" "(" expr:e ")" stmt:s                        -> _.SwitchStmt(e, s),
-
-    iteration_stmt  = "while" "(" expr:e ")" stmt:s                         -> _.WhileStmt(e, s)
-                    | "do" stmt:s "while" "(" expr:e ")" ";"                -> _.DoWhileStmt(e, s)
-                    | "for" "(" expr?:se ";" expr?:ee ";" expr?:ie ")" stmt:s   -> _.ForStmt(se, ee, ie, s)
-
-    jump_stmt       = "goto" "id":l ";"                         -> _.GotoStmt(l)
-                    | "continue" ";"                            -> _.ContinueStmt()
-                    | "break" ";"                               -> _.BreakStmt()
-                    | "return" expr?:e ";"                      -> _.ReturnStmt(e),
-
-    external_decl   = function_def
-                    | declaration,
-
-    function_def    = decl_specs?:ds declarator:dc compound_stmt:s      -> _.FuncDeclare(ds, dc, s)
+  compound_stmt   = "{" declaration_lst statement_lst "}"
+                  | "{" statement_lst "}"
+                  | "{" declaration_lst "}"
+                  | "{" "}",
 
 
-    translation_u   = external_decl+,
+  declaration_lst = declaration_lst declaration
+                  | declaration,
 
-    topLevel        = translation_u spaces end
+  statement_lst   = statement+,
+
+  expression_stmt = expression* ";",
+
+  selection_stmt  = "if" "(" expression ")" statement "else" statement
+                  | "if" "(" expression ")" statement
+                  | "switch" "(" expression ")" statement,
+
+
+  iteration_stmt  = "while" "(" expression ")" statement                    -> console.log("While! ")
+                  | "do" statement "while" "(" expression ")" ";"
+                  | "for" "(" expression_stmt expression_stmt ")" statement
+                  | "for" "(" expression_stmt expression_stmt expression ")" statement,
+
+  jump_stmt       = "goto" "id" ";"
+                  | "continue" ";"
+                  | "break" ";"
+                  | "return" ";"
+                  | "return" expression ";",
+
+
+  translation_u   = external_decl+,
+
+  external_decl   = function_def            -> console.log("Function def")
+                  | declaration,
+
+
+  function_def    = decl_specs declarator declaration_lst compound_stmt
+                  | decl_specs declarator compound_stmt
+                  | declarator declaration_lst compound_stmt
+                  | declarator compound_stmt,
+
+  topLevel             = translation_u spaces end
 }
 
 
