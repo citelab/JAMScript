@@ -166,119 +166,49 @@ ometa CParser  {
 
     const_expr      = cond_expr,
 
-
     // Declaration statements
     // Statements that do "type" specification
     //
 
-    declaration     = decl_specs:ds init_decl*:id ";"               -> _.ApplyDecls(id, ds),
+    declaration     = decl_specs:ds init_decl*:id ";"               -> _.MakeDeclaration(ds, idec),
 
     decl_specs      = store_cl_spec:s decl_specs*:ds                -> ds.concat(s)
                     | type_spec:t decl_specs*:ds                    -> ds.concat(t)
                     | type_qualifier:t decl_specs*:ds               -> ds.concat(t),
 
-    init_decl       = declarator "=" initializer
-                    | declarator,
+    init_decl       = declarator:d "=" initializer:i                -> _.InitDeclarator(d, i)
+                    | declarator:d                                  -> _.InitDeclarator(d),
 
-    store_cl_spec   = "typedef"
-                    | "extern"
-                    | "static"
-                    | "auto"
-                    | "register",
+    store_cl_spec   = "extern" | "static" | "auto" | "register",
 
-    type_spec       = "void"
-                    | "char"
-                    | "short"
-                    | "int"
-                    | "long"
-                    | "float"
-                    | "double"
-                    | "signed"
-                    | "unsigned"
-                    | struct_uni_spec
-                    | enum_spec,
-
-    struct_uni_spec = struct_o_uni "id" "{" struct_decl_lst "}"
-                    | struct_o_uni "{" struct_decl_lst "}"
-                    | struct_o_uni "id",
-
-    struct_o_uni    = "struct"
-                    | "union",
-
-    struct_decl_lst = struct_decl+,
-
-    struc_decl      = spec_qual_list struct_decl_lst ";",
-
-    spec_qual_list  = type_spec spec_qual_list
-                    | type_spec
-                    | type_qualifier spec_qual_list
-                    | type_qualifier,
-
-    struc_declr_lst = listOf(#struct_declr, ","),
-
-    struct_declr    = declarator ":" const_expr
-                    | ":" const_expr
-                    | declarator,
-
-    enum_spec       = "enum" "id" "{" enumratr_lst "}"
-                    | "enum" "{" enumratr_lst "}"
-                    | "enum" "id",
-
-    enumratr_lst    = listOf(#enumerator, ","),
-
-    enumerator      = "id" "=" const_expr
-                    | "id",
-
+    type_spec       = "void" | "char" | "short" | "int" | "long"
+                    | "float" | "double" | "signed" | "unsigned",
 
     type_qualifier  = "const"
                     | "volatile",
 
-    declarator      = pointer dir_declarator
+    declarator      = pointer:p dir_declarator:d                    -> _.PointerDeclarator(d, p)
                     | dir_declarator,
 
-    dir_declarator  = dir_declarator:d member_decl(d) "[" const_expr "]"
-                    | dir_declarator "[" "]"
-                    | dir_declarator "(" param_type_lst ")"
-                    | dir_declarator "(" ident_lst ")"
-                    | dir_declarator "(" ")"
+    dir_declarator  = dir_declarator:d pmember_decl(d)
+                    | dir_declarator:d pcall_decl(d)
                     | "(" declarator ")"
                     | "id",
 
-    member_decl :p  = "[ const_expr:e ]"                            -> _.
+    pmember_decl :p = "[ const_expr:e ]"                            -> _.MemberDecl(p, e)
+                    | "[" "]"                                       -> _.MemberDecl(p),
 
+    pcall_decl :p   = "(" ( param_type_lst |
+                            ident_list |
+                            empty ):g ")"                           -> _.GroupDecl(p, g),
 
-    pointer         = "*" type_qual_list pointer
-                    | "*" type_qual_list
-                    | "*" pointer
-                    | "*",
+    pointer         = "*"+:pn ( "const" | "volatile" ):pt           -> _.PointerType(pt, pn),
 
-    type_qual_list  = type_qualifier+,
+    param_type_lst  = listOf(#param_decl, ","),
 
-    param_type_lst  = param_list "," "..."
-                    | param_list,
+    param_decl      = decl_specs:ds declarator?:dl                  -> _.ParamDeclaration(dl, ds),
 
-    param_list      = param_list "," param_decl
-                    | param_decl,
-
-    param_decl      = decl_specs declarator
-                    | decl_specs abstract_decl
-                    | decl_specs,
-
-    abstract_decl   = pointer dir_abs_declr
-                    | dir_abs_declr
-                    | pointer,
-
-    dir_abs_declr   = "(" abstract_decl ")"
-                    | "[" const_expr "]"
-                    | "[" "]"
-                    | dir_abs_declr "[" const_expr "]"
-                    dir_abs_declr "[" "]"
-                    | "(" param_type_lst ")"
-                    | "(" ")"
-                    | dir_abs_declr "(" param_type_lst ")"
-                    | dir_abs_declr "(" ")",
-
-    initializer     = "{" listOf(#initializer_lst, ",") "}"
+    initializer     = "{" listOf(#initializer_lst, ","):p "}"       -> _.GroupInitializer(p)
                     | assign_expr,
 
     initializer_lst = listOf(#initializer, ","),
@@ -292,8 +222,11 @@ ometa CParser  {
                     | selection_stmt
                     | iteration_stmt
                     | jump_stmt
+                    | expr_stmt,
 
-    labeled_stmt    = "id":l ":" stmt:s                                     -> _.LabeledStmt(l, s)
+    expr_stmt       = expr?:e ";"                                           -> _.ExprStmt(e),
+
+    labeled_stmt    = "id":l ":" stmt:s                                     -> _.LabeledStmt(l.value(), s)
                     | "case" const_expr:e ":" stmt:s                        -> _.CaseStmt(e, s)
                     | "default" ":" stmt:s                                  -> _.DefaultStmt(s),
 
@@ -308,7 +241,7 @@ ometa CParser  {
                     | "do" stmt:s "while" "(" expr:e ")" ";"                -> _.DoWhileStmt(e, s)
                     | "for" "(" expr?:se ";" expr?:ee ";" expr?:ie ")" stmt:s   -> _.ForStmt(se, ee, ie, s)
 
-    jump_stmt       = "goto" "id":l ";"                         -> _.GotoStmt(l)
+    jump_stmt       = "goto" "id":l ";"                         -> _.GotoStmt(l.value())
                     | "continue" ";"                            -> _.ContinueStmt()
                     | "break" ";"                               -> _.BreakStmt()
                     | "return" expr?:e ";"                      -> _.ReturnStmt(e),
