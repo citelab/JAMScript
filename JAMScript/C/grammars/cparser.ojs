@@ -26,7 +26,10 @@ var _       = require('../nodes.js');
  * - only basic pointer patterns
  * - no suffix for constants like integers or floats
  * - no prefix for strings
-
+ * - no structures
+ * - no enums
+ * - no abstract direct declarations
+ * - need to check with the full C95 specification for other omissions
  */
 
 ometa CParser  {

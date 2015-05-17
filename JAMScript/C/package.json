@@ -1,0 +1,21 @@
+{
+  "name": "C",
+  "version" : "0.1.0",
+
+  "descriptions": "C Parser and Code Generator",
+
+  "contributors": [{
+    "name": "Muthucumaru Maheswaran",
+    "email": "mahes25@gmail.com",
+    "web": "http://www.cs.mcgill.ca/~anrl"
+  }],
+
+  "repositories": [{
+    "type": "git",
+    "url": "https://github.com/anrl/JAM.git"
+   }],
+
+   "engines": ["node"],
+
+  "main" : "./index.js"
+}
