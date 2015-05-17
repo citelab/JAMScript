@@ -1,0 +1,426 @@
+/**
+ * ES5Parser
+ * ========= 
+ * This Parser has been built on the work of Alessandro Warth. The original licence can
+ * be found below.
+ * It has been improved to nearly cover the complete range of JavaScript as it is 
+ * specified in ES5.1
+ *
+ * To provide a more easy extensibility the parser is designed less restrictive than
+ * ES5. For this reason "noIn" is omitted.
+ *
+ * Original Licence
+ * ----------------
+ * Copyright (c) 2007-2011 Alessandro Warth <alexwarth@gmail.com>
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following
+ * conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ * 
+ */
+
+// Dependencies
+var unicode = require('../unicode.js'),
+    _       = require('../nodes.js');
+
+
+ometa ES5Parser {
+  
+  // Helper Rules
+  //
+  isKeyword     :x = ?this.spec.keyword(x),
+  //
+  idFirst          = char:x ?this.spec.idFirst(x), 
+  idPart           = char:x ?this.spec.idPart(x),
+  whitespace       = char:x ?this.spec.whitespaces(x),
+  linebreak        = char:x ?this.spec.linebreaks(x),
+  //
+  // punctuator and keyword both won't occure in the AST
+  token :tt        = spaces ( (punctuator | keyword):t ?(t.value() == tt)                -> t
+                            | (name | number | string):t ?(t[0] == tt)                   -> t
+                            ),
+
+  // 7.4 Comments
+  //
+  comment          = ``//'' (~linebreak char)* &linebreak 
+                   | fromTo('/*', '*/'),
+  space            = whitespace | comment | linebreak,
+  spacesNoNl       = (~linebreak space)*,
+  // 
+  // mimics automatic semicolon insertion
+  // a semicolon is assumed when
+  // - there is a line break
+  // - it's at the end of a block
+  // - it's at the end of stream
+  // - actually a semicolon can be found  
+  sc               = spacesNoNl (linebreak | &'}' | end)
+                   | ";",
+  
+  
+  // 7.6 Identifier Names and Identifiers
+  //
+  nameFirst        = idFirst | '$' | '_' | escapeSeq,
+  namePart         = nameFirst | idPart  | digit,
+  identifier       = <nameFirst namePart*>,  
+  //                                                                 
+  name             = identifier:n ~isKeyword(n)                                          -> _.Id(n),
+  keyword          = identifier:k isKeyword(k)                                           -> _.Keyword(k),  
+  
+
+  // 7.8.3 Numeric Literals  
+  //
+  // [0-9a-fA-F]
+  hexDigit         = digit | range('a','f') | range('A','F'),
+  hex              = <``0x'' hexDigit+>:d                                                 -> _.Number(parseInt(d)).kind('hex'),
+  //
+  decimalInt       = '0' | (~'0' digit) digit*,
+  expPart          = ('e' | 'E') ('+' | '-')? digit+,
+  // At this point I have to break ECMA compatibility (normally 1. is an allowed literal,
+  // but this makes it unnecessary difficult to allow slicing foo[1..3]
+  decimal          = <'-'? decimalInt ('.' digit+)? expPart?>:f                          -> _.Number(f)
+                   | <'-'? ('.' digit+) expPart?>:f                                      -> _.Number(f),
+  //  
+  number           = hex | decimal,
+                   
+
+  // 7.8.4 String Literals
+  //
+  // possibly we need a line-escape sequence (backslash followed by "\r\n")
+  escapeSeq        = <'\\' ( 'u' hexDigit hexDigit hexDigit hexDigit
+                           | 'x' hexDigit hexDigit
+                           | char                                    
+                           )>:s                                                          -> unescape(s),
+  //
+  string           = '\'' (escapeSeq | ~'\'' char)*:cs '\''                              -> _.String(cs.join(''))
+                   | '"'  (escapeSeq | ~'"'  char)*:cs '"'                               -> _.String(cs.join('')),
+  
+
+  // 7.7 Punctuators
+  //
+  // since PEG always uses first match the longest prefix has to be the first alternative
+  // ('a' | 'a' 'a' problem) 
+  punctuator       = ( ',' | '.' | ':' | ';' | '(' | ')' | '{' | '}' | '[' | ']' | '?' | '~'
+                     | ``>>>='' | ``>>>'' | ``>>='' | ``>>''  | ``>=''  | '>'
+                     | ``<<=''  | ``<<''  | ``<=''  | '<'     
+                     | ``||=''  | ``||''  | ``|=''  | '|'
+                     | ``&&=''  | ``&&''  | ``&=''  | '&'
+                     | ``!==''  | ``!=''  | '!'
+                     | ``===''  | ``==''  | '='
+                     | ``++''   | ``+=''  | '+'     
+                     | ``--''   | ``-=''  | '-'     
+                     | ``*=''   | '*'     
+                     | ``/=''   | '/'
+                     | ``%=''   | '%'      
+                     | ``^=''   | '^'     
+                     ):s                                                                 -> _.Punctuator(s),
+
+
+  // 11. Expressions
+  //
+  // All expressions can fall through to leftExpr
+  expr             = listOf(#assignExpr, ','):le                                         -> (le.length > 1? _.SequenceExpr(le) : le[0]), 
+  //
+  assignExpr       = leftExpr:lhs ( "="  | "+="  | "-=" | "*="  | "/=" | "%="   | "<<=" 
+                                  | "^=" | "&&=" | "&=" | "||=" | "|=" | ">>>=" | ">>="
+                                  ):op assignExpr:rhs                                    -> _.AssignExpr(lhs, rhs).operator(op.value())
+                   | condExpr,
+  //
+  // tertiary operators
+  condExpr         = orExpr:e ( "?" assignExpr:t ":" assignExpr:f                        -> _.CondExpr(e, t, f)
+                              | empty                                                    -> e
+                              ),
+  //
+  // binary operators
+  orExpr           = orExpr:x      "||" andExpr:y                                        -> _.BinaryExpr(x, y).operator("||")
+                   | andExpr,
+  andExpr          = andExpr:x     "&&" bitOrExpr:y                                      -> _.BinaryExpr(x, y).operator("&&")
+                   | bitOrExpr,  
+  bitOrExpr        = bitOrExpr:x   "|" bitXorExpr:y                                      -> _.BinaryExpr(x, y).operator("|")
+                   | bitXorExpr,
+  bitXorExpr       = bitXorExpr:x  "^" bitAndExpr:y                                      -> _.BinaryExpr(x, y).operator("^")
+                   | bitAndExpr,
+  bitAndExpr       = bitAndExpr:x  "&" eqExpr:y                                          -> _.BinaryExpr(x, y).operator("&")
+                   | eqExpr,
+  eqExpr           = eqExpr:x    ( "==" | "!=" | "===" | "!=="):op relExpr:y             -> _.BinaryExpr(x, y).operator(op.value())
+                   | relExpr,
+  relExpr          = relExpr:x   ( ">=" | ">" | "<=" | "<" 
+                                 | "instanceof" | "in" 
+                                 ):op shiftExpr:y                                        -> _.BinaryExpr(x, y).operator(op.value())
+                   | shiftExpr, 
+  shiftExpr        = shiftExpr:x ( ">>>" | ">>" | "<<" ):op addExpr:y                    -> _.BinaryExpr(x, y).operator(op.value())
+                   | addExpr,  
+  addExpr          = addExpr:x   ( "+" | "-" ):op mulExpr:y                              -> _.BinaryExpr(x, y).operator(op.value())
+                   | mulExpr,
+  mulExpr          = mulExpr:x   ( "*" | "/" | "%" ):op prefixExpr:y                     -> _.BinaryExpr(x, y).operator(op.value())
+                   | prefixExpr,  
+
+  //
+  // unary operators
+  prefixExpr       = ("++" | "--" ):op spacesNoNl unaryExpr:e                            -> _.UpdateExpr(e).operator(op.value())
+                   | unaryExpr,
+  unaryExpr        = ( "!" | "~" | "+" | "-" 
+                     | "void" | "delete" | "typeof" 
+                     ):op prefixExpr:e                                                   -> _.UnaryExpr(e).operator(op.value())
+                   | postfixExpr,
+  postfixExpr      = leftExpr:e spacesNoNl ("++" | "--"):op                              -> _.UpdateExpr(e).operator(op.value()).prefix(false)
+                   | leftExpr,
+            
+  //
+  // different combinations of member-expressions, call expressions and new-expressions
+  leftExpr         = "new" leftExpr:n                                                     -> _.NewExpr(n)
+                   | accessExpr, 
+  //
+  // this "property" trick is needed to dynamically combine access-expressions with postfix
+  // expressions like ...() or ...[] while staying left-associative
+  // this also allows an easy extension with a new operator like ...<> etc.
+  accessExpr       = accessExpr:p callExpr(p)
+                   | accessExpr:p memberExpr(p)
+                   | funcExpr
+                   | primExpr,
+  //
+  callExpr      :p = "(" listOf(#assignExpr, ','):as ")"                                 -> _.CallExpr(p, as),
+  //
+  memberExpr    :p = ( "[" expr:i "]"                                                    -> _.MemberExpr(p, i)
+                     | "." "Id":f                                                        -> _.MemberExpr(p).name(f.value())
+                     ),
+
+
+  // 11.1 Primary Expressions   
+  //
+  primExpr         = "this"                                                              -> _.ThisExpr()
+                   | "Id"
+                   | "Number"
+                   | "String"
+                   | objectLiteral
+                   | arrayLiteral
+                   | "(" expr:e ")"                                                      -> _.GroupExpr(e)
+                   | reLiteral,
+  
+
+  // 11.1.4 Array Literals
+  //
+  // can't use listOf here in order to allow elision as first element [,,,]
+  arrayLiteral     =  "[" ( arrayEl:f ("," arrayEl)*:cs -> [f].concat(cs)
+                          | empty                       -> []
+                          ):es "]"                                                       -> _.ArrayExpr(es),
+  //
+  arrayEl          = assignExpr 
+                   | empty -> undefined, // elision
+  
+
+  // 11.1.5 Object Literals
+  //
+  objectLiteral    = "{" listOf(#objBinding, ','):bs "}"                                 -> _.ObjectExpr(bs),
+  //
+  objBinding       = spaces <``get'' | ``set''>:t spaces objPropName:n funcRest:f        -> _.PropertyBinding(n, f.args, f.body).kind(t)
+                   | objPropName:n ":" assignExpr:v                                      -> _.PropertyBinding(n, v),                   
+  objPropName      = "Id" | "String" | "Number",
+  
+  
+  // 15.10 Regular Expressions
+  //
+  // Had to fix regexp to match /([-.*+?^${}()|[\]\/\\])/g
+  // /\\\\]/g
+  reLiteral        = spaces '/' <reBody>:b '/' <reFlag*>:f                               -> _.RegExpr(b).flags(f),
+  //
+  reBody           = reFirst reChar*,  
+  reChar           = reFirst | '*',
+  reFirst          = ~('*' | '/' | '[') reClassChar
+                   | reClass
+                   | ']',  
+  reClass          = '[' reClassChar* ']',
+  reClassChar      = escapeSeq
+                   | ~(']' | '\\' | '\n' | '\r') char,
+  reFlag           = letter,   
+  
+  
+  // Functions
+  //
+  funcDecl         = "function" "Id":n funcRest:f                                        -> _.Function(f.args, f.body).id(n.value()),
+  funcExpr         = "function" funcRest:f                                               -> _.Function(f.args, f.body).expr(true)
+                   | funcDecl:f                                                          -> f.expr(true),
+  //
+  funcRest         = "(" funcArgs:args ")" block:block                                   -> { args: args, body: block },
+  funcArgs         = listOf(#formal, ','):a                                              -> _.FunctionArgs(a),
+  formal           = "Id",
+  
+
+  // Variable Declarations
+  //
+  bindings         = "var" listOf(#binding, ','):bs                                      -> _.VarDeclStmt(bs),
+  binding          = "Id":n ( "=" assignExpr
+                            | empty          -> _.Id('undefined')
+                            )?:v                                                         -> _.VarBinding(n.value(), v),
+   
+
+  // Block Statement
+  //
+  block            = "{" srcElem*:ss "}"                                                 -> _.BlockStmt(ss),
+
+
+  // 12. Statements
+  //
+  stmt             = bindings:bs sc                                                      -> bs
+                   | "if" "(" expr:c ")" stmt:t ( "else" stmt:f                          -> _.IfStmt(c, t, f)
+                                                | empty                                  -> _.IfStmt(c, t)
+                                                )
+                   | "while" "(" expr:c ")" stmt:s                                       -> _.WhileStmt(c, s)
+                   | "do" stmt:s "while" "(" expr:c ")" sc                               -> _.DoWhileStmt(s, c)
+                   | "for" "(" ( bindings
+                               | expr 
+                               )?:i
+                           ";" expr?:c
+                           ";" expr?:u                                                   
+                           ")" stmt:s                                                    -> _.ForStmt(i, c, u, s)
+                   | "for" "(" ( bindings
+                               | leftExpr     
+                               ):v
+                           "in" expr:e
+                           ")" stmt:s                                                    -> _.ForInStmt(v, e, s)
+                   | "switch" "(" expr:e ")" "{"
+                       ( "case" expr:c ":" srcElem*:cs                                   -> _.SwitchCase(c, cs)  // fallthrough now possible
+                       | "default"     ":" srcElem*:cs                                   -> _.SwitchCase(cs)
+                       )*:cs
+                     "}"                                                                 -> _.SwitchStmt(e, cs)
+                   | "break" spacesNoNl name:n sc                                        -> _.BreakStmt().label(n.value())
+                   | "break" sc                                                          -> _.BreakStmt()
+                   | "continue" spacesNoNl name:n sc                                     -> _.ContinueStmt().label(n.value())
+                   | "continue" sc                                                       -> _.ContinueStmt()
+                   | "throw" spacesNoNl expr:e sc                                        -> _.ThrowStmt(e)
+                   | "try" block:t "catch" "(" "Id":n ")" block:c                        // catch is optional, if finally is provided
+                                 ( "finally" block)?:f                                   -> _.TryStmt(t, n, c, f)
+                   | "try" block:t "finally" block:f                                     -> _.TryStmt(t, f)
+                   | "return" ( expr ):e sc                                              -> _.ReturnStmt(e)
+                   | "with" "(" expr:x ")" stmt:s                                        -> _.WithStmt(x, s)
+                   | "Id":l ":" stmt:s                                                   -> _.LabeledStmt(l.value(), s)
+                   | ";"                                                                 -> _.EmptyStmt()                
+                   | spaces (~("{" | "function" | sc) expr:e) sc                         -> e        // 12.4 Comma Operator
+                   | block,                                                                          //
+                                                                                                     // This allows the use of the comma-operator
+                                                                                                     // (Or to be more precise, `expr` does this)
+                                                                                                     //
+                                                                                                     //     result += source, source = '';
+                                                                                                     //
+                                                                                                     // I had big trouble to prevent an endless
+                                                                                                     // loop at this point. The solution was
+                                                                                                     // to firstly consume all whitespaces and
+                                                                                                     // then match `not sc`
+                                                                                                     //
+                                                                                                     // This seems to magically work, i still
+                                                                                                     // have to think about why...
+  
+  // Source Elements
+  //
+  srcElem          = funcDecl | stmt,
+
+
+  // Program
+  //
+  topLevel         = srcElem*:el spaces end                                              -> _.Program(el)
+
+}
+
+// Configure position information callback
+ES5Parser.position_info = function(input, from, to) {
+  
+  function position(pos) {
+    var line  = 1,
+        column = undefined;
+    
+    // scroll backwards to next linebreak
+    for(var i=pos; i>=0; i--) {
+    
+      if(input[i] === "\n") {
+        // only for the first time search column
+        if(typeof column == 'undefined')
+          column = pos - i;
+      
+        line++
+      }
+    }
+    
+    if(line === 1) 
+      column = pos;
+    
+    return {
+      line: line,
+      column: column
+    }
+  }
+  
+  return {
+    source: input.slice(from, to),
+    start: position(from),
+    end: position(to)
+  }
+}
+
+ES5Parser.spec = {
+
+  // 7.2 Whitespaces
+  //
+  whitespaces:  unicode.matcher(['TAB', 'VT', 'FF', 'SP', 'NBSP', 'BOM', 'Zs']),
+  
+  // 7.3 Line Terminators
+  //
+  linebreaks:   unicode.matcher(['LF', 'CR', 'LS', 'PS']),
+
+  // UnicodeLetter ::
+  // any character in the Unicode categories 
+  //  ―Uppercase letter (Lu), 1436    }
+  //  ―Lowercase letter (Ll), 1759    }> There is an alias for those three called `L&`
+  //  ―Titlecase letter (Lt), 31      }
+  //  ―Modifier letter (Lm),  210 
+  //  ―Other letter (Lo), or  11320
+  //  ―Letter number (Nl)     224
+  //                        = 14980
+  //
+  // http://www.unicode.org/reports/tr44/#General_Category_Values
+  //
+  //
+  // additional in IdentifierPart
+  //  ―UnicodeCombiningMark (Mn and Mc) 1199 + 287
+  //  ―UnicodeDigit (Nd)                420
+  //  ―UnicodeConnectorPunctuation (Pc) 10
+  //                                  = 1910
+  //
+  // and the Control Characters 0x200C, 0x200D. Altogether these are ~ 16900 Characters.
+  idFirst:      unicode.matcher(['L', 'Nl']),
+  idPart:       unicode.matcher(['Mn', 'Mc', 'Nd', 'Pc', 'ZWNJ','ZWJ']),
+  
+  // 7.6.1.1 Keywords
+  //
+  keywords:     ["break", "case", "catch", "class", "const", "continue", "debugger", 
+                 "default", "delete", "do", "else", "enum", "export", "extends", "for", 
+                 "finally", "function", "if", "import", "in", "instanceof", "new", 
+                 "return", "super", "switch", "this", "throw", "try", "typeof", "var", 
+                 "void", "while", "with"],
+
+  future_keywords: ["implements", "interface", "let", "package", "private", "protected", "public", "yield"],
+
+  keyword: function(k) { return this.keywords.indexOf(k) != -1; }
+  
+};
+
+ES5Parser.parse = function(input) {
+  return ES5Parser.matchAll(input, 'topLevel');
+};
+
+module.exports = ES5Parser;
