@@ -177,7 +177,7 @@ ometa CParser  {
 
     member_expr :p  = ( "[" expr:e "]"                              -> __.MemberExpr(p, e)
                         |   "." "Id":i                              -> __.MemberExpr(p).name(i.value())
-                        |   "->" "Id":i                             -> __.PointerExpr(p).name(i.value())  
+                        |   "->" "Id":i                             -> __.PointerExpr(p).name(i.value())
                       ),
 
     primary_expr    = "Id"
@@ -194,32 +194,32 @@ ometa CParser  {
     declaration     = decl_specs:ds init_decl*:idec ";"             -> __.VarDeclStmt(ds, idec),
 
     decl_specs      = store_cl_spec:s decl_specs*:ds                -> { res = declattr();
-                                                                         if (a.length === 0) {
-                                                                            res.storage_class=s
+                                                                         if (ds.length === 0) {
+                                                                            res.storage_class=s.value()
                                                                          } else {
-                                                                            res = a[0];
-                                                                            res.storage_class=s
+                                                                            res = ds[0];
+                                                                            res.storage_class=s.value()
                                                                          };
                                                                          res
                                                                         }
                     | type_spec:t decl_specs*:ds                    -> { res = declattr();
-                                                                         if (a.length === 0) {
-                                                                            res.type_spec=t
+                                                                         if (ds.length == 0) {
+                                                                            res.type_spec=t.value()
                                                                          } else {
-                                                                            res = a[0];
-                                                                            res.type_spec=s
+                                                                            res = ds[0];
+                                                                            res.type_spec=t.value()
                                                                          };
                                                                          res
                                                                         }
                     | type_qualifier:t decl_specs*:ds               -> { res = declattr();
-                                                                         if (a.length === 0) {
-                                                                            res.type_qual=t
+                                                                         if (ds.length === 0) {
+                                                                            res.type_qual=t.value()
                                                                          } else {
-                                                                            res = a[0];
-                                                                            res.type_qual=t
+                                                                            res = ds[0];
+                                                                            res.type_qual=t.value()
                                                                          };
                                                                          res
-                                                                        }
+                                                                        },
 
     init_decl       = declarator:d "=" initializer:i                -> __.VarBinding(d, i)
                     | declarator:d                                  -> __.VarBinding(d),
@@ -269,9 +269,9 @@ ometa CParser  {
                             | empty ) ")"                           -> {
                                                                          p.call(true);
                                                                          p;
-                                                                        }
+                                                                        },
 
-    pointer         = "*"+:pn ( "const" | "volatile" )?:pt          -> {pointer_level:pn.length, pointer_type:pt}
+    pointer         = "*"+:pn ( "const" | "volatile" )?:pt          -> {pointer_level:pn.length, pointer_type:pt},
 
     param_type_lst  = listOf(#param_decl, ","),
 
@@ -299,7 +299,7 @@ ometa CParser  {
                     | "case" const_expr:e ":" stmt:s                        -> __.CaseStmt(e, s)
                     | "default" ":" stmt:s                                  -> __.DefaultStmt(s),
 
-    compound_stmt   = "{" declaration*:d stmt*:s "}",                       -> __.CompoundStmt(d, s),
+    compound_stmt   = "{" declaration*:d stmt*:s "}"                        -> __.CompoundStmt(d, s),
 
     selection_stmt  = "if" "(" expr:e ")" stmt:s ( "else" stmt:f            -> __.IfStmt(e, s, f)
                                                     | empty                 -> __.IfStmt(e, s)
@@ -323,8 +323,7 @@ ometa CParser  {
 
     translation_u   = external_decl+:s                            -> __.Program(s),
 
-//    topLevel        = translation_u:u spaces end        -> u
-    topLevel        = ( spaces iteration_stmt )+:q spaces end		-> q
+    topLevel        = translation_u:u spaces end        -> u
 }
 
 

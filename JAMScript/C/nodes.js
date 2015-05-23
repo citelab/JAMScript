@@ -12,6 +12,7 @@ var Factory  = require('../jsonml').factory;
 var register = function(type) {
 
   var nodetype = Factory.apply(null, arguments);
+
   // register new nodetype
   nodes[type] = nodetype;
 };
@@ -35,35 +36,6 @@ register("Program", {}, function(srcEls) {
   this.appendAll(srcEls);
 });
 
-/**
- * Function
- * --------
- *
- * Representation:
- *     [#Function, { id: Identifier, generator: boolean, expression: boolean }, FunctionArgs, BlockStmt]
- *
- * Call like:
- *     CBuilder.Function(args, body).id("name");
- */
-register("Function", {
-  id: undefined,
-  generator: false,
-  expr: false
-});
-
-/**
- * FunctionArgs
- * ------------
- *
- * Representation:
- *     [#FunctionArgs, {}, ...Expression]
- *
- * Call like:
- *     CBuilder.FunctionArgs(...args);
- */
-register("FunctionArgs", {}, function(args) {
-  this.appendAll(args);
-});
 
 /**
  * Literals
@@ -82,7 +54,6 @@ register("FunctionArgs", {}, function(args) {
  *     CBuilder.Id("Foo");
  */
 register("Id", { value: undefined}, function(value) {
-	console.log("Id = ", value);
   this.value(value);
 });
 
@@ -97,7 +68,6 @@ register("Id", { value: undefined}, function(value) {
  *     CBuilder.Number(12435.50);
  */
 register("Number", { kind: 'decimal', original: undefined, value: undefined }, function(value) {
-	console.log("Value = ", value);
   this.value(parseFloat(value));
   this.original(value);          // save original string-representation
 });
@@ -147,7 +117,6 @@ register("Punctuator", { value: undefined }, function(value) {
  *     CBuilder.Keyword("while");
  */
 register("Keyword", { value: undefined }, function(value) {
-	console.log("Registering keyword.. ", value);
   this.value(value);
 });
 
@@ -157,29 +126,18 @@ register("Keyword", { value: undefined }, function(value) {
  */
 
 /**
- * EmptyStatement
+ * CompoundStatement
  * --------------
  *
  * Representation:
- *     [#EmptyStmt, {}]
+ *     [#CompoundStmt, {}, Decls?, Statements?]
  *
  * Call like:
- *     CBuilder.EmptyStmt();
+ *     CBuilder.CompoundStmt(...decls?, stmts?);
  */
-register("EmptyStmt");
-
-/**
- * BlockStatement
- * --------------
- *
- * Representation:
- *     [#BlockStmt, {}, ...Statement]
- *
- * Call like:
- *     CBuilder.BlockStmt(...stmts);
- */
-register("BlockStmt", {}, function(stmts) {
-  this.appendAll(stmts);
+register("CompoundStmt", {}, function(decls, stmts) {
+    this.appendAll(decls);
+    this.appendAll(stmts);
 });
 
 
@@ -211,100 +169,88 @@ register("LabeledStmt", { label: ""}, function(label, stmt) {
 });
 
 
-/**
- * GotoStatement
- * -------------
- *
- * Representation:
- *      [#GotoStmt, {label: string}]
- *
- * Call like:
- *      CBuilder.GotoStmt(label);
- */
- register("GotoStmt", {label: ""}, function(label) {
-     this.label(label);
- });
-
-
-
-
 
 /**
  * BreakStatement
  * --------------
  *
  * Representation:
- *     [#BreakStmt, { label: string }]
+ *     [#BreakStmt, {}]
  *
  * Call like:
- *     CBuilder.BreakStmt().label(string);
+ *     CBuilder.BreakStmt();
  */
-register("BreakStmt", {
-    label: undefined
-});
+register("BreakStmt");
 
 /**
  * ContinueStatement
  * -----------------
  *
  * Representation:
- *     [#ContinueStmt, { label: string }]
+ *     [#ContinueStmt, {}]
  *
  * Call like:
- *     CBuilder.ContinueStmt().label(string);
+ *     CBuilder.ContinueStmt();
  */
-register("ContinueStmt", {
-    label: undefined
-});
+register("ContinueStmt");
 
 /**
- * WithStatement
+ * GotoStatement
  * -------------
  *
  * Representation:
- *     [#WithStmt, {}, Expression, Statement]
+ *     [#GotoStmt, {label: string}]
  *
  * Call like:
- *     CBuilder.WithStmt(expr, stmt);
+ *     CBuilder.GotoStmt().label(string);
  */
-register("WithStmt");
+register("GotoStmt", {
+    label: undefined
+});
 
 /**
  * SwitchStatement
  * ---------------
  *
  * Representation:
- *     [#SwitchStmt, {}, Expression, ...Cases]
+ *     [#SwitchStmt, {}, Expression, Statement]
  *
  * Call like:
- *     CBuilder.SwitchStmt(switchExpr, ...cases);
+ *     CBuilder.SwitchStmt(switchExpr, Statement);
  */
-register("SwitchStmt", {}, function(switchExpr, cases) {
+register("SwitchStmt", {}, function(switchExpr, stmt) {
   this.append(switchExpr)
-      .appendAll(cases);
+      .appendAll(stmt);
 });
 
 /**
- * SwitchCase
+ * CaseStatement
  * ----------
- * Because `default` is a keyword, we use `default_case`
  *
  * Representation:
- *     [#SwitchCase, { def: false }, Expression, ...Statement]
+ *     [#CaseStmt, {}, Expression, Statement]
  *
  * Call like:
- *     CBuilder.SwitchCase(testExpr, ...stmts);
- *     CBuilder.SwitchCase(...stmts).default(true);
+ *     CBuilder.CaseStmt(testExpr, stmt);
  */
-register("SwitchCase", { default_case: false }, function() {
-  // if there is only one argument, it's a default-case
-  if(arguments.length == 1) {
-    this.default_case(true)
-        .appendAll(arguments[0]);
-  } else {
-    this.append(arguments[0])
-        .appendAll(arguments[1]);
-  }
+register("CaseStmt", {}, function(testExpr,stmt) {
+    this.append(testExpr)
+        .appendAll(stmt);
+});
+
+
+/**
+ * DefaultStatement
+ * ----------
+ *
+ * Representation:
+ *     [#DefaultStmt, {}, Statement]
+ *
+ * Call like:
+ *     CBuilder.DefaultStmt(stmt);
+ */
+register("CaseStmt", {}, function(stmt) {
+    this.appendAll(stmt);
 });
 
 
@@ -320,37 +266,27 @@ register("SwitchCase", { default_case: false }, function() {
  */
 register("ReturnStmt");
 
-/**
- * ThrowStatement
- * ---------------
- *
- * Representation:
- *     [#ThrowStmt, {}, Expression?]
- *
- * Call like:
- *     CBuilder.ThrowStmt(expr?);
- */
-register("ThrowStmt");
 
 /**
- * TryStatement
+ * ExpressionStatement
  * ---------------
  *
  * Representation:
- *     [#TryStmt, {}, BlockStatement, Expression, BlockStatement, BlockStatement?]
- *     [#TryStmt, {}, BlockStatement, BlockStatement]
+ *     [#ExprStmt, {}, Expression?]
  *
  * Call like:
- *     CBuilder.TryStmt(tryBlock, catchExpr, catchStmt, finallyStmt?);
- *     CBuilder.TryStmt(tryBlock, finallyStmt);
+ *     CBuilder.ExprStmt(expr?);
  */
-register("TryStmt");
+register("ExprStmt");
+
+
+
 /**
  * WhileStatement
  * ---------------
  *
  * Representation:
- *     [#WhileStmt, {}, Expression, BlockStatement]
+ *     [#WhileStmt, {}, Expression, CompoundStatement]
  *
  * Call like:
  *     CBuilder.WhileStmt(condExpr, stmt);
@@ -362,7 +298,7 @@ register("WhileStmt");
  * ---------------
  *
  * Representation:
- *     [#DoWhileStmt, {}, BlockStatement, Expression]
+ *     [#DoWhileStmt, {}, CompoundStatement, Expression]
  *
  * Call like:
  *     CBuilder.DoWhileStmt(stmt, condExpr);
@@ -381,31 +317,6 @@ register("DoWhileStmt");
  */
 register("ForStmt");
 
-/**
- * ForInStatement
- * --------------
- *
- * Representation:
- *     [#ForInStmt, {}, Binding, Expression, Statement]
- *
- * Call like:
- *     CBuilder.ForInStmt(bindings, expr, stmt);
- */
-register("ForInStmt");
-
-/**
- * DebuggerStatement
- * -----------------
- * SampleCode:
- *     debugger;
- *
- * Representation:
- *     [#DebuggerStmt, {}]
- *
- * Call like:
- *     CBuilder.DebuggerStmt();
- */
-register("DebuggerStmt");
 
 /**
  * Declaration <: Statement
@@ -413,60 +324,82 @@ register("DebuggerStmt");
  */
 
 /**
- * VariableDeclaration
+ * MakeDeclaration
  * -------------------
  * SampleCode:
- *     var foo = 14, bar;
+ *     register int a = 10;
  *
  * Representation:
- *     [#VarDeclStmt, {}, ...VarBinding]
+ *     [#VarDeclStmt, {storage_class: .. type_spec: .. type_qual: ..}, ...VarBinding]
  *
  * Call like:
- *     CBuilder.VarDeclStmt(...bindings).kind("var");
+ *     CBuilder.VarDeclStmt(attr, bindings);
  */
-register("VarDeclStmt", { kind: "var" }, function(bindings) {
+register("VarDeclStmt", {}, function(attr, bindings) {
+  this[1] = attr;
   this.appendAll(bindings);
 });
 
 /**
- * VariableDeclarator
+ * VariableBinding
  * ------------------
- * Keep in mind, that next Version of JavaScript will allow declarationpatterns. Necessary
- * for VariableDeclaration (see above).
- *
  * SampleCode:
- *     foo = 14
- *     bar
+ *     int a = 15;
+ *     float q;
  *
  * Representation:
- *     [#VarBinding, {}, Identifier, Expr]
+ *     [#VarBinding, {}, declarator, initializer]
+ * Note:
+ *      Declarator could be quite complex - pointer, group, member, etc
  *
  * Call like:
- *     CBuilder.VarBinding(name, init);
+ *     CBuilder.VarBinding(decl, init);
+ *     CBuilder.VarBinding(decl);
  */
-register("VarBinding", { name: undefined }, function(name, init) {
-  this.name(name)
-      .append(init);
+register("VarBinding");
+
+/**
+ * MakeDeclarator
+ * --------------
+ *
+ * Representation
+ *      [#Declarator {name: string, pointer_level:0, pointer_type: .. member: false, call: false, func: false}]
+ */
+register("Declarator", {
+    name: undefined,
+    pointer_level: 0,
+    pointer_type: undefined,
+    member: false,
+    call: false,
+    func: false
 });
+
+/**
+ * ParamDeclaration
+ * ----------------
+ *
+ * Representation
+ *      [#ParamDeclaration, {storage_class: .. type_spec: .. type_qual: ..}, ... Declarator]
+ */
+register("ParamDeclaration", function(ds, decl) {
+    this[1] = ds;
+    this.append(decl);
+});
+
+/**
+ * GroupInitializer
+ * ----------------
+ *
+ * Representation:
+ *      [#GroupInitializer, {}, initializer list..]
+ */
+ register("GroupInitializer");
+
 
 /**
  * Expressions
  * ===========
  */
-
-/**
- * ThisExpression
- * --------------
- * SampleCode:
- *     this.foo();
- *
- * Representation:
- *     [#ThisExpr, {}]
- *
- * Call like:
- *     CBuilder.ThisExpr();
- */
-register("ThisExpr");
 
 /**
  * AssignmentExpression
@@ -560,12 +493,12 @@ register("BinaryExpr", {
  *     foo += 4, bar(foo), !baz;
  *
  * Representation:
- *     [#SequenceExpr, {}, ...Expression]
+ *     [#SequenceExpr, {const: 'false'}, ...Expression]
  *
  * Call like:
- *     CBuilder.SequenceExpr(...expr);
+ *     CBuilder.SequenceExpr(...expr).const(true);
  */
-register("SequenceExpr", {}, function(exprs) {
+register("SequenceExpr", {const: false}, function(exprs) {
   this.appendAll(exprs)
 });
 
@@ -615,11 +548,9 @@ register("PointerExpr", {access: 'pointer', name: undefined}, function(expr) {
 });
 
 
-
 /**
  * GroupExpression
  * ---------------
- * Please note: the GroupExpression has no equivalent in the SpiderMonkey Parser API
  *
  * SampleCode:
  *     (foo.bar + baz())
@@ -631,29 +562,6 @@ register("PointerExpr", {access: 'pointer', name: undefined}, function(expr) {
  *     CBuilder.GroupExpr(expr);
  */
 register("GroupExpr");
-
-/**
- * ArrayExpression
- * ---------------
- * SampleCode:
- *     [1, 3, 5, undefined, "hello", something()]
- *
- * Representation:
- *     [#ArrayExpr, {}, ...Expr]
- *
- * Call like:
- *     CBuilder.ArrayExpr(...expr);
- */
-register("ArrayExpr", {}, function(exprs) {
-
-  // only append exprs if not undefined
-  if(exprs === undefined || exprs[0] === undefined && exprs.length === 1)
-    return this;
-
-  // exprs should be an array containing nodes
-  else
-    this.appendAll(exprs);
-});
 
 
 /**
@@ -669,68 +577,3 @@ register("ArrayExpr", {}, function(exprs) {
      this.append(decl);
      this.append(stmt);
  });
-
-
-
-
-/**
- * ObjectExpression
- * ----------------
- * SampleCode:
- *     {
- *       foo: 4,
- *       get name() {…},
- *       set name(new_name) {…}
- *     }
- *
- * Representation:
- *     [#ObjectExpr, {}, ...PropertyBinding)]
- *
- * Call like:
- *     CBuilder.ObjectExpr(...bindings);
- */
-register("ObjectExpr", {}, function(bindings) {
-  this.appendAll(bindings)
-});
-
-/**
- * PropertyBinding
- * ---------------
- * SampleCode:
- *    foo: 4
- *    get name() {…}
- *    set name(new_name) {…}
- *
- * Representation:
- *     [#PropertyBinding, { kind: 'init', name: "somename" }, ), id, Expr]
- *     [#PropertyBinding, { kind: ('get' | 'set'), name: "somename" }, ), id, FunctionArgs, BlockStatement]
- *
- * Call like:
- *     CBuilder.PropertyBinding("name", initExpr);
- *     CBuilder.PropertyBinding("name", args, block).kind('set')
- */
-register("PropertyBinding", { kind: 'init',  name: undefined}, function(name) {
-
-  if(typeof name === 'string')
-    name = nodes.Id(name)
-
-  // append rest-args
-  this.name(name.value())
-      .appendAll(arguments);
-});
-
-/**
- * RegularExpression
- * ----------------
- * SampleCode:
- *     /[a-z]{3}/gi
- *
- * Representation:
- *     [#RegExpr, {}, PropertyBinding)]
- *
- * Call like:
- *     CBuilder.RegExpr('[a-z]{3}').flags('gi');
- */
-register("RegExpr", { body: undefined, flags: '' }, function(body) {
-  this.body(body);
-});

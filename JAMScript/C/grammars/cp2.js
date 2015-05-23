@@ -3,7 +3,13 @@
         return root[moduleName];
     }, root, root.OMeta);
 }(this, function(require, exports, OMeta) {
-    var _ = require("../nodes.js"), CParser = OMeta._extend({
+    var __ = require("../nodes.js"), declattr = function() {
+        return {
+            storage_class: void 0,
+            type_qual: void 0,
+            type_spec: void 0
+        };
+    }, CParser = OMeta._extend({
         isKeyword: function(x) {
             var $elf = this, _fromIdx = this.input.idx;
             return this._pred(this.spec.isKeyword(x));
@@ -11,7 +17,7 @@
         nameFirst: function() {
             var $elf = this, _fromIdx = this.input.idx;
             return this._or(function() {
-                return this._apply("letter");
+                return OMeta._superApplyWithArgs(this, "letter");
             }, function() {
                 switch (this.anything()) {
                   case "_":
@@ -27,7 +33,7 @@
             return this._or(function() {
                 return this._apply("nameFirst");
             }, function() {
-                return this._apply("digit");
+                return OMeta._superApplyWithArgs(this, "digit");
             });
         },
         linebreak: function() {
@@ -67,6 +73,15 @@
                 return this._apply("linebreak");
             });
         },
+        spacesNoNl: function() {
+            var $elf = this, _fromIdx = this.input.idx;
+            return this._many(function() {
+                this._not(function() {
+                    return this._apply("linebreak");
+                });
+                return this._apply("space");
+            });
+        },
         iName: function() {
             var $elf = this, _fromIdx = this.input.idx;
             return this._consumedBy(function() {
@@ -82,18 +97,18 @@
             this._not(function() {
                 return this._applyWithArgs("isKeyword", name);
             });
-            return _.Id(name);
+            return __.Id(name);
         },
         keyword: function() {
             var $elf = this, _fromIdx = this.input.idx, kwd;
             kwd = this._apply("iName");
             this._applyWithArgs("isKeyword", kwd);
-            return _.Keyword(kwd);
+            return __.Keyword(kwd);
         },
         hexDigit: function() {
             var $elf = this, _fromIdx = this.input.idx;
             return this._or(function() {
-                return this._apply("digit");
+                return OMeta._superApplyWithArgs(this, "digit");
             }, function() {
                 return this._applyWithArgs("range", "a", "f");
             }, function() {
@@ -122,7 +137,7 @@
                     throw this._fail();
                 }
             });
-            return _.Number(parseInt(d)).kind("hex");
+            return __.Number(parseInt(d)).kind("hex");
         },
         decimalInt: function() {
             var $elf = this, _fromIdx = this.input.idx;
@@ -182,7 +197,7 @@
                     return this._apply("digit");
                 });
             });
-            return _.Number(parseInt(d, 8)).kind("oct");
+            return __.Number(parseInt(d, 8)).kind("oct");
         },
         decimal: function() {
             var $elf = this, _fromIdx = this.input.idx, f;
@@ -202,7 +217,7 @@
                         return this._apply("expPart");
                     });
                 });
-                return _.Number(f).kind("float");
+                return __.Number(f).kind("float");
             }, function() {
                 f = this._consumedBy(function() {
                     this._opt(function() {
@@ -216,7 +231,7 @@
                         return this._apply("expPart");
                     });
                 });
-                return _.Number(f).kind("float");
+                return __.Number(f).kind("float");
             });
         },
         integer: function() {
@@ -227,7 +242,7 @@
                 });
                 return this._apply("decimalInt");
             });
-            return _.Number(parseInt(d)).kind("int");
+            return __.Number(parseInt(d)).kind("int");
         },
         number: function() {
             var $elf = this, _fromIdx = this.input.idx;
@@ -265,7 +280,7 @@
                         });
                     });
                     this._applyWithArgs("exactly", '"');
-                    return _.String(cs.join(""));
+                    return __.String(cs.join(""));
 
                   default:
                     throw this._fail();
@@ -284,10 +299,10 @@
                     }
                 }).call(this);
                 n = this._apply("iName");
-                return _.String(cs.join(""));
+                return __.String(cs.join(""));
             });
         },
-        special: function() {
+        punctuator: function() {
             var $elf = this, _fromIdx = this.input.idx, s;
             s = function() {
                 switch (this.anything()) {
@@ -539,18 +554,18 @@
                     throw this._fail();
                 }
             }.call(this);
-            return _.Special(s);
+            return __.Punctuator(s);
         },
         token: function(tt) {
             var $elf = this, _fromIdx = this.input.idx, t;
             this._apply("spaces");
             return this._or(function() {
                 t = this._or(function() {
-                    return this._apply("special");
+                    return this._apply("punctuator");
                 }, function() {
                     return this._apply("keyword");
                 });
-                this._pred(t.value == tt);
+                this._pred(t.value() == tt);
                 return t;
             }, function() {
                 t = this._or(function() {
@@ -564,10 +579,22 @@
                 return t;
             });
         },
+        listof: function(p) {
+            var $elf = this, _fromIdx = this.input.idx, x, y;
+            x = this._applyWithArgs("apply", p);
+            y = this._many(function() {
+                this._applyWithArgs("token", ",");
+                return this._applyWithArgs("apply", p);
+            });
+            return function() {
+                y.unshift(x);
+                return y;
+            }.call(this);
+        },
         expr: function() {
             var $elf = this, _fromIdx = this.input.idx, le;
-            le = this._applyWithArgs("listOf", "assign_expr", ",");
-            return le.length > 1 ? _.SequenceExpr(le) : le[0];
+            le = this._applyWithArgs("listof", "assign_expr");
+            return le.length > 1 ? __.SequenceExpr(le) : le[0];
         },
         assign_expr: function() {
             var $elf = this, _fromIdx = this.input.idx, lhs, op, rhs;
@@ -575,7 +602,7 @@
                 lhs = this._apply("unary_expr");
                 op = this._apply("assign_op");
                 rhs = this._apply("assign_expr");
-                return _.AssignExpr(lhs, rhs).operator(op.value());
+                return __.AssignExpr(lhs, rhs).operator(op.value());
             }, function() {
                 return this._apply("cond_expr");
             });
@@ -585,13 +612,12 @@
             return this._or(function() {
                 e = this._apply("lor_expr");
                 this._applyWithArgs("token", "?");
-                t = this._apply("expression");
+                t = this._apply("expr");
                 this._applyWithArgs("token", ":");
                 f = this._apply("cond_expr");
-                return _.CondExpr(e, t, f);
+                return __.CondExpr(e, t, f);
             }, function() {
-                e = this._apply("lor_expr");
-                return e;
+                return this._apply("lor_expr");
             });
         },
         lor_expr: function() {
@@ -600,7 +626,7 @@
                 x = this._apply("lor_expr");
                 this._applyWithArgs("token", "||");
                 y = this._apply("lar_expr");
-                return _.BinaryExpr(x, y).operator("||");
+                return __.BinaryExpr(x, y).operator("||");
             }, function() {
                 return this._apply("lar_expr");
             });
@@ -611,7 +637,7 @@
                 x = this._apply("lar_expr");
                 this._applyWithArgs("token", "&&");
                 y = this._apply("ior_expr");
-                return _.BinaryExpr(x, y).operator("||");
+                return __.BinaryExpr(x, y).operator("&&");
             }, function() {
                 return this._apply("ior_expr");
             });
@@ -622,7 +648,7 @@
                 x = this._apply("ior_expr");
                 this._applyWithArgs("token", "|");
                 y = this._apply("xor_expr");
-                return _.BinaryExpr(x, y).operator("|");
+                return __.BinaryExpr(x, y).operator("|");
             }, function() {
                 return this._apply("xor_expr");
             });
@@ -633,18 +659,18 @@
                 x = this._apply("xor_expr");
                 this._applyWithArgs("token", "^");
                 y = this._apply("and_expr");
-                return _.BinaryExpr(x, y).operator("^");
+                return __.BinaryExpr(x, y).operator("^");
             }, function() {
                 return this._apply("and_expr");
             });
         },
         and_expr: function() {
-            var $elf = this, _fromIdx = this.input.idx, x;
+            var $elf = this, _fromIdx = this.input.idx, x, y;
             return this._or(function() {
                 x = this._apply("and_expr");
                 this._applyWithArgs("token", "&");
-                x = this._apply("eq_expr");
-                return _.BinaryExpr(x, y).operator("&");
+                y = this._apply("eq_expr");
+                return __.BinaryExpr(x, y).operator("&");
             }, function() {
                 return this._apply("eq_expr");
             });
@@ -659,7 +685,7 @@
                     return this._applyWithArgs("token", "!=");
                 });
                 y = this._apply("rel_expr");
-                return _.BinaryExpr(x, y).operator(op.value());
+                return __.BinaryExpr(x, y).operator(op.value());
             }, function() {
                 return this._apply("rel_expr");
             });
@@ -678,7 +704,7 @@
                     return this._applyWithArgs("token", ">");
                 });
                 y = this._apply("shift_expr");
-                return _.BinaryExpr(x, y).operator(op.value());
+                return __.BinaryExpr(x, y).operator(op.value());
             }, function() {
                 return this._apply("shift_expr");
             });
@@ -693,31 +719,31 @@
                     return this._applyWithArgs("token", ">>");
                 });
                 y = this._apply("add_expr");
-                return _.BinaryExpr(x, y).operator(op.value());
+                return __.BinaryExpr(x, y).operator(op.value());
             }, function() {
                 return this._apply("add_expr");
             });
         },
         add_expr: function() {
-            var $elf = this, _fromIdx = this.input.idx, x, y;
+            var $elf = this, _fromIdx = this.input.idx, op, x, y;
             return this._or(function() {
                 x = this._apply("add_expr");
-                this._or(function() {
+                op = this._or(function() {
                     return this._applyWithArgs("token", "+");
                 }, function() {
                     return this._applyWithArgs("token", "-");
                 });
                 y = this._apply("mult_expr");
-                return _.BinaryExpr(x, y).operator(op.value());
+                return __.BinaryExpr(x, y).operator(op.value());
             }, function() {
                 return this._apply("mult_expr");
             });
         },
         mult_expr: function() {
-            var $elf = this, _fromIdx = this.input.idx, x, y;
+            var $elf = this, _fromIdx = this.input.idx, op, x, y;
             return this._or(function() {
                 x = this._apply("mult_expr");
-                this._or(function() {
+                op = this._or(function() {
                     return this._applyWithArgs("token", "*");
                 }, function() {
                     return this._applyWithArgs("token", "/");
@@ -725,7 +751,7 @@
                     return this._applyWithArgs("token", "%");
                 });
                 y = this._apply("prefix_expr");
-                return _.BinaryExpr(x, y).operator(op.value());
+                return __.BinaryExpr(x, y).operator(op.value());
             }, function() {
                 return this._apply("prefix_expr");
             });
@@ -766,7 +792,7 @@
                 });
                 this._apply("spacesNoNl");
                 e = this._apply("unary_expr");
-                return _.UpdateExpr(e).operator(op.value());
+                return __.UpdateExpr(e).operator(op.value());
             }, function() {
                 return this._apply("unary_expr");
             });
@@ -788,7 +814,7 @@
                     return this._applyWithArgs("token", "!");
                 });
                 e = this._apply("prefix_expr");
-                return _.UnaryExpr(e).operator(op.value());
+                return __.UnaryExpr(e).operator(op.value());
             }, function() {
                 this._applyWithArgs("token", "sizeof");
                 return e = this._apply("unary_expr");
@@ -798,14 +824,18 @@
         },
         postfix_expr: function() {
             var $elf = this, _fromIdx = this.input.idx, e, op;
-            e = this._apply("left_expr");
-            this._apply("spacesNoNl");
-            op = this._or(function() {
-                return this._applyWithArgs("token", "++");
+            return this._or(function() {
+                e = this._apply("left_expr");
+                this._apply("spacesNoNl");
+                op = this._or(function() {
+                    return this._applyWithArgs("token", "++");
+                }, function() {
+                    return this._applyWithArgs("token", "--");
+                });
+                return __.UpdateExpr(e).operator(op.value()).prefix(!1);
             }, function() {
-                return this._applyWithArgs("token", "--");
+                return this._apply("left_expr");
             });
-            return _.UpdateExpr(e).operator(op.value()).prefix(!1);
         },
         left_expr: function() {
             var $elf = this, _fromIdx = this.input.idx, p;
@@ -824,52 +854,53 @@
             this._applyWithArgs("token", "(");
             as = this._applyWithArgs("listOf", "assign_expr", ",");
             this._applyWithArgs("token", ")");
-            return _.CallExpr(p, as);
+            return __.CallExpr(p, as);
         },
         member_expr: function(p) {
             var $elf = this, _fromIdx = this.input.idx, e, i;
             return this._or(function() {
                 this._applyWithArgs("token", "[");
-                e = this._apply("expression");
+                e = this._apply("expr");
                 this._applyWithArgs("token", "]");
-                return _.MemberExpr(p, e);
+                return __.MemberExpr(p, e);
             }, function() {
                 this._applyWithArgs("token", ".");
-                i = this._applyWithArgs("token", "id");
-                return _.MemberExpr(p).name(i.value());
+                i = this._applyWithArgs("token", "Id");
+                return __.MemberExpr(p).name(i.value());
             }, function() {
                 this._applyWithArgs("token", "->");
-                i = this._applyWithArgs("token", "id");
-                return _.PointerExpr(p).name(i.value());
+                i = this._applyWithArgs("token", "Id");
+                return __.PointerExpr(p).name(i.value());
             });
         },
         primary_expr: function() {
             var $elf = this, _fromIdx = this.input.idx, e;
             return this._or(function() {
-                return this._applyWithArgs("token", "id");
+                return this._applyWithArgs("token", "Id");
             }, function() {
-                return this._applyWithArgs("token", "const");
+                return this._applyWithArgs("token", "Number");
             }, function() {
-                return this._applyWithArgs("token", "string");
+                return this._applyWithArgs("token", "String");
             }, function() {
                 this._applyWithArgs("token", "(");
-                e = this._apply("expression");
+                e = this._apply("expr");
                 this._applyWithArgs("token", ")");
-                return _.GroupExpr(e);
+                return __.GroupExpr(e);
             });
         },
         const_expr: function() {
-            var $elf = this, _fromIdx = this.input.idx;
-            return this._apply("cond_expr");
+            var $elf = this, _fromIdx = this.input.idx, e;
+            e = this._apply("cond_expr");
+            return e["const"](!0);
         },
         declaration: function() {
-            var $elf = this, _fromIdx = this.input.idx, ds, id;
+            var $elf = this, _fromIdx = this.input.idx, ds, idec;
             ds = this._apply("decl_specs");
-            id = this._many(function() {
+            idec = this._many(function() {
                 return this._apply("init_decl");
             });
             this._applyWithArgs("token", ";");
-            return _.MakeDeclaration(ds, idec);
+            return __.VarDeclStmt(ds, idec);
         },
         decl_specs: function() {
             var $elf = this, _fromIdx = this.input.idx, ds, s, t;
@@ -878,19 +909,40 @@
                 ds = this._many(function() {
                     return this._apply("decl_specs");
                 });
-                return ds.concat(s);
+                return function() {
+                    res = declattr();
+                    if (0 === ds.length) res.storage_class = s.value(); else {
+                        res = ds[0];
+                        res.storage_class = s.value();
+                    }
+                    return res;
+                }.call(this);
             }, function() {
                 t = this._apply("type_spec");
                 ds = this._many(function() {
                     return this._apply("decl_specs");
                 });
-                return ds.concat(t);
+                return function() {
+                    res = declattr();
+                    if (0 == ds.length) res.type_spec = t.value(); else {
+                        res = ds[0];
+                        res.type_spec = t.value();
+                    }
+                    return res;
+                }.call(this);
             }, function() {
                 t = this._apply("type_qualifier");
                 ds = this._many(function() {
                     return this._apply("decl_specs");
                 });
-                return ds.concat(t);
+                return function() {
+                    res = declattr();
+                    if (0 === ds.length) res.type_qual = t.value(); else {
+                        res = ds[0];
+                        res.type_qual = t.value();
+                    }
+                    return res;
+                }.call(this);
             });
         },
         init_decl: function() {
@@ -899,10 +951,10 @@
                 d = this._apply("declarator");
                 this._applyWithArgs("token", "=");
                 i = this._apply("initializer");
-                return _.InitDeclarator(d, i);
+                return __.VarBinding(d, i);
             }, function() {
                 d = this._apply("declarator");
-                return _.InitDeclarator(d);
+                return __.VarBinding(d);
             });
         },
         store_cl_spec: function() {
@@ -952,13 +1004,17 @@
             return this._or(function() {
                 p = this._apply("pointer");
                 d = this._apply("dir_declarator");
-                return _.PointerDeclarator(d, p);
+                return function() {
+                    p.pointer_level > 0 && d.pointer_level(p.pointer_level);
+                    void 0 !== p.pointer_type && d.pointer_type(p.pointer_type);
+                    return d;
+                }.call(this);
             }, function() {
                 return this._apply("dir_declarator");
             });
         },
         dir_declarator: function() {
-            var $elf = this, _fromIdx = this.input.idx, d;
+            var $elf = this, _fromIdx = this.input.idx, d, s;
             return this._or(function() {
                 d = this._apply("dir_declarator");
                 return this._applyWithArgs("pmember_decl", d);
@@ -967,47 +1023,74 @@
                 return this._applyWithArgs("pcall_decl", d);
             }, function() {
                 this._applyWithArgs("token", "(");
-                this._apply("declarator");
-                return this._applyWithArgs("token", ")");
+                d = this._apply("declarator");
+                this._applyWithArgs("token", ")");
+                return d.func(!0);
             }, function() {
-                return this._applyWithArgs("token", "id");
+                s = this._applyWithArgs("token", "Id");
+                return __.Declarator().name(s);
             });
         },
         pmember_decl: function(p) {
             var $elf = this, _fromIdx = this.input.idx;
             return this._or(function() {
                 this._applyWithArgs("token", "[ const_expr:e ]");
-                return _.MemberDecl(p, e);
+                return function() {
+                    p.member(!0);
+                    p.append(e);
+                    return p;
+                }.call(this);
             }, function() {
                 this._applyWithArgs("token", "[");
                 this._applyWithArgs("token", "]");
-                return _.MemberDecl(p);
+                return function() {
+                    p.member(!0);
+                    return p;
+                }.call(this);
             });
         },
         pcall_decl: function(p) {
-            var $elf = this, _fromIdx = this.input.idx, g;
+            var $elf = this, _fromIdx = this.input.idx, ll, pl;
             this._applyWithArgs("token", "(");
-            g = this._or(function() {
-                return this._apply("param_type_lst");
+            this._or(function() {
+                pl = this._apply("param_type_lst");
+                return function() {
+                    p.call(!0);
+                    p.append(pl);
+                    return p;
+                }.call(this);
             }, function() {
-                return this._apply("ident_list");
+                ll = this._apply("ident_list");
+                return function() {
+                    p.call(!0);
+                    p.append(ll);
+                    return p;
+                }.call(this);
             }, function() {
                 return this._apply("empty");
             });
             this._applyWithArgs("token", ")");
-            return _.GroupDecl(p, g);
+            return function() {
+                p.call(!0);
+                return p;
+            }.call(this);
         },
         pointer: function() {
             var $elf = this, _fromIdx = this.input.idx, pn, pt;
             pn = this._many1(function() {
                 return this._applyWithArgs("token", "*");
             });
-            pt = this._or(function() {
-                return this._applyWithArgs("token", "const");
-            }, function() {
-                return this._applyWithArgs("token", "volatile");
+            pt = this._opt(function() {
+                return this._or(function() {
+                    return this._applyWithArgs("token", "const");
+                }, function() {
+                    return this._applyWithArgs("token", "volatile");
+                });
             });
-            return _.PointerType(pt, pn);
+            return {
+                pointer_level: pn.length,
+                pointer_type: pt
+            };
         },
         param_type_lst: function() {
             var $elf = this, _fromIdx = this.input.idx;
@@ -1019,7 +1102,7 @@
             dl = this._opt(function() {
                 return this._apply("declarator");
             });
-            return _.ParamDeclaration(dl, ds);
+            return __.ParamDeclaration(dl, ds);
         },
         initializer: function() {
             var $elf = this, _fromIdx = this.input.idx, p;
@@ -1027,7 +1110,7 @@
                 this._applyWithArgs("token", "{");
                 p = this._applyWithArgs("listOf", "initializer_lst", ",");
                 this._applyWithArgs("token", "}");
-                return _.GroupInitializer(p);
+                return __.GroupInitializer(p);
             }, function() {
                 return this._apply("assign_expr");
             });
@@ -1058,26 +1141,26 @@
                 return this._apply("expr");
             });
             this._applyWithArgs("token", ";");
-            return _.ExprStmt(e);
+            return __.ExprStmt(e);
         },
         labeled_stmt: function() {
             var $elf = this, _fromIdx = this.input.idx, e, l, s;
             return this._or(function() {
-                l = this._applyWithArgs("token", "id");
+                l = this._applyWithArgs("token", "Id");
                 this._applyWithArgs("token", ":");
                 s = this._apply("stmt");
-                return _.LabeledStmt(l.value(), s);
+                return __.LabeledStmt(l.value(), s);
             }, function() {
                 this._applyWithArgs("token", "case");
                 e = this._apply("const_expr");
                 this._applyWithArgs("token", ":");
                 s = this._apply("stmt");
-                return _.CaseStmt(e, s);
+                return __.CaseStmt(e, s);
             }, function() {
                 this._applyWithArgs("token", "default");
                 this._applyWithArgs("token", ":");
                 s = this._apply("stmt");
-                return _.DefaultStmt(s);
+                return __.DefaultStmt(s);
             });
         },
         compound_stmt: function() {
@@ -1090,7 +1173,7 @@
                 return this._apply("stmt");
             });
             this._applyWithArgs("token", "}");
-            return _.CompoundStmt(d, s);
+            return __.CompoundStmt(d, s);
         },
         selection_stmt: function() {
             var $elf = this, _fromIdx = this.input.idx, e, f, s;
@@ -1103,10 +1186,10 @@
                 return this._or(function() {
                     this._applyWithArgs("token", "else");
                     f = this._apply("stmt");
-                    return _.IfStmt(e, s, f);
+                    return __.IfStmt(e, s, f);
                 }, function() {
                     this._apply("empty");
-                    return _.IfStmt(e, s);
+                    return __.IfStmt(e, s);
                 });
             }, function() {
                 this._applyWithArgs("token", "switch");
@@ -1114,7 +1197,7 @@
                 e = this._apply("expr");
                 this._applyWithArgs("token", ")");
                 s = this._apply("stmt");
-                return _.SwitchStmt(e, s);
+                return __.SwitchStmt(e, s);
             });
         },
         iteration_stmt: function() {
@@ -1125,7 +1208,7 @@
                 e = this._apply("expr");
                 this._applyWithArgs("token", ")");
                 s = this._apply("stmt");
-                return _.WhileStmt(e, s);
+                return __.WhileStmt(e, s);
             }, function() {
                 this._applyWithArgs("token", "do");
                 s = this._apply("stmt");
@@ -1134,7 +1217,7 @@
                 e = this._apply("expr");
                 this._applyWithArgs("token", ")");
                 this._applyWithArgs("token", ";");
-                return _.DoWhileStmt(e, s);
+                return __.DoWhileStmt(e, s);
             }, function() {
                 this._applyWithArgs("token", "for");
                 this._applyWithArgs("token", "(");
@@ -1151,31 +1234,31 @@
                 });
                 this._applyWithArgs("token", ")");
                 s = this._apply("stmt");
-                return _.ForStmt(se, ee, ie, s);
+                return __.ForStmt(se, ee, ie, s);
             });
         },
         jump_stmt: function() {
             var $elf = this, _fromIdx = this.input.idx, e, l;
             return this._or(function() {
                 this._applyWithArgs("token", "goto");
-                l = this._applyWithArgs("token", "id");
+                l = this._applyWithArgs("token", "Id");
                 this._applyWithArgs("token", ";");
-                return _.GotoStmt(l.value());
+                return __.GotoStmt(l.value());
             }, function() {
                 this._applyWithArgs("token", "continue");
                 this._applyWithArgs("token", ";");
-                return _.ContinueStmt();
+                return __.ContinueStmt();
             }, function() {
                 this._applyWithArgs("token", "break");
                 this._applyWithArgs("token", ";");
-                return _.BreakStmt();
+                return __.BreakStmt();
             }, function() {
                 this._applyWithArgs("token", "return");
                 e = this._opt(function() {
                     return this._apply("expr");
                 });
                 this._applyWithArgs("token", ";");
-                return _.ReturnStmt(e);
+                return __.ReturnStmt(e);
             });
         },
         external_decl: function() {
@@ -1193,21 +1276,24 @@
             });
             dc = this._apply("declarator");
             s = this._apply("compound_stmt");
-            return _.FuncDeclare(ds, dc, s);
+            return __.FuncDefinition(ds, dc, s);
         },
         translation_u: function() {
-            var $elf = this, _fromIdx = this.input.idx;
-            return this._many1(function() {
+            var $elf = this, _fromIdx = this.input.idx, s;
+            s = this._many1(function() {
                 return this._apply("external_decl");
             });
+            return __.Program(s);
         },
         topLevel: function() {
-            var $elf = this, _fromIdx = this.input.idx;
-            this._many1(function() {
-                return this._apply("expr");
+            var $elf = this, _fromIdx = this.input.idx, q;
+            q = this._many1(function() {
+                this._apply("spaces");
+                return this._apply("declaration");
             });
             this._apply("spaces");
-            return this._apply("end");
+            this._apply("end");
+            return q;
         }
     });
     CParser.position_info = function(input, from, to) {
