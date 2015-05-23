@@ -1,36 +1,5 @@
-
-/**
- * Copyright (c) 2015-2016 Muthucumaru Maheswaran <mahes25@gmail.com>
- *
- * See the LICENCE file at the root of the project for the full licence.
- *
- * This parser borrows quite liberally from the awesome ES5Parser built by
- * Jonathan Brachthäuser (http://b-studios.de). But, don't worry this implements
- * a C grammar and not a JavaScript grammar as ES5!
- */
-
-
 // Dependencies
 var _       = require('../nodes.js');
-
-
-/**
- * Reduced C: This parser accepts a subset of the C language.
- * I want to get the JAMScript up and running to hash out the many problems we
- * would encounter in deploying a 'bridge' language and understand what we could do
- * with it.
- *
- * Simplifications:
- * - no typedefs
- * - no complicated structures.. only primary types are included in structures
- * - only basic pointer patterns
- * - no suffix for constants like integers or floats
- * - no prefix for strings
- * - no structures
- * - no enums
- * - no abstract direct declarations
- * - need to check with the full C95 specification for other omissions
- */
 
 ometa CParser  {
 
@@ -41,10 +10,9 @@ ometa CParser  {
     nameRest        = nameFirst | digit,
     linebreak       = '\n',
 
-
     // Comments
     //
-    comment         = ``//'' (~linebreak char)* &linebreak,
+    comment         = ``//'' (~linebreak char)* &linebreak
                     | fromTo('/*', '*/'),
 
     space           = ^space | comment | linebreak,
@@ -91,7 +59,7 @@ ometa CParser  {
                   | '%' | '<' | '>' | '^' | '|' | '?' ):s           -> _.Special(s),
 
 
-    token: tt       = spaces ( (special | keyword):t ?(t.value) == tt)              -> t
+    token: tt       = spaces ( (special | keyword):t ?(t.value == tt)               -> t
                     | (id | number | string):t ?(t[0] == tt)                        -> t
                     ),
 
@@ -101,7 +69,7 @@ ometa CParser  {
     // TODO: arg_expr_list .. is it just an alias to expression?
     // FIXME: There could be a difference due to semantics..
 
-    expr            = listOf(#assign_expr, ','):le                  -> _.(le.length > 1? _.SequenceExpr(le) : le[0]),
+    expr            = listOf(#assign_expr, ','):le                  -> (le.length > 1? _.SequenceExpr(le) : le[0]),
 
     assign_expr     = unary_expr:lhs assign_op:op assign_expr:rhs   -> _.AssignExpr(lhs, rhs).operator(op.value())
                     | cond_expr,
@@ -131,7 +99,7 @@ ometa CParser  {
     add_expr        = add_expr:x ( "+" | "-" ) mult_expr:y          -> _.BinaryExpr(x, y).operator(op.value())
                     | mult_expr,
     mult_expr       = mult_expr:x ( "*" | "/" | "%" ) prefix_expr:y -> _.BinaryExpr(x, y).operator(op.value())
-                    | prefix_expr
+                    | prefix_expr,
 
     assign_op       = "=" | "*=" | "/=" | ">>=" | "<<=" | "+=" | "-="
                     | "%=" | "&=" | "|=" | "^=",
@@ -149,7 +117,7 @@ ometa CParser  {
                     | "sizeof" unary_expr:e
                     | postfix_expr,
 
-    postfix_expr    = left_expr:e spacesNoNl ( "++" | "--" ):op     -> _.UpdateExpr(e).operator(op.value()).prefix(false)
+    postfix_expr    = left_expr:e spacesNoNl ( "++" | "--" ):op     -> _.UpdateExpr(e).operator(op.value()).prefix(false),
 
     left_expr       = left_expr:p call_expr(p)
                     | left_expr:p member_expr(p)
@@ -242,7 +210,7 @@ ometa CParser  {
 
     iteration_stmt  = "while" "(" expr:e ")" stmt:s                         -> _.WhileStmt(e, s)
                     | "do" stmt:s "while" "(" expr:e ")" ";"                -> _.DoWhileStmt(e, s)
-                    | "for" "(" expr?:se ";" expr?:ee ";" expr?:ie ")" stmt:s   -> _.ForStmt(se, ee, ie, s)
+                    | "for" "(" expr?:se ";" expr?:ee ";" expr?:ie ")" stmt:s   -> _.ForStmt(se, ee, ie, s),
 
     jump_stmt       = "goto" "id":l ";"                         -> _.GotoStmt(l.value())
                     | "continue" ";"                            -> _.ContinueStmt()
@@ -252,17 +220,18 @@ ometa CParser  {
     external_decl   = function_def
                     | declaration,
 
-    function_def    = decl_specs?:ds declarator:dc compound_stmt:s      -> _.FuncDeclare(ds, dc, s)
+    function_def    = decl_specs?:ds declarator:dc compound_stmt:s      -> _.FuncDeclare(ds, dc, s),
 
 
     translation_u   = external_decl+,
 
-    topLevel        = translation_u spaces end
+//    topLevel        = translation_u spaces end
+    topLevel        = expr+ spaces end
 }
 
 
 // Configure position information callback
-CParser.position_info = function(input, from to) {
+CParser.position_info = function(input, from, to) {
 
     function position(pos) {
         var line  = 1,
@@ -304,7 +273,7 @@ CParser.spec = {
                  "do", "double", "else", "enum", "extern", "float", "for", "goto",
                  "if", "int", "long", "register", "return", "short", "signed",
                  "sizeof", "static", "struct", "switch", "typedef", "union",
-                 "unsigned", "void", "volatile", "while"];
+                 "unsigned", "void", "volatile", "while"],
 
     isKeyword:  function(k) { return this.keywords.indexOf(k) != -1; }
 };
