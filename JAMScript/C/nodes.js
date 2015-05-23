@@ -570,20 +570,6 @@ register("SequenceExpr", {}, function(exprs) {
 });
 
 /**
- * NewExpression
- * -------------
- * SampleCode:
- *     new foo().bar;
- *
- * Representation:
- *     [#NewExpr, {}, MemberExpression]
- *
- * Call like:
- *     CBuilder.NewExpr(class);
- */
-register("NewExpr");
-
-/**
  * CallExpression
  * --------------
  * SampleCode:
@@ -601,13 +587,14 @@ register("CallExpr", {}, function(expr, args) {
 });
 
 /**
- * MemberExpression
- * ----------------
+ * MemberExpression or PointerExpression
+ * -------------------------------------
  * SampleCode:
  *     foo.by_name[calculated]
+ *     foo->by_pointer
  *
  * Representation:
- *     [#MemberExpr, { access: ('name' | 'calculated') }, Expression, Expression?]
+ *     [#MemberExpr, { access: ('name' | 'calculated' ) }, Expression, Expression?]
  *
  * Call like:
  *     CBuilder.MemberExpr(expr, accessExpr).access('calculated');
@@ -622,6 +609,12 @@ register("MemberExpr", { access: 'calculated', name: undefined }, function(expr,
     this.appendAll(arguments);
   }
 });
+
+register("PointerExpr", {access: 'pointer', name: undefined}, function(expr) {
+    this.appendAll(arguments);
+});
+
+
 
 /**
  * GroupExpression
@@ -661,6 +654,24 @@ register("ArrayExpr", {}, function(exprs) {
   else
     this.appendAll(exprs);
 });
+
+
+/**
+ * FuncDefinition
+ * --------------
+ *
+ * Representation
+ *      [#FuncDefinition, {storage_class: .. type_spec:.. type_qual:..}, decl, stmt]
+ *
+ */
+ register("FuncDefinition", function(dspec, decl, stmt) {
+     this[1] = dspec;
+     this.append(decl);
+     this.append(stmt);
+ });
+
+
+
 
 /**
  * ObjectExpression

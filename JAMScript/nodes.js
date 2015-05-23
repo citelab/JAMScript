@@ -36,35 +36,6 @@ register("Program", {}, function(srcEls) {
   this.appendAll(srcEls);
 });
 
-/**
- * Function
- * --------
- *
- * Representation:
- *     [#Function, { id: Identifier, generator: boolean, expression: boolean }, FunctionArgs, BlockStmt]
- *
- * Call like:
- *     ES5Builder.Function(args, body).id("name");
- */
-register("Function", {
-  id: undefined,
-  generator: false,
-  expr: false
-});
-
-/**
- * FunctionArgs
- * ------------
- *
- * Representation:
- *     [#FunctionArgs, {}, ...Expression]
- *
- * Call like:
- *     ES5Builder.FunctionArgs(...args);
- */
-register("FunctionArgs", {}, function(args) {
-  this.appendAll(args);
-});
 
 /**
  * Literals
@@ -196,6 +167,8 @@ register("LabeledStmt", { label: ""}, function(label, stmt) {
   this.label(label)
       .append(stmt);
 });
+
+
 
 /**
  * BreakStatement
@@ -407,13 +380,20 @@ register("Declarator", {
  *
  * Representation
  *      [#ParamDeclaration, {storage_class: .. type_spec: .. type_qual: ..}, ... Declarator]
- *
  */
-register("ParamDeclaration", {
-    storage_class: undefined,
-    type_spec: undefined,
-    type_qual: undefined
+register("ParamDeclaration", function(ds, decl) {
+    this[1] = ds;
+    this.append(decl);
 });
+
+/**
+ * GroupInitializer
+ * ----------------
+ *
+ * Representation:
+ *      [#GroupInitializer, {}, initializer list..]
+ */
+ register("GroupInitializer");
 
 
 /**
@@ -432,7 +412,7 @@ register("ParamDeclaration", {
  *     [#AssignExpr, { operator: ( += | -= | *= | /= | … ) }, Identifier, Expr]
  *
  * Call like:
- *     ES5Builder.AssignExpr(lhsExpr, rhsExpr).operator('+=');
+ *     CBuilder.AssignExpr(lhsExpr, rhsExpr).operator('+=');
  */
 register("AssignExpr", { operator: "=" });
 
@@ -446,7 +426,7 @@ register("AssignExpr", { operator: "=" });
  *     [#CondExpr, {}, Expression, Expression, Expression]
  *
  * Call like:
- *     ES5Builder.CondExpr(condExpr, trueExpr, falseExpr);
+ *     CBuilder.CondExpr(condExpr, trueExpr, falseExpr);
  */
 register("CondExpr");
 
@@ -461,7 +441,7 @@ register("CondExpr");
  *     [#UnaryExpr, { operator: ( ! | + | - | ~ | void | delete | typeof) }, Expression]
  *
  * Call like:
- *     ES5Builder.UnaryExpr(expr).operator('!');
+ *     CBuilder.UnaryExpr(expr).operator('!');
  */
 register("UnaryExpr", {
   operator: undefined
@@ -480,7 +460,7 @@ register("UnaryExpr", {
  *     [#UpdateExpr, { operator: ( ++ | -- ), prefix: true }, Expression]
  *
  * Call like:
- *     ES5Builder.UpdateExpr(expr).operator('!').prefix(false);
+ *     CBuilder.UpdateExpr(expr).operator('!').prefix(false);
  */
 register("UpdateExpr", {
   operator: undefined,
@@ -500,7 +480,7 @@ register("UpdateExpr", {
  *     [#BinaryExpr, { operator: ( || | && | ^ | … )}, Expression, Expression]
  *
  * Call like:
- *     ES5Builder.BinaryExpr(lhsExpr, rhsExpr).operator('||');
+ *     CBuilder.BinaryExpr(lhsExpr, rhsExpr).operator('||');
  */
 register("BinaryExpr", {
   operator: undefined
@@ -523,20 +503,6 @@ register("SequenceExpr", {const: false}, function(exprs) {
 });
 
 /**
- * NewExpression
- * -------------
- * SampleCode:
- *     new foo().bar;
- *
- * Representation:
- *     [#NewExpr, {}, MemberExpression]
- *
- * Call like:
- *     ES5Builder.NewExpr(class);
- */
-register("NewExpr");
-
-/**
  * CallExpression
  * --------------
  * SampleCode:
@@ -546,7 +512,7 @@ register("NewExpr");
  *     [#CallExpr, {}, (CallExpr | MemberExpression), ...AssignExpr]
  *
  * Call like:
- *     ES5Builder.CallExpr(expr, ...args);
+ *     CBuilder.CallExpr(expr, ...args);
  */
 register("CallExpr", {}, function(expr, args) {
   this.append(expr)
@@ -554,16 +520,17 @@ register("CallExpr", {}, function(expr, args) {
 });
 
 /**
- * MemberExpression
- * ----------------
+ * MemberExpression or PointerExpression
+ * -------------------------------------
  * SampleCode:
  *     foo.by_name[calculated]
+ *     foo->by_pointer
  *
  * Representation:
- *     [#MemberExpr, { access: ('name' | 'calculated') }, Expression, Expression?]
+ *     [#MemberExpr, { access: ('name' | 'calculated' ) }, Expression, Expression?]
  *
  * Call like:
- *     ES5Builder.MemberExpr(expr, accessExpr).access('calculated');
+ *     CBuilder.MemberExpr(expr, accessExpr).access('calculated');
  */
 register("MemberExpr", { access: 'calculated', name: undefined }, function(expr, accessExpr){
 
@@ -576,10 +543,14 @@ register("MemberExpr", { access: 'calculated', name: undefined }, function(expr,
   }
 });
 
+register("PointerExpr", {access: 'pointer', name: undefined}, function(expr) {
+    this.appendAll(arguments);
+});
+
+
 /**
  * GroupExpression
  * ---------------
- * Please note: the GroupExpression has no equivalent in the SpiderMonkey Parser API
  *
  * SampleCode:
  *     (foo.bar + baz())
@@ -588,75 +559,21 @@ register("MemberExpr", { access: 'calculated', name: undefined }, function(expr,
  *     [#GroupExpr, {}, Expr]
  *
  * Call like:
- *     ES5Builder.GroupExpr(expr);
+ *     CBuilder.GroupExpr(expr);
  */
 register("GroupExpr");
 
-/**
- * ArrayExpression
- * ---------------
- * SampleCode:
- *     [1, 3, 5, undefined, "hello", something()]
- *
- * Representation:
- *     [#ArrayExpr, {}, ...Expr]
- *
- * Call like:
- *     ES5Builder.ArrayExpr(...expr);
- */
-register("ArrayExpr", {}, function(exprs) {
-
-  // only append exprs if not undefined
-  if(exprs === undefined || exprs[0] === undefined && exprs.length === 1)
-    return this;
-
-  // exprs should be an array containing nodes
-  else
-    this.appendAll(exprs);
-});
 
 /**
- * ObjectExpression
- * ----------------
- * SampleCode:
- *     {
- *       foo: 4,
- *       get name() {…},
- *       set name(new_name) {…}
- *     }
+ * FuncDefinition
+ * --------------
  *
- * Representation:
- *     [#ObjectExpr, {}, ...PropertyBinding)]
+ * Representation
+ *      [#FuncDefinition, {storage_class: .. type_spec:.. type_qual:..}, decl, stmt]
  *
- * Call like:
- *     ES5Builder.ObjectExpr(...bindings);
  */
-register("ObjectExpr", {}, function(bindings) {
-  this.appendAll(bindings)
-});
-
-/**
- * PropertyBinding
- * ---------------
- * SampleCode:
- *    foo: 4
- *    get name() {…}
- *    set name(new_name) {…}
- *
- * Representation:
- *     [#PropertyBinding, { kind: 'init', name: "somename" }, ), id, Expr]
- *     [#PropertyBinding, { kind: ('get' | 'set'), name: "somename" }, ), id, FunctionArgs, BlockStatement]
- *
- * Call like:
- *     ES5Builder.PropertyBinding("name", initExpr);
- *     ES5Builder.PropertyBinding("name", args, block).kind('set')
- */
-register("PropertyBinding", { kind: 'init',  name: undefined}, function(name) {
-
-  if(typeof name === 'string')
-    name = nodes.Id(name)
-
-  // append rest-args
-  this.name(name.value())
-      .appendAll(arguments);
-});
+ register("FuncDefinition", function(dspec, decl, stmt) {
+     this[1] = dspec;
+     this.append(decl);
+     this.append(stmt);
+ });
