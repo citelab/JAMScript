@@ -42,7 +42,6 @@ var declattr = function() {
 };
 
 
-
 ometa CParser  {
 
     // Helper Rules
