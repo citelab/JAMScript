@@ -249,7 +249,7 @@ register("CaseStmt", {}, function(testExpr,stmt) {
  * Call like:
  *     CBuilder.DefaultStmt(stmt);
  */
-register("CaseStmt", {}, function(stmt) {
+register("DefaultStmt", {}, function(stmt) {
     this.appendAll(stmt);
 });
 

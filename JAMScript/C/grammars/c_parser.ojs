@@ -1,6 +1,6 @@
 
 /**
- * Copyright (c) 2015-2016 Muthucumaru Maheswaran <mahes25@gmail.com>
+ * Copyright (c) 2015 Muthucumaru Maheswaran <mahes25@gmail.com>
  *
  * See the LICENCE file at the root of the project for the full licence.
  *
@@ -246,27 +246,27 @@ ometa CParser  {
                     | "Id":s                                        -> __.Declarator().name(s),
 
     pmember_decl :p = "[ const_expr:e ]"                            -> {
-                                                                         p.member(true);
+                                                                         p.type('member');
                                                                          p.append(e);
                                                                          p;
                                                                         }
                     | "[" "]"                                       -> {
-                                                                         p.member(true);
+                                                                         p.type('member');
                                                                          p;
                                                                         },
 
     pcall_decl :p   = "(" ( param_type_lst:pl                       -> {
-                                                                         p.call(true);
+                                                                         p.type('call');
                                                                          p.append(pl);
                                                                          p;
                                                                         }
                             | ident_list:ll                         -> {
-                                                                         p.call(true);
+                                                                         p.type('call');
                                                                          p.append(ll);
                                                                          p;
                                                                         }
                             | empty ) ")"                           -> {
-                                                                         p.call(true);
+                                                                         p.type('call');
                                                                          p;
                                                                         },
 

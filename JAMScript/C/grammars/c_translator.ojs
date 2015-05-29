@@ -1,188 +1,175 @@
 /**
- * Copyright (c) 2015-2016 Muthucumaru Maheswaran <mahes25@gmail.com>
+ * Copyright (c) 2015 Muthucumaru Maheswaran <mahes25@gmail.com>
  *
  * See the LICENCE file at the root of the project for the full licence.
  *
- * This parser borrows quite liberally from the awesome ES5Parser built by
- * Jonathan Brachthäuser (http://b-studios.de). But, don't worry this implements
- * a C grammar and not a JavaScript grammar as ES5!
+ * This translator borrows quite liberally from the awesome ES5Translator built by
+ * Jonathan Brachthäuser (http://b-studios.de).
  */
 
 // Dependencies
 var JsonMLWalker = require('../../jsonml/grammars/jsonml_walker.ojs'),
-    _            = require('../nodes'),
     join         = require('../../utils.js').join,
     escape       = require('../../utils.js').escape_string;
 
-/*
-What are the rules?
 
-  1. if a block is not empty create a new line and indent the content.
-  2. Everything that ends with } does not need to be terminated with a ';' (Like Functions)
-  3. If Function is not the first statement it needs one line of space above
-*/
-ometa ES5Pretty <: JsonMLWalker {
+ometa CPretty <: JsonMLWalker {
 
-  // Helper rule
-  assure_block       = ~undefined :n ( ?n.hasType('BlockStmt') walk(n)                   //     {...} -> {...}
-                                     | walk(_.BlockStmt([n]))                            //       ... -> {...}
-                                     ),
+    // Literals
+    //
+    Id              :n                                                                  -> n.value(),
 
-  // Node Translations
-  Program         :n = walk*:cs                                                          -> cs.join(';\n'),
+    Number          :n  = ?n.is('kind', 'hex')                                          -> join('0x', n.value().toString(16))
+                        | ?n.is('kind', 'oct')                                          -> join('0', n.value().toString(8))
+                        | ?n.is('value', parseFloat(n.original()))                      -> n.original()           // if something changed then don't
+                        | empty                                                         -> n.value().toString(),  // use the original string representation
 
-  Function        :n = walk:args walk:body ( ?n.has('id')                                -> join('function ', n.id(), '(', args.join(', '), ') ', body)
-                                           | empty                                       -> join('function(', args.join(', '), ') ', body)
-                                           ),
-  FunctionArgs    :n = walk*:as                                                          -> as,
+    String          :n                                                                  -> join('"', escape(n.value()), '"'),
 
+    // Expressions
+    //
+    SequenceExpr    :n  = walk*:es                                                      -> es.join(', '),
 
-  // Literals
-  Id              :n                                                                     -> n.value(),
+    AssignExpr      :n  = walk:lhs walk:rhs                                             -> join(lhs, ' ', n.operator(), ' ', rhs),
 
-  Number          :n = ?n.is('kind', 'hex')                                              -> join('0x', n.value().toString(16))
-                     | ?n.is('value', parseFloat(n.original()))                          -> n.original()           // if something changed then don't
-                     | empty                                                             -> n.value().toString(),  // use the original string representation
+    CondExpr        :n  = walk:ce walk:t walk:f                                         -> join(ce, ' ? ', t, ' : ', f),
 
-  String          :n                                                                     -> join('"', escape(n.value()), '"'),
+    BinaryExpr      :n  = walk:lhs walk:rhs                                             -> join(lhs, ' ', n.operator(), ' ', rhs),
 
+    UpdateExpr      :n = walk:e ( ?n.is('prefix')                                       -> join(n.operator(), e)
+                                | empty                                                 -> join(e, n.operator())
+                                ),
 
-  // Statements
-  BlockStmt       :n = walk+:cs                                                          -> join('{\n', this.indent(this.join_sc(cs)), '\n}')
-                     | empty                                                             -> '{}',
+    UnaryExpr       :n = walk:e ( ?n.operator().match(/^[+-~!*&]$/)                     -> join(n.operator(), e)
+                                | empty                                                 -> join(n.operator(), ' ', e)
+                                ),
 
-  VarDeclStmt     :n = walk+:vs                                                          -> join(n.kind(), ' ', this.indent(vs.join(',\n'), {
-                                                                                              width: n.kind().length + 1,
-                                                                                              first_line: false
-                                                                                            })),
+    CallExpr        :n = walk:e walk*:args                                              -> join(e, '(', args.join(', '), ')'),
 
-  VarBinding      :n = undefined                                                         -> n.name()
-                     | &anything:i ?i.hasType('Id') ?i.is('value', 'undefined') anything -> n.name()
-                     | walk:init                                                         -> join(n.name(), ' = ', init),
+    MemberExpr      :n = ?n.is('access', 'name') walk:e                                 -> join(e, '.', n.name())
+                       | walk:e walk:ae                                                 -> join(e, '[', ae, ']'),
 
-  EmptyStmt       :n                                                                     -> '',
+    PointerExpr     :n = ?n.is('access', 'pointer') walk:e                              -> joint(e, '->' n.name()),
 
-  IfStmt          :n = walk:c assure_block:t ( assure_block:f                            -> join('if(', c, ') ', t, ' else ', f)
-                                             | (undefined | empty)                       -> join('if(', c, ') ', t)
-                                             ),
+    GroupExpr       :n = walk:e                                                         -> join('(', e, ')'),
 
-  LabeledStmt     :n = walk:s                                                            -> join(n.label(), ': ', s),
+    // Declarations
+    //
 
-  BreakStmt       :n = ?(n.label() !== undefined)                                        -> join('break ', n.label())
-                     | empty                                                             -> 'break',
+    VarDeclStmt     :n = walk+:vs                                                       -> join(this.print_sc(n), vs,join(','), ';'),
 
-  ContinueStmt    :n = ?(n.label() !== undefined)                                        -> join('continue ', n.label())
-                     | empty                                                             -> 'continue',
+    VarBinding      :n = walk:d walk:i                                                  -> i !== undefined ? join(d, ' = ', i) : d,
 
-  ReturnStmt      :n = walk:e ( ?(e !== undefined)                                       -> join('return ', e)
-                              | empty                                                    -> 'return'
-                              ),
+    Declarator      :n = ?n.is('type', 'member') walk:e                                 -> e !== undefined ? join(this.print_ptr(n), n.name(), '[', e, ']') : join(n.name(), '[]')
+                       | ?n.is('type', 'call') walk:e                                   -> e !== undefined ? join(this.print_ptr(n), n.name(), '(', e, ')') : join(n.name(), '()')
+                       | ?n.is('type', 'func')                                          -> join('(', this.print_ptr(n), n.name(), ')')
+                       | empty                                                          -> join(this.print_ptr(n), n.name()),
 
-  ThrowStmt       :n = walk:e                                                            -> join('throw ', e),
+    ParamDeclaration  :n = walk:d                                                       -> join(this.print_sc(n), d),
 
-  WithStmt        :n = walk:e assure_block:s                                             -> join('with(', e,') ', s),
-
-  SwitchStmt      :n = walk:e ( walk+:cs                                                 -> join('{\n', this.indent(cs.join('\n')), '\n}')
-                              | empty                                                    -> join('switch(', e, ') {}')
-                              ),
-
-  SwitchCase      :n = ?n.is('default_case') ( walk+:ss                                  -> join('default:\n', this.indent(this.join_sc(ss)))
-                                             | empty                                     -> 'default:'
-                                             )
-
-                     | walk:e                ( walk+:ss                                  -> join('case ', e, ':\n', this.indent(this.join_sc(ss)))
-                                             | empty                                     -> join('case ', e, ':')
-                                             ),
-
-  TryStmt         :n = walk:t walk:ce assure_block:c ( undefined                         -> join('try ', t, ' catch(',ce,') ', c)
-                                                     | assure_block:f                    -> join('try ', t, ' catch(',ce,') ', c, ' finally ', f)
-                                                     )
-                     | walk:t assure_block:f                                             -> join('try ', t, ' finally ', f),
-
-  WhileStmt       :n = walk:ce assure_block:s                                            -> join('while(', ce, ') ', s),
-
-  DoWhileStmt     :n = assure_block:s walk:ce                                            -> join('do ', s, ' while(', ce, ')'),
-
-  ForStmt         :n = walk:ie walk:ce walk:ue assure_block:s                            -> join('for(', ie, '; ', ce, '; ', ue, ') ', s),
-
-  ForInStmt       :n = walk:vs walk:ce assure_block:s                                    -> join('for(', vs, ' in ', ce, ') ', s),
-
-  DebuggerStmt    :n                                                                     -> 'debugger',
+    GroupInitializer  :n = walk+:p                                                      -> join('{', p.join(','), '}'),
 
 
-  // Expressions
-  ThisExpr        :n                                                                     -> 'this',
+    // Statements
+    //
 
-  AssignExpr      :n = walk:lhs walk:rhs                                                 -> join(lhs, ' ', n.operator(), ' ', rhs),
+    ExprStmt        :n = walk*:s                                                        -> join(s, ";"),
 
-  CondExpr        :n = walk:ce walk:t walk:f                                             -> join(ce, ' ? ', t, ' : ', f),
+    LabeledStmt     :n = walk:s                                                         -> join(n.label(), ': ', s),
 
-  UnaryExpr       :n = walk:e ( ?n.operator().match(/^[+-~!]$/)                          -> join(n.operator(), e)
-                              | empty                                                    -> join(n.operator(), ' ', e)
-                              ),
+    CaseStmt        :n = walk:ex walk:st                                                -> join('case', ex, ':', st, ';'),
 
-  UpdateExpr      :n = walk:e ( ?n.is('prefix')                                          -> join(n.operator(), e)
-                              | empty                                                    -> join(e, n.operator())
-                              ),
+    DefaultStmt     :n = walk:s                                                         -> join('default:', s, ';'),
 
-  BinaryExpr      :n = walk:lhs walk:rhs                                                 -> join(lhs, ' ', n.operator(), ' ', rhs),
+    CompoundStmt    :n = walk*:d walk:s                                                 -> join('{\n', this.indent(this.join_sc(d)), this.indent(this.join_sc(s)), '}\n'),
 
-  SequenceExpr    :n = walk*:es                                                          -> es.join(', '),
+    IfStmt          :n = walk:c walk:t ( walk:f                                         -> join('if(', c, ') ', t, ' else ', f, ';')
+                                               | (undefined | empty)                    -> join('if(', c, ') ', t, ';')
+                                               ),
 
-  NewExpr         :n = walk:cls                                                          -> join('new ', cls),
+    SwitchStmt      :n = walk:se walk:st                                                -> join('switch', '(', se, ')', st, ';'),
 
-  CallExpr        :n = walk:e walk*:args                                                 -> join(e, '(', args.join(', '), ')'),
+    WhileStmt       :n = walk:ce walk:s                                                 -> join('while(', ce, ') ', s, ';'),
 
-  MemberExpr      :n = ?n.is('access', 'name') walk:e                                    -> join(e, '.', n.name())
-                     | walk:e walk:ae                                                    -> join(e, '[', ae, ']'),
+    DoWhileStmt     :n = walk:s walk:ce                                                 -> join('do ', s, ' while(', ce, ')', ';'),
 
-  GroupExpr       :n = walk:e                                                            -> join('(', e, ')'),
+    ForStmt         :n = walk:ie walk:ce walk:ue walk:s                                 -> join('for(', ie, '; ', ce, '; ', ue, ') ', s, ';'),
 
-  // TODO
-  ArrayExpr       :n = walk*:es                                                          -> join('[', es.join(', '), ']'),
+    GotoStmt        :n = empty                                                          -> join('goto ', n.label(), ';'),
 
-  // TODO
-  ObjectExpr      :n = walk*:ps                                                          -> join('{\n', this.indent(ps.join(',\n')), '\n}'),
+    ContinueStmt    :n = empty                                                          -> 'continue;',
 
-  PropertyBinding :n = ?n.is('kind', 'init') walk:id walk:e                              -> join(id, ': ', e)
-                     | walk:id walk:args walk:body                                       -> join(n.kind(), ' ', id, '(', args.join(','), ')', body),
+    BreakStmt       :n = empty                                                          -> 'break;',
 
-  RegExpr         :n                                                                     -> join('/', n.body(), '/', n.flags())
+    ReturnStmt      :n = walk:e ( ?(e !== undefined)                                    -> join('return ', e, ';')
+                                | empty                                                 -> 'return;'
+                                ),
+
+    // Function or Program Statements
+    //
+
+    FuncDefinition  :n = walk:de walk:st                                                ->join(this.print_sc(n), de, '{', st, '}'),
+
+    Program         :n = walk*:cs                                                       -> cs.join(';\n'),
 
 }
+
+CPretty.print_ptr(n) {
+    if (n.pointer_level() == 0)
+        return '';
+    if (n.pointer_level() == 1)
+        return join('*', n.pointer_type() !== undefined : n.pointer_type() ? '');
+    else // pointer level more than 2 not supported
+        return join('**', n.pointer_type() !== undefined : n.pointer_type() ? '');
+}
+
+// Pretty print storage class
+CPretty.print_sc(n) {
+
+    var scarr = [];
+    if (n.storage_class() !== undefined)
+        scarr.push(n.storage_class());
+    if (n.type_qual() !== undefined)
+        scarr.push(n.type_qual());
+    if (n.type_spec() !== undefined)
+        scarr.push(n.type_spec());
+
+    return scarr.join(' ');
+}
+
 // join with semicolons and linebreaks
-ES5Pretty.join_sc = function(cs) {
+CPretty.join_sc = function(cs) {
 
-  var output = [];
+    var output = [];
 
-  for(var i = 0; i < cs.length; i++) {
+    for(var i = 0; i < cs.length; i++) {
 
-    // does not end with }
-    if(!cs[i].match(/}$/))
-      output.push(cs[i] + ';');
-    else
-      output.push(cs[i]);
-  }
-  return output.join('\n');
+        // does not end with }
+        if(!cs[i].match(/}$/))
+            output.push(cs[i] + ';');
+        else
+            output.push(cs[i]);
+    }
+    return output.join('\n');
 };
 
-ES5Pretty.indent = function(source, opts) {
+CPretty.indent = function(source, opts) {
 
-  opts = opts || {};
+    opts = opts || {};
 
-  function defaults(key, value) { if(typeof opts[key] == 'undefined') opts[key] = value; }
+    function defaults(key, value) { if(typeof opts[key] == 'undefined') opts[key] = value; }
 
-  defaults('width',      this.tab_width);
-  defaults('first_line', true);
+    defaults('width',      this.tab_width);
+    defaults('first_line', true);
 
-  var space = Array(opts.width+1).join(' ');
-  return (opts.first_line ? space : '') + source.split('\n').join('\n' + space);
+    var space = Array(opts.width+1).join(' ');
+    return (opts.first_line ? space : '') + source.split('\n').join('\n' + space);
 };
 
-ES5Pretty.tab_width = 4;
-ES5Pretty.force_rules = true;
-ES5Pretty.translate = function(input) {
-  return ES5Pretty.match(input, 'walk');
+CPretty.tab_width = 4;
+CPretty.force_rules = true;
+CPretty.translate = function(input) {
+    return CPretty.match(input, 'walk');
 };
 
-module.exports = ES5Pretty;
+module.exports = CPretty;

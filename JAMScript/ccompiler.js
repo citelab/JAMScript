@@ -30,7 +30,9 @@ fs.readFile(fpath, 'utf8', function (err,data) {
         return console.log(err);
     }
         try {
-            CParser.parse(data);
+            tree = CParser.parse(data);
+            console.log("Successfully parsed..");
+            console.log(tree);
         } catch (err) {
             console.log(err);
         }
