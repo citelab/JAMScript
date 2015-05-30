@@ -49,7 +49,7 @@ ometa CPretty <: JsonMLWalker {
     MemberExpr      :n = ?n.is('access', 'name') walk:e                                 -> join(e, '.', n.name())
                        | walk:e walk:ae                                                 -> join(e, '[', ae, ']'),
 
-    PointerExpr     :n = ?n.is('access', 'pointer') walk:e                              -> joint(e, '->' n.name()),
+    PointerExpr     :n = ?n.is('access', 'pointer') walk:e                              -> join(e, '->',  n.name()),
 
     GroupExpr       :n = walk:e                                                         -> join('(', e, ')'),
 
@@ -58,10 +58,10 @@ ometa CPretty <: JsonMLWalker {
 
     VarDeclStmt     :n = walk+:vs                                                       -> join(this.print_sc(n), vs,join(','), ';'),
 
-    VarBinding      :n = walk:d walk:i                                                  -> i !== undefined ? join(d, ' = ', i) : d,
+    VarBinding      :n = walk:d walk:i                                                  -> {i != undefined ? join(d, ' = ', i) : d},
 
-    Declarator      :n = ?n.is('type', 'member') walk:e                                 -> e !== undefined ? join(this.print_ptr(n), n.name(), '[', e, ']') : join(n.name(), '[]')
-                       | ?n.is('type', 'call') walk:e                                   -> e !== undefined ? join(this.print_ptr(n), n.name(), '(', e, ')') : join(n.name(), '()')
+    Declarator      :n = ?n.is('type', 'member') walk:e                                 -> {e !== undefined ? join(this.print_ptr(n), n.name(), '[', e, ']') : join(n.name(), '[]')}
+                       | ?n.is('type', 'call') walk:e                                   -> {e !== undefined ? join(this.print_ptr(n), n.name(), '(', e, ')') : join(n.name(), '()')}
                        | ?n.is('type', 'func')                                          -> join('(', this.print_ptr(n), n.name(), ')')
                        | empty                                                          -> join(this.print_ptr(n), n.name()),
 
@@ -110,21 +110,26 @@ ometa CPretty <: JsonMLWalker {
 
     FuncDefinition  :n = walk:de walk:st                                                ->join(this.print_sc(n), de, '{', st, '}'),
 
-    Program         :n = walk*:cs                                                       -> cs.join(';\n'),
+    Program         :n = walk*:cs                                                       -> cs.join(';\n')
 
 }
 
-CPretty.print_ptr(n) {
+CPretty.print_ptr = function(n) {
+    var pointtype = '';
     if (n.pointer_level() == 0)
         return '';
+    if (n.pointer_type() !== undefined)
+        pointtype = n.pointer_type();
     if (n.pointer_level() == 1)
-        return join('*', n.pointer_type() !== undefined : n.pointer_type() ? '');
-    else // pointer level more than 2 not supported
-        return join('**', n.pointer_type() !== undefined : n.pointer_type() ? '');
+        return join('* ', pointtype, ' ');
+    else  // pointer level more than 2 not supported
+        return join('** ', pointtype, ' ');
+
 }
 
+
 // Pretty print storage class
-CPretty.print_sc(n) {
+CPretty.print_sc = function(n) {
 
     var scarr = [];
     if (n.storage_class() !== undefined)

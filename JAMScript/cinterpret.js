@@ -1,5 +1,6 @@
 var ometa = require('ometa-js'),
     CParser = require('./C/grammars/c_parser.ojs'),
+    CTranslator = require('./C/grammars/c_translator.ojs'),
     readline = require('readline'),
     fs = require('fs');
 
@@ -15,6 +16,8 @@ rl.on('line', function(line) {
 	    tree = CParser.parse(line);
         console.log("Tree = ", tree);
         console.log("Tree length = ", tree.length);
+        output = CTranslator.translate(tree);
+
 	} catch(e) {
 	    console.log("\t\t\t\t ERROR! Invalid Input");
 	}

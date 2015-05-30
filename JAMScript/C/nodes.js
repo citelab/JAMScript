@@ -363,15 +363,13 @@ register("VarBinding");
  * --------------
  *
  * Representation
- *      [#Declarator {name: string, pointer_level:0, pointer_type: .. member: false, call: false, func: false}]
+ *      [#Declarator {name: string, pointer_level:0, pointer_type: .. type: (member| call| func | undefined)]
  */
 register("Declarator", {
     name: undefined,
     pointer_level: 0,
     pointer_type: undefined,
-    member: false,
-    call: false,
-    func: false
+    type: undefined
 });
 
 /**
