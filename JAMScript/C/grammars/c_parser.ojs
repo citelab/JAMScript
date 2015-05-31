@@ -255,7 +255,7 @@ ometa CParser  {
                                                                          p;
                                                                         },
 
-    pcall_decl :p   = "(" ( param_type_lst:pl                        -> {
+    pcall_decl :p   = "(" ( &keyword param_type_lst:pl                -> {
                                                                          p.type('call');
                                                                          p.appendAll(pl);
                                                                          p;
@@ -271,6 +271,9 @@ ometa CParser  {
                                                                         },
 
     pointer         = "*"+:pn ( "const" | "volatile" )?:pt          -> {pointer_level:pn.length, pointer_type:pt === undefined? pt : pt.value()},
+
+
+    ident_list      = listOf(#id, ','),
 
     param_type_lst  = listOf(#param_decl, ","),
 

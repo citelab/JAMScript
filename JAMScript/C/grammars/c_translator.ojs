@@ -60,10 +60,17 @@ ometa CPretty <: JsonMLWalker {
 
     VarBinding      :n = walk:d walk:i                                                  -> {i != undefined ? join(d, ' = ', i) : d},
 
-    Declarator      :n = ?n.is('type', 'member') walk:e                                 -> {e !== undefined ? join(this.print_ptr(n), n.name(), '[', e, ']') : join(n.name(), '[]')}
-                       | ?n.is('type', 'call') walk+:e                                   -> {console.log("e = ", e); e !== undefined ? join(this.print_ptr(n), n.name(), '(', e.join(', '), ')') : join(n.name(), '()')}
-                       | ?n.is('type', 'func')                                          -> join('(', this.print_ptr(n), n.name(), ')')
-                       | empty                                                          -> join(this.print_ptr(n), n.name()),
+    Declarator      :n = ?n.is('type', 'member') walk:e                                 -> {join(this.print_ptr(n), n.name(), '[', e, ']')}
+                       | ?n.is('type', 'call') walk+:e                                  -> {console.log("e = ", e); join(this.print_ptr(n), n.name(), '(', e.join(', '), ')')}
+                       | ?n.is('type', 'func')                                          -> join(this.print_ptr(n), '(', n.name(), ')')
+                       | empty                                                          -> {
+                                                                                            if (n.is('type', 'member'))
+                                                                                                return join(this.print_ptr(n), n.name(), '[]');
+                                                                                            else if (n.is('type', 'call'))
+                                                                                                return join(this.print_ptr(n), n.name(), '()');
+                                                                                            else
+                                                                                                return join(this.print_ptr(n), n.name());
+                                                                                          },
 
     ParamDeclaration  :n = walk:d                                                       -> join(this.print_sc(n), ' ', d),
 
@@ -119,11 +126,11 @@ CPretty.print_ptr = function(n) {
     if (n.pointer_level() == 0)
         return '';
     if (n.pointer_type() !== undefined)
-        pointtype = n.pointer_type();
+        pointtype = join(n.pointer_type(), ' ');
     if (n.pointer_level() == 1)
-        return join('* ', pointtype, ' ');
+        return join('*', pointtype);
     else  // pointer level more than 2 not supported
-        return join('** ', pointtype, ' ');
+        return join('**', pointtype);
 
 }
 
@@ -147,14 +154,8 @@ CPretty.join_sc = function(cs) {
 
     var output = [];
 
-    for(var i = 0; i < cs.length; i++) {
-
-        // does not end with }
-        if(!cs[i].match(/}$/))
-            output.push(cs[i] + ';');
-        else
-            output.push(cs[i]);
-    }
+    for(var i = 0; i < cs.length; i++)
+        output.push(cs[i]);
     return output.join('\n');
 };
 
