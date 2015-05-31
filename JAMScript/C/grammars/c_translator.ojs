@@ -61,11 +61,11 @@ ometa CPretty <: JsonMLWalker {
     VarBinding      :n = walk:d walk:i                                                  -> {i != undefined ? join(d, ' = ', i) : d},
 
     Declarator      :n = ?n.is('type', 'member') walk:e                                 -> {e !== undefined ? join(this.print_ptr(n), n.name(), '[', e, ']') : join(n.name(), '[]')}
-                       | ?n.is('type', 'call') walk:e                                   -> {e !== undefined ? join(this.print_ptr(n), n.name(), '(', e, ')') : join(n.name(), '()')}
+                       | ?n.is('type', 'call') walk+:e                                   -> {console.log("e = ", e); e !== undefined ? join(this.print_ptr(n), n.name(), '(', e.join(', '), ')') : join(n.name(), '()')}
                        | ?n.is('type', 'func')                                          -> join('(', this.print_ptr(n), n.name(), ')')
                        | empty                                                          -> join(this.print_ptr(n), n.name()),
 
-    ParamDeclaration  :n = walk:d                                                       -> join(this.print_sc(n), d),
+    ParamDeclaration  :n = walk:d                                                       -> join(this.print_sc(n), ' ', d),
 
     GroupInitializer  :n = walk+:p                                                      -> join('{', p.join(','), '}'),
 
@@ -81,7 +81,7 @@ ometa CPretty <: JsonMLWalker {
 
     DefaultStmt     :n = walk:s                                                         -> join('default:', s, ';'),
 
-    CompoundStmt    :n = walk*:d walk:s                                                 -> join('{\n', this.indent(this.join_sc(d)), this.indent(this.join_sc(s)), '}\n'),
+    CompoundStmt    :n = walk*:d walk*:s                                                 -> join('{\n', this.indent(this.join_sc(d)), this.indent(this.join_sc(s)), '}\n'),
 
     IfStmt          :n = walk:c walk:t ( walk:f                                         -> join('if(', c, ') ', t, ' else ', f, ';')
                                                | (undefined | empty)                    -> join('if(', c, ') ', t, ';')

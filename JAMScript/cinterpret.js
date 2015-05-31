@@ -17,7 +17,7 @@ rl.on('line', function(line) {
         console.log("Tree = ", tree);
         console.log("Tree length = ", tree.length);
         output = CTranslator.translate(tree);
-
+        console.log("output =", output);
 	} catch(e) {
 	    console.log("\t\t\t\t ERROR! Invalid Input");
 	}

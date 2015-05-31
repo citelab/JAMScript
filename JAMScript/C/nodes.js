@@ -336,7 +336,7 @@ register("ForStmt");
  *     CBuilder.VarDeclStmt(attr, bindings);
  */
 register("VarDeclStmt", {}, function(attr, bindings) {
-  this[1] = attr;
+  this.set(attr);
   this.appendAll(bindings);
 });
 
@@ -379,8 +379,11 @@ register("Declarator", {
  * Representation
  *      [#ParamDeclaration, {storage_class: .. type_spec: .. type_qual: ..}, ... Declarator]
  */
-register("ParamDeclaration", function(ds, decl) {
-    this[1] = ds;
+register("ParamDeclaration", {
+    storage_class: undefined,
+    type_spec: undefined,
+    type_qual: undefined}, function(ds, decl) {
+    this.set(ds);
     this.append(decl);
 });
 

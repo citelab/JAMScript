@@ -1,5 +1,5 @@
 ometa JsonMLWalker {
-  
+
   walk          = undefined:t                                                            -> this.handle_undefined()
                 | &anything:n [undefined:u]                                              -> this.handle_undefined(n)
                 | &anything:n [:t :prop walk(t, n):ans]                                  -> ans
@@ -14,8 +14,8 @@ ometa JsonMLWalker {
 }
 
 JsonMLWalker.replace_children = function(obj, children) {
-  
-  //console.log("Call to replace_children with", obj, children);
+
+  console.log("Call to replace_children with", obj, children);
 
   // remove children
   obj.splice(2, obj.length)
@@ -24,13 +24,15 @@ JsonMLWalker.replace_children = function(obj, children) {
   obj.push.apply(obj, children)
 
   //console.log("New object:", obj);
- 
+
   return obj;
 }
 
-JsonMLWalker.handle_undefined = function() { 
-  if(arguments.length === 1) 
-    return [undefined]; 
+JsonMLWalker.handle_undefined = function() {
+
+    console.log("Handle undefined");
+  if(arguments.length === 1)
+    return [undefined];
   else
     return undefined;
 }

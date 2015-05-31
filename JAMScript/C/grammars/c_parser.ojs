@@ -184,7 +184,7 @@ ometa CParser  {
                     | "String"
                     | "(" expr:e ")"                                -> __.GroupExpr(e),
 
-    const_expr      = cond_expr:e                                   -> e.const(true),
+    const_expr      = cond_expr:e                                   -> e,
 
     // Declaration statements
     // Statements that do "type" specification
@@ -242,39 +242,39 @@ ometa CParser  {
 
     dir_declarator  = dir_declarator:d pmember_decl(d)
                     | dir_declarator:d pcall_decl(d)
-                    | "(" declarator:d ")"                          -> d.func(true)
-                    | "Id":s                                        -> __.Declarator().name(s),
+                    | "(" declarator:d ")"                          -> {d.type('func'); d}
+                    | "Id":s                                        -> __.Declarator().name(s.value()),
 
-    pmember_decl :p = "[ const_expr:e ]"                            -> {
+    pmember_decl :p = "[" const_expr:e "]"                            -> {
                                                                          p.type('member');
                                                                          p.append(e);
                                                                          p;
                                                                         }
-                    | "[" "]"                                       -> {
+                    | "[" empty "]"                                   -> {
                                                                          p.type('member');
                                                                          p;
                                                                         },
 
-    pcall_decl :p   = "(" ( param_type_lst:pl                       -> {
+    pcall_decl :p   = "(" ( param_type_lst:pl                        -> {
                                                                          p.type('call');
-                                                                         p.append(pl);
+                                                                         p.appendAll(pl);
                                                                          p;
                                                                         }
                             | ident_list:ll                         -> {
                                                                          p.type('call');
-                                                                         p.append(ll);
+                                                                         p.appendAll(ll);
                                                                          p;
                                                                         }
-                            | empty ) ")"                           -> {
+                            | empty ) ")"                   -> {
                                                                          p.type('call');
                                                                          p;
                                                                         },
 
-    pointer         = "*"+:pn ( "const" | "volatile" )?:pt          -> {pointer_level:pn.length, pointer_type:pt},
+    pointer         = "*"+:pn ( "const" | "volatile" )?:pt          -> {pointer_level:pn.length, pointer_type:pt === undefined? pt : pt.value()},
 
     param_type_lst  = listOf(#param_decl, ","),
 
-    param_decl      = decl_specs:ds declarator?:dl                  -> __.ParamDeclaration(dl, ds),
+    param_decl      = decl_specs:ds declarator?:dl                  -> __.ParamDeclaration(ds, dl),
 
     initializer     = "{" listOf(#initializer_lst, ","):p "}"       -> __.GroupInitializer(p)
                     | assign_expr,
@@ -322,7 +322,8 @@ ometa CParser  {
 
     translation_u   = external_decl+:s                            -> __.Program(s),
 
-    topLevel        = translation_u:u spaces end        -> u
+//    topLevel        = translation_u:u spaces end        -> u
+    topLevel        = declarator:u end                  ->u
 }
 
 
