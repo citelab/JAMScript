@@ -335,9 +335,13 @@ register("ForStmt");
  * Call like:
  *     CBuilder.VarDeclStmt(attr, bindings);
  */
-register("VarDeclStmt", {}, function(attr, bindings) {
-  this.set(attr);
-  this.appendAll(bindings);
+register("VarDeclStmt", {
+    storage_class: undefined,
+    type_spec: undefined,
+    type_qual: undefined }, function(attr, bindings) {
+
+    this.set(attr);
+    this.appendAll(bindings);
 });
 
 /**
@@ -573,8 +577,12 @@ register("GroupExpr");
  *      [#FuncDefinition, {storage_class: .. type_spec:.. type_qual:..}, decl, stmt]
  *
  */
- register("FuncDefinition", function(dspec, decl, stmt) {
-     this[1] = dspec;
+ register("FuncDefinition", {
+    storage_class: undefined,
+    type_qual: undefined,
+    type_spec: undefined
+ }, function(dspec, decl, stmt) {
+     this.set(dspec);
      this.append(decl);
      this.append(stmt);
  });

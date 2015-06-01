@@ -56,9 +56,9 @@ ometa CPretty <: JsonMLWalker {
     // Declarations
     //
 
-    VarDeclStmt     :n = walk+:vs                                                       -> join(this.print_sc(n), vs,join(','), ';'),
+    VarDeclStmt     :n = walk+:vs                                                       -> join(this.print_sc(n), ' ', vs.join(','), ';'),
 
-    VarBinding      :n = walk:d walk:i                                                  -> {i != undefined ? join(d, ' = ', i) : d},
+    VarBinding      :n = walk:d walk*:i                                                 -> {i.length > 0 ? join(d, ' = ', i.join(',')) : d},
 
     Declarator      :n = ?n.is('type', 'member') walk:e                                 -> {join(this.print_ptr(n), n.name(), '[', e, ']')}
                        | ?n.is('type', 'call') walk+:e                                  -> {console.log("e = ", e); join(this.print_ptr(n), n.name(), '(', e.join(', '), ')')}
@@ -72,7 +72,7 @@ ometa CPretty <: JsonMLWalker {
                                                                                                 return join(this.print_ptr(n), n.name());
                                                                                           },
 
-    ParamDeclaration  :n = walk:d                                                       -> join(this.print_sc(n), ' ', d),
+    ParamDeclaration  :n = walk:d                                                       -> {console.log("n = ", n, "n . sc = ", this.print_sc(n)); join(this.print_sc(n), ' ', d)},
 
     GroupInitializer  :n = walk+:p                                                      -> join('{', p.join(','), '}'),
 

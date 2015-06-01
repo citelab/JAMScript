@@ -190,7 +190,7 @@ ometa CParser  {
     // Statements that do "type" specification
     //
 
-    declaration     = decl_specs:ds init_decl*:idec ";"             -> __.VarDeclStmt(ds, idec),
+    declaration     = decl_specs:ds init_decl_lst:idec ";"             -> __.VarDeclStmt(ds, idec),
 
     decl_specs      = store_cl_spec:s decl_specs*:ds                -> { res = declattr();
                                                                          if (ds.length === 0) {
@@ -219,6 +219,8 @@ ometa CParser  {
                                                                          };
                                                                          res
                                                                         },
+
+    init_decl_lst   = listOf(#init_decl, ','),
 
     init_decl       = declarator:d "=" initializer:i                -> __.VarBinding(d, i)
                     | declarator:d                                  -> __.VarBinding(d),
@@ -325,8 +327,9 @@ ometa CParser  {
 
     translation_u   = external_decl+:s                            -> __.Program(s),
 
-//    topLevel        = translation_u:u spaces end        -> u
-    topLevel        = declarator:u end                  ->u
+
+    topLevel     = translation_u:u spaces end    -> u
+
 }
 
 
