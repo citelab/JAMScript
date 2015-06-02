@@ -1,0 +1,21 @@
+{ 
+  "name": "jsonml",
+  "version" : "0.1.0",
+
+  "descriptions": "OMeta/JS Grammars and Node Constructors to simplify your live with jsonml",
+
+  "contributors": [{
+    "name": "Jonathan Brachthäuser",
+    "email": "jonathan@b-studios.de",
+    "web": "http://www.b-studios.de" 
+  }],
+
+  "repositories": [{
+    "type": "git",
+    "url": "https://github.com/b-studios/ejs.git" 
+   }],
+
+   "engines": ["node"],
+
+  "main" : "./index.js" 
+}

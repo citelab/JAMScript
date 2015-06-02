@@ -1,0 +1,181 @@
+/**
+ * Copyright (c) 2015 Muthucumaru Maheswaran <mahes25@gmail.com>
+ *
+ * See the LICENCE file at the root of the project for the full licence.
+ *
+ * This translator borrows quite liberally from the awesome ES5Translator built by
+ * Jonathan Brachthäuser (http://b-studios.de).
+ */
+
+// Dependencies
+var JsonMLWalker = require('../../jsonml/grammars/jsonml_walker.ojs'),
+    join         = require('../../utils.js').join,
+    escape       = require('../../utils.js').escape_string;
+
+
+ometa CPretty <: JsonMLWalker {
+
+    // Literals
+    //
+    Id              :n                                                                  -> n.value(),
+
+    Number          :n  = ?n.is('kind', 'hex')                                          -> join('0x', n.value().toString(16))
+                        | ?n.is('kind', 'oct')                                          -> join('0', n.value().toString(8))
+                        | ?n.is('value', parseFloat(n.original()))                      -> n.original()           // if something changed then don't
+                        | empty                                                         -> n.value().toString(),  // use the original string representation
+
+    String          :n                                                                  -> join('"', escape(n.value()), '"'),
+
+    // Expressions
+    //
+    SequenceExpr    :n  = walk*:es                                                      -> es.join(', '),
+
+    AssignExpr      :n  = walk:lhs walk:rhs                                             -> join(lhs, ' ', n.operator(), ' ', rhs),
+
+    CondExpr        :n  = walk:ce walk:t walk:f                                         -> join(ce, ' ? ', t, ' : ', f),
+
+    BinaryExpr      :n  = walk:lhs walk:rhs                                             -> join(lhs, ' ', n.operator(), ' ', rhs),
+
+    UpdateExpr      :n = walk:e ( ?n.is('prefix')                                       -> join(n.operator(), e)
+                                | empty                                                 -> join(e, n.operator())
+                                ),
+
+    UnaryExpr       :n = walk:e ( ?n.operator().match(/^[+-~!*&]$/)                     -> join(n.operator(), e)
+                                | empty                                                 -> join(n.operator(), ' ', e)
+                                ),
+
+    CallExpr        :n = walk:e walk*:args                                              -> join(e, '(', args.join(', '), ')'),
+
+    MemberExpr      :n = ?n.is('access', 'name') walk:e                                 -> join(e, '.', n.name())
+                       | walk:e walk:ae                                                 -> join(e, '[', ae, ']'),
+
+    PointerExpr     :n = ?n.is('access', 'pointer') walk:e                              -> join(e, '->',  n.name()),
+
+    GroupExpr       :n = walk:e                                                         -> join('(', e, ')'),
+
+    // Declarations
+    //
+
+    VarDeclStmt     :n = walk+:vs                                                       -> join(this.print_sc(n), ' ', vs.join(','), ';'),
+
+    VarBinding      :n = walk:d walk*:i                                                 -> {i.length > 0 ? join(d, ' = ', i.join(',')) : d},
+
+    Declarator      :n = ?n.is('type', 'member') walk:e                                 -> {join(this.print_ptr(n), n.name(), '[', e, ']')}
+                       | ?n.is('type', 'call') walk+:e                                  -> {console.log("e = ", e); join(this.print_ptr(n), n.name(), '(', e.join(', '), ')')}
+                       | ?n.is('type', 'func')                                          -> join(this.print_ptr(n), '(', n.name(), ')')
+                       | empty                                                          -> {
+                                                                                            if (n.is('type', 'member'))
+                                                                                                return join(this.print_ptr(n), n.name(), '[]');
+                                                                                            else if (n.is('type', 'call'))
+                                                                                                return join(this.print_ptr(n), n.name(), '()');
+                                                                                            else
+                                                                                                return join(this.print_ptr(n), n.name());
+                                                                                          },
+
+    ParamDeclaration  :n = walk:d                                                       -> {console.log("n = ", n, "n . sc = ", this.print_sc(n)); join(this.print_sc(n), ' ', d)},
+
+    GroupInitializer  :n = walk+:p                                                      -> join('{', p.join(','), '}'),
+
+
+    // Statements
+    //
+
+    ExprStmt        :n = walk*:s                                                        -> join(s, ";"),
+
+    LabeledStmt     :n = walk:s                                                         -> join(n.label(), ': ', s),
+
+    CaseStmt        :n = walk:ex walk:st                                                -> join('case', ex, ':', st, ';'),
+
+    DefaultStmt     :n = walk:s                                                         -> join('default:', s, ';'),
+
+    CompoundStmt    :n = walk*:d walk*:s                                                 -> join('{\n', this.indent(this.join_sc(d)), this.indent(this.join_sc(s)), '}\n'),
+
+    IfStmt          :n = walk:c walk:t ( walk:f                                         -> join('if(', c, ') ', t, ' else ', f, ';')
+                                               | (undefined | empty)                    -> join('if(', c, ') ', t, ';')
+                                               ),
+
+    SwitchStmt      :n = walk:se walk:st                                                -> join('switch', '(', se, ')', st, ';'),
+
+    WhileStmt       :n = walk:ce walk:s                                                 -> join('while(', ce, ') ', s, ';'),
+
+    DoWhileStmt     :n = walk:s walk:ce                                                 -> join('do ', s, ' while(', ce, ')', ';'),
+
+    ForStmt         :n = walk:ie walk:ce walk:ue walk:s                                 -> join('for(', ie, '; ', ce, '; ', ue, ') ', s, ';'),
+
+    GotoStmt        :n = empty                                                          -> join('goto ', n.label(), ';'),
+
+    ContinueStmt    :n = empty                                                          -> 'continue;',
+
+    BreakStmt       :n = empty                                                          -> 'break;',
+
+    ReturnStmt      :n = walk:e ( ?(e !== undefined)                                    -> join('return ', e, ';')
+                                | empty                                                 -> 'return;'
+                                ),
+
+    // Function or Program Statements
+    //
+
+    FuncDefinition  :n = walk:de walk:st                                                ->join(this.print_sc(n), de, '{', st, '}'),
+
+    Program         :n = walk*:cs                                                       -> cs.join(';\n')
+
+}
+
+CPretty.print_ptr = function(n) {
+    var pointtype = '';
+    if (n.pointer_level() == 0)
+        return '';
+    if (n.pointer_type() !== undefined)
+        pointtype = join(n.pointer_type(), ' ');
+    if (n.pointer_level() == 1)
+        return join('*', pointtype);
+    else  // pointer level more than 2 not supported
+        return join('**', pointtype);
+
+}
+
+
+// Pretty print storage class
+CPretty.print_sc = function(n) {
+
+    var scarr = [];
+    if (n.storage_class() !== undefined)
+        scarr.push(n.storage_class());
+    if (n.type_qual() !== undefined)
+        scarr.push(n.type_qual());
+    if (n.type_spec() !== undefined)
+        scarr.push(n.type_spec());
+
+    return scarr.join(' ');
+}
+
+// join with semicolons and linebreaks
+CPretty.join_sc = function(cs) {
+
+    var output = [];
+
+    for(var i = 0; i < cs.length; i++)
+        output.push(cs[i]);
+    return output.join('\n');
+};
+
+CPretty.indent = function(source, opts) {
+
+    opts = opts || {};
+
+    function defaults(key, value) { if(typeof opts[key] == 'undefined') opts[key] = value; }
+
+    defaults('width',      this.tab_width);
+    defaults('first_line', true);
+
+    var space = Array(opts.width+1).join(' ');
+    return (opts.first_line ? space : '') + source.split('\n').join('\n' + space);
+};
+
+CPretty.tab_width = 4;
+CPretty.force_rules = true;
+CPretty.translate = function(input) {
+    return CPretty.match(input, 'walk');
+};
+
+module.exports = CPretty;
