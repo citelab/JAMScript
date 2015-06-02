@@ -1,4 +1,4 @@
-var ometa = require('ometa-js'),
+var ometa = require('./ometa'),
     CParser = require('./C/grammars/c_parser.ojs'),
     CTranslator = require('./C/grammars/c_translator.ojs'),
     readline = require('readline'),

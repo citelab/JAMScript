@@ -1,4 +1,4 @@
-require('ometa-js')
+require('./ometa')
 var CParser = require('./C/grammars/c_parser.ojs')
 
 fs = require('fs')
