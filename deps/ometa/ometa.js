@@ -11,10 +11,10 @@ function cached(grammar_file) {
       change  = fs.statSync(grammar_file).mtime.valueOf(),
       cache   = [cache_path,'/', path.basename(grammar_file), '.', change, '.js'].join('');
 
-  if(!path.existsSync(cache_path))
+  if(!fs.existsSync(cache_path))
     fs.mkdirSync(cache_path);
 
-  if(path.existsSync(cache))
+  if(fs.existsSync(cache))
     return fs.readFileSync(cache, 'utf8');
 
   var result = load(grammar_file);

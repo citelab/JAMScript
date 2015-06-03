@@ -1,4 +1,4 @@
-{{var JsonMLWalker=require("../../jsonml/grammars/jsonml_walker.ojs");var join=require("../../utils.js")["join"];var escape=require("../../utils.js")["escape_string"]}var CPretty=JsonMLWalker.inherit({_grammarName: "CPretty",
+{{var JsonMLWalker=require("../../../deps/jsonml/grammars/jsonml_walker.ojs");var join=require("../../../utils.js")["join"];var escape=require("../../../utils.js")["escape_string"]}var CPretty=JsonMLWalker.inherit({_grammarName: "CPretty",
 
 /*
 
@@ -95,15 +95,15 @@
     // Declarations
     //
 
-    VarDeclStmt     :n = walk+:vs                                                       -> join(this.print_sc(n), vs,join(','), ';')
+    VarDeclStmt     :n = walk+:vs                                                       -> join(this.print_sc(n), ' ', vs.join(','), ';')
 */
-"VarDeclStmt":function(){var n,vs;return this._or((function(){return (function(){(function(){return n=this._apply("anything")}).call(this);return (function(){vs=this._many1((function(){return this._apply("walk")}));return join(this.print_sc(n),vs,join(","),";")}).call(this)}).call(this)}))},
+"VarDeclStmt":function(){var n,vs;return this._or((function(){return (function(){(function(){return n=this._apply("anything")}).call(this);return (function(){vs=this._many1((function(){return this._apply("walk")}));return join(this.print_sc(n)," ",vs.join(","),";")}).call(this)}).call(this)}))},
 
 /*
 
-    VarBinding      :n = walk:d walk:i                                                  -> {i != undefined ? join(d, ' = ', i) : d}
+    VarBinding      :n = walk:d walk*:i                                                 -> {i.length > 0 ? join(d, ' = ', i.join(',')) : d}
 */
-"VarBinding":function(){var n,d,i;return this._or((function(){return (function(){(function(){return n=this._apply("anything")}).call(this);return (function(){d=this._apply("walk");i=this._apply("walk");return ((i != undefined)?join(d," = ",i):d)}).call(this)}).call(this)}))},
+"VarBinding":function(){var n,d,i;return this._or((function(){return (function(){(function(){return n=this._apply("anything")}).call(this);return (function(){d=this._apply("walk");i=this._many((function(){return this._apply("walk")}));return ((i["length"] > (0))?join(d," = ",i.join(",")):d)}).call(this)}).call(this)}))},
 
 /*
 
@@ -111,22 +111,21 @@
                        | ?n.is('type', 'call') walk+:e                                  -> {console.log("e = ", e); join(this.print_ptr(n), n.name(), '(', e.join(', '), ')')}
                        | ?n.is('type', 'func')                                          -> join(this.print_ptr(n), '(', n.name(), ')')
                        | empty                                                          -> {
-                                                                                            console.log("HEllo ", n.is('type', 'call'));
-                                                                                            if (n.is('type', 'member') === true)
-                                                                                                join(this.print_ptr(n), n.name(), '[]');
+                                                                                            if (n.is('type', 'member'))
+                                                                                                return join(this.print_ptr(n), n.name(), '[]');
                                                                                             else if (n.is('type', 'call'))
-                                                                                                join(this.print_ptr(n), n.name(), '()');
+                                                                                                return join(this.print_ptr(n), n.name(), '()');
                                                                                             else
-                                                                                                join(this.print_ptr(n), n.name());
+                                                                                                return join(this.print_ptr(n), n.name());
                                                                                           }
 */
-"Declarator":function(){var n,e;return this._or((function(){return (function(){(function(){return n=this._apply("anything")}).call(this);return this._or((function(){return (function(){this._pred(n.is("type","member"));e=this._apply("walk");return join(this.print_ptr(n),n.name(),"[",e,"]")}).call(this)}),(function(){return (function(){this._pred(n.is("type","call"));e=this._many1((function(){return this._apply("walk")}));return (function (){console.log("e = ",e);return join(this.print_ptr(n),n.name(),"(",e.join(", "),")")}).call(this)}).call(this)}),(function(){return (function(){this._pred(n.is("type","func"));return join(this.print_ptr(n),"(",n.name(),")")}).call(this)}),(function(){return (function(){this._apply("empty");return (function (){console.log("HEllo ",n.is("type","call"));if((n.is("type","member") === true)){join(this.print_ptr(n),n.name(),"[]")}else{if(n.is("type","call")){join(this.print_ptr(n),n.name(),"()")}else{join(this.print_ptr(n),n.name())}}}).call(this)}).call(this)}))}).call(this)}))},
+"Declarator":function(){var n,e;return this._or((function(){return (function(){(function(){return n=this._apply("anything")}).call(this);return this._or((function(){return (function(){this._pred(n.is("type","member"));e=this._apply("walk");return join(this.print_ptr(n),n.name(),"[",e,"]")}).call(this)}),(function(){return (function(){this._pred(n.is("type","call"));e=this._many1((function(){return this._apply("walk")}));return (function (){console.log("e = ",e);return join(this.print_ptr(n),n.name(),"(",e.join(", "),")")}).call(this)}).call(this)}),(function(){return (function(){this._pred(n.is("type","func"));return join(this.print_ptr(n),"(",n.name(),")")}).call(this)}),(function(){return (function(){this._apply("empty");return (function (){if(n.is("type","member")){return join(this.print_ptr(n),n.name(),"[]")}else{if(n.is("type","call")){return join(this.print_ptr(n),n.name(),"()")}else{return join(this.print_ptr(n),n.name())}}}).call(this)}).call(this)}))}).call(this)}))},
 
 /*
 
-    ParamDeclaration  :n = walk:d                                                       -> join(this.print_sc(n), ' ', d)
+    ParamDeclaration  :n = walk:d                                                       -> {console.log("n = ", n, "n . sc = ", this.print_sc(n)); join(this.print_sc(n), ' ', d)}
 */
-"ParamDeclaration":function(){var n,d;return this._or((function(){return (function(){(function(){return n=this._apply("anything")}).call(this);return (function(){d=this._apply("walk");return join(this.print_sc(n)," ",d)}).call(this)}).call(this)}))},
+"ParamDeclaration":function(){var n,d;return this._or((function(){return (function(){(function(){return n=this._apply("anything")}).call(this);return (function(){d=this._apply("walk");return (function (){console.log("n = ",n,"n . sc = ",this.print_sc(n));return join(this.print_sc(n)," ",d)}).call(this)}).call(this)}).call(this)}))},
 
 /*
 
