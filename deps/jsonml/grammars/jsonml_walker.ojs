@@ -15,7 +15,7 @@ ometa JsonMLWalker {
 
 JsonMLWalker.replace_children = function(obj, children) {
 
-  console.log("Call to replace_children with", obj, children);
+  //console.log("Call to replace_children with", obj, children);
 
   // remove children
   obj.splice(2, obj.length)
@@ -30,7 +30,7 @@ JsonMLWalker.replace_children = function(obj, children) {
 
 JsonMLWalker.handle_undefined = function() {
 
-    console.log("Handle undefined");
+    // console.log("Handle undefined");
   if(arguments.length === 1)
     return [undefined];
   else
