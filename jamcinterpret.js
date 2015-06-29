@@ -1,6 +1,6 @@
 var ometa = require('./deps/ometa'),
     JAMCParser = require('./lib/jamc/grammars/jamc_parser.ojs'),
-    // JAMCTranslator = require('./lib/jamc/grammars/jamc_translator.ojs'),
+    JAMCTranslator = require('./lib/jamc/grammars/jamc_translator.ojs'),
     readline = require('readline'),
     fs = require('fs');
 
@@ -14,7 +14,9 @@ rl.on('line', function(line) {
 
 	try {
 	    tree = JAMCParser.parse(line);
-        console.log("Tree = ", tree);
+//        console.log("Tree = ", tree);
+        out = JAMCTranslator.translate(tree);
+        console.log("Output = ", out);
 	} catch(e) {
 	    console.log("\t\t\t\t ERROR! Invalid Input");
 	}

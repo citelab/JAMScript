@@ -1,0 +1,23 @@
+JAM C Parser/Translator
+=======================
+
+OPEN:	main(x, y) {} does not work. The *space* is creating parsing problem.
+		main(x,y) {} works!
+
+OPEN:	function declaration is not properly checked. May be we are
+		just doing the syntactic checking. A declaration like
+		xx {} is passing through the parser. It should be xx() {}.
+		Semantic checking could fix this?
+				= Modified the parser.. I think this is the correct approach
+				= Slightly different from the grammar spec..
+
+FIXED: 	Additional semicolon on all lines before the last one.
+		The last line seems to be immune of the problem.
+
+===================================
+MISSING FEATURES (From C front end)
+
+1.	Typedef support in the C parser
+2.	Suffix for integers and floats
+3.	Prefix for strings
+4. 	Abstract declarator .. low priority .. how to test?

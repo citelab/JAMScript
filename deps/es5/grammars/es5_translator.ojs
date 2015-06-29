@@ -1,8 +1,8 @@
 // Dependencies
 var JsonMLWalker = require('../../jsonml/grammars/jsonml_walker.ojs'),
     _            = require('../nodes'),
-    join         = require('../../utils.js').join,
-    escape       = require('../../utils.js').escape_string;
+    join         = require('../../../utils.js').join,
+    escape       = require('../../../utils.js').escape_string;
 
 /*
 What are the rules?
@@ -12,8 +12,8 @@ What are the rules?
   3. If Function is not the first statement it needs one line of space above
 */
 ometa ES5Pretty <: JsonMLWalker {
-                      
-  // Helper rule                   
+
+  // Helper rule
   assure_block       = ~undefined :n ( ?n.hasType('BlockStmt') walk(n)                   //     {...} -> {...}
                                      | walk(_.BlockStmt([n]))                            //       ... -> {...}
                                      ),
@@ -21,7 +21,7 @@ ometa ES5Pretty <: JsonMLWalker {
   // Node Translations
   Program         :n = walk*:cs                                                          -> cs.join(';\n'),
 
-  Function        :n = walk:args walk:body ( ?n.has('id')                                -> join('function ', n.id(), '(', args.join(', '), ') ', body) 
+  Function        :n = walk:args walk:body ( ?n.has('id')                                -> join('function ', n.id(), '(', args.join(', '), ') ', body)
                                            | empty                                       -> join('function(', args.join(', '), ') ', body)
                                            ),
   FunctionArgs    :n = walk*:as                                                          -> as,
@@ -31,19 +31,19 @@ ometa ES5Pretty <: JsonMLWalker {
   Id              :n                                                                     -> n.value(),
 
   Number          :n = ?n.is('kind', 'hex')                                              -> join('0x', n.value().toString(16))
-                     | ?n.is('value', parseFloat(n.original()))                          -> n.original()           // if something changed then don't 
-                     | empty                                                             -> n.value().toString(),  // use the original string representation 
+                     | ?n.is('value', parseFloat(n.original()))                          -> n.original()           // if something changed then don't
+                     | empty                                                             -> n.value().toString(),  // use the original string representation
 
   String          :n                                                                     -> join('"', escape(n.value()), '"'),
 
-   
+
   // Statements
   BlockStmt       :n = walk+:cs                                                          -> join('{\n', this.indent(this.join_sc(cs)), '\n}')
                      | empty                                                             -> '{}',
 
-  VarDeclStmt     :n = walk+:vs                                                          -> join(n.kind(), ' ', this.indent(vs.join(',\n'), { 
-                                                                                              width: n.kind().length + 1, 
-                                                                                              first_line: false 
+  VarDeclStmt     :n = walk+:vs                                                          -> join(n.kind(), ' ', this.indent(vs.join(',\n'), {
+                                                                                              width: n.kind().length + 1,
+                                                                                              first_line: false
                                                                                             })),
 
   VarBinding      :n = undefined                                                         -> n.name()
@@ -51,10 +51,10 @@ ometa ES5Pretty <: JsonMLWalker {
                      | walk:init                                                         -> join(n.name(), ' = ', init),
 
   EmptyStmt       :n                                                                     -> '',
-  
+
   IfStmt          :n = walk:c assure_block:t ( assure_block:f                            -> join('if(', c, ') ', t, ' else ', f)
                                              | (undefined | empty)                       -> join('if(', c, ') ', t)
-                                             ), 
+                                             ),
 
   LabeledStmt     :n = walk:s                                                            -> join(n.label(), ': ', s),
 
@@ -65,7 +65,7 @@ ometa ES5Pretty <: JsonMLWalker {
                      | empty                                                             -> 'continue',
 
   ReturnStmt      :n = walk:e ( ?(e !== undefined)                                       -> join('return ', e)
-                              | empty                                                    -> 'return' 
+                              | empty                                                    -> 'return'
                               ),
 
   ThrowStmt       :n = walk:e                                                            -> join('throw ', e),
@@ -79,7 +79,7 @@ ometa ES5Pretty <: JsonMLWalker {
   SwitchCase      :n = ?n.is('default_case') ( walk+:ss                                  -> join('default:\n', this.indent(this.join_sc(ss)))
                                              | empty                                     -> 'default:'
                                              )
-                                             
+
                      | walk:e                ( walk+:ss                                  -> join('case ', e, ':\n', this.indent(this.join_sc(ss)))
                                              | empty                                     -> join('case ', e, ':')
                                              ),
@@ -127,7 +127,7 @@ ometa ES5Pretty <: JsonMLWalker {
                      | walk:e walk:ae                                                    -> join(e, '[', ae, ']'),
 
   GroupExpr       :n = walk:e                                                            -> join('(', e, ')'),
-  
+
   // TODO
   ArrayExpr       :n = walk*:es                                                          -> join('[', es.join(', '), ']'),
 
@@ -144,9 +144,9 @@ ometa ES5Pretty <: JsonMLWalker {
 ES5Pretty.join_sc = function(cs) {
 
   var output = [];
-      
+
   for(var i = 0; i < cs.length; i++) {
-    
+
     // does not end with }
     if(!cs[i].match(/}$/))
       output.push(cs[i] + ';');
@@ -159,12 +159,12 @@ ES5Pretty.join_sc = function(cs) {
 ES5Pretty.indent = function(source, opts) {
 
   opts = opts || {};
-  
+
   function defaults(key, value) { if(typeof opts[key] == 'undefined') opts[key] = value; }
-  
+
   defaults('width',      this.tab_width);
   defaults('first_line', true);
-  
+
   var space = Array(opts.width+1).join(' ');
   return (opts.first_line ? space : '') + source.split('\n').join('\n' + space);
 };
