@@ -21,29 +21,31 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- 
-*/
 
+*/
 
 #include "jamlib.h"
 #include "command.h"
 #include "socket.h"
 #include "utils.h"
-#include "web.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <time.h>
+#include <pthread.h>
+
+/* Maximum size of input buffer TODO: Analysis to figure out a good candidate value */
+#define BUFSIZE         256
 
 /*
- * Private function prototypes...
+ * Prototypes for private functions..
  */
 
-Event *_event_setup(Application *app, Command *cmd);
-Event *_event_drop(Command *cmd);
-Event *_event_drop64(Command *cmd);
+Event *get_event(Application *app);
+void *event_loop(void *arg);
+
 
 
 // Global variables! This should not be an issue unless we load the library
@@ -52,12 +54,13 @@ Event *_event_drop64(Command *cmd);
 
 Socket *jsocket;
 
+
 /*
  * This function should be called first... it is responsible for initializing the
- * Jam library.. it takes two arguments pointing to the Jam server (hostname, port).
- * It will fail if the Jam server is down.. so the client program quits if the server is down..
+ * JAM library.. it takes two arguments pointing to the Jam server (hostname, port).
+ * It will fail if the JAM server is down.. so the client program quits if the server is down..
  *
- * We support offline.. by distributed servers.. a server could be located at the local
+ * We could support offline by distributed servers.. a server could be located at the local
  * proximity. Now, consistency could be an issue..
  *
  * This function affects a GLOBAL variable - jsocket -
@@ -76,21 +79,21 @@ int init_jam(char *jam_server, int port)
 
     jsocket = socket_new(Socket_Blocking);
     if (socket_connect(jsocket, server, sport) != 0) {
-	socket_free(jsocket);
-	return -1;
+        socket_free(jsocket);
+        return -1;
     }
 
     // select a random sequence number
     seqnum = arc4random() % 1000000;
     // ping the server...
-    cmd = command_format_json("PING", "%d", seqnum);
+    cmd = command_format_json("PING", "", "", "%d", seqnum);
 
     if (cmd == NULL)
-	return -1;
-    
+        return -1;
+
     if (command_send(cmd, jsocket) != 0) {
-	command_free(cmd);
-	return -1;
+        command_free(cmd);
+        return -1;
     }
 
     // Release the memory for Command.. not needed now
@@ -98,381 +101,310 @@ int init_jam(char *jam_server, int port)
 
     // Read the reply from the server...
     cmd = command_read(jsocket);
-    if (cmd == NULL)
-	printf("ERROR! Unable to get the reply.. \n");
+    if (cmd == NULL) {
+        printf("Unable to get the reply.. \n");
+        printf("ERROR! Initializing JAMLib aborted..\n");
+        exit(1);
+    }
 
-    printf("Helloo..\n");
-
+    int ival = int_from_params(cmd->params, 0);
     // Check if reply is correct.. then we are talking to the correct server.
-    if (strcmp(cmd->name, "PINGR") == 0 && cmd->params[0].val.ival == seqnum + 1) {
-	command_free(cmd);
-	printf("Helloo.. 2 \n");
-	return 0;
+    if (strcmp(cmd->name, "PINGR") == 0 && ival == seqnum + 1) {
+        command_free(cmd);
+        return 0;
     } else {
-	command_free(cmd);
-	return -1;
+        command_free(cmd);
+        return -1;
     }
 }
-
 
 
 /*
- * Updating functions used by 'live variable' implementations. We have one function per
- * type of variable: int, double, string (char *).
+ * Goal: Open the given application - appname.
+ * Try to open the application, if does succeed fine. Otherwise, create the
+ * application. This could fail due to some reason. In that case, return NULL.
+ *
+ * NOTE: This method is executed before the eventloop starts running. So we need
+ * to receive the messages manually.
  */
-
-int update_int(Application *app, char *varname, int val)
+Application *open_application(char *appname)
 {
-    Command *cmd = NULL;
+    int appid;
 
-    cmd = command_format_json("UPDATE", "\"%s\" %d", varname, val);
-    if (cmd == NULL)
-	return -1;
-    
-    if (command_send(cmd, app->socket) != 0) {
-	command_free(cmd);
-	return -1;
-    } else {
-	command_free(cmd);
-	return 0;
+    // Open application .. return code indicates success or not
+    if ((appid = _open_application(appname)) == 0) {
+        // failed to open the application.. may be a new application?
+        // create it.
+        appid = _register_application(appname);
+        if (appid == 0) {
+            printf("ERROR! Unable to open or create the application: %s", appname);
+            exit(1);
+        }
     }
-}
-
-int update_double(Application *app, char *varname, double val)
-{
-    Command *cmd = NULL;
-
-    cmd = command_format_json("UPDATE", "\"%s\" %f", varname, val);
-    if (cmd == NULL)
-	return -1;
-    
-    if (command_send(cmd, app->socket) != 0) {
-	command_free(cmd);
-	return -1;
-    } else {
-	command_free(cmd);
-	return 0;
-    }
+    return _process_application(appid);
 }
 
 
-int update_string(Application *app, char *varname, char *str)
+// Returns 0 on success and -1 otherwise
+//
+int close_application(Application *app)
 {
-    Command *cmd = NULL;
+    void *rval;
 
-    cmd = command_format_json("UPDATE", "\"%s\" \"%s\"", varname, str);
-    if (cmd == NULL)
-	return -1;
-    
+    if (app == NULL)
+        return -1;
+
+    // Ask server to close the app...
+    if (!_close_application(app->appid)) {
+        printf("ERROR! Unable to close application %s\n", app->appname);
+        return -1;
+    }
+
+    // Release local resources...
+    if (app->callbacks != NULL)
+        callbacks_free(app->callbacks);
+
+    socket_free(app->socket);
+
+    pthread_join(app->evthread, &rval);
+
+    free(app);
+    return 0;
+}
+
+
+/*
+ * This is equivalent to "uninstalling the application".
+ * This may not be used often... could it be useful?
+ * Returns 0 on success and -1 otherwise.
+ */
+int remove_application(Application *app)
+{
+    if (app == NULL)
+        return -1;
+
+    // Ask server to remove the app..
+    if (_remove_application(app->appid)) {
+        printf("ERROR! Unable to remove application %s\n", app->appname);
+        return -1;
+    }
+
+    // Release local resources...
+    if (app->callbacks != NULL)
+        callbacks_free(app->callbacks);
+
+    socket_free(app->socket);
+    free(app);
+    return 0;
+}
+
+// Returns 0 on success and -1 otherwise
+//
+int execute_remote_func(Application *app, const char *name, const char *format, ...)
+{
+    va_list args;
+    int i;
+    char buf[BUFSIZE];
+    char *json;
+    char json_format[] = "{\"name\":\"%s\", \"args\":[%s], \"sign\":\"%s\"}\n";
+    int ret;
+    Command *cmd = NULL;
+    char* new_format;
+    int count = 0; /* this counts additional overhead chars */
+
+    if (format == NULL)
+        return -1;
+    /*
+     * Strings NEED to be properly quoted, return NULL if we
+     * find an unquoted string.
+     */
+    for(i = 0; i < strlen(format); i++) {
+        if (format[i] == '%' && format[i+1] == 's') {
+            count += 2;
+            if (format[i-1] != '"' || format[i+2] != '"') {
+                return -1;
+            }
+        }
+    }
+
+    /* Format is const so make a usable copy of it to play with */
+    new_format = strdup(format);
+
+    /* Replace spaces by commas. This will help for json formatting */
+    for(i = 0; i < strlen(new_format); i++) {
+        if (new_format[i] == ' ') {
+            new_format[i] = ',';
+            count++;
+        }
+    }
+
+    va_start(args, format);
+    ret = vsnprintf(buf, BUFSIZE, new_format, args);
+    va_end(args);
+
+    json = calloc((strlen(json_format) + strlen(name) + BUFSIZE), sizeof(char));
+    ret = sprintf(json, json_format, name, buf, "");
+
+    if (json <= 0)
+        return -1;
+
+    cmd = (Command *) calloc(1, sizeof(Command));               // allocates and initialized to 0 - 1 unit of Command
+    cmd->max_params = MAX_PARAMS;
+    cmd->param_count = 0;
+    // Parameters are not saved here.. so no need to worry about the type..
+
+    cmd->command = strdup(json);
+    free(json);
+    free(new_format);
+
     if (command_send(cmd, app->socket) != 0) {
-	command_free(cmd);
-	return -1;
+        command_free(cmd);
+        return -1;
     } else {
-	command_free(cmd);
-	return 0;
+        command_free(cmd);
+        return 0;
     }
 }
 
 
-int call_user_def(Application *app, char *fmt, ...)
+void register_callback(Application *app, char *aname, EventType etype, EventCallback cb, void *data)
 {
-    va_list args, cargs;
-    char fbuffer[MAX_BUF_SIZE];
+    callbacks_add(app->callbacks, aname, etype, cb, data);
+}
+
+
+void bg_event_loop(Application *app)
+{
+
+    int rval = pthread_create(&(app->evthread), NULL, event_loop, (void *)app);
+    if (rval != 0) {
+        perror("ERROR! Unable to start the background event loop");
+        exit(1);
+    }
+}
+
+/*
+ * Send the given event to the remote side.
+ * tag - arbitrary value (activity name or something else)
+ * cback - callback
+ * format - s (string), i (integer) f,d for float/double - no % (e.g., "si")
+ *
+ */
+int raise_event(Application *app, char *tag, EventType etype, char *cback, char *fmt, ...)
+{
+    va_list args;
+    char fbuffer[BUFSIZE];
     char *bufptr = fbuffer;
-    Command *cmd = NULL;
-
-    bufptr = strcat(bufptr, "\"%s\"");
+    Command *cmd;
 
     va_start(args, fmt);
-    va_copy(cargs, args);
 
     while(*fmt)
     {
         switch(*fmt++)
         {
             case 's':
-                bufptr = strcat(bufptr, ",\"%s\"");
+                bufptr = strcat(bufptr, "\"%s\"");
                 break;
             case 'i':
-                bufptr = strcat(bufptr, ",%d");
+                bufptr = strcat(bufptr, "%d");
                 break;
             case 'f':
             case 'd':
-                bufptr = strcat(bufptr, ",%f");
+                bufptr = strcat(bufptr, "%f");
                 break;
             default:
                 break;
         }
+        if (*fmt)
+            bufptr = strcat(bufptr, ",");
     }
     va_end(args);
 
-    cmd = command_format_jsonk("USER_DEF", bufptr, cargs);
+    switch (etype){
+        case ErrorEventType:
+        cmd = command_format_jsonk("ERROR", tag, cback, bufptr, args);
+        break;
 
-    if (cmd == NULL)
-        return -1;
-        
+        case CompleteEventType:
+        cmd = command_format_jsonk("COMPLETE", tag, cback, bufptr, args);
+        break;
+
+        case CancelEventType:
+        cmd = command_format_jsonk("CANCEL", tag, cback, bufptr, args);
+        break;
+
+        case VerifyEventType:
+        cmd = command_format_jsonk("VERIFY", tag, cback, bufptr, args);
+        break;
+
+        case CallbackEventType:
+        cmd = command_format_jsonk("CALLBACK", tag, cback, bufptr, args);
+        break;
+    }
+
     if (command_send(cmd, app->socket) != 0) {
         command_free(cmd);
         return -1;
     } else {
-	command_free(cmd);
-	return 0;
+        command_free(cmd);
+        return 0;
     }
 }
-    
+
+
+// Private functions...
+
+// TODO: Trace the memory allocated to the command structure...
+// Seems like it is not released when the incoming message contains an event?
+//
+void *event_loop(void *arg)
+{
+    Application *app = (Application *)arg;
+    Event *e = NULL;
+
+    while ((e = get_event(app))) {
+        if (e != NULL)
+            callbacks_call(app->callbacks, app, e);
+    }
+
+    // Just a dummy return.. return value inconsequential..
+    return NULL;
+}
 
 Event *get_event(Application *app)
 {
     Command *cmd = command_read(app->socket);
-    Event *e = NULL;
+
     int len = 0;
-    
+
     if (cmd == NULL)
         return NULL;
-    
+
     if (cmd->name == NULL)
         return NULL;
-    
+
     len = strlen(cmd->name);
 
-    /* Check for expose */
-    if (len == 6 && strncmp(cmd->name, "EXPOSE", 6) == 0) {
-        e = event_expose_new();
-        return e;
+    if (len == 5 && strncmp(cmd->name, "ERROR", 5) == 0) {
+        return event_error_new(cmd->tag, cmd->params, cmd->callback);
     }
-    else if (len == 5 && strncmp(cmd->name, "SETUP", 5) == 0) {
-	return _event_setup(app, cmd);
+
+    if (len == 8 && strncmp(cmd->name, "COMPLETE", 8) == 0) {
+        return event_complete_new(cmd->tag, cmd->params, cmd->callback);
     }
-    else if (len == 5 && strncmp(cmd->name, "CLICK", 5) == 0) {
-	e = event_click_new(cmd->params[0].val.ival, cmd->params[1].val.ival, cmd->params[2].val.ival);
-        return e;
+
+    if (len == 6 && strncmp(cmd->name, "CANCEL", 6) == 0) {
+        return event_cancel_new(cmd->tag, cmd->callback);
     }
-    else if (len == 5 && strncmp(cmd->name, "MDOWN", 5) == 0) {
-        e = event_mousedown_new(cmd->params[0].val.ival, cmd->params[1].val.ival, cmd->params[2].val.ival);
-        return e;
+
+    if (len == 6 && strncmp(cmd->name, "VERIFY", 6) == 0) {
+        return event_verify_new(cmd->tag, cmd->callback);
     }
-    else if (len == 5 && strncmp(cmd->name, "MMOVE", 5) == 0) {
-	e = event_mousemove_new(cmd->params[0].val.ival, cmd->params[1].val.ival, cmd->params[2].val.ival, cmd->params[3].val.ival);
-        return e;
-    }
-    else if (len == 6 && strncmp(cmd->name, "BCLICK", 6) == 0) {
-	e = event_buttonclick_new(cmd->params[0].val.sval);
-        return e;
-    }
-    else if (len == 5 && strncmp(cmd->name, "MDRAG", 5) == 0) {
-        e = event_mousedrag_new(cmd->params[0].val.ival, cmd->params[1].val.ival, cmd->params[2].val.ival, cmd->params[3].val.ival, cmd->params[4].val.ival);
-        return e;
-    }
-    else if (len == 8 && strncmp(cmd->name, "MDRAGOUT", 8) == 0) {
-        e = event_mousedragout_new(cmd->params[0].val.ival, cmd->params[1].val.ival, cmd->params[2].val.ival, cmd->params[3].val.ival, cmd->params[4].val.ival);
-        return e;
-    }
-    else if (len == 7 && strncmp(cmd->name, "PRELOAD", 7) == 0) {
-        e = event_preload_new();
-        return e;
-    }
-    else if (len == 6 && strncmp(cmd->name, "RESIZE", 6) == 0) {
-        e = event_resize_new(cmd->params[0].val.ival, cmd->params[1].val.ival);
-        return e;
-    }
-    else if (len == 8 && strncmp(cmd->name, "KEYTYPED", 8) == 0) {
-        e = event_key_typed_new(cmd->params[0].val.ival);	
-        return e;
-    }
-    else if (len == 10 && strncmp(cmd->name, "KEYPRESSED", 10)  == 0) {
-        e = event_key_pressed_new(cmd->params[0].val.ival);	
-        return e;
-    }
-    else if (len == 11 && strncmp(cmd->name, "KEYRELEASED", 11) == 0) {
-        e = event_key_released_new(cmd->params[0].val.ival);	
-        return e;
-    }
-    else if (len == 4 && strncmp(cmd->name, "DROP", 4) == 0) {
-	return _event_drop(cmd);
-    }
-    else if (len == 6 && strncmp(cmd->name, "DROP64", 6) == 0) {
-	return _event_drop64(cmd);
+
+    if (len == 8 && strncmp(cmd->name, "CALLBACK", 8) == 0) {
+        return event_callback_new(cmd->tag);
     }
 
     return NULL;
 }
-
-
-Event *_event_setup(Application *app, Command *cmd)
-{
-    char *str = NULL;
-    Event *e;
-
-    e = event_setup_new(cmd->params[0].val.ival, cmd->params[1].val.ival);
-
-    /* 
-     * Check the app's callbacks and send registration 
-     * message to the browser side as required.
-     * 
-     * Done in a single message, accumulating hanlders to register.
-     * 
-     * NB: When adding events, this string might need to grow!
-     */
-
-    if (app->callbacks != NULL) {
-	str = calloc(REG_CB_MSG_SIZE, sizeof(char));
-	if(app->callbacks->clickHandlers != NULL) {
-	    strcat(str, "\"CLICK\" ");
-	}
-	if(app->callbacks->mouseMoveHandlers != NULL) {
-	    strcat(str, "\"MMOVE\" ");
-	}
-	if(app->callbacks->mouseDownHandlers != NULL) {
-	    strcat(str, "\"MDOWN\" ");
-	}
-	if(app->callbacks->mouseDragHandlers != NULL) {
-	    strcat(str, "\"MDRAG\" ");
-	}
-	if(app->callbacks->mouseDragOutHandlers != NULL) {
-	    strcat(str, "\"MDRAGOUT\" ");
-	}
-	if(app->callbacks->buttonClickHandlers != NULL) {
-	    strcat(str, "\"BCLICK\" ");
-	}
-	if(app->callbacks->fileDropInitHandlers != NULL ||
-	   app->callbacks->b64FileDropInitHandlers != NULL) {
-	    /* A single callback handler for both un-encoded and base64 encoded transfers */
-	    strcat(str, "\"DROP\" ");
-	}
-	if(app->callbacks->resizeHandlers != NULL) {
-	    strcat(str, "\"RESIZE\" ");
-	}
-	if (strlen(str) > 0) {
-	    /* Change all but the last space to a comma. Only need to do this if one of the callbacks is used */
-	    int i = 0;
-	    for(i = 0; i < strlen(str)-1; i++) {
-		if (str[i] == ' ') {
-		    str[i] = ',';
-		}
-	    }
-	    /* Eventually, check the return value to determine success here */
-	    send_register_callback_msg(app, str);
-	}
-	free(str);
-
-	/* Register keyboard handlers if any */
-	CallbackList *cb = app->callbacks->keyTypedHandlers;
-	if (cb != NULL) {
-	    send_keyboard_callback_msg(app, "CB_KEY_T", (char *)cb->data);
-	}
-	cb = app->callbacks->keyPressedHandlers;
-	if (cb != NULL) {
-	    send_keyboard_callback_msg(app, "CB_KEY_P", (char *)cb->data);
-	}
-	cb = app->callbacks->keyReleasedHandlers;
-	if (cb != NULL) {
-	    send_keyboard_callback_msg(app, "CB_KEY_R", (char *)cb->data);
-	}
-    }
-    return e;
-}
-
-
-Event *_event_drop(Command *cmd)
-{
-    Event *e = NULL;
-
-    /* It's a paired message approach. First message sets the event
-     * metadata and establishes the number of chunks required for transfer.
-     *
-     * Message 0 format:
-     *         EVENT DROP INIT <filename> <filetype> <filesize>
-     *         Caveat: Filetype might not be known. Javascript support for it seems dodgy.
-     *
-     * 1 to N-1 Message pairs then follow in the format:
-     *         a. EVENT DROP CHUNK <filename> <filetype> <filesize> <current chunk>
-     *         b. <file chunk X>
-     *
-     * Final Message format:
-     *         EVENT DROP END <filename> <filetype> <filesize>
-     */
-    char *name    = strdup(cmd->params[1].val.sval);
-    char *type    = strdup(cmd->params[2].val.sval);
-    unsigned int size    = cmd->params[3].val.ival;
-    unsigned int nchunks    = CEIL((double)(size / CHUNKSIZE));
-
-    if ( (strlen(cmd->params[0].val.sval) == 5) && strncmp(cmd->params[0].val.sval, "CHUNK", 5) == 0 ) {
-	/* This is a filechunk pair */
-	unsigned int chunk_size    = cmd->params[4].val.ival;
-	unsigned int cur_chunk    = cmd->params[5].val.ival;
-	char buf[CHUNKSIZE];
-	//int ret = 0;
-
-	//ret = socket_read(app->socket, buf, chunk_size);
-
-	e = event_filedrop_chunk_new(name, type, size, nchunks, chunk_size, cur_chunk, buf);
-	return e;
-    } else if ( (strlen(cmd->params[0].val.sval) == 3) && strncmp(cmd->params[0].val.sval, "END", 3) == 0 ) {
-	/* This is the end of the transfer */
-	e = event_filedrop_end_new(name, type, size, nchunks);
-	return e;
-    } else {
-	/* Filedrop Initalisation */
-	e = event_filedrop_init_new(name, type, size, nchunks);
-	return e;
-    }
-}
-
-
-Event *_event_drop64(Command *cmd)
-{
-    Event *e = NULL;
-
-    /* The client application is responsible for base64 decoding
-     */
-    char *name    = strdup(cmd->params[1].val.sval);
-    char *type    = strdup(cmd->params[2].val.sval);
-    unsigned int o_size    = cmd->params[3].val.ival;
-
-    if ( (strlen(cmd->params[0].val.sval) == 5) && strncmp(cmd->params[0].val.sval, "CHUNK", 5) == 0 ) {
-	/* This is a filechunk pair */
-	unsigned int e_size    = cmd->params[4].val.ival;
-	unsigned int chunk_size    = cmd->params[5].val.ival;
-	unsigned int cur_chunk    = cmd->params[6].val.ival;
-
-	unsigned int nchunks    = CEIL((double)(e_size / CHUNKSIZE));
-
-	char buf[CHUNKSIZE];
-	//int ret = 0;
-
-	//ret = socket_read(app->socket, buf, chunk_size);
-
-	e = event_filedrop64_chunk_new(name, type, o_size, e_size, nchunks, chunk_size, cur_chunk, buf);
-	return e;
-    } else if ( (strlen(cmd->params[0].val.sval) == 3) && strncmp(cmd->params[0].val.sval, "END", 3) == 0 ) {
-	/* This is the end of the transfer */
-	unsigned int e_size    = cmd->params[4].val.ival;
-	unsigned int nchunks    = CEIL((double)(e_size / CHUNKSIZE));
-	e = event_filedrop64_end_new(name, type, o_size, e_size, nchunks);
-	return e;
-    } else {
-	/* Filedrop Initalisation */
-	/* NB we don't actually know the encoded filesize nor the number of chunks yet */
-	e = event_filedrop64_init_new(name, type, o_size);
-	return e;
-    }
-}
-
-
-
-void register_callback(Application *app, EventType etype, EventCallback cb, void *data)
-{
-    callbacks_add(app->callbacks, etype, cb, data);
-}
-
-
-void main_loop(Application *app)
-{
-    Event *e = NULL;
-    while ((e = get_event(app))) {
-        callbacks_call(app->callbacks, app, e);
-    }
-}
-
-
-

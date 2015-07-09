@@ -21,7 +21,7 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- 
+
 */
 
 #include "jparser.h"
@@ -35,6 +35,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 static char *_parse_str;
 static int _loc;
 static int _len;
+// parsed value is passed using the parameter..
 static JSONValue *rval;
 
 int _peek_value();
@@ -52,7 +53,7 @@ char *_get_char();
 
 
 /*
- * Setup the parse process... 
+ * Setup the parse process...
  */
 void init_parse(char *str)
 {
@@ -73,18 +74,18 @@ JSONValue *get_value()
 
 /*
  * Global variable rval is set by the 'parse_' functions called here.
- * There is no need to manipulate that variable here.. we just need to pass 
+ * There is no need to manipulate that variable here.. we just need to pass
  * along to the next iteration..
  */
-int parse_value() 
+int parse_value()
 {
 
     _parse_white();
     int nextchar = _peek_value();
 
-    switch(nextchar) 
+    switch(nextchar)
 	{
-	case ' ': 
+	case ' ':
 	    _consume_char();
 	    break;
 	case 't':
@@ -102,11 +103,11 @@ int parse_value()
 	case '-':
 	    return (parse_number() == ERROR) ? ERROR : VALID_VALUE;
 	default:
-	    if ((nextchar >= '0') && (nextchar <= '9')) 
+	    if ((nextchar >= '0') && (nextchar <= '9'))
 		return (parse_number() == ERROR) ? ERROR : VALID_VALUE;
 	}
     return ERROR;
-}    
+}
 
 
 void print_string()
@@ -114,25 +115,22 @@ void print_string()
     printf("Parse string %s\n", &_parse_str[_loc]);
 }
 
-
 int parse_true()
 {
     int sloc = _loc;
     JSONValue *val = create_value();
 
     _parse_white();
-    if ((_parse_str[_loc++] == 't') &&
-	(_parse_str[_loc++] == 'r') &&
-	(_parse_str[_loc++] == 'u') &&
-	(_parse_str[_loc++] == 'e')) {
-	set_true(val);
-	rval = val;
-	return TRUE_VALUE;
+    if ((_parse_str[_loc++] == 't') && (_parse_str[_loc++] == 'r') &&
+        (_parse_str[_loc++] == 'u') && (_parse_str[_loc++] == 'e')) {
+        set_true(val);
+        rval = val;
+        return TRUE_VALUE;
     } else {
-	free(val);
-	_loc = sloc;
-	return ERROR;
-    }	
+        free(val);
+        _loc = sloc;
+        return ERROR;
+    }
 }
 
 
@@ -185,14 +183,19 @@ int parse_array()
     JSONArray *arr = create_array();
     set_array(val, arr);
 
+
     if (_parse_barr() == BEGIN_ARRAY) {
-	do {
-	    if (parse_value() == ERROR) return ERROR;
-	    add_element(arr, rval);
-	} while (_parse_comma() == COMMA_VALUE);
-	finalize_array(arr);
-	rval = val;
-	return _parse_earr() == END_ARRAY ? ARRAY_VALUE : ERROR;
+
+        while (_peek_value() != ']') {
+
+            if (parse_value() == ERROR) return ERROR;
+    	    add_element(arr, rval);
+            if (_peek_value() == ',')
+                _parse_comma();
+        }
+        finalize_array(arr);
+        rval = val;
+        return _parse_earr() == END_ARRAY ? ARRAY_VALUE : ERROR;
     }
     return ERROR;
 }
@@ -231,7 +234,7 @@ int parse_string()
 
     _parse_white();
     if (_parse_quote() == QUOTE_VALUE) {
-	while (_char_in_string()) 
+	while (_char_in_string())
 	    buf[j++] = *_get_char();
 	buf[j] = '\0';
 	val->val.sval = strdup(buf);
@@ -245,7 +248,7 @@ int parse_string()
 
 /*
  * This needs to expanded and tested for all possible number formats..
- * particularly fixed and floating pointing formats are not handled properly 
+ * particularly fixed and floating pointing formats are not handled properly
  * or correctly...
  */
 int parse_number()
@@ -257,23 +260,23 @@ int parse_number()
     _parse_white();
 
     while (isdigit(_parse_str[_loc]))
-	buf[j++] = *(_get_char());
+        buf[j++] = *(_get_char());
 
     if (_parse_str[_loc] == '.') {
-	buf[j++] = *(_get_char());
-	while (isdigit(_parse_str[_loc])) 
-	    buf[j++] = *(_get_char());
-	buf[j] = '\0';
-	val->val.dval = atof(buf);
-	val->type = DOUBLE;
-	rval = val;
-	return NUMBER_VALUE;
+        buf[j++] = *(_get_char());
+        while (isdigit(_parse_str[_loc]))
+            buf[j++] = *(_get_char());
+        buf[j] = '\0';
+        val->val.dval = atof(buf);
+        val->type = DOUBLE;
+        rval = val;
+        return NUMBER_VALUE;
     } else {
-	buf[j] = '\0';
-	val->val.ival = atoi(buf);
-	val->type = INTEGER;
-	rval = val;
-	return NUMBER_VALUE;
+        buf[j] = '\0';
+        val->val.ival = atoi(buf);
+        val->type = INTEGER;
+        rval = val;
+        return NUMBER_VALUE;
     }
 }
 
@@ -297,7 +300,7 @@ void _consume_char()
 void _parse_white()
 {
     while (_loc < _len && _parse_str[_loc] == ' ')
-	_loc++;
+        _loc++;
 }
 
 
@@ -305,10 +308,10 @@ int _parse_colon()
 {
     _parse_white();
     if (_parse_str[_loc++] == ':')
-	return COLON_VALUE;
+        return COLON_VALUE;
     else {
-	_loc--;
-	return ERROR;
+        _loc--;
+        return ERROR;
     }
 }
 
@@ -317,10 +320,10 @@ int _parse_comma()
 {
     _parse_white();
     if (_parse_str[_loc++] == ',')
-	return COMMA_VALUE;
+        return COMMA_VALUE;
     else {
-	_loc--;
-	return ERROR;
+        _loc--;
+        return ERROR;
     }
 }
 
@@ -329,10 +332,10 @@ int _parse_barr()
 {
     _parse_white();
     if (_parse_str[_loc++] == '[')
-	return BEGIN_ARRAY;
+        return BEGIN_ARRAY;
     else {
-	_loc--;
-	return ERROR;
+        _loc--;
+        return ERROR;
     }
 }
 
@@ -341,10 +344,10 @@ int _parse_earr()
 {
     _parse_white();
     if (_parse_str[_loc++] == ']')
-	return END_ARRAY;
+        return END_ARRAY;
     else {
-	_loc--;
-	return ERROR;
+        _loc--;
+        return ERROR;
     }
 }
 
@@ -353,10 +356,10 @@ int _parse_bobj()
 {
     _parse_white();
     if (_parse_str[_loc++] == '{')
-	return BEGIN_OBJECT;
+        return BEGIN_OBJECT;
     else {
-	_loc--;
-	return ERROR;
+        _loc--;
+        return ERROR;
     }
 }
 
@@ -365,10 +368,10 @@ int _parse_eobj()
 {
     _parse_white();
     if (_parse_str[_loc++] == '}')
-	return END_OBJECT;
+        return END_OBJECT;
     else {
-	_loc--;
-	return ERROR;
+        _loc--;
+        return ERROR;
     }
 }
 
@@ -376,10 +379,10 @@ int _parse_quote()
 {
     _parse_white();
     if (_parse_str[_loc++] == '"')
-	return QUOTE_VALUE;
+        return QUOTE_VALUE;
     else {
-	_loc--;
-	return ERROR;
+        _loc--;
+        return ERROR;
     }
 }
 
@@ -387,30 +390,14 @@ int _parse_quote()
 int _char_in_string()
 {
     int curchar = _parse_str[_loc];
-    
-    if (isalnum(curchar) || 
-	curchar == '-' || 
-	curchar == '.' ||
-	curchar == '_' ||
-	curchar == '*' ||
-	curchar == '$' ||
-	curchar == '@' ||
-	curchar == '#' ||
 
-	curchar == '$' ||
-	curchar == '%' ||
-	curchar == '&' ||
-
-	curchar == '(' ||
-	curchar == ')' ||
-	curchar == '=' ||
-	curchar == '+' ||
-	curchar == '[' ||
-	curchar == ']' ||
-	curchar == '|')
-	return 1;
+    if (isalnum(curchar) || curchar == '-' || curchar == '.' || curchar == '_' || curchar == '*' ||
+        curchar == '$' || curchar == '@' || curchar == '#' || curchar == '$' ||  curchar == '%' ||
+        curchar == '&' || curchar == '(' || curchar == ')' || curchar == '=' || curchar == '+' ||
+        curchar == '[' || curchar == ']' || curchar == '|')
+        return 1;
     else
-	return 0;
+        return 0;
 }
 
 

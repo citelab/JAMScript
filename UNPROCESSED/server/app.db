@@ -1,7 +1,0 @@
-{"$$indexCreated":{"fieldName":"appid","unique":true,"sparse":false}}
-{"maxappid":100,"_id":"jumDH9T679dpamx9"}
-{"maxappid":101,"_id":"jumDH9T679dpamx9"}
-{"appname":"app2","appid":100,"server":"127.0.0.1","port":50947,"state":1,"_id":"FdhxyrLUQzYxrU0k"}
-{"appname":"app2","appid":100,"server":"127.0.0.1","port":50947,"state":0,"_id":"FdhxyrLUQzYxrU0k"}
-{"appname":"app2","appid":100,"server":"127.0.0.1","port":50947,"state":0,"_id":"FdhxyrLUQzYxrU0k"}
- 

@@ -21,7 +21,7 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- 
+
 */
 
 #ifdef __cplusplus
@@ -35,6 +35,8 @@ extern "C" {
 #include "event.h"
 #include "callback.h"
 
+#include <pthread.h>
+
 typedef struct Application
 {
     int appid;
@@ -43,15 +45,21 @@ typedef struct Application
     char *server;
     int port;
     Socket *socket;
+    pthread_t evthread;
     Callbacks *callbacks;
 } Application;
 
 
-Application *create_application(char *appname);
-Application *open_application(char *appname);
-int close_application(Application *app);
-int remove_application(Application *app);
-void print_application(Application *app);
+int _is_app_registered(char *appname);
+int _register_application(char *appname);
+int _open_application(char *appname);
+int _close_application(int appid);
+int _remove_application(int appid);
+int _get_state_from_server(char *statstr);
+Application *_get_app_info(int appid);
+Application *_process_application(int appid);
+Application *_application_from_json(JSONValue *val);
+
 
 #endif
 

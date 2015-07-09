@@ -21,7 +21,7 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- 
+
 */
 
 #ifdef __cplusplus
@@ -38,42 +38,29 @@ struct Application;
 typedef void (*EventCallback)(struct Application *d, Event *e, void *data);
 
 typedef struct CallbackList {
+    char *aname;
     EventCallback cb;
     void *data;
     struct CallbackList *next;
 } CallbackList;
 
-/* I'm not entirely sure that base64-specific handlers are necessary but they seemed like a good idea at the time. */
 typedef struct Callbacks {
-    CallbackList *clickHandlers;
-    CallbackList *mouseDownHandlers;
-    CallbackList *mouseMoveHandlers;
-    CallbackList *mouseDragHandlers;
-    CallbackList *mouseDragOutHandlers;
-    CallbackList *keyTypedHandlers;
-    CallbackList *keyPressedHandlers;
-    CallbackList *keyReleasedHandlers;
-    CallbackList *exposeHandlers;
-    CallbackList *setupHandlers;
-    CallbackList *fileDropInitHandlers;
-    CallbackList *fileDropChunkHandlers;
-    CallbackList *fileDropEndHandlers;
-    CallbackList *b64FileDropInitHandlers;
-    CallbackList *b64FileDropChunkHandlers;
-    CallbackList *b64FileDropEndHandlers;
-    CallbackList *preLoadHandlers;
-    CallbackList *resizeHandlers;
-    CallbackList *buttonClickHandlers;
+    // Other types of callback handlers could be added here.
+    CallbackList *errorHandlers;
+    CallbackList *completeHandlers;
+    CallbackList *cancelHandlers;
+    CallbackList *verifyHandlers;
+    CallbackList *callbackHandlers;
 } Callbacks;
 
 CallbackList *callbacklist_new();
 void callbacklist_free(CallbackList *list);
-CallbackList *callbacklist_add(CallbackList *list, EventCallback cb, void *data);
+CallbackList *callbacklist_add(CallbackList *list, char *aname, EventCallback cb, void *data);
 void callbacklist_call(CallbackList *list, struct Application *app, Event *event);
 
 Callbacks *callbacks_new();
 void callbacks_free(Callbacks *callbacks);
-void callbacks_add(Callbacks *callbacks, EventType type, EventCallback cb,  void *data);
+void callbacks_add(Callbacks *callbacks, char *actname, EventType type, EventCallback cb,  void *data);
 void callbacks_call(Callbacks *callbacks, struct Application *app, Event *event);
 
 #endif /* __CALLBACK_H */

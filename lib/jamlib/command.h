@@ -49,10 +49,12 @@ extern "C" {
 
 typedef struct _Command
 {
-    char *name;                             // Name of the command 
-    JSONValue params[MAX_PARAMS];         // Parameters 
-    char *command;                          // The full command 
-    unsigned int param_count;               // Number of parameters 
+    char *name;                             // Name of the command
+    char *tag;
+    JSONValue *params;                      // Parameters is a JSON array
+    char *command;                          // The full command
+    unsigned int param_count;               // Number of parameters
+    char *callback;                         // Name of the callback function from remote
     unsigned int max_params;
     char *signature;
     JSONValue *parsedCmd;                   // Parsed command - full JSON - should be freed - only for incoming
@@ -60,13 +62,20 @@ typedef struct _Command
 
 
 Command *command_format(const char *format, ...);
-Command *command_format_json(const char *name, const char *format, ...);
-Command *command_format_jsonk(const char *name, const char *format, va_list args);
+Command *command_format_json(const char *name, const char *tag, const char *cback, const char *format, ...);
+Command *command_format_jsonk(char *name, char *tag, char *cback, char *format, va_list args);
 void command_free(Command *cmd);
+
 
 int command_send(Command *cmd, Socket *socket);
 
 Command *command_read(Socket *socket);
+
+int int_from_params(JSONValue *p, int i);
+char *string_from_params(JSONValue *p, int i);
+double double_from_params(JSONValue *p, int i);
+JSONValue *object_from_params(JSONValue *p, int i);
+
 
 #endif /* _COMMAND_H */
 

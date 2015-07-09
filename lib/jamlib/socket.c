@@ -21,7 +21,7 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- 
+
 */
 
 #include <stdlib.h>
@@ -123,7 +123,7 @@ int socket_connect(Socket *sock, char *addr, char *port)
     ai_head = socket_get_addrinfo(sock, addr, port);
 
     /* Iterate over the linked list returned
-     * Connect to the first one that works 
+     * Connect to the first one that works
      * Using this method allows us to support IPV6 also */
     ai_node = ai_head;
     while (ai_node != NULL) {
@@ -175,7 +175,7 @@ int socket_listen(Socket *sock, char *port, int backlog)
     ai_head = socket_get_addrinfo(sock, NULL, port);
 
     /* Iterate over the linked list returned
-     * Bind to the first one that works 
+     * Bind to the first one that works
      * Using this method allows us to support IPV6 also */
     ai_node = ai_head;
     while (ai_node != NULL) {
@@ -228,7 +228,7 @@ int socket_listen(Socket *sock, char *port, int backlog)
     return 0;
 }
 
-Socket *socket_accept(Socket *sock, SocketBlocking blocktype) 
+Socket *socket_accept(Socket *sock, SocketBlocking blocktype)
 {
     Socket *newsock = NULL;
     struct sockaddr_storage remote_addr;
@@ -316,7 +316,7 @@ int socket_write(Socket *socket, char *data, int len)
 
     while (sent < len) {
         ret = send (socket->sock_fd, data + sent, len - sent, 0);
-        
+
         if (ret < 0) {
             /* Check if the send failed because it would block */
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
@@ -326,7 +326,7 @@ int socket_write(Socket *socket, char *data, int len)
             else
                 return ret;
         }
-        else 
+        else
             sent += ret;
     }
 
@@ -346,14 +346,14 @@ static int socket_lineterm_position (Socket *socket, char *lineterm)
     int recv_ret = 0;
     int delim_size = 0;
     int pos = 0;
-    
+
     if (socket == NULL || lineterm == NULL)
         return -1;
-    
+
     delim_size = strlen (lineterm);
     if (delim_size > bufsize)
         return -1;
-    
+
     recv_ret = recv (socket->sock_fd, buf, bufsize, MSG_PEEK);
 
     if (recv_ret == 0) {
@@ -363,16 +363,16 @@ static int socket_lineterm_position (Socket *socket, char *lineterm)
     else if (recv_ret == -1) {
         return -1;
     }
-        
+
     buf[recv_ret] = '\0';
-        
+
     if ((substr = strstr (buf, lineterm)) != NULL) {
-	
+
         pos = (substr - buf);
         pos += delim_size;
         return pos;
     }
-    
+
     return 0;
 }
 
@@ -388,7 +388,7 @@ char *socket_readline (Socket *socket, char *lineterm)
     int term_pos = 0;     /* length of the line (including lineterm delimiter)*/
     int tmp_size = 0;     /* Size of tmp buffer */
     int return_size = 0;  /* Size of return buffer */
-    
+
     if (socket == NULL || lineterm == NULL)
         return NULL;
 
@@ -411,10 +411,10 @@ char *socket_readline (Socket *socket, char *lineterm)
         return NULL;
     }
     tmp_buffer[tmp_size] = '\0';
-    
+
     /* Remove lineterm from the string */
     return_size = tmp_size - lineterm_len;
-    
+
     if (return_size <= 0) {
         free(tmp_buffer);
         return NULL;
@@ -426,7 +426,7 @@ char *socket_readline (Socket *socket, char *lineterm)
     return_buffer[return_size] = '\0'; /* Should not be necessary */
 
     free(tmp_buffer);
-    
+
 
 
     return return_buffer;
@@ -464,12 +464,16 @@ unsigned int socket_select (Socket *socket, long seconds, long usec)
         return 0;
 }
 
-void wait_until_data_available(Socket *socket)
+// Return value is 0 if everything is ok.
+// Otherwise, return value is -1.
+//
+int wait_until_data_available(Socket *socket)
 {
     fd_set fds;
-    
+
     FD_ZERO (&fds);
     FD_SET (socket->sock_fd, &fds);
-    
-    select (socket->sock_fd + 1, &fds, NULL, NULL, NULL);
+
+    int x = select (socket->sock_fd + 1, &fds, NULL, NULL, NULL);
+    return x < 0 ? -1 : 0;
 }

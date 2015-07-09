@@ -21,7 +21,7 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- 
+
 */
 
 #ifdef __cplusplus
@@ -65,7 +65,7 @@ int socket_write(Socket *socket, char *data, int len);
 int socket_enable_blocktype(int sock_fd, SocketBlocking blocktype);
 
 unsigned int socket_select(Socket *socket, long seconds, long usec);
-void wait_until_data_available (Socket *socket);
+int wait_until_data_available (Socket *socket);
 
 #endif /* _SOCKET_H_ */
 

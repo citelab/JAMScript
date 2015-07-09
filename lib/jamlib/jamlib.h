@@ -21,7 +21,7 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- 
+
 */
 
 #ifdef __cplusplus
@@ -36,30 +36,19 @@ extern "C" {
 #include "callback.h"
 #include "application.h"
 
-#define CEIL(X) ( (X - (int)X) > 0 ? (int)X+1 : (int)X )
-
-#define TRUE	1
-#define FALSE	0
-
-#define CHUNKSIZE		1048576         /* 1Meg chunk size */
-#define REG_CB_MSG_SIZE	        128		/* size of REG_CB string */
-
-#define MAX_ARGS                16              /* Number of arguments for User defined functions */
-#define MAX_BUF_SIZE            256             /* Buffer for user defined functions */
-
-
 extern Socket *jsocket;
 
 int init_jam(char *jam_server, int port);
-int call_user_def(Application *app, char *fmt, ...);
-int update(Application *app, char *varname, char *fmt, ...);
-
-/* Get an event from remote server */
-Event *get_event(Application *app);
-
+Application *open_application(char *appname);
+int close_application(Application *app);
+int remove_application(Application *app);
+void print_application(Application *app);
+int execute_remote_func(Application *app, const char *fname, const char *fmt, ...);
 /* Register a callback method locally */
-void register_callback(Application *app, EventType etype, EventCallback cb, void *data);
-void main_loop(Application *app);
+void register_callback(Application *app, char *aname, EventType etype, EventCallback cb, void *data);
+void bg_event_loop(Application *app);
+
+int raise_event(Application *app, char *tag, EventType etype, char *cback, char *fmt, ...);
 
 #endif  // __JAMLIB_H
 
