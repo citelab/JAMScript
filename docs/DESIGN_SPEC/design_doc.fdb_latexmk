@@ -1,12 +1,13 @@
 # Fdb version 3
-["bibtex design_doc"] 1431304038 "design_doc.aux" "design_doc.bbl" "design_doc" 1431304040
+["bibtex design_doc"] 1431304038 "design_doc.aux" "design_doc.bbl" "design_doc" 1436670166
   "/usr/local/texlive/2014/texmf-dist/bibtex/bst/IEEEtran/IEEEtran.bst" 1222816716 59506 016987d9be15acf51cdd7252d40ecec2 ""
   "all_papers.bib" 1428288721 393206 b91b2634b6200699f26eb8a804012aee ""
-  "design_doc.aux" 1431304040 1147 63599e027271191ac94bade060b7c9ec ""
+  "design_doc.aux" 1436670165 1147 63599e027271191ac94bade060b7c9ec ""
   "design_doc.bcf" 0 -1 0 ""
   (generated)
+  "design_doc.blg"
   "design_doc.bbl"
-["pdflatex"] 1431304039 "design_doc.tex" "design_doc.pdf" "design_doc" 1431304040
+["pdflatex"] 1436670164 "design_doc.tex" "design_doc.pdf" "design_doc" 1436670166
   "/usr/local/texlive/2014/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2014/texmf-dist/fonts/enc/dvips/libertine/lbtn_76gpa5.enc" 1354061736 3084 fca1079ded8e9e82dd71d9ec768687ab ""
   "/usr/local/texlive/2014/texmf-dist/fonts/enc/dvips/libertine/lbtn_7grukw.enc" 1354061736 3085 ece23fa68e433b1ee7e76fa7b71bf6d2 ""
@@ -81,12 +82,12 @@
   "/usr/local/texlive/2014/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1401025944 1445653 26a0aacf3d70032b1ec192e8c7792117 ""
   "/usr/local/texlive/2014/texmf-var/web2c/pdftex/pdflatex.fmt" 1401025990 3832012 904d82bdcc8abf2b1cd296990b82553b ""
   "/usr/local/texlive/2014/texmf.cnf" 1401025936 577 a59edbde8d3a8c549d0eeaab1739e2ff ""
-  "design_doc.aux" 1431304040 1147 63599e027271191ac94bade060b7c9ec ""
+  "design_doc.aux" 1436670165 1147 63599e027271191ac94bade060b7c9ec ""
   "design_doc.bbl" 1431304039 1238 48d3356e92a7a37bfa8224f6e576524e "bibtex design_doc"
-  "design_doc.tex" 1429583047 22981 a6a496ec8abb5597d231336821290613 ""
+  "design_doc.tex" 1436670117 22989 ca4ac319676d1b0c39992c547079f1e2 ""
   "setup.tex" 1429570551 1107 7017868fa5c8f4982e7ecaa8c7ccf53d ""
   (generated)
-  "design_doc.pdf"
-  "design_doc.log"
   "setup.aux"
+  "design_doc.log"
+  "design_doc.pdf"
   "design_doc.aux"

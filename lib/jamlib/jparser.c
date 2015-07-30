@@ -52,6 +52,11 @@ int _parse_barr();
 char *_get_char();
 
 
+// TODO: Lots of memory leak here.. Nothing is properly deallocated as it should
+// TODO: Check and balance the allocs and deallocs
+// TODO: Some deallocs should be delayed until the value is not needed
+
+
 /*
  * Setup the parse process...
  */
@@ -297,6 +302,9 @@ void _consume_char()
 }
 
 
+// White spaces here does not include TABs and NEWLINEs..
+// TODO: Should this be fixed?
+//
 void _parse_white()
 {
     while (_loc < _len && _parse_str[_loc] == ' ')

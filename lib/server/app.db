@@ -16,7 +16,6 @@
 {"appname":"app3","appid":105,"server":"127.0.0.1","port":61254,"state":0,"_id":"xKf4JzZUIIaJ1TcR"}
 {"appname":"app40","appid":109,"server":"127.0.0.1","port":61334,"state":0,"_id":"yJ0DTelwWqu2HJaA"}
 {"$$indexCreated":{"fieldName":"appid","unique":true,"sparse":false}}
-{"appname":"app2","appid":99,"server":"127.0.0.1","port":60985,"state":0,"_id":"gl28PiV2f8ryXMXz"}
-{"appname":"app2","appid":99,"server":"127.0.0.1","port":60985,"state":0,"_id":"gl28PiV2f8ryXMXz"}
-{"appname":"app51","appid":110,"server":"127.0.0.1","port":61338,"state":0,"_id":"ZrsE5C2x7kMio3wx"}
-{"appname":"app2","appid":99,"server":"127.0.0.1","port":60985,"state":0,"_id":"gl28PiV2f8ryXMXz"}
+{"maxappid":116,"_id":"NYxTD7YVtIVqgT0D"}
+{"appname":"app34","appid":115,"server":"127.0.0.1","port":50274,"state":1,"_id":"L6ePB1NKxgRJt071"}
+{"appname":"app34","appid":115,"server":"127.0.0.1","port":50274,"state":0,"_id":"L6ePB1NKxgRJt071"}

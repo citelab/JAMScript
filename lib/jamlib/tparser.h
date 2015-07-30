@@ -1,7 +1,7 @@
 /*
 
 The MIT License (MIT)
-Copyright (c) 2014 Muthucumaru Maheswaran
+Copyright (c) 2015 Muthucumaru Maheswaran
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -24,54 +24,53 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#ifndef _TPARSER_H
+#define _TPARSER_H
 
-#ifndef _JPARSER_H
-#define _JPARSER_H
+#include "toml.h"
 
-#include "json.h"
+
+#define MAX_NAME_LEN            32
 
 
 typedef enum
 {
-    ERROR = 200,
-    VALID_VALUE,
-    TRUE_VALUE,
-    FALSE_VALUE,
-    NULL_VALUE,
-    COLON_VALUE,
-    COMMA_VALUE,
-    BEGIN_ARRAY,
-    END_ARRAY,
-    BEGIN_OBJECT,
-    END_OBJECT,
-    ARRAY_VALUE,
-    OBJECT_VALUE,
-    QUOTE_VALUE,
-    STRING_VALUE,
-    NUMBER_VALUE
+    T_ERROR = 300,
+    T_EOF_VALUE,
+    T_NAME_VALUE,
+    T_VALID_VALUE,
+    T_TRUE_VALUE,
+    T_FALSE_VALUE,
+    T_ARRAY_VALUE,
+    T_OBJECT_VALUE,
+    T_STRING_VALUE,
+    T_NUMBER_VALUE
 } ReturnTypes;
 
 // Primary parser interface functions..
-void init_parse(char *str);
-JSONValue *get_value();
-int parse_value();
-void print_string();
+void t_init_parse(char *str);
+TOMLValue *t_get_value();
 
-// Secondary parser interface functions.. could be rarely used
-int parse_true();
-int parse_false();
-int parse_null();
-int parse_array();
-int parse_object();
-int parse_string();
-int parse_number();
+int t_parse_doc();
 
-#endif /* _JPARSER_H */
+int t_parse_name();
+int t_parse_tname();
+int t_parse_table();
+int t_parse_value();
+int t_parse_equal();
+
+int t_parse_number();
+int t_parse_string();
+int t_parse_array();
+int t_parse_true();
+int t_parse_false();
+
+
+#endif /* _TPARSER_H */
 
 #ifdef __cplusplus
 }
