@@ -11,7 +11,7 @@ int main()
 
    printf("String 'hello', 'there' is '%s', '%s'\n", "hello", "there");
    printf("Character 'A' is '%c'\n", 65);
-   printf("Character 'a' is 'a'");
+   printf("Character 'a' is '%c'\n", 'a');
 
    return 0;
 }

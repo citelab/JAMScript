@@ -14,6 +14,10 @@ module.exports = {
     return Array.prototype.join.call(arguments, '');
   },
 
+  getNum: function(input) {
+    return input[input.length-1].charCodeAt(0);
+  },
+
   force_block: function(input) {
     input = input || '';
     if(input[0] === '{' && input[input.length -1 ] === '}')
