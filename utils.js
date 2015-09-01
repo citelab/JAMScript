@@ -14,8 +14,14 @@ module.exports = {
     return Array.prototype.join.call(arguments, '');
   },
 
-  getNum: function(input) {
-    return input[input.length-1].charCodeAt(0);
+  getNum: function(input, type) {
+    if(type == "oct") {
+      return parseInt(input, 8);
+    } else if(type == "hex") {
+      return parseInt(input, 16);
+    } else {
+      return input[input.length-1].charCodeAt(0);
+    }
   },
 
   force_block: function(input) {
