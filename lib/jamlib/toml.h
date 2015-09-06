@@ -36,7 +36,7 @@ extern "C" {
 // We realloc more properties as needed.
 
 #define ALLOCED_NUM                         16
-#define MAX_PRINT_BUF                       256
+#define MAX_PRINT_BUF                       1024
 #define MAX_NAMES                           16
 #define TRUE                                1
 #define FALSE                               0
@@ -127,7 +127,6 @@ TOMLValue *t_find_element(TOMLArray *tarr, int index);
 /*
  * TOMLValue methods..
  */
-
 TOMLValue *t_query_value(TOMLValue *jval, char *fmt, ...);
 TOMLValue *t_create_value();
 TOMLValue *t_copy_value(TOMLValue *val);

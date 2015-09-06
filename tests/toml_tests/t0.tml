@@ -1,0 +1,7 @@
+[servers]
+	[servers.y]
+	x = 10
+
+	[servers.b]
+		name = "hello"
+		address = "4972, rue Athena"

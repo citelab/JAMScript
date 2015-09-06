@@ -47,40 +47,53 @@ TOMLObject *t_create_object()
 
 
 
-
-int t_add_property(TOMLObject *jobj, TOMLName *name, TOMLValue *val)
+/*
+ * This function assumes there are no duplicates. We need to make a duplicate
+ * check before calling this function. If duplicate is found, we could just report
+ * it and skip the insertion.. Done outside this function.
+ */
+int t_add_property(TOMLObject *obj, TOMLName *name, TOMLValue *val)
 {
     TOMLProperty *props;
 
-    if (jobj->count >= jobj->allocednum) {
+    if (obj->count >= obj->allocednum) {
         // reallocate the storage..
-        props = (TOMLProperty *)realloc(jobj->properties, (jobj->allocednum + ALLOCED_NUM) * sizeof(TOMLProperty));
+        props = (TOMLProperty *)realloc(obj->properties, (obj->allocednum + ALLOCED_NUM) * sizeof(TOMLProperty));
         if (props == NULL) {
             perror("Unable to Reallocate Memory");
             return -1;
         }
-        jobj->properties = props;
-        jobj->allocednum += ALLOCED_NUM;
+        obj->properties = props;
+        obj->allocednum += ALLOCED_NUM;
     }
     // Now add the actual property...
     if (name->nums == 1) {
-        jobj->properties[jobj->count].name = strdup(name->names[0]);
-        jobj->properties[jobj->count].value = t_copy_value(val);
-        jobj->count++;
+        // No need to check for duplicates here.
+        obj->properties[obj->count].name = strdup(name->names[0]);
+        obj->properties[obj->count].value = t_copy_value(val);
+        obj->count++;
     } else {
-        TOMLObject *obj = t_create_object();
-        TOMLValue *val = t_create_value();
-        t_set_object(val, obj);
-
+        // At least the last level is different.. we can have existing upper level names..
+        // We need not insert an object if the name is already found.
         TOMLName *n;
         t_splice_first_name(&n, name);
-        t_add_property(obj, name, val);
-        // are we just tossing the "spliced" name?
-        jobj->properties[jobj->count].name = strdup(n->names[0]);
-        jobj->properties[jobj->count].value = val;
-        jobj->count++;
-    }
 
+        TOMLValue *v = t_find_property_with_str(obj, n->names[0]);
+        if (v->type == T_UNDEFINED) {
+            TOMLObject *o = t_create_object();
+            t_set_object(v, o);
+            t_add_property(o, name, val);
+
+            obj->properties[obj->count].name = strdup(n->names[0]);
+            obj->properties[obj->count].value = v;
+            obj->count++;
+            t_free_name(n);
+        } else if (v->type == T_OBJECT) {
+            TOMLObject *o = v->val.oval;
+            t_add_property(o, name, val);
+        } else
+            return -1;
+    }
     return 0;
 }
 
@@ -341,6 +354,9 @@ void t_free_value(TOMLValue *jval, int freeme)
  * value. The function writes the TOML value into this buffer.
  * If it is NOT big enough, we return 0. Otherwise, we
  * return the number of characters written into the buffer + 1.
+ *
+ * TODO: This would not work with large TOML files..
+ * We are using a 1024 buffer for the printed string!
  */
 int t_val_to_string(char **buf, int buflen, TOMLValue *val)
 {
@@ -377,6 +393,13 @@ int t_val_to_string(char **buf, int buflen, TOMLValue *val)
             }
             nbuf = *buf + cnt;
             cnt += sprintf(nbuf, "]");
+            break;
+        case T_NAME:
+            cnt = sprintf(*buf, " %s ", val->val.nval->names[0]);
+            for (int i = 1; i < val->val.nval->nums; i++) {
+                nbuf = *buf + cnt;
+                cnt += sprintf(nbuf, ". %s", val->val.nval->names[i]);
+            }
             break;
         case T_OBJECT:
             cnt = sprintf(*buf, "{");

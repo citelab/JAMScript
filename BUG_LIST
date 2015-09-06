@@ -17,7 +17,6 @@ FIXED: 	Additional semicolon on all lines before the last one.
 ===================================
 MISSING FEATURES (From C front end)
 
-1.	Typedef support in the C parser
 2.	Suffix for integers and floats
 3.	Prefix for strings
 4. 	Abstract declarator .. low priority .. how to test?

@@ -15,6 +15,7 @@ rl.on('line', function(line) {
 	try {
 	    tree = CParser.parse(line);
         console.log("Tree = ", tree);
+        console.log("Typenames = ", CParser.spec.typenames);
         console.log("=================");
         output = CTranslator.translate(tree);
         console.log("output =", output);

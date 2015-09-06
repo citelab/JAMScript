@@ -116,15 +116,23 @@ int t_parse_doc()
                 _consume_comment_t();
                 break;
             case '[':
+                printf("Table parsing..\n");
                 // this should be a table.. parse the name
                 if (t_parse_tname() != T_ERROR) {
                     TOMLName *n = t_rval->val.nval;
+                    printf("Found table name... ");
+                    t_print_value(t_rval);
+
                     if (t_parse_table() != T_ERROR) {
+                        printf("Adding property to the table..");
+                        t_print_value(val);
                         t_add_property(oval, n, t_rval);
                     } else
                         return T_ERROR;
                 } else
                     return T_ERROR;
+                printf("\n Printing the value after table insertion...\n");
+                t_print_value(val);
                 break;
             default:
                 printf("Default parsing..");
@@ -258,18 +266,26 @@ int t_parse_table()
 
     // go processing the statements until EOF or '[' of a begin Table.
     while (!_end_of_table_t()) {
+        printf("Cur. character %c.. loc %d", _peek_value_t(), _loc_t);
 
         if (t_parse_name() != T_ERROR) {
             TOMLName *n = t_rval->val.nval;
+            printf("\n Name found.......");
+            t_print_value(t_rval);
             if (_parse_equal_t() != T_ERROR) {
-                if (t_parse_value() != T_ERROR)
+                printf("\n Equal found.......");
+                if (t_parse_value() != T_ERROR) {
+                    printf("\n Value found ..");
                     t_add_property(tbl, n, t_rval);
+                }
             } else
                 return T_ERROR;
-        } else
-            return T_ERROR;
+        }
+        _parse_white_t();
+        _consume_comment_t();
     }
 
+    t_rval = val;
     return T_OBJECT;
 }
 
@@ -286,8 +302,8 @@ int t_parse_array()
 
             if (t_parse_value() == T_ERROR) return T_ERROR;
     	    t_add_element(arr, t_rval);
-            if (_peek_value_t() == ',')
-                _parse_comma_t();
+            _parse_comma_t();
+            _parse_white_t();
         }
         t_finalize_array(arr);
         t_rval = val;
@@ -510,6 +526,7 @@ int _parse_quote_t()
     }
 }
 
+
 int _parse_comma_t()
 {
     _parse_white_t();
@@ -521,13 +538,12 @@ int _parse_comma_t()
     }
 }
 
-
-
 int _end_of_table_t()
 {
+    _parse_white_t();
     int curchar = _parse_str_t[_loc_t];
 
-    if (curchar == '[' || _loc_t >= _len_t)
+    if (curchar == '[' || _loc_t >= _len_t -1)
         return 1;
     else
         return 0;
