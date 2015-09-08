@@ -10,6 +10,12 @@ module.exports = {
       return [el];
   },
 
+  join_print: function() {
+    console.log(arguments);
+    return Array.prototype.join.call(arguments, '');
+  },
+
+
   join: function() {
     return Array.prototype.join.call(arguments, '');
   },
@@ -19,6 +25,21 @@ module.exports = {
       return parseInt(input, 8);
     } else if(type == "hex") {
       return parseInt(input, 16);
+    } else if(type == "escape") {
+      switch(input) {
+        case "\\a": return 7;
+        case "\\b": return 8;
+        case "\\f": return 12;
+        case "\\n": return 10;
+        case "\\r": return 13;
+        case "\\t": return 9;
+        case "\\v": return 11;
+        case "\\\\": return 92;
+        case "\\'": return 39;
+        case '\\"': return 34;
+        case "\\?": return 63;
+        default: return 0;
+      }
     } else {
       return input[input.length-1].charCodeAt(0);
     }
