@@ -19,6 +19,8 @@ typedef struct _point
 
 int main()
 {
+    point pt;
+    point pts[2];
     int8_t  x8  = 0xFEDCBA98;
     int16_t x16 = 0xFEDCBA98;
     int32_t x32 = 0xFEDCBA98;
@@ -31,8 +33,7 @@ int main()
 
     char* y = (char*) &x32;
     
-    point pt;
-    point pts[2];
+
     point* ptp = (point*) &pts[0];
     
     printf("%d<%ld>\n", x8, sizeof(x8));

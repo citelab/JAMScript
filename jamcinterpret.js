@@ -1,6 +1,6 @@
 var ometa = require('./deps/ometa'),
-    JAMCParser = require('./lib/jamc/grammars/jamc_parser.ojs'),
-    JAMCTranslator = require('./lib/jamc/grammars/jamc_translator.ojs'),
+    JAMCParser = require('./lib/jamscript/grammars/jamc_parser.ojs'),
+    JAMCTranslator = require('./lib/jamscript/grammars/jamc_translator.ojs'),
     readline = require('readline'),
     fs = require('fs');
 
