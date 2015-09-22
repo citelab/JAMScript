@@ -14,7 +14,7 @@ rl.on('line', function(line) {
 
 	try {
 	    tree = JAMCParser.parse(line);
-//        console.log("Tree = ", tree);
+       console.log("Tree = ", tree);
         out = JAMCTranslator.translate(tree);
         console.log("Output = ", out);
 	} catch(e) {
