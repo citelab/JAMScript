@@ -1,6 +1,4 @@
-/* credits: CSmith, a random generator of C programs. */
-
-#include "stdio.h"
+#include <stdio.h>
 
 void func_1(void)
 {
