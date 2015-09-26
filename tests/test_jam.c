@@ -1,6 +1,7 @@
-jamsync void test(int b) {
-	int b = 1;
-	int a;
-	a = 2;
-	return b;
+jamdef void test(int b) {
+
+	int onload() {
+		int a=3;
+		return a;
+	};
 }
