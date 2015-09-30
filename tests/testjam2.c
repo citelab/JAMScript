@@ -1,4 +1,4 @@
-#include "jamlib.h"
+#include "../lib/jamlib/jamlib.h"
 #include <stdio.h>
 
 
@@ -6,7 +6,7 @@ int main()
 {
     int res;
 
-    res = init_jam("localhost", 7777);
+    res = init_jam("localhost", 2500);
     printf("\nReturn code %d \n\n", res);
     
     if (res >= 0) {

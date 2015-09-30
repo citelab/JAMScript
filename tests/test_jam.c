@@ -1,6 +1,9 @@
-jamdef int test(){
-	int onload() {
-	int a=3;
+jamsync int test(){
+	var a=3;
 	return a;
-};
+}
+
+
+int main() {
+	printf("%d\n", test_sync());
 }
