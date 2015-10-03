@@ -1,1 +1,6 @@
-function test_sync () {var a = 3;return a;}HookUpJSFunction(8bzcw4mfgvitestsync);
+module.exports = {
+	hello: function (self, sock) {
+	console.log("Hello, World!");
+	sock.write("Hello");
+	}
+};
