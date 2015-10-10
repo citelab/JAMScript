@@ -1,11 +1,15 @@
-jamdef void test(){
+jamasync void test(){
 	void onload() {
 		var a;
 		console.log("Hello World!");
 	};
+    void oncomplete() {
+        int a;
+        printf("Completed!\n");
+    };
 }
 
-jamdef void bad(){
+jamasync void bad(){
 	void onload() {
 		var a;
 		blah("Hello World!");
@@ -13,6 +17,10 @@ jamdef void bad(){
 	void onerror() {
 		printf("Error received\n");
 	};
+    void oncomplete() {
+        int a;
+        printf("Completed!\n");
+    };
 }
 
 int main() {
@@ -27,10 +35,10 @@ int main() {
         scanf("%d", &code);
         switch (code) {
             case 1:
-                test_load();
+                test();
                 break;
             case 2:
-                bad_load();
+                bad();
                 break;
             case 3:
                 loop = 0;
