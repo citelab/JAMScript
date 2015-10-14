@@ -1,8 +1,11 @@
-jamasync void test(){
-	void onload() {
+jamasync void test(float i){
+    void onload() {
 		var a;
-		console.log("Hello World!");
+		console.log("Hello World " + i);
 	};
+    void onerror() {
+        printf("Error received\n");
+    };
     void oncomplete() {
         int a;
         printf("Completed!\n");
@@ -35,7 +38,7 @@ int main() {
         scanf("%d", &code);
         switch (code) {
             case 1:
-                test();
+                test(3.1);
                 break;
             case 2:
                 bad();
