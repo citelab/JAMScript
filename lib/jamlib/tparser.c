@@ -103,21 +103,21 @@ int t_parse_doc()
 
     t_set_object(val, oval);
 
-    // keep eating white spaces away..
+    /* keep eating white spaces away.. */
     _parse_white_t();
     while ((nextchar = _peek_value_t()) != T_EOF_VALUE) {
         printf("Nextchar %c\n", nextchar);
         switch(nextchar)
         {
             case '\n':
-                // consume the new line.. just falling through here
+                /* consume the new line.. just falling through here */
             case '#':
-                // consume a comment line...
+                /* consume a comment line... */
                 _consume_comment_t();
                 break;
             case '[':
                 printf("Table parsing..\n");
-                // this should be a table.. parse the name
+                /* this should be a table.. parse the name */
                 if (t_parse_tname() != T_ERROR) {
                     TOMLName *n = t_rval->val.nval;
                     printf("Found table name... ");
@@ -151,7 +151,7 @@ int t_parse_doc()
                 } else
                     return T_ERROR;
         }
-        // keep eating white spaces away..
+        /* keep eating white spaces away.. */
         _parse_white_t();
     }
 
@@ -209,13 +209,13 @@ int t_parse_name()
     t_set_name(val, n);
 
     if (t_parse_string() == T_STRING) {
-        // String found.. so we process it accordingly..
+        /* String found.. so we process it accordingly.. */
         t_add_name(n, t_rval->val.sval);
         t_free_value(t_rval, 1);
         t_rval = val;
         return T_NAME;
     } else {
-        // Check for name..
+        /* Check for name.. */
         i = 0;
         while (_char_in_name_t())
             namebuf[i++] = _get_char_t();
@@ -232,9 +232,9 @@ int t_parse_value()
     _parse_white_t();
     int nextchar = _peek_value_t();
 
-    // Each match is tentative.. there is backtracking built into each matching
-    // On failure, the pointer on the input stream is not advanced.
-    //
+    /* Each match is tentative.. there is backtracking built into each matching
+     * On failure, the pointer on the input stream is not advanced.
+     */
     switch(nextchar)
 	{
 	case '#':
@@ -264,7 +264,7 @@ int t_parse_table()
     TOMLObject *tbl = t_create_object();
     t_set_object(val, tbl);
 
-    // go processing the statements until EOF or '[' of a begin Table.
+    /* go processing the statements until EOF or '[' of a begin Table. */
     while (!_end_of_table_t()) {
         printf("Cur. character %c.. loc %d", _peek_value_t(), _loc_t);
 
@@ -455,7 +455,7 @@ int _peek_value_t()
 
 void _consume_comment_t()
 {
-    // yes, it is comment.. start consuming!
+    /* yes, it is comment.. start consuming! */
     if (_parse_str_t[_loc_t] == '#') {
         while (_parse_str_t[_loc_t] != '\n')
             _loc_t++;

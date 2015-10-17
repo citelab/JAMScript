@@ -57,7 +57,7 @@ int t_add_property(TOMLObject *obj, TOMLName *name, TOMLValue *val)
     TOMLProperty *props;
 
     if (obj->count >= obj->allocednum) {
-        // reallocate the storage..
+        /* reallocate the storage.. */
         props = (TOMLProperty *)realloc(obj->properties, (obj->allocednum + ALLOCED_NUM) * sizeof(TOMLProperty));
         if (props == NULL) {
             perror("Unable to Reallocate Memory");
@@ -66,15 +66,16 @@ int t_add_property(TOMLObject *obj, TOMLName *name, TOMLValue *val)
         obj->properties = props;
         obj->allocednum += ALLOCED_NUM;
     }
-    // Now add the actual property...
+    /* Now add the actual property... */
     if (name->nums == 1) {
-        // No need to check for duplicates here.
+        /* No need to check for duplicates here. */
         obj->properties[obj->count].name = strdup(name->names[0]);
         obj->properties[obj->count].value = t_copy_value(val);
         obj->count++;
     } else {
-        // At least the last level is different.. we can have existing upper level names..
-        // We need not insert an object if the name is already found.
+        /* At least the last level is different.. we can have existing upper level names..
+         * We need not insert an object if the name is already found.
+         */
         TOMLName *n;
         t_splice_first_name(&n, name);
 
@@ -102,9 +103,9 @@ int t_finalize_object(TOMLObject *jobj)
 {
     TOMLProperty *props;
 
-    // Resize the memory allocation to fit the count.. excess memory is trimmed.
+    /* Resize the memory allocation to fit the count.. excess memory is trimmed. */
     if (jobj->count < jobj->allocednum) {
-        // reallocate the storage..
+        /* reallocate the storage.. */
         props = (TOMLProperty *)realloc(jobj->properties, (jobj->count) * sizeof(TOMLProperty));
         if (props == NULL) {
             perror("Unable to Reallocate Memory");
@@ -129,11 +130,11 @@ TOMLValue *t_find_property_with_name(TOMLObject *jobj, TOMLName *name)
                 found = 1;
             }
         }
-        // if not found return 'undefined'
+        /* if not found return 'undefined' */
         if (!found) return t_create_value();
     }
 
-    // return is the one we are looking for..
+    /* return is the one we are looking for.. */
     TOMLValue *rv = t_create_value();
     t_set_object(rv, this);
     return rv;
@@ -149,7 +150,7 @@ TOMLValue *t_find_property_with_str(TOMLObject *jobj, char *name)
             return jobj->properties[j].value;
     }
 
-    // if did not find.. return 'undefined'
+    /* if did not find.. return 'undefined' */
     return t_create_value();
 }
 
@@ -187,7 +188,7 @@ int t_add_element(TOMLArray *jarr, TOMLValue *elem)
     TOMLValue *elems;
 
     if (jarr->length >= jarr->allocednum) {
-        // reallocate the storage..
+        /* reallocate the storage.. */
         elems = (TOMLValue *)realloc(jarr->elems, (jarr->allocednum + ALLOCED_NUM) * sizeof(TOMLValue));
         if (elems == NULL) {
             perror("Unable to Reallocate Memory");
@@ -196,7 +197,7 @@ int t_add_element(TOMLArray *jarr, TOMLValue *elem)
         jarr->elems = elems;
         jarr->allocednum += ALLOCED_NUM;
     }
-    // Now add the actual element..
+    /* Now add the actual element.. */
     jarr->elems[jarr->length] = *elem;
     jarr->length++;
 
@@ -209,7 +210,7 @@ int t_finalize_array(TOMLArray *jarr)
     TOMLValue *elems;
 
     if (jarr->length < jarr->allocednum) {
-        // reallocate the storage..
+        /* reallocate the storage.. */
         elems = (TOMLValue *)realloc(jarr->elems, jarr->length * sizeof(TOMLValue));
         if (elems == NULL) {
             perror("Unable to Reallocate Memory");
@@ -253,8 +254,9 @@ TOMLValue *t_create_value()
     return jval;
 }
 
-// Make a shallow copy of the value given by 'val'
-// Shallow copy means.. elements linked by the val is not copied
+/* Make a shallow copy of the value given by 'val'
+ * Shallow copy means.. elements linked by the val is not copied
+ */
 TOMLValue *t_copy_value(TOMLValue *val)
 {
     TOMLValue *nval = t_create_value();
@@ -265,8 +267,7 @@ TOMLValue *t_copy_value(TOMLValue *val)
 }
 
 
-// Returns 1 (true) if the TOMLValue holds a TRUE value for the BOOLEAN
-//
+/* Returns 1 (true) if the TOMLValue holds a TRUE value for the BOOLEAN */
 int t_is_true(TOMLValue *tval)
 {
     if ((tval->type == T_BOOLEAN) && (tval->val.ival == TRUE))
@@ -275,8 +276,7 @@ int t_is_true(TOMLValue *tval)
         return FALSE;
 }
 
-// Returns 1 (true) if the TOMLValue holds a FALSE value for the BOOLEAN
-//
+/* Returns 1 (true) if the TOMLValue holds a FALSE value for the BOOLEAN */
 int t_is_false(TOMLValue *tval)
 {
     if ((tval->type == T_BOOLEAN) && (tval->val.ival == FALSE))
@@ -286,14 +286,14 @@ int t_is_false(TOMLValue *tval)
 }
 
 
-// Set the value to TRUE and the type to BOOLEAN
+/* Set the value to TRUE and the type to BOOLEAN */
 void t_set_true(TOMLValue *jval)
 {
     jval->type = T_BOOLEAN;
     jval->val.ival = TRUE;
 }
 
-// Set the value to FALSE and the type to BOOLEAN
+/* Set the value to FALSE and the type to BOOLEAN */
 void t_set_false(TOMLValue *jval)
 {
     jval->type = T_BOOLEAN;
@@ -420,7 +420,7 @@ int t_val_to_string(char **buf, int buflen, TOMLValue *val)
             cnt += sprintf(*buf, "<< other type >>");
     }
 
-    // +1 to accomodate the '\0' trailing at the end
+    /* +1 to accomodate the '\0' trailing at the end */
     return (buflen < cnt + 1) ? 0 : cnt;
 }
 
@@ -507,7 +507,7 @@ TOMLValue *t_query_value(TOMLValue *jval, char *fmt, ...)
     while (*fmt) {
         switch (*fmt++) {
 	        case 's':
-	            // if not an Object, return the 'T_UNDEFINED'
+	            /* if not an Object, return the 'T_UNDEFINED' */
 	            if (cval->type != T_OBJECT) return rval;
 	               str = va_arg(args, char *);
 	            cval = t_find_property_with_str(cval->val.oval, str);

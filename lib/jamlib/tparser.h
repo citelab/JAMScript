@@ -51,7 +51,7 @@ typedef enum
     T_NUMBER_VALUE
 } ReturnTypes;
 
-// Primary parser interface functions..
+/* Primary parser interface functions.. */
 void t_init_parse(char *str);
 TOMLValue *t_get_value();
 

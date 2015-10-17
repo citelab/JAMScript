@@ -56,9 +56,9 @@ void callbacklist_free(CallbackList *list)
     }
 }
 
-// Has been modified so that activity name is matched before the callback is
-// triggered.
-//
+/* Has been modified so that activity name is matched before the callback is
+ * triggered.
+ */
 void callbacklist_call(CallbackList *list, struct Application *app, Event *event)
 {
     CallbackList *curr = NULL;
@@ -119,7 +119,7 @@ void callbacks_add(Callbacks *callbacks, char *actname, EventType type, EventCal
         return;
 
     switch (type) {
-        // Other types of handlers will be added here..
+        /* Other types of handlers will be added here.. */
         case CompleteEventType:
             callbacks->completeHandlers = callbacklist_add(callbacks->completeHandlers, actname, cb, data);
             break;
@@ -142,7 +142,7 @@ void callbacks_add(Callbacks *callbacks, char *actname, EventType type, EventCal
 void callbacks_call(Callbacks *callbacks, struct Application *app, Event *event)
 {
     switch(event->type) {
-        // Other types of handlers will be added here..
+        /* Other types of handlers will be added here.. */
         case CompleteEventType:
             callbacklist_call(callbacks->completeHandlers, app, event);
             break;

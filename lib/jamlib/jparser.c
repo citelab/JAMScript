@@ -35,7 +35,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 static char *_parse_str;
 static int _loc;
 static int _len;
-// parsed value is passed using the parameter..
+/* parsed value is passed using the parameter.. */
 static JSONValue *rval;
 
 int _peek_value();
@@ -52,10 +52,10 @@ int _parse_barr();
 char *_get_char();
 
 
-// TODO: Lots of memory leak here.. Nothing is properly deallocated as it should
-// TODO: Check and balance the allocs and deallocs
-// TODO: Some deallocs should be delayed until the value is not needed
-
+/* TODO: Lots of memory leak here.. Nothing is properly deallocated as it should
+ * TODO: Check and balance the allocs and deallocs
+ * TODO: Some deallocs should be delayed until the value is not needed
+ */
 
 /*
  * Setup the parse process...
@@ -221,7 +221,7 @@ int parse_object()
 	    if (parse_value() == ERROR) return ERROR;
 	    if (savedval->type != STRING) return ERROR;
 	    add_property(obj, savedval->val.sval, rval);
-	    free(savedval); // we need to free this.. the string is freed later
+	    free(savedval); /* we need to free this.. the string is freed later */
 	} while (_parse_comma() == COMMA_VALUE);
 	finalize_object(obj);
 	rval = val;
@@ -302,9 +302,9 @@ void _consume_char()
 }
 
 
-// White spaces here does not include TABs and NEWLINEs..
-// TODO: Should this be fixed?
-//
+/* White spaces here does not include TABs and NEWLINEs..
+ * TODO: Should this be fixed?
+ */
 void _parse_white()
 {
     while (_loc < _len && _parse_str[_loc] == ' ')

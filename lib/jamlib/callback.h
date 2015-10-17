@@ -45,7 +45,7 @@ typedef struct CallbackList {
 } CallbackList;
 
 typedef struct Callbacks {
-    // Other types of callback handlers could be added here.
+    /* Other types of callback handlers could be added here. */
     CallbackList *errorHandlers;
     CallbackList *completeHandlers;
     CallbackList *cancelHandlers;

@@ -48,9 +48,10 @@ void *event_loop(void *arg);
 
 
 
-// Global variables! This should not be an issue unless we load the library
-// more than once. For now, we are not expecting the jamlib to be loaded more than
-// once by a program.
+/* Global variables! This should not be an issue unless we load the library
+ * more than once. For now, we are not expecting the jamlib to be loaded more than
+ * once by a program.
+ */
 
 Socket *jsocket;
 
@@ -73,7 +74,7 @@ int init_jam(char *jam_server, int port)
     char *sport;
     int seqnum;
 
-    // save parameters ..
+    /* save parameters .. */
     server = strdup(jam_server);
     sport = int_to_string(port);
 
@@ -83,9 +84,9 @@ int init_jam(char *jam_server, int port)
         return -1;
     }
 
-    // select a random sequence number
+    /* select a random sequence number */
     seqnum = arc4random() % 1000000;
-    // ping the server...
+    /* ping the server... */
     cmd = command_format_json("PING", "", "", "%d", seqnum);
 
     if (cmd == NULL)
@@ -96,10 +97,10 @@ int init_jam(char *jam_server, int port)
         return -1;
     }
 
-    // Release the memory for Command.. not needed now
+    /* Release the memory for Command.. not needed now */
     command_free(cmd);
 
-    // Read the reply from the server...
+    /* Read the reply from the server... */
     cmd = command_read(jsocket);
     if (cmd == NULL) {
         printf("Unable to get the reply.. \n");
@@ -108,7 +109,7 @@ int init_jam(char *jam_server, int port)
     }
 
     int ival = int_from_params(cmd->params, 0);
-    // Check if reply is correct.. then we are talking to the correct server.
+    /* Check if reply is correct.. then we are talking to the correct server. */
     if (strcmp(cmd->name, "PINGR") == 0 && ival == seqnum + 1) {
         command_free(cmd);
         return 0;
@@ -131,10 +132,11 @@ Application *open_application(char *appname)
 {
     int appid;
 
-    // Open application .. return code indicates success or not
+    /* Open application .. return code indicates success or not */
     if ((appid = _open_application(appname)) == 0) {
-        // failed to open the application.. may be a new application?
-        // create it.
+        /* failed to open the application.. may be a new application?
+         * create it.
+         */
         appid = _register_application(appname);
         if (appid == 0) {
             printf("ERROR! Unable to open or create the application: %s", appname);
@@ -145,8 +147,7 @@ Application *open_application(char *appname)
 }
 
 
-// Returns 0 on success and -1 otherwise
-//
+/* Returns 0 on success and -1 otherwise */
 int close_application(Application *app)
 {
     void *rval;
@@ -154,13 +155,13 @@ int close_application(Application *app)
     if (app == NULL)
         return -1;
 
-    // Ask server to close the app...
+    /* Ask server to close the app... */
     if (!_close_application(app->appid)) {
         printf("ERROR! Unable to close application %s\n", app->appname);
         return -1;
     }
 
-    // Release local resources...
+    /* Release local resources... */
     if (app->callbacks != NULL)
         callbacks_free(app->callbacks);
 
@@ -183,13 +184,13 @@ int remove_application(Application *app)
     if (app == NULL)
         return -1;
 
-    // Ask server to remove the app..
+    /* Ask server to remove the app.. */
     if (_remove_application(app->appid)) {
         printf("ERROR! Unable to remove application %s\n", app->appname);
         return -1;
     }
 
-    // Release local resources...
+    /* Release local resources... */
     if (app->callbacks != NULL)
         callbacks_free(app->callbacks);
 
@@ -198,8 +199,7 @@ int remove_application(Application *app)
     return 0;
 }
 
-// Returns 0 on success and -1 otherwise
-//
+/* Returns 0 on success and -1 otherwise */
 int execute_remote_func(Application *app, const char *name, const char *format, ...)
 {
     va_list args;
@@ -248,10 +248,10 @@ int execute_remote_func(Application *app, const char *name, const char *format, 
     if (json <= 0)
         return -1;
 
-    cmd = (Command *) calloc(1, sizeof(Command));               // allocates and initialized to 0 - 1 unit of Command
+    cmd = (Command *) calloc(1, sizeof(Command));               /* allocates and initialized to 0 - 1 unit of Command */
     cmd->max_params = MAX_PARAMS;
     cmd->param_count = 0;
-    // Parameters are not saved here.. so no need to worry about the type..
+    /* Parameters are not saved here.. so no need to worry about the type.. */
 
     cmd->command = strdup(json);
     free(json);
@@ -353,11 +353,10 @@ int raise_event(Application *app, char *tag, EventType etype, char *cback, char 
 }
 
 
-// Private functions...
-
-// TODO: Trace the memory allocated to the command structure...
-// Seems like it is not released when the incoming message contains an event?
-//
+/* Private functions...
+ * TODO: Trace the memory allocated to the command structure...
+ * Seems like it is not released when the incoming message contains an event?
+ */
 void *event_loop(void *arg)
 {
     Application *app = (Application *)arg;
@@ -368,7 +367,7 @@ void *event_loop(void *arg)
             callbacks_call(app->callbacks, app, e);
     }
 
-    // Just a dummy return.. return value inconsequential..
+    /* Just a dummy return.. return value inconsequential.. */
     return NULL;
 }
 
