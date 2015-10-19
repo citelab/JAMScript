@@ -1,7 +1,7 @@
 PROJECT = ../../tests/jamlib.a
 
-CC = gcc
-CFLAGS = -Wall -g
+CC = gcc-5
+CFLAGS = -std=iso9899:199409 -Wall -g
 
 
 OBJECTS = socket.o command.o event.o callback.o jamlib.o \

@@ -49,15 +49,15 @@ extern "C" {
 
 typedef struct _Command
 {
-    char *name;                             // Name of the command
+    char *name;                             /* Name of the command */
     char *tag;
-    JSONValue *params;                      // Parameters is a JSON array
-    char *command;                          // The full command
-    unsigned int param_count;               // Number of parameters
-    char *callback;                         // Name of the callback function from remote
+    JSONValue *params;                      /* Parameters is a JSON array */
+    char *command;                          /* The full command */
+    unsigned int param_count;               /* Number of parameters */
+    char *callback;                         /* Name of the callback function from remote */
     unsigned int max_params;
     char *signature;
-    JSONValue *parsedCmd;                   // Parsed command - full JSON - should be freed - only for incoming
+    JSONValue *parsedCmd;                   /* Parsed command - full JSON - should be freed - only for incoming */
 } Command;
 
 

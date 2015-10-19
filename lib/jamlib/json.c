@@ -355,7 +355,8 @@ int val_to_string(char **buf, int buflen, JSONValue *val)
 	break;
     case ARRAY:
 	cnt = sprintf(*buf, "[");
-	for (int i = 0; i < val->val.aval->length; i++) {
+    int i;
+	for (i = 0; i < val->val.aval->length; i++) {
 	    nbuf = *buf + cnt;
 	    cnt += val_to_string(&nbuf, (buflen - cnt), &(val->val.aval->elems[i]));
 	    if (i < val->val.aval->length - 1) {
@@ -368,7 +369,7 @@ int val_to_string(char **buf, int buflen, JSONValue *val)
 	break;
     case OBJECT:
 	cnt = sprintf(*buf, "{");
-	for (int i = 0; i < val->val.oval->count; i++) {
+	for (i = 0; i < val->val.oval->count; i++) {
 	    nbuf = *buf + cnt;
 	    cnt += sprintf(nbuf, " \"%s\" :", val->val.oval->properties[i].name);
 	    nbuf = *buf + cnt;
