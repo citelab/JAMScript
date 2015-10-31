@@ -4,7 +4,7 @@ var ometa = require('./deps/ometa'),
     readline = require('readline'),
     fs = require('fs');
 
-fs.readFile("tests/test_jam.c", "utf8", function(err, data) {
+fs.readFile("tests/pre_jam.c", "utf8", function(err, data) {
   if (err) {
     return console.log(err);
   }

@@ -11,8 +11,8 @@ fs.readFile("tests/test_file.c", "utf8", function(err, data) {
   try {
   	// console.log(data);
   	tree = CParser.parse(data);
-  	console.log("Tree = ", tree);
-  	console.log("=================");
+  	// console.log("Tree = ", tree);
+  	// console.log("=================");
   	output = CTranslator.translate(tree);
     console.log(output);
   } catch(e) {
