@@ -11,8 +11,8 @@ fs.readFile("tests/pre_jam.c", "utf8", function(err, data) {
   try {
   	console.log(data);
   	tree = JAMCParser.parse(data);
-  	console.log("Tree = ", tree);
-  	console.log("=================");
+  	// console.log("Tree = ", tree);
+  	// console.log("=================");
   	output = JAMCTranslator.translate(tree);
     fs.writeFile("tests/jamout.c", output.C, function(err) {
       if(err) {
