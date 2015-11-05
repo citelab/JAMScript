@@ -4,17 +4,26 @@ var ometa = require('./deps/ometa'),
     readline = require('readline'),
     fs = require('fs');
 
-fs.readFile("tests/test_jam.c", "utf8", function(err, data) {
+fs.readFile("tests/pre_jam.c", "utf8", function(err, data) {
   if (err) {
     return console.log(err);
   }
   try {
   	console.log(data);
   	tree = JAMCParser.parse(data);
-  	console.log("Tree = ", tree);
-  	console.log("=================");
+  	// console.log("Tree = ", tree);
+  	// console.log("=================");
   	output = JAMCTranslator.translate(tree);
-    console.log("output =", output);
+    fs.writeFile("tests/jamout.c", output.C, function(err) {
+      if(err) {
+          return console.log(err);
+      }
+    });
+    fs.writeFile("tests/jamout.js", output.JS, function(err) {
+      if(err) {
+          return console.log(err);
+      }
+    }); 
   } catch(e) {
 	    console.log("\t\t\t\t ERROR! Invalid Input");
 	}

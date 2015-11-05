@@ -50,7 +50,7 @@ void bg_event_loop(Application *app);
 
 int raise_event(Application *app, char *tag, EventType etype, char *cback, char *fmt, ...);
 
-#endif  // __JAMLIB_H
+#endif  /* __JAMLIB_H */
 
 #ifdef __cplusplus
 }

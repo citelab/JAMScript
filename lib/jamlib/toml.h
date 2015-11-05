@@ -32,8 +32,9 @@ extern "C" {
 #ifndef _TOML_H
 #define _TOML_H
 
-// This is the number of properties allocated at any given time.
-// We realloc more properties as needed.
+/* This is the number of properties allocated at any given time.
+ * We realloc more properties as needed.
+ */
 
 #define ALLOCED_NUM                         16
 #define MAX_PRINT_BUF                       1024
@@ -106,8 +107,9 @@ struct TOMLObject
  * TOMLObject methods..
  */
 TOMLObject *t_create_object();
-// Object owns the value after it is added as property
-// This means the 'val' can be changed later on...
+/* Object owns the value after it is added as property
+ * This means the 'val' can be changed later on...
+ */
 int t_add_property(TOMLObject *tobj, TOMLName *name, TOMLValue *val);
 int t_finalize_object(TOMLObject *tobj);
 TOMLValue *t_find_property_with_name(TOMLObject *jobj, TOMLName *name);
@@ -117,8 +119,9 @@ TOMLValue *t_find_property_with_str(TOMLObject *jobj, char *name);
  * TOMLArray methods..
  */
 TOMLArray *t_create_array();
-// Array owns the value after it is inserted into the array
-// This means the value can be changed later on..
+/* Array owns the value after it is inserted into the array
+ * This means the value can be changed later on..
+ */
 int t_add_element(TOMLArray *tarr, TOMLValue *elem);
 int t_finalize_array(TOMLArray *tarr);
 TOMLValue *t_find_element(TOMLArray *tarr, int index);

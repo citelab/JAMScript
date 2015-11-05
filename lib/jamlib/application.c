@@ -54,7 +54,7 @@ int _register_application(char *appname)
 {
     Command *cmd;
 
-    // Register application
+    /* Register application */
     cmd = command_format_json("REGAPP", "", "", "\"%s\"", appname);
     if (cmd == NULL)
         return 0;
@@ -70,7 +70,7 @@ int _register_application(char *appname)
 
 int _get_state_from_server(char *statstr) {
 
-    // Read the reply from the server...
+    /* Read the reply from the server... */
     Command *cmd = command_read(jsocket);
     if (cmd == NULL) {
         printf("Unable to get the reply.. \n");
@@ -100,7 +100,7 @@ int _open_application(char *appname)
 {
     Command *cmd;
 
-    // Open application
+    /* Open application */
     cmd = command_format_json("OPNAPP", "", "", "\"%s\"", appname);
     if (cmd == NULL)
         return 0;
@@ -122,7 +122,7 @@ int _close_application(int appid)
 {
     Command *cmd;
 
-    // Close application
+    /* Close application */
     cmd = command_format_json("CLOSAPP", "", "", "%d", appid);
     if (cmd == NULL)
         return 0;
@@ -133,8 +133,9 @@ int _close_application(int appid)
     }
     command_free(cmd);
 
-    // TODO: state is inverted by the server
-    // fix it..
+    /* TODO: state is inverted by the server
+     * fix it..
+     */
     return _get_state_from_server("APPSTAT");
 }
 
@@ -143,7 +144,7 @@ int _remove_application(int appid)
 {
     Command *cmd;    
 
-    // Remove application
+    /* Remove application */
     cmd = command_format_json("REMAPP", "", "", "%d", appid);
     if (cmd == NULL)
         return 0;
@@ -154,7 +155,7 @@ int _remove_application(int appid)
     }
     command_free(cmd);
 
-    // TODO: inversted state.
+    /* TODO: inversted state. */
     return _get_state_from_server("APPSTAT");
 }
 
@@ -171,8 +172,8 @@ Application *_get_app_info(int appid)
     Command *cmd;
     Application *app;
 
-    // Register the application
-    //
+    /* Register the application */
+
     cmd = command_format_json("GAPPINFO", "", "", "%d", appid);
     if (cmd == NULL)
         return NULL;
@@ -183,7 +184,7 @@ Application *_get_app_info(int appid)
     }
     command_free(cmd);
 
-    // Read the reply from the server...
+    /* Read the reply from the server... */
     cmd = command_read(jsocket);
     if (cmd == NULL) {
         printf("Unable to get the reply.. \n");
@@ -206,14 +207,14 @@ Application *_process_application(int appid)
     Application *app = NULL;
     char *port_buf = NULL;
 
-    // get information on application
+    /* get information on application */
     app = _get_app_info(appid);
     if (app == NULL) {
         printf("ERROR! Unable to get information on application. Aborted\n");
         exit(1);
     }
 
-    // Connect socket to application service on server
+    /* Connect socket to application service on server */
     port_buf = int_to_string(app->port);
     if (port_buf == NULL)
         return NULL;
@@ -244,10 +245,10 @@ Application *_application_from_json(JSONValue *jval)
     Application *app = NULL;
     JSONValue *tval;
 
-    // Allocate the data structure for application..
+    /* Allocate the data structure for application.. */
     app = (Application *) calloc(1, sizeof(Application));
 
-    // copy the value into the application structure.. memory will be held by Application
+    /* copy the value into the application structure.. memory will be held by Application */
 
     tval = query_value(jval, "sds", "args", 0, "appid");
     if (tval->type == INTEGER)

@@ -2,8 +2,7 @@
 #include <stdio.h>
 
 
-int main() 
-{
+int main() {
     int res;
 
     res = init_jam("localhost", 2500);

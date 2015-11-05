@@ -4,3 +4,7 @@ node_modules/*
 *.o
 *.a
 *.gch
+
+*.db
+
+*.out

@@ -51,7 +51,7 @@ int add_property(JSONObject *jobj, char *name, JSONValue *val)
     JSONProperty *props;
 
     if (jobj->count >= jobj->allocednum) {
-	// reallocate the storage..
+	/* reallocate the storage.. */
 	props = (JSONProperty *)realloc(jobj->properties, (jobj->allocednum + ALLOCED_NUM) * sizeof(JSONProperty));
 	if (props == NULL) {
 	    perror("Unable to Reallocate Memory");
@@ -60,7 +60,7 @@ int add_property(JSONObject *jobj, char *name, JSONValue *val)
 	jobj->properties = props;
 	jobj->allocednum += ALLOCED_NUM;
     }
-    // Now add the actual property...
+    /* Now add the actual property... */
     jobj->properties[jobj->count].name = strdup(name);
     jobj->properties[jobj->count].value = copy_value(val);
     jobj->count++;
@@ -73,9 +73,9 @@ int finalize_object(JSONObject *jobj)
 {
     JSONProperty *props;
 
-    // Resize the memory allocation to fit the count.. excess memory is trimmed.
+    /* Resize the memory allocation to fit the count.. excess memory is trimmed. */
     if (jobj->count < jobj->allocednum) {
-	// reallocate the storage..
+	/* reallocate the storage.. */
 	props = (JSONProperty *)realloc(jobj->properties, (jobj->count) * sizeof(JSONProperty));
 	if (props == NULL) {
 	    perror("Unable to Reallocate Memory");
@@ -94,8 +94,9 @@ JSONValue *find_property(JSONObject *jobj, char *name)
 	if (strcmp(name, jobj->properties[i].name) == 0)
 	    return jobj->properties[i].value;
     }
-    // return an 'undefined' value.. which is returned by default
-    // by create_value()
+    /* return an 'undefined' value.. which is returned by default
+     * by create_value()
+     */
     return create_value();
 }
 
@@ -119,7 +120,7 @@ int add_element(JSONArray *jarr, JSONValue *elem)
     JSONValue *elems;
 
     if (jarr->length >= jarr->allocednum) {
-	// reallocate the storage..
+	/* reallocate the storage.. */
 	elems = (JSONValue *)realloc(jarr->elems, (jarr->allocednum + ALLOCED_NUM) * sizeof(JSONValue));
 	if (elems == NULL) {
 	    perror("Unable to Reallocate Memory");
@@ -128,7 +129,7 @@ int add_element(JSONArray *jarr, JSONValue *elem)
 	jarr->elems = elems;
 	jarr->allocednum += ALLOCED_NUM;
     }
-    // Now add the actual element..
+    /* Now add the actual element.. */
     jarr->elems[jarr->length] = *elem;
     jarr->length++;
 
@@ -141,7 +142,7 @@ int finalize_array(JSONArray *jarr)
     JSONValue *elems;
 
     if (jarr->length < jarr->allocednum) {
-	// reallocate the storage..
+	/* reallocate the storage.. */
 	elems = (JSONValue *)realloc(jarr->elems, jarr->length * sizeof(JSONValue
 
 ));
@@ -176,8 +177,9 @@ JSONValue *create_value()
     return jval;
 }
 
-// Make a shallow copy of the value given by 'val'
-// Shallow copy means.. elements linked by the val is not copied
+/* Make a shallow copy of the value given by 'val'
+ * Shallow copy means.. elements linked by the val is not copied
+ */
 JSONValue *copy_value(JSONValue *val)
 {
     JSONValue *nval = create_value();
@@ -285,7 +287,7 @@ JSONValue *query_value(JSONValue *jval, char *fmt, ...)
     while (*fmt) {
         switch (*fmt++) {
 	        case 's':
-	            // if not an object, return the 'undefined'
+	            /* if not an object, return the 'undefined' */
 	            if (cval->type != OBJECT) return rval;
 	               str = va_arg(args, char *);
 	            cval = find_property(cval->val.oval, str);
@@ -353,7 +355,8 @@ int val_to_string(char **buf, int buflen, JSONValue *val)
 	break;
     case ARRAY:
 	cnt = sprintf(*buf, "[");
-	for (int i = 0; i < val->val.aval->length; i++) {
+    int i;
+	for (i = 0; i < val->val.aval->length; i++) {
 	    nbuf = *buf + cnt;
 	    cnt += val_to_string(&nbuf, (buflen - cnt), &(val->val.aval->elems[i]));
 	    if (i < val->val.aval->length - 1) {
@@ -366,7 +369,7 @@ int val_to_string(char **buf, int buflen, JSONValue *val)
 	break;
     case OBJECT:
 	cnt = sprintf(*buf, "{");
-	for (int i = 0; i < val->val.oval->count; i++) {
+	for (i = 0; i < val->val.oval->count; i++) {
 	    nbuf = *buf + cnt;
 	    cnt += sprintf(nbuf, " \"%s\" :", val->val.oval->properties[i].name);
 	    nbuf = *buf + cnt;
@@ -384,7 +387,7 @@ int val_to_string(char **buf, int buflen, JSONValue *val)
 	cnt += sprintf(*buf, "<< other type >>");
     }
 
-    // +1 to accomodate the '\0' trailing at the end
+    /* +1 to accomodate the '\0' trailing at the end */
     return (buflen < cnt + 1) ? 0 : cnt;
 }
 

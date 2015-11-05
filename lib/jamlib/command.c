@@ -38,7 +38,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "jparser.h"
 
 
-// Maximum size of input buffer
+/* Maximum size of input buffer */
 #define BUFSIZE         1024
 
 static Command *_command_from_json(char *str);
@@ -105,10 +105,10 @@ Command *command_format_json(const char *name, const char *tag, const char *cbac
     if (json <= 0)
         return NULL;
 
-    cmd = (Command *) calloc(1, sizeof(Command));               // allocates and initialized to 0 - 1 unit of Command
+    cmd = (Command *) calloc(1, sizeof(Command));               /* allocates and initialized to 0 - 1 unit of Command */
     cmd->max_params = MAX_PARAMS;
     cmd->param_count = 0;
-    // Parameters are not saved here.. so no need to worry about the type..
+    /* Parameters are not saved here.. so no need to worry about the type.. */
 
     cmd->command = strdup(json);
     free(json);
@@ -136,10 +136,10 @@ Command *command_format_jsonk(char *name, char *tag, char *cback, char *format, 
     if (json == NULL)
         return NULL;
 
-    cmd = (Command *) calloc(1, sizeof(Command));               // allocates and initialized to 0 - 1 unit of Command
+    cmd = (Command *) calloc(1, sizeof(Command));               /* allocates and initialized to 0 - 1 unit of Command */
     cmd->max_params = MAX_PARAMS;
     cmd->param_count = 0;
-    // Parameters are not saved here.. so no need to worry about the type..
+    /* Parameters are not saved here.. so no need to worry about the type.. */
 
     cmd->command = strdup(json);
     free(json);
@@ -213,7 +213,7 @@ JSONValue *_get_arr_elem(JSONValue *p, int i)
         printf("ERROR! Out-of-bound array access attempted\n");
         exit(1);
     }
-    // Never reached.. just to make the compiler happy!
+    /* Never reached.. just to make the compiler happy! */
     return NULL;
 }
 
@@ -271,40 +271,41 @@ static Command *_command_from_json(char *json)
     if (json == NULL)
 	return NULL;
 
-    // initialize the parser
+    /* initialize the parser */
     init_parse(json);
 
-    if (parse_value() == ERROR) return NULL; // we have invalid JSON, return NULL
-    // Otherwise.. string has been parsed into JSON
+    if (parse_value() == ERROR) return NULL;  /* we have invalid JSON, return NULL */
+    /* Otherwise.. string has been parsed into JSON */
 
     cmd = (Command *) calloc(1, sizeof(Command));
     cmd->max_params = MAX_PARAMS;
     cmd->param_count = 0;
-    // Get a handle to the parsed JSON value..
+    /* Get a handle to the parsed JSON value.. */
     jval = get_value();
 
     JSONValue *nval = query_value(jval, "s", "name");
     JSONValue *tval = query_value(jval, "s", "tag");
-    JSONValue *aval = query_value(jval, "s", "args");   // TODO: Should the format be "d"?
+    JSONValue *aval = query_value(jval, "s", "args");   /* TODO: Should the format be "d"? */
     JSONValue *cval = query_value(jval, "s", "cback");
 
-    // fill up the Command structure.. the memory is NOT held by the Command structure
-    // it is still held in the JSON object... we free memory be deallocing the JSON object
-    // name and tag are mandatory..
+    /* fill up the Command structure.. the memory is NOT held by the Command structure
+     * it is still held in the JSON object... we free memory be deallocing the JSON object
+     * name and tag are mandatory..
+     */
     if (nval->type != STRING) return NULL;
     cmd->name = nval->val.sval;
 
     if (tval->type != STRING) return NULL;
     cmd->tag = tval->val.sval;
 
-    // callback could be undefined
+    /* callback could be undefined */
     if (cval->type == STRING)
         cmd->callback = cval->val.sval;
     else
         cmd->callback = NULL;
 
-    // check the array before assigning to cmd params.
-    if (aval->type != ARRAY) return NULL; // second parameter SHOULD be an ARRAY.. otherwise we reject
+    /* check the array before assigning to cmd params. */
+    if (aval->type != ARRAY) return NULL; /* second parameter SHOULD be an ARRAY.. otherwise we reject */
     cmd->params = aval;
 
     cmd->parsedCmd = jval;

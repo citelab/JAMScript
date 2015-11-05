@@ -89,8 +89,9 @@ struct JSONObject
  * JSONObject methods..
  */
 JSONObject *create_object();
-// Object owns the value after it is added as property
-// This means the 'val' can be changed later on...
+/* Object owns the value after it is added as property
+ * This means the 'val' can be changed later on...
+ */
 int add_property(JSONObject *jobj, char *name, JSONValue *val);
 int finalize_object(JSONObject *jobj);
 JSONValue *find_property(JSONObject *jobj, char *name);
@@ -100,8 +101,9 @@ JSONValue *find_property(JSONObject *jobj, char *name);
  * JSONArray methods..
  */
 JSONArray *create_array();
-// Array owns the value after it is inserted into the array
-// This means the value can be changed later on..
+/* Array owns the value after it is inserted into the array
+ * This means the value can be changed later on..
+ */
 int add_element(JSONArray *jarr, JSONValue *elem);
 int finalize_array(JSONArray *jarr);
 JSONValue *find_element(JSONArray *jarr, int index);
@@ -123,8 +125,9 @@ void free_value(JSONValue *jval, int freeme);
 void free_array(JSONArray *arr);
 void free_object(JSONObject *obj);
 
-// Dispose only frees a value of UNDEFINED type
-// Different from free_value()
+/* Dispose only frees a value of UNDEFINED type
+ * Different from free_value()
+ */
 void dispose_value(JSONValue *val);
 
 /*

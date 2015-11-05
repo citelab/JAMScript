@@ -56,13 +56,13 @@ typedef enum
     NUMBER_VALUE
 } ReturnTypes;
 
-// Primary parser interface functions..
+/* Primary parser interface functions.. */
 void init_parse(char *str);
 JSONValue *get_value();
 int parse_value();
 void print_string();
 
-// Secondary parser interface functions.. could be rarely used
+/* Secondary parser interface functions.. could be rarely used */
 int parse_true();
 int parse_false();
 int parse_null();

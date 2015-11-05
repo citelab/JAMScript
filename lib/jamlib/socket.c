@@ -464,9 +464,9 @@ unsigned int socket_select (Socket *socket, long seconds, long usec)
         return 0;
 }
 
-// Return value is 0 if everything is ok.
-// Otherwise, return value is -1.
-//
+/* Return value is 0 if everything is ok.
+ * Otherwise, return value is -1.
+ */
 int wait_until_data_available(Socket *socket)
 {
     fd_set fds;
