@@ -1,3 +1,8 @@
+#include "../lib/jamlib/jamlib.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
 jamasync void test(float i){
     void onload() {
 		var a;
