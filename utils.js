@@ -10,12 +10,6 @@ module.exports = {
       return [el];
   },
 
-  join_print: function() {
-    console.log(arguments);
-    return Array.prototype.join.call(arguments, '');
-  },
-
-
   join: function() {
     return Array.prototype.join.call(arguments, '');
   },
