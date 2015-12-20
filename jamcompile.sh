@@ -1,8 +1,5 @@
 #!/bin/sh
-cd tests
-gcc-5 -E -P -std=iso9899:199409 test_jam.c > pre_jam.c
-cd ..
+gcc-5 -E -P -std=iso9899:199409 tests/test_jam.c > tests/pre_jam.c
 node jamout
 cd tests
-gcc -std=iso9899:199409 jamlib.a jamout.c
-cd ..
+gcc jamout.c jamlib.a -lpthread
