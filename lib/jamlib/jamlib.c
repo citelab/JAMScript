@@ -85,7 +85,8 @@ int init_jam(char *jam_server, int port)
     }
 
     /* select a random sequence number */
-    seqnum = arc4random() % 1000000;
+    srand(time(NULL));
+    seqnum = rand();
     /* ping the server... */
     cmd = command_format_json("PING", "", "", "%d", seqnum);
 
