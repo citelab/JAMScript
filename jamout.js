@@ -24,6 +24,11 @@ fs.readFile("tests/pre_jam.c", "utf8", function(err, data) {
           return console.log(err);
       }
     }); 
+    fs.writeFile("tests/annotated_jamout.js", output.annotated_JS, function(err) {
+      if(err) {
+          return console.log(err);
+      }
+    });
   } catch(e) {
 	    console.log("\t\t\t\t ERROR! Invalid Input");
 	}
