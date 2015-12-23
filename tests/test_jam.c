@@ -1,9 +1,13 @@
 #include "../lib/jamlib/jamlib.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
-jamasync void test(char * i){
+jsync int stest(int b) {
+    var a = b*2;
+    return a;
+}
+
+jasync void test(char * i){
     void onload() {
 		var a;
 		console.log("Hello World " + i);
@@ -17,19 +21,13 @@ jamasync void test(char * i){
     };
 }
 
-/* jamsync int syncfunc(){
-// 	var a = 3;
-// 	return a;
-// }
-*/
-
 int main() {
 	int code;
     int loop = 1;
     while(loop) {
         printf("Your choice: \n \
-                1 - Execute hello \n \
-                2 - Trigger error \n \
+                1 - ASync \n \
+                2 - Sync \n \
                 3 - Quit \n");
 
         scanf("%d", &code);
@@ -38,7 +36,7 @@ int main() {
                 test("hi");
                 break;
             case 2:
-                /* printf("%i\n", syncfunc()); */
+                stest(3);
                 break;
             case 3:
                 loop = 0;
