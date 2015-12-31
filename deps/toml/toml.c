@@ -123,28 +123,36 @@ int t_finalize_object(TOMLObject *jobj)
     return 0;
 }
 
+/*
+ * WARNING this function finds the first instance of property with such name.
+ * Currently it is possible to have multiple properties of the same name
+ * It returns such object back
+ */
 
 TOMLValue *t_find_property_with_name(TOMLObject *jobj, TOMLName *name)
 {
     int i, j;
     TOMLObject *this = jobj;
     int found = 0;
-
     for (i = 0; i < name->nums; i++) {
         for (j = 0; j < this->count; j++) {
+            //printf("%s vs %s\n", name->names[i], this->properties[j].name);
             if (strcmp(name->names[i], this->properties[j].name) == 0) {
-                this = this->properties[i].value->val.oval;
+                this = this->properties[j].value->val.oval;
                 found = 1;
+                break;
             }
         }
-        // if not found return 'undefined'
-        if (!found) return t_create_value();
     }
+
+    // if not found return 'undefined'
+    if (!found) return t_create_value();
 
     // return is the one we are looking for..
     TOMLValue *rv = t_create_value();
     t_set_object(rv, this);
     return rv;
+
 }
 
 
