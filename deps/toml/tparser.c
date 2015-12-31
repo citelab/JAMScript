@@ -22,6 +22,15 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+
+Current Issues
+Arrays can be inputted with values of different types
+i.e [2, "test"]
+This should be invalid
+
+All "" are literal, no escape characters possible
+
+'' do not parse
 */
 
 #include "tparser.h"
@@ -155,8 +164,8 @@ int t_parse_doc()
                                 printf("TESTING \n");
                                 return T_ERROR;
                             }
-                            }else
-                                return T_ERROR;
+                        }else
+                            return T_ERROR;
                     }else{
                         return T_ERROR;
                     }
@@ -313,6 +322,7 @@ int t_parse_value()
     // Each match is tentative.. there is backtracking built into each matching
     // On failure, the pointer on the input stream is not advanced.
     //
+    printf("\nTHE CHARACTER IS %c\n", nextchar);
     switch(nextchar)
 	{
 	case '#':
@@ -323,11 +333,11 @@ int t_parse_value()
 	case 'f':
 	    return (t_parse_false() == T_ERROR) ? T_ERROR : T_VALID_VALUE;
 	case '[':
+        printf("\n WHAT IS LIFE ERROR\n");
 	    return (t_parse_array() == T_ERROR) ? T_ERROR : T_VALID_VALUE;
 	case '"':
 	    return (t_parse_string() == T_ERROR) ? T_ERROR : T_VALID_VALUE;
 	case '-':
-        printf("\n WHAT IS LIFE ERROR\n");
 	    return (t_parse_number() == T_ERROR) ? T_ERROR : T_VALID_VALUE;
 	default:
 	    if ((nextchar >= '0') && (nextchar <= '9'))
@@ -362,6 +372,7 @@ int t_parse_table()
             t_print_value(t_rval);
             if (_parse_equal_t() != T_ERROR) {
                 printf("\n Equal found.......");
+                printf("TESTING");
                 if (t_parse_value() != T_ERROR) {
                     printf("\n Value found ..");
                     t_add_property(tbl, n, t_rval);
@@ -384,14 +395,19 @@ int t_parse_array()
     TOMLValue *val = t_create_value();
     TOMLArray *arr = t_create_array();
     t_set_array(val, arr);
-
     if (_parse_barr_t() == '[') {
+
+            _parse_white_t();
+            _consume_comment_t();
+            _parse_white_t();
 
         while (_peek_value_t() != ']') {
 
             if (t_parse_value() == T_ERROR) return T_ERROR;
     	    t_add_element(arr, t_rval);
             _parse_comma_t();
+            _parse_white_t();
+            _consume_comment_t();
             _parse_white_t();
         }
         t_finalize_array(arr);
@@ -516,11 +532,9 @@ int parse_array()
     TOMLArray *arr = t_create_array();
     t_set_array(val, arr);
 
-
     if (_parse_barr_t() == '[') {
 
         while (_peek_value_t() != ']') {
-
             if (t_parse_value() == T_ERROR) return T_ERROR;
     	    t_add_element(arr, t_rval);
             if (_peek_value_t() == ',')
