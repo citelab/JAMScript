@@ -327,7 +327,7 @@ int t_parse_value()
 	case '"':
 	    return (t_parse_string() == T_ERROR) ? T_ERROR : T_VALID_VALUE;
 	case '-':
-        printf("TESTING\n");
+        printf("\n WHAT IS LIFE ERROR\n");
 	    return (t_parse_number() == T_ERROR) ? T_ERROR : T_VALID_VALUE;
 	default:
 	    if ((nextchar >= '0') && (nextchar <= '9'))
@@ -432,9 +432,13 @@ int t_parse_number()
     TOMLValue *val = t_create_value();
     char buf[64];
     int j = 0;
+    int negative = 1;
 
-    _parse_white_t();
-
+    _parse_white_t();  
+    if(_parse_str_t[_loc_t] == '-'){ //Is a negative number        
+        negative = -1;
+        _loc_t++;
+    }
     while (isdigit(_parse_str_t[_loc_t]))
         buf[j++] = _get_char_t();
 
@@ -443,13 +447,13 @@ int t_parse_number()
         while (isdigit(_parse_str_t[_loc_t]))
             buf[j++] = _get_char_t();
         buf[j] = '\0';
-        val->val.dval = atof(buf);
+        val->val.dval = atof(buf) * negative;
         val->type = T_DOUBLE;
         t_rval = val;
         return T_NUMBER_VALUE;
     } else {
         buf[j] = '\0';
-        val->val.ival = atoi(buf);
+        val->val.ival = atoi(buf) * negative;
         val->type = T_INTEGER;
         t_rval = val;
         return T_NUMBER_VALUE;
