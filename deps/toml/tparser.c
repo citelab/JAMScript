@@ -25,7 +25,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "tparser.h"
-#include "toml.h"
+#include "TOML.h"
+#include "date_parser.c"
 
 #include <stdio.h>
 #include <string.h>
@@ -69,6 +70,10 @@ int _parse_barr_t();
 char _get_char_t();
 
 
+int isNumber(char c){
+    return c >= '0' && c <= '9';
+}
+
 /*
  * Setup the parse process...
  */
@@ -106,7 +111,7 @@ int t_parse_doc()
     // keep eating white spaces away..
     _parse_white_t();
     while ((nextchar = _peek_value_t()) != T_EOF_VALUE) {
-        printf("Nextchar %c\n", nextchar);
+        printf("\nNextchar %c\n", nextchar);
         switch(nextchar)
         {
             case '\n':
@@ -127,8 +132,9 @@ int t_parse_doc()
                         printf("Adding property to the table..");
                         t_print_value(val);
                         t_add_property(oval, n, t_rval);
-                    } else
+                    } else{
                         return T_ERROR;
+                    }
                 } else
                     return T_ERROR;
                 printf("\n Printing the value after table insertion...\n");
@@ -136,31 +142,103 @@ int t_parse_doc()
                 break;
             default:
                 printf("Default parsing..");
-                if (t_parse_name() != T_ERROR) {
-                    printf("Name found..");
-                    TOMLName *n = t_rval->val.nval;
-                    if (_parse_equal_t() != T_ERROR) {
-                        printf("Equal found...");
-                        if (t_parse_value() != T_ERROR) {
-                            printf("Value found..");
-                            t_add_property(oval, n, t_rval);
-                        } else
-                            return T_ERROR;
-                    } else
+                if(t_parse_date() == T_ERROR){
+                    if (t_parse_name() != T_ERROR) {
+                        printf("Name found..");
+                        TOMLName *n = t_rval->val.nval;
+                        if (_parse_equal_t() != T_ERROR) {
+                            printf("Equal found...");
+                            if (t_parse_value() != T_ERROR) {
+                                printf("Value found..");
+                                t_add_property(oval, n, t_rval);
+                            } else{
+                                printf("TESTING \n");
+                                return T_ERROR;
+                            }
+                            }else
+                                return T_ERROR;
+                    }else{
                         return T_ERROR;
-                } else
-                    return T_ERROR;
+                    }
+                    }else{
+                        TOMLName * n = t_create_name();
+                        t_add_name(n, t_rval->val.dtval->name);
+                        printf("Date found ...\n");
+                        print_time(&t_rval->val.dtval->date);
+                        t_add_property(oval, n , t_rval);
+                }
         }
         // keep eating white spaces away..
         _parse_white_t();
     }
-
-    printf("==============================\n");
+    printf("\n------------------------------\n\n");
+    printf("FINAL VALUES \n");
+    t_print_value(val);
+    printf("\n==============================\n");
     t_rval = val;
 
     return T_VALID_VALUE;
 }
+//Parses a date string given string 
+int t_parse_date(){
+    //The Format is year-month-dayThour:minute:
+    //1979-05-27T07:32:00-08:00
+    int temp = 0;
+    int i;
+    int prev_loc = _loc_t;   
+    TOMLValue * ret;
+    TOMLDate * val = t_create_date();
+    char * valid;
+    char date[128];
 
+    _parse_white_t();
+    //So the main idea is to check if this is a date string
+    //Parse a string name when we have dob = 1994-02-04
+
+    for(i = 0; i < 30; i++){
+        if(_parse_str_t[_loc_t + i] == '#'){ //if the line is mostly comment
+            _loc_t = prev_loc;
+            return T_ERROR;
+        }
+        else if(_parse_str_t[_loc_t + i] == ' ' || _parse_str_t[_loc_t + i] == '='){  //Stop parsing the name
+            break;
+        }
+        else
+            val->name[i] = _parse_str_t[_loc_t + i];
+    }
+    _loc_t += i; //increment _loc_t
+    _parse_white_t();
+    if(_parse_str_t[_loc_t] != '='){ //we'd have a problem if the next value wasn't =
+        _loc_t = prev_loc;
+        return T_ERROR;
+    }
+    _loc_t++;
+    _parse_white_t();
+    //Parse the next part of the string for the datetime parser
+    for(i = 0; i < 128 && (_loc_t + i) < _len_t; i++){ //Get short form of the date (if it exists)
+        date[i] = _parse_str_t[_loc_t + i];
+        if(date[i] == '\n' || date[i] == '#' || date[i] == ' '){
+            date[i] = '\0';//end of the string
+            break;
+        }
+    }
+    _loc_t += i;
+
+    valid = parse_datetime(date, &val->date, val->dston);
+    if(valid == NULL){
+        _loc_t = prev_loc;  //this means we can't handle it so we let the other parser do the work
+        return T_ERROR;
+    }
+    else{ //otherwise, change t_rval so it can be changed
+        ret = t_create_value();
+        ret->type = T_DATETIME;
+        ret->val.dtval = val;
+        t_rval = ret;
+    
+        return T_DATETIME;
+    }
+
+}   
 
 int t_parse_tname()
 {
@@ -249,6 +327,7 @@ int t_parse_value()
 	case '"':
 	    return (t_parse_string() == T_ERROR) ? T_ERROR : T_VALID_VALUE;
 	case '-':
+        printf("TESTING\n");
 	    return (t_parse_number() == T_ERROR) ? T_ERROR : T_VALID_VALUE;
 	default:
 	    if ((nextchar >= '0') && (nextchar <= '9'))
@@ -266,9 +345,18 @@ int t_parse_table()
 
     // go processing the statements until EOF or '[' of a begin Table.
     while (!_end_of_table_t()) {
-        printf("Cur. character %c.. loc %d", _peek_value_t(), _loc_t);
-
-        if (t_parse_name() != T_ERROR) {
+        printf("Cur. character %c .. loc %d Next: ", _peek_value_t(), _loc_t);
+        t_print_value(t_rval);
+        if(_peek_value_t() == '#')
+            _consume_comment_t();
+        else if(t_parse_date() != T_ERROR){
+            TOMLName * n = t_create_name();
+            t_add_name(n, t_rval->val.dtval->name);
+            printf("Date found ...\n");
+            print_time(&t_rval->val.dtval->date);
+            t_add_property(tbl, n , t_rval);
+        }
+        else if (t_parse_name() != T_ERROR) {
             TOMLName *n = t_rval->val.nval;
             printf("\n Name found.......");
             t_print_value(t_rval);
@@ -278,8 +366,9 @@ int t_parse_table()
                     printf("\n Value found ..");
                     t_add_property(tbl, n, t_rval);
                 }
-            } else
+            } else{
                 return T_ERROR;
+            }
         }
         _parse_white_t();
         _consume_comment_t();

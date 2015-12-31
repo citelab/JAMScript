@@ -24,13 +24,21 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#include "toml.h"
+#include "TOML.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
 
+/*
+ * Simple create for date
+ */
+TOMLDate *t_create_date(){
+    TOMLDate *val = (TOMLDate *)calloc(1, sizeof(TOMLDate));
+    val->dston = 0;    
+    return val;
+}
 
 /*
  * TOMLObject methods...
@@ -455,8 +463,8 @@ int t_val_to_string(char **buf, int buflen, TOMLValue *val)
 {
     int cnt = 0;
     char *nbuf;
-
-    printf("Type %d\n", val->type);
+    char buffer[128];
+    //printf("Type %d\n", val->type);
 
     switch (val->type) {
         case T_BOOLEAN:
@@ -508,6 +516,10 @@ int t_val_to_string(char **buf, int buflen, TOMLValue *val)
             }
             nbuf = *buf + cnt;
             cnt += sprintf(nbuf, "}");
+            break;
+        case T_DATETIME:
+            get_time(&val->val.dtval->date, buffer);
+            cnt += sprintf(*buf, "%s", buffer);
             break;
         default:
             cnt += sprintf(*buf, "<< other type >>");

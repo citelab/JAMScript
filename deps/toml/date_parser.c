@@ -4,6 +4,14 @@
 #include <stdlib.h>
 
 
+/* Fills ret with the proper time
+ *
+ */
+void get_time(struct tm *tval, char * ret){
+     int index = strftime(ret, 128, "%C%y-%m-%eT%TZ GMT %z", tval);
+     ret[index] = '\0';
+}
+
 /**
  * Print time to standard out..
  */
@@ -83,27 +91,49 @@ char *parse_datetime(char *buf, struct tm *ts, int dston)
     char *nrval;
     struct tm lts;
 
+    int i, j;
+    //int off = 0;
+
+    char test[128];
     memset(&lts, 0, sizeof(struct tm));
 
     if ((rval = strptime(buf, "%C%y-%m-%eT%TZ", ts)) != NULL) {
         // matching format like 1979-05-27T07:32:00Z
         make_time(ts, dston);
         return rval;
-    } else if ((rval = strptime(buf, "%C%y-%m-%eT%T", ts)) != NULL) {
+    } 
+    else if ((rval = strptime(buf, "%C%y-%m-%eT%T", ts)) != NULL) {
         // matching format like 1979-05-27T00:32:00-07:00
         make_time(ts, dston);
-        if ((nrval = strptime(rval, "-%R", &lts)) != NULL) {
+        
+        //The section below is used to prevent a weird segfault I get...
+        
+        for(i = 9; i < 128; i++){
+            if(buf[i] == '+' || buf[i] == '-')
+                break;
+        }
+        j = i;
+        for(i = j; i < 128; i++){
+            test[i-j] = buf[i];
+        }
+        //At least it works 
+        
+        if ((nrval = strptime(test, "-%R", &lts)) != NULL) {
             // parsing negative offset
             subtract_time(ts, &lts);
             return nrval;
         }
-        if ((nrval = strptime(rval, "+%R", &lts)) != NULL) {
+        
+        if ((nrval = strptime(test, "+%R", &lts)) != NULL) {
             // parsing positive offet
             add_time(ts, &lts);
             return nrval;
         }
+        
         // no offset
+        
         return rval;
+    
     } else if ((rval = strptime(buf, "%C%y-%m-%e", ts)) != NULL) {
         // parsing format like 1979-05-27
         make_time(ts, dston);
@@ -112,6 +142,7 @@ char *parse_datetime(char *buf, struct tm *ts, int dston)
         return NULL;
 }
 
+/*
 int main(int ac, char *av[])
 {
     char buf[128];
@@ -126,3 +157,4 @@ int main(int ac, char *av[])
     }
 
 }
+*/

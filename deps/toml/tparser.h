@@ -31,7 +31,7 @@ extern "C" {
 #ifndef __TPARSER_H__
 #define __TPARSER_H__
 
-#include "toml.h"
+#include "TOML.h"
 
 
 #define MAX_NAME_LEN            32
@@ -48,7 +48,8 @@ typedef enum
     T_ARRAY_VALUE,
     T_OBJECT_VALUE,
     T_STRING_VALUE,
-    T_NUMBER_VALUE
+    T_NUMBER_VALUE,
+    T_DATE_VALUE
 } ReturnTypes;
 
 // Primary parser interface functions..
@@ -62,6 +63,7 @@ int t_parse_tname();
 int t_parse_table();
 int t_parse_value();
 int t_parse_equal();
+int t_parse_date();
 
 int t_parse_number();
 int t_parse_string();
