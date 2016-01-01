@@ -31,6 +31,8 @@ This should be invalid
 All "" are literal, no escape characters possible
 
 '' do not parse
+
+Very long floats which don't give errors may lead to rounded results -> be careful with float numbers of high precision
 */
 
 #include "tparser.h"
@@ -40,7 +42,9 @@ All "" are literal, no escape characters possible
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <limits.h>
 #include <ctype.h>
+#include <errno.h>
 
 static char *_parse_str_t;
 static int _loc_t;
@@ -449,31 +453,75 @@ int t_parse_number()
     char buf[64];
     int j = 0;
     int negative = 1;
+    int overflow;
+    double overflowd;
 
     _parse_white_t();  
     if(_parse_str_t[_loc_t] == '-'){ //Is a negative number        
         negative = -1;
         _loc_t++;
     }
-    while (isdigit(_parse_str_t[_loc_t]))
-        buf[j++] = _get_char_t();
+    while (isdigit(_parse_str_t[_loc_t])){
+            if(j < 64)
+                buf[j++] = _get_char_t();
+            else{
+                printf("\n------------------INTEGER OVERFLOW---------------------\n");
+                return T_ERROR;
+            }
 
+    }
     if (_parse_str_t[_loc_t] == '.') {
         buf[j++] = _get_char_t();
-        while (isdigit(_parse_str_t[_loc_t]))
-            buf[j++] = _get_char_t();
+        
+            while (isdigit(_parse_str_t[_loc_t])){
+                if(j < 64)
+                    buf[j++] = _get_char_t();
+                else{
+                    printf("\n------------------FLOAT OVERFLOW---------------------\n");
+                    return T_ERROR;
+                }
+            }
         buf[j] = '\0';
-        val->val.dval = atof(buf) * negative;
-        val->type = T_DOUBLE;
+        errno = 0;
+        overflowd = strtof(buf, NULL) * negative; //Test for float overflow -> throw error if true
+            if(errno == ERANGE || errno == EINVAL){
+                printf("\n------------------FLOAT OVERFLOW---------------------\n");
+                return T_ERROR;
+            }
+            else{
+                val->type = T_DOUBLE;
+                val->val.dval = overflowd;
+            }
         t_rval = val;
         return T_NUMBER_VALUE;
     } else {
         buf[j] = '\0';
-        val->val.ival = atoi(buf) * negative;
-        val->type = T_INTEGER;
-        t_rval = val;
-        return T_NUMBER_VALUE;
+        errno = 0;        
+        overflow = strtol(buf, NULL, 10) * negative;
+        if(errno == ERANGE || errno == EINVAL){
+            //Integer overflow, try with float instead
+            errno = 0;
+            overflowd = strtof(buf, NULL) * negative;
+            if(errno == ERANGE || errno == EINVAL){
+                //if fail, we throw error
+                printf("\n------------------INTEGER OVERFLOW---------------------\n");
+                return T_ERROR;
+            }
+            else{
+                //otherwise we can represent such number with a float
+                val->type = T_DOUBLE;
+                val->val.dval = overflowd;
+            }
+        }
+        else{
+            //if no error, regular int works fine
+            val->type = T_INTEGER;
+            val->val.ival = overflow;
+        }
     }
+    t_rval = val;
+    return T_NUMBER_VALUE;
+            
 }
 
 
