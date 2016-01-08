@@ -89,6 +89,8 @@ int finalize_object(JSONObject *jobj)
 
 JSONValue *find_property(JSONObject *jobj, char *name)
 {
+    if(jobj == NULL || name == NULL)
+        return NULL;
     int i;
     for (i = 0; i < jobj->count; i++) {
 	if (strcmp(name, jobj->properties[i].name) == 0)
@@ -323,81 +325,128 @@ void dispose_value(JSONValue *val)
  * object. The function writes the JSON object into this buffer.
  * If it is NOT big enough, we return 0. Otherwise, we
  * return the number of characters written into the buffer + 1.
+ * -------------UPDATE----------
+ * This has been updated to properly exit without smashing stacks when buffer is too small for string
+ * Implemented by the use of snprintf instead and preventing the buffer - cnt -1 < 0
+ * Xiru Zhu
  */
 int val_to_string(char **buf, int buflen, JSONValue *val)
 {
     int cnt;
+    int test;
     char *nbuf;
 
-    printf("Type %d\n", val->type);
+    //printf("Type %d\n", val->type);
 
     switch (val->type) {
     case UNDEFINED:
-	cnt = sprintf(*buf, " Undefined ");
+	cnt = snprintf(*buf, buflen," Undefined ");
 	break;
     case JFALSE:
-	cnt = sprintf(*buf, " False ");
+	cnt = snprintf(*buf, buflen, " False ");
 	break;
     case JTRUE:
-	cnt = sprintf(*buf, " True ");
+	cnt = snprintf(*buf, buflen, " True ");
 	break;
     case JNULL:
-	cnt = sprintf(*buf, " Null ");
+	cnt = snprintf(*buf, buflen, " Null ");
 	break;
     case INTEGER:
-	cnt = sprintf(*buf, " %d ", val->val.ival);
+	cnt = snprintf(*buf, buflen, " %d ", val->val.ival);
 	break;
     case DOUBLE:
-	cnt = sprintf(*buf, " %f ", val->val.dval);
+	cnt = snprintf(*buf, buflen, " %f ", val->val.dval);
 	break;
     case STRING:
-	cnt = sprintf(*buf, " \"%s\" ", val->val.sval);
+	cnt = snprintf(*buf, buflen, " \"%s\" ", val->val.sval);
 	break;
     case ARRAY:
-	cnt = sprintf(*buf, "[");
+	cnt = snprintf(*buf, buflen, "[");
     int i;
 	for (i = 0; i < val->val.aval->length; i++) {
 	    nbuf = *buf + cnt;
-	    cnt += val_to_string(&nbuf, (buflen - cnt), &(val->val.aval->elems[i]));
-	    if (i < val->val.aval->length - 1) {
-		nbuf = *buf + cnt;
-		cnt += sprintf(nbuf, ", ");
+         if(buflen - (cnt + 1)< 0)
+            return 0;
+	    test = val_to_string(&nbuf, (buflen - cnt), &(val->val.aval->elems[i]));
+        if(test == 0)
+            return 0;
+	    cnt += test;
+        if (i < val->val.aval->length - 1) {
+		  nbuf = *buf + cnt;
+           if(buflen - (cnt + 1)< 0)
+                return 0;
+		  cnt += snprintf(nbuf, buflen - cnt ,", ");
 	    }
 	}
 	nbuf = *buf + cnt;
-	cnt += sprintf(nbuf, "]");
+    if(buflen - (cnt + 1)< 0)
+            return 0;
+	cnt += snprintf(nbuf, buflen,"]");
 	break;
     case OBJECT:
-	cnt = sprintf(*buf, "{");
+	cnt = snprintf(*buf, buflen, "{");
 	for (i = 0; i < val->val.oval->count; i++) {
 	    nbuf = *buf + cnt;
-	    cnt += sprintf(nbuf, " \"%s\" :", val->val.oval->properties[i].name);
+        if(buflen - (cnt + 1)< 0)
+            return 0;
+	    cnt += snprintf(nbuf,buflen - cnt, " \"%s\" :", val->val.oval->properties[i].name);
 	    nbuf = *buf + cnt;
-	    cnt += val_to_string(&nbuf, (buflen -cnt), val->val.oval->properties[i].value);
+        if(buflen - (cnt + 1)< 0)
+            return 0;
+	    test = val_to_string(&nbuf, (buflen -cnt), val->val.oval->properties[i].value);
+        if(test == 0)
+            return 0;
+        cnt += test;
 	    if (i < val->val.aval->length - 1) {
 		nbuf = *buf + cnt;
-		cnt += sprintf(nbuf, ", ");
+        if(buflen - (cnt + 1)< 0)
+            return 0;
+		cnt += snprintf(nbuf, buflen - cnt, ", ");
 	    }
 
 	}
 	nbuf = *buf + cnt;
-	cnt += sprintf(nbuf, "}");
+    if(buflen - (cnt + 1)< 0)
+            return 0;
+	cnt += snprintf(nbuf, buflen, "}");
 	break;
     default:
-	cnt += sprintf(*buf, "<< other type >>");
+	cnt += snprintf(*buf, buflen, "<< other type >>");
     }
 
     /* +1 to accomodate the '\0' trailing at the end */
     return (buflen < cnt + 1) ? 0 : cnt;
 }
 
+/* Prints the value of a JSONValue
+ * This has been updated to accommodate for very large strings
+ * This is no longer upper bounded by MAX_PRINT_BUF, though the minimum 
+ * string size is still MAX_PRINT_BUF
+ */
+
 void print_value(JSONValue *val)
 {
-    char buf[MAX_PRINT_BUF];
-    char *pbuf = buf;
-
-    if (val_to_string(&pbuf, MAX_PRINT_BUF, val))
-	printf("%s\n", pbuf);
-    else
-	printf("Printing ERROR!\n");
+    char * buf = (char *)calloc(MAX_PRINT_BUF, sizeof(char));
+    int multiplier = 1;
+    int printed = 0;
+    for(int i = 0; i < 50; i++){
+        if (val_to_string(&buf, MAX_PRINT_BUF * multiplier, val)){
+	       printf("%s\n", buf);
+           free(buf);
+           printed ++;
+           break;
+        }
+        else{
+	       //printf("Printing ERROR!\n");
+           multiplier *= 4;
+           free(buf);
+           buf = calloc(MAX_PRINT_BUF * multiplier, sizeof(char));
+        }
+    }
+    if(!printed)
+        printf("PRINTING ERROR\n");
 }
+
+
+
+

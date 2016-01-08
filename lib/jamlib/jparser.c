@@ -31,6 +31,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <errno.h>
 
 static char *_parse_str;
 static int _loc;
@@ -41,6 +42,7 @@ static JSONValue *rval;
 int _peek_value();
 void _consume_char();
 void _parse_white();
+void _parse_nextline();
 int _char_in_string();
 int _parse_colon();
 int _parse_quote();
@@ -56,6 +58,21 @@ char *_get_char();
  * TODO: Check and balance the allocs and deallocs
  * TODO: Some deallocs should be delayed until the value is not needed
  */
+
+int parse_undefined(){
+    int sloc = _loc;
+    JSONValue *val = create_value();
+    _parse_white();
+    if(strncmp("undefined", (_parse_str + _loc), 9) == 0){ //equal{
+        val->type = UNDEFINED;
+        rval = val;
+        _loc += 9;
+        return UNDEFINED_VALUE;
+    } else {
+        free(val);
+        return ERROR;
+    }
+}
 
 /*
  * Setup the parse process...
@@ -107,6 +124,8 @@ int parse_value()
 	    return (parse_string() == ERROR) ? ERROR : VALID_VALUE;
 	case '-':
 	    return (parse_number() == ERROR) ? ERROR : VALID_VALUE;
+    case 'u':
+        return (parse_undefined() == ERROR) ? ERROR : VALID_VALUE;
 	default:
 	    if ((nextchar >= '0') && (nextchar <= '9'))
 		return (parse_number() == ERROR) ? ERROR : VALID_VALUE;
@@ -215,16 +234,30 @@ int parse_object()
 
     if (_parse_bobj() == BEGIN_OBJECT) {
 	do {
-	    if (parse_string() == ERROR) return ERROR;
+	    if (parse_string() == ERROR) {
+            printf("String Error\n");
+            return ERROR;
+        }
 	    savedval = rval;
-	    if (_parse_colon() == ERROR) return ERROR;
-	    if (parse_value() == ERROR) return ERROR;
-	    if (savedval->type != STRING) return ERROR;
+	    if (_parse_colon() == ERROR) {
+            printf("Colon Error\n");
+            return ERROR;
+        }
+	    if (parse_value() == ERROR) {
+            printf("Value Error\n");
+            return ERROR;
+        }
+	    if (savedval->type != STRING) {
+            printf("Second String Error\n");
+            return ERROR;
+        }
 	    add_property(obj, savedval->val.sval, rval);
 	    free(savedval); /* we need to free this.. the string is freed later */
 	} while (_parse_comma() == COMMA_VALUE);
 	finalize_object(obj);
 	rval = val;
+    _parse_white();
+    _parse_nextline();
 	return _parse_eobj() == END_OBJECT ? OBJECT_VALUE : ERROR;
     }
     return ERROR;
@@ -238,10 +271,16 @@ int parse_string()
     int j = 0;
 
     _parse_white();
+    _parse_nextline();
+    //if(_parse_str[_loc] == ' ')
+        //printf("Testing %d\n",_parse_str[_loc]);
+
     if (_parse_quote() == QUOTE_VALUE) {
 	while (_char_in_string())
 	    buf[j++] = *_get_char();
+
 	buf[j] = '\0';
+    //printf("%s\n", buf);
 	val->val.sval = strdup(buf);
 	val->type = STRING;
 	rval = val;
@@ -256,29 +295,52 @@ int parse_string()
  * particularly fixed and floating pointing formats are not handled properly
  * or correctly...
  */
+/*
+ *  Negative Parse Added
+ *  Can now detect overflow and throw error
+ *  May lead to rounding error, when surpassing the notation's ability to represent
+ *  
+ */
 int parse_number()
 {
     JSONValue *val = create_value();
     char buf[64];
-    int j = 0;
+    int j = 0; 
+    int negative = 1;
 
+    _parse_white();
+    if(_parse_str[_loc] == '-'){
+        negative = -1;
+        _loc++;
+    } //So the number is negative
     _parse_white();
 
     while (isdigit(_parse_str[_loc]))
         buf[j++] = *(_get_char());
 
-    if (_parse_str[_loc] == '.') {
+    if (_parse_str[_loc] == '.') { //If double overflows/underflow it will be detected...
         buf[j++] = *(_get_char());
         while (isdigit(_parse_str[_loc]))
             buf[j++] = *(_get_char());
         buf[j] = '\0';
-        val->val.dval = atof(buf);
+        errno = 0;
+        val->val.dval = strtod(buf, NULL) * negative;
+        if(errno == ERANGE || errno == EINVAL){
+            printf("\n------DOUBLE OVERFLOW-------\n");
+            return ERROR;
+        }
         val->type = DOUBLE;
         rval = val;
         return NUMBER_VALUE;
-    } else {
+    } else {  //We try integer otherwise, if it doesn't work will return an error
+        int temp;
         buf[j] = '\0';
-        val->val.ival = atoi(buf);
+        errno = 0;
+        val->val.ival = strtol(buf, NULL, 10) * negative;
+        if(errno == ERANGE || errno == EINVAL){
+            printf("\n------INTEGER OVERFLOW-------\n");
+                return ERROR;
+        }
         val->type = INTEGER;
         rval = val;
         return NUMBER_VALUE;
@@ -307,7 +369,12 @@ void _consume_char()
  */
 void _parse_white()
 {
-    while (_loc < _len && _parse_str[_loc] == ' ')
+    while (_loc < _len && (_parse_str[_loc] == ' ' ))
+        _loc++;
+}
+
+void _parse_nextline(){
+    while (_loc < _len && (_parse_str[_loc] == '\n' ))
         _loc++;
 }
 
@@ -399,10 +466,7 @@ int _char_in_string()
 {
     int curchar = _parse_str[_loc];
 
-    if (isalnum(curchar) || curchar == '-' || curchar == '.' || curchar == '_' || curchar == '*' ||
-        curchar == '$' || curchar == '@' || curchar == '#' || curchar == '$' ||  curchar == '%' ||
-        curchar == '&' || curchar == '(' || curchar == ')' || curchar == '=' || curchar == '+' ||
-        curchar == '[' || curchar == ']' || curchar == '|')
+    if (isalnum(curchar) || curchar >= '#' && curchar <= ('#' + 91) || curchar == '!')
         return 1;
     else
         return 0;

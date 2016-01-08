@@ -53,7 +53,8 @@ typedef enum
     OBJECT_VALUE,
     QUOTE_VALUE,
     STRING_VALUE,
-    NUMBER_VALUE
+    NUMBER_VALUE,
+    UNDEFINED_VALUE
 } ReturnTypes;
 
 /* Primary parser interface functions.. */
@@ -70,6 +71,7 @@ int parse_array();
 int parse_object();
 int parse_string();
 int parse_number();
+int parse_undefined();
 
 #endif /* _JPARSER_H */
 
