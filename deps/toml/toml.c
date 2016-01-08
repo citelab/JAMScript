@@ -124,7 +124,7 @@ int t_finalize_object(TOMLObject *jobj)
 }
 
 /*
- * WARNING this function finds the first instance of property with such name.
+ * WARNING this function finds the first instance of property with such name chain.
  * Currently it is possible to have multiple properties of the same name
  * It returns such object back
  */
@@ -144,15 +144,12 @@ TOMLValue *t_find_property_with_name(TOMLObject *jobj, TOMLName *name)
             }
         }
     }
-
     // if not found return 'undefined'
     if (!found) return t_create_value();
-
     // return is the one we are looking for..
     TOMLValue *rv = t_create_value();
     t_set_object(rv, this);
     return rv;
-
 }
 
 
@@ -443,17 +440,33 @@ int t_count(TOMLValue *val)
 /**
  * The buffer size in the code below should be adjusted. We need to remove This
  * restriction and make it dynamic..
+ * --------------------- UPDATE ----------------------
+ * This is now dynamic and has size restriction 4^16 * MAX_PRINTF_BUF
+ * This is a max cap of 2048 mb, or 2 gb of memory before it stops
  */
 
 void t_print_value(TOMLValue *val)
 {
-    char buf[MAX_PRINT_BUF];
-    char *pbuf = buf;
-
-    if (t_val_to_string(&pbuf, MAX_PRINT_BUF, val))
-        printf("%s\n", pbuf);
-    else
-        printf("Printing ERROR!\n");
+ 
+    char * buf = (char *)calloc(MAX_PRINT_BUF, sizeof(char));
+    int multiplier = 1;
+    int printed = 0;
+    for(int i = 0; i < 16; i++){
+        if (t_val_to_string(&buf, MAX_PRINT_BUF * multiplier, val)){
+           printf("%s\n", buf);
+           free(buf);
+           printed ++;
+           break;
+        }
+        else{
+           multiplier *= 4;
+           free(buf);
+           buf = calloc(MAX_PRINT_BUF * multiplier, sizeof(char));
+        }
+    }
+    if(!printed)
+        printf("PRINTING ERROR\n");
+        
 }
 
 
@@ -466,71 +479,107 @@ void t_print_value(TOMLValue *val)
  *
  * TODO: This would not work with large TOML files..
  * We are using a 1024 buffer for the printed string!
+ * ----------------UPDATE---------------------------
+ * No longer causes stack crash with larger TOML files
+ * Will Simply return 0 if cannot be written in the string length provided
  */
 int t_val_to_string(char **buf, int buflen, TOMLValue *val)
 {
     int cnt = 0;
+    int test;
     char *nbuf;
     char buffer[128];
     //printf("Type %d\n", val->type);
+    if(buflen < 0)
+        return 0;
 
     switch (val->type) {
         case T_BOOLEAN:
             if (val->val.ival == TRUE)
-                cnt = sprintf(*buf, " true ");
+                cnt = snprintf(*buf, buflen, " true ");
             else
-                cnt = sprintf(*buf, " false ");
+                cnt = snprintf(*buf, buflen, " false ");
             break;
         case T_INTEGER:
-            cnt = sprintf(*buf, " %d ", val->val.ival);
+            cnt = snprintf(*buf, buflen, " %d ", val->val.ival);
             break;
         case T_DOUBLE:
-            cnt = sprintf(*buf, " %f ", val->val.dval);
+            cnt = snprintf(*buf, buflen, " %f ", val->val.dval);
             break;
         case T_STRING:
-            cnt = sprintf(*buf, " \"%s\" ", val->val.sval);
+            cnt = snprintf(*buf, buflen, " \"%s\" ", val->val.sval);
             break;
         case T_ARRAY:
-            cnt = sprintf(*buf, "[");
+
+            cnt = snprintf(*buf, buflen, "[");
             for (int i = 0; i < val->val.aval->length; i++) {
                 nbuf = *buf + cnt;
-                cnt += t_val_to_string(&nbuf, (buflen - cnt), &(val->val.aval->elems[i]));
+                if(buflen - (cnt + 1) < 0)
+                    return 0;
+                test = t_val_to_string(&nbuf, (buflen - cnt), &(val->val.aval->elems[i]));
+                if(test == 0)
+                    return 0;
+                cnt += test;
                 if (i < val->val.aval->length - 1) {
                     nbuf = *buf + cnt;
-                    cnt += sprintf(nbuf, ", ");
+                    if(buflen - (cnt + 1)< 0)
+                        return 0;
+                    cnt += snprintf(nbuf, buflen - cnt, ", ");
                 }
             }
             nbuf = *buf + cnt;
-            cnt += sprintf(nbuf, "]");
+            if(buflen - (cnt + 1)< 0)
+                return 0;
+            cnt += snprintf(nbuf, buflen - cnt, "]");
             break;
         case T_NAME:
-            cnt = sprintf(*buf, " %s ", val->val.nval->names[0]);
+            cnt = snprintf(*buf, buflen," %s ", val->val.nval->names[0]);
             for (int i = 1; i < val->val.nval->nums; i++) {
                 nbuf = *buf + cnt;
-                cnt += sprintf(nbuf, ". %s", val->val.nval->names[i]);
+                if(buflen - (cnt + 1)< 0)
+                    return 0;
+                test = snprintf(nbuf, buflen - cnt, ". %s", val->val.nval->names[i]);
+                if(test == 0)
+                    return 0;
+                cnt += test;
             }
             break;
         case T_OBJECT:
-            cnt = sprintf(*buf, "{");
+            cnt = snprintf(*buf, buflen,"{");
             for (int i = 0; i < val->val.oval->count; i++) {
                 nbuf = *buf + cnt;
-                cnt += sprintf(nbuf, " \"%s\" :", val->val.oval->properties[i].name);
+                if(buflen - (cnt + 1)< 0)
+                    return 0;
+                test = snprintf(nbuf, buflen - cnt,  " \"%s\" :", val->val.oval->properties[i].name);
+                if(test == 0)
+                    return 0;
+                cnt += test;
                 nbuf = *buf + cnt;
-                cnt += t_val_to_string(&nbuf, (buflen -cnt), val->val.oval->properties[i].value);
+                
+                if(buflen - (cnt + 1)< 0)
+                    return 0;
+                test = t_val_to_string(&nbuf, (buflen -cnt), val->val.oval->properties[i].value);
+                if(test == 0)
+                    return 0;
+                cnt += test;
                 if (i < val->val.aval->length - 1) {
                     nbuf = *buf + cnt;
-                    cnt += sprintf(nbuf, ", ");
+                    if(buflen - (cnt + 1)< 0)
+                        return 0;
+                    cnt += snprintf(nbuf, buflen - cnt, ", ");
                 }
             }
             nbuf = *buf + cnt;
-            cnt += sprintf(nbuf, "}");
+            if(buflen - (cnt + 1)< 0)
+                    return 0;
+            cnt += snprintf(nbuf, buflen-cnt, "}");
             break;
         case T_DATETIME:
             get_time(&val->val.dtval->date, buffer);
-            cnt += sprintf(*buf, "%s", buffer);
+            cnt += snprintf(*buf, buflen, "%s", buffer);
             break;
         default:
-            cnt += sprintf(*buf, "<< other type >>");
+            cnt += snprintf(*buf, buflen, "<< other type >>");
     }
 
     // +1 to accomodate the '\0' trailing at the end
