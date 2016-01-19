@@ -29,6 +29,42 @@ fs.readFile("tests/pre_jam.c", "utf8", function(err, data) {
           return console.log(err);
       }
     });
+    var toml = "";
+    toml += "# Description of the JXE structure\n";
+    toml += "title = \"JAMScript Executable Description\"\n";
+
+    toml += "# global identification and requirements are specified next\n";
+    toml += "[jxe]\n";
+    toml += "version = 1.0\n";
+    toml += "checksum = XXXDFDFDFDFDF\n";
+    toml += "requirements = none\n";
+
+    toml += "# javascript portion is in one file for now\n";
+    toml += "[jsfile]\n";
+    toml += "# any or a particular version can be specified for nodeversion\n";
+    toml += "nodeversion = any\n";
+    toml += "# list of modules that should be pre-loaded into Node\n";
+    toml += "requires = [" + output.JS_functions.join(", ") + "]\n";
+    toml += "# file name for the javascript code\n";
+    toml += "file = jamout.js\n";
+
+    toml += "# c portion could be in multiple files (in shared lib format)\n";
+    toml += "[cfile]\n";
+    toml += "portions = 1\n";
+    toml += "# definition of a C portion\n";
+    toml += "[cfile.1]\n";
+    toml += "# architecture for which the shared library is genereated\n";
+    toml += "arch = x86\n";
+    toml += "# requirements of the shared library; these are tags that indicate the requirements\n";
+    toml += "requires = [lpthread]\n";
+    toml += "# filename of the shared library\n";
+    toml += "file = libjamout.so\n";
+    console.log(output.JS_functions);
+    fs.writeFile("tests/MANIFEST.tml", toml, function(err) {
+      if(err) {
+          return console.log(err);
+      }
+    });
   } catch(e) {
 	    console.log("\t\t\t\t ERROR! Invalid Input");
 	}

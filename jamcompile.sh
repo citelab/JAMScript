@@ -4,3 +4,6 @@ node jamout
 cd tests
 # cat annotated_jamout.js | flow check-contents
 gcc jamout.c jamlib.a -lpthread
+gcc -fPIC -c jamout.c
+gcc -shared -o libjamout.so jamout.o jamlib.a
+zip jamout.jxe libjamout.so jamout.js MANIFEST.tml
