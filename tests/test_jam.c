@@ -7,10 +7,10 @@ jsync int stest(int b) {
     return a;
 }
 
-jasync void test(char * i){
+jasync void test(){
     void onload() {
 		var a;
-		console.log("Hello World " + i);
+		console.log("Hello World");
 	};
     void onerror() {
         printf("Error received\n");
@@ -33,7 +33,7 @@ int main() {
         scanf("%d", &code);
         switch (code) {
             case 1:
-                test("hi");
+                test();
                 break;
             case 2:
                 stest(3);
