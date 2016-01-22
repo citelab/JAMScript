@@ -1,0 +1,19 @@
+README
+
+So to make this work, you should first install libarchive.
+There are more precise instructions in the libarchive folder for that
+Then make in this folder
+The resulting runnable jamrun can be executed
+
+The most basic way to execute it is in this manner
+jamrun -[js|s|c] -filepath 
+e.g jamrun -s dummy.jxe
+
+WARNING
+For some reason when I attemped to run server.js, it resulted in Unique Index Violation, duplicated app id found which I am presuming is a database error(nedb), not javascript error. 
+
+In addition the c file needs to have two functions 
+user_main
+user_setup
+This is what the dynamic loader is attempting to find
+if not found, the loading for that particular c file will fail
