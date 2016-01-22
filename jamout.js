@@ -59,7 +59,6 @@ fs.readFile("tests/pre_jam.c", "utf8", function(err, data) {
     toml += "requires = []\n";
     toml += "# filename of the shared library\n";
     toml += "file = \"libjamout.so\"\n";
-    console.log(output.JS_functions);
     fs.writeFile("tests/MANIFEST.tml", toml, function(err) {
       if(err) {
           return console.log(err);
