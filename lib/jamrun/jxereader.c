@@ -45,6 +45,7 @@ static int extract(const char *filename, jxe_file * j)
 {
   char cwd[1024];
   char path[1024];
+  int err = 0;
   struct archive *a;
   struct archive *ext;
   struct archive_entry *entry;
@@ -77,8 +78,17 @@ static int extract(const char *filename, jxe_file * j)
         break;
     }
   }
-  snprintf(j->dir_name, 512, "%s", filename);
-  snprintf(j->dir_name + file_index, 512 - file_index, "_jam_run");
+  err = snprintf(j->dir_name, 512, "%s", filename);
+  if(err != strlen(filename)){
+    printf("File name too long 1\n");
+    exit(1);
+  }
+
+  err = snprintf(j->dir_name + file_index, 512 - file_index, "_jam_run");
+   if(err != strlen("_jam_run")){
+    printf("File name too long\n");
+    exit(1);
+  }
   //With this we have our directory name which we will be extracting to
 
   if ((r = archive_read_open_filename(a, filename, CHUNK)))
@@ -100,7 +110,7 @@ static int extract(const char *filename, jxe_file * j)
                  strncpy(j->potential_dir_name, currentFile, i + 1);
                  break;
             }
-            else if(currentFile[i] == NULL){
+            else if(currentFile[i] == '\0'){
                  strncpy(j->potential_dir_name, "/", 2);
                  break;
             }
@@ -145,14 +155,14 @@ jxe_file * create_jxe(){
     jxe_file * ret = calloc(1, sizeof(jxe_file));
     if(ret == NULL){
         printf("Memory Allocation Failure\n");
-        return 1;
+        return NULL;
     }
     ret->entries = 0;   
     ret->entries_cap = 5;
     ret->entries_name = calloc(5, sizeof(char *));
     if(ret->entries_name == NULL){
         printf("Memory Allocation Failure\n");
-        return 1;
+        return NULL;
     }
     return ret;
 }
@@ -165,6 +175,7 @@ int free_jxe(jxe_file * j){
         free(j->entries_name[i]);
     }
     free(j->entries_name);
+    t_free_value(j->manifest, 1);
     free(j);
     return 0;
 }
@@ -215,14 +226,15 @@ int is_c_file(char * filename){
 
 jxe_file *open_jam_executable(char *path, int mode)
 {
-    int eflag, s, len;
-    FILE * toml;
+    int eflag, s;
     char cwd[1024];   //path for current working directory
     char * buf;       //buffer for toml
     jxe_file * j = create_jxe();  //create jxe_file
 
+    if(j == NULL)
+      return NULL;
     // First we extract the file -> Will halt if cannot be found or extraction error
-    if( eflag = extract(path, j) ){  
+    if( (eflag = extract(path, j)) != 0 ){  
         printf("Extraction Failure\n");  //if extraction fail, free then return
         free(j);
         return NULL;
@@ -236,7 +248,7 @@ jxe_file *open_jam_executable(char *path, int mode)
         free(j);
         return NULL;
     }
-    len = strlen(cwd);
+    //len = strlen(cwd);
     snprintf(j->path, 1024, "%s/%s", cwd, j->dir_name); //Set the path of our file, for future uses
     snprintf(cwd, 1024, "%s/MANIFEST.tml", j->path);
     //So first try, we hope the manifest is in this path
@@ -277,7 +289,7 @@ int load_names(jxe_file * j, char ** names, int * num){
     char filename[64];
     TOMLValue *file;
     TOMLValue * cfile = t_find_property_with_str(j->manifest->val.oval, "cfile");
-    if(cfile->type == 0){
+    if(cfile->type == 0 || cfile->type != T_OBJECT){
       printf("Failed to find the C Mode TOML values of jxe... \n Exiting ... \n");
       return -1;
     }
@@ -292,17 +304,17 @@ int load_names(jxe_file * j, char ** names, int * num){
     printf("Testing: %d, %d\n", pcount, cfile->type);    
     
     for(int i = 0; i < pcount; i++){
-     snprintf(filename, 64, "%d", i + 1); //So we would have things like file1, file2, file3.....
+     snprintf(filename, 64, "%d", i + 1); //So we would have things like 1, 2, 3.....
      file = t_find_property_with_str(cfile->val.oval, filename);
      if(file->type == 0 || file->type != T_OBJECT){
-        fprintf(stderr, "Failed to find %s ... Continuing\n");
+        fprintf(stderr, "Failed to find %s ... Continuing\n", filename);
         pcount--;
         i--;
      }
      else{
         file = t_find_property_with_str(file->val.oval, "file");
         if(file->type == 0 || file->type != T_STRING){
-          fprintf(stderr, "Failed to find %s ... Continuing\n");
+          fprintf(stderr, "Failed to find %s ... Continuing\n", filename);
           pcount--;
           i--;
         }
@@ -312,7 +324,6 @@ int load_names(jxe_file * j, char ** names, int * num){
      }
 
     }
-
   return pcount;
 }
 
@@ -409,7 +420,6 @@ int load_jxe_activities(jxe_file *j, char *tags[])
  
 int jxe_load_js_file(jxe_file *j)
 {
-    int pcount = 0;
     char * filename = "file";
     char execute[512];
     TOMLValue *file;
@@ -429,17 +439,3 @@ int jxe_load_js_file(jxe_file *j)
     return 0;
 }
 
-
-/**
- * Run the main C program. 
-
-
-
-
-
-
-
-/**
- * ROUGH NOTES
- * L
-*/

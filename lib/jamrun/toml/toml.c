@@ -34,7 +34,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*
  * Simple create for date
  */
-TOMLDate *t_create_date(){
+TOMLDate * t_create_date(){
     TOMLDate *val = (TOMLDate *)calloc(1, sizeof(TOMLDate));
     val->dston = 0;    
     return val;
@@ -420,6 +420,8 @@ char *t_typeof(TOMLValue *val)
             return "array";
         case T_OBJECT:
             return "object";
+        default:
+            return "undefined";
     }
 }
 

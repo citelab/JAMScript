@@ -23,9 +23,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include <stdio.h>
-#include <slack/std.h>
-#include <slack/prog.h>
-
 #include <sys/wait.h>
 #include "jamrun.h"
 #include "jxereader.h"
@@ -35,41 +32,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * This is used to store values from args
  * NOTE the C files must have a 
  */
-//testfsaasd
-runner_config rconfig = {.mach_name=NULL, .file_name=NULL, .key_value=NULL, .c_mode=0, .js_mode=0, .s_mode=0, .proc_count=0};
-Option runner_optab[] =
-{
-	{
-		"machine-name", 'm', "name", "Provide a name to connect to or create machine",
-		required_argument, OPT_STRING, OPT_VARIABLE, &(rconfig.mach_name), NULL
-	},
-	{
-		"C-mode", 'c', NULL, "Run in C mode",
-		no_argument, OPT_NONE, OPT_VARIABLE, &(rconfig.c_mode), NULL
-	},
-	{
-		"JS-mode", 'j', NULL, "Run in JS mode",
-		no_argument, OPT_NONE, OPT_VARIABLE, &(rconfig.js_mode), NULL
-	},
-	{
-		"S-mode", 's', NULL, "Run in Single mode",
-		no_argument, OPT_NONE, OPT_VARIABLE, &(rconfig.s_mode), NULL
-	},
-	{
-		"key_value", 'k', "value", "Key value for secure domain establishment",
-		required_argument, OPT_STRING, OPT_VARIABLE, &(rconfig.key_value), NULL
-	},
-	{
-		"pcount", 'p', "number", "Number of C nodes in single mode",
-		required_argument, OPT_INTEGER, OPT_VARIABLE, &(rconfig.proc_count), NULL
-	},
-	{
-		NULL, '\0', NULL, NULL, 0, 0, 0, NULL
-	}
-};
+//
 
-Options options[1] = {{ prog_options_table, runner_optab}};
-
+runner_config rconfig;
 
 jam_service * open_jam_service(){
 	//This is a dummy jam service, since the actual service is still not finished yet
@@ -92,6 +57,10 @@ jam_service * open_jam_service(){
 	}
 	*/
 	ret = (jam_service *)calloc(1, sizeof(jam_service));
+	if(ret == NULL){
+		printf("Memory Malloc Failed\n");
+		exit(1);
+	}
 	ret->timestamp = time(NULL);
 	printf("CONNECTION ESTABLISHED.... at time %d\n", ret->timestamp);
 	return ret;
@@ -109,8 +78,9 @@ int main(int ac, char *av[])
 	print_config(&rconfig);
 
 	// Access the JAMService deamon.. if not accessible then quit
-	jam_service *js = open_jam_service(); //open jam should quit automatically if failure
+	open_jam_service(); //open jam should quit automatically if failure
 	// Open the JAMScript executable. If file not found or malformed, then quit with error!
+
 	jxe_file *jxe = open_jam_executable(rconfig.file_name, 1);
 	//This returns NULL for failure -> Error msg printed in open_jam
 	if(jxe == NULL){ 
@@ -160,6 +130,53 @@ int main(int ac, char *av[])
 
 void setup_program(int ac, char *av[])
 {
+	//Well we have our args so we set up the stuff
+	// So we are going to set up a strict version of this input args
+	// jamrun -type filename -procs -machine -key where procs, machine and key are optional
+	int length;
+	if(ac < 3){
+		printf("Please Input Arguments when running Jamrun\n jamrun -type filename -procs -machine -key\n procs, machine and key are optional\n");
+	}
+	if(av[1][0] == '-'){
+		if(av[1][1] == 'c')
+			rconfig.c_mode = 1;
+		else if(av[1][1] == 'j')
+			rconfig.js_mode = 1;
+		else if(av[1][1] == 's')
+			rconfig.s_mode = 1;
+		else{
+			printf("Invalid Mode\nPlease enter jamrun -type filename -procs -machine -key\n");
+			exit(1);
+		}
+	}
+	else{
+		printf("Please enter an option -c, -j or -s\n");
+		exit(1);
+	}
+	length = strlen(av[2]);
+	if(length < 4){
+		printf("\n Please enter an appropriate filename ending in .jxe\n");
+	}
+	else{
+		if(av[2][length - 4] == '.' && av[2][length - 3] == 'j' && av[2][length - 2] == 'x' && av[2][length - 1] == 'e' ){
+			rconfig.file_name = calloc(length + 1, sizeof(char));
+			if(rconfig.file_name == NULL){
+				printf("Mem Alloc Failed\n");
+				exit(1);
+			}
+			strcpy(rconfig.file_name, av[2]);
+		}
+		else{
+			printf("\nPlease enter an appropriate filename ending in .jxe\n");
+			exit(1);
+		}
+	}
+
+	//Now process the file name
+
+
+
+	/*
 	int indx;
 
 	prog_init();
@@ -190,6 +207,7 @@ void setup_program(int ac, char *av[])
 	 * Only one mode could be specified. Process count is valid only in single mode
 	 * Machine name is necessary in the c and js modes.
 	 */
+	 /*
 	if (rconfig.c_mode + rconfig.js_mode + rconfig.s_mode != 1) {
 		prog_usage_msg("\n[setup_program]:: need to select exactly one mode: C, JS, or S\n\n");
 		exit(1);
@@ -198,6 +216,7 @@ void setup_program(int ac, char *av[])
 		prog_usage_msg("\n[setup_program]:: process count only valid in S-mode\n\n");
 		exit(1);
 	}
+	*/
 }
 
 

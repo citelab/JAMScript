@@ -2,9 +2,6 @@
 #ifndef __JAMRUN_H__
 #define __JAMRUN_H__
 
-#include "jxereader.h"
-
-
 typedef struct _runner_config
 {
 	char *mach_name;

@@ -11,3 +11,6 @@ e.g jamrun -s dummy.jxe
 
 WARNING
 For some reason when I attemped to run server.js, it resulted in Unique Index Violation, duplicated app id found which I am presuming is a database error(nedb), not javascript error. 
+
+Try this as a instruction ./jamrun -s testing.jxe
+

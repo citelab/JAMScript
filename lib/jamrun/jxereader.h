@@ -9,7 +9,7 @@ typedef struct _jxe_file
 	int entries_cap;
 	char ** entries_name;
 	char dir_name[512];
-	char * potential_dir_name[512];
+	char potential_dir_name[512];
 	char path[1024];
 	TOMLValue * manifest;
 

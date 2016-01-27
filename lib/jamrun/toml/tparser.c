@@ -196,11 +196,10 @@ int t_parse_doc()
 int t_parse_date(){
     //The Format is year-month-dayThour:minute:
     //1979-05-27T07:32:00-08:00
-    int temp = 0;
     int i;
     int prev_loc = _loc_t;   
     TOMLValue * ret;
-    TOMLDate * val = t_create_date();
+    TOMLDate * val = (TOMLDate *)t_create_date();
     char * valid;
     char date[128];
 
