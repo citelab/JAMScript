@@ -4,7 +4,7 @@ var ometa = require('./deps/ometa'),
     readline = require('readline'),
     fs = require('fs');
 
-fs.readFile("tests/pre_jam.c", "utf8", function(err, data) {
+fs.readFile("output/pre_jam.c", "utf8", function(err, data) {
   if (err) {
     return console.log(err);
   }
@@ -14,17 +14,17 @@ fs.readFile("tests/pre_jam.c", "utf8", function(err, data) {
   	// console.log("Tree = ", tree);
   	// console.log("=================");
   	output = JAMCTranslator.translate(tree);
-    fs.writeFile("tests/jamout.c", output.C, function(err) {
+    fs.writeFile("output/jamout.c", output.C, function(err) {
       if(err) {
           return console.log(err);
       }
     });
-    fs.writeFile("tests/jamout.js", output.JS, function(err) {
+    fs.writeFile("output/jamout.js", output.JS, function(err) {
       if(err) {
           return console.log(err);
       }
     }); 
-    fs.writeFile("tests/annotated_jamout.js", output.annotated_JS, function(err) {
+    fs.writeFile("output/annotated_jamout.js", output.annotated_JS, function(err) {
       if(err) {
           return console.log(err);
       }
@@ -59,7 +59,7 @@ fs.readFile("tests/pre_jam.c", "utf8", function(err, data) {
     toml += "requires = []\n";
     toml += "# filename of the shared library\n";
     toml += "file = \"libjamout.so\"\n";
-    fs.writeFile("tests/MANIFEST.tml", toml, function(err) {
+    fs.writeFile("output/MANIFEST.tml", toml, function(err) {
       if(err) {
           return console.log(err);
       }

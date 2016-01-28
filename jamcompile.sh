@@ -1,13 +1,25 @@
 #!/bin/sh
+if [ $# -eq 0 ]; then
+    echo "No input file specified"
+    echo "Input format:"
+    echo "\tjamcompile [input file] [jamlib.a path]"
+    exit 1
+fi
+if [ $# -eq 1 ]; then
+    echo "jamlib not specified"
+    echo "Input format:"
+    echo "\tjamcompile [input file] [jamlib.a path]"
+    exit 1
+fi
+mkdir -p output
 if [[ "$OSTYPE" == "darwin"* ]]; then
-	gcc-5 -E -P -std=iso9899:199409 tests/test_jam.c > tests/pre_jam.c
+    gcc-5 -E -P -std=iso9899:199409 $1 > output/pre_jam.c
 else
-	gcc -E -P -std=iso9899:199409 tests/test_jam.c > tests/pre_jam.c
+    gcc -E -P -std=iso9899:199409 $1 > output/pre_jam.c
 fi
 node jamout
-cd tests
 # cat annotated_jamout.js | flow check-contents
-gcc jamout.c jamlib.a -lpthread
-gcc -fPIC -c jamout.c
-gcc -shared -o libjamout.so jamout.o jamlib.a -lpthread
-zip jamout.jxe libjamout.so jamout.js MANIFEST.tml
+gcc output/jamout.c $2 -lpthread -o output/a.out
+gcc -fPIC -c output/jamout.c -o output/jamout.o
+gcc -shared -o output/libjamout.so output/jamout.o $2 -lpthread
+zip output/jamout.jxe output/libjamout.so output/jamout.js output/MANIFEST.tml
