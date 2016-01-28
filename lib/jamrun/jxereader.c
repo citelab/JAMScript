@@ -1,5 +1,6 @@
 
 #include <archive.h>
+#include <archive_entry.h>
 #include "jxereader.h"
 #include "toml/tparser.h"
 #include "toml/files.h"

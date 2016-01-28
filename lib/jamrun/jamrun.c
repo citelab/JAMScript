@@ -136,6 +136,7 @@ void setup_program(int ac, char *av[])
 	int length;
 	if(ac < 3){
 		printf("Please Input Arguments when running Jamrun\n jamrun -type filename -procs -machine -key\n procs, machine and key are optional\n");
+		exit(1);
 	}
 	if(av[1][0] == '-'){
 		if(av[1][1] == 'c')
