@@ -215,16 +215,9 @@ int t_parse_date(){
         else if(_parse_str_t[_loc_t + i] == ' ' || _parse_str_t[_loc_t + i] == '='){  //Stop parsing the name
             break;
         } else {
-            printf("hi\n");
             val->name[i] = _parse_str_t[_loc_t + i];
-            printf("bye\n");
         }
     }
-    // printf("%s\n", name);
-    // printf("HELLO\n");
-    // strcpy(val->name, name);
-    printf("HELLO\n");
-
     _loc_t += i; //increment _loc_t
 
     _parse_white_t();
