@@ -36,7 +36,7 @@ Very long floats which don't give errors may lead to rounded results -> be caref
 */
 
 #include "tparser.h"
-#include "TOML.h"
+#include "toml.h"
 #include "date_parser.h"
 
 #include <stdio.h>
@@ -123,6 +123,7 @@ int t_parse_doc()
 
     // keep eating white spaces away..
     _parse_white_t();
+
     while ((nextchar = _peek_value_t()) != T_EOF_VALUE) {
         printf("\nNextchar %c\n", nextchar);
         switch(nextchar)
@@ -154,7 +155,8 @@ int t_parse_doc()
                 t_print_value(val);
                 break;
             default:
-                printf("Default parsing..");
+                printf("Default parsing..\n");
+                t_parse_date();
                 if(t_parse_date() == T_ERROR){
                     if (t_parse_name() != T_ERROR) {
                         printf("Name found..");
@@ -202,7 +204,6 @@ int t_parse_date(){
     TOMLDate * val = (TOMLDate *)t_create_date();
     char * valid;
     char date[128];
-
     _parse_white_t();
     //So the main idea is to check if this is a date string
     //Parse a string name when we have dob = 1994-02-04
@@ -214,11 +215,19 @@ int t_parse_date(){
         }
         else if(_parse_str_t[_loc_t + i] == ' ' || _parse_str_t[_loc_t + i] == '='){  //Stop parsing the name
             break;
-        }
-        else
+        } else {
+            printf("hi\n");
             val->name[i] = _parse_str_t[_loc_t + i];
+            printf("bye\n");
+        }
     }
+    // printf("%s\n", name);
+    // printf("HELLO\n");
+    // strcpy(val->name, name);
+    printf("HELLO\n");
+
     _loc_t += i; //increment _loc_t
+
     _parse_white_t();
     if(_parse_str_t[_loc_t] != '='){ //we'd have a problem if the next value wasn't =
         _loc_t = prev_loc;

@@ -1,7 +1,7 @@
 
 #ifndef __JXE_READER_H__
 #define __JXE_READER_H__
-#include "toml/TOML.h"
+#include "toml/toml.h"
 
 typedef struct _jxe_file
 {

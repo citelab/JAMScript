@@ -24,6 +24,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <stdio.h>
 #include <sys/wait.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 #include "jamrun.h"
 #include "jxereader.h"
 

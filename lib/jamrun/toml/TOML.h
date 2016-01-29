@@ -113,6 +113,7 @@ struct TOMLObject
     TOMLProperty *properties;
 };
 
+TOMLDate *t_create_date();
 
 /*
  * TOMLObject methods..
