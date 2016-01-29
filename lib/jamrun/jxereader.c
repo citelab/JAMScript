@@ -372,6 +372,7 @@ int load_jxe_activity(jxe_file *j, char *actname)
     char dll[512]; //path for the lib file
     void (*user_main)() = NULL; 
     void (*user_setup)() = NULL;
+    void (*user_finish)() = NULL;
     void * handle = NULL; 
     //These above are pointers for the methods and library
     snprintf(dll, 512 ,"%s/%s%s", j->path, j->potential_dir_name ,actname);
@@ -383,11 +384,13 @@ int load_jxe_activity(jxe_file *j, char *actname)
     }
     user_main = dlsym(handle, "user_main");
     user_setup = dlsym(handle, "user_setup"); //Get the methods pointers
+    user_finish = dlsym(handle, "user_finish"); //Get the methods pointers
 
-    if(user_main != NULL && user_setup != NULL){ //If successful, we execute them in the following order
+    if(user_main != NULL && user_setup != NULL && user_finish != NULL){ //If successful, we execute them in the following order
         printf("Executing Functions... \n");
         user_setup();
         user_main();
+        user_finish();
     }
     else{
         printf("%s\n",dlerror());
