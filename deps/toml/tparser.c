@@ -36,7 +36,7 @@ Very long floats which don't give errors may lead to rounded results -> be caref
 */
 
 #include "tparser.h"
-#include "TOML.h"
+#include "toml.h"
 #include "date_parser.c"
 
 #include <stdio.h>

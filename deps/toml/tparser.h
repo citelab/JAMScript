@@ -31,7 +31,7 @@ extern "C" {
 #ifndef __TPARSER_H__
 #define __TPARSER_H__
 
-#include "TOML.h"
+#include "toml.h"
 
 
 #define MAX_NAME_LEN            32
