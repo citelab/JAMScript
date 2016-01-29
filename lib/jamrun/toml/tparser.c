@@ -155,8 +155,7 @@ int t_parse_doc()
                 t_print_value(val);
                 break;
             default:
-                printf("Default parsing..\n");
-                t_parse_date();
+                printf("Default parsing..");
                 if(t_parse_date() == T_ERROR){
                     if (t_parse_name() != T_ERROR) {
                         printf("Name found..");
