@@ -67,7 +67,7 @@ static int extract(const char *filename, jxe_file * j)
 
   a = archive_read_new();
   archive_read_support_format_all(a);
-  archive_read_support_compression_all(a);
+  archive_read_support_filter_all(a);
   ext = archive_write_disk_new();
   archive_write_disk_set_options(ext, flags);
   archive_write_disk_set_standard_lookup(ext);
