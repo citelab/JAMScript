@@ -1,3 +1,6 @@
+#define _XOPEN_SOURCE       /* See feature_test_macros(7) */
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
