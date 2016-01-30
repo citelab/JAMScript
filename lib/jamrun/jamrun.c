@@ -33,9 +33,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /**
  * Define some global variables..
  * This is used to store values from args
- * NOTE the C files must have a 
+ * NOTE the C files must have a user_main and a user_setup methods which the runner will call. It will fail if it does not have either
  */
-//
+
 
 runner_config rconfig;
 

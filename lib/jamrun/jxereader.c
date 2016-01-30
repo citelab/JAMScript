@@ -379,7 +379,7 @@ int load_jxe_activity(jxe_file *j, char *actname)
     printf("Path: %s\n", dll);
     handle = dlopen(dll, RTLD_LAZY);  //open lib, return -1 if fails
     if(handle == NULL){
-        printf("%s\n",dlerror());
+        printf("Library Loading Error: %s\n",dlerror());
         return -1;
     }
     user_main = dlsym(handle, "user_main");
@@ -393,7 +393,7 @@ int load_jxe_activity(jxe_file *j, char *actname)
         user_finish();
     }
     else{
-        printf("%s\n",dlerror());
+        printf("Methods Loading Error: %s\n",dlerror());
         return -1;
     }
     dlclose(handle);
@@ -437,8 +437,8 @@ int jxe_load_js_file(jxe_file *j)
       printf("Failed to find the file name TOML values of jxe... \n Exiting ... \n");
       return -1;
     }
-    snprintf(execute, 512, "node %s/%s%s\n", j->path, j->potential_dir_name, file->val.sval);
-    printf("Executing jsfile %s...\n", file->val.sval);
+    snprintf(execute, 512, "nodejs %s/%s%s\n", j->path, j->potential_dir_name, file->val.sval);
+    printf("Executing jsfile: %s...\n", file->val.sval);
     system(execute);
     return 0;
 }
