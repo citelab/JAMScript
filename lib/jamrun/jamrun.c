@@ -206,12 +206,12 @@ void setup_program(int ac, char *av[])
 
 	// Why do we need to set the program name.. don't know!
 	prog_set_name("jamrun");
-	/**
+	
 	 * Do Consistency Checks..
 	 * Only one mode could be specified. Process count is valid only in single mode
 	 * Machine name is necessary in the c and js modes.
 	 */
-	 /*
+	/* 
 	if (rconfig.c_mode + rconfig.js_mode + rconfig.s_mode != 1) {
 		prog_usage_msg("\n[setup_program]:: need to select exactly one mode: C, JS, or S\n\n");
 		exit(1);

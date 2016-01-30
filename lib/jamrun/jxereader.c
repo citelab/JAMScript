@@ -103,7 +103,7 @@ static int extract(const char *filename, jxe_file * j)
     if (r < ARCHIVE_WARN)
       return 2;
 
-    currentFile = archive_entry_pathname(entry);
+    currentFile = (char *)archive_entry_pathname(entry);
 
     if(i == 0){ //So find the inner folder in case
         for(int i = 0; i < 512; i++){
