@@ -437,7 +437,7 @@ int jxe_load_js_file(jxe_file *j)
       printf("Failed to find the file name TOML values of jxe... \n Exiting ... \n");
       return -1;
     }
-    snprintf(execute, 512, "nodejs %s/%s%s\n", j->path, j->potential_dir_name, file->val.sval);
+    snprintf(execute, 512, "node server/server.js %s/%s\n", j->path, j->potential_dir_name);
     printf("Executing jsfile: %s...\n", file->val.sval);
     system(execute);
     return 0;

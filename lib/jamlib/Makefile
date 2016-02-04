@@ -1,4 +1,4 @@
-PROJECT = ../../tests/jamlib.a
+PROJECT = ../jamlib.a
 
 CC = gcc-5
 CFLAGS = -Wall -g
