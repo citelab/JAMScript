@@ -1,6 +1,6 @@
-PROJECT = ../jamlib.a
+PROJECT = jamlib.a
 
-CC = gcc-5
+CC = gcc
 CFLAGS = -Wall -g
 
 
