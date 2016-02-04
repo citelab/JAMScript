@@ -9,8 +9,8 @@ make
 ```
 This will create a jamlib.a file
 
-
-Then you can compile a JAM file compile:
+<br />
+Then you can compile a JAM file:
 ```sh
 ./jamcompile.sh [input file] [jamlib.a path] [output name (optional)]
 ```
