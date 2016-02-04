@@ -9,11 +9,14 @@ make
 ```
 This will create a jamlib.a file
 
+
 Then you can compile a JAM file compile:
 ```sh
-./jamcompile.sh [input file] [jamlib.a path]
+./jamcompile.sh [input file] [jamlib.a path] [output name (optional)]
 ```
-This will produce a jxe file in the output folder
+This will produce a jxe file in the output folder, by default it will be named jamout.jxe
+
+
 
 ### Running a JAM progarm
 First build jamrun:
