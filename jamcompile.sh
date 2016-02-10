@@ -22,7 +22,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 else
     gcc -E -P -std=iso9899:199409 $1 > output/pre_jam.c
 fi
-node jamout
+node jamout.js
 # cat annotated_jamout.js | flow check-contents
 gcc output/jamout.c $2 -lpthread -o output/a.out
 gcc -fPIC -c output/jamout.c -o output/jamout.o
