@@ -2,7 +2,7 @@ var ometa = require('./deps/ometa'),
     JAMCParser = require('./lib/jamscript/grammars/jamc_parser.ojs'),
     JAMCTranslator = require('./lib/jamscript/grammars/jamc_translator.ojs'),
     fs = require('fs'),
-    AdmZip = require('adm-zip'),
+    JSZip = require('jszip'),
     child_process = require('child_process'),
     crypto = require('crypto');
 
@@ -30,18 +30,20 @@ var preprocessed = child_process.execSync(`${cc} -E -P -std=iso9899:199409 ${inp
 try {
 	var tree = JAMCParser.parse(preprocessed);
 	var output = JAMCTranslator.translate(tree);
-  fs.mkdirSync(tmpDir);
+	fs.mkdirSync(tmpDir);
   fs.writeFileSync(`${tmpDir}/jamout.c`, output.C);
   child_process.execSync(`gcc -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
 
-  var zip = new AdmZip();
-  zip.addFile("MANIFSEST.tml", new Buffer(createTOML()));
-  zip.addFile("jamout.js", new Buffer(output.JS));
-  zip.addFile("libjamout.so", fs.readFileSync(`${tmpDir}/libjamout.so`).toString());
-  zip.writeZip(outputName + ".jxe");
+  var zip = new JSZip();
+  zip.file("MANIFEST.tml", createTOML());
+  zip.file("jamout.js", output.JS);
+  zip.file("libjamout.so", fs.readFileSync(`${tmpDir}/libjamout.so`));
+	fs.writeFileSync(`${outputName}.jxe`, zip.generate({type:"nodebuffer"}));
+
   deleteFolderRecursive(tmpDir);
 } catch(e) {
-    console.log("\t\t\t\t ERROR! Invalid Input");
+    console.log("ERROR:");
+    console.log(e);
 }
 
 function createTOML() {
