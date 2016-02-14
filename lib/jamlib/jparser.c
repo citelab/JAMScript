@@ -60,7 +60,6 @@ char *_get_char();
  */
 
 int parse_undefined(){
-    int sloc = _loc;
     JSONValue *val = create_value();
     _parse_white();
     if(strncmp("undefined", (_parse_str + _loc), 9) == 0){ //equal{
@@ -333,7 +332,6 @@ int parse_number()
         rval = val;
         return NUMBER_VALUE;
     } else {  //We try integer otherwise, if it doesn't work will return an error
-        int temp;
         buf[j] = '\0';
         errno = 0;
         val->val.ival = strtol(buf, NULL, 10) * negative;
@@ -466,7 +464,7 @@ int _char_in_string()
 {
     int curchar = _parse_str[_loc];
 
-    if (isalnum(curchar) || curchar >= '#' && curchar <= ('#' + 91) || curchar == '!')
+    if (isalnum(curchar) || (curchar >= '#' && curchar <= ('#' + 91)) || curchar == '!')
         return 1;
     else
         return 0;
