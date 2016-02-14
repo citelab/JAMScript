@@ -31,19 +31,15 @@ try {
 	var tree = JAMCParser.parse(preprocessed);
 	var output = JAMCTranslator.translate(tree);
   fs.mkdirSync(tmpDir);
-  fs.writeFile(`${tmpDir}/jamout.c`, output.C, function(err) {
-    if(err) {
-        return console.log(err);
-    }
-    child_process.execSync(`gcc -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
+  fs.writeFileSync(`${tmpDir}/jamout.c`, output.C);
+  child_process.execSync(`gcc -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
 
-    var zip = new AdmZip();
-    zip.addFile("MANIFSEST.tml", new Buffer(createTOML()));
-    zip.addFile("jamout.js", new Buffer(output.JS));
-    zip.addLocalFile(tmpDir + "/libjamout.so", "/", "libjamout.so");
-    zip.writeZip(outputName + ".jxe");
-    deleteFolderRecursive(tmpDir);
-  });
+  var zip = new AdmZip();
+  zip.addFile("MANIFSEST.tml", new Buffer(createTOML()));
+  zip.addFile("jamout.js", new Buffer(output.JS));
+  zip.addFile("libjamout.so", fs.readFileSync(`${tmpDir}/libjamout.so`).toString());
+  zip.writeZip(outputName + ".jxe");
+  deleteFolderRecursive(tmpDir);
 } catch(e) {
     console.log("\t\t\t\t ERROR! Invalid Input");
 }
