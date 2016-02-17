@@ -128,7 +128,7 @@ After receiving the Inter-ping replies we get to know how many Fogs are availabl
 
 Cloud Ping Routine::
 
-
+Reliability at the Cloud level.
 
 
 
