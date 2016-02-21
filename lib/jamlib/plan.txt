@@ -210,10 +210,6 @@ a return value could be transfered to the J-core. The J-core uses these values t
 callback.
 
 
-
-
-
-
 Idea for Implementing Security
 ==============================
 

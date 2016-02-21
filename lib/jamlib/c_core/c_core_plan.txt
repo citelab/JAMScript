@@ -1,0 +1,14 @@
+
+
+Respond to Ping
+    This could be a heartbeat for a running request too.
+
+Respond to Survey
+    A request to run an activity comes through the survey.
+
+    A heartbeat request for running activity comes through the survey
+
+    Are you there type of queries come through survey
+
+Get Subscriptions
+    This could be triggering some local callbacks on the pub-sub messages.
