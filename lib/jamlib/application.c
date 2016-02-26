@@ -225,7 +225,7 @@ Application *_process_application(int appid)
         free(port_buf);
         return NULL;
     } else {
-        printf("Connected to the servelet... ");
+        printf("Connected to the servelet... \n");
     }
 
     free(port_buf);
