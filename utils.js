@@ -47,8 +47,7 @@ module.exports = {
       return ['{', input, '}'].join('');
   },
 
-  // Got major trouble with this. Because
-  // "\"" is being double escaped...
+
   escape_string: function(str) {
     
     var str = String(str),
