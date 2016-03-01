@@ -54,8 +54,7 @@ char *random_name()
 simplequeue_t *create_simple_queue(bool ownedbyq)
 {
 	simplequeue_t *sq = (simplequeue_t *)calloc(1, sizeof(simplequeue_t));
-	if (sq == NULL)
-		return NULL;
+	assert(sq != NULL);
 
 	sq->pullsock = nn_socket(AF_SP, NN_PULL);
 	assert(sq->pullsock >= 0);

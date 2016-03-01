@@ -1,4 +1,47 @@
 
+New Plans
+=========
+
+= Get CBOR working from C side:
+    = Create a routine for encoding a command and print it to the screen.
+    = Retrieve standard input (file redirect) and decode the CBOR and
+        retrieve the command.
+    (The second one responsible for retrieving network data and
+    recovering the command.)
+
+= Use the nanomsg and rewrite the Socket routines in the previous jamlib.
+
+= C->JS transfers through CBOR
+= JS->C transfer through CBOR
+
+= C->JS & JS->C working with CBOR and nanomsg
+
+Modify the jamlib routines to work with the new combination
+    = CBOR
+    = nanomsg
+
+Improve the jamlib to the new architecture
+    = Fog
+    = Cloud
+    = Handle fault tolerance
+
+Activity logging with new jamlib
+
+Activity accumulation to the cloud central
+
+
+NOTE 1: Rethink the use of assert(). We need something that would implement
+assert differently and also log the important events.
+
+NOTE 2: Should logging or the direction of message flow be part of the command?
+
+
+
+Old Plans
+=========
+
+
+
 
 Respond to Ping
     This could be a heartbeat for a running request too.
@@ -12,3 +55,42 @@ Respond to Survey
 
 Get Subscriptions
     This could be triggering some local callbacks on the pub-sub messages.
+
+
+Fog server holds all the sockets..
+    including the REQREP ones!
+
+Step 1:
+=======
+First the list of FOG_SERVERs are tried and then CLOUD_SERVERs are attempted.
+
+If the FOG_SERVER is found, we should get the config information from that
+server.
+
+CLOUD_SERVER has a all-Fog registry. Send a survey to that address seeking
+a Fog for for the application we are running right now... given by
+APP_NAME
+
+= Perform survey
+= Perform request and expect result
+
+= Process survey
+= Process request
+= Process publish
+
+Step 2:
+=======
+Register the c-core with the Fog so that the c-core could respond to the
+surveys send out by the Fog server.
+
+
+Step 3:
+=======
+Run a J-core activity. Activity we need to ask the J-core to run for the C-core.
+Reliability management is big part of the execution protocol. We also need to make sure
+that the protocol does not depend on the run time of the application so we
+can use timeouts in a sane manner.
+
+Step 4:
+=======
+Run a C-core activity.

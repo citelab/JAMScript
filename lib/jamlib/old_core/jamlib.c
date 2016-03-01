@@ -353,7 +353,6 @@ int raise_event(Application *app, char *tag, EventType etype, char *cback, char 
     }
 }
 
-
 /* Private functions...
  * TODO: Trace the memory allocated to the command structure...
  * Seems like it is not released when the incoming message contains an event?

@@ -44,8 +44,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
-
-
 /*
  * Register the application with the given name.. return 0
  * on failure, return a positive number (appID > 0) on success.
@@ -142,7 +140,7 @@ int _close_application(int appid)
 
 int _remove_application(int appid)
 {
-    Command *cmd;    
+    Command *cmd;
 
     /* Remove application */
     cmd = command_format_json("REMAPP", "", "", "%d", appid);
