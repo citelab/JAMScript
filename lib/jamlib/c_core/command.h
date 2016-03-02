@@ -31,6 +31,7 @@ extern "C" {
 #ifndef __COMMAND_H__
 #define __COMMAND_H__
 
+#include <cbor.h>
 
 /*
  * TODO: May be we could have user defined structures and unions in the

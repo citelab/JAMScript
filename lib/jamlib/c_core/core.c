@@ -20,9 +20,6 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include <nanomsg/nn.h>
-#include <nanomsg/reqrep.h>
-
 #include <assert.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -43,22 +40,22 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * unresponsive node.
  */
 
-bool core_ping_jcore(char *hostname, char *port, *char devid, int timeout)
+bool core_ping_jcore(char *hostname, int port, char *devid, int timeout)
 {
     command_t *scmd;
 
     // create a request-reply socket
-    socket_t *sock = sock_new(SOCKET_REQU);
-    sock_connect(sock, hostname, port);
+    socket_t *sock = socket_new(SOCKET_REQU);
+    socket_connect(sock, hostname, port);
     if (devid != NULL)
         scmd = command_new("PING", "JCORE", "s", devid);
     else
         scmd = command_new("PING", "JCORE", "");
 
-    sock_send(sock, scmd);
+    socket_send(sock, scmd);
     command_free(scmd);
 
-    command_t *rcmd = sock_recv_into_command(sock, timeout);
+    command_t *rcmd = socket_recv_command(sock, timeout);
     if (rcmd == NULL)
         return false;
     else
@@ -95,11 +92,11 @@ bool core_connect_to_fog(corestate_t *cstate, int timeout)
     for (i = 0; i < cstate->env->num_fog_servers; i++) {
 
         // create a request-reply socket
-        socket_t *sock = sock_new(SOCKET_REQU);
-        sock_connect(sock, cstate->env->fog_servers[i], REQUEST_PORT);
-        sock_send(sock, scmd);
+        socket_t *sock = socket_new(SOCKET_REQU);
+        socket_connect(sock, cstate->env->fog_servers[i], REQUEST_PORT);
+        socket_send(sock, scmd);
 
-        command_t *rcmd = sock_recv_into_command(sock, timeout);
+        command_t *rcmd = socket_recv_command(sock, timeout);
         if (rcmd == NULL)
         {
             command_free(rcmd);
@@ -111,13 +108,22 @@ bool core_connect_to_fog(corestate_t *cstate, int timeout)
                 strcmp(rcmd->subcmd, "CONFIRMED") == 0)
             {
                 // We got results.. process it .. device_id could be saved.
+                cstate->device_id = strdup(rcmd->args[0].val.sval);
 
                 // Save Fog connection state.. the Fog endpoint we are talking to..
+                cstate->fog_state.server = strdup(cstate->env->fog_servers[i]);
+                cstate->fog_state.port = REQUEST_PORT;
+                time_t now = time(&now);
+                cstate->fog_state.stime = localtime(&now);
 
                 // Make the survey and subscribe sockets
+                cstate->survey_sock = socket_new(SOCKET_RESP);
+                socket_connect_resp(cstate->survey_sock, cstate->fog_state.server, SURVEY_PORT);
+                cstate->subscribe_sock = socket_new(SOCKET_SUBS);
+                socket_connect_subs(cstate->subscribe_sock, cstate->fog_state.server, PUBLISH_PORT, "");
 
                 // Hookup handlers..
-                // TODO: ???
+                core_sock_handler_start(cstate->survey_sock, cstate->subscribe_sock);
 
                 return true;
             }
@@ -132,20 +138,6 @@ bool core_connect_to_fog(corestate_t *cstate, int timeout)
 
     // we failed to get a valid connection to a Fog.. so we fail
     return false;
-}
-
-
-bool connect_to_fog(e_context_t *ctx, int timeout)
-{
-    // We check
-    // Hookup to survey
-    // Hookup to publish..
-
-
-    // There should be a heartbeat on the connection.
-    // If the connection is responding for REQUEST-REPLY, we re-initialize
-
-    return true;
 }
 
 
@@ -212,11 +204,11 @@ bool core_find_fog_from_cloud(corestate_t *cstate, int timeout)
     for (i = 0; i < cstate->env->num_cloud_servers; i++) {
 
         // create a request-reply socket
-        socket_t *sock = sock_new(SOCKET_REQU);
-        sock_connect(sock, cstate->env->cloud_servers[i], REQUEST_PORT);
-        sock_send(sock, scmd);
+        socket_t *sock = socket_new(SOCKET_REQU);
+        socket_connect(sock, cstate->env->cloud_servers[i], REQUEST_PORT);
+        socket_send(sock, scmd);
 
-        command_t *rcmd = sock_recv_into_command(sock, timeout);
+        command_t *rcmd = socket_recv_command(sock, timeout);
         if (rcmd == NULL)
         {
             command_free(rcmd);
@@ -233,7 +225,7 @@ bool core_find_fog_from_cloud(corestate_t *cstate, int timeout)
                 // So we only insert new replies..
                 for (i = 0; i < rcmd->length; i++) {
                     if (rcmd->args[i].type == STRING_TYPE)
-                        core_insert_fog_address(cstate, rcmd->args[i].val.sval);
+                        core_insert_fog_addr(cstate, rcmd->args[i].val.sval);
                 }
                 command_free(rcmd);
                 continue;
@@ -306,4 +298,27 @@ corestate_t *core_do_init(corestate_t *cs, int timeout)
         else
             return NULL;
     }
+}
+
+
+// Insert the given address at the beginning of the fog server address
+//
+void core_insert_fog_addr(corestate_t *cstate, char *host)
+{
+    int i;
+
+    if (cstate->env->num_fog_servers < MAX_SERVERS)
+        cstate->env->num_fog_servers++;
+
+    for (i = cstate->env->num_fog_servers; i > 0; i--)
+        cstate->env->fog_servers[i] = cstate->env->fog_servers[i-1];
+    cstate->env->fog_servers[0] = strdup(host);
+}
+
+
+// TODO: this one needs to be implemented...
+//
+void core_sock_handler_start(socket_t *ssock, socket_t *psock)
+{
+
 }

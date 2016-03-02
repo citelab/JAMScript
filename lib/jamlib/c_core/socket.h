@@ -31,7 +31,7 @@ extern "C" {
 #ifndef __SOCKET_H__
 #define __SOCKET_H__
 
-#include <nanomsg/nn.h>
+#include "command.h"
 
 
 enum socket_type
@@ -56,22 +56,15 @@ typedef struct _socket_t
 socket_t *socket_new(enum socket_type type);
 void socket_free(socket_t *socket);
 
-int socket_connect(socket_t *socket, char *addr, char *port);
-int socket_create(socket_t *socket, char *port);
+int socket_create(socket_t *socket, int port);
 
+int socket_connect(socket_t *socket, char *addr, int port);
+int socket_connect_resp(socket_t *socket, char *server, int port);
+int socket_connect_subs(socket_t *socket, char *server, int port, char *pattern);
 
+int socket_send(socket_t *sock, command_t *cmd);
+command_t *socket_recv_command(socket_t *sock, int timeout);
 
-int socket_listen(Socket *socket, char *port, int backlog);
-Socket *socket_accept(Socket *socket, SocketBlocking blocktype);
-
-int socket_read(Socket *socket, char *dest_buf, int len);
-char *socket_readline(Socket *osocket, char *lineterm);
-int socket_write(Socket *socket, char *data, int len);
-
-int socket_enable_blocktype(int sock_fd, SocketBlocking blocktype);
-
-unsigned int socket_select(Socket *socket, long seconds, long usec);
-int wait_until_data_available (Socket *socket);
 
 #endif /* __SOCKET_H__ */
 
