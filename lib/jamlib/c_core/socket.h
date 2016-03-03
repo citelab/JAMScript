@@ -56,15 +56,13 @@ typedef struct _socket_t
 socket_t *socket_new(enum socket_type type);
 void socket_free(socket_t *socket);
 
-int socket_create(socket_t *socket, int port);
+bool socket_create(socket_t *socket, char *host, int port);
 
-int socket_connect(socket_t *socket, char *addr, int port);
-int socket_connect_resp(socket_t *socket, char *server, int port);
-int socket_connect_subs(socket_t *socket, char *server, int port, char *pattern);
+bool socket_connect(socket_t *socket, char *addr, int port);
 
 int socket_send(socket_t *sock, command_t *cmd);
 command_t *socket_recv_command(socket_t *sock, int timeout);
-
+char *socket_new_url(char *host, int port);
 
 #endif /* __SOCKET_H__ */
 

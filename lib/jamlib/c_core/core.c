@@ -118,9 +118,9 @@ bool core_connect_to_fog(corestate_t *cstate, int timeout)
 
                 // Make the survey and subscribe sockets
                 cstate->survey_sock = socket_new(SOCKET_RESP);
-                socket_connect_resp(cstate->survey_sock, cstate->fog_state.server, SURVEY_PORT);
+                socket_connect(cstate->survey_sock, cstate->fog_state.server, SURVEY_PORT);
                 cstate->subscribe_sock = socket_new(SOCKET_SUBS);
-                socket_connect_subs(cstate->subscribe_sock, cstate->fog_state.server, PUBLISH_PORT, "");
+                socket_connect(cstate->subscribe_sock, cstate->fog_state.server, PUBLISH_PORT);
 
                 // Hookup handlers..
                 core_sock_handler_start(cstate->survey_sock, cstate->subscribe_sock);

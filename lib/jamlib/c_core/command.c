@@ -130,7 +130,7 @@ command_t *command_new(const char *cmd, const char *subcmd, const char *fmt, ...
 /*
  * Command from CBOR data. If the fmt is non NULL, then we use
  * the specification in fmt to validate the parameter ordering.
- *
+ * A local copy of bytes is actually created, so we can free it.
  */
 
 command_t *command_from_data(char *fmt, unsigned char *bytes, int len)
@@ -141,6 +141,8 @@ command_t *command_from_data(char *fmt, unsigned char *bytes, int len)
 
     command_t *cmd = (command_t *)calloc(1, sizeof(command_t));
     cmd->item = cbor_load(bytes, len, &result);
+    cmd->buffer = (unsigned char *)malloc(len);
+    memcpy(cmd->buffer, bytes, len);
 
     // extract information from the CBOR object and validate or fill the
     // command structure
