@@ -35,33 +35,31 @@ extern "C" {
 
 struct jamstate_t;
 
-typedef void (*event_callback_f)(struct jamestate_t *d, event_t *e, void *data);
+typedef void (*event_callback_f)(struct jamstate_t *d, event_t *e, void *data);
 
-typedef struct CallbackList {
+typedef struct _callbacklist_t {
     char *aname;
-    EventCallback cb;
+    event_callback_f cb;
     void *data;
-    struct CallbackList *next;
-} CallbackList;
+    struct _callbacklist_t *next;
+} callbacklist_t;
 
-typedef struct Callbacks {
+typedef struct _callbacks_t {
     /* Other types of callback handlers could be added here. */
-    CallbackList *errorHandlers;
-    CallbackList *completeHandlers;
-    CallbackList *cancelHandlers;
-    CallbackList *verifyHandlers;
-    CallbackList *callbackHandlers;
-} Callbacks;
+    callbacklist_t *error_handlers;
+    callbacklist_t *complete_handlers;
+    callbacklist_t *cback_handlers;
+} callbacks_t;
 
-CallbackList *callbacklist_new();
-void callbacklist_free(CallbackList *list);
-CallbackList *callbacklist_add(CallbackList *list, char *aname, EventCallback cb, void *data);
-void callbacklist_call(CallbackList *list, struct Application *app, Event *event);
+callbacklist_t *callbacklist_new();
+void callbacklist_free(callbacklist_t *list);
+callbacklist_t *callbacklist_add(callbacklist_t *list, char *aname, event_callback_f cb, void *data);
+void callbacklist_call(callbacklist_t *list, struct jamstate_t *jam, event_t *event);
 
-Callbacks *callbacks_new();
-void callbacks_free(Callbacks *callbacks);
-void callbacks_add(Callbacks *callbacks, char *actname, EventType type, EventCallback cb,  void *data);
-void callbacks_call(Callbacks *callbacks, struct Application *app, Event *event);
+callbacks_t *callbacks_new();
+void callbacks_free(callbacks_t *callbacks);
+void callbacks_add(callbacks_t *callbacks, char *actname, eventtype_t type, event_callback_f cb,  void *data);
+void callbacks_call(callbacks_t *callbacks, struct jamstate_t *jam, event_t *event);
 
 #endif /* __CALLBACK_H__ */
 

@@ -1,7 +1,7 @@
 /*
 
 The MIT License (MIT)
-Copyright (c) 2014 Muthucumaru Maheswaran
+Copyright (c) 2011 Derek Ingrouville, Julien Lord, Muthucumaru Maheswaran
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -28,38 +28,51 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 extern "C" {
 #endif
 
-#ifndef __APPLICATION_H
-#define __APPLICATION_H
+#ifndef __EVENT_H__
+#define __EVENT_H__
 
-#include "socket.h"
-#include "event.h"
-#include "callback.h"
+#include <cbor.h>
 
-#include <pthread.h>
-
-typedef struct Application
+typedef enum eventtype_t
 {
-    int appid;
-    int state;
-    char *appname;
-    char *server;
-    int port;
-    Socket *socket;
-    pthread_t evthread;
-    Callbacks *callbacks;
-} Application;
+    ErrorEventType,
+    CompleteEventType,
+    CallbackEventType
+} eventtype_t;
+
+/**
+ * Event Structures
+ */
+typedef struct _errorevent_t
+{
+    cbor_item_t *ecode;
+} errorevent_t;
+
+typedef struct _completeevent_t
+{
+    cbor_item_t *rval;
+} completeevent_t;
 
 
-int _is_app_registered(char *appname);
-int _register_application(char *appname);
-int _open_application(char *appname);
-int _close_application(int appid);
-int _remove_application(int appid);
-int _get_state_from_server(char *statstr);
-Application *_get_app_info(int appid);
-Application *_process_application(int appid);
-Application *_application_from_json(JSONValue *val);
+/**
+ * General Event structure
+ */
+typedef struct _event
+{
+    eventtype_t type;
+    char *actname;
+    char *callback;
+    union {
+        errorevent_t error;
+        completeevent_t comp;
+    } val;
+} event_t;
 
+/** Event constructors */
+void event_free(event_t *e);
+event_t *event_error_new(char *aname, cbor_item_t *ecode, char *ecallback);
+event_t *event_complete_new(char *aname, cbor_item_t *rval, char *ccallback);
+event_t *event_callback_new(char *aname);
 
 #endif
 
