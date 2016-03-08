@@ -14,7 +14,7 @@ the following conditions:
 The above copyright notice and this permission notice shall be
 included in all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY O9F ANY KIND,
 EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
@@ -25,15 +25,42 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "jamlib.h"
+#include "core.h"
+
+// Initialize the JAM library.. nothing much done here.
+// We just initialize the Core ..
+//
+jamstate_t *jam_init()
+{
+    jamstate_t *js = (jamstate_t *)calloc(1, sizeof(jamstate_t));
+
+    // TODO: Remove the hardcoded timeout values
+    // 200 milliseconds timeout now set
+    js->cstate = core_init(200);
+
+    // Callback initialization
+    js->callbacks = callbacks_new();
+
+    // Queue initialization
+    js->queue = queue_new(true);
+
+    // Start the event processing background thread..
+    jam_event_loop(js);
+
+    return js;
+}
 
 
 // Check whether there are any more pending JAM activities.
 // If none are pending, we can exit the program right away.
 // If some activities are pending, we defer the execution of the jam_exit(1).
 //
-int jam_exit()
+int jam_exit(jamstate_t *js)
 {
+    if (jam_pending_acts(js) > 0) {
+        //
 
+    }
 
 }
 
@@ -42,129 +69,105 @@ int jam_exit()
 // If the C-core is not receiving any interactions.. it will repeat sending this message
 // Assuming this message is lost..
 //
-bool jam_core_ready()
+// This function is invoked by the JAM program...
+//
+bool jam_core_ready(jamstate_t *js)
 {
 
 }
 
-// Start the background prcessing loop.
+// Start the background processing loop.
 // This is temporary..
 // TODO: Make it truely single threaded. We need run the user functions and background
 // task commits in the same thread. This needs some form of cooperative processing.
 //
 //
-void jam_bg_event_loop()
+void jam_event_loop(jamstate_t *js)
 {
-
-}
-
-
-int jam_execute_func(const char *fname, const char *fmt, ...)
-{
-
-
-}
-
-void jam_register_callback(char *aname, EventType etype, EventCallback cb, void *data)
-{
-
-}
-
-int jame_raise_event(char *tag, EventType etype, char *cback, char *fmt, ...)
-{
-
-}
-
-
-/*
- * Prototypes for private functions..
- */
-
-Event *get_event(Application *app);
-void *event_loop(void *arg);
-
-
-
-
-
-/*
- * Goal: Open the given application - appname.
- * Try to open the application, if does succeed fine. Otherwise, create the
- * application. This could fail due to some reason. In that case, return NULL.
- *
- * NOTE: This method is executed before the eventloop starts running. So we need
- * to receive the messages manually.
- */
-Application *open_application(char *appname)
-{
-    int appid;
-
-    /* Open application .. return code indicates success or not */
-    if ((appid = _open_application(appname)) == 0) {
-        /* failed to open the application.. may be a new application?
-         * create it.
-         */
-        appid = _register_application(appname);
-        if (appid == 0) {
-            printf("ERROR! Unable to open or create the application: %s", appname);
-            exit(1);
-        }
+    int rval = pthread_create(&(js->bgthread), NULL, jam_event_processor, (void *)js);
+    if (rval != 0) {
+        perror("ERROR! Unable to start the background event loop");
+        exit(1);
     }
-    return _process_application(appid);
 }
 
 
-/* Returns 0 on success and -1 otherwise */
-int close_application(Application *app)
+/* Private functions...
+ * TODO: Trace the memory allocated to the command structure...
+ * Seems like it is not released when the incoming message contains an event?
+ */
+void *jam_event_processor(void *arg)
 {
-    void *rval;
+    jamstate_t *js = (jamstate_t *)arg;
+    event_t *e = NULL;
 
-    if (app == NULL)
-        return -1;
-
-    /* Ask server to close the app... */
-    if (!_close_application(app->appid)) {
-        printf("ERROR! Unable to close application %s\n", app->appname);
-        return -1;
+    while ((e = get_event(js))) {
+        if (e != NULL)
+            callbacks_call(js->callbacks, app, e);
     }
 
-    /* Release local resources... */
-    if (app->callbacks != NULL)
-        callbacks_free(app->callbacks);
-
-    socket_free(app->socket);
-
-    pthread_join(app->evthread, &rval);
-
-    free(app);
-    return 0;
+    /* Just a dummy return.. return value inconsequential.. */
+    return NULL;
 }
 
 
-/*
- * This is equivalent to "uninstalling the application".
- * This may not be used often... could it be useful?
- * Returns 0 on success and -1 otherwise.
- */
-int remove_application(Application *app)
+event_t *get_event(jamstate_t *js)
 {
-    if (app == NULL)
-        return -1;
+    int len;
+    unsigned char *buf = (unsigned char *)queue_deq(js->queue, &len);
+    command_t *cmd = command_from_data(NULL, buf, len);
 
-    /* Ask server to remove the app.. */
-    if (_remove_application(app->appid)) {
-        printf("ERROR! Unable to remove application %s\n", app->appname);
-        return -1;
+    if (cmd == NULL)
+        return NULL;
+
+    if (cmd->cmd == NULL)
+        return NULL;
+
+    len = strlen(cmd->cmd);
+
+    if (len == 5 && strncmp(cmd->name, "ERROR", 5) == 0) {
+        return event_error_new(cmd->tag, cmd->params, cmd->callback);
     }
 
-    /* Release local resources... */
-    if (app->callbacks != NULL)
-        callbacks_free(app->callbacks);
+    if (len == 8 && strncmp(cmd->name, "COMPLETE", 8) == 0) {
+        return event_complete_new(cmd->tag, cmd->params, cmd->callback);
+    }
 
-    socket_free(app->socket);
-    free(app);
-    return 0;
+    if (len == 8 && strncmp(cmd->name, "CALLBACK", 8) == 0) {
+        return event_callback_new(cmd->tag);
+    }
+
+    return NULL;
 }
+
+
+void jam_reg_callback(jamstate_t *js, char *aname, eventtype_t etype, event_callback_f cb, void *data)
+{
+    callbacks_add(js->callbacks, aname, etype, cb, data);
+}
+
+
+// This could be complicated!
+// Launch the execution request. Wait for the reply and get the lease time..
+// We fail the exec request, if we are unable to get the first part done
+// We need some way of tracking the progress of the launched task.
+// Lease extensions and completions are tracked here.
+// Send a message to the queue() seeking a timeout..
+//
+//
+bool jam_execute_func(jamstate_t *js, const char *fname, const char *fmt, ...)
+{
+    
+
+}
+
+
+
+int jam_raise_event(jamstate_t *js, char *tag, EventType etype, char *cback, char *fmt, ...)
+{
+
+}
+
 
 /* Returns 0 on success and -1 otherwise */
 int execute_remote_func(Application *app, const char *name, const char *format, ...)
@@ -234,22 +237,6 @@ int execute_remote_func(Application *app, const char *name, const char *format, 
 }
 
 
-void register_callback(Application *app, char *aname, EventType etype, EventCallback cb, void *data)
-{
-    callbacks_add(app->callbacks, aname, etype, cb, data);
-}
-
-
-void bg_event_loop(Application *app)
-{
-
-    int rval = pthread_create(&(app->evthread), NULL, event_loop, (void *)app);
-    if (rval != 0) {
-        perror("ERROR! Unable to start the background event loop");
-        exit(1);
-    }
-}
-
 /*
  * Send the given event to the remote side.
  * tag - arbitrary value (activity name or something else)
@@ -317,59 +304,4 @@ int raise_event(Application *app, char *tag, EventType etype, char *cback, char 
         command_free(cmd);
         return 0;
     }
-}
-
-/* Private functions...
- * TODO: Trace the memory allocated to the command structure...
- * Seems like it is not released when the incoming message contains an event?
- */
-void *event_loop(void *arg)
-{
-    Application *app = (Application *)arg;
-    Event *e = NULL;
-
-    while ((e = get_event(app))) {
-        if (e != NULL)
-            callbacks_call(app->callbacks, app, e);
-    }
-
-    /* Just a dummy return.. return value inconsequential.. */
-    return NULL;
-}
-
-Event *get_event(Application *app)
-{
-    Command *cmd = command_read(app->socket);
-
-    int len = 0;
-
-    if (cmd == NULL)
-        return NULL;
-
-    if (cmd->name == NULL)
-        return NULL;
-
-    len = strlen(cmd->name);
-
-    if (len == 5 && strncmp(cmd->name, "ERROR", 5) == 0) {
-        return event_error_new(cmd->tag, cmd->params, cmd->callback);
-    }
-
-    if (len == 8 && strncmp(cmd->name, "COMPLETE", 8) == 0) {
-        return event_complete_new(cmd->tag, cmd->params, cmd->callback);
-    }
-
-    if (len == 6 && strncmp(cmd->name, "CANCEL", 6) == 0) {
-        return event_cancel_new(cmd->tag, cmd->callback);
-    }
-
-    if (len == 6 && strncmp(cmd->name, "VERIFY", 6) == 0) {
-        return event_verify_new(cmd->tag, cmd->callback);
-    }
-
-    if (len == 8 && strncmp(cmd->name, "CALLBACK", 8) == 0) {
-        return event_callback_new(cmd->tag);
-    }
-
-    return NULL;
 }

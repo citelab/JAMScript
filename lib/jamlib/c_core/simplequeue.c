@@ -51,7 +51,7 @@ char *random_name()
 /*
  * Create a simple queue..
  */
-simplequeue_t *create_simple_queue(bool ownedbyq)
+simplequeue_t *queue_new(bool ownedbyq)
 {
 	simplequeue_t *sq = (simplequeue_t *)calloc(1, sizeof(simplequeue_t));
 	assert(sq != NULL);
@@ -79,7 +79,7 @@ simplequeue_t *create_simple_queue(bool ownedbyq)
 	return sq;
 }
 
-bool destroy_simple_queue(simplequeue_t *sq)
+bool queue_delete(simplequeue_t *sq)
 {
 	if (nn_shutdown(sq->pushsock, 0) < 0)
 		return false;
@@ -92,7 +92,7 @@ bool destroy_simple_queue(simplequeue_t *sq)
  * Push the data or a copy of the data into the queue.
  * If ownedbyq is true, then the queue has a locally owned copy of the data.
  */
-bool enqueue(simplequeue_t *sq, void *data, int size)
+bool queue_enq(simplequeue_t *sq, void *data, int size)
 {
 	datawrapper_t *dw = (datawrapper_t *)calloc(1, sizeof(datawrapper_t));
 	dw->size = size;
@@ -114,49 +114,42 @@ bool enqueue(simplequeue_t *sq, void *data, int size)
 		return false;
 }
 
-void *dequeue(simplequeue_t *sq)
+void *queue_deq(simplequeue_t *sq, int *len)
 {
 	char *buf = NULL;
 	int bytes = nn_recv (sq->pullsock, &buf, NN_MSG, 0);
 
 	if (bytes != sizeof(datawrapper_t)) {
 		nn_freemsg(buf);
+		*len = 0;
 		return NULL;
 	}
 	else
 	{
 		void *data = ((datawrapper_t *)buf)->data;
 		nn_freemsg(buf);
+		*len = ((datawrapper_t *)buf)->size;
 		return data;
 	}
 }
 
-
-/*
- * Simple tester for the simplequeue..
- */
-
-int main(void)
+void *queue_deq_timeout(simplequeue_t *sq, int *len, int timeout)
 {
-	simplequeue_t *q = create_simple_queue(true);
+	struct nn_pollfd pfd [1];
+	pfd [0].fd = sq->pullsock;
+	pfd [0].events = NN_POLLIN;
 
-	char *buf = malloc(100);
-	strcpy(buf, "Hello World.. 1234");
-	enqueue(q, buf, strlen(buf) + 1);
+	int rc = nn_poll(pfd, 1, timeout);
+	if (rc == 0) {
+		*len = 0;
+		return NULL;
+	}
+	else
+	if (pfd[0].revents & NN_POLLIN)
+		return queue_deq(sq, len);
 
-	printf("After enqueue..\n");
-	free(buf);
-
-	char *s = dequeue(q);
-	printf("Pointer %p\n", s);
-	printf("Dequeued .. %s\n", s);
-
-	destroy_simple_queue(q);
-
-
-	//TODO: Expand this into a proper tester..
-	// Use the random generator of strings.. to pump stuff into the
-	// queue.. check whether things are coming in the order in which
-	// it goes in.. things retrieved... need a generator capable of
-	// generating different length strings.
+	return NULL;
 }
+
+
+// See the testers folder for testing routine for the simple queue module.

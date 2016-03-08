@@ -62,10 +62,11 @@ typedef struct _datawrapper_t
  * function prototypes
  */
 
-simplequeue_t *create_simple_queue(bool ownedbyq);
-bool destroy_simple_queue(simplequeue_t *queue);
+simplequeue_t *queue_new(bool ownedbyq);
+bool queue_delete(simplequeue_t *queue);
 
-bool enqueue(simplequeue_t *queue, void *data, int size);
-void *dequeue(simplequeue_t *queue);
+bool queue_enq(simplequeue_t *queue, void *data, int size);
+void *queue_deq(simplequeue_t *queue, int *len);
+void *queue_deq_timeout(simplequeue_t *sq, int *len, int timeout);
 
 #endif
