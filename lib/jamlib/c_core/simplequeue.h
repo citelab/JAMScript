@@ -31,7 +31,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Implementation idea is very simple. Just use a nano message pipeline.
  * Stick the messages into the pipeline when enqueuing. Dequeue from the pipeline
  * itself. The thread that is trying to dequeue from the pipeline will get stuck
- * if there is no items in the pipeline.
+ * if thedfdsfdfre is no items in the pipeline.
 
  * The cool thing with this implementation is that it could be used with threads
  * without threads .. with the threadless "select-based" approach. Just watch the

@@ -103,7 +103,7 @@ void *timer_loop(void *arg)
     int len;
 
     while (1) {
-        char *s = (char *)queue_deq_timeout(tmr->timerqueue, &len, 2000);
+        char *s = (char *)queue_deq_timeout(tmr->timerqueue, &len, 100);
         if (s == NULL)
         {
             // Timeout happened.. walk through the events and fire the expired ones
@@ -144,15 +144,19 @@ void timer_decrement_and_fire_events(timertype_t *tmr)
             if (tmr->events[i]->timeleft <= 0)
             {
                 if (tmr->events[i]->repeated)
+                {
+                    if (tmr->events[i]->cback != NULL)
+                        tmr->events[i]->cback(tmr->events[i]->arg);
                     tmr->events[i]->timeleft = tmr->events[i]->timeoutval;
+                }
                 else
                 {
+                    if (tmr->events[i]->cback != NULL)
+                        tmr->events[i]->cback(tmr->events[i]->arg);
                     free(tmr->events[i]);
                     tmr->events[i] = NULL;
                 }
 
-                if (tmr->events[i]->cback != NULL)
-                    tmr->events[i]->cback(tmr->events[i]->arg);
             }
         }
 
@@ -188,6 +192,9 @@ void timer_delete_records_with_tag(timertype_t *tmr, char *tag)
     // free and NULL all records with matching tag
     for (i = 0; i < tmr->numevents; i++)
     {
+        if (tmr->events[i] == NULL)
+            continue;
+
         if (strcmp(tmr->events[i]->tag, tag) == 0)
         {
             free(tmr->events[i]);

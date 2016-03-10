@@ -1,4 +1,99 @@
 
+= Simple mycontext
+= Activity struct as described below
+= Remote exec.. as described below
+
+
+
+Plans March 8, 2016
+===================
+
+IMPORTANT: Do we restrict activities such that there is no recursive calls?
+Activity X cannot call X again either directly or indirectly.
+
+
+C-core calling J-core
+
+= Marshall the parameters
+= Get the activity ID
+= Stick the activity ID in the request for remote execution
+= Activity state = NEW
+
+= Send the remove execution request. Wait for acknowledgement.
+= Once we receive the acknowledgment, make
+    Activity state = RUNNING
+  If we fail to get the ack after many tries, make
+    Activity state = TIMEDOUT
+
+= Get the lease time from the ack from the remote side
+
+= Add a timer call for the activity
+
+= When we receive a timer expiry, we check the health
+    of the corresponding activity.
+    If the activity health check fails, we timeout
+    the execution of the activity with a failure.
+
+============= Challenge!!
+
+= If the activity is synchronous, we need to wait
+    for one of the following conditions:
+        = timeout failure of the activity execution
+        = successful completion of the activity
+        = erroneous run of the activity - similar to the timeout
+
+= If the activity is asynchronous, we don't wait
+......???
+
+Asynchronous .. what do we do?
+        = we have the user program running..
+        = "yield" routines are embedded in the user program
+        = yield checks for background executions.. after checking we always
+            return back to the main thread
+
+wait for asynchronous activity
+    = is a yield statement, where we yield the user execution
+        until we have a "reply" of some sort for the activity
+
+The only difference between the two: sync and async
+    = sync we call the yield as soon as we complete the invocation
+
+We need to develop a "yield" or context switch routine.
+    = Need to ensure that this is built on non deprecated functions
+
+
+
+
+==========
+
+activitytable_t *at = activity_table_new();
+
+activity_t *act = activity_get_id(activitytable_t *atbl, char *actname);
+
+activity_start(activity_t *act);
+activity_stop(activity_t *act, void *code);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 New Plans
 =========
 

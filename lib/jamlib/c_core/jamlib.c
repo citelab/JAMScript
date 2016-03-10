@@ -111,6 +111,11 @@ void *jam_event_processor(void *arg)
 }
 
 
+
+// TODO: This needs to revamped. Timeouts come here too.
+// The RPC processing is complicated.. it could have changes here too.
+//
+//
 event_t *get_event(jamstate_t *js)
 {
     int len;
@@ -157,7 +162,7 @@ void jam_reg_callback(jamstate_t *js, char *aname, eventtype_t etype, event_call
 //
 bool jam_execute_func(jamstate_t *js, const char *fname, const char *fmt, ...)
 {
-    
+
 
 }
 
