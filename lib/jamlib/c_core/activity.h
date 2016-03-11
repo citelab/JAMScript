@@ -28,10 +28,23 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdbool.h>
 #include <stdint.h>
 
+#define MAX_NAME_LEN            64
+#define ACTIVITY_SLICE          32
+
+enum activity_state_t
+{
+    NEW,
+    RUNNING,
+    STOPPED,
+    FAILED,
+    COMPLETED
+};
+
+
 typedef struct _jactivity_t
 {
-    int64_t actid;
-    int state;
+    uint64_t actid;
+    enum activity_state_t state;
     char name[MAX_NAME_LEN];
     nvoid_t *code;
 
@@ -42,6 +55,7 @@ typedef struct _activitytable_t
 {
     int numactivities;
     jactivity_t *activities;
+    int activityslots;
 
 } activitytable_t;
 
@@ -50,8 +64,9 @@ typedef struct _activitytable_t
 // Function prototypes..
 //
 
-activitytable_t *at = activity_table_new();
+activitytable_t *activity_table_new();
 void activity_table_print(activitytable_t *at);
+void activity_print(jactivity_t *ja);
 
 jactivity_t *activity_new(activitytable_t *atbl, char *name);
 int64_t activity_getid(activitytable_t *atbl, char *name);
@@ -60,6 +75,5 @@ char *activity_getname(activitytable_t *atbl, int64_t id);
 bool activity_start(jactivity_t *act);
 bool activity_stop(jactivity_t *act, nvoid_t *rcode);
 bool activity_fail(jactivity_t *act, nvoid_t *ecode);
-
 
 #endif

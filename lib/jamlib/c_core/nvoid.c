@@ -42,6 +42,7 @@ nvoid_t *nvoid_new(void *data, int len)
 
     memcpy(dc, data, len);
     nv->data = dc;
+    nv->len = 0;
 
     return nv;
 }
