@@ -1,8 +1,7 @@
 
 = Simple mycontext
-= Activity struct as described below
-= Remote exec.. as described below
 
+= Remote exec.. as described below
 
 
 Plans March 8, 2016
@@ -60,19 +59,6 @@ The only difference between the two: sync and async
 
 We need to develop a "yield" or context switch routine.
     = Need to ensure that this is built on non deprecated functions
-
-
-
-
-==========
-
-activitytable_t *at = activity_table_new();
-
-activity_t *act = activity_get_id(activitytable_t *atbl, char *actname);
-
-activity_start(activity_t *act);
-activity_stop(activity_t *act, void *code);
-
 
 
 
