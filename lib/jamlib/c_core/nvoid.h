@@ -40,5 +40,6 @@ nvoid_t *nvoid_append(nvoid_t *n, void *data, int len);
 nvoid_t *nvoid_concat(nvoid_t *f, nvoid_t *s);
 
 void nvoid_print(nvoid_t *n);
+void nvoid_print_ascii(nvoid_t *n);
 
 #endif

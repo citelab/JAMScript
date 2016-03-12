@@ -42,7 +42,7 @@ nvoid_t *nvoid_new(void *data, int len)
 
     memcpy(dc, data, len);
     nv->data = dc;
-    nv->len = 0;
+    nv->len = len;
 
     return nv;
 }
@@ -54,6 +54,11 @@ void nvoid_free(nvoid_t *n)
     free(n);
 }
 
+
+// Old structure is reused..
+// Don't deallocate the old nvoid structure.. doing so will
+// result in a segmentation fault!
+//
 nvoid_t *nvoid_append(nvoid_t *n, void *data, int len)
 {
     void *nd = (void *)malloc(len + n->len);
@@ -104,4 +109,22 @@ void nvoid_print(nvoid_t *n)
 
         printf("%x", *(int8_t *)&n->data[i]);
     }
+    printf("\n");
+}
+
+
+void nvoid_print_ascii(nvoid_t *n)
+{
+    int i;
+    printf("\n");
+    for (i = 0; i < n->len; i++)
+    {
+        if (i % PRINT_WIDTH == 0)
+            printf("\n");
+        if (i % GROUP_WIDTH == 0)
+            printf(" ");
+
+        printf("%c", *(int8_t *)&n->data[i]);
+    }
+    printf("\n");
 }
