@@ -33,7 +33,7 @@ for (var i = 1; i < args.length; i++) {
       debug = true;
     } else if(args[i] == "-help") { // help
       printHelp();
-    } else if(args[i] == "-N") { // help
+    } else if(args[i] == "-N") { // Don't compile
       noCompile = true;
     } else if(args[i] == "-P") { // Preprocessor only
       preprocessOnly = true;
@@ -94,6 +94,7 @@ try {
   }
 
   if(!noCompile) {
+    flowCheck(output.annotated_JS)
   	fs.mkdirSync(tmpDir);
     fs.writeFileSync(`${tmpDir}/jamout.c`, output.C);
     child_process.execSync(`gcc -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
@@ -115,6 +116,23 @@ function printAndExit(output) {
 
 function preprocess(file) {
   return child_process.execSync(`${cc} -E -P -std=iso9899:199409 ${file}`).toString()
+  // return child_process.execSync(`tcc -E -w ${file}`).toString()
+}
+
+function flowCheck(input) {
+  // Returns empty buffer if flow installed
+  var hasFlow = child_process.execSync("flow version >/dev/null 2>&1 || { echo 'not installed';}");
+  
+  if(hasFlow.length == 0) {
+    const child = child_process.exec('flow check-contents --color always', (error, stdout, stderr) => {
+        if (error !== null) {
+          console.log("JavaScript Type Checking Error:");
+          console.log(stdout.substring(stdout.indexOf("\n") + 1));
+        }
+    });
+    child.stdin.write(input);
+    child.stdin.end();
+  }
 }
 
 function createZip(toml, jsout, tmpDir, outputName) {
