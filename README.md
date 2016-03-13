@@ -1,14 +1,14 @@
 # JAM
 JavaScript Machine: A Middleware for Things, Web, and Cloud
 
-### Compiling a JAM program
-Installing jamc:
+#### Installing jam
+Run:
 ```sh
 ./install.sh
 ```
 
-<br />
-Then you can compile a JAM file:
+##### Compiling a JAM program
+
 ```sh
 jamc [input file] [output name (optional)]
 ```
@@ -16,22 +16,14 @@ This will produce a jxe file in the output folder, by default it will be named j
 
 
 
-### Running a JAM progarm
-First build jamrun:
+##### Running a JAM progarm
+
+JavaScript Mode:
 ```sh
-cd lib/jamrun
-make
+jamrun -j [jxe path]
 ```
 
-##### Running jamrun:
 C Mode:
 ```sh
-cd lib/jamrun
-./jamrun -c [jxe path]
-```
-
-JS Mode:
-```sh
-cd lib/jamrun
-./jamrun -j [jxe path]
+jamrun -c [jxe path]
 ```
