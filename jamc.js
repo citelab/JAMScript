@@ -97,7 +97,7 @@ try {
     flowCheck(output.annotated_JS)
   	fs.mkdirSync(tmpDir);
     fs.writeFileSync(`${tmpDir}/jamout.c`, output.C);
-    child_process.execSync(`gcc -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
+    child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
     createZip(createTOML(), output.JS, tmpDir, outputName);
     
     if(!debug) {
@@ -115,8 +115,8 @@ function printAndExit(output) {
 }
 
 function preprocess(file) {
-  return child_process.execSync(`${cc} -E -P -std=iso9899:199409 ${file}`).toString()
-  // return child_process.execSync(`tcc -E -w ${file}`).toString()
+  // return child_process.execSync(`${cc} -E -P -std=iso9899:199409 ${file}`).toString();
+  return child_process.execSync(`tcc -E -P -w ${file}`).toString();
 }
 
 function flowCheck(input) {
