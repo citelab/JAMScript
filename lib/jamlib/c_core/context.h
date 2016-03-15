@@ -23,35 +23,52 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef __CONTEXT_H__
 #define __CONTEXT_H__
 
+
 #include <ucontext.h>
+#include <assert.h>
+#include <stdlib.h>
 
 
-typedef struct _context_t
+#ifdef __APPLE__
+#define _XOPEN_SOURCE
+#endif
+
+
+void context_save(ucontext_t *uc)
 {
-    ucontext_t uc;
-} context_t;
+   (void)getcontext(uc);
+}
 
 
-#define context_save(ctx)               (void)getcontext(&(ctx)->uc)
-#define context_restore(ctx)            (void)setcontext(&(ctx)->uc)
-#define context_switch(old,new) \
-                    (void)swapcontext(&((old)->uc), &((new)->uc))
+void context_restore(ucontext_t *uc)
+{
+    (void)setcontext(uc);
+}
 
-void context_create(context_t *ctx,
-                    void (*handler)(void *),
+void context_switch(ucontext_t *old, ucontext_t *new)
+{
+    (void)swapcontext(old, new);
+}
+
+
+ucontext_t *context_create(void (*handler)(void *),
                     void *arg,
-                    void *stack,
-                    size_t stack_size)
+                    int stack_size)
 {
-    getcontext(&(ctx->uc));
 
-    ctx->uc.uc_link            = NULL;
-    ctx->uc.uc_stack.ss_sp     = stack;
-    ctx->uc.uc_stack.ss_size   = stack_size;
-    ctx->uc.uc_stack.ss_flags  = 0;
+    ucontext_t *ctx = (ucontext_t *)calloc(1, sizeof(ucontext_t));
 
-    makecontext(&(ctx->uc), handler, 1, arg);
-    return;
+    getcontext(ctx);
+
+    ctx->uc_link            = NULL;
+    ctx->uc_stack.ss_sp     = (void *)malloc(stack_size);
+    ctx->uc_stack.ss_size   = stack_size;
+    ctx->uc_stack.ss_flags  = 0;
+    ctx->uc_link = 0;
+
+    makecontext(ctx, handler, 0);
+
+    return ctx;
 }
 
 
