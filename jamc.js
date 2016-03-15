@@ -115,8 +115,11 @@ function printAndExit(output) {
 }
 
 function preprocess(file) {
+  var contents = fs.readFileSync(file);
+  contents = '#include "/usr/local/share/jam/lib/jamlib/jamlib.h"\n' + contents;
+  return child_process.execSync("tcc -E -P -w -", {input: contents}).toString();
   // return child_process.execSync(`${cc} -E -P -std=iso9899:199409 ${file}`).toString();
-  return child_process.execSync(`tcc -E -P -w ${file}`).toString();
+
 }
 
 function flowCheck(input) {
