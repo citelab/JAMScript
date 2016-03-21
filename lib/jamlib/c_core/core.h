@@ -25,8 +25,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <time.h>
 #include <stdbool.h>
-
 #include "socket.h"
+
 
 #define MAX_SERVERS                                 8
 
@@ -39,7 +39,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 typedef struct _connect_state_t
 {
     char *server;
-    int port;                                       // Dynamically probed
+    int port;                                       // TODO: Dynamically probed
     struct tm *stime;                               // start time of the connection
 
 } connect_state_t;
@@ -64,8 +64,10 @@ typedef struct _corestate_t
 
     int retries;
     char *device_id;
-    socket_t *survey_sock;
-    socket_t *subscribe_sock;
+
+    socket_t *reqsock;
+    socket_t *subsock;
+    socket_t *respsock;
 
 } corestate_t;
 
@@ -84,6 +86,9 @@ environ_t *get_environ();
 // Initialize the core.. the first thing we need to call
 corestate_t *core_init(int timeout);
 corestate_t *core_do_init(corestate_t *cs, int timeout);
+corestate_t *core_reinit(corestate_t *cs, int timeout);
+
+
 
 // Find a list of respondning Fog endpoints.. no connection made
 bool core_find_fog(corestate_t *cstate, int timeout);
@@ -95,9 +100,6 @@ bool core_connect_to_fog(corestate_t *cstate, int timeout);
 
 // Ping a J core
 bool core_ping_jcore();
-
-// Hookup a service hander for RESPONDANT messages..
-void core_sock_handler_start(socket_t *ssock, socket_t *psock);
 
 void core_insert_fog_addr(corestate_t *cstate, char *host);
 

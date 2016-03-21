@@ -28,6 +28,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <string.h>
 #include <assert.h>
 
+#include "nvoid.h"
 
 #include "simplequeue.h"
 
@@ -94,8 +95,8 @@ bool queue_delete(simplequeue_t *sq)
  */
 bool queue_enq(simplequeue_t *sq, void *data, int size)
 {
-	datawrapper_t *dw = (datawrapper_t *)calloc(1, sizeof(datawrapper_t));
-	dw->size = size;
+	nvoid_t *dw = (nvoid_t *)calloc(1, sizeof(nvoid_t));
+	dw->len = size;
 	if (sq->ownedbyq) {
 		void *ndata = calloc(1, size);
 		memcpy(ndata, data, size);
@@ -104,7 +105,7 @@ bool queue_enq(simplequeue_t *sq, void *data, int size)
 	else
 		dw->data = data;
 
-	int dwsize = sizeof(datawrapper_t);
+	int dwsize = sizeof(nvoid_t);
 	int bytes = nn_send (sq->pushsock, dw, dwsize, 0);
 	free(dw);
 
@@ -114,26 +115,26 @@ bool queue_enq(simplequeue_t *sq, void *data, int size)
 		return false;
 }
 
-void *queue_deq(simplequeue_t *sq, int *len)
+nvoid_t *queue_deq(simplequeue_t *sq)
 {
 	char *buf = NULL;
 	int bytes = nn_recv (sq->pullsock, &buf, NN_MSG, 0);
 
-	if (bytes != sizeof(datawrapper_t)) {
+	if (bytes != sizeof(nvoid_t)) {
 		nn_freemsg(buf);
-		*len = 0;
 		return NULL;
 	}
 	else
 	{
-		void *data = ((datawrapper_t *)buf)->data;
+		nvoid_t *data = (nvoid_t *)calloc(1, sizeof(nvoid_t));
+		memcpy(data, buf, sizeof(nvoid_t));
 		nn_freemsg(buf);
-		*len = ((datawrapper_t *)buf)->size;
+		// why? I don't know. May be I could have just returned buf without releasing it.
 		return data;
 	}
 }
 
-void *queue_deq_timeout(simplequeue_t *sq, int *len, int timeout)
+nvoid_t *queue_deq_timeout(simplequeue_t *sq, int timeout)
 {
 	struct nn_pollfd pfd [1];
 	pfd [0].fd = sq->pullsock;
@@ -141,12 +142,11 @@ void *queue_deq_timeout(simplequeue_t *sq, int *len, int timeout)
 
 	int rc = nn_poll(pfd, 1, timeout);
 	if (rc == 0) {
-		*len = 0;
 		return NULL;
 	}
 	else
 	if (pfd[0].revents & NN_POLLIN)
-		return queue_deq(sq, len);
+		return queue_deq(sq);
 
 	return NULL;
 }

@@ -128,11 +128,26 @@ int socket_send(socket_t *sock, command_t *cmd)
 
 command_t *socket_recv_command(socket_t *sock, int timeout)
 {
-    unsigned char *buffer = NULL;
-    int bytes = nn_recv(sock->sock_fd, buffer, NN_MSG, 0);
-    command_t *cmd = command_from_data(NULL, buffer, bytes);
-    nn_freemsg(buffer);
+    struct nn_pollfd pfd [1];
+    pfd[0].fd = sock->sock_fd;
+    pfd[0].events = NN_POLLIN;
 
+    int rc = nn_poll(pfd, 1, timeout);
+    if (rc == 0) {
+        return NULL;
+    }
+
+    printf("Over here.. \n");
+    unsigned char *buffer = NULL;
+
+    int bytes = nn_recv(sock->sock_fd, &buffer, NN_MSG, 0);
+    nvoid_t *nv = nvoid_new(buffer, bytes);
+    printf("Over here.. 2 \n");
+    command_t *cmd = command_from_data(NULL, nv);
+    printf("Over here.. 3 \n");
+    nn_freemsg(buffer);
+    nvoid_free(nv);
+    printf("Hello 2 \n");
     return cmd;
 }
 

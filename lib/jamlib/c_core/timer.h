@@ -55,8 +55,11 @@ typedef struct _timertype_t
 
 
 timertype_t *timer_init();
+bool timer_free(timertype_t *tmr);
+
 bool timer_add_event(timertype_t *tmr, int timerval, bool repeat, char *tag, timercallback_f cback, void *arg);
 bool timer_del_event(timertype_t *tmr, char *tag);
+bool timer_cancel_next(timertype_t *tmr, char *tag);
 
 // Private functions...
 
@@ -65,5 +68,5 @@ timerevent_t *timer_create_event(int timerval, bool repeated, char *tag, timerca
 void timer_decrement_and_fire_events(timertype_t *tmr);
 void timer_insert_event_record(timertype_t *tmr, timerevent_t *tev);
 void timer_delete_records_with_tag(timertype_t *tmr, char *tag);
-
+void timer_cancel_next_match_event(timertype_t *tmr, char *tag);
 #endif

@@ -1,3 +1,35 @@
+March 19th Notes
+================
+
+We should have namespaces too. Their values is important for
+discovering activities.
+
+
+In the bgthread do the following:
+    Read packet off the external sockets
+    Parse the packet into a command structure.
+    Do the actions depending on the packet type.
+
+    Pubsub packets could be for the following:
+        = Need to execute X:
+
+        = Completed the execution of X on J:
+
+        = What else?
+
+    Survey packets could be for the following:
+        = Is anyone executing X?
+
+        = What else?
+
+
+
+
+
+
+
+
+
 
 === testers: nvoid, activity, context..
 

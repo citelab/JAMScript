@@ -48,9 +48,9 @@ bool core_ping_jcore(char *hostname, int port, char *devid, int timeout)
     socket_t *sock = socket_new(SOCKET_REQU);
     socket_connect(sock, hostname, port);
     if (devid != NULL)
-        scmd = command_new("PING", "JCORE", "s", devid);
+        scmd = command_new("PING", "JCORE", "", "s", devid);
     else
-        scmd = command_new("PING", "JCORE", "");
+        scmd = command_new("PING", "JCORE", "", "");
 
     socket_send(sock, scmd);
     command_free(scmd);
@@ -85,9 +85,9 @@ bool core_connect_to_fog(corestate_t *cstate, int timeout)
     command_t *scmd;
 
     if (cstate->device_id)
-        scmd = command_new("REGISTER", "JCORE", "s", cstate->device_id);
+        scmd = command_new("REGISTER", "JCORE", "", "s", cstate->device_id);
     else
-        scmd = command_new("REGISTER", "JCORE", "s", "--NEW-NODE--");
+        scmd = command_new("REGISTER", "JCORE", "", "s", "--NEW-NODE--");
 
     for (i = 0; i < cstate->env->num_fog_servers; i++) {
 
@@ -105,7 +105,7 @@ bool core_connect_to_fog(corestate_t *cstate, int timeout)
         else
         {
             if (strcmp(rcmd->cmd, "REGISTER") == 0 &&
-                strcmp(rcmd->subcmd, "CONFIRMED") == 0)
+                strcmp(rcmd->opt, "CONFIRMED") == 0)
             {
                 // We got results.. process it .. device_id could be saved.
                 cstate->device_id = strdup(rcmd->args[0].val.sval);
@@ -116,14 +116,10 @@ bool core_connect_to_fog(corestate_t *cstate, int timeout)
                 time_t now = time(&now);
                 cstate->fog_state.stime = localtime(&now);
 
-                // Make the survey and subscribe sockets
-                cstate->survey_sock = socket_new(SOCKET_RESP);
-                socket_connect(cstate->survey_sock, cstate->fog_state.server, SURVEY_PORT);
-                cstate->subscribe_sock = socket_new(SOCKET_SUBS);
-                socket_connect(cstate->subscribe_sock, cstate->fog_state.server, PUBLISH_PORT);
-
-                // Hookup handlers..
-                core_sock_handler_start(cstate->survey_sock, cstate->subscribe_sock);
+                // Open the sockets.. three in total
+                cstate->reqsock = core_socket_to_fog(cstate, SOCKET_REQU);
+                cstate->subsock = core_socket_to_fog(cstate, SOCKET_SUBS);
+                cstate->respsock = core_socket_to_fog(cstate, SOCKET_RESP);
 
                 return true;
             }
@@ -199,7 +195,7 @@ bool core_find_fog_from_cloud(corestate_t *cstate, int timeout)
     bool gotnew = false;
 
     // Send a "DISCOVER", "FOG" request to the cloud endpoints
-    command_t *scmd = command_new("DISCOVER", "FOG", "s", cstate->env->app_name);
+    command_t *scmd = command_new("DISCOVER", "FOG", "", "s", cstate->env->app_name);
 
     for (i = 0; i < cstate->env->num_cloud_servers; i++) {
 
@@ -217,7 +213,7 @@ bool core_find_fog_from_cloud(corestate_t *cstate, int timeout)
         else
         {
             if (strcmp(rcmd->cmd, "ADDRESSES") == 0 &&
-                strcmp(rcmd->subcmd, "FOGS") == 0)
+                strcmp(rcmd->opt, "FOGS") == 0)
             {
                 gotnew = true;
                 // We got Fog addresses.. insert them into the local database
@@ -244,7 +240,6 @@ bool core_find_fog_from_cloud(corestate_t *cstate, int timeout)
 }
 
 
-
 /*
  * initialize the c_core
  * get the context, try to connect the fog, if not to the cloud
@@ -269,6 +264,14 @@ corestate_t *core_init(int timeout)
     return core_do_init(cs, timeout);
 }
 
+corestate_t *core_reinit(corestate_t *cs, int timeout)
+{
+    socket_free(cs->respsock);
+    socket_free(cs->respsock);
+    socket_free(cs->subsock);
+
+    return core_do_init(cs, timeout);
+}
 
 corestate_t *core_do_init(corestate_t *cs, int timeout)
 {
@@ -316,9 +319,10 @@ void core_insert_fog_addr(corestate_t *cstate, char *host)
 }
 
 
-// TODO: this one needs to be implemented...
-//
-void core_sock_handler_start(socket_t *ssock, socket_t *psock)
+socket_t *core_socket_to_fog(corestate_t *cs, int type)
 {
+    socket_t *sock = socket_new(type);
+    socket_create(sock, cs->fog_state.server, cs->fog_state.port);
 
+    return sock;
 }

@@ -54,6 +54,18 @@ timertype_t *timer_init()
 }
 
 
+// Stop the thread, release the memory allocations, etc
+//
+bool timer_free(timertype_t *tmr)
+{
+    pthread_cancel(tmr->tmrthread);
+    queue_delete(tmr->timerqueue);
+
+    free(tmr);
+    return true;
+}
+
+
 bool timer_add_event(timertype_t *tmr, int timerval, bool repeat, char *tag, timercallback_f cback, void *arg)
 {
     timerevent_t *tev = timer_create_event(timerval, repeat, tag, cback, arg);
@@ -71,6 +83,17 @@ bool timer_del_event(timertype_t *tmr, char *tag)
     char buf[64];
 
     sprintf(buf, "DELEVENT %s", tag);
+
+    queue_enq(tmr->timerqueue, buf, strlen(buf));
+    return true;
+}
+
+
+bool timer_cancel_next(timertype_t *tmr, char *tag)
+{
+    char buf[64];
+
+    sprintf(buf, "CANCELEVENT %s", tag);
 
     queue_enq(tmr->timerqueue, buf, strlen(buf));
     return true;
@@ -101,6 +124,10 @@ void *timer_loop(void *arg)
 {
     timertype_t *tmr = (timertype_t *)arg;
     int len;
+    int oldstate, oldtype;
+
+    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldstate);
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, oldtype);
 
     while (1) {
         char *s = (char *)queue_deq_timeout(tmr->timerqueue, &len, 100);
@@ -167,7 +194,6 @@ void timer_decrement_and_fire_events(timertype_t *tmr)
 // Insert the given record if a NULL record is found.
 // Otherwise, bump up the count and insert the record at the end
 //
-//
 void timer_insert_event_record(timertype_t *tmr, timerevent_t *tev)
 {
     int i;
@@ -222,4 +248,21 @@ void timer_delete_records_with_tag(timertype_t *tmr, char *tag)
     while (tmr->events[i] != NULL)
         i++;
     tmr->numevents = i;
+}
+
+
+void timer_cancel_next_match_event(timertype_t *tmr, char *tag)
+{
+    int i;
+
+    // scan all the events..
+    for (i = 0; i < tmr->numevents; i++)
+    {
+        // skip null slots.. these events don't exist
+        if (tmr->events[i] == NULL)
+            continue;
+
+        if (strcmp(tmr->events[i]->tag, tag) == 0)
+            tmr->events[i]->timeleft = tmr->events[i]->timeoutval;
+    }
 }

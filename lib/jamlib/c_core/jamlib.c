@@ -44,8 +44,9 @@ jamstate_t *jam_init()
     // Queue initialization
     js->queue = queue_new(true);
 
-    // Start the event processing background thread..
-    jam_event_loop(js);
+    // Start the event loop in another thread.. with cooperative threads.. we
+    // to yield for that thread to start running
+    taskcreate(jam_event_loop, js, 30000);
 
     return js;
 }
@@ -77,26 +78,13 @@ bool jam_core_ready(jamstate_t *js)
 }
 
 // Start the background processing loop.
-// This is temporary..
-// TODO: Make it truely single threaded. We need run the user functions and background
-// task commits in the same thread. This needs some form of cooperative processing.
-//
-//
-void jam_event_loop(jamstate_t *js)
-{
-    int rval = pthread_create(&(js->bgthread), NULL, jam_event_processor, (void *)js);
-    if (rval != 0) {
-        perror("ERROR! Unable to start the background event loop");
-        exit(1);
-    }
-}
-
-
 /* Private functions...
  * TODO: Trace the memory allocated to the command structure...
  * Seems like it is not released when the incoming message contains an event?
  */
-void *jam_event_processor(void *arg)
+//
+//
+void jam_event_loop(jamstate_t *js)
 {
     jamstate_t *js = (jamstate_t *)arg;
     event_t *e = NULL;
@@ -104,16 +92,17 @@ void *jam_event_processor(void *arg)
     while ((e = get_event(js))) {
         if (e != NULL)
             callbacks_call(js->callbacks, app, e);
+
+        taskyield();
+
+        // TODO: We need to exit this task if an "exit" command arrives
     }
-
-    /* Just a dummy return.. return value inconsequential.. */
-    return NULL;
 }
-
 
 
 // TODO: This needs to revamped. Timeouts come here too.
 // The RPC processing is complicated.. it could have changes here too.
+// TODO: Add many different types of events here with the new design!
 //
 //
 event_t *get_event(jamstate_t *js)
@@ -152,93 +141,153 @@ void jam_reg_callback(jamstate_t *js, char *aname, eventtype_t etype, event_call
 }
 
 
-// This could be complicated!
-// Launch the execution request. Wait for the reply and get the lease time..
-// We fail the exec request, if we are unable to get the first part done
-// We need some way of tracking the progress of the launched task.
-// Lease extensions and completions are tracked here.
-// Send a message to the queue() seeking a timeout..
-//
-//
-bool jam_execute_func(jamstate_t *js, const char *fname, const char *fmt, ...)
+
+jactivity_t *jam_rexec(jamstate_t *js, char *aname, ...)
 {
+    // find the activity..
+    jactivity_t *jact = activity_getbyname(js->atable, aname);
+
+    // get the mask
+    char *fmask = activity_get_mask(jact);
+
+    cbor_item_t *arr = cbor_new_indefinite_array();
+    cbor_item_t *elem;
+
+    va_start(args, aname);
+
+    while(*fmask)
+    {
+        switch(*fmask++)
+        {
+            case 's':
+                elem = cbor_build_string(va_arg(args, char *));
+                break;
+            case 'i':
+                val = va_arg(args, int);
+                elem = cbor_build_uint32(abs(val));
+                if (val < 0)
+                    cbor_mark_negint(elem);
+                break;
+            case 'd':
+            case 'f':
+                elem = cbor_build_float8(va_arg(args, double));
+                break;
+            default:
+                break;
+        }
+        if (elem)
+            assert(cbor_array_push(arr, elem) == true);
+    }
+    va_end(args);
+
+    // Get the type
+    int type = activity_get_type(jact);
+
+    if (type == SYNCHRONOUS_ACTIVITY)
+    {    // create the command structure..
+        command_t *cmd = command_new_using_cbor("REXEC", "SYNC", aname, arr);
+        return jam_rexec_sync(js, cmd);
+    }
+    else
+    {
+        command_t *cmd = command_new_using_cbor("REXEC", "ASYNC", aname, arr);
+        return jam_rexec_async(js, jact, cmd);
+    }
+
+}
+
+jactivity_t *jam_rexec_sync(jamstate_t *js, jactivity_t *jact, command_t *cmd)
+{
+    int i = 0;
+    command_t *rcmd;
+    // Send command to the fog using the REQUEST socket
+    while (i < js->cstate->retries)
+    {
+        socket_send(js->reqsock, cmd);
+        rcmd = socket_recv_command(js->reqsock, 50);       // TODO: Make this aynchronous.. right now the thread is blocked
+        if (rcmd != NULL)
+            break;
+
+        i++;
+    }
+
+    // IMPORTANT: Fix the above problem. This could hold up the thread
+    // Although, there might be a justification for doing this part synchronously..
+    // This part should take little time.
+
+    // Return NULL if we failed to connect..
+    if (i == js->csstate->retries)
+    {
+        command_free(rcmd);
+        return NULL;
+    }
+
+    for (i = 0; i < js->maxleases; i++)
+    {
+        int timerval = jam_get_timer_from_reply(rmcd);
+        command_free(rcmd);
+        jam_set_timer(js, jact->name, timerval);
+        tasksleep(&(jact->sem));
+        jam_get_event_for_activity(js, rcmd);
+        if (strcmp(rcmd->cmd, "TIMEOUT") == 0) {
+            command_t *lcmd = command_new("STATUS", "LEASE", jact->name, "");
+            socket_send(js->reqsock, lcmd);
+            command_free(lcmd);
+            rcmd = socket_recv_command(js->reqsock, 100);       // TODO: What value here?
+            continue;
+        }
+        else
+        if (strcmp(rcmd->cmd, "REXEC") == 0 &&
+            strcmp(rcmd->opt, "COMPLETE") == 0) {
+
+            break;
+        }
+        else
+        if (strcmp(rcmd->cmd, "REXEC") == 0 &&
+            strcmp(rcmd->opt, "ERROR") == 0) {
+
+            break;
+        }
+        i++;
+    }
+
+    // activity timed out..
+    // It is taking way too long to run at the J-core
+
+    // Send a kill commmand...
 
 
 }
+
+
+jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, command_t *cmd)
+{
+    // Find the fog J-core
+
+    // Send command to the fog
+
+    // If we are unable to get the ack.. fail execution
+
+    // get lease period from the ack..
+    // setup the wakeup timer based on lease time
+
+    // for 1 to maxleases try the following:
+
+        // wait until the lease over or results obtained
+        // TODO: Tasksleep should be used here... it is woken up by
+        // Timer event or something comes from the destination
+
+        // if results not obtained, check with remote for exec status
+        // if new lease, set timer
+        // if results obtained, return results else return failure
+}
+
 
 
 
 int jam_raise_event(jamstate_t *js, char *tag, EventType etype, char *cback, char *fmt, ...)
 {
 
-}
-
-
-/* Returns 0 on success and -1 otherwise */
-int execute_remote_func(Application *app, const char *name, const char *format, ...)
-{
-    va_list args;
-    int i;
-    char buf[BUFSIZE];
-    char *json;
-    char json_format[] = "{\"name\":\"%s\", \"args\":[%s], \"sign\":\"%s\"}\n";
-    int ret;
-    Command *cmd = NULL;
-    char* new_format;
-    int count = 0; /* this counts additional overhead chars */
-
-    if (format == NULL)
-        return -1;
-    /*
-     * Strings NEED to be properly quoted, return NULL if we
-     * find an unquoted string.
-     */
-    for(i = 0; i < strlen(format); i++) {
-        if (format[i] == '%' && format[i+1] == 's') {
-            count += 2;
-            if (format[i-1] != '"' || format[i+2] != '"') {
-                return -1;
-            }
-        }
-    }
-
-    /* Format is const so make a usable copy of it to play with */
-    new_format = strdup(format);
-
-    /* Replace spaces by commas. This will help for json formatting */
-    for(i = 0; i < strlen(new_format); i++) {
-        if (new_format[i] == ' ') {
-            new_format[i] = ',';
-            count++;
-        }
-    }
-
-    va_start(args, format);
-    ret = vsnprintf(buf, BUFSIZE, new_format, args);
-    va_end(args);
-
-    json = calloc((strlen(json_format) + strlen(name) + BUFSIZE), sizeof(char));
-    ret = sprintf(json, json_format, name, buf, "");
-
-    if (json <= 0)
-        return -1;
-
-    cmd = (Command *) calloc(1, sizeof(Command));               /* allocates and initialized to 0 - 1 unit of Command */
-    cmd->max_params = MAX_PARAMS;
-    cmd->param_count = 0;
-    /* Parameters are not saved here.. so no need to worry about the type.. */
-
-    cmd->command = strdup(json);
-    free(json);
-    free(new_format);
-
-    if (command_send(cmd, app->socket) != 0) {
-        command_free(cmd);
-        return -1;
-    } else {
-        command_free(cmd);
-        return 0;
-    }
 }
 
 

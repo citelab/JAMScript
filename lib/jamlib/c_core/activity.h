@@ -24,6 +24,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define __ACTIVITY_H__
 
 #include "nvoid.h"
+#include "task.h"
+#include "command.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -43,10 +45,10 @@ enum activity_state_t
 
 typedef struct _jactivity_t
 {
-    uint64_t actid;
     enum activity_state_t state;
     char name[MAX_NAME_LEN];
     nvoid_t *code;
+    Rendez  sem;
 
 } jactivity_t;
 
@@ -63,7 +65,6 @@ typedef struct _activitytable_t
 //
 // Function prototypes..
 //
-
 activitytable_t *activity_table_new();
 void activity_table_print(activitytable_t *at);
 void activity_print(jactivity_t *ja);
@@ -71,6 +72,8 @@ void activity_print(jactivity_t *ja);
 jactivity_t *activity_new(activitytable_t *atbl, char *name);
 int64_t activity_getid(activitytable_t *atbl, char *name);
 char *activity_getname(activitytable_t *atbl, int64_t id);
+
+
 
 bool activity_start(jactivity_t *act);
 bool activity_stop(jactivity_t *act, nvoid_t *rcode);

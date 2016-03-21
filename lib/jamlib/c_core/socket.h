@@ -32,7 +32,7 @@ extern "C" {
 #define __SOCKET_H__
 
 #include "command.h"
-
+#include "nvoid.h"
 
 enum socket_type
 {

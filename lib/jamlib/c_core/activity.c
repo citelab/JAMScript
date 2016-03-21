@@ -76,6 +76,8 @@ jactivity_t *activity_new(activitytable_t *atbl, char *name)
     strcpy(jact->name, name);
     jact->code = NULL;
 
+    bzero(&(jact->sem), sizeof(Rendez));
+
     return jact;
 }
 
@@ -93,6 +95,7 @@ jactivity_t *activity_getbyid(activitytable_t *atbl, int64_t id)
 
     return NULL;
 }
+
 
 jactivity_t *activity_getbyname(activitytable_t *atbl, char *name)
 {

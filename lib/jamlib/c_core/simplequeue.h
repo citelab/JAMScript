@@ -26,6 +26,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <nanomsg/nn.h>
 #include <stdbool.h>
 
+#include "nvoid.h"
 
 /*
  * Implementation idea is very simple. Just use a nano message pipeline.
@@ -51,13 +52,6 @@ typedef struct _simplequeue_t
 } simplequeue_t;
 
 
-typedef struct _datawrapper_t
-{
-	void *data;
-	int size;
-
-} datawrapper_t;
-
 /*
  * function prototypes
  */
@@ -65,8 +59,8 @@ typedef struct _datawrapper_t
 simplequeue_t *queue_new(bool ownedbyq);
 bool queue_delete(simplequeue_t *queue);
 
-bool queue_enq(simplequeue_t *queue, void *data, int size);
-void *queue_deq(simplequeue_t *queue, int *len);
-void *queue_deq_timeout(simplequeue_t *sq, int *len, int timeout);
+bool queue_enq(simplequeue_t *queue, void *data, int len);
+nvoid_t *queue_deq(simplequeue_t *queue);
+nvoid_t *queue_deq_timeout(simplequeue_t *sq, int timeout);
 
 #endif

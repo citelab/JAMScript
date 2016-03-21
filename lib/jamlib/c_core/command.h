@@ -32,6 +32,9 @@ extern "C" {
 #define __COMMAND_H__
 
 #include <cbor.h>
+#include <stdint.h>
+
+#include "nvoid.h"
 
 /*
  * TODO: May be we could have user defined structures and unions in the
@@ -69,22 +72,26 @@ typedef struct _arg_t
 
 typedef struct _command_t
 {
-    char *cmd;                              // Name of the command
-    char *subcmd;
-    arg_t *args;                            // List of args
-    unsigned char *buffer;                  // CBOR byte array in raw byte form
-    int length;                             // length of CBOR array
     cbor_item_t *item;                      // handle to the CBOR array
+    unsigned char *buffer;                  // CBOR byte array in raw byte form
+    char *cmd;                              // Name of the command
+    char *opt;
+    char *actname;                        // Activity ID, where applicable
+    arg_t *args;                            // List of args
+    int length;                            // length of the raw CBOR data
+    int nitems;                             // length of CBOR array
 
 } command_t;
 
-command_t *command_new(const char *cmd, const char *subcmd, const char *fmt, ...);
-command_t *command_from_data(char *fmt, unsigned char *bytes, int len);
+
+command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, cbor_item_t *arr);
+command_t *command_new(const char *cmd, char *opt, char *actname, const char *fmt, ...);
+command_t *command_from_data(char *fmt, nvoid_t *data);
 
 void command_free(command_t *cmd);
 void command_print(command_t *cmd);
 
-#endif /* __COMMAND_H__ */
+#endif
 
 #ifdef __cplusplus
 }

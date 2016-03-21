@@ -40,6 +40,7 @@ typedef struct _jamstate_t
     pthread_t bgthread;
     callbacks_t *callbacks;
     simplequeue_t *queue;
+    activitytable_t *atable;
 
 } jamstate_t;
 
