@@ -46,10 +46,22 @@ jamstate_t *jam_init()
 
     // Start the event loop in another thread.. with cooperative threads.. we
     // to yield for that thread to start running
-    taskcreate(jam_event_loop, js, 30000);
+    taskcreate(jam_event_loop, js, STACKSIZE);
 
     return js;
 }
+
+
+bool jam_create_bgthread(jamstate_t *js)
+{
+    int rval = pthread_create(&(js->bgthread), NULL, jamworker_bgthread, (void *)js);
+    if (rval != 0) {
+        perror("ERROR! Unable to start the jamworker thread");
+        return false;
+    }
+    return true;
+}
+
 
 
 // Check whether there are any more pending JAM activities.
@@ -78,10 +90,6 @@ bool jam_core_ready(jamstate_t *js)
 }
 
 // Start the background processing loop.
-/* Private functions...
- * TODO: Trace the memory allocated to the command structure...
- * Seems like it is not released when the incoming message contains an event?
- */
 //
 //
 void jam_event_loop(jamstate_t *js)
@@ -92,10 +100,10 @@ void jam_event_loop(jamstate_t *js)
     while ((e = get_event(js))) {
         if (e != NULL)
             callbacks_call(js->callbacks, app, e);
+        else
+            taskexit(0);
 
         taskyield();
-
-        // TODO: We need to exit this task if an "exit" command arrives
     }
 }
 
@@ -359,3 +367,22 @@ int raise_event(Application *app, char *tag, EventType etype, char *cback, char 
         return 0;
     }
 }
+
+
+/*
+ * jam background loop. This loop is responsible for processing publish-subscribe,
+ * survey-respondent, request-reply packets. The C-core does not take
+ * unsolicited REQ packets. It is always a REPLY to a previous REQ packet.
+ *
+ * We launch this loop in a thread. Here is what happens in the loop
+ * we read from the network for published and survey packets. This happens on the
+ * SUBS and RESP sockets.
+ *
+ * Process the publsihed events - or messages on the SUBS.
+ * Process the survey events - or messages on the RESP sockets
+ *
+ * Process the REQandREPL packets.. The REQ is an outgoing packet and the REPLY
+ * is an incoming packet. Do we have a matching problem? Guess not.
+
+ * When a process writes packets into the thread facing queue, the lock needs to be
+ * unlocked..

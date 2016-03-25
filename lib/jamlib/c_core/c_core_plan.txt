@@ -1,3 +1,40 @@
+March 24th Notes
+================
+    = Complete activity module.. test activity
+    = Complete jamworker module
+    = Work on jamlib ...
+
+
+
+
+March 23rd Notes
+================
+
+High precision timer could be used for sequence numbers, activity serial numbers, etc.
+We need worry about the collision that could happen with two cores (J and C) selecting
+sequence numbers at the same time.
+
+
+bgthread design
+    = Get all the file descriptors and put them into the poller
+    = Wait on the poller
+    = Initialize a type array that will allow us to branch into the correct
+        method for processing the decriptor. The type array is as long as the
+        number of open descriptors and it maps the file descriptor to the
+        type of processing routine.
+    We read the file descriptor and use the type array to figure out the processor
+    type that should handle the event
+
+    Go into the processing loop.
+
+    = Survey packets
+    = Publish packets
+    = Local request packets
+    = Reply packets for the request packets
+    =
+
+
+
 March 19th Notes
 ================
 

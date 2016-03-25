@@ -31,15 +31,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdint.h>
 
 #define MAX_NAME_LEN            64
-#define ACTIVITY_SLICE          32
+#define MAX_MASK_LEN            64
+#define ALLOCATE_SLICE          32
 
 enum activity_state_t
 {
     NEW,
     RUNNING,
-    STOPPED,
-    FAILED,
-    COMPLETED
+    TIMEDOUT,
+    COMPLETED,
+    ERROR
 };
 
 
@@ -47,17 +48,30 @@ typedef struct _jactivity_t
 {
     enum activity_state_t state;
     char name[MAX_NAME_LEN];
+    int64_t actid;
     nvoid_t *code;
     Rendez  sem;
 
 } jactivity_t;
 
 
+typedef struct _activity_registry_t
+{
+    char name[MAX_NAME_LEN];
+    char mask[MAX_MASK_LEN];
+    int type;
+    // function pointers are not needed.. generic representation is troublesome too
+} activity_registry_t;
+
+
 typedef struct _activitytable_t
 {
+    int numactivityregs;
     int numactivities;
+    activity_registry_t *registrations;
     jactivity_t *activities;
     int activityslots;
+    int activityregslots;
 
 } activitytable_t;
 
@@ -67,16 +81,21 @@ typedef struct _activitytable_t
 //
 activitytable_t *activity_table_new();
 void activity_table_print(activitytable_t *at);
+
+bool activity_make(activitytable_t *at, char *name, char *mask, int type);
+char *activity_get_mask(activitytable_t *at, char *name);
+int activity_get_type(activitytable_t *at, char *name);
+
+void activity_reg_print(activity_registry_t *areg);
 void activity_print(jactivity_t *ja);
 
 jactivity_t *activity_new(activitytable_t *atbl, char *name);
-int64_t activity_getid(activitytable_t *atbl, char *name);
-char *activity_getname(activitytable_t *atbl, int64_t id);
+int64_t activity_getid(jactivity_t *jact);
+char *activity_getname(jactivity_t *jact);
 
-
-
-bool activity_start(jactivity_t *act);
-bool activity_stop(jactivity_t *act, nvoid_t *rcode);
-bool activity_fail(jactivity_t *act, nvoid_t *ecode);
+void activity_start(jactivity_t *act);
+void activity_timeout(jactivity_t *act);
+void activity_complete_success(jactivity_t *act);
+void activity_complete_error(jactivity_t *act);
 
 #endif

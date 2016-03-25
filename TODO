@@ -1,0 +1,4 @@
+TODO
+
+High precision timers could still collide if they are taken in different
+machines. So we need to resolve this problem with activity serial numbers.
