@@ -150,29 +150,74 @@ int activity_get_type(activitytable_t *at, char *name)
 jactivity_t *activity_new(activitytable_t *at, char *name)
 {
     int i;
-    bool found = false;
+    jactivity_t *jact;
 
-    // If the registration is not there, return NULL
+    // Look for the registration
     for (i = 0; i <at->numactivityregs; i++)
         if (strcmp(at->registrations[i].name, name) == 0)
-        {
-            found = true;
             break;
-        }
-    if (!found)
+    // If the registration is not there, return NULL
+    if (i == at->numactivityregs)
         return NULL;
 
-    // Insert new activity into the table
-    jactivity_t *jact = &(at->activities[at->numactivities++]);
+    // Look for a deleted slot.. if available, we reuse it.
+    for (i = 0; i < at->numactivities; i++)
+        if (at->activities[i].state == DELETED)
+            break;
+
+    // Create a new slot if a deleted one is not found
+    if (i == at->numactivities)
+    {
+        if ((at->activityslots - at->numactivities) < ALLOCATE_SLICE/2)
+            at->activities = realloc(at->activities,
+                            sizeof(jactivity_t) * (at->activityslots + ALLOCATE_SLICE));
+
+        jact = &(at->activities[at->numactivities++]);
+    }
+    else
+        jact = &(at->activities[i]);
+
+    // Setup the new activity
     jact->state = NEW;
     strcpy(jact->name, name);
     jact->code = NULL;
     bzero(&(jact->sem), sizeof(Rendez));
     jact->actid = activity_gettime();
 
+    // Setup the I/O queues
+    jact->inq = queue_new(true);
+    jact->outq = queue_new(true);
+
     // return the pointer
     return jact;
 }
+
+
+jactivity_t *activity_getbyid(activitytable_t *at, uint64_t actid)
+{
+    int i;
+
+    for (i = 0; i < at->numactivities; i++)
+    {
+        if (at->activities[i].state == DELETED)
+            continue;
+        if (at->activities[i].actid == actid)
+            return &(at->activities[i]);
+    }
+    return NULL;
+}
+
+void activity_del(activitytable_t *at, jactivity_t *jact)
+{
+    // delete the queues..
+    queue_delete(jact->inq);
+    queue_delete(jact->outq);
+
+    jact->state = DELETED;
+    // TODO: The memory is not touched.. may be we need to resize the memory pool if
+    // the number of activities goes below a certain number?
+}
+
 
 int64_t activity_getid(jactivity_t *jact)
 {

@@ -42,7 +42,12 @@ jamstate_t *jam_init()
     js->callbacks = callbacks_new();
 
     // Queue initialization
-    js->queue = queue_new(true);
+    // maininq is used by the main thread for input purposes
+    // mainoutq is used by the main thread for output purposes
+    js->maininq = queue_new(true);
+    js->mainoutq = queue_new(true);
+
+    bzero(&(js->mainthreadsem), sizeof(Rendez));
 
     // Start the event loop in another thread.. with cooperative threads.. we
     // to yield for that thread to start running
@@ -125,19 +130,7 @@ event_t *get_event(jamstate_t *js)
     if (cmd->cmd == NULL)
         return NULL;
 
-    len = strlen(cmd->cmd);
-
-    if (len == 5 && strncmp(cmd->name, "ERROR", 5) == 0) {
-        return event_error_new(cmd->tag, cmd->params, cmd->callback);
-    }
-
-    if (len == 8 && strncmp(cmd->name, "COMPLETE", 8) == 0) {
-        return event_complete_new(cmd->tag, cmd->params, cmd->callback);
-    }
-
-    if (len == 8 && strncmp(cmd->name, "CALLBACK", 8) == 0) {
-        return event_callback_new(cmd->tag);
-    }
+    // TODO: Something should be done here...
 
     return NULL;
 }

@@ -48,9 +48,9 @@ bool core_ping_jcore(char *hostname, int port, char *devid, int timeout)
     socket_t *sock = socket_new(SOCKET_REQU);
     socket_connect(sock, hostname, port);
     if (devid != NULL)
-        scmd = command_new("PING", "JCORE", "", "s", devid);
+        scmd = command_new("PING", "JCORE", "", 0, "s", devid);
     else
-        scmd = command_new("PING", "JCORE", "", "");
+        scmd = command_new("PING", "JCORE", "", 0, "");
 
     socket_send(sock, scmd);
     command_free(scmd);
@@ -85,9 +85,9 @@ bool core_connect_to_fog(corestate_t *cstate, int timeout)
     command_t *scmd;
 
     if (cstate->device_id)
-        scmd = command_new("REGISTER", "JCORE", "", "s", cstate->device_id);
+        scmd = command_new("REGISTER", "JCORE", "", 0, "s", cstate->device_id);
     else
-        scmd = command_new("REGISTER", "JCORE", "", "s", "--NEW-NODE--");
+        scmd = command_new("REGISTER", "JCORE", "", 0, "s", "--NEW-NODE--");
 
     for (i = 0; i < cstate->env->num_fog_servers; i++) {
 
@@ -195,7 +195,7 @@ bool core_find_fog_from_cloud(corestate_t *cstate, int timeout)
     bool gotnew = false;
 
     // Send a "DISCOVER", "FOG" request to the cloud endpoints
-    command_t *scmd = command_new("DISCOVER", "FOG", "", "s", cstate->env->app_name);
+    command_t *scmd = command_new("DISCOVER", "FOG", "", 0, "s", cstate->env->app_name);
 
     for (i = 0; i < cstate->env->num_cloud_servers; i++) {
 

@@ -32,6 +32,12 @@ extern "C" {
 #define __JAMLIB_H__
 
 #include "core.h"
+#include "simplequeue.h"
+#include "activity.h"
+#include "callback.h"
+#include "event.h"
+
+#include <pthread.h>
 
 typedef struct _jamstate_t
 {
@@ -39,8 +45,13 @@ typedef struct _jamstate_t
     corestate_t *cstate;
     pthread_t bgthread;
     callbacks_t *callbacks;
-    simplequeue_t *queue;
+    simplequeue_t *maininq;
+    simplequeue_t *mainoutq;
     activitytable_t *atable;
+    Rendez mainthreadsem;
+
+    struct nn_pollfd *pollfds;
+    int numpollfds;
 
 } jamstate_t;
 
@@ -52,8 +63,22 @@ bool jam_core_ready(jamstate_t *js);
 int jam_execute_func(jamstate_t *js, const char *fname, const char *fmt, ...);
 void jam_reg_callback(jamstate_t *js, char *aname, eventtype_t etype,
                                                 event_callback_f cb, void *data);
-int jam_raise_event(jamstate_t *js, char *tag, eventtype_t etype,
-                                                char *cback, char *fmt, ...);
+
+/*
+ * Functions defined in jamworker.c
+ */
+void jamworker_bgthread(jamstate_t *js);
+void jamworker_assemble_fds(jamstate_t *js);
+int jamworker_wait_fds(jamstate_t *js);
+void jamworker_processor(jamstate_t *js);
+void jamworker_process_reqsock(jamstate_t *js);
+void jamworker_process_subsock(jamstate_t *js);
+void jamworker_process_respsock(jamstate_t *js);
+void jamworker_process_mainoutq(jamstate_t *js);
+void jamworker_process_actoutq(jamstate_t *js, int indx);
+command_t *jamworker_activity_status(jamstate_t *js, uint64_t indx);
+command_t *jamworker_device_status(jamstate_t *js);
+
 
 #endif  /* __JAMLIB_H__ */
 

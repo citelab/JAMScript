@@ -55,7 +55,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * format - s (string), i (integer) f,d for float/double - no % (e.g., "si")
  *
  */
-command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, cbor_item_t *arr)
+command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, uint64_t actid, cbor_item_t *arr)
 {
 
     // Allocate a new command structure.. we are going to save the cbor
@@ -88,6 +88,12 @@ command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, cbo
         .value = cbor_move(cbor_build_string(actname))
     });
 
+    // Add the actid field to the map
+    cbor_map_add(rmap, (struct cbor_pair) {
+        .key = cbor_move(cbor_build_string("actid")),
+        .value = cbor_move(cbor_build_uint64(actid))
+    });
+
     // Add the args field to the map
     cbor_map_add(rmap, (struct cbor_pair) {
         .key = cbor_move(cbor_build_string("args")),
@@ -105,10 +111,11 @@ command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, cbo
  * Reusing the previous command encoder..
  *
  */
-command_t *command_new(const char *cmd, char *opt, char *actname, const char *fmt, ...)
+command_t *command_new(const char *cmd, char *opt, char *actname, uint64_t actid, const char *fmt, ...)
 {
     va_list args;
     int val;
+    nvoid_t *nv;
 
     cbor_item_t *arr = cbor_new_indefinite_array();
     cbor_item_t *elem;
@@ -119,6 +126,10 @@ command_t *command_new(const char *cmd, char *opt, char *actname, const char *fm
     {
         switch(*fmt++)
         {
+            case 'n':
+                nv = va_arg(args, nvoid_t*);
+                elem = cbor_build_bytestring(nv->data, nv->len);
+                break;
             case 's':
                 elem = cbor_build_string(va_arg(args, char *));
                 break;
@@ -141,7 +152,7 @@ command_t *command_new(const char *cmd, char *opt, char *actname, const char *fm
 
     va_end(args);
 
-    return command_new_using_cbor(cmd, opt, actname, arr);
+    return command_new_using_cbor(cmd, opt, actname, actid, arr);
 }
 
 
@@ -159,7 +170,7 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
     struct cbor_load_result result;
 
     command_t *cmd = (command_t *)calloc(1, sizeof(command_t));
-    cmd->buffer = (unsigned char *)malloc(data->len * 10);
+    cmd->buffer = (unsigned char *)malloc(data->len);
     memcpy(cmd->buffer, data->data, data->len);
     cmd->item = cbor_load(cmd->buffer, data->len, &result);
     cmd->length = data->len;
@@ -203,9 +214,15 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
     strncpy(fieldname, (const char *)cbor_string_handle(mitems[3].key),
                         (int)cbor_string_length(mitems[3].key));
     fieldname[(int)cbor_string_length(mitems[3].key)] = 0;
+    assert(strcmp(fieldname, "actid") == 0);
+    cmd->actid = cbor_get_uint64(mitems[3].value);
+
+    strncpy(fieldname, (const char *)cbor_string_handle(mitems[4].key),
+                        (int)cbor_string_length(mitems[4].key));
+    fieldname[(int)cbor_string_length(mitems[4].key)] = 0;
     assert(strcmp(fieldname, "args") == 0);
 
-    cbor_item_t *arr = mitems[3].value;
+    cbor_item_t *arr = mitems[4].value;
     cmd->nitems = cbor_array_size(arr);
     cmd->args = (arg_t *)calloc(cmd->length, sizeof(arg_t));
 

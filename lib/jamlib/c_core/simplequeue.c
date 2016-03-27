@@ -136,9 +136,9 @@ nvoid_t *queue_deq(simplequeue_t *sq)
 
 nvoid_t *queue_deq_timeout(simplequeue_t *sq, int timeout)
 {
-	struct nn_pollfd pfd [1];
-	pfd [0].fd = sq->pullsock;
-	pfd [0].events = NN_POLLIN;
+	struct nn_pollfd pfd[1];
+	pfd[0].fd = sq->pullsock;
+	pfd[0].events = NN_POLLIN;
 
 	int rc = nn_poll(pfd, 1, timeout);
 	if (rc == 0) {

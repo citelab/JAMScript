@@ -26,6 +26,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "nvoid.h"
 #include "task.h"
 #include "command.h"
+#include "simplequeue.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -40,7 +41,8 @@ enum activity_state_t
     RUNNING,
     TIMEDOUT,
     COMPLETED,
-    ERROR
+    ERROR,
+    DELETED
 };
 
 
@@ -51,6 +53,8 @@ typedef struct _jactivity_t
     int64_t actid;
     nvoid_t *code;
     Rendez  sem;
+    simplequeue_t *inq;
+    simplequeue_t *outq;
 
 } jactivity_t;
 
@@ -90,6 +94,7 @@ void activity_reg_print(activity_registry_t *areg);
 void activity_print(jactivity_t *ja);
 
 jactivity_t *activity_new(activitytable_t *atbl, char *name);
+jactivity_t *activity_getbyid(activitytable_t *at, uint64_t actid);
 int64_t activity_getid(jactivity_t *jact);
 char *activity_getname(jactivity_t *jact);
 

@@ -103,4 +103,6 @@ bool core_ping_jcore();
 
 void core_insert_fog_addr(corestate_t *cstate, char *host);
 
+socket_t *core_socket_to_fog(corestate_t *cs, int type);
+
 #endif
