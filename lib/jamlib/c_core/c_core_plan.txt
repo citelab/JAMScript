@@ -1,7 +1,16 @@
+March 27th Notes
+================
+    Remote execution
+        = Sync
+        = Async
+
+    Get both done.
+    
+
+
+
 March 24th Notes
 ================
-    = Complete activity module.. test activity
-    = Complete jamworker module
     = Work on jamlib ...
 
 

@@ -45,15 +45,21 @@ typedef struct _jamstate_t
     corestate_t *cstate;
     pthread_t bgthread;
     callbacks_t *callbacks;
-    simplequeue_t *maininq;
-    simplequeue_t *mainoutq;
     activitytable_t *atable;
-    Rendez mainthreadsem;
 
     struct nn_pollfd *pollfds;
     int numpollfds;
 
 } jamstate_t;
+
+typedef struct _temprecord_t
+{
+    jamstate_t *jstate;
+    jactivity_t *jact;
+    command_t *cmd;
+
+} temprecord_t;
+
 
 
 jamstate_t *jam_init();
@@ -74,7 +80,7 @@ void jamworker_processor(jamstate_t *js);
 void jamworker_process_reqsock(jamstate_t *js);
 void jamworker_process_subsock(jamstate_t *js);
 void jamworker_process_respsock(jamstate_t *js);
-void jamworker_process_mainoutq(jamstate_t *js);
+void jamworker_process_globaloutq(jamstate_t *js);
 void jamworker_process_actoutq(jamstate_t *js, int indx);
 command_t *jamworker_activity_status(jamstate_t *js, uint64_t indx);
 command_t *jamworker_device_status(jamstate_t *js);

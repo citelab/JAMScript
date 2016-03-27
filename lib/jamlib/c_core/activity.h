@@ -45,16 +45,23 @@ enum activity_state_t
     DELETED
 };
 
+enum activity_type_t
+{
+    SYNC,
+    ASYNC
+};
+
 
 typedef struct _jactivity_t
 {
     enum activity_state_t state;
     char name[MAX_NAME_LEN];
-    int64_t actid;
+    uint64_t actid;
     nvoid_t *code;
     Rendez  sem;
     simplequeue_t *inq;
     simplequeue_t *outq;
+
 
 } jactivity_t;
 
@@ -64,7 +71,7 @@ typedef struct _activity_registry_t
     char name[MAX_NAME_LEN];
     char mask[MAX_MASK_LEN];
     int type;
-    // function pointers are not needed.. generic representation is troublesome too
+
 } activity_registry_t;
 
 
@@ -76,6 +83,11 @@ typedef struct _activitytable_t
     jactivity_t *activities;
     int activityslots;
     int activityregslots;
+
+    simplequeue_t *globalinq;
+    simplequeue_t *globaloutq;
+    Rendez globalsem;
+
 
 } activitytable_t;
 
@@ -95,12 +107,14 @@ void activity_print(jactivity_t *ja);
 
 jactivity_t *activity_new(activitytable_t *atbl, char *name);
 jactivity_t *activity_getbyid(activitytable_t *at, uint64_t actid);
-int64_t activity_getid(jactivity_t *jact);
+uint64_t activity_getid(jactivity_t *jact);
 char *activity_getname(jactivity_t *jact);
 
 void activity_start(jactivity_t *act);
 void activity_timeout(jactivity_t *act);
 void activity_complete_success(jactivity_t *act);
 void activity_complete_error(jactivity_t *act);
+
+void activity_del(activitytable_t *at, jactivity_t *jact);
 
 #endif

@@ -86,7 +86,7 @@ void jamworker_assemble_fds(jamstate_t *js)
     js->pollfds[2].fd = js->cstate->respsock->sock_fd;
 
     // pick the output queue of the main thread .. it is the input for the bgthread
-    js->pollfds[3].fd = js->mainoutq->pullsock;
+    js->pollfds[3].fd = js->atable->globaloutq->pullsock;
 
     // scan the number of activities and get their input queue hooked
     for (i = 0; i < js->atable->numactivities; i++)
@@ -123,7 +123,7 @@ void jamworker_processor(jamstate_t *js)
         jamworker_process_respsock(js);
     else
     if (js->pollfds[3].revents & NN_POLLIN)
-        jamworker_process_mainoutq(js);
+        jamworker_process_globaloutq(js);
     else
     // Use a loop to scan the rest of the descriptors
     for (i = 4; i < js->numpollfds; i++)
@@ -146,8 +146,8 @@ void jamworker_process_reqsock(jamstate_t *js)
         if (rcmd->actid == 0)
         {
             // Send it to the main thread and unblock the thread
-            queue_enq(js->maininq, rcmd->buffer, rcmd->length);
-            taskwakeup(&(js->mainthreadsem));
+            queue_enq(js->atable->globalinq, rcmd->buffer, rcmd->length);
+            taskwakeup(&(js->atable->globalsem));
         }
         else
         {
@@ -173,8 +173,8 @@ void jamworker_process_subsock(jamstate_t *js)
         if (rcmd->actid == 0)
         {
             // Send it to the main thread and unblock the thread
-            queue_enq(js->maininq, rcmd->buffer, rcmd->length);
-            taskwakeup(&(js->mainthreadsem));
+            queue_enq(js->atable->globalinq, rcmd->buffer, rcmd->length);
+            taskwakeup(&(js->atable->globalsem));
         }
         // Otherwise, we drop the packet.
 
@@ -210,9 +210,9 @@ void jamworker_process_respsock(jamstate_t *js)
 }
 
 
-void jamworker_process_mainoutq(jamstate_t *js)
+void jamworker_process_globaloutq(jamstate_t *js)
 {
-    nvoid_t *data = queue_deq(js->mainoutq);
+    nvoid_t *data = queue_deq(js->atable->globaloutq);
     command_t *rcmd = command_from_data(NULL, data);
     if (rcmd != NULL)
     {
@@ -278,5 +278,5 @@ command_t *jamworker_activity_status(jamstate_t *js, uint64_t indx)
 command_t *jamworker_device_status(jamstate_t *js)
 {
     // Get the number of activities running on the device
-    return command_new("REPORT", "DEVICE", "", 0, "d", js->atable->numactivities);
+    return command_new("REPORT", "DEVICE", "", 0, "i", js->atable->numactivities);
 }

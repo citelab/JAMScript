@@ -188,6 +188,10 @@ jactivity_t *activity_new(activitytable_t *at, char *name)
     jact->inq = queue_new(true);
     jact->outq = queue_new(true);
 
+    // Send a message to the background so it starts watching for messages
+    command_t *cmd = command_new("LOCAL", "NEW-ACTIVITY", name, jact->actid, "");
+    queue_enq(at->globaloutq, cmd->buffer, cmd->length);
+
     // return the pointer
     return jact;
 }
@@ -216,10 +220,14 @@ void activity_del(activitytable_t *at, jactivity_t *jact)
     jact->state = DELETED;
     // TODO: The memory is not touched.. may be we need to resize the memory pool if
     // the number of activities goes below a certain number?
+
+    // Send a message to the background so it starts watching for messages
+    command_t *cmd = command_new("LOCAL", "DEL-ACTIVITY", jact->name, jact->actid, "");
+    queue_enq(at->globaloutq, cmd->buffer, cmd->length);
 }
 
 
-int64_t activity_getid(jactivity_t *jact)
+uint64_t activity_getid(jactivity_t *jact)
 {
     return jact->actid;
 }

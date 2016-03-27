@@ -27,6 +27,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "jamlib.h"
 #include "core.h"
 
+#include <strings.h>
+#include <pthread.h>
+
+#define STACKSIZE                   30000
+
+
+
 // Initialize the JAM library.. nothing much done here.
 // We just initialize the Core ..
 //
@@ -42,12 +49,12 @@ jamstate_t *jam_init()
     js->callbacks = callbacks_new();
 
     // Queue initialization
-    // maininq is used by the main thread for input purposes
-    // mainoutq is used by the main thread for output purposes
-    js->maininq = queue_new(true);
-    js->mainoutq = queue_new(true);
+    // globalinq is used by the main thread for input purposes
+    // globaloutq is used by the main thread for output purposes
+    js->atable->globalinq = queue_new(true);
+    js->atable->globaloutq = queue_new(true);
 
-    bzero(&(js->mainthreadsem), sizeof(Rendez));
+    bzero(&(js->atable->globalsem), sizeof(Rendez));
 
     // Start the event loop in another thread.. with cooperative threads.. we
     // to yield for that thread to start running
@@ -55,7 +62,6 @@ jamstate_t *jam_init()
 
     return js;
 }
-
 
 bool jam_create_bgthread(jamstate_t *js)
 {
@@ -66,8 +72,6 @@ bool jam_create_bgthread(jamstate_t *js)
     }
     return true;
 }
-
-
 
 // Check whether there are any more pending JAM activities.
 // If none are pending, we can exit the program right away.
@@ -142,14 +146,17 @@ void jam_reg_callback(jamstate_t *js, char *aname, eventtype_t etype, event_call
 }
 
 
-
-jactivity_t *jam_rexec(jamstate_t *js, char *aname, ...)
+//
+// TODO: Is there a better way to write this code?
+// At this point, a big chunk of the code is replicated.. too bad
+//
+//
+void *jam_rexec_sync(jamstate_t *js, char *aname, ...)
 {
-    // find the activity..
-    jactivity_t *jact = activity_getbyname(js->atable, aname);
+    int val;
 
     // get the mask
-    char *fmask = activity_get_mask(jact);
+    char *fmask = activity_get_mask(js->atable, aname);
 
     cbor_item_t *arr = cbor_new_indefinite_array();
     cbor_item_t *elem;
@@ -158,6 +165,7 @@ jactivity_t *jam_rexec(jamstate_t *js, char *aname, ...)
 
     while(*fmask)
     {
+        elem = NULL;
         switch(*fmask++)
         {
             case 's':
@@ -176,62 +184,136 @@ jactivity_t *jam_rexec(jamstate_t *js, char *aname, ...)
             default:
                 break;
         }
-        if (elem)
+        if (elem != NULL)
             assert(cbor_array_push(arr, elem) == true);
     }
     va_end(args);
 
-    // Get the type
-    int type = activity_get_type(jact);
+    jactivity *jact = activity_new(js->atable, aname);
+    command_t *cmd = command_new_using_cbor("REXEC", "SYNC", aname, jact->actid, arr);
+    jam_rexec_runner(js, jact, cmd);
 
-    if (type == SYNCHRONOUS_ACTIVITY)
-    {    // create the command structure..
-        command_t *cmd = command_new_using_cbor("REXEC", "SYNC", aname, arr);
-        return jam_rexec_sync(js, cmd);
+    if (jact->state == TIMEDOUT)
+    {
+        activity_del(jact);
+        return NULL;
     }
     else
     {
-        command_t *cmd = command_new_using_cbor("REXEC", "ASYNC", aname, arr);
-        return jam_rexec_async(js, jact, cmd);
+        activity_del(jact);
+        return jact->code->data;
     }
-
 }
 
-jactivity_t *jam_rexec_sync(jamstate_t *js, jactivity_t *jact, command_t *cmd)
+
+jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, ...)
+{
+    int val;
+
+    // get the mask
+    char *fmask = activity_get_mask(js->atable, aname);
+
+    cbor_item_t *arr = cbor_new_indefinite_array();
+    cbor_item_t *elem;
+
+    va_start(args, aname);
+
+    while(*fmask)
+    {
+        elem = NULL;
+        switch(*fmask++)
+        {
+            case 's':
+                elem = cbor_build_string(va_arg(args, char *));
+                break;
+            case 'i':
+                val = va_arg(args, int);
+                elem = cbor_build_uint32(abs(val));
+                if (val < 0)
+                    cbor_mark_negint(elem);
+                break;
+            case 'd':
+            case 'f':
+                elem = cbor_build_float8(va_arg(args, double));
+                break;
+            default:
+                break;
+        }
+        if (elem != NULL)
+            assert(cbor_array_push(arr, elem) == true);
+    }
+    va_end(args);
+
+    // Need to add start to activity_new()
+    jactivity *jact = activity_new(js->atable, aname);
+    command_t *cmd = command_new_using_cbor("REXEC", "SYNC", aname, jact->actid, arr);
+    temprecord_t *trec = jam_create_temprecord(js, jact, cmd);
+    taskcreate(jam_rexec_run_wrapper, trec, STACKSIZE);
+
+    return jact;
+}
+
+temprecord_t *jam_create_temprecord(jamstate_t *js, jactivity_t *jact, command_t *cmd)
+{
+    temprecord_t *trec = (temprecord_t *)calloc(1, sizeof(temprecord_t));
+    trec->jstate = js;
+    trec->jact = jact;
+    trec->cmd = cmd;
+
+    return trec;
+}
+
+
+void jam_rexec_run_wrapper(void *arg)
+{
+    temprecord_t *trec = (temprecord_t *)arg;
+    jam_rexec_runner(trec->jstate, trec->jact, trec->cmd);
+    free(trec);
+}
+
+
+void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
 {
     int i = 0;
+    bool connected = false;
+    bool processed = false;
     command_t *rcmd;
-    // Send command to the fog using the REQUEST socket
-    while (i < js->cstate->retries)
+
+    for (i = 0; i < js->cstate->retries; i++)
     {
-        socket_send(js->reqsock, cmd);
-        rcmd = socket_recv_command(js->reqsock, 50);       // TODO: Make this aynchronous.. right now the thread is blocked
-        if (rcmd != NULL)
-            break;
-
-        i++;
-    }
-
-    // IMPORTANT: Fix the above problem. This could hold up the thread
-    // Although, there might be a justification for doing this part synchronously..
-    // This part should take little time.
-
-    // Return NULL if we failed to connect..
-    if (i == js->csstate->retries)
-    {
-        command_free(rcmd);
-        return NULL;
-    }
-
-    for (i = 0; i < js->maxleases; i++)
-    {
-        int timerval = jam_get_timer_from_reply(rmcd);
-        command_free(rcmd);
-        jam_set_timer(js, jact->name, timerval);
+        queue_enq(jact->outq, cmd->buffer, cmd->length);
         tasksleep(&(jact->sem));
+
+        nvoid_t *nv = queue_deq(jact->inq);
+        rcmd = command_from_data(NULL, nv);
+        if (rcmd != NULL)
+        {
+            connected = true;
+            break;
+        }
+        nvoid_free(nv);
+    }
+
+    // Mark the state as TIMEDOUT if we failed to connect..
+    if (!connected)
+    {
+        command_free(rcmd);
+        jact->state = TIMEDOUT;
+        return;
+    }
+
+    for (i = 0; i < js->maxleases && !processed; i++)
+    {
+        int timerval = jam_get_timer_from_reply(rcmd);
+        command_free(rcmd);
+        jam_set_timer(js, jact->actid, timerval);
+        tasksleep(&(jact->sem));
+
+        nvoid_t *nv = queue_deq(js->)
         jam_get_event_for_activity(js, rcmd);
+
         if (strcmp(rcmd->cmd, "TIMEOUT") == 0) {
-            command_t *lcmd = command_new("STATUS", "LEASE", jact->name, "");
+            command_t *lcmd = command_new("STATUS", "LEASE", jact->name, 0, "");
             socket_send(js->reqsock, lcmd);
             command_free(lcmd);
             rcmd = socket_recv_command(js->reqsock, 100);       // TODO: What value here?
@@ -249,40 +331,21 @@ jactivity_t *jam_rexec_sync(jamstate_t *js, jactivity_t *jact, command_t *cmd)
 
             break;
         }
-        i++;
     }
 
-    // activity timed out..
-    // It is taking way too long to run at the J-core
+    if (!processed)
+    {
+        // activity timed out..
+        // It is taking way too long to run at the J-core
 
-    // Send a kill commmand...
+        // Send a kill commmand...
+    }
 
+
+
+    // Close the activity...
 
 }
-
-
-jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, command_t *cmd)
-{
-    // Find the fog J-core
-
-    // Send command to the fog
-
-    // If we are unable to get the ack.. fail execution
-
-    // get lease period from the ack..
-    // setup the wakeup timer based on lease time
-
-    // for 1 to maxleases try the following:
-
-        // wait until the lease over or results obtained
-        // TODO: Tasksleep should be used here... it is woken up by
-        // Timer event or something comes from the destination
-
-        // if results not obtained, check with remote for exec status
-        // if new lease, set timer
-        // if results obtained, return results else return failure
-}
-
 
 
 

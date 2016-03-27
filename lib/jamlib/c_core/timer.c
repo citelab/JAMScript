@@ -27,8 +27,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <pthread.h>
 
-
 #include "timer.h"
+#include "nvoid.h"
 
 void *timer_loop(void *arg);
 
@@ -123,15 +123,15 @@ timerevent_t *timer_create_event(int timerval, bool repeated, char *tag, timerca
 void *timer_loop(void *arg)
 {
     timertype_t *tmr = (timertype_t *)arg;
-    int len;
+    nvoid_t *nv;
     int oldstate, oldtype;
 
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldstate);
-    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, oldtype);
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldtype);
 
     while (1) {
-        char *s = (char *)queue_deq_timeout(tmr->timerqueue, &len, 100);
-        if (s == NULL)
+        nv = queue_deq_timeout(tmr->timerqueue, 100);
+        if (nv == NULL)
         {
             // Timeout happened.. walk through the events and fire the expired ones
             timer_decrement_and_fire_events(tmr);
@@ -140,7 +140,7 @@ void *timer_loop(void *arg)
         {
             char cmd[64], param[64];
             // Check whether we have an addition or deletion
-            sscanf(s, "%s %s", cmd, param);
+            sscanf((char *)nv->data, "%s %s", cmd, param);
             if (strcmp(cmd, "ADDEVENT") == 0)
             {
                 timerevent_t *tev;
