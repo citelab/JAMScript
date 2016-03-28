@@ -50,6 +50,8 @@ typedef struct _jamstate_t
     struct nn_pollfd *pollfds;
     int numpollfds;
 
+    int maxleases;
+
 } jamstate_t;
 
 typedef struct _temprecord_t
@@ -61,19 +63,24 @@ typedef struct _temprecord_t
 } temprecord_t;
 
 
-
 jamstate_t *jam_init();
 bool jam_exit(jamstate_t *js);
-void jam_event_loop(jamstate_t *js);
+void jam_event_loop(void *js);
 bool jam_core_ready(jamstate_t *js);
 int jam_execute_func(jamstate_t *js, const char *fname, const char *fmt, ...);
 void jam_reg_callback(jamstate_t *js, char *aname, eventtype_t etype,
                                                 event_callback_f cb, void *data);
 
+temprecord_t *jam_create_temprecord(jamstate_t *js, jactivity_t *jact, command_t *cmd);
+void jam_rexec_run_wrapper(void *arg);
+void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd);
+
+
+
 /*
  * Functions defined in jamworker.c
  */
-void jamworker_bgthread(jamstate_t *js);
+void *jamworker_bgthread(void *arg);
 void jamworker_assemble_fds(jamstate_t *js);
 int jamworker_wait_fds(jamstate_t *js);
 void jamworker_processor(jamstate_t *js);

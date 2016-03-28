@@ -73,35 +73,11 @@ bool jam_create_bgthread(jamstate_t *js)
     return true;
 }
 
-// Check whether there are any more pending JAM activities.
-// If none are pending, we can exit the program right away.
-// If some activities are pending, we defer the execution of the jam_exit(1).
-//
-int jam_exit(jamstate_t *js)
-{
-    if (jam_pending_acts(js) > 0) {
-        //
-
-    }
-
-}
-
-// Send a message to the J-core informing it that C-core (device) is ready.
-// The J-core is supposed to engage with the C-core after it receives this message.
-// If the C-core is not receiving any interactions.. it will repeat sending this message
-// Assuming this message is lost..
-//
-// This function is invoked by the JAM program...
-//
-bool jam_core_ready(jamstate_t *js)
-{
-
-}
 
 // Start the background processing loop.
 //
 //
-void jam_event_loop(jamstate_t *js)
+void jam_event_loop(void *arg)
 {
     jamstate_t *js = (jamstate_t *)arg;
     event_t *e = NULL;
@@ -125,8 +101,8 @@ void jam_event_loop(jamstate_t *js)
 event_t *get_event(jamstate_t *js)
 {
     int len;
-    unsigned char *buf = (unsigned char *)queue_deq(js->queue, &len);
-    command_t *cmd = command_from_data(NULL, buf, len);
+    nvoid_t *nv = queue_deq(js->atable->globalinq);
+    command_t *cmd = command_from_data(NULL, nv);
 
     if (cmd == NULL)
         return NULL;
@@ -153,6 +129,7 @@ void jam_reg_callback(jamstate_t *js, char *aname, eventtype_t etype, event_call
 //
 void *jam_rexec_sync(jamstate_t *js, char *aname, ...)
 {
+    va_list args;
     int val;
 
     // get the mask
@@ -189,18 +166,18 @@ void *jam_rexec_sync(jamstate_t *js, char *aname, ...)
     }
     va_end(args);
 
-    jactivity *jact = activity_new(js->atable, aname);
+    jactivity_t *jact = activity_new(js->atable, aname);
     command_t *cmd = command_new_using_cbor("REXEC", "SYNC", aname, jact->actid, arr);
     jam_rexec_runner(js, jact, cmd);
 
     if (jact->state == TIMEDOUT)
     {
-        activity_del(jact);
+        activity_del(js->atable, jact);
         return NULL;
     }
     else
     {
-        activity_del(jact);
+        activity_del(js->atable, jact);
         return jact->code->data;
     }
 }
@@ -208,6 +185,7 @@ void *jam_rexec_sync(jamstate_t *js, char *aname, ...)
 
 jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, ...)
 {
+    va_list args;
     int val;
 
     // get the mask
@@ -245,7 +223,7 @@ jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, ...)
     va_end(args);
 
     // Need to add start to activity_new()
-    jactivity *jact = activity_new(js->atable, aname);
+    jactivity_t *jact = activity_new(js->atable, aname);
     command_t *cmd = command_new_using_cbor("REXEC", "SYNC", aname, jact->actid, arr);
     temprecord_t *trec = jam_create_temprecord(js, jact, cmd);
     taskcreate(jam_rexec_run_wrapper, trec, STACKSIZE);
@@ -262,7 +240,6 @@ temprecord_t *jam_create_temprecord(jamstate_t *js, jactivity_t *jact, command_t
 
     return trec;
 }
-
 
 void jam_rexec_run_wrapper(void *arg)
 {
@@ -309,26 +286,31 @@ void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         jam_set_timer(js, jact->actid, timerval);
         tasksleep(&(jact->sem));
 
-        nvoid_t *nv = queue_deq(js->)
-        jam_get_event_for_activity(js, rcmd);
+        nvoid_t *nv = queue_deq(jact->inq);
+        rcmd = command_from_data(NULL, nv);
 
         if (strcmp(rcmd->cmd, "TIMEOUT") == 0) {
-            command_t *lcmd = command_new("STATUS", "LEASE", jact->name, 0, "");
-            socket_send(js->reqsock, lcmd);
+            command_t *lcmd = command_new("STATUS", "LEASE", jact->name, jact->actid, "");
+            queue_enq(jact->outq, lcmd->buffer, lcmd->length);
             command_free(lcmd);
-            rcmd = socket_recv_command(js->reqsock, 100);       // TODO: What value here?
+            tasksleep(&(jact->sem));
+
+            nvoid_t *nv = queue_deq(jact->inq);
+            rcmd = command_from_data(NULL, nv);
             continue;
         }
         else
         if (strcmp(rcmd->cmd, "REXEC") == 0 &&
             strcmp(rcmd->opt, "COMPLETE") == 0) {
-
+            // return code already retrived by the command parser
+            processed = true;
             break;
         }
         else
         if (strcmp(rcmd->cmd, "REXEC") == 0 &&
             strcmp(rcmd->opt, "ERROR") == 0) {
-
+            // return code already retrived by the command parser
+            processed = true;
             break;
         }
     }
@@ -336,109 +318,13 @@ void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     if (!processed)
     {
         // activity timed out..
+        jact->state = TIMEDOUT;
         // It is taking way too long to run at the J-core
-
         // Send a kill commmand...
+        command_t *kcmd = command_new("REXEC", "KILL", jact->name, jact->actid, "");
+        queue_enq(jact->outq, kcmd->buffer, kcmd->length);
+        command_free(kcmd);
     }
 
-
-
-    // Close the activity...
-
+    // TODO: How to delete an async activity that was timedout?
 }
-
-
-
-int jam_raise_event(jamstate_t *js, char *tag, EventType etype, char *cback, char *fmt, ...)
-{
-
-}
-
-
-/*
- * Send the given event to the remote side.
- * tag - arbitrary value (activity name or something else)
- * cback - callback
- * format - s (string), i (integer) f,d for float/double - no % (e.g., "si")
- *
- */
-int raise_event(Application *app, char *tag, EventType etype, char *cback, char *fmt, ...)
-{
-    va_list args;
-    char fbuffer[BUFSIZE];
-    char *bufptr = fbuffer;
-    Command *cmd;
-
-    va_start(args, fmt);
-
-    while(*fmt)
-    {
-        switch(*fmt++)
-        {
-            case 's':
-                bufptr = strcat(bufptr, "\"%s\"");
-                break;
-            case 'i':
-                bufptr = strcat(bufptr, "%d");
-                break;
-            case 'f':
-            case 'd':
-                bufptr = strcat(bufptr, "%f");
-                break;
-            default:
-                break;
-        }
-        if (*fmt)
-            bufptr = strcat(bufptr, ",");
-    }
-    va_end(args);
-
-    switch (etype){
-        case ErrorEventType:
-        cmd = command_format_jsonk("ERROR", tag, cback, bufptr, args);
-        break;
-
-        case CompleteEventType:
-        cmd = command_format_jsonk("COMPLETE", tag, cback, bufptr, args);
-        break;
-
-        case CancelEventType:
-        cmd = command_format_jsonk("CANCEL", tag, cback, bufptr, args);
-        break;
-
-        case VerifyEventType:
-        cmd = command_format_jsonk("VERIFY", tag, cback, bufptr, args);
-        break;
-
-        case CallbackEventType:
-        cmd = command_format_jsonk("CALLBACK", tag, cback, bufptr, args);
-        break;
-    }
-
-    if (command_send(cmd, app->socket) != 0) {
-        command_free(cmd);
-        return -1;
-    } else {
-        command_free(cmd);
-        return 0;
-    }
-}
-
-
-/*
- * jam background loop. This loop is responsible for processing publish-subscribe,
- * survey-respondent, request-reply packets. The C-core does not take
- * unsolicited REQ packets. It is always a REPLY to a previous REQ packet.
- *
- * We launch this loop in a thread. Here is what happens in the loop
- * we read from the network for published and survey packets. This happens on the
- * SUBS and RESP sockets.
- *
- * Process the publsihed events - or messages on the SUBS.
- * Process the survey events - or messages on the RESP sockets
- *
- * Process the REQandREPL packets.. The REQ is an outgoing packet and the REPLY
- * is an incoming packet. Do we have a matching problem? Guess not.
-
- * When a process writes packets into the thread facing queue, the lock needs to be
- * unlocked..

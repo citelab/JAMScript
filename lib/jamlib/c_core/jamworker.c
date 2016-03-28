@@ -38,9 +38,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // library. It seems little brain dead. This should be rewritten for better performance
 // from a scalability point-of-view.
 //
-void jamworker_bgthread(jamstate_t *js)
+void *jamworker_bgthread(void *arg)
 {
     int oldstate, oldtype;
+
+    jamstate_t *js = (jamstate_t *)arg;
 
     // setup the thread.. make it async. cancellable
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldstate);
@@ -59,6 +61,8 @@ void jamworker_bgthread(jamstate_t *js)
 
         jamworker_processor(js);
     }
+
+    return NULL;
 }
 
 
