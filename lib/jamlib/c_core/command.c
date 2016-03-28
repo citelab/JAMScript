@@ -270,6 +270,14 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
                 cmd->args[i].type = DOUBLE_TYPE;
                 cmd->args[i].val.dval = cbor_float_get_float8(&arr[i]);
                 break;
+            case CBOR_TYPE_BYTESTRING:
+                if (fmt != NULL && fmt[i] != 'n') {
+                    printf("ERROR! Message does not match the validation specification\n");
+                    return NULL;
+                }
+                cmd->args[i].type = NVOID_TYPE;
+                cmd->args[i].val.nval = nvoid_new(cbor_bytestring_handle(&arr[i]), cbor_bytestring_length(&arr[i]));
+                break;
             default:
                 // Nothing to do for the CBOR types - at least for now
                 break;

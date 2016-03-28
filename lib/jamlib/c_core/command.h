@@ -46,7 +46,7 @@ enum argtype_t {
     STRING_TYPE,
     INT_TYPE,
     DOUBLE_TYPE,
-    OTHER_TYPE
+    NVOID_TYPE
 };
 
 typedef struct _arg_t
@@ -57,7 +57,7 @@ typedef struct _arg_t
         int ival;
         char *sval;
         double dval;
-        void *oval;
+        nvoid_t *nval;
     } val;
 } arg_t;
 
