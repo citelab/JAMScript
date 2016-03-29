@@ -43,7 +43,7 @@ jamstate_t *jam_init()
 
     // TODO: Remove the hardcoded timeout values
     // 200 milliseconds timeout now set
-    js->cstate = core_init(200);
+    js->cstate = core_init(1000);
 
     // Callback initialization
     js->callbacks = callbacks_new();
@@ -84,7 +84,7 @@ void jam_event_loop(void *arg)
 
     while ((e = get_event(js))) {
         if (e != NULL)
-            callbacks_call(js->callbacks, app, e);
+            callbacks_call(js->callbacks, js, e);
         else
             taskexit(0);
 
@@ -100,7 +100,6 @@ void jam_event_loop(void *arg)
 //
 event_t *get_event(jamstate_t *js)
 {
-    int len;
     nvoid_t *nv = queue_deq(js->atable->globalinq);
     command_t *cmd = command_from_data(NULL, nv);
 
@@ -327,4 +326,23 @@ void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     }
 
     // TODO: How to delete an async activity that was timedout?
+}
+
+void jam_set_timer(jamstate_t *js, uint64_t actid, int timerval)
+{
+
+
+}
+
+int jam_get_timer_from_reply(command_t *cmd)
+{
+
+    return 0;
+}
+
+
+void taskmain(int argc, char **argv)
+{
+    jamstate_t *js = jam_init();
+    return;
 }

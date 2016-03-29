@@ -201,15 +201,14 @@ bool core_find_fog_from_cloud(corestate_t *cstate, int timeout)
 
         // create a request-reply socket
         socket_t *sock = socket_new(SOCKET_REQU);
+                printf("Hello 1\n");
         socket_connect(sock, cstate->env->cloud_servers[i], REQUEST_PORT);
+                printf("Hello 2\n");
         socket_send(sock, scmd);
-
+        printf("Hello 3\n");
         command_t *rcmd = socket_recv_command(sock, timeout);
         if (rcmd == NULL)
-        {
-            command_free(rcmd);
             continue;
-        }
         else
         {
             if (strcmp(rcmd->cmd, "ADDRESSES") == 0 &&
@@ -255,12 +254,14 @@ bool core_find_fog_from_cloud(corestate_t *cstate, int timeout)
 
 corestate_t *core_init(int timeout)
 {
+    printf("COre init\n");
     // create the core state structure..
     corestate_t *cs = (corestate_t *)calloc(1, sizeof(corestate_t));
     // get execution context
     cs->env = get_environ();
     assert(cs->env != NULL);
 
+    printf("Calling do init \n");
     return core_do_init(cs, timeout);
 }
 
@@ -275,11 +276,12 @@ corestate_t *core_reinit(corestate_t *cs, int timeout)
 
 corestate_t *core_do_init(corestate_t *cs, int timeout)
 {
+    printf("Do init.. \n");
     // Try connecting to Fog servers if they are available..
     if (!core_find_fog(cs, timeout)) {
         // if unable to connect to fog, now try the cloud..
         // we need at least the cloud to move forward..
-
+        printf("Fog Not found..\n");
         if (core_find_fog_from_cloud(cs, timeout)) {
             // If the cloud connection is a success we should have new Fog
             // servers in the list.. lets connect to them..
@@ -296,6 +298,7 @@ corestate_t *core_do_init(corestate_t *cs, int timeout)
     }
     else
     {
+        printf("Connecting to Fog .\n");
         if (core_connect_to_fog(cs, timeout))
             return cs;
         else

@@ -33,9 +33,9 @@ extern "C" {
 
 #include "event.h"
 
-struct jamstate_t;
+struct _jamstate_t;
 
-typedef void (*event_callback_f)(struct jamstate_t *d, event_t *e, void *data);
+typedef void (*event_callback_f)(struct _jamstate_t *d, event_t *e, void *data);
 
 typedef struct _callbacklist_t {
     char *aname;
@@ -54,12 +54,12 @@ typedef struct _callbacks_t {
 callbacklist_t *callbacklist_new();
 void callbacklist_free(callbacklist_t *list);
 callbacklist_t *callbacklist_add(callbacklist_t *list, char *aname, event_callback_f cb, void *data);
-void callbacklist_call(callbacklist_t *list, struct jamstate_t *jam, event_t *event);
+void callbacklist_call(callbacklist_t *list, struct _jamstate_t *jam, event_t *event);
 
 callbacks_t *callbacks_new();
 void callbacks_free(callbacks_t *callbacks);
 void callbacks_add(callbacks_t *callbacks, char *actname, eventtype_t type, event_callback_f cb,  void *data);
-void callbacks_call(callbacks_t *callbacks, struct jamstate_t *jam, event_t *event);
+void callbacks_call(callbacks_t *callbacks, struct _jamstate_t *jam, event_t *event);
 
 #endif /* __CALLBACK_H__ */
 

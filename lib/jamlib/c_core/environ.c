@@ -65,33 +65,32 @@ environ_t *get_environ()
 
     // get the fog servers
     char *fservers = getenv("FOG_SERVERS");
+    printf("Fog serrver %s\n", fservers);
     if (fservers != NULL) {
         // find out how many we have in the list.. list is seperated by ':'
         for (i = 0; i < MAX_SERVERS; i++) {
-            env->fog_servers[i] = strdup(strsep(&fservers, ":"));
-            if (env->fog_servers[i] == NULL)
+            char *tstr = strsep(&fservers, ":");
+            if (tstr != NULL)
+                env->fog_servers[i] = strdup(tstr);
+            else
                 break;
         }
         env->num_fog_servers = i;
     }
 
     char *cservers = getenv("CLOUD_SERVERS");
+    printf("Cloud serrver %s\n", cservers);
     if (cservers != NULL) {
         // find out how many we have in the list.. list is seperated by ':'
         for (i = 0; i < MAX_SERVERS; i++) {
-            env->cloud_servers[i] = strdup(strsep(&cservers, ":"));
-            if (env->cloud_servers[i] == NULL)
+            char *tstr = strsep(&cservers, ":");
+            if (tstr != NULL)
+                env->cloud_servers[i] = strdup(tstr);
+            else 
                 break;
         }
         env->num_cloud_servers = i;
     }
 
     return env;
-}
-
-
-int main(void)
-{
-    environ_t *ctx = get_environ();
-    print_environ(ctx);
 }

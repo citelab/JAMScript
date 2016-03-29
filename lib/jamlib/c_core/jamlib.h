@@ -75,7 +75,7 @@ temprecord_t *jam_create_temprecord(jamstate_t *js, jactivity_t *jact, command_t
 void jam_rexec_run_wrapper(void *arg);
 void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd);
 
-
+event_t *get_event(jamstate_t *js);
 
 /*
  * Functions defined in jamworker.c
@@ -92,6 +92,8 @@ void jamworker_process_actoutq(jamstate_t *js, int indx);
 command_t *jamworker_activity_status(jamstate_t *js, uint64_t indx);
 command_t *jamworker_device_status(jamstate_t *js);
 
+void jam_set_timer(jamstate_t *js, uint64_t actid, int timerval);
+int jam_get_timer_from_reply(command_t *cmd);
 
 #endif  /* __JAMLIB_H__ */
 

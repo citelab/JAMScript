@@ -59,7 +59,7 @@ void callbacklist_free(callbacklist_t *list)
 /* Has been modified so that activity name is matched before the callback is
  * triggered.
  */
-void callbacklist_call(callbacklist_t *list, struct jamstate_t *jam, event_t *event)
+void callbacklist_call(callbacklist_t *list, struct _jamstate_t *jam, event_t *event)
 {
     callbacklist_t *curr = NULL;
     event_callback_f cb = NULL;
@@ -131,7 +131,7 @@ void callbacks_add(callbacks_t *callbacks, char *actname, eventtype_t type, even
     return;
 }
 
-void callbacks_call(callbacks_t *callbacks, struct jamstate_t *jam, event_t *event)
+void callbacks_call(callbacks_t *callbacks, struct _jamstate_t *jam, event_t *event)
 {
     switch(event->type) {
         /* Other types of handlers will be added here.. */
