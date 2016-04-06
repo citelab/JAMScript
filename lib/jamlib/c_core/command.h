@@ -72,21 +72,21 @@ typedef struct _arg_t
 
 typedef struct _command_t
 {
-    cbor_item_t *item;                      // handle to the CBOR array
+    cbor_item_t *cdata;                     // handle to the CBOR array
     unsigned char *buffer;                  // CBOR byte array in raw byte form
+    int length;                             // length of the raw CBOR data
     char *cmd;                              // Name of the command
     char *opt;
     char *actname;                          // Activity name
     uint64_t actid;                         // Activity ID.. created at launch time
                                             // Activity is single threaded .. so no sessionID
     arg_t *args;                            // List of args
-    int length;                             // length of the raw CBOR data
-    int nitems;                             // length of CBOR array
+    int nargs;                              // length of args array
 
 } command_t;
 
 
-command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, uint64_t actid, cbor_item_t *arr);
+command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, uint64_t actid, cbor_item_t *arr, arg_t *args, int nargs);
 command_t *command_new(const char *cmd, char *opt, char *actname, uint64_t actid, const char *fmt, ...);
 command_t *command_from_data(char *fmt, nvoid_t *data);
 

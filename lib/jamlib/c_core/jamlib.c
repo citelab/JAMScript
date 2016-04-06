@@ -44,6 +44,11 @@ jamstate_t *jam_init()
     // TODO: Remove the hardcoded timeout values
     // 200 milliseconds timeout now set
     js->cstate = core_init(1000);
+    if (js->cstate == NULL)
+    {
+        printf("ERROR!! Core Init Failed. Exiting.\n");
+        exit(1);
+    }
 
     // Callback initialization
     js->callbacks = callbacks_new();
@@ -129,10 +134,12 @@ void jam_reg_callback(jamstate_t *js, char *aname, eventtype_t etype, event_call
 void *jam_rexec_sync(jamstate_t *js, char *aname, ...)
 {
     va_list args;
-    int val;
+    nvoid_t *nv;
+    int i = 0;
 
     // get the mask
     char *fmask = activity_get_mask(js->atable, aname);
+    arg_t *qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
 
     cbor_item_t *arr = cbor_new_indefinite_array();
     cbor_item_t *elem;
@@ -144,29 +151,41 @@ void *jam_rexec_sync(jamstate_t *js, char *aname, ...)
         elem = NULL;
         switch(*fmask++)
         {
+            case 'n':
+                nv = va_arg(args, nvoid_t*);
+                elem = cbor_build_bytestring(nv->data, nv->len);
+                qargs[i].val.nval = nv;
+                qargs[i].type = NVOID_TYPE;
+                break;
             case 's':
-                elem = cbor_build_string(va_arg(args, char *));
+                qargs[i].val.sval = strdup(va_arg(args, char *));
+                qargs[i].type = STRING_TYPE;
+                elem = cbor_build_string(qargs[i].val.sval);
                 break;
             case 'i':
-                val = va_arg(args, int);
-                elem = cbor_build_uint32(abs(val));
-                if (val < 0)
+                qargs[i].val.ival = va_arg(args, int);
+                qargs[i].type = INT_TYPE;
+                elem = cbor_build_uint32(abs(qargs[i].val.ival));
+                if (qargs[i].val.ival < 0)
                     cbor_mark_negint(elem);
                 break;
             case 'd':
             case 'f':
-                elem = cbor_build_float8(va_arg(args, double));
+                qargs[i].val.dval = va_arg(args, double);
+                qargs[i].type = DOUBLE_TYPE;
+                elem = cbor_build_float8(qargs[i].val.dval);
                 break;
             default:
                 break;
         }
+        i++;
         if (elem != NULL)
             assert(cbor_array_push(arr, elem) == true);
     }
     va_end(args);
 
     jactivity_t *jact = activity_new(js->atable, aname);
-    command_t *cmd = command_new_using_cbor("REXEC", "SYNC", aname, jact->actid, arr);
+    command_t *cmd = command_new_using_cbor("REXEC", "SYNC", aname, jact->actid, arr, qargs, i);
     jam_rexec_runner(js, jact, cmd);
 
     if (jact->state == TIMEDOUT)
@@ -185,10 +204,12 @@ void *jam_rexec_sync(jamstate_t *js, char *aname, ...)
 jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, ...)
 {
     va_list args;
-    int val;
+    nvoid_t *nv;
+    int i = 0;
 
     // get the mask
     char *fmask = activity_get_mask(js->atable, aname);
+    arg_t *qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
 
     cbor_item_t *arr = cbor_new_indefinite_array();
     cbor_item_t *elem;
@@ -200,22 +221,34 @@ jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, ...)
         elem = NULL;
         switch(*fmask++)
         {
+            case 'n':
+                nv = va_arg(args, nvoid_t*);
+                elem = cbor_build_bytestring(nv->data, nv->len);
+                qargs[i].val.nval = nv;
+                qargs[i].type = NVOID_TYPE;
+                break;
             case 's':
-                elem = cbor_build_string(va_arg(args, char *));
+                qargs[i].val.sval = strdup(va_arg(args, char *));
+                qargs[i].type = STRING_TYPE;
+                elem = cbor_build_string(qargs[i].val.sval);
                 break;
             case 'i':
-                val = va_arg(args, int);
-                elem = cbor_build_uint32(abs(val));
-                if (val < 0)
+                qargs[i].val.ival = va_arg(args, int);
+                qargs[i].type = INT_TYPE;
+                elem = cbor_build_uint32(abs(qargs[i].val.ival));
+                if (qargs[i].val.ival < 0)
                     cbor_mark_negint(elem);
                 break;
             case 'd':
             case 'f':
-                elem = cbor_build_float8(va_arg(args, double));
+                qargs[i].val.dval = va_arg(args, double);
+                qargs[i].type = DOUBLE_TYPE;
+                elem = cbor_build_float8(qargs[i].val.dval);
                 break;
             default:
                 break;
         }
+        i++;
         if (elem != NULL)
             assert(cbor_array_push(arr, elem) == true);
     }
@@ -223,7 +256,7 @@ jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, ...)
 
     // Need to add start to activity_new()
     jactivity_t *jact = activity_new(js->atable, aname);
-    command_t *cmd = command_new_using_cbor("REXEC", "SYNC", aname, jact->actid, arr);
+    command_t *cmd = command_new_using_cbor("REXEC", "SYNC", aname, jact->actid, arr, qargs, i);
     temprecord_t *trec = jam_create_temprecord(js, jact, cmd);
     taskcreate(jam_rexec_run_wrapper, trec, STACKSIZE);
 

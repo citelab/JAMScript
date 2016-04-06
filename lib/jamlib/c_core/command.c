@@ -55,12 +55,22 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * format - s (string), i (integer) f,d for float/double - no % (e.g., "si")
  *
  */
-command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, uint64_t actid, cbor_item_t *arr)
+command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, uint64_t actid,
+                                cbor_item_t *arr, arg_t *args, int nargs)
 {
 
     // Allocate a new command structure.. we are going to save the cbor
     // version in the command structure. Not much of the command is used
     command_t *cmdo = (command_t *) calloc(1, sizeof(command_t));
+
+    // hookup parameter such as cmd, opt, actname, etc
+    cmdo->cmd = strdup(cmd);
+    cmdo->opt = strdup(opt);
+    cmdo->actname = strdup(actname);
+    cmdo->actid = actid;
+
+    cmdo->args = args;
+    cmdo->nargs = nargs;
 
     /*
      * Format of the CBOR map is as follows in equivalent JSON syntax
@@ -68,7 +78,7 @@ command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, uin
      */
 
 
-    cbor_item_t *rmap = cbor_new_definite_map(4);
+    cbor_item_t *rmap = cbor_new_definite_map(5);
 
     // Add the cmd field to the map
     cbor_map_add(rmap, (struct cbor_pair) {
@@ -100,6 +110,8 @@ command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, uin
         .value = cbor_move(arr)
     });
 
+    cmdo->cdata = rmap;
+
     cbor_serialize_alloc(rmap, &(cmdo->buffer), (size_t *)&(cmdo->length));
     return cmdo;
 }
@@ -114,8 +126,9 @@ command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, uin
 command_t *command_new(const char *cmd, char *opt, char *actname, uint64_t actid, const char *fmt, ...)
 {
     va_list args;
-    int val;
     nvoid_t *nv;
+    int i = 0;
+    arg_t *qargs = (arg_t *)calloc(strlen(fmt), sizeof(arg_t));
 
     cbor_item_t *arr = cbor_new_indefinite_array();
     cbor_item_t *elem;
@@ -129,30 +142,40 @@ command_t *command_new(const char *cmd, char *opt, char *actname, uint64_t actid
             case 'n':
                 nv = va_arg(args, nvoid_t*);
                 elem = cbor_build_bytestring(nv->data, nv->len);
+                qargs[i].val.nval = nv;
+                qargs[i].type = NVOID_TYPE;
                 break;
             case 's':
-                elem = cbor_build_string(va_arg(args, char *));
+                qargs[i].val.sval = strdup(va_arg(args, char *));
+                qargs[i].type = STRING_TYPE;
+                elem = cbor_build_string(qargs[i].val.sval);
                 break;
             case 'i':
-                val = va_arg(args, int);
-                elem = cbor_build_uint32(abs(val));
-                if (val < 0)
+                qargs[i].val.ival = va_arg(args, int);
+                qargs[i].type = INT_TYPE;
+                elem = cbor_build_uint32(abs(qargs[i].val.ival));
+                if (qargs[i].val.ival < 0)
                     cbor_mark_negint(elem);
                 break;
             case 'd':
             case 'f':
-                elem = cbor_build_float8(va_arg(args, double));
+                qargs[i].val.dval = va_arg(args, double);
+                qargs[i].type = DOUBLE_TYPE;
+                elem = cbor_build_float8(qargs[i].val.dval);
                 break;
             default:
                 break;
         }
+        i++;
         if (elem)
             assert(cbor_array_push(arr, elem) == true);
     }
 
     va_end(args);
 
-    return command_new_using_cbor(cmd, opt, actname, actid, arr);
+    command_t *c = command_new_using_cbor(cmd, opt, actname, actid, arr, qargs, i);
+    command_print(c);
+    return c;
 }
 
 
@@ -172,23 +195,26 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
     command_t *cmd = (command_t *)calloc(1, sizeof(command_t));
     cmd->buffer = (unsigned char *)malloc(data->len);
     memcpy(cmd->buffer, data->data, data->len);
-    cmd->item = cbor_load(cmd->buffer, data->len, &result);
+    cmd->cdata = cbor_load(cmd->buffer, data->len, &result);
     cmd->length = data->len;
 
     // extract information from the CBOR object and validate or fill the
     // command structure
 
     // check the size of the CBOR map
-    int items = cbor_map_size(cmd->item);
-    assert(items == 4);
+    int items = cbor_map_size(cmd->cdata);
+    assert(items == 5);
 
-    struct cbor_pair *mitems = cbor_map_handle(cmd->item);
+    printf("1 \n");
+
+    struct cbor_pair *mitems = cbor_map_handle(cmd->cdata);
 
     strncpy(fieldname, (const char *)cbor_string_handle(mitems[0].key),
                         (int)cbor_string_length(mitems[0].key));
     fieldname[(int)cbor_string_length(mitems[0].key)] = 0;
     assert(strcmp(fieldname, "cmd") == 0);
 
+    printf("2 \n");
     cmd->cmd = calloc((int)cbor_string_length(mitems[0].value) +1, sizeof(char));
     strncpy(cmd->cmd, (char *)cbor_string_handle(mitems[0].value),
                         (int)cbor_string_length(mitems[0].value));
@@ -197,6 +223,8 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
                         (int)cbor_string_length(mitems[1].key));
     fieldname[(int)cbor_string_length(mitems[1].key)] = 0;
     assert(strcmp(fieldname, "opt") == 0);
+
+    printf("3 \n");
 
     cmd->opt = calloc((int)cbor_string_length(mitems[1].value) +1, sizeof(char));
     strncpy(cmd->opt, (char *)cbor_string_handle(mitems[1].value),
@@ -207,6 +235,8 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
     fieldname[(int)cbor_string_length(mitems[2].key)] = 0;
     assert(strcmp(fieldname, "actname") == 0);
 
+    printf("4 \n");
+
     cmd->actname = calloc((int)cbor_string_length(mitems[2].value) +1, sizeof(char));
     strncpy(cmd->actname, (char *)cbor_string_handle(mitems[2].value),
                         (int)cbor_string_length(mitems[2].value));
@@ -215,15 +245,21 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
                         (int)cbor_string_length(mitems[3].key));
     fieldname[(int)cbor_string_length(mitems[3].key)] = 0;
     assert(strcmp(fieldname, "actid") == 0);
+
+    printf("5 \n");
+
     cmd->actid = cbor_get_uint64(mitems[3].value);
+    printf("5 %llu\n", cmd->actid);
 
     strncpy(fieldname, (const char *)cbor_string_handle(mitems[4].key),
                         (int)cbor_string_length(mitems[4].key));
+    printf("5 \n");
     fieldname[(int)cbor_string_length(mitems[4].key)] = 0;
     assert(strcmp(fieldname, "args") == 0);
 
+    printf("6 \n");
     cbor_item_t *arr = mitems[4].value;
-    cmd->nitems = cbor_array_size(arr);
+    cmd->nargs = cbor_array_size(arr);
     cmd->args = (arg_t *)calloc(cmd->length, sizeof(arg_t));
 
     if (fmt != NULL && strlen(fmt) != cmd->length) {
@@ -232,7 +268,7 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
     }
 
     // parse the array of args and fill in the local command structure..
-    for (i = 0; i < cmd->nitems; i++) {
+    for (i = 0; i < cmd->nargs; i++) {
 
         switch (cbor_typeof(&arr[i])) {
             case CBOR_TYPE_UINT:
@@ -297,8 +333,8 @@ void command_free(command_t *cmd)
     free(cmd->actname);
 
     // decrement the reference to the CBOR object..
-    if (cmd->item)
-        cbor_decref(&cmd->item);
+    if (cmd->cdata)
+        cbor_decref(&cmd->cdata);
     free(cmd->args);
     free(cmd);
 }
@@ -337,13 +373,13 @@ void command_print(command_t *cmd)
     printf("\nCommand buffer: ");
     for (i = 0; i < strlen((char *)cmd->buffer); i++)
         printf("%x", (int)cmd->buffer[i]);
-    printf("\nCommand number of args: %d\n", cmd->nitems);
+    printf("\nCommand number of args: %d\n", cmd->nargs);
 
-    for (i = 0; i < cmd->nitems; i++)
+    for (i = 0; i < cmd->nargs; i++)
         command_print_arg(&cmd->args[i]);
 
     printf("\n");
 
-    cbor_describe(cmd->item, stdout);
+    cbor_describe(cmd->cdata, stdout);
     printf("\n===================================\n");
 }

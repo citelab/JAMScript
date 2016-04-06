@@ -110,6 +110,7 @@ bool socket_create(socket_t *socket, char *host, int port)
 bool socket_connect(socket_t *socket, char *addr, int port)
 {
     char *url = socket_new_url(addr, port);
+    printf("Connecting to %s\n", url);
     assert(nn_connect(socket->sock_fd, url) >= 0);
     free(url);
 

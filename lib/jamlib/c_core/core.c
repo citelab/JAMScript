@@ -48,18 +48,21 @@ bool core_ping_jcore(char *hostname, int port, char *devid, int timeout)
     socket_t *sock = socket_new(SOCKET_REQU);
     socket_connect(sock, hostname, port);
     if (devid != NULL)
-        scmd = command_new("PING", "JCORE", "", 0, "s", devid);
+        scmd = command_new("PING", "JCORE", "", 10000000000000, "s", devid);
     else
-        scmd = command_new("PING", "JCORE", "", 0, "");
+        scmd = command_new("PING", "JCORE", "", 10000000000000, "");
 
     socket_send(sock, scmd);
     command_free(scmd);
-
+    printf("dfdsfsdf\n");
     command_t *rcmd = socket_recv_command(sock, timeout);
+    printf("dfdsfsdf\n");
     if (rcmd == NULL)
         return false;
     else
     {
+        printf("Got pong..\n");
+
         if (strcmp(rcmd->cmd, "PONG") == 0)
         {
             command_free(rcmd);
@@ -84,10 +87,11 @@ bool core_connect_to_fog(corestate_t *cstate, int timeout)
     int i;
     command_t *scmd;
 
+    printf("Core connect to Fog..\n");
     if (cstate->device_id)
-        scmd = command_new("REGISTER", "JCORE", "", 0, "s", cstate->device_id);
+        scmd = command_new("REGISTER", "JCORE", "", 10000000000000, "s", cstate->device_id);
     else
-        scmd = command_new("REGISTER", "JCORE", "", 0, "s", "--NEW-NODE--");
+        scmd = command_new("REGISTER", "JCORE", "", 10000000000000, "s", "--NEW-NODE--");
 
     for (i = 0; i < cstate->env->num_fog_servers; i++) {
 
@@ -131,7 +135,7 @@ bool core_connect_to_fog(corestate_t *cstate, int timeout)
             }
         }
     }
-
+    printf("Failed to connect...\n");
     // we failed to get a valid connection to a Fog.. so we fail
     return false;
 }
@@ -151,21 +155,26 @@ bool core_find_fog(corestate_t *cs, int timeout)
     int i, k, l;
     int responding[MAX_SERVERS];
 
+    printf("Finding the Fog.. \n");
     memset(responding, 0, MAX_SERVERS * sizeof(int));
 
     for (i = 0; i < cs->env->num_fog_servers; i++)  {
         int retries = cs->retries;
+        printf("Server count %d, Retries %d\n, server %s", cs->env->num_fog_servers, retries, cs->env->fog_servers[i]);
         while (retries-- > 0) {
             if (core_ping_jcore(cs->env->fog_servers[i], REQUEST_PORT, cs->device_id, timeout))
                 responding[i] = 1;
         }
     }
 
+    printf("Finding count \n");
     int count = 0;
     for (i = 0; i < cs->env->num_fog_servers; i++)
         count += responding[i];
     if (count == 0)
         return false;
+
+    printf("Some Fog servers found.. %d\n", count);
 
     if (count < cs->env->num_fog_servers) {
         // Rearrange the server list.. some servers are not responding..
@@ -261,6 +270,10 @@ corestate_t *core_init(int timeout)
     cs->env = get_environ();
     assert(cs->env != NULL);
 
+    // Set some default parameters..
+    cs->retries = 3;
+
+
     printf("Calling do init \n");
     return core_do_init(cs, timeout);
 }
@@ -292,7 +305,7 @@ corestate_t *core_do_init(corestate_t *cs, int timeout)
         }
         else
         {
-            printf("ERROR!! Unable to connect to cloud.. \n");
+            printf("WARNING! Unable to connect to cloud.. \n");
             return NULL;
         }
     }
