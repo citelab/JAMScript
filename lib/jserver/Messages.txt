@@ -1,0 +1,32 @@
+Message formats
+
+TODO: Remove actname from messages. Not needed.
+
+
+PING    source        deviceID (64 bit)
+    source could be DEVICE, CLOUD, or FOG
+
+    PONG    ...
+        always a reply to PING
+
+REGISTER    source       deviceID (64 bit)
+    source could be DEVICE, CLOUD, or FOG
+
+    REGISTER    ACK     deviceID (64 bit)
+
+DE-REGISTER     source       deviceID (64 bit)
+    source could be DEVICE, CLOUD, or FOG
+
+    DE-REGISTER ACK     deviceID
+
+
+REXEC   type    actid (64 bit)
+    type could be SYNC or ASYNC
+
+    REXEC ACK|NACK  actid       args: leaseval (milliseconds)
+
+
+RKILL   source    actid (64 bit)
+    source could be DEVICE, CLOUD, or FOG (only DEVICE for now)
+
+    RKILL ACK|NACK actid    args: return-code
