@@ -41,9 +41,10 @@ jamstate_t *jam_init()
 {
     jamstate_t *js = (jamstate_t *)calloc(1, sizeof(jamstate_t));
 
+
     // TODO: Remove the hardcoded timeout values
     // 200 milliseconds timeout now set
-    js->cstate = core_init(1000);
+    js->cstate = core_init(10000);
     if (js->cstate == NULL)
     {
         printf("ERROR!! Core Init Failed. Exiting.\n");
@@ -52,6 +53,8 @@ jamstate_t *jam_init()
 
     // Callback initialization
     js->callbacks = callbacks_new();
+    js->atable = activity_table_new();
+    printf("Hi\n");
 
     // Queue initialization
     // globalinq is used by the main thread for input purposes
@@ -59,7 +62,11 @@ jamstate_t *jam_init()
     js->atable->globalinq = queue_new(true);
     js->atable->globaloutq = queue_new(true);
 
+    printf("Hi\n");
     bzero(&(js->atable->globalsem), sizeof(Rendez));
+
+    // create the worker thread..
+    jam_create_bgthread(js);
 
     // Start the event loop in another thread.. with cooperative threads.. we
     // to yield for that thread to start running
@@ -288,7 +295,7 @@ void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     bool processed = false;
     command_t *rcmd;
 
-    for (i = 0; i < js->cstate->retries; i++)
+    for (i = 0; i < js->cstate->conf->retries; i++)
     {
         queue_enq(jact->outq, cmd->buffer, cmd->length);
         tasksleep(&(jact->sem));
@@ -361,7 +368,7 @@ void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     // TODO: How to delete an async activity that was timedout?
 }
 
-void jam_set_timer(jamstate_t *js, uint64_t actid, int timerval)
+void jam_set_timer(jamstate_t *js, char *actid, int timerval)
 {
 
 
@@ -376,6 +383,8 @@ int jam_get_timer_from_reply(command_t *cmd)
 
 void taskmain(int argc, char **argv)
 {
-    jamstate_t *js = jam_init();
+    // jamstate_t *js = jam_init();
+    jam_init();
+
     return;
 }

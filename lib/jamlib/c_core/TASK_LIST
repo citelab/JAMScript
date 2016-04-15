@@ -1,0 +1,13 @@
+
+= Debug Registration step
+= Get the port number and store it
+
+= Connect to the service at the given port number
+
+= Try multiple devices
+
+= PING/PONG is the heartbeat of the system
+
+= Disconnect and reconnect of the devices
+
+=

@@ -64,6 +64,7 @@ typedef struct _temprecord_t
 
 
 jamstate_t *jam_init();
+bool jam_create_bgthread(jamstate_t *js);
 bool jam_exit(jamstate_t *js);
 void jam_event_loop(void *js);
 bool jam_core_ready(jamstate_t *js);
@@ -89,10 +90,10 @@ void jamworker_process_subsock(jamstate_t *js);
 void jamworker_process_respsock(jamstate_t *js);
 void jamworker_process_globaloutq(jamstate_t *js);
 void jamworker_process_actoutq(jamstate_t *js, int indx);
-command_t *jamworker_activity_status(jamstate_t *js, uint64_t indx);
+command_t *jamworker_activity_status(jamstate_t *js, char *indx);
 command_t *jamworker_device_status(jamstate_t *js);
 
-void jam_set_timer(jamstate_t *js, uint64_t actid, int timerval);
+void jam_set_timer(jamstate_t *js, char *actid, int timerval);
 int jam_get_timer_from_reply(command_t *cmd);
 
 #endif  /* __JAMLIB_H__ */

@@ -55,7 +55,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * format - s (string), i (integer) f,d for float/double - no % (e.g., "si")
  *
  */
-command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, uint64_t actid,
+command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, char *actid,
                                 cbor_item_t *arr, arg_t *args, int nargs)
 {
 
@@ -67,7 +67,7 @@ command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, uin
     cmdo->cmd = strdup(cmd);
     cmdo->opt = strdup(opt);
     cmdo->actname = strdup(actname);
-    cmdo->actid = actid;
+    cmdo->actid = strdup(actid);
 
     cmdo->args = args;
     cmdo->nargs = nargs;
@@ -101,7 +101,7 @@ command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, uin
     // Add the actid field to the map
     cbor_map_add(rmap, (struct cbor_pair) {
         .key = cbor_move(cbor_build_string("actid")),
-        .value = cbor_move(cbor_build_uint64(actid))
+        .value = cbor_move(cbor_build_string(actid))
     });
 
     // Add the args field to the map
@@ -123,7 +123,7 @@ command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, uin
  * Reusing the previous command encoder..
  *
  */
-command_t *command_new(const char *cmd, char *opt, char *actname, uint64_t actid, const char *fmt, ...)
+command_t *command_new(const char *cmd, char *opt, char *actname, char *actid, const char *fmt, ...)
 {
     va_list args;
     nvoid_t *nv;
@@ -174,7 +174,7 @@ command_t *command_new(const char *cmd, char *opt, char *actname, uint64_t actid
     va_end(args);
 
     command_t *c = command_new_using_cbor(cmd, opt, actname, actid, arr, qargs, i);
-    command_print(c);
+//    command_print(c);
     return c;
 }
 
@@ -248,71 +248,82 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
 
     printf("5 \n");
 
-    cmd->actid = cbor_get_uint64(mitems[3].value);
-    printf("5 %llu\n", cmd->actid);
+    cmd->actid = calloc((int)cbor_string_length(mitems[3].value) +1, sizeof(char));
+    strncpy(cmd->actid, (char *)cbor_string_handle(mitems[3].value),
+                        (int)cbor_string_length(mitems[3].value));
 
     strncpy(fieldname, (const char *)cbor_string_handle(mitems[4].key),
                         (int)cbor_string_length(mitems[4].key));
-    printf("5 \n");
+    printf("6 \n");
     fieldname[(int)cbor_string_length(mitems[4].key)] = 0;
     assert(strcmp(fieldname, "args") == 0);
 
-    printf("6 \n");
     cbor_item_t *arr = mitems[4].value;
     cmd->nargs = cbor_array_size(arr);
-    cmd->args = (arg_t *)calloc(cmd->length, sizeof(arg_t));
+    cmd->args = (arg_t *)calloc(cmd->nargs, sizeof(arg_t));
 
-    if (fmt != NULL && strlen(fmt) != cmd->length) {
+    printf("6 cmd-length %d, nargs %d\n", cmd->length, cmd->nargs);
+
+    if (fmt != NULL && strlen(fmt) != cmd->nargs) {
         printf("ERROR! Message does not match the validation specification\n");
         return NULL;
     }
-
+    cbor_item_t **arrl = cbor_array_handle(arr);
     // parse the array of args and fill in the local command structure..
     for (i = 0; i < cmd->nargs; i++) {
-
-        switch (cbor_typeof(&arr[i])) {
+        printf("Processing arg \n");
+        switch (cbor_typeof(arrl[i])) {
             case CBOR_TYPE_UINT:
+                printf("Int \n");
                 if (fmt != NULL && fmt[i] != 'i') {
                     printf("ERROR! Message does not match the validation specification\n");
                     return NULL;
                 }
                 cmd->args[i].type = INT_TYPE;
-                cmd->args[i].val.ival = cbor_get_uint32(&arr[i]);
+                cmd->args[i].val.ival = cbor_get_uint32(arrl[i]);
                 break;
 
             case CBOR_TYPE_NEGINT:
+                printf("Neg. Int \n");
                 if (fmt != NULL && fmt[i] != 'i') {
                     printf("ERROR! Message does not match the validation specification\n");
                     return NULL;
                 }
                 cmd->args[i].type = INT_TYPE;
-                cmd->args[i].val.ival = -1 * cbor_get_uint32(&arr[i]);
+                cmd->args[i].val.ival = -1 * cbor_get_uint32(arrl[i]);
                 break;
 
             case CBOR_TYPE_STRING:
+                printf("String \n");
                 if (fmt != NULL && fmt[i] != 's') {
                     printf("ERROR! Message does not match the validation specification\n");
                     return NULL;
                 }
+                char *str = (char *)malloc(cbor_string_length(arrl[i]));
+                strncpy(str, (const char *)cbor_string_handle(arrl[i]),
+                                    (int)cbor_string_length(arrl[i]));
                 cmd->args[i].type = STRING_TYPE;
-                cmd->args[i].val.sval = (char *)cbor_string_handle(&arr[i]);
+                printf("============ String %s, len %d\n", str, (int)cbor_string_length(arrl[i]));
+                cmd->args[i].val.sval = str;
                 break;
 
             case CBOR_TYPE_FLOAT_CTRL:
+                printf("Float \n");
                 if (fmt != NULL && fmt[i] != 'd') {
                     printf("ERROR! Message does not match the validation specification\n");
                     return NULL;
                 }
                 cmd->args[i].type = DOUBLE_TYPE;
-                cmd->args[i].val.dval = cbor_float_get_float8(&arr[i]);
+                cmd->args[i].val.dval = cbor_float_get_float8(arrl[i]);
                 break;
             case CBOR_TYPE_BYTESTRING:
+                printf("Bytestring. \n");
                 if (fmt != NULL && fmt[i] != 'n') {
                     printf("ERROR! Message does not match the validation specification\n");
                     return NULL;
                 }
                 cmd->args[i].type = NVOID_TYPE;
-                cmd->args[i].val.nval = nvoid_new(cbor_bytestring_handle(&arr[i]), cbor_bytestring_length(&arr[i]));
+                cmd->args[i].val.nval = nvoid_new(cbor_bytestring_handle(arrl[i]), cbor_bytestring_length(arrl[i]));
                 break;
             default:
                 // Nothing to do for the CBOR types - at least for now
@@ -332,6 +343,8 @@ void command_free(command_t *cmd)
     free(cmd->opt);
     free(cmd->actname);
 
+    free(cmd->actid);
+
     // decrement the reference to the CBOR object..
     if (cmd->cdata)
         cbor_decref(&cmd->cdata);
@@ -345,13 +358,13 @@ void command_print_arg(arg_t *arg)
     printf("\t\t");
     switch(arg->type) {
         case INT_TYPE:
-            printf(" %d ", arg->val.ival);
+            printf("Int: %d ", arg->val.ival);
             break;
         case STRING_TYPE:
-            printf(" %s ", arg->val.sval);
+            printf("String: %s ", arg->val.sval);
             break;
         case DOUBLE_TYPE:
-            printf(" %f ", arg->val.dval);
+            printf("Double: %f ", arg->val.dval);
             break;
         default:
             break;
@@ -370,6 +383,8 @@ void command_print(command_t *cmd)
     printf("\nCommand cmd: %s\n", cmd->cmd);
     printf("\nCommand opt: %s\n", cmd->opt);
     printf("\nCommand activity name: %s\n", cmd->actname);
+    printf("\nCommand activity id: %s\n", cmd->actid);    
+
     printf("\nCommand buffer: ");
     for (i = 0; i < strlen((char *)cmd->buffer); i++)
         printf("%x", (int)cmd->buffer[i]);

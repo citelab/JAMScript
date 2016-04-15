@@ -258,7 +258,7 @@ void jamworker_process_actoutq(jamstate_t *js, int indx)
     }
 }
 
-command_t *jamworker_activity_status(jamstate_t *js, uint64_t indx)
+command_t *jamworker_activity_status(jamstate_t *js, char *indx)
 {
     // Get the status of the activity
     jactivity_t *jact = activity_getbyid(js->atable, indx);
@@ -282,5 +282,5 @@ command_t *jamworker_activity_status(jamstate_t *js, uint64_t indx)
 command_t *jamworker_device_status(jamstate_t *js)
 {
     // Get the number of activities running on the device
-    return command_new("REPORT", "DEVICE", "", 10000000000000, "i", js->atable->numactivities);
+    return command_new("REPORT", "DEVICE", "", "10000000000000", "i", js->atable->numactivities);
 }

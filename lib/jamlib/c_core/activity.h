@@ -56,7 +56,7 @@ typedef struct _jactivity_t
 {
     enum activity_state_t state;
     char name[MAX_NAME_LEN];
-    uint64_t actid;
+    char *actid;
     nvoid_t *code;
     Rendez  sem;
     simplequeue_t *inq;
@@ -95,6 +95,8 @@ typedef struct _activitytable_t
 //
 // Function prototypes..
 //
+
+char *activity_gettime();
 activitytable_t *activity_table_new();
 void activity_table_print(activitytable_t *at);
 
@@ -106,8 +108,8 @@ void activity_reg_print(activity_registry_t *areg);
 void activity_print(jactivity_t *ja);
 
 jactivity_t *activity_new(activitytable_t *atbl, char *name);
-jactivity_t *activity_getbyid(activitytable_t *at, uint64_t actid);
-uint64_t activity_getid(jactivity_t *jact);
+jactivity_t *activity_getbyid(activitytable_t *at, char *actid);
+char *activity_getid(jactivity_t *jact);
 char *activity_getname(jactivity_t *jact);
 
 void activity_start(jactivity_t *act);

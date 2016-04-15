@@ -1,3 +1,42 @@
+April 13th
+==========
+    = Actid should be string - microseconds from Epoch for the creation time.
+    = Device_id is the APPNAME|DEVICE_NAME - this should be unique. Otherwise
+      we should have used the make unique flag to get the system append the correct
+      sequence number to it. APPNAME|DEVICE_NAME|creation time (ms).
+
+    = We need to save the registration locally.. use mydb as the persistant store.
+
+    = Use APP_NAME and DEVICE_NAME to come up with a unique device_id
+    = REGISTER the device with the device_id to get the PORT number; we talk to Common
+      registration ports (one or few) to the private port number.
+    = Device keeps talking to the private REQREP port after registration.
+    = If the private REQREP port is unresponsive the device will try to re-initialize the
+      registration; otherwise, it keeps working with the private port.
+
+    = Register is the first step. Ping before Registration is not meaningful.
+
+
+
+April 12th
+==========
+    = Device ID is not properly handled
+    = Cloud connection not tested - connecting through the cloud
+    =
+
+
+
+April 7th
+=========
+    = Complete the PING and REGISTER components
+    = Both should work with Req/Rep sockets
+
+    = Get the publish and survey sockets working
+    = Get the Remote execution working..
+
+
+==============
+
 = Load the necessary modules
 = Setup the publish-subscribe socket
 = Setup the survey socket

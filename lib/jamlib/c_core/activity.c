@@ -33,10 +33,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "nvoid.h"
 
 
-uint64_t activity_gettime()
+char *activity_gettime()
 {
+    char buf[64];
     #ifdef __APPLE__
-    return mach_absolute_time();
+    sprintf(buf, "%llu", mach_absolute_time());
+    return strdup(buf);
     #endif
 
     // TODO: Implement the timer capture for linux.
@@ -90,7 +92,7 @@ void activity_reg_print(activity_registry_t *areg)
 void activity_print(jactivity_t *ja)
 {
     printf("\n");
-    printf("Activity ID: %llu\n", ja->actid);
+    printf("Activity ID: %s\n", ja->actid);
     printf("Activity state: %d\n", ja->state);
     printf("Activity name: %s\n", ja->name);
     nvoid_print(ja->code);
@@ -197,7 +199,7 @@ jactivity_t *activity_new(activitytable_t *at, char *name)
 }
 
 
-jactivity_t *activity_getbyid(activitytable_t *at, uint64_t actid)
+jactivity_t *activity_getbyid(activitytable_t *at, char *actid)
 {
     int i;
 
@@ -227,7 +229,7 @@ void activity_del(activitytable_t *at, jactivity_t *jact)
 }
 
 
-uint64_t activity_getid(jactivity_t *jact)
+char *activity_getid(jactivity_t *jact)
 {
     return jact->actid;
 }
