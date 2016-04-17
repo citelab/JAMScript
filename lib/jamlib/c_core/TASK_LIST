@@ -1,8 +1,11 @@
 
-= Debug Registration step
-= Get the port number and store it
+= Get different port numbers from Registration
+    = Port numbers should be based on the devidrcd..
 
-= Connect to the service at the given port number
+= Open new or not working services
+
+= Connect to the service and check whether it is working.. we need
+  use a PING/PONG service.
 
 = Try multiple devices
 
@@ -10,5 +13,11 @@
 
 = Disconnect and reconnect of the devices
 
+= Get REXEC working:
+
 = Call from Device to J-core
 = Call from J-core to single device, multiple devices, etc
+
+= Check fault tolerance...
+
+= We need to store state at the server side too! This is another headache!

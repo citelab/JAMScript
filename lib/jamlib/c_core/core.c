@@ -213,8 +213,9 @@ void core_register_at_fog(corestate_t *cs, int timeout)
                     database_put_int(cs->conf->db, "REQREP_PORT", cs->conf->port);
                     cs->conf->registered = 1;
                     database_put_int(cs->conf->db, "REGISTERED", cs->conf->registered);
-                    database_put_string(cs->conf->db, "MY_FOG_SERVER", cs->conf->fog_servers[i]);
                     cs->conf->my_fog_server = cs->conf->fog_servers[i];
+                    database_put_string(cs->conf->db, "MY_FOG_SERVER", cs->conf->my_fog_server);
+
                     return;
                 }
                 else
@@ -236,10 +237,16 @@ void core_register_at_fog(corestate_t *cs, int timeout)
                     database_put_int(cs->conf->db, "REQREP_PORT", cs->conf->port);
                     cs->conf->registered = 1;
                     database_put_int(cs->conf->db, "REGISTERED", cs->conf->registered);
+                    cs->conf->my_fog_server = cs->conf->fog_servers[i];
+                    database_put_string(cs->conf->db, "MY_FOG_SERVER", cs->conf->my_fog_server);
 
                     // Get the new device ID and store it as well..
                     if (rcmd->args[1].val.sval != NULL)
+                    {
                         cs->conf->device_id = strdup(rcmd->args[1].val.sval);
+                        database_put_string(cs->conf->db, "DEVICE_ID", cs->conf->device_id);
+                    }
+
 
                     return;
                 }

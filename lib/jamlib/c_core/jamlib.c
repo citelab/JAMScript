@@ -72,6 +72,8 @@ jamstate_t *jam_init()
     // to yield for that thread to start running
     taskcreate(jam_event_loop, js, STACKSIZE);
 
+    printf("End of Jam-lib\n");
+
     return js;
 }
 
@@ -386,5 +388,6 @@ void taskmain(int argc, char **argv)
     // jamstate_t *js = jam_init();
     jam_init();
 
+    printf("Done jam init..\n");
     return;
 }
