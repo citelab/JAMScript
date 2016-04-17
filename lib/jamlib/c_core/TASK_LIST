@@ -10,4 +10,5 @@
 
 = Disconnect and reconnect of the devices
 
-=
+= Call from Device to J-core
+= Call from J-core to single device, multiple devices, etc

@@ -71,3 +71,12 @@ mydbiter_t *get_iterator(mydb_t *db);
 void destroy_iterator(mydbiter_t *dbi);
 bool get_next_record(mydbiter_t *dbi, char *key, void *data);
 bool del_prev_record(mydbiter_t *dbi);
+
+// IMPORTANT - the above methods deal with the database with fixed sized
+// Key and value chunks. This may not work depending on the data and key lengths
+// we have a for particular scenario
+
+char *database_get_string(mydb_t *db, char *k);
+int database_get_int(mydb_t *db, char *k);
+void database_put_string(mydb_t *db, char *k, char *d);
+void database_put_int(mydb_t *db, char *k, int d);

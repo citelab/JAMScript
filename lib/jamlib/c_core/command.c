@@ -39,6 +39,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <cbor.h>
 
 #include "command.h"
+#include "cborutils.h"
 
 /*
  * Return a command in CBOR format (as an unsigned char array) that can be sent out..
@@ -189,7 +190,6 @@ command_t *command_new(const char *cmd, char *opt, char *actname, char *actid, c
 command_t *command_from_data(char *fmt, nvoid_t *data)
 {
     int i;
-    char fieldname[64];
     struct cbor_load_result result;
 
     command_t *cmd = (command_t *)calloc(1, sizeof(command_t));
@@ -209,54 +209,29 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
 
     struct cbor_pair *mitems = cbor_map_handle(cmd->cdata);
 
-    strncpy(fieldname, (const char *)cbor_string_handle(mitems[0].key),
-                        (int)cbor_string_length(mitems[0].key));
-    fieldname[(int)cbor_string_length(mitems[0].key)] = 0;
-    assert(strcmp(fieldname, "cmd") == 0);
+    cbor_assert_field_string(mitems[0].key, "cmd");
+    cmd->cmd = cbor_get_string(mitems[0].value);
 
     printf("2 \n");
-    cmd->cmd = calloc((int)cbor_string_length(mitems[0].value) +1, sizeof(char));
-    strncpy(cmd->cmd, (char *)cbor_string_handle(mitems[0].value),
-                        (int)cbor_string_length(mitems[0].value));
 
-    strncpy(fieldname, (const char *)cbor_string_handle(mitems[1].key),
-                        (int)cbor_string_length(mitems[1].key));
-    fieldname[(int)cbor_string_length(mitems[1].key)] = 0;
-    assert(strcmp(fieldname, "opt") == 0);
+    cbor_assert_field_string(mitems[1].key, "opt");
+    cmd->opt = cbor_get_string(mitems[1].value);
 
     printf("3 \n");
 
-    cmd->opt = calloc((int)cbor_string_length(mitems[1].value) +1, sizeof(char));
-    strncpy(cmd->opt, (char *)cbor_string_handle(mitems[1].value),
-                        (int)cbor_string_length(mitems[1].value));
-
-    strncpy(fieldname, (const char *)cbor_string_handle(mitems[2].key),
-                        (int)cbor_string_length(mitems[2].key));
-    fieldname[(int)cbor_string_length(mitems[2].key)] = 0;
-    assert(strcmp(fieldname, "actname") == 0);
+    cbor_assert_field_string(mitems[2].key, "actname");
+    cmd->actname = cbor_get_string(mitems[2].value);
 
     printf("4 \n");
 
-    cmd->actname = calloc((int)cbor_string_length(mitems[2].value) +1, sizeof(char));
-    strncpy(cmd->actname, (char *)cbor_string_handle(mitems[2].value),
-                        (int)cbor_string_length(mitems[2].value));
-
-    strncpy(fieldname, (const char *)cbor_string_handle(mitems[3].key),
-                        (int)cbor_string_length(mitems[3].key));
-    fieldname[(int)cbor_string_length(mitems[3].key)] = 0;
-    assert(strcmp(fieldname, "actid") == 0);
+    cbor_assert_field_string(mitems[3].key, "actid");
+    cmd->actid = cbor_get_string(mitems[3].value);
 
     printf("5 \n");
 
-    cmd->actid = calloc((int)cbor_string_length(mitems[3].value) +1, sizeof(char));
-    strncpy(cmd->actid, (char *)cbor_string_handle(mitems[3].value),
-                        (int)cbor_string_length(mitems[3].value));
+    cbor_assert_field_string(mitems[4].key, "args");
 
-    strncpy(fieldname, (const char *)cbor_string_handle(mitems[4].key),
-                        (int)cbor_string_length(mitems[4].key));
     printf("6 \n");
-    fieldname[(int)cbor_string_length(mitems[4].key)] = 0;
-    assert(strcmp(fieldname, "args") == 0);
 
     cbor_item_t *arr = mitems[4].value;
     cmd->nargs = cbor_array_size(arr);
@@ -274,23 +249,13 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
         printf("Processing arg \n");
         switch (cbor_typeof(arrl[i])) {
             case CBOR_TYPE_UINT:
-                printf("Int \n");
-                if (fmt != NULL && fmt[i] != 'i') {
-                    printf("ERROR! Message does not match the validation specification\n");
-                    return NULL;
-                }
-                cmd->args[i].type = INT_TYPE;
-                cmd->args[i].val.ival = cbor_get_uint32(arrl[i]);
-                break;
-
             case CBOR_TYPE_NEGINT:
-                printf("Neg. Int \n");
                 if (fmt != NULL && fmt[i] != 'i') {
                     printf("ERROR! Message does not match the validation specification\n");
                     return NULL;
                 }
                 cmd->args[i].type = INT_TYPE;
-                cmd->args[i].val.ival = -1 * cbor_get_uint32(arrl[i]);
+                cmd->args[i].val.ival = cbor_get_integer(arrl[i]);
                 break;
 
             case CBOR_TYPE_STRING:
@@ -299,12 +264,8 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
                     printf("ERROR! Message does not match the validation specification\n");
                     return NULL;
                 }
-                char *str = (char *)malloc(cbor_string_length(arrl[i]));
-                strncpy(str, (const char *)cbor_string_handle(arrl[i]),
-                                    (int)cbor_string_length(arrl[i]));
                 cmd->args[i].type = STRING_TYPE;
-                printf("============ String %s, len %d\n", str, (int)cbor_string_length(arrl[i]));
-                cmd->args[i].val.sval = str;
+                cmd->args[i].val.sval = cbor_get_string(arrl[i]);
                 break;
 
             case CBOR_TYPE_FLOAT_CTRL:
@@ -383,7 +344,7 @@ void command_print(command_t *cmd)
     printf("\nCommand cmd: %s\n", cmd->cmd);
     printf("\nCommand opt: %s\n", cmd->opt);
     printf("\nCommand activity name: %s\n", cmd->actname);
-    printf("\nCommand activity id: %s\n", cmd->actid);    
+    printf("\nCommand activity id: %s\n", cmd->actid);
 
     printf("\nCommand buffer: ");
     for (i = 0; i < strlen((char *)cmd->buffer); i++)

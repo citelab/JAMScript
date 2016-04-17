@@ -66,21 +66,6 @@ coreconf_t *coreconf_get()
 }
 
 
-#define new_buffer(x)           (char *)calloc(x, sizeof(char))
-void recover_string_data(mydb_t *db, char *key, char **data)
-{
-    *data = new_buffer(db->state.datalen);
-    database_get(db, key, *data);
-}
-
-void recover_int_data(mydb_t *db, char *key, int *data)
-{
-    database_get(db, key, data);
-}
-
-
-
-
 
 bool coreconf_recover(coreconf_t *conf)
 {
@@ -92,32 +77,38 @@ bool coreconf_recover(coreconf_t *conf)
         return false;
 
     // Now recover the configure data
-    recover_string_data(conf->db, "APP_NAME", &conf->app_name);
-    recover_string_data(conf->db, "DEVICE_NAME", &conf->device_name);
-    recover_string_data(conf->db, "DEVICE_ID", &conf->device_id);
+    conf->app_name = database_get_string(conf->db, "APP_NAME");
+    conf->device_name = database_get_string(conf->db, "DEVICE_NAME");
+    conf->device_id = database_get_string(conf->db, "DEVICE_ID");
+    conf->retries = database_get_int(conf->db, "RETRIES");
 
-    recover_int_data(conf->db, "NUM_FOG_SERVERS", &conf->num_fog_servers);
-    recover_int_data(conf->db, "NUM_CLOUD_SERVERS", &conf->num_cloud_servers);
+    printf("Hooo\n");
+    conf->num_fog_servers = database_get_int(conf->db, "NUM_FOG_SERVERS");
+    printf("Hooo\n");
+    fflush(stdout);
+    conf->num_cloud_servers = database_get_int(conf->db, "NUM_CLOUD_SERVERS");
+    printf("Hooo 2\n");
 
     for (i = 0; i < conf->num_fog_servers; i++)
     {
         char key[128];
         sprintf(key, "FOG_SERVERS(%d)", i);
-        recover_string_data(conf->db, key, &conf->fog_servers[i]);
+        conf->fog_servers[i] = database_get_string(conf->db, key);
     }
 
+    printf("Hooo 3\n");
     for (i = 0; i < conf->num_cloud_servers; i++)
     {
         char key[128];
         sprintf(key, "CLOUD_SERVERS(%d)", i);
-        recover_string_data(conf->db, key, &conf->cloud_servers[i]);
+        conf->cloud_servers[i] = database_get_string(conf->db, key);
     }
-
-    recover_int_data(conf->db, "REGISTERED", &conf->registered);
+    printf("Hooo 4\n");
+    conf->registered = database_get_int(conf->db, "REGISTERED");
     if (conf->registered)
     {
-        recover_int_data(conf->db, "REQREP_PORT", &conf->registered);
-        recover_string_data(conf->db, "MY_FOG_SERVER", &conf->my_fog_server);
+        conf->port = database_get_int(conf->db, "REQREP_PORT");
+        conf->my_fog_server = database_get_string(conf->db, "MY_FOG_SERVER");
     }
 
     // TODO: Add new portion of the configuration here..
@@ -203,28 +194,28 @@ coreconf_t *coreconf_make(coreconf_t *conf)
     if (conf->db == 0)
         return false;
 
-    database_put(conf->db, "APP_NAME", conf->app_name);
-    database_put(conf->db, "DEVICE_NAME", conf->device_name);
-    database_put(conf->db, "DEVICE_ID", conf->device_id);
-    database_put(conf->db, "RETRIES", &conf->retries);
+    database_put_string(conf->db, "APP_NAME", conf->app_name);
+    database_put_string(conf->db, "DEVICE_NAME", conf->device_name);
+    database_put_string(conf->db, "DEVICE_ID", conf->device_id);
+    database_put_int(conf->db, "RETRIES", conf->retries);
 
-    database_put(conf->db, "NUM_FOG_SERVERS", (void *)&conf->num_fog_servers);
+    database_put_int(conf->db, "NUM_FOG_SERVERS", conf->num_fog_servers);
     for (i = 0; i < conf->num_fog_servers; i++)
     {
         char tempkey[128];
         sprintf(tempkey, "FOG_SERVERS(%d)", i);
-        database_put(conf->db, tempkey, conf->fog_servers[i]);
+        database_put_string(conf->db, tempkey, conf->fog_servers[i]);
     }
 
-    database_put(conf->db, "NUM_CLOUD_SERVERS", (void *)&conf->num_cloud_servers);
+    database_put_int(conf->db, "NUM_CLOUD_SERVERS", conf->num_cloud_servers);
     for (i = 0; i < conf->num_cloud_servers; i++)
     {
         char tempkey[128];
         sprintf(tempkey, "CLOUD_SERVERS(%d)", i);
-        database_put(conf->db, tempkey, conf->cloud_servers[i]);
+        database_put_string(conf->db, tempkey, conf->cloud_servers[i]);
     }
 
-    database_put_sync(conf->db, "REGISTERED", (void *)&conf->registered);
+    database_put_int(conf->db, "REGISTERED", conf->registered);
 
     return conf;
 }
@@ -233,5 +224,5 @@ coreconf_t *coreconf_make(coreconf_t *conf)
 void register_coreconf(coreconf_t *cc)
 {
     cc->registered = 1;
-    database_put_sync(cc->db, "REGISTERED", (void *)&cc->registered);
+    database_put_int(cc->db, "REGISTERED", cc->registered);
 }

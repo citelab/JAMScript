@@ -471,3 +471,50 @@ bool del_prev_record(mydbiter_t *dbi)
     else
         return false;
 }
+
+
+
+#define new_buffer(x)           (char *)calloc(x, sizeof(char))
+char *database_get_string(mydb_t *db, char *k)
+{
+    char *data = new_buffer(db->state.datalen);
+    char *key = new_buffer(db->state.keylen);
+    strcpy(key, k);
+    database_get(db, key, data);
+    free(key);
+    return data;
+}
+
+int database_get_int(mydb_t *db, char *k)
+{
+    char *data = new_buffer(db->state.datalen);
+    char *key = new_buffer(db->state.keylen);
+    strcpy(key, k);
+    database_get(db, key, data);
+    free(key);
+    int idata = *((int *)data);
+    free(data);
+    return idata;
+}
+
+void database_put_string(mydb_t *db, char *k, char *d)
+{
+    char *data = new_buffer(db->state.datalen);
+    char *key = new_buffer(db->state.keylen);
+    strcpy(key, k);
+    strcpy(data, d);
+    database_put(db, key, data);
+    free(data);
+    free(key);
+}
+
+void database_put_int(mydb_t *db, char *k, int d)
+{
+    char *data = new_buffer(db->state.datalen);
+    char *key = new_buffer(db->state.keylen);
+    strcpy(key, k);
+    memcpy(data, &d, sizeof(int));
+    database_put(db, key, data);
+    free(data);
+    free(key);
+}

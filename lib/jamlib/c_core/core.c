@@ -34,10 +34,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 corestate_t *core_init(int timeout)
 {
+    printf("Core init..\n");
     // create the core state structure..
     corestate_t *cs = (corestate_t *)calloc(1, sizeof(corestate_t));
     // get core configuration
+
+    printf("Before core init\n");
     cs->conf = coreconf_get();
+    printf("After conf get\n");
     if (cs->conf == NULL)
     {
         printf("ERROR!! Unable to create or recover configuration.\n");
@@ -45,11 +49,14 @@ corestate_t *core_init(int timeout)
     }
 
 
+    printf("Hi 1 .. %d\n", cs->conf->registered);
     if (!cs->conf->registered)
         core_do_register(cs, timeout);
 
+    printf("Hi 2\n");
     if (cs->conf->registered)
     {
+        printf("Connecting...\n");
         if (!core_do_connect(cs, timeout))
         {
             printf("ERROR!! Unable to connect to the Fog.\n");
@@ -62,6 +69,7 @@ corestate_t *core_init(int timeout)
         exit(1);
     }
 
+    printf("At the end..\n");
     return cs;
 }
 
@@ -76,13 +84,17 @@ void core_do_register(corestate_t *cs, int timeout)
 {
     int i;
 
+    printf("Hii.... %d \n", cs->conf->registered);
     for (i = 0; i < cs->conf->retries; i++)
     {
+        printf("Do reg at fog \n");
         core_register_at_fog(cs, timeout);
+        printf("Registered .. %d\n", cs->conf->registered);
         if (cs->conf->registered)
             return;
     }
-
+    printf("Hii ==== %d\n", cs->conf->retries);
+    // TODO: Segfault below.. in the function??
     if (core_find_fog_from_cloud(cs, timeout)) {
 
         for (i = 0; i < cs->conf->retries; i++)
@@ -166,17 +178,24 @@ void core_register_at_fog(corestate_t *cs, int timeout)
     int i;
     command_t *scmd;
 
+    printf("Params\n");
+    printf("Appname %s\n", cs->conf->app_name);
+    printf("Device name %s\n", cs->conf->device_name);
+    printf("Deviceid %s\n", cs->conf->device_id);
+
     scmd = command_new("REGISTER", "DEVICE", cs->conf->app_name, cs->conf->device_name, "s", cs->conf->device_id);
 
+    printf("Fog servers %d\n", cs->conf->num_fog_servers);
     for (i = 0; i < cs->conf->num_fog_servers; i++) {
-
+        printf("..\n");
         // create a request-reply socket
         socket_t *sock = socket_new(SOCKET_REQU);
         socket_connect(sock, cs->conf->fog_servers[i], REQUEST_PORT);
         socket_send(sock, scmd);
-
+        printf("Waiting to receive...\n");
         command_t *rcmd = socket_recv_command(sock, timeout);
-        socket_free(sock);
+        printf("Got...\n");
+
         if (rcmd == NULL)
         {
             command_free(rcmd);
@@ -187,12 +206,15 @@ void core_register_at_fog(corestate_t *cs, int timeout)
             if (strcmp(rcmd->cmd, "REGISTERED") == 0 &&
                 strcmp(rcmd->opt, "ORI") == 0)
             {
+                printf("Got registered ori.. \n");
                 if (rcmd->nargs > 0 && rcmd->args[0].type == INT_TYPE)
                 {
                     cs->conf->port = rcmd->args[0].val.ival;
-                    database_put(cs->conf->db, "REQREP_PORT", &cs->conf->port);
+                    database_put_int(cs->conf->db, "REQREP_PORT", cs->conf->port);
                     cs->conf->registered = 1;
-                    database_put_sync(cs->conf->db, "REGISTERED", &cs->conf->registered);
+                    database_put_int(cs->conf->db, "REGISTERED", cs->conf->registered);
+                    database_put_string(cs->conf->db, "MY_FOG_SERVER", cs->conf->fog_servers[i]);
+                    cs->conf->my_fog_server = cs->conf->fog_servers[i];
                     return;
                 }
                 else
@@ -205,14 +227,15 @@ void core_register_at_fog(corestate_t *cs, int timeout)
             if (strcmp(rcmd->cmd, "REGISTERED") == 0 &&
                 strcmp(rcmd->opt, "ALT") == 0)
             {
+                printf("Got registered alt.. \n");
                 // TODO: Anything else here?
                 //
                 if (rcmd->nargs > 0 && rcmd->args[0].type == INT_TYPE)
                 {
                     cs->conf->port = rcmd->args[0].val.ival;
-                    database_put(cs->conf->db, "REQREP_PORT", &cs->conf->port);
+                    database_put_int(cs->conf->db, "REQREP_PORT", cs->conf->port);
                     cs->conf->registered = 1;
-                    database_put_sync(cs->conf->db, "REGISTERED", &cs->conf->registered);
+                    database_put_int(cs->conf->db, "REGISTERED", cs->conf->registered);
 
                     // Get the new device ID and store it as well..
                     if (rcmd->args[1].val.sval != NULL)
@@ -235,13 +258,18 @@ bool core_do_connect(corestate_t *cs, int timeout)
 {
     // We already have a port that is allocated for this device.
     // Connect to the Fog at the given port (REQREP)
+    printf("Connecting.. REQU..%s %d\n", cs->conf->my_fog_server, cs->conf->port);
+
     cs->reqsock = socket_new(SOCKET_REQU);
     socket_create(cs->reqsock, cs->conf->my_fog_server, cs->conf->port);
+    printf("Connected.. REQU\n");
 
+    printf("Connecting.. subs\n");
     // Connect to the Fog at the Publish and Survey sockets
     cs->subsock = socket_new(SOCKET_SUBS);
     socket_create(cs->subsock, cs->conf->my_fog_server, PUBLISH_PORT);
 
+    printf("Connected.. resp\n");
     cs->respsock = socket_new(SOCKET_RESP);
     socket_create(cs->respsock, cs->conf->my_fog_server, SURVEY_PORT);
 
