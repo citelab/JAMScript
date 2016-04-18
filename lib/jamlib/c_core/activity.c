@@ -62,6 +62,7 @@ activitytable_t *activity_table_new()
     return atbl;
 }
 
+
 void activity_table_print(activitytable_t *at)
 {
     int i;
@@ -70,6 +71,7 @@ void activity_table_print(activitytable_t *at)
     printf("Activity registrations: slots [%d], filled [%d]\n", at->activityregslots, at->numactivityregs);
     printf("Activity instances: slots [%d], filled [%d]\n", at->activityslots, at->numactivities);
     printf("Registrations::\n");
+    
     for (i = 0; i < at->numactivityregs; i++)
         activity_reg_print(&(at->registrations[i]));
 

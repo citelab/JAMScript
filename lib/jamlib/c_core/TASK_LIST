@@ -1,13 +1,10 @@
+= Checkout the self stabilizing algorithms?
+= Can we make it self stabilizing?
+    = What is self stabilization here??
 
-= Get different port numbers from Registration
-    = Port numbers should be based on the devidrcd..
+= What about residual sockets in the networks
+= Ports openned by other apps or left behind this program?
 
-= Open new or not working services
-
-= Connect to the service and check whether it is working.. we need
-  use a PING/PONG service.
-
-= Try multiple devices
 
 = PING/PONG is the heartbeat of the system
 

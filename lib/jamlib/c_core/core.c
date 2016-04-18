@@ -268,7 +268,7 @@ bool core_do_connect(corestate_t *cs, int timeout)
     printf("Connecting.. REQU..%s %d\n", cs->conf->my_fog_server, cs->conf->port);
 
     cs->reqsock = socket_new(SOCKET_REQU);
-    socket_create(cs->reqsock, cs->conf->my_fog_server, cs->conf->port);
+    socket_connect(cs->reqsock, cs->conf->my_fog_server, cs->conf->port);
     printf("Connected.. REQU\n");
 
     printf("Connecting.. subs\n");

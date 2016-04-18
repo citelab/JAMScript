@@ -66,7 +66,7 @@ jamstate_t *jam_init()
     bzero(&(js->atable->globalsem), sizeof(Rendez));
 
     // create the worker thread..
-    jam_create_bgthread(js);
+//    jam_create_bgthread(js);
 
     // Start the event loop in another thread.. with cooperative threads.. we
     // to yield for that thread to start running
@@ -370,6 +370,38 @@ void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     // TODO: How to delete an async activity that was timedout?
 }
 
+
+bool jam_ping_jcore(socket_t *sock, int timeout)
+{
+    command_t *scmd;
+
+    // create a request-reply socket
+    scmd = command_new("PING", "DEVICE", "dfsdfsdfsdf",
+                        "dfdfds", "");
+
+    socket_send(sock, scmd);
+    command_free(scmd);
+    command_t *rcmd = socket_recv_command(sock, timeout);
+
+    if (rcmd == NULL)
+        return false;
+    else
+    {
+        if (strcmp(rcmd->cmd, "PONG") == 0)
+        {
+            command_free(rcmd);
+            return true;
+        }
+        else
+        {
+            command_free(rcmd);
+            return false;
+        }
+    }
+}
+
+
+
 void jam_set_timer(jamstate_t *js, char *actid, int timerval)
 {
 
@@ -386,8 +418,30 @@ int jam_get_timer_from_reply(command_t *cmd)
 void taskmain(int argc, char **argv)
 {
     // jamstate_t *js = jam_init();
-    jam_init();
+    jamstate_t *js = jam_init();
 
-    printf("Done jam init..\n");
+
+    int i, error = 0;
+
+    printf("Sending pings to %s at port %d\n", js->cstate->conf->my_fog_server, js->cstate->conf->port);
+
+//    socket_t *sock = socket_new(SOCKET_REQU);
+//    socket_connect(sock, js->cstate->conf->my_fog_server, js->cstate->conf->port);
+
+
+
+    for (i = 0; i < 100000; i++) {
+        bool res = jam_ping_jcore(js->cstate->reqsock, 1000);
+//        bool res = jam_ping_jcore(sock, 1000);
+
+        if (!res) error++;
+        if (res) printf("+ i = %d", i); else printf("-");
+    }
+
+    if (error > 0)
+        printf("%d pings out of 1000 were lost\n", error);
+    else
+        printf("All pings replied..\n");
+
     return;
 }

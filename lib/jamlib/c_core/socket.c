@@ -87,6 +87,7 @@ void socket_free(socket_t *socket)
 }
 
 
+
 // This is binding the socket..
 //
 bool socket_create(socket_t *socket, char *host, int port)
