@@ -371,17 +371,16 @@ void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
 }
 
 
-bool jam_ping_jcore(socket_t *sock, int timeout)
+bool jam_ping_jcore(jamstate_t *js, int timeout)
 {
     command_t *scmd;
 
     // create a request-reply socket
-    scmd = command_new("PING", "DEVICE", "dfsdfsdfsdf",
-                        "dfdfds", "");
+    scmd = command_new("PING", "DEVICE", js->cstate->conf->app_name, js->cstate->conf->device_id, "");
 
-    socket_send(sock, scmd);
+    socket_send(js->cstate->reqsock, scmd);
     command_free(scmd);
-    command_t *rcmd = socket_recv_command(sock, timeout);
+    command_t *rcmd = socket_recv_command(js->cstate->reqsock, timeout);
 
     if (rcmd == NULL)
         return false;
@@ -430,8 +429,8 @@ void taskmain(int argc, char **argv)
 
 
 
-    for (i = 0; i < 100000; i++) {
-        bool res = jam_ping_jcore(js->cstate->reqsock, 1000);
+    for (i = 0; i < 1000; i++) {
+        bool res = jam_ping_jcore(js, 1000);
 //        bool res = jam_ping_jcore(sock, 1000);
 
         if (!res) error++;

@@ -93,7 +93,7 @@ void jamworker_process_actoutq(jamstate_t *js, int indx);
 command_t *jamworker_activity_status(jamstate_t *js, char *indx);
 command_t *jamworker_device_status(jamstate_t *js);
 
-bool jam_ping_jcore(socket_t *s, int timeout);
+bool jam_ping_jcore(jamstate_t *js, int timeout);
 
 void jam_set_timer(jamstate_t *js, char *actid, int timerval);
 int jam_get_timer_from_reply(command_t *cmd);
