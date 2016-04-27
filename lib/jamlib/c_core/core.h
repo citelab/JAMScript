@@ -32,8 +32,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 // TODO: This is problematic.. do we need these? If so, when should we use them??
 #define REQUEST_PORT                                5555
-#define SURVEY_PORT                                 6555
-#define PUBLISH_PORT                                7555
+#define SURVEY_PORT                                 7777
+#define PUBLISH_PORT                                6666
 
 
 typedef struct _connect_state_t

@@ -36,6 +36,7 @@ extern "C" {
 #include "activity.h"
 #include "callback.h"
 #include "event.h"
+#include "timer.h"
 
 #include <pthread.h>
 
@@ -49,6 +50,8 @@ typedef struct _jamstate_t
 
     struct nn_pollfd *pollfds;
     int numpollfds;
+    
+    timertype_t *maintimer;
 
     int maxleases;
 
@@ -83,20 +86,23 @@ event_t *get_event(jamstate_t *js);
  */
 void *jamworker_bgthread(void *arg);
 void jamworker_assemble_fds(jamstate_t *js);
-int jamworker_wait_fds(jamstate_t *js);
+int jamworker_wait_fds(jamstate_t *js, int beattime);
 void jamworker_processor(jamstate_t *js);
 void jamworker_process_reqsock(jamstate_t *js);
 void jamworker_process_subsock(jamstate_t *js);
 void jamworker_process_respsock(jamstate_t *js);
 void jamworker_process_globaloutq(jamstate_t *js);
 void jamworker_process_actoutq(jamstate_t *js, int indx);
-command_t *jamworker_activity_status(jamstate_t *js, char *indx);
+command_t *jamworker_runid_status(jamstate_t *js, char *runid);
 command_t *jamworker_device_status(jamstate_t *js);
 
-bool jam_ping_jcore(jamstate_t *js, int timeout);
+command_t *jamworker_runid_kill(jamstate_t *js, char *runid);
+void jam_send_ping(jamstate_t *js);
 
-void jam_set_timer(jamstate_t *js, char *actid, int timerval);
 int jam_get_timer_from_reply(command_t *cmd);
+void jam_set_timer(jamstate_t *js, char *actarg, int tval);
+
+bool jam_eval_condition(char *expr);
 
 #endif  /* __JAMLIB_H__ */
 

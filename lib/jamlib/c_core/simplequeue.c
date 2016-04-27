@@ -57,8 +57,12 @@ simplequeue_t *queue_new(bool ownedbyq)
 	simplequeue_t *sq = (simplequeue_t *)calloc(1, sizeof(simplequeue_t));
 	assert(sq != NULL);
 
+	printf("Helloooo \n");
 	sq->pullsock = nn_socket(AF_SP, NN_PULL);
 	assert(sq->pullsock >= 0);
+
+	printf("Helloooo 2\n");
+	
 
 	// try to create a socket.. find a name that is not already used
 	while(1) {
@@ -72,10 +76,14 @@ simplequeue_t *queue_new(bool ownedbyq)
 		}
 	}
 
+	printf("Helloooo 3\n");
+
 	sq->pushsock = nn_socket(AF_SP, NN_PUSH);
 	assert(sq->pushsock >= 0);
 	nn_connect(sq->pushsock, sq->name);
 	sq->ownedbyq = ownedbyq;
+
+	printf("Helloooo 4\n");
 
 	return sq;
 }
@@ -95,46 +103,24 @@ bool queue_delete(simplequeue_t *sq)
  */
 bool queue_enq(simplequeue_t *sq, void *data, int size)
 {
-	nvoid_t *dw = (nvoid_t *)calloc(1, sizeof(nvoid_t));
-	dw->len = size;
-	if (sq->ownedbyq) {
-		void *ndata = calloc(1, size);
-		memcpy(ndata, data, size);
-		dw->data = ndata;
-	}
-	else
-		dw->data = data;
-
-	int dwsize = sizeof(nvoid_t);
-	int bytes = nn_send (sq->pushsock, dw, dwsize, 0);
-	free(dw);
-
-	if (bytes == dwsize)
+	int bytes = nn_send(sq->pushsock, data, size, 0);
+	if (bytes == size)
 		return true;
 	else
 		return false;
 }
 
-nvoid_t *queue_deq(simplequeue_t *sq)
+
+void *queue_deq(simplequeue_t *sq)
 {
 	char *buf = NULL;
-	int bytes = nn_recv (sq->pullsock, &buf, NN_MSG, 0);
+	nn_recv (sq->pullsock, &buf, NN_MSG, 0);
 
-	if (bytes != sizeof(nvoid_t)) {
-		nn_freemsg(buf);
-		return NULL;
-	}
-	else
-	{
-		nvoid_t *data = (nvoid_t *)calloc(1, sizeof(nvoid_t));
-		memcpy(data, buf, sizeof(nvoid_t));
-		nn_freemsg(buf);
-		// why? I don't know. May be I could have just returned buf without releasing it.
-		return data;
-	}
+	return buf;
 }
 
-nvoid_t *queue_deq_timeout(simplequeue_t *sq, int timeout)
+
+void *queue_deq_timeout(simplequeue_t *sq, int timeout)
 {
 	struct nn_pollfd pfd[1];
 	pfd[0].fd = sq->pullsock;

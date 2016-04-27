@@ -57,7 +57,9 @@ activitytable_t *activity_table_new()
     atbl->activityregslots = ALLOCATE_SLICE;
 
     atbl->activities = (jactivity_t *)calloc(atbl->activityslots, sizeof(jactivity_t));
+    assert(atbl->activities != NULL);
     atbl->registrations = (activity_registry_t *)calloc(atbl->activityregslots, sizeof(activity_registry_t));
+    assert(atbl->registrations != NULL);
 
     return atbl;
 }
@@ -95,6 +97,7 @@ void activity_print(jactivity_t *ja)
 {
     printf("\n");
     printf("Activity ID: %s\n", ja->actid);
+    printf("Activity arg: %s\n", ja->actarg);
     printf("Activity state: %d\n", ja->state);
     printf("Activity name: %s\n", ja->name);
     nvoid_print(ja->code);
@@ -169,17 +172,28 @@ jactivity_t *activity_new(activitytable_t *at, char *name)
         if (at->activities[i].state == DELETED)
             break;
 
-    // Create a new slot if a deleted one is not found
-    if (i == at->numactivities)
-    {
-        if ((at->activityslots - at->numactivities) < ALLOCATE_SLICE/2)
-            at->activities = realloc(at->activities,
-                            sizeof(jactivity_t) * (at->activityslots + ALLOCATE_SLICE));
+    printf("i = %d, numactivities %d \n", i, at->numactivities);
 
-        jact = &(at->activities[at->numactivities++]);
-    }
-    else
-        jact = &(at->activities[i]);
+    // // Create a new slot if a deleted one is not found
+    // if (i == at->numactivities)
+    // {
+    //     if ((at->activityslots - at->numactivities) < ALLOCATE_SLICE/2)
+    //     {
+    //         printf("Reallocating...\n");
+    //         fflush(stdout);
+    //         at->activities = realloc(at->activities,
+    //                         sizeof(jactivity_t) * (at->activityslots + ALLOCATE_SLICE));
+    //         at->numactivities += ALLOCATE_SLICE;                        
+    //     }
+        
+    //     jact = &(at->activities[at->numactivities++]);
+    // }
+    // else
+    //     jact = &(at->activities[i]);
+
+    //  printf("Returning jact.. \n");
+
+     jact = (jactivity_t *)calloc(1, sizeof(jactivity_t));
 
     // Setup the new activity
     jact->state = NEW;
@@ -187,14 +201,23 @@ jactivity_t *activity_new(activitytable_t *at, char *name)
     jact->code = NULL;
     bzero(&(jact->sem), sizeof(Rendez));
     jact->actid = activity_gettime();
+    // TODO: Temporary stuff..
+    jact->actarg = strdup(name);
+
+    printf("Before queue creation ..\n");
 
     // Setup the I/O queues
     jact->inq = queue_new(true);
     jact->outq = queue_new(true);
 
+    printf("After queue creation ..\n");
+
     // Send a message to the background so it starts watching for messages
-    command_t *cmd = command_new("LOCAL", "NEW-ACTIVITY", name, jact->actid, "");
+    command_t *cmd = command_new("LOCAL", "NEW-ACTIVITY", name, jact->actid, jact->actarg, "");
+    
     queue_enq(at->globaloutq, cmd->buffer, cmd->length);
+    
+    printf("Sent the command ..\n");
 
     // return the pointer
     return jact;
@@ -226,7 +249,7 @@ void activity_del(activitytable_t *at, jactivity_t *jact)
     // the number of activities goes below a certain number?
 
     // Send a message to the background so it starts watching for messages
-    command_t *cmd = command_new("LOCAL", "DEL-ACTIVITY", jact->name, jact->actid, "");
+    command_t *cmd = command_new("LOCAL", "DEL-ACTIVITY", jact->name, jact->actid, jact->actarg, "");
     queue_enq(at->globaloutq, cmd->buffer, cmd->length);
 }
 

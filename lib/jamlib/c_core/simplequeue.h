@@ -26,8 +26,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <nanomsg/nn.h>
 #include <stdbool.h>
 
-#include "nvoid.h"
-
 /*
  * Implementation idea is very simple. Just use a nano message pipeline.
  * Stick the messages into the pipeline when enqueuing. Dequeue from the pipeline
@@ -60,7 +58,7 @@ simplequeue_t *queue_new(bool ownedbyq);
 bool queue_delete(simplequeue_t *queue);
 
 bool queue_enq(simplequeue_t *queue, void *data, int len);
-nvoid_t *queue_deq(simplequeue_t *queue);
-nvoid_t *queue_deq_timeout(simplequeue_t *sq, int timeout);
+void *queue_deq(simplequeue_t *queue);
+void *queue_deq_timeout(simplequeue_t *sq, int timeout);
 
 #endif

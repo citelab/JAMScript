@@ -33,7 +33,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define STACKSIZE                   30000
 
 
-
 // Initialize the JAM library.. nothing much done here.
 // We just initialize the Core ..
 //
@@ -65,15 +64,13 @@ jamstate_t *jam_init()
     printf("Hi\n");
     bzero(&(js->atable->globalsem), sizeof(Rendez));
 
-    // create the worker thread..
-//    jam_create_bgthread(js);
-
     // Start the event loop in another thread.. with cooperative threads.. we
     // to yield for that thread to start running
     taskcreate(jam_event_loop, js, STACKSIZE);
 
+    js->maintimer = timer_init();
+    
     printf("End of Jam-lib\n");
-
     return js;
 }
 
@@ -114,8 +111,7 @@ void jam_event_loop(void *arg)
 //
 event_t *get_event(jamstate_t *js)
 {
-    nvoid_t *nv = queue_deq(js->atable->globalinq);
-    command_t *cmd = command_from_data(NULL, nv);
+    command_t *cmd = (command_t *)queue_deq(js->atable->globalinq);
 
     if (cmd == NULL)
         return NULL;
@@ -146,9 +142,13 @@ void *jam_rexec_sync(jamstate_t *js, char *aname, ...)
     nvoid_t *nv;
     int i = 0;
 
+    printf("Before get mask \n");
     // get the mask
     char *fmask = activity_get_mask(js->atable, aname);
+    assert(fmask != NULL);
     arg_t *qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
+
+    printf("After get mask \n");
 
     cbor_item_t *arr = cbor_new_indefinite_array();
     cbor_item_t *elem;
@@ -161,6 +161,7 @@ void *jam_rexec_sync(jamstate_t *js, char *aname, ...)
         switch(*fmask++)
         {
             case 'n':
+                printf("Bytestringn.... \n");
                 nv = va_arg(args, nvoid_t*);
                 elem = cbor_build_bytestring(nv->data, nv->len);
                 qargs[i].val.nval = nv;
@@ -193,9 +194,23 @@ void *jam_rexec_sync(jamstate_t *js, char *aname, ...)
     }
     va_end(args);
 
+    printf("Before create new activity %s\n", aname);
+    
+    
     jactivity_t *jact = activity_new(js->atable, aname);
-    command_t *cmd = command_new_using_cbor("REXEC", "SYNC", aname, jact->actid, arr, qargs, i);
+
+
+    printf("After create new activity \n");
+    
+    command_t *cmd = command_new_using_cbor("REXEC", "DEVICE", aname, jact->actid, jact->actarg, arr, qargs, i);
+
+    printf("Command created... \n");
+    
     jam_rexec_runner(js, jact, cmd);
+
+    printf("After rexec runner \n");
+    
+    return NULL;
 
     if (jact->state == TIMEDOUT)
     {
@@ -218,7 +233,11 @@ jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, ...)
 
     // get the mask
     char *fmask = activity_get_mask(js->atable, aname);
+    assert(fmask != NULL);
+    
     arg_t *qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
+
+    printf("After mask \n");
 
     cbor_item_t *arr = cbor_new_indefinite_array();
     cbor_item_t *elem;
@@ -263,11 +282,18 @@ jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, ...)
     }
     va_end(args);
 
+    printf("Blah 1\n");
     // Need to add start to activity_new()
     jactivity_t *jact = activity_new(js->atable, aname);
-    command_t *cmd = command_new_using_cbor("REXEC", "SYNC", aname, jact->actid, arr, qargs, i);
+    printf("Blah 2\n");
+    
+    command_t *cmd = command_new_using_cbor("REXEC", "DEVICE", aname, jact->actid, jact->actarg, arr, qargs, i);
+    printf("Blah 3\n");
+    
     temprecord_t *trec = jam_create_temprecord(js, jact, cmd);
     taskcreate(jam_rexec_run_wrapper, trec, STACKSIZE);
+    printf("Blah 4\n");
+    
 
     return jact;
 }
@@ -299,17 +325,19 @@ void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
 
     for (i = 0; i < js->cstate->conf->retries; i++)
     {
-        queue_enq(jact->outq, cmd->buffer, cmd->length);
+        printf("Enqueing...\n");
+        queue_enq(jact->outq, cmd, sizeof(command_t));
+        printf("Completed enqueuing.. \n");
+        
         tasksleep(&(jact->sem));
 
-        nvoid_t *nv = queue_deq(jact->inq);
-        rcmd = command_from_data(NULL, nv);
+        printf("After sleep ..\n");
+        rcmd  = (command_t *)queue_deq(jact->inq);
         if (rcmd != NULL)
         {
             connected = true;
             break;
         }
-        nvoid_free(nv);
     }
 
     // Mark the state as TIMEDOUT if we failed to connect..
@@ -324,20 +352,18 @@ void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     {
         int timerval = jam_get_timer_from_reply(rcmd);
         command_free(rcmd);
-        jam_set_timer(js, jact->actid, timerval);
+        jam_set_timer(js, jact->actarg, timerval);
         tasksleep(&(jact->sem));
 
-        nvoid_t *nv = queue_deq(jact->inq);
-        rcmd = command_from_data(NULL, nv);
+        rcmd = (command_t *)queue_deq(jact->inq);
 
         if (strcmp(rcmd->cmd, "TIMEOUT") == 0) {
-            command_t *lcmd = command_new("STATUS", "LEASE", jact->name, jact->actid, "");
-            queue_enq(jact->outq, lcmd->buffer, lcmd->length);
+            command_t *lcmd = command_new("STATUS", "LEASE", jact->name, jact->actid, jact->actarg, "");
+            queue_enq(jact->outq, lcmd, sizeof(command_t));
             command_free(lcmd);
             tasksleep(&(jact->sem));
 
-            nvoid_t *nv = queue_deq(jact->inq);
-            rcmd = command_from_data(NULL, nv);
+            rcmd = (command_t *)queue_deq(jact->inq);
             continue;
         }
         else
@@ -362,85 +388,24 @@ void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         jact->state = TIMEDOUT;
         // It is taking way too long to run at the J-core
         // Send a kill commmand...
-        command_t *kcmd = command_new("REXEC", "KILL", jact->name, jact->actid, "");
-        queue_enq(jact->outq, kcmd->buffer, kcmd->length);
+        command_t *kcmd = command_new("REXEC", "KILL", jact->name, jact->actid, jact->actarg, "");
+        queue_enq(jact->outq, kcmd, sizeof(command_t));
         command_free(kcmd);
     }
 
-    // TODO: How to delete an async activity that was timedout?
-}
-
-
-bool jam_ping_jcore(jamstate_t *js, int timeout)
-{
-    command_t *scmd;
-
-    // create a request-reply socket
-    scmd = command_new("PING", "DEVICE", js->cstate->conf->app_name, js->cstate->conf->device_id, "");
-
-    socket_send(js->cstate->reqsock, scmd);
-    command_free(scmd);
-    command_t *rcmd = socket_recv_command(js->cstate->reqsock, timeout);
-
-    if (rcmd == NULL)
-        return false;
-    else
-    {
-        if (strcmp(rcmd->cmd, "PONG") == 0)
-        {
-            command_free(rcmd);
-            return true;
-        }
-        else
-        {
-            command_free(rcmd);
-            return false;
-        }
-    }
-}
-
-
-
-void jam_set_timer(jamstate_t *js, char *actid, int timerval)
-{
-
-
-}
-
-int jam_get_timer_from_reply(command_t *cmd)
-{
-
-    return 0;
+    // TODO: How to delete an async activity that was timed out?
 }
 
 
 void taskmain(int argc, char **argv)
 {
-    // jamstate_t *js = jam_init();
     jamstate_t *js = jam_init();
 
-
-    int i, error = 0;
-
-    printf("Sending pings to %s at port %d\n", js->cstate->conf->my_fog_server, js->cstate->conf->port);
-
-//    socket_t *sock = socket_new(SOCKET_REQU);
-//    socket_connect(sock, js->cstate->conf->my_fog_server, js->cstate->conf->port);
-
-
-
-    for (i = 0; i < 1000; i++) {
-        bool res = jam_ping_jcore(js, 1000);
-//        bool res = jam_ping_jcore(sock, 1000);
-
-        if (!res) error++;
-        if (res) printf("+ i = %d", i); else printf("-");
-    }
-
-    if (error > 0)
-        printf("%d pings out of 1000 were lost\n", error);
-    else
-        printf("All pings replied..\n");
-
-    return;
+    // create the background thread
+    jam_create_bgthread(js);
+    
+    activity_make(js->atable, "test", "sii", SYNC);
+    
+    jam_rexec_sync(js, "test", "f", 20, 10);
+    
 }

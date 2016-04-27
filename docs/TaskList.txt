@@ -1,0 +1,47 @@
+
+
+
+
+
+
+
+
+Get basic REXEC working:
+    = C to JS working
+    = JS to C working
+======================
+
+We need to use self-stabilizing algorithms for bringing
+up the connection table in the server side. 
+How can we infer the state of the connection table?
+
+======================
+
+Interesting problem: Do we need consensus algorithms like Paxos or
+RAFT? What is their purpose to implement reliable stores for data?
+
+Can we think of a distributed ledger for quick updates?
+
+
+
+
+= Checkout the self stabilizing algorithms?
+= Can we make it self stabilizing?
+    = What is self stabilization here??
+
+= What about residual sockets in the networks
+= Ports openned by other apps or left behind this program?
+
+
+= PING/PONG is the heartbeat of the system
+
+= Disconnect and reconnect of the devices
+
+= Get REXEC working:
+
+= Call from Device to J-core
+= Call from J-core to single device, multiple devices, etc
+
+= Check fault tolerance...
+
+= We need to store state at the server side too! This is another headache!

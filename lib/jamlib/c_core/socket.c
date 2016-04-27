@@ -64,6 +64,7 @@ socket_t *socket_new(enum socket_type type)
 
         case SOCKET_SUBS:
             sock->sock_fd = nn_socket(AF_SP, NN_SUB);
+            nn_setsockopt(sock->sock_fd, NN_SUB, NN_SUB_SUBSCRIBE, "", 0);
             break;
 
         case SOCKET_LOCL:

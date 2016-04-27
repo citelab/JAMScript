@@ -31,7 +31,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "command.h"
 
 
-
 corestate_t *core_init(int timeout)
 {
     printf("Core init..\n");
@@ -129,14 +128,16 @@ bool core_find_fog_from_cloud(corestate_t *cstate, int timeout)
             continue;
         else
         {
-            if (strcmp(rcmd->cmd, "ADDRESSES") == 0 &&
-                strcmp(rcmd->opt, "FOGS") == 0)
+            if (strcmp(rcmd->cmd, "FOUND") == 0 &&
+                strcmp(rcmd->opt, "CLOUD") == 0)
             {
-                gotnew = true;
+                if (rcmd->nargs > 0)
+                    gotnew = true;
+                   
                 // We got Fog addresses.. insert them into the local database
                 // while inserting.. we need to eliminate duplicates.
                 // So we only insert new replies..
-                for (i = 0; i < rcmd->length; i++) {
+                for (i = 0; i < rcmd->nargs; i++) {
                     if (rcmd->args[i].type == STRING_TYPE)
                         core_insert_fog_addr(cstate, rcmd->args[i].val.sval);
                 }
@@ -183,7 +184,7 @@ void core_register_at_fog(corestate_t *cs, int timeout)
     printf("Device name %s\n", cs->conf->device_name);
     printf("Deviceid %s\n", cs->conf->device_id);
 
-    scmd = command_new("REGISTER", "DEVICE", cs->conf->app_name, cs->conf->device_name, "s", cs->conf->device_id);
+    scmd = command_new("REGISTER", "DEVICE", cs->conf->app_name, cs->conf->device_id, cs->conf->device_name, "");
 
     printf("Fog servers %d\n", cs->conf->num_fog_servers);
     for (i = 0; i < cs->conf->num_fog_servers; i++) {
@@ -203,7 +204,7 @@ void core_register_at_fog(corestate_t *cs, int timeout)
         }
         else
         {
-            if (strcmp(rcmd->cmd, "REGISTERED") == 0 &&
+            if (strcmp(rcmd->cmd, "REGISTER-ACK") == 0 &&
                 strcmp(rcmd->opt, "ORI") == 0)
             {
                 printf("Got registered ori.. \n");
@@ -212,7 +213,7 @@ void core_register_at_fog(corestate_t *cs, int timeout)
                     cs->conf->port = rcmd->args[0].val.ival;
                     database_put_int(cs->conf->db, "REQREP_PORT", cs->conf->port);
                     cs->conf->registered = 1;
-                    database_put_int(cs->conf->db, "REGISTERED", cs->conf->registered);
+                    database_put_int(cs->conf->db, "REGISTER-ACK", cs->conf->registered);
                     cs->conf->my_fog_server = cs->conf->fog_servers[i];
                     database_put_string(cs->conf->db, "MY_FOG_SERVER", cs->conf->my_fog_server);
 
@@ -225,7 +226,7 @@ void core_register_at_fog(corestate_t *cs, int timeout)
                 }
             }
             else
-            if (strcmp(rcmd->cmd, "REGISTERED") == 0 &&
+            if (strcmp(rcmd->cmd, "REGISTER-ACK") == 0 &&
                 strcmp(rcmd->opt, "ALT") == 0)
             {
                 printf("Got registered alt.. \n");
@@ -236,7 +237,7 @@ void core_register_at_fog(corestate_t *cs, int timeout)
                     cs->conf->port = rcmd->args[0].val.ival;
                     database_put_int(cs->conf->db, "REQREP_PORT", cs->conf->port);
                     cs->conf->registered = 1;
-                    database_put_int(cs->conf->db, "REGISTERED", cs->conf->registered);
+                    database_put_int(cs->conf->db, "REGISTER-ACK", cs->conf->registered);
                     cs->conf->my_fog_server = cs->conf->fog_servers[i];
                     database_put_string(cs->conf->db, "MY_FOG_SERVER", cs->conf->my_fog_server);
 
@@ -274,11 +275,11 @@ bool core_do_connect(corestate_t *cs, int timeout)
     printf("Connecting.. subs\n");
     // Connect to the Fog at the Publish and Survey sockets
     cs->subsock = socket_new(SOCKET_SUBS);
-    socket_create(cs->subsock, cs->conf->my_fog_server, PUBLISH_PORT);
+    socket_connect(cs->subsock, cs->conf->my_fog_server, PUBLISH_PORT);
 
     printf("Connected.. resp\n");
     cs->respsock = socket_new(SOCKET_RESP);
-    socket_create(cs->respsock, cs->conf->my_fog_server, SURVEY_PORT);
+    socket_connect(cs->respsock, cs->conf->my_fog_server, SURVEY_PORT);
 
     time_t now = time(&now);
     cs->conf->stime = localtime(&now);

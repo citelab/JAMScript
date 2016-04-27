@@ -44,10 +44,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*
  * Return a command in CBOR format (as an unsigned char array) that can be sent out..
  *
- * The format is a 3-member object:
+ * The format is a 5-member object:
  *         cmd: command name: RPC, PING, REGISTER, etc (see command.txt for a
  *              full list of commands)
- *         actid: 64 bit integer ID of the activity - 0 if not activity
+ *         actarg: 64 bit integer ID of the activity - 0 if not activity
   *         args: array of arguments to the command
  *
  * Limitations: We have limitations in the types of arguments that can be encoded.
@@ -56,7 +56,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * format - s (string), i (integer) f,d for float/double - no % (e.g., "si")
  *
  */
-command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, char *actid,
+command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, char *actid, char *actarg,
                                 cbor_item_t *arr, arg_t *args, int nargs)
 {
 
@@ -68,18 +68,18 @@ command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, cha
     cmdo->cmd = strdup(cmd);
     cmdo->opt = strdup(opt);
     cmdo->actname = strdup(actname);
-    cmdo->actid = strdup(actid);
+    cmdo->actarg = strdup(actarg);
 
     cmdo->args = args;
     cmdo->nargs = nargs;
 
     /*
      * Format of the CBOR map is as follows in equivalent JSON syntax
-     * {cmd: Command_String, actid: Activity ID, args: [Array of args]}
+     * {cmd: Command_String, actarg: Activity ID, args: [Array of args]}
      */
 
 
-    cbor_item_t *rmap = cbor_new_definite_map(5);
+    cbor_item_t *rmap = cbor_new_definite_map(6);
 
     // Add the cmd field to the map
     cbor_map_add(rmap, (struct cbor_pair) {
@@ -98,11 +98,17 @@ command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, cha
         .key = cbor_move(cbor_build_string("actname")),
         .value = cbor_move(cbor_build_string(actname))
     });
-
+    
     // Add the actid field to the map
     cbor_map_add(rmap, (struct cbor_pair) {
         .key = cbor_move(cbor_build_string("actid")),
         .value = cbor_move(cbor_build_string(actid))
+    });
+
+    // Add the actarg field to the map
+    cbor_map_add(rmap, (struct cbor_pair) {
+        .key = cbor_move(cbor_build_string("actarg")),
+        .value = cbor_move(cbor_build_string(actarg))
     });
 
     // Add the args field to the map
@@ -124,7 +130,7 @@ command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, cha
  * Reusing the previous command encoder..
  *
  */
-command_t *command_new(const char *cmd, char *opt, char *actname, char *actid, const char *fmt, ...)
+command_t *command_new(const char *cmd, char *opt, char *actname, char *actid, char *actarg, const char *fmt, ...)
 {
     va_list args;
     nvoid_t *nv;
@@ -174,7 +180,7 @@ command_t *command_new(const char *cmd, char *opt, char *actname, char *actid, c
 
     va_end(args);
 
-    command_t *c = command_new_using_cbor(cmd, opt, actname, actid, arr, qargs, i);
+    command_t *c = command_new_using_cbor(cmd, opt, actname, actid, actarg, arr, qargs, i);
 //    command_print(c);
     return c;
 }
@@ -203,7 +209,7 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
 
     // check the size of the CBOR map
     int items = cbor_map_size(cmd->cdata);
-    assert(items == 5);
+    assert(items == 6);
 
     printf("1 \n");
 
@@ -222,18 +228,21 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
     cbor_assert_field_string(mitems[2].key, "actname");
     cmd->actname = cbor_get_string(mitems[2].value);
 
-    printf("4 \n");
-
     cbor_assert_field_string(mitems[3].key, "actid");
     cmd->actid = cbor_get_string(mitems[3].value);
 
+    printf("4 \n");
+
+    cbor_assert_field_string(mitems[4].key, "actarg");
+    cmd->actarg = cbor_get_string(mitems[4].value);
+
     printf("5 \n");
 
-    cbor_assert_field_string(mitems[4].key, "args");
+    cbor_assert_field_string(mitems[5].key, "args");
 
     printf("6 \n");
 
-    cbor_item_t *arr = mitems[4].value;
+    cbor_item_t *arr = mitems[5].value;
     cmd->nargs = cbor_array_size(arr);
     cmd->args = (arg_t *)calloc(cmd->nargs, sizeof(arg_t));
 
@@ -304,7 +313,7 @@ void command_free(command_t *cmd)
     free(cmd->opt);
     free(cmd->actname);
 
-    free(cmd->actid);
+    free(cmd->actarg);
 
     // decrement the reference to the CBOR object..
     if (cmd->cdata)
@@ -345,6 +354,8 @@ void command_print(command_t *cmd)
     printf("\nCommand opt: %s\n", cmd->opt);
     printf("\nCommand activity name: %s\n", cmd->actname);
     printf("\nCommand activity id: %s\n", cmd->actid);
+    printf("\nCommand activity arg: %s\n", cmd->actarg);
+
 
     printf("\nCommand buffer: ");
     for (i = 0; i < strlen((char *)cmd->buffer); i++)

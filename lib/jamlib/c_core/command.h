@@ -78,15 +78,16 @@ typedef struct _command_t
     char *cmd;                              // Name of the command
     char *opt;
     char *actname;                          // Activity name
-    char *actid;                            // Activity ID.. created at launch time
+    char *actid;                            // Activity ID
+    char *actarg;                           // Activity arg
     arg_t *args;                            // List of args
     int nargs;                              // length of args array
 
 } command_t;
 
 
-command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, char *actid, cbor_item_t *arr, arg_t *args, int nargs);
-command_t *command_new(const char *cmd, char *opt, char *actname, char *actid, const char *fmt, ...);
+command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, char *actid, char *actarg, cbor_item_t *arr, arg_t *args, int nargs);
+command_t *command_new(const char *cmd, char *opt, char *actname, char *actid, char *actarg, const char *fmt, ...);
 command_t *command_from_data(char *fmt, nvoid_t *data);
 
 void command_free(command_t *cmd);

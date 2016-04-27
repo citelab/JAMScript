@@ -1,0 +1,5 @@
+
+When an application is launched we create the following user-threads:
+    = Main thread where the application is running..
+    = Activity (one for each activity)
+    = Event loop (EVENTL) where a thread is waiting for event processing..
