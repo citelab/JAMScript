@@ -244,7 +244,10 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
 
     cbor_item_t *arr = mitems[5].value;
     cmd->nargs = cbor_array_size(arr);
-    cmd->args = (arg_t *)calloc(cmd->nargs, sizeof(arg_t));
+    if (cmd->nargs > 0)
+        cmd->args = (arg_t *)calloc(cmd->nargs, sizeof(arg_t));
+    else
+        cmd->args = NULL;
 
     printf("6 cmd-length %d, nargs %d\n", cmd->length, cmd->nargs);
 
