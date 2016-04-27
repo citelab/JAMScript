@@ -35,6 +35,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define MAX_MASK_LEN            64
 #define ALLOCATE_SLICE          32
 
+#define MAX_ACTIVITIES          256
+
 enum activity_state_t
 {
     NEW,
@@ -54,12 +56,12 @@ enum activity_type_t
 
 typedef struct _jactivity_t
 {
+    Rendez  sem;   
     enum activity_state_t state;
     char name[MAX_NAME_LEN];
     char *actid;
     char *actarg;
     nvoid_t *code;
-    Rendez  sem;
     simplequeue_t *inq;
     simplequeue_t *outq;
 
@@ -80,15 +82,12 @@ typedef struct _activitytable_t
 {
     int numactivityregs;
     int numactivities;
-    activity_registry_t *registrations;
-    jactivity_t *activities;
-    int activityslots;
-    int activityregslots;
+    activity_registry_t *registrations[MAX_ACTIVITIES];
+    jactivity_t *activities[MAX_ACTIVITIES];
 
     simplequeue_t *globalinq;
     simplequeue_t *globaloutq;
     Rendez globalsem;
-
 
 } activitytable_t;
 

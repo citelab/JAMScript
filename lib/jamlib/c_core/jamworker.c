@@ -84,6 +84,8 @@ void jamworker_assemble_fds(jamstate_t *js)
 {
     int i;
 
+    printf("Assembling fds ................. %d activities \n", js->atable->numactivities);
+        
     // release old one..
     if (js->pollfds)
         free(js->pollfds);
@@ -104,15 +106,23 @@ void jamworker_assemble_fds(jamstate_t *js)
 
     // scan the number of activities and get their input queue hooked
     for (i = 0; i < js->atable->numactivities; i++)
-        js->pollfds[i+3].fd = js->atable->activities[i].outq->pullsock;
+    {
+        js->pollfds[i+3].fd = js->atable->activities[i]->outq->pullsock;
+        printf("Inserted an activity pullsock.. \n");
+    }
 
     // pollfds structure is not complete..
     js->numpollfds = 4 + js->atable->numactivities;
+    printf("Number of numpollfds %d\n", js->numpollfds);
 }
 
 
 int jamworker_wait_fds(jamstate_t *js, int beattime)
 {
+    int i;
+//   for (i = 0; i < js->numpollfds; i++)
+//        printf("%d) Waiting on %d, event %d\n", i, js->pollfds[i].fd, js->pollfds[i].events);
+    
     // wait on the nn_pollfd array that is in the jamstate_t structure!
     //
     return nn_poll(js->pollfds, js->numpollfds, beattime);
@@ -141,6 +151,7 @@ void jamworker_processor(jamstate_t *js)
     // Use a loop to scan the rest of the descriptors
     for (i = 4; i < js->numpollfds; i++)
     {
+        printf("---------------- looking for activity... \n");
         if (js->pollfds[i].revents & NN_POLLIN)
             jamworker_process_actoutq(js, i - 4);
     }
@@ -262,14 +273,12 @@ void jamworker_process_globaloutq(jamstate_t *js)
     nvoid_t *nv = queue_deq(js->atable->globaloutq);
     command_t *rcmd = (command_t *)nv->data;
     printf("Got packet.. bytes %d\n", nv->len);
-    command_print(rcmd);
-    printf("Helloooooo\n");
-    fflush(stdout);
-    
-    return;
+  //  command_print(rcmd);
     
     if (rcmd != NULL)
     {
+        printf("Processing cmd: [%s] from GlobalOutQ\n", rcmd->cmd);
+        
         // Many commands are in the output queue of the main thread
         // QCMD: LOCAL NEW-ACTIVITY actname actarg
         if (strcmp(rcmd->cmd, "LOCAL") == 0 &&
@@ -291,7 +300,7 @@ void jamworker_process_globaloutq(jamstate_t *js)
 //
 void jamworker_process_actoutq(jamstate_t *js, int indx)
 {
-    command_t *rcmd = (command_t *)queue_deq(js->atable->activities[indx].outq);
+    command_t *rcmd = (command_t *)queue_deq(js->atable->activities[indx]->outq);
     if (rcmd != NULL)
     {
         // QCMD: LOCAL DEL-ACTIVITY actname actarg

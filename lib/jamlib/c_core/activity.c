@@ -53,13 +53,6 @@ activitytable_t *activity_table_new()
 
     atbl->numactivities = 0;
     atbl->numactivityregs = 0;
-    atbl->activityslots = ALLOCATE_SLICE;
-    atbl->activityregslots = ALLOCATE_SLICE;
-
-    atbl->activities = (jactivity_t *)calloc(atbl->activityslots, sizeof(jactivity_t));
-    assert(atbl->activities != NULL);
-    atbl->registrations = (activity_registry_t *)calloc(atbl->activityregslots, sizeof(activity_registry_t));
-    assert(atbl->registrations != NULL);
 
     return atbl;
 }
@@ -70,16 +63,16 @@ void activity_table_print(activitytable_t *at)
     int i;
 
     printf("\n");
-    printf("Activity registrations: slots [%d], filled [%d]\n", at->activityregslots, at->numactivityregs);
-    printf("Activity instances: slots [%d], filled [%d]\n", at->activityslots, at->numactivities);
+    printf("Activity registrations: [%d] \n", at->numactivityregs);
+    printf("Activity instances: [%d]\n", at->numactivities);
     printf("Registrations::\n");
     
     for (i = 0; i < at->numactivityregs; i++)
-        activity_reg_print(&(at->registrations[i]));
+        activity_reg_print(at->registrations[i]);
 
     printf("Activity instances::\n");
     for (i = 0; i < at->numactivities; i++)
-        activity_print(&(at->activities[i]));
+        activity_print(at->activities[i]);
 
     printf("\n");
 }
@@ -104,24 +97,31 @@ void activity_print(jactivity_t *ja)
     printf("\n");
 }
 
+activity_registry_t *activity_reg_new(char *name, char *mask, int type)
+{
+    activity_registry_t *reg = (activity_registry_t *)calloc(1, sizeof(activity_registry_t));
+    assert(reg != NULL);
+    
+    strcpy(reg->name, name);
+    strcpy(reg->mask, mask);
+    reg->type = type;
+    
+    return reg;
+}
+
 bool activity_make(activitytable_t *at, char *name, char *mask, int type)
 {
     int i;
 
     // if a registration already exists, return false
     for (i = 0; i < at->numactivityregs; i++)
-        if (strcmp(at->registrations[i].name, name) == 0)
+        if (strcmp(at->registrations[i]->name, name) == 0)
             return false;
 
-    // otherwise, we insert the registration and return true
-    if ((at->activityregslots - at->numactivityregs) < ALLOCATE_SLICE/2)
-        at->registrations = realloc(at->registrations,
-                        sizeof(activity_registry_t) * (at->activityregslots + ALLOCATE_SLICE));
-
-    activity_registry_t *areg = &(at->registrations[at->numactivityregs++]);
-    strcpy(areg->name, name);
-    strcpy(areg->mask, mask);
-    areg->type = type;
+    // otherwise, make a new activity registration.
+    at->registrations[at->numactivityregs++] = activity_reg_new(name, mask, type);
+    
+    return true;
 
     return true;
 }
@@ -133,8 +133,8 @@ char *activity_get_mask(activitytable_t *at, char *name)
     // Get the mask from the registration for the activity with the given name
     for (i = 0; i < at->numactivityregs; i++)
     {
-        if (strcmp(at->registrations[i].name, name) == 0)
-            return at->registrations[i].mask;
+        if (strcmp(at->registrations[i]->name, name) == 0)
+            return at->registrations[i]->mask;
     }
     return NULL;
 }
@@ -147,8 +147,8 @@ int activity_get_type(activitytable_t *at, char *name)
 
     for (i = 0; i < at->numactivityregs; i++)
     {
-        if (strcmp(at->registrations[i].name, name) == 0)
-            return at->registrations[i].type;
+        if (strcmp(at->registrations[i]->name, name) == 0)
+            return at->registrations[i]->type;
     }
     return -1;
 }
@@ -161,7 +161,7 @@ jactivity_t *activity_new(activitytable_t *at, char *name)
 
     // Look for the registration
     for (i = 0; i <at->numactivityregs; i++)
-        if (strcmp(at->registrations[i].name, name) == 0)
+        if (strcmp(at->registrations[i]->name, name) == 0)
             break;
     // If the registration is not there, return NULL
     if (i == at->numactivityregs)
@@ -169,31 +169,13 @@ jactivity_t *activity_new(activitytable_t *at, char *name)
 
     // Look for a deleted slot.. if available, we reuse it.
     for (i = 0; i < at->numactivities; i++)
-        if (at->activities[i].state == DELETED)
+        if (at->activities[i]->state == DELETED)
             break;
 
     printf("i = %d, numactivities %d \n", i, at->numactivities);
 
-    // // Create a new slot if a deleted one is not found
-    // if (i == at->numactivities)
-    // {
-    //     if ((at->activityslots - at->numactivities) < ALLOCATE_SLICE/2)
-    //     {
-    //         printf("Reallocating...\n");
-    //         fflush(stdout);
-    //         at->activities = realloc(at->activities,
-    //                         sizeof(jactivity_t) * (at->activityslots + ALLOCATE_SLICE));
-    //         at->numactivities += ALLOCATE_SLICE;                        
-    //     }
-        
-    //     jact = &(at->activities[at->numactivities++]);
-    // }
-    // else
-    //     jact = &(at->activities[i]);
-
-    //  printf("Returning jact.. \n");
-
-     jact = (jactivity_t *)calloc(1, sizeof(jactivity_t));
+    jact = (jactivity_t *)calloc(1, sizeof(jactivity_t));
+    at->activities[at->numactivities++] = jact;
 
     // Setup the new activity
     jact->state = NEW;
@@ -204,7 +186,8 @@ jactivity_t *activity_new(activitytable_t *at, char *name)
     // TODO: Temporary stuff..
     jact->actarg = strdup(name);
 
-    printf("Before queue creation ..\n");
+    printf("Before queue creation .. %d\n", at->numactivities);
+    printf("Jact pointer %p\n", jact);
 
     // Setup the I/O queues
     jact->inq = queue_new(true);
@@ -219,6 +202,10 @@ jactivity_t *activity_new(activitytable_t *at, char *name)
     
     printf("Sent the command ..\n");
 
+    i = 0;
+    while (i++ < 100000000);
+    printf("=============================================>>>>>>>>>>>> \n");
+
     // return the pointer
     return jact;
 }
@@ -230,10 +217,10 @@ jactivity_t *activity_getbyid(activitytable_t *at, char *actid)
 
     for (i = 0; i < at->numactivities; i++)
     {
-        if (at->activities[i].state == DELETED)
+        if (at->activities[i]->state == DELETED)
             continue;
-        if (at->activities[i].actid == actid)
-            return &(at->activities[i]);
+        if (at->activities[i]->actid == actid)
+            return at->activities[i];
     }
     return NULL;
 }

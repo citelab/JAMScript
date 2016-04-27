@@ -200,18 +200,19 @@ void *jam_rexec_sync(jamstate_t *js, char *aname, ...)
     
     jactivity_t *jact = activity_new(js->atable, aname);
 
-
     printf("After create new activity \n");
 
     command_t *cmd = command_new_using_cbor("REXEC", "DEVICE", aname, jact->actid, jact->actarg, arr, qargs, i);
-
-    command_print(cmd);
     printf("Command created... \n");
+    
+    queue_enq(js->atable->globaloutq, cmd, sizeof(command_t));
+    while(1);
 
     jam_rexec_runner(js, jact, cmd);
 
     printf("After rexec runner \n");
     
+    return NULL;
     if (jact->state == TIMEDOUT)
     {
         activity_del(js->atable, jact);
@@ -326,7 +327,9 @@ void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     for (i = 0; i < js->cstate->conf->retries; i++)
     {
         printf("Enqueing...\n");
-        queue_enq(jact->outq, cmd, sizeof(command_t));
+       // queue_enq(jact->outq, cmd, sizeof(command_t));
+       queue_enq(js->atable->globaloutq, cmd, sizeof(command_t));
+       
         printf("Completed enqueuing.. bytes %lu\n", sizeof(command_t));
         
         tasksleep(&(jact->sem));
