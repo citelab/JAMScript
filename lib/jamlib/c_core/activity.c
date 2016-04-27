@@ -215,7 +215,7 @@ jactivity_t *activity_new(activitytable_t *at, char *name)
     // Send a message to the background so it starts watching for messages
     command_t *cmd = command_new("LOCAL", "NEW-ACTIVITY", name, jact->actid, jact->actarg, "");
     
-    queue_enq(at->globaloutq, cmd->buffer, cmd->length);
+    queue_enq(at->globaloutq, cmd, sizeof(command_t));
     
     printf("Sent the command ..\n");
 

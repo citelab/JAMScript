@@ -81,7 +81,7 @@ simplequeue_t *queue_new(bool ownedbyq)
 	sq->pushsock = nn_socket(AF_SP, NN_PUSH);
 	assert(sq->pushsock >= 0);
 	nn_connect(sq->pushsock, sq->name);
-	sq->ownedbyq = ownedbyq;
+	sq->ownedbyq = false; //ownedbyq;
 
 	printf("Helloooo 4\n");
 
@@ -103,24 +103,54 @@ bool queue_delete(simplequeue_t *sq)
  */
 bool queue_enq(simplequeue_t *sq, void *data, int size)
 {
-	int bytes = nn_send(sq->pushsock, data, size, 0);
-	if (bytes == size)
+	nvoid_t *dw = (nvoid_t *)calloc(1, sizeof(nvoid_t));
+
+	//size = 118;
+	printf("Size %d\n", size);
+	dw->len = size;
+	if (sq->ownedbyq) {
+		printf("Making a local copy .............\n");
+		
+		void *ndata = calloc(1, size);
+		memcpy(ndata, data, size);
+		dw->data = ndata;
+	}
+	else
+		dw->data = data;
+
+		printf("Dw size %d\n", dw->len);
+	int dwsize = sizeof(nvoid_t);
+	int bytes = nn_send (sq->pushsock, dw, dwsize, 0);
+	free(dw);
+
+	if (bytes == dwsize)
 		return true;
 	else
 		return false;
 }
 
-
-void *queue_deq(simplequeue_t *sq)
+nvoid_t *queue_deq(simplequeue_t *sq)
 {
 	char *buf = NULL;
-	nn_recv (sq->pullsock, &buf, NN_MSG, 0);
+	int bytes = nn_recv (sq->pullsock, &buf, NN_MSG, 0);
 
-	return buf;
+	if (bytes != sizeof(nvoid_t)) {
+		nn_freemsg(buf);
+		return NULL;
+	}
+	else
+	{
+		printf("Len %d \n", ((nvoid_t *)buf)->len);
+		
+		nvoid_t *data = (nvoid_t *)calloc(1, sizeof(nvoid_t));
+		memcpy(data, buf, sizeof(nvoid_t));
+		nn_freemsg(buf);
+		// why? I don't know. May be I could have just returned buf without releasing it.
+		return data;
+	}
 }
 
-
-void *queue_deq_timeout(simplequeue_t *sq, int timeout)
+nvoid_t *queue_deq_timeout(simplequeue_t *sq, int timeout)
 {
 	struct nn_pollfd pfd[1];
 	pfd[0].fd = sq->pullsock;
@@ -136,6 +166,8 @@ void *queue_deq_timeout(simplequeue_t *sq, int timeout)
 
 	return NULL;
 }
+
+
 
 
 // See the testers folder for testing routine for the simple queue module.

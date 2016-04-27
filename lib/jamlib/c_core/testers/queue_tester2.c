@@ -6,6 +6,8 @@
 #include <pthread.h>
 
 #include "nvoid.h"
+#include "command.h"
+
 /*
  * Simple tester for the simplequeue..
  */
@@ -32,16 +34,23 @@ char buf[64];
 int main(void)
 {
 	simplequeue_t *q = queue_new(true);
-    pthread_t tid;
+    command_t *t = command_new("REXEC", "DEVICE", "activity1", "testactivity_Id", "testAttribute", "");
+    
+    command_print(t);
 
-    pthread_create(&tid, NULL, read_queue, (void *)q);
+    printf("Size of t %d\n", sizeof(command_t));
 
-    while (1) {
-        printf("Enter string: ");
-        scanf("%s", buf);
-        printf("Wrote %s.. length %lu\n", buf, strlen(buf));
-        queue_enq(q, buf, strlen(buf));
-    }
+    queue_enq(q, t, sizeof(command_t));
+    nvoid_t *nv = queue_deq(q);
+    
+    printf("Value len %d\n", nv->len);
+    command_t *s = (command_t *)nv->data;
+    command_print(s);
+    
+    if (command_equal(t, s))
+        printf("Commands are equal\n");
+    else
+        printf("COmmands are NOT equal\n");
 
     queue_delete(q);
 }

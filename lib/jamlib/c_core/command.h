@@ -72,17 +72,16 @@ typedef struct _arg_t
 
 typedef struct _command_t
 {
-    cbor_item_t *cdata;                     // handle to the CBOR array
-    unsigned char *buffer;                  // CBOR byte array in raw byte form
-    int length;                             // length of the raw CBOR data
     char *cmd;                              // Name of the command
     char *opt;
     char *actname;                          // Activity name
     char *actid;                            // Activity ID
     char *actarg;                           // Activity arg
+    unsigned char *buffer;                  // CBOR byte array in raw byte form
+    int length;                             // length of the raw CBOR data
+    cbor_item_t *cdata;                     // handle to the CBOR array
     arg_t *args;                            // List of args
     int nargs;                              // length of args array
-
 } command_t;
 
 

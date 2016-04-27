@@ -370,3 +370,58 @@ void command_print(command_t *cmd)
     cbor_describe(cmd->cdata, stdout);
     printf("\n===================================\n");
 }
+
+
+bool only_one_null(void *p, void *q)
+{
+    if (p == NULL && q != NULL)
+        return true;
+    if (p != NULL && q == NULL)
+        return true;
+
+    return false;           
+}
+
+
+bool string_equal(char *p, char *q)
+{
+    if (p == NULL && q == NULL)
+        return true;
+
+    if (strcmp(p, q) == 0)
+        return true;
+    else
+        return false;    
+}
+
+bool command_equal(command_t *f, command_t *s)
+{
+    if (only_one_null(f->cmd, s->cmd))
+        return false;
+    if (only_one_null(f->opt, s->opt))
+        return false;       
+    if (only_one_null(f->actname, s->actname))
+        return false;
+    if (only_one_null(f->actid, s->actid))
+        return false;
+    if (only_one_null(f->actarg, s->actarg))
+        return false;
+    if (only_one_null(f->buffer, s->buffer))
+        return false;
+    if (only_one_null(f->cdata, s->cdata))
+        return false;
+    if (only_one_null(f->args, s->args))
+        return false;
+        
+    if (string_equal(f->cmd, s->cmd) &&
+        string_equal(f->opt, s->opt) &&
+        string_equal(f->actname, s->actname) &&
+        string_equal(f->actid, s->actid) &&
+        string_equal(f->actarg, s->actarg) &&
+        string_equal((char *)f->buffer, (char *)s->buffer))
+        return true;
+    else
+        return false;
+    
+    return false;
+}

@@ -148,7 +148,7 @@ void *jam_rexec_sync(jamstate_t *js, char *aname, ...)
     assert(fmask != NULL);
     arg_t *qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
 
-    printf("After get mask \n");
+    printf("After get mask %s\n", fmask);
 
     cbor_item_t *arr = cbor_new_indefinite_array();
     cbor_item_t *elem;
@@ -157,7 +157,6 @@ void *jam_rexec_sync(jamstate_t *js, char *aname, ...)
 
     while(*fmask)
     {
-        elem = NULL;
         switch(*fmask++)
         {
             case 'n':
@@ -168,11 +167,13 @@ void *jam_rexec_sync(jamstate_t *js, char *aname, ...)
                 qargs[i].type = NVOID_TYPE;
                 break;
             case 's':
+                printf("=============== string \n");
                 qargs[i].val.sval = strdup(va_arg(args, char *));
                 qargs[i].type = STRING_TYPE;
                 elem = cbor_build_string(qargs[i].val.sval);
                 break;
             case 'i':
+                printf("=============== integer \n");            
                 qargs[i].val.ival = va_arg(args, int);
                 qargs[i].type = INT_TYPE;
                 elem = cbor_build_uint32(abs(qargs[i].val.ival));
@@ -189,7 +190,7 @@ void *jam_rexec_sync(jamstate_t *js, char *aname, ...)
                 break;
         }
         i++;
-        if (elem != NULL)
+        if (elem)
             assert(cbor_array_push(arr, elem) == true);
     }
     va_end(args);
@@ -201,17 +202,16 @@ void *jam_rexec_sync(jamstate_t *js, char *aname, ...)
 
 
     printf("After create new activity \n");
-    
+
     command_t *cmd = command_new_using_cbor("REXEC", "DEVICE", aname, jact->actid, jact->actarg, arr, qargs, i);
 
+    command_print(cmd);
     printf("Command created... \n");
-    
+
     jam_rexec_runner(js, jact, cmd);
 
     printf("After rexec runner \n");
     
-    return NULL;
-
     if (jact->state == TIMEDOUT)
     {
         activity_del(js->atable, jact);
@@ -327,7 +327,7 @@ void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     {
         printf("Enqueing...\n");
         queue_enq(jact->outq, cmd, sizeof(command_t));
-        printf("Completed enqueuing.. \n");
+        printf("Completed enqueuing.. bytes %lu\n", sizeof(command_t));
         
         tasksleep(&(jact->sem));
 

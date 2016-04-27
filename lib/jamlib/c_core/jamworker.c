@@ -259,10 +259,13 @@ void jamworker_process_globaloutq(jamstate_t *js)
 {
     printf("Global Outq processing... \n");
     
-    command_t *rcmd = (command_t *)queue_deq(js->atable->globaloutq);
-    printf("Got packet.. \n");
-    fflush(stdout);
+    nvoid_t *nv = queue_deq(js->atable->globaloutq);
+    command_t *rcmd = (command_t *)nv->data;
+    printf("Got packet.. bytes %d\n", nv->len);
     command_print(rcmd);
+    printf("Helloooooo\n");
+    fflush(stdout);
+    
     return;
     
     if (rcmd != NULL)
