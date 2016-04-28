@@ -134,8 +134,13 @@ command_t *command_new(const char *cmd, char *opt, char *actname, char *actid, c
 {
     va_list args;
     nvoid_t *nv;
+    arg_t *qargs;
     int i = 0;
-    arg_t *qargs = (arg_t *)calloc(strlen(fmt), sizeof(arg_t));
+    
+    if (strlen(fmt) > 0)
+        qargs = (arg_t *)calloc(strlen(fmt), sizeof(arg_t));
+    else
+        qargs = NULL;        
 
     cbor_item_t *arr = cbor_new_indefinite_array();
     cbor_item_t *elem;

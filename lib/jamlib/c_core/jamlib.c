@@ -141,12 +141,16 @@ void *jam_rexec_sync(jamstate_t *js, char *aname, ...)
     va_list args;
     nvoid_t *nv;
     int i = 0;
+    arg_t *qargs;
 
     printf("Before get mask \n");
     // get the mask
     char *fmask = activity_get_mask(js->atable, aname);
     assert(fmask != NULL);
-    arg_t *qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
+    if (strlen(fmask) > 0)
+        qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
+    else
+        qargs = NULL;
 
     printf("After get mask %s\n", fmask);
 
@@ -231,12 +235,17 @@ jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, ...)
     va_list args;
     nvoid_t *nv;
     int i = 0;
+    arg_t *qargs;
 
     // get the mask
     char *fmask = activity_get_mask(js->atable, aname);
     assert(fmask != NULL);
     
-    arg_t *qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
+    if (strlen(fmask) > 0)
+        qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
+    else
+        qargs = NULL;
+        
 
     printf("After mask \n");
 
