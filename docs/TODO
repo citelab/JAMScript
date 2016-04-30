@@ -1,3 +1,20 @@
+
+April 29th
+
+Fix jam_rexec_runner()
+
+Get REXEC reply from the j-core.
+It should be routed to the c-core.
+
+Get the full protocol working.
+
+Multiple executions working for C->J side.
+
+Nested executions?
+
+
+
+
 April 14th
 ==========
 

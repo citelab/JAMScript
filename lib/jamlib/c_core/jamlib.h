@@ -40,6 +40,9 @@ extern "C" {
 
 #include <pthread.h>
 
+#include "task.h"
+#include "threadsem.h"
+
 typedef struct _jamstate_t
 {
     char *appname;
@@ -52,7 +55,8 @@ typedef struct _jamstate_t
     int numpollfds;
     
     timertype_t *maintimer;
-
+    threadsem_t *bgsem;
+    
     int maxleases;
 
 } jamstate_t;
@@ -67,13 +71,15 @@ typedef struct _temprecord_t
 
 
 jamstate_t *jam_init();
-bool jam_create_bgthread(jamstate_t *js);
+void jam_create_bgthread(void *arg);
 bool jam_exit(jamstate_t *js);
 void jam_event_loop(void *js);
 bool jam_core_ready(jamstate_t *js);
 int jam_execute_func(jamstate_t *js, const char *fname, const char *fmt, ...);
 void jam_reg_callback(jamstate_t *js, char *aname, eventtype_t etype,
                                                 event_callback_f cb, void *data);
+
+void *jam_rexec_sync(jamstate_t *js, char *aname, ...);
 
 temprecord_t *jam_create_temprecord(jamstate_t *js, jactivity_t *jact, command_t *cmd);
 void jam_rexec_run_wrapper(void *arg);

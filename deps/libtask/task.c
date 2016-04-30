@@ -368,7 +368,7 @@ main(int argc, char **argv)
 	taskargv = argv;
 
 	if(mainstacksize == 0)
-		mainstacksize = 256*1024;
+		mainstacksize = 256*1024*1024;
 	taskcreate(taskmainstart, nil, mainstacksize);
 	taskscheduler();
 	fprint(2, "taskscheduler returned in main!\n");

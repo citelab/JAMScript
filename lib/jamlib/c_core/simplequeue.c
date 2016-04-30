@@ -56,13 +56,8 @@ simplequeue_t *queue_new(bool ownedbyq)
 {
 	simplequeue_t *sq = (simplequeue_t *)calloc(1, sizeof(simplequeue_t));
 	assert(sq != NULL);
-
-	printf("Helloooo \n");
 	sq->pullsock = nn_socket(AF_SP, NN_PULL);
 	assert(sq->pullsock >= 0);
-
-	printf("Helloooo 2\n");
-	
 
 	// try to create a socket.. find a name that is not already used
 	while(1) {
@@ -76,15 +71,15 @@ simplequeue_t *queue_new(bool ownedbyq)
 		}
 	}
 
-	printf("Helloooo 3\n");
-
 	sq->pushsock = nn_socket(AF_SP, NN_PUSH);
 	assert(sq->pushsock >= 0);
 	nn_connect(sq->pushsock, sq->name);
 	sq->ownedbyq = false; //ownedbyq;
 
-	printf("Helloooo 4\n");
-
+	#ifdef DEBUG_MSGS
+		printf("Queue created at %s\n", sq->name);
+	#endif
+		
 	return sq;
 }
 
@@ -105,12 +100,8 @@ bool queue_enq(simplequeue_t *sq, void *data, int size)
 {
 	nvoid_t *dw = (nvoid_t *)calloc(1, sizeof(nvoid_t));
 
-	//size = 118;
-	printf("Size %d\n", size);
 	dw->len = size;
 	if (sq->ownedbyq) {
-		printf("Making a local copy .............\n");
-		
 		void *ndata = calloc(1, size);
 		memcpy(ndata, data, size);
 		dw->data = ndata;
@@ -118,7 +109,6 @@ bool queue_enq(simplequeue_t *sq, void *data, int size)
 	else
 		dw->data = data;
 
-		printf("Dw size %d\n", dw->len);
 	int dwsize = sizeof(nvoid_t);
 	int bytes = nn_send (sq->pushsock, dw, dwsize, 0);
 	free(dw);
@@ -140,8 +130,6 @@ nvoid_t *queue_deq(simplequeue_t *sq)
 	}
 	else
 	{
-		printf("Len %d \n", ((nvoid_t *)buf)->len);
-		
 		nvoid_t *data = (nvoid_t *)calloc(1, sizeof(nvoid_t));
 		memcpy(data, buf, sizeof(nvoid_t));
 		nn_freemsg(buf);
@@ -168,6 +156,16 @@ nvoid_t *queue_deq_timeout(simplequeue_t *sq, int timeout)
 }
 
 
+void queue_print(simplequeue_t *sq)
+{
+	printf("Queue name: %s\n", sq->name);
+	printf("Queue ");
+	if (sq->ownedbyq)
+		printf("owns the objects\n");
+	else
+		printf("does NOT own the objects\n");
+	printf("Pushsock = %d, pullsock = %d\n", sq->pushsock, sq->pullsock);
+}
 
 
 // See the testers folder for testing routine for the simple queue module.

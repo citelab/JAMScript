@@ -62,5 +62,6 @@ bool queue_delete(simplequeue_t *queue);
 bool queue_enq(simplequeue_t *queue, void *data, int len);
 nvoid_t *queue_deq(simplequeue_t *queue);
 nvoid_t *queue_deq_timeout(simplequeue_t *sq, int timeout);
+void queue_print(simplequeue_t *sq);
 
 #endif

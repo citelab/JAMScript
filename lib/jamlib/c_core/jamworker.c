@@ -29,6 +29,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <task.h>
 #include <string.h>
+#include "threadsem.h"
+
+#include "activity.h"
 
 
 // The JAM bgthread is run in another worker (pthread). Although it shares all
@@ -49,11 +52,14 @@ void *jamworker_bgthread(void *arg)
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldtype);
 
     // assemble the poller.. insert the FDs that should go into the poller
+    printf("---------------------- Calling assemble FDs\n");
     jamworker_assemble_fds(js);
 
     // heartbeat time is set to 1000 milliseconds    
     int beattime = 5000; 
 
+    printf("Signalling..........................\n");
+    thread_signal(js->bgsem);
     // get into the event processing..
     while (1)
     {
@@ -84,7 +90,7 @@ void jamworker_assemble_fds(jamstate_t *js)
 {
     int i;
 
-    printf("Assembling fds ................. %d activities \n", js->atable->numactivities);
+    printf("========================== Assembling fds ................. %d activities \n", js->atable->numactivities);
         
     // release old one..
     if (js->pollfds)
@@ -107,7 +113,7 @@ void jamworker_assemble_fds(jamstate_t *js)
     // scan the number of activities and get their input queue hooked
     for (i = 0; i < js->atable->numactivities; i++)
     {
-        js->pollfds[i+3].fd = js->atable->activities[i]->outq->pullsock;
+        js->pollfds[i+4].fd = js->atable->activities[i]->outq->pullsock;
         printf("Inserted an activity pullsock.. \n");
     }
 
@@ -120,8 +126,8 @@ void jamworker_assemble_fds(jamstate_t *js)
 int jamworker_wait_fds(jamstate_t *js, int beattime)
 {
     int i;
-//   for (i = 0; i < js->numpollfds; i++)
-//        printf("%d) Waiting on %d, event %d\n", i, js->pollfds[i].fd, js->pollfds[i].events);
+   for (i = 0; i < js->numpollfds; i++)
+        printf("%d) Waiting on %d, event %d\n", i, js->pollfds[i].fd, js->pollfds[i].events);
     
     // wait on the nn_pollfd array that is in the jamstate_t structure!
     //
@@ -173,7 +179,7 @@ void jamworker_process_reqsock(jamstate_t *js)
         {
             // Send it to the main thread and unblock the thread
             queue_enq(js->atable->globalinq, rcmd, sizeof(command_t));
-            taskwakeup(&(js->atable->globalsem));
+        //    taskwakeup(&(js->atable->globalsem));
         }
         else
         if (strcmp(rcmd->actname, "ACTIVITY") == 0)
@@ -184,7 +190,7 @@ void jamworker_process_reqsock(jamstate_t *js)
             
             // Send it to the activity and unblock the activity
             queue_enq(jact->inq, rcmd, sizeof(command_t));
-            taskwakeup(&(jact->sem));
+    //        taskwakeup(&(jact->sem));
         }
         else
         if (strcmp(rcmd->actname, "PINGER") == 0)
@@ -215,7 +221,7 @@ void jamworker_process_subsock(jamstate_t *js)
             if (jam_eval_condition(rcmd->actarg)) 
             {
                 queue_enq(js->atable->globalinq, rcmd, sizeof(command_t));
-                taskwakeup(&(js->atable->globalsem));
+          //      taskwakeup(&(js->atable->globalsem));
                 
                 // rcmd is released in the main thread after consumption
             }
@@ -300,9 +306,12 @@ void jamworker_process_globaloutq(jamstate_t *js)
 //
 void jamworker_process_actoutq(jamstate_t *js, int indx)
 {
-    command_t *rcmd = (command_t *)queue_deq(js->atable->activities[indx]->outq);
+    nvoid_t *nv = queue_deq(js->atable->activities[indx]->outq);
+    command_t *rcmd = (command_t *)nv->data;
     if (rcmd != NULL)
     {
+        printf("ActOutQ %s, opt = %s\n", rcmd->cmd, rcmd->opt);
+        fflush(stdout);
         // QCMD: LOCAL DEL-ACTIVITY actname actarg
         // Otherwise, send it to the reqsock
         if (strcmp(rcmd->cmd, "LOCAL") == 0 &&
@@ -336,7 +345,7 @@ void jam_send_ping(jamstate_t *js)
     command_t *scmd;
 
     // create a request-reply socket
-    scmd = command_new("PING", "DEVICE", "PINGER", js->cstate->conf->device_name, "s", js->cstate->conf->device_id);
+    scmd = command_new("PING", "DEVICE", "PINGER", js->cstate->conf->device_name, js->cstate->conf->device_id, "s", "temp");
 
     socket_send(js->cstate->reqsock, scmd);
     command_free(scmd);

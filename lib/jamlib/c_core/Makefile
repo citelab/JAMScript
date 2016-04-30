@@ -1,9 +1,9 @@
-CC = gcc -Wall
-CFLAGS = -I../../../deps/libtask
-LDFLAGS = -lcbor -lnanomsg ./libtask.a
+CC = clang -Wall -g 
+CFLAGS = -I../../../deps/libtask -DDBEUG_MSGS
+LDFLAGS = -lcbor -lnanomsg ./libtask.a 
 
 OBJECTS = activity.o simplequeue.o command.o coreconf.o core.o jamlib.o jamworker.o callback.o \
-		timer.o socket.o nvoid.o event.o mydb.o dbutil.o cborutils.o
+		timer.o socket.o nvoid.o event.o mydb.o dbutil.o cborutils.o threadsem.o
 
 testjam: $(OBJECTS)
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)

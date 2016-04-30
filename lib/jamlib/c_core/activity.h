@@ -56,7 +56,7 @@ enum activity_type_t
 
 typedef struct _jactivity_t
 {
-    Rendez  sem;   
+//    Rendez  sem;   
     enum activity_state_t state;
     char name[MAX_NAME_LEN];
     char *actid;
@@ -87,7 +87,7 @@ typedef struct _activitytable_t
 
     simplequeue_t *globalinq;
     simplequeue_t *globaloutq;
-    Rendez globalsem;
+//    Rendez globalsem;
 
 } activitytable_t;
 

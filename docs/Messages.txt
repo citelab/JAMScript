@@ -98,7 +98,7 @@ activity ID (actid) should be received back from the Fog.
 The arg0 would be lease value within which the Fog agreed to 
 get back regarding the execution of the activity. 
 
-[[ REXEC-ERR FOG ACTIVITY __  runid ]]
+[[ REXEC-NAC FOG ACTIVITY __  runid ]]
 
 The request for activity execution resulted in an error. Obviously, the activity 
 execution did not even start at the Fog. 

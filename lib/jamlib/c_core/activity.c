@@ -93,8 +93,19 @@ void activity_print(jactivity_t *ja)
     printf("Activity arg: %s\n", ja->actarg);
     printf("Activity state: %d\n", ja->state);
     printf("Activity name: %s\n", ja->name);
-    nvoid_print(ja->code);
+    if (ja->code != NULL)
+        nvoid_print(ja->code);
+    else
+        printf("Activity code: NULL\n");
+        
+    if (ja->inq != NULL)
+        queue_print(ja->inq);
+    if (ja->outq != NULL)
+        queue_print(ja->outq);    
+        
     printf("\n");
+    
+    
 }
 
 activity_registry_t *activity_reg_new(char *name, char *mask, int type)
@@ -120,8 +131,10 @@ bool activity_make(activitytable_t *at, char *name, char *mask, int type)
 
     // otherwise, make a new activity registration.
     at->registrations[at->numactivityregs++] = activity_reg_new(name, mask, type);
-    
-    return true;
+
+    #ifdef DEBUG_MSGS
+        printf("Activity make success: %s.. made\n", name);
+    #endif
 
     return true;
 }
@@ -181,7 +194,7 @@ jactivity_t *activity_new(activitytable_t *at, char *name)
     jact->state = NEW;
     strcpy(jact->name, name);
     jact->code = NULL;
-    bzero(&(jact->sem), sizeof(Rendez));
+ //   bzero(&(jact->sem), sizeof(Rendez));
     jact->actid = activity_gettime();
     // TODO: Temporary stuff..
     jact->actarg = strdup(name);
@@ -196,14 +209,14 @@ jactivity_t *activity_new(activitytable_t *at, char *name)
     printf("After queue creation ..\n");
 
     // Send a message to the background so it starts watching for messages
-    command_t *cmd = command_new("LOCAL", "NEW-ACTIVITY", name, jact->actid, jact->actarg, "");
+    command_t *cmd = command_new("LOCAL", "NEW-ACTIVITY", name, jact->actid, jact->actarg, "s", "temp");
     
     queue_enq(at->globaloutq, cmd, sizeof(command_t));
     
     printf("Sent the command ..\n");
 
-    i = 0;
-    while (i++ < 100000000);
+//    i = 0;
+//    while (i++ < 100000000);
     printf("=============================================>>>>>>>>>>>> \n");
 
     // return the pointer
@@ -236,7 +249,7 @@ void activity_del(activitytable_t *at, jactivity_t *jact)
     // the number of activities goes below a certain number?
 
     // Send a message to the background so it starts watching for messages
-    command_t *cmd = command_new("LOCAL", "DEL-ACTIVITY", jact->name, jact->actid, jact->actarg, "");
+    command_t *cmd = command_new("LOCAL", "DEL-ACTIVITY", jact->name, jact->actid, jact->actarg, "s", "temp");
     queue_enq(at->globaloutq, cmd->buffer, cmd->length);
 }
 

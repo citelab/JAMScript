@@ -62,26 +62,41 @@ jamstate_t *jam_init()
     js->atable->globaloutq = queue_new(true);
 
     printf("Hi\n");
-    bzero(&(js->atable->globalsem), sizeof(Rendez));
+ //   bzero(&(js->atable->globalsem), sizeof(Rendez));
 
     // Start the event loop in another thread.. with cooperative threads.. we
     // to yield for that thread to start running
-    taskcreate(jam_event_loop, js, STACKSIZE);
+ //   taskcreate(jam_event_loop, js, STACKSIZE);
 
     js->maintimer = timer_init();
+    
+    js->bgsem = threadsem_new();
     
     printf("End of Jam-lib\n");
     return js;
 }
 
-bool jam_create_bgthread(jamstate_t *js)
+
+void jam_create_bgthread(void *arg)
 {
+    printf("+++++==================================\n");
+    
+    jamstate_t *js = (jamstate_t *)arg;
     int rval = pthread_create(&(js->bgthread), NULL, jamworker_bgthread, (void *)js);
     if (rval != 0) {
         perror("ERROR! Unable to start the jamworker thread");
-        return false;
+        return;
     }
-    return true;
+     
+    printf("Waiting......................................\n");
+    task_wait(js->bgsem);
+    printf("=======================================================After waitng.....\n");
+    
+    activity_make(js->atable, "test", "sii", SYNC);
+    printf("Heereerere \n");
+    
+    jam_rexec_sync(js, "test", "f", 20, 10);
+    
 }
 
 
@@ -205,13 +220,15 @@ void *jam_rexec_sync(jamstate_t *js, char *aname, ...)
     jactivity_t *jact = activity_new(js->atable, aname);
 
     printf("After create new activity \n");
+    jact->actid = strdup(jact->actarg);
+
 
     command_t *cmd = command_new_using_cbor("REXEC", "DEVICE", aname, jact->actid, jact->actarg, arr, qargs, i);
+    
+    command_print(cmd);
     printf("Command created... \n");
     
-    queue_enq(js->atable->globaloutq, cmd, sizeof(command_t));
-    while(1);
-
+    
     jam_rexec_runner(js, jact, cmd);
 
     printf("After rexec runner \n");
@@ -297,7 +314,7 @@ jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, ...)
     jactivity_t *jact = activity_new(js->atable, aname);
     printf("Blah 2\n");
     
-    command_t *cmd = command_new_using_cbor("REXEC", "DEVICE", aname, jact->actid, jact->actarg, arr, qargs, i);
+    command_t *cmd = command_new_using_cbor("REXEC", "DEVICE", aname, "jact->actid", jact->actarg, arr, qargs, i);
     printf("Blah 3\n");
     
     temprecord_t *trec = jam_create_temprecord(js, jact, cmd);
@@ -336,12 +353,11 @@ void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     for (i = 0; i < js->cstate->conf->retries; i++)
     {
         printf("Enqueing...\n");
-       // queue_enq(jact->outq, cmd, sizeof(command_t));
-       queue_enq(js->atable->globaloutq, cmd, sizeof(command_t));
+        queue_enq(jact->outq, cmd, sizeof(command_t));
        
         printf("Completed enqueuing.. bytes %lu\n", sizeof(command_t));
-        
-        tasksleep(&(jact->sem));
+        while(1);
+   //     tasksleep(&(jact->sem));
 
         printf("After sleep ..\n");
         rcmd  = (command_t *)queue_deq(jact->inq);
@@ -365,7 +381,7 @@ void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         int timerval = jam_get_timer_from_reply(rcmd);
         command_free(rcmd);
         jam_set_timer(js, jact->actarg, timerval);
-        tasksleep(&(jact->sem));
+   //     tasksleep(&(jact->sem));
 
         rcmd = (command_t *)queue_deq(jact->inq);
 
@@ -373,7 +389,7 @@ void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
             command_t *lcmd = command_new("STATUS", "LEASE", jact->name, jact->actid, jact->actarg, "");
             queue_enq(jact->outq, lcmd, sizeof(command_t));
             command_free(lcmd);
-            tasksleep(&(jact->sem));
+        //    tasksleep(&(jact->sem));
 
             rcmd = (command_t *)queue_deq(jact->inq);
             continue;
@@ -410,14 +426,16 @@ void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
 
 
 void taskmain(int argc, char **argv)
-{
+{   
     jamstate_t *js = jam_init();
 
+    printf("Before taskcreate... \n");
     // create the background thread
-    jam_create_bgthread(js);
-    
-    activity_make(js->atable, "test", "sii", SYNC);
-    
-    jam_rexec_sync(js, "test", "f", 20, 10);
+    taskcreate(jam_create_bgthread, js, STACKSIZE);
+  
+    printf("======================After taskcreate... \n");
+
+//    while (1)
+//      taskyield();
     
 }

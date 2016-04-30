@@ -68,6 +68,7 @@ command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, cha
     cmdo->cmd = strdup(cmd);
     cmdo->opt = strdup(opt);
     cmdo->actname = strdup(actname);
+    cmdo->actid = strdup(actid);
     cmdo->actarg = strdup(actarg);
 
     cmdo->args = args;
