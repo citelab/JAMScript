@@ -82,12 +82,8 @@ bool coreconf_recover(coreconf_t *conf)
     conf->device_id = database_get_string(conf->db, "DEVICE_ID");
     conf->retries = database_get_int(conf->db, "RETRIES");
 
-    printf("Hooo\n");
     conf->num_fog_servers = database_get_int(conf->db, "NUM_FOG_SERVERS");
-    printf("Hooo\n");
-    fflush(stdout);
     conf->num_cloud_servers = database_get_int(conf->db, "NUM_CLOUD_SERVERS");
-    printf("Hooo 2\n");
 
     for (i = 0; i < conf->num_fog_servers; i++)
     {
@@ -96,14 +92,13 @@ bool coreconf_recover(coreconf_t *conf)
         conf->fog_servers[i] = database_get_string(conf->db, key);
     }
 
-    printf("Hooo 3\n");
     for (i = 0; i < conf->num_cloud_servers; i++)
     {
         char key[128];
         sprintf(key, "CLOUD_SERVERS(%d)", i);
         conf->cloud_servers[i] = database_get_string(conf->db, key);
     }
-    printf("Hooo 4\n");
+
     conf->registered = database_get_int(conf->db, "REGISTERED");
     if (conf->registered)
     {

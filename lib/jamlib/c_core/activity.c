@@ -132,7 +132,7 @@ bool activity_make(activitytable_t *at, char *name, char *mask, int type)
     // otherwise, make a new activity registration.
     at->registrations[at->numactivityregs++] = activity_reg_new(name, mask, type);
 
-    #ifdef DEBUG_MSGS
+    #ifdef DEBUG_LVL1
         printf("Activity make success: %s.. made\n", name);
     #endif
 
@@ -185,8 +185,6 @@ jactivity_t *activity_new(activitytable_t *at, char *name)
         if (at->activities[i]->state == DELETED)
             break;
 
-    printf("i = %d, numactivities %d \n", i, at->numactivities);
-
     jact = (jactivity_t *)calloc(1, sizeof(jactivity_t));
     at->activities[at->numactivities++] = jact;
 
@@ -194,30 +192,24 @@ jactivity_t *activity_new(activitytable_t *at, char *name)
     jact->state = NEW;
     strcpy(jact->name, name);
     jact->code = NULL;
- //   bzero(&(jact->sem), sizeof(Rendez));
+    jact->sem = threadsem_new();
     jact->actid = activity_gettime();
     // TODO: Temporary stuff..
+    // TODO: What should be done here?
     jact->actarg = strdup(name);
-
-    printf("Before queue creation .. %d\n", at->numactivities);
-    printf("Jact pointer %p\n", jact);
 
     // Setup the I/O queues
     jact->inq = queue_new(true);
     jact->outq = queue_new(true);
 
-    printf("After queue creation ..\n");
-
     // Send a message to the background so it starts watching for messages
     command_t *cmd = command_new("LOCAL", "NEW-ACTIVITY", name, jact->actid, jact->actarg, "s", "temp");
-    
-    queue_enq(at->globaloutq, cmd, sizeof(command_t));
-    
-    printf("Sent the command ..\n");
 
-//    i = 0;
-//    while (i++ < 100000000);
-    printf("=============================================>>>>>>>>>>>> \n");
+    queue_enq(at->globaloutq, cmd, sizeof(command_t));
+      
+    #ifdef DEBUG_LVL1
+        printf("Created the activity: %s\n", jact->name);
+    #endif
 
     // return the pointer
     return jact;

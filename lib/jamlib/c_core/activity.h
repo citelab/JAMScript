@@ -27,6 +27,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "task.h"
 #include "command.h"
 #include "simplequeue.h"
+#include "threadsem.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -56,7 +57,7 @@ enum activity_type_t
 
 typedef struct _jactivity_t
 {
-//    Rendez  sem;   
+    threadsem_t *sem;   
     enum activity_state_t state;
     char name[MAX_NAME_LEN];
     char *actid;
@@ -64,7 +65,6 @@ typedef struct _jactivity_t
     nvoid_t *code;
     simplequeue_t *inq;
     simplequeue_t *outq;
-
 
 } jactivity_t;
 
@@ -87,7 +87,7 @@ typedef struct _activitytable_t
 
     simplequeue_t *globalinq;
     simplequeue_t *globaloutq;
-//    Rendez globalsem;
+    threadsem_t *globalsem;
 
 } activitytable_t;
 

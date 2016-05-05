@@ -33,29 +33,26 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 corestate_t *core_init(int timeout)
 {
-    printf("Core init..\n");
+    #ifdef DEBUG_MSGS
+        printf("Core initialization...");
+    #endif
+
     // create the core state structure..
     corestate_t *cs = (corestate_t *)calloc(1, sizeof(corestate_t));
     // get core configuration
 
-    printf("Before core init\n");
     cs->conf = coreconf_get();
-    printf("After conf get\n");
     if (cs->conf == NULL)
     {
         printf("ERROR!! Unable to create or recover configuration.\n");
         exit(1);
     }
 
-
-    printf("Hi 1 .. %d\n", cs->conf->registered);
     if (!cs->conf->registered)
         core_do_register(cs, timeout);
 
-    printf("Hi 2\n");
     if (cs->conf->registered)
     {
-        printf("Connecting...\n");
         if (!core_do_connect(cs, timeout))
         {
             printf("ERROR!! Unable to connect to the Fog.\n");
@@ -68,7 +65,10 @@ corestate_t *core_init(int timeout)
         exit(1);
     }
 
-    printf("At the end..\n");
+    #ifdef DEBUG_MSGS
+        printf("\t\t Done\n");
+    #endif
+
     return cs;
 }
 
@@ -83,16 +83,22 @@ void core_do_register(corestate_t *cs, int timeout)
 {
     int i;
 
-    printf("Hii.... %d \n", cs->conf->registered);
+    #ifdef DEBUG_MSGS
+        printf("Core Registration ..... ");
+    #endif
+
     for (i = 0; i < cs->conf->retries; i++)
     {
-        printf("Do reg at fog \n");
         core_register_at_fog(cs, timeout);
-        printf("Registered .. %d\n", cs->conf->registered);
-        if (cs->conf->registered)
+        if (cs->conf->registered) 
+        {
+    #ifdef DEBUG_MSGS
+        printf("\t\t Done\n");
+    #endif
             return;
+        }
     }
-    printf("Hii ==== %d\n", cs->conf->retries);
+
     // TODO: Segfault below.. in the function??
     if (core_find_fog_from_cloud(cs, timeout)) {
 
@@ -100,9 +106,15 @@ void core_do_register(corestate_t *cs, int timeout)
         {
             core_register_at_fog(cs, timeout);
             if (cs->conf->registered)
+            {
+    #ifdef DEBUG_MSGS
+        printf("\t\t Done\n");
+    #endif
                 return;
+            }
         }
     }
+    
 }
 
 
@@ -111,6 +123,10 @@ bool core_find_fog_from_cloud(corestate_t *cstate, int timeout)
     int i;
     bool gotnew = false;
 
+    #ifdef DEBUG_MSGS
+        printf("Finding a Fog from Cloud.. \n");
+    #endif
+    
     // Send a "DISCOVER", "FOG" request to the cloud endpoints
     command_t *scmd = command_new("DISCOVER", "FOG", "", 0, "s", cstate->conf->app_name);
 
@@ -118,11 +134,8 @@ bool core_find_fog_from_cloud(corestate_t *cstate, int timeout)
 
         // create a request-reply socket
         socket_t *sock = socket_new(SOCKET_REQU);
-                printf("Hello 1\n");
         socket_connect(sock, cstate->conf->cloud_servers[i], REQUEST_PORT);
-                printf("Hello 2\n");
         socket_send(sock, scmd);
-        printf("Hello 3\n");
         command_t *rcmd = socket_recv_command(sock, timeout);
         if (rcmd == NULL)
             continue;
@@ -158,7 +171,6 @@ bool core_find_fog_from_cloud(corestate_t *cstate, int timeout)
 }
 
 
-
 // Insert the given address at the beginning of the fog server address
 //
 void core_insert_fog_addr(corestate_t *cstate, char *host)
@@ -179,23 +191,18 @@ void core_register_at_fog(corestate_t *cs, int timeout)
     int i;
     command_t *scmd;
 
-    printf("Params\n");
-    printf("Appname %s\n", cs->conf->app_name);
-    printf("Device name %s\n", cs->conf->device_name);
-    printf("Deviceid %s\n", cs->conf->device_id);
+    #ifdef DEBUG_MSGS
+        printf("Registering the device at the Fog.. ");
+    #endif   
 
     scmd = command_new("REGISTER", "DEVICE", cs->conf->app_name, cs->conf->device_id, cs->conf->device_name, "");
 
-    printf("Fog servers %d\n", cs->conf->num_fog_servers);
     for (i = 0; i < cs->conf->num_fog_servers; i++) {
-        printf("..\n");
         // create a request-reply socket
         socket_t *sock = socket_new(SOCKET_REQU);
         socket_connect(sock, cs->conf->fog_servers[i], REQUEST_PORT);
         socket_send(sock, scmd);
-        printf("Waiting to receive...\n");
         command_t *rcmd = socket_recv_command(sock, timeout);
-        printf("Got...\n");
 
         if (rcmd == NULL)
         {
@@ -207,7 +214,9 @@ void core_register_at_fog(corestate_t *cs, int timeout)
             if (strcmp(rcmd->cmd, "REGISTER-ACK") == 0 &&
                 strcmp(rcmd->opt, "ORI") == 0)
             {
-                printf("Got registered ori.. \n");
+            #ifdef DEBUG_MSGS
+                printf("\t\t Done. Got original registration \n");
+            #endif   
                 if (rcmd->nargs > 0 && rcmd->args[0].type == INT_TYPE)
                 {
                     cs->conf->port = rcmd->args[0].val.ival;
@@ -229,7 +238,9 @@ void core_register_at_fog(corestate_t *cs, int timeout)
             if (strcmp(rcmd->cmd, "REGISTER-ACK") == 0 &&
                 strcmp(rcmd->opt, "ALT") == 0)
             {
-                printf("Got registered alt.. \n");
+            #ifdef DEBUG_MSGS
+                printf("\t\t Done. Got alternate registration \n");
+            #endif
                 // TODO: Anything else here?
                 //
                 if (rcmd->nargs > 0 && rcmd->args[0].type == INT_TYPE)
@@ -264,20 +275,20 @@ void core_register_at_fog(corestate_t *cs, int timeout)
 
 bool core_do_connect(corestate_t *cs, int timeout)
 {
+    #ifdef DEBUG_MSGS
+        printf("Setting up the sockets to the Fog..server - %s:%d\n", cs->conf->my_fog_server, cs->conf->port);
+    #endif 
+    
     // We already have a port that is allocated for this device.
     // Connect to the Fog at the given port (REQREP)
-    printf("Connecting.. REQU..%s %d\n", cs->conf->my_fog_server, cs->conf->port);
 
     cs->reqsock = socket_new(SOCKET_REQU);
     socket_connect(cs->reqsock, cs->conf->my_fog_server, cs->conf->port);
-    printf("Connected.. REQU\n");
 
-    printf("Connecting.. subs\n");
     // Connect to the Fog at the Publish and Survey sockets
     cs->subsock = socket_new(SOCKET_SUBS);
     socket_connect(cs->subsock, cs->conf->my_fog_server, PUBLISH_PORT);
 
-    printf("Connected.. resp\n");
     cs->respsock = socket_new(SOCKET_RESP);
     socket_connect(cs->respsock, cs->conf->my_fog_server, SURVEY_PORT);
 

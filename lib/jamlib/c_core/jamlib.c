@@ -38,8 +38,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 jamstate_t *jam_init()
 {
-    jamstate_t *js = (jamstate_t *)calloc(1, sizeof(jamstate_t));
+    #ifdef DEBUG_LVL1
+        printf("JAM Library initialization... ");
+    #endif 
 
+    jamstate_t *js = (jamstate_t *)calloc(1, sizeof(jamstate_t));
 
     // TODO: Remove the hardcoded timeout values
     // 200 milliseconds timeout now set
@@ -53,7 +56,6 @@ jamstate_t *jam_init()
     // Callback initialization
     js->callbacks = callbacks_new();
     js->atable = activity_table_new();
-    printf("Hi\n");
 
     // Queue initialization
     // globalinq is used by the main thread for input purposes
@@ -61,42 +63,35 @@ jamstate_t *jam_init()
     js->atable->globalinq = queue_new(true);
     js->atable->globaloutq = queue_new(true);
 
-    printf("Hi\n");
- //   bzero(&(js->atable->globalsem), sizeof(Rendez));
+    js->atable->globalsem = threadsem_new();
 
-    // Start the event loop in another thread.. with cooperative threads.. we
-    // to yield for that thread to start running
- //   taskcreate(jam_event_loop, js, STACKSIZE);
-
-    js->maintimer = timer_init();
+    js->maintimer = timer_init("maintimer");
     
     js->bgsem = threadsem_new();
+
+    int rval = pthread_create(&(js->bgthread), NULL, jamworker_bgthread, (void *)js);
+    if (rval != 0) {
+        perror("ERROR! Unable to start the jamworker thread");
+        exit(1);
+    }
     
-    printf("End of Jam-lib\n");
+    task_wait(js->bgsem);
+    
+    #ifdef DEBUG_LVL1
+        printf("\t\t Done.");
+    #endif 
     return js;
 }
 
 
-void jam_create_bgthread(void *arg)
+void jam_run_application(void *arg)
 {
-    printf("+++++==================================\n");
-    
     jamstate_t *js = (jamstate_t *)arg;
-    int rval = pthread_create(&(js->bgthread), NULL, jamworker_bgthread, (void *)js);
-    if (rval != 0) {
-        perror("ERROR! Unable to start the jamworker thread");
-        return;
-    }
-     
-    printf("Waiting......................................\n");
-    task_wait(js->bgsem);
-    printf("=======================================================After waitng.....\n");
-    
+            
     activity_make(js->atable, "test", "sii", SYNC);
-    printf("Heereerere \n");
     
     jam_rexec_sync(js, "test", "f", 20, 10);
-    
+        
 }
 
 
@@ -110,7 +105,10 @@ void jam_event_loop(void *arg)
 
     while ((e = get_event(js))) {
         if (e != NULL)
-            callbacks_call(js->callbacks, js, e);
+        {
+            printf("=============== GOT EVENT %s=========\n", e->actname);
+         //   callbacks_call(js->callbacks, js, e);
+        }
         else
             taskexit(0);
 
@@ -126,6 +124,7 @@ void jam_event_loop(void *arg)
 //
 event_t *get_event(jamstate_t *js)
 {
+    task_wait(js->atable->globalsem);
     command_t *cmd = (command_t *)queue_deq(js->atable->globalinq);
 
     if (cmd == NULL)
@@ -134,9 +133,8 @@ event_t *get_event(jamstate_t *js)
     if (cmd->cmd == NULL)
         return NULL;
 
-    // TODO: Something should be done here...
-
-    return NULL;
+    // TODO: This needs to be fixed ASAP!
+    return event_complete_new(cmd->actname, NULL, "temp");
 }
 
 
@@ -158,7 +156,6 @@ void *jam_rexec_sync(jamstate_t *js, char *aname, ...)
     int i = 0;
     arg_t *qargs;
 
-    printf("Before get mask \n");
     // get the mask
     char *fmask = activity_get_mask(js->atable, aname);
     assert(fmask != NULL);
@@ -166,8 +163,6 @@ void *jam_rexec_sync(jamstate_t *js, char *aname, ...)
         qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
     else
         qargs = NULL;
-
-    printf("After get mask %s\n", fmask);
 
     cbor_item_t *arr = cbor_new_indefinite_array();
     cbor_item_t *elem;
@@ -179,20 +174,17 @@ void *jam_rexec_sync(jamstate_t *js, char *aname, ...)
         switch(*fmask++)
         {
             case 'n':
-                printf("Bytestringn.... \n");
                 nv = va_arg(args, nvoid_t*);
                 elem = cbor_build_bytestring(nv->data, nv->len);
                 qargs[i].val.nval = nv;
                 qargs[i].type = NVOID_TYPE;
                 break;
             case 's':
-                printf("=============== string \n");
                 qargs[i].val.sval = strdup(va_arg(args, char *));
                 qargs[i].type = STRING_TYPE;
                 elem = cbor_build_string(qargs[i].val.sval);
                 break;
             case 'i':
-                printf("=============== integer \n");            
                 qargs[i].val.ival = va_arg(args, int);
                 qargs[i].type = INT_TYPE;
                 elem = cbor_build_uint32(abs(qargs[i].val.ival));
@@ -214,26 +206,19 @@ void *jam_rexec_sync(jamstate_t *js, char *aname, ...)
     }
     va_end(args);
 
-    printf("Before create new activity %s\n", aname);
-    
-    
     jactivity_t *jact = activity_new(js->atable, aname);
 
-    printf("After create new activity \n");
     jact->actid = strdup(jact->actarg);
 
 
     command_t *cmd = command_new_using_cbor("REXEC", "DEVICE", aname, jact->actid, jact->actarg, arr, qargs, i);
     
-    command_print(cmd);
-    printf("Command created... \n");
-    
+    #ifdef DEBUG_LVL1
+        printf("Starting JAM exec runner... \n");
+    #endif
     
     jam_rexec_runner(js, jact, cmd);
-
-    printf("After rexec runner \n");
     
-    return NULL;
     if (jact->state == TIMEDOUT)
     {
         activity_del(js->atable, jact);
@@ -352,14 +337,9 @@ void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
 
     for (i = 0; i < js->cstate->conf->retries; i++)
     {
-        printf("Enqueing...\n");
         queue_enq(jact->outq, cmd, sizeof(command_t));
-       
-        printf("Completed enqueuing.. bytes %lu\n", sizeof(command_t));
-        while(1);
-   //     tasksleep(&(jact->sem));
+        task_wait(jact->sem);
 
-        printf("After sleep ..\n");
         rcmd  = (command_t *)queue_deq(jact->inq);
         if (rcmd != NULL)
         {
@@ -381,7 +361,7 @@ void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         int timerval = jam_get_timer_from_reply(rcmd);
         command_free(rcmd);
         jam_set_timer(js, jact->actarg, timerval);
-   //     tasksleep(&(jact->sem));
+        task_wait(jact->sem);
 
         rcmd = (command_t *)queue_deq(jact->inq);
 
@@ -389,7 +369,7 @@ void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
             command_t *lcmd = command_new("STATUS", "LEASE", jact->name, jact->actid, jact->actarg, "");
             queue_enq(jact->outq, lcmd, sizeof(command_t));
             command_free(lcmd);
-        //    tasksleep(&(jact->sem));
+            task_wait(jact->sem);
 
             rcmd = (command_t *)queue_deq(jact->inq);
             continue;
@@ -429,13 +409,11 @@ void taskmain(int argc, char **argv)
 {   
     jamstate_t *js = jam_init();
 
-    printf("Before taskcreate... \n");
-    // create the background thread
-    taskcreate(jam_create_bgthread, js, STACKSIZE);
-  
-    printf("======================After taskcreate... \n");
+    // Start the event loop in another thread.. with cooperative threads.. we
+    // to yield for that thread to start running
+    taskcreate(jam_event_loop, js, STACKSIZE);
 
-//    while (1)
-//      taskyield();
-    
+    // create the application runner
+    taskcreate(jam_run_application, js, STACKSIZE);
+
 }

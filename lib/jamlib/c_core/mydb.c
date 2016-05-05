@@ -136,7 +136,7 @@ bool check_zero_key(mydb_t *db, void *key)
 
 bool check_equal_key(mydb_t *db, void *ckey, void *rkey)
 {
-#ifdef DEBUG
+#ifdef DEBUG_LVL2
     print_key(db, "CKey", ckey);
     print_key(db, "RKey", rkey);
 #endif
@@ -147,7 +147,7 @@ bool check_equal_key(mydb_t *db, void *ckey, void *rkey)
 
 bool check_equal_data(mydb_t *db, void *cdata, void *rdata)
 {
-#ifdef DEBUG
+#ifdef DEBUG_LVL2
     print_data(db, "CData", cdata);
     print_data(db, "RDdata", rdata);
 #endif
@@ -208,7 +208,7 @@ bool database_put(mydb_t *mydb, void *key, void *data)
     // check the key.. does it exist?
     int recnum = search_database(mydb, key);
     if (recnum < 0) {
-#ifdef DEBUG
+#ifdef DEBUG_LVL2
         printf("Adding new ...");
 #endif
         // Get a new record number..
@@ -231,7 +231,7 @@ bool database_put(mydb_t *mydb, void *key, void *data)
     }
     else
     {
-#ifdef DEBUG
+#ifdef DEBUG_LVL2
         printf("Revising old  %d\n", recnum);
 #endif
 
@@ -255,7 +255,7 @@ bool database_get(mydb_t *mydb, void *key, void *data)
     // why we need a hash table!
 
     int recnum = search_database(mydb, key);
-#ifdef DEBUG
+#ifdef DEBUG_LVL2
     printf("[key: %d] ", recnum);
     print_key(mydb, "Get ", key);
     printf("\n");
@@ -280,7 +280,7 @@ bool database_del(mydb_t *mydb, void *key)
     // search through the database to get the record number.. this is
     // why we need a hash table!
     int recnum = search_database(mydb, key);
-#ifdef DEBUG
+#ifdef DEBUG_LVL2
     printf("[key: %d] ", recnum);
     print_key(mydb, "Del ", key);
     printf("\n");

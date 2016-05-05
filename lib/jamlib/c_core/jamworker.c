@@ -47,40 +47,39 @@ void *jamworker_bgthread(void *arg)
 
     jamstate_t *js = (jamstate_t *)arg;
 
+    #ifdef DEBUG_LVL1
+        printf("BG Thread processor started in JAM Worker..\n");
+    #endif
+
     // setup the thread.. make it async. cancellable
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldstate);
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldtype);
 
     // assemble the poller.. insert the FDs that should go into the poller
-    printf("---------------------- Calling assemble FDs\n");
     jamworker_assemble_fds(js);
 
     // heartbeat time is set to 1000 milliseconds    
     int beattime = 5000; 
-
-    printf("Signalling..........................\n");
     thread_signal(js->bgsem);
     // get into the event processing..
     while (1)
     {
-        printf("Waiting for FDs\n");
-         
         // wait on the poller
         int nfds = jamworker_wait_fds(js, beattime);
         if (nfds <= 0) 
         {
-            printf("Sending ping..\n");        
             jam_send_ping(js);
             continue;
         }
 
-        printf("Calling jamworker processor..\n");
+    #ifdef DEBUG_LVL1
+        printf("Calling the JAM worker processor.. \n");
+    #endif
         jamworker_processor(js);
     }
 
     return NULL;
 }
-
 
 
 // Put the FDs in a particular order..
@@ -90,8 +89,6 @@ void jamworker_assemble_fds(jamstate_t *js)
 {
     int i;
 
-    printf("========================== Assembling fds ................. %d activities \n", js->atable->numactivities);
-        
     // release old one..
     if (js->pollfds)
         free(js->pollfds);
@@ -112,23 +109,15 @@ void jamworker_assemble_fds(jamstate_t *js)
 
     // scan the number of activities and get their input queue hooked
     for (i = 0; i < js->atable->numactivities; i++)
-    {
         js->pollfds[i+4].fd = js->atable->activities[i]->outq->pullsock;
-        printf("Inserted an activity pullsock.. \n");
-    }
 
     // pollfds structure is not complete..
     js->numpollfds = 4 + js->atable->numactivities;
-    printf("Number of numpollfds %d\n", js->numpollfds);
 }
 
 
 int jamworker_wait_fds(jamstate_t *js, int beattime)
 {
-    int i;
-   for (i = 0; i < js->numpollfds; i++)
-        printf("%d) Waiting on %d, event %d\n", i, js->pollfds[i].fd, js->pollfds[i].events);
-    
     // wait on the nn_pollfd array that is in the jamstate_t structure!
     //
     return nn_poll(js->pollfds, js->numpollfds, beattime);
@@ -157,7 +146,6 @@ void jamworker_processor(jamstate_t *js)
     // Use a loop to scan the rest of the descriptors
     for (i = 4; i < js->numpollfds; i++)
     {
-        printf("---------------- looking for activity... \n");
         if (js->pollfds[i].revents & NN_POLLIN)
             jamworker_process_actoutq(js, i - 4);
     }
@@ -179,18 +167,16 @@ void jamworker_process_reqsock(jamstate_t *js)
         {
             // Send it to the main thread and unblock the thread
             queue_enq(js->atable->globalinq, rcmd, sizeof(command_t));
-        //    taskwakeup(&(js->atable->globalsem));
+            thread_signal(js->atable->globalsem);
         }
         else
         if (strcmp(rcmd->actname, "ACTIVITY") == 0)
         {
             jactivity_t *jact = activity_getbyid(js->atable, rcmd->actarg);
             
-            
-            
             // Send it to the activity and unblock the activity
             queue_enq(jact->inq, rcmd, sizeof(command_t));
-    //        taskwakeup(&(jact->sem));
+            thread_signal(jact->sem);
         }
         else
         if (strcmp(rcmd->actname, "PINGER") == 0)
@@ -221,7 +207,7 @@ void jamworker_process_subsock(jamstate_t *js)
             if (jam_eval_condition(rcmd->actarg)) 
             {
                 queue_enq(js->atable->globalinq, rcmd, sizeof(command_t));
-          //      taskwakeup(&(js->atable->globalsem));
+                thread_signal(js->atable->globalsem);
                 
                 // rcmd is released in the main thread after consumption
             }
@@ -274,12 +260,10 @@ void jamworker_process_respsock(jamstate_t *js)
 
 void jamworker_process_globaloutq(jamstate_t *js)
 {
-    printf("Global Outq processing... \n");
-    
     nvoid_t *nv = queue_deq(js->atable->globaloutq);
     command_t *rcmd = (command_t *)nv->data;
-    printf("Got packet.. bytes %d\n", nv->len);
-  //  command_print(rcmd);
+    free(nv);
+    // Don't use nvoid_free() .. it is not deep enough 
     
     if (rcmd != NULL)
     {
@@ -308,10 +292,11 @@ void jamworker_process_actoutq(jamstate_t *js, int indx)
 {
     nvoid_t *nv = queue_deq(js->atable->activities[indx]->outq);
     command_t *rcmd = (command_t *)nv->data;
+    free(nv);
+    // Don't use nvoid_free() .. it is not deep enough 
+    
     if (rcmd != NULL)
     {
-        printf("ActOutQ %s, opt = %s\n", rcmd->cmd, rcmd->opt);
-        fflush(stdout);
         // QCMD: LOCAL DEL-ACTIVITY actname actarg
         // Otherwise, send it to the reqsock
         if (strcmp(rcmd->cmd, "LOCAL") == 0 &&
@@ -362,7 +347,6 @@ void jam_set_timer(jamstate_t *js, char *actarg, int tval)
     
     
 }
-
 
 // This is evaluating a JavaScript expression for the nodal predicate
 //

@@ -112,7 +112,10 @@ bool socket_create(socket_t *socket, char *host, int port)
 bool socket_connect(socket_t *socket, char *addr, int port)
 {
     char *url = socket_new_url(addr, port);
-    printf("Connecting to %s\n", url);
+    
+    #ifdef DEBUG_LVL1
+        printf("Connecting to URL: %s\n", url);
+    #endif
     assert(nn_connect(socket->sock_fd, url) >= 0);
     free(url);
 
@@ -124,7 +127,9 @@ int socket_send(socket_t *sock, command_t *cmd)
 {
     int bytes = nn_send(sock->sock_fd, cmd->buffer, cmd->length, 0);
     assert(bytes == cmd->length);
-    printf("Sent %d bytes..\n", bytes);
+    #ifdef DEBUG_LVL1
+        printf("Sent %d bytes on sock \n", bytes);
+    #endif   
     // return the number of bytes sent out..
     return bytes;
 }
@@ -141,17 +146,14 @@ command_t *socket_recv_command(socket_t *sock, int timeout)
         return NULL;
     }
 
-    printf("Over here.. \n");
     unsigned char *buffer = NULL;
 
     int bytes = nn_recv(sock->sock_fd, &buffer, NN_MSG, 0);
     nvoid_t *nv = nvoid_new(buffer, bytes);
-    printf("Over here.. 2 \n");
+
     command_t *cmd = command_from_data(NULL, nv);
-    printf("Over here.. 3 \n");
     nn_freemsg(buffer);
     nvoid_free(nv);
-    printf("Hello 2 \n");
     return cmd;
 }
 

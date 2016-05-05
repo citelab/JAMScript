@@ -46,6 +46,7 @@ typedef struct _timerevent_t
 
 typedef struct _timertype_t
 {
+	char *name;
 	int numevents;
 	timerevent_t *events[MAX_EVENTS];
 	simplequeue_t *timerqueue;
@@ -54,7 +55,7 @@ typedef struct _timertype_t
 } timertype_t;
 
 
-timertype_t *timer_init();
+timertype_t *timer_init(char *name);
 bool timer_free(timertype_t *tmr);
 
 bool timer_add_event(timertype_t *tmr, int timerval, bool repeat, char *tag, timercallback_f cback, void *arg);

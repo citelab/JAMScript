@@ -1,0 +1,41 @@
+Cloud and Fog Design
+====================
+
+Cloud service is built around a ZooKeeper (ZK) server.
+The ZK server is responsible for maintaining the state and performing the coordination
+activities. The JAMScript components are built around the clients provided by the ZooKeeper.
+
+The Fog server will connect to the ZK server under the /cloud/fog tree. We can find the fogs
+that are connected by examining the children of the /cloud/fog branch. 
+ 
+
+JAMScript Cloud Component
+
+A cloud client for the ZK server is expected to do the following tasks.
+
+= Connect to the ZK server
+= Registers itself under /cloud/clients
+= Each client could have a unique number which could be a sequence number
+
+= It watches for Fog changes and notifies the JAMScript program accordingly by generating
+  appropriate events in the JAMScript domain.
+  
+= What else should this do?
+
+
+JAMScript Fog Component
+
+A Fog client for the ZK server is expected to do the following tasks.
+
+= Connect to the ZK server
+= Registers iself under /cloud/fog/
+= Each fog has a unique number which is its sequence number
+= Under its own tree we will find client information (IP address or port)
+
+
+Shadow Fog
+
+
+Data storage 
+
+The Fogs connect

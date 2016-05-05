@@ -217,19 +217,13 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
     int items = cbor_map_size(cmd->cdata);
     assert(items == 6);
 
-    printf("1 \n");
-
     struct cbor_pair *mitems = cbor_map_handle(cmd->cdata);
 
     cbor_assert_field_string(mitems[0].key, "cmd");
     cmd->cmd = cbor_get_string(mitems[0].value);
 
-    printf("2 \n");
-
     cbor_assert_field_string(mitems[1].key, "opt");
     cmd->opt = cbor_get_string(mitems[1].value);
-
-    printf("3 \n");
 
     cbor_assert_field_string(mitems[2].key, "actname");
     cmd->actname = cbor_get_string(mitems[2].value);
@@ -237,16 +231,10 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
     cbor_assert_field_string(mitems[3].key, "actid");
     cmd->actid = cbor_get_string(mitems[3].value);
 
-    printf("4 \n");
-
     cbor_assert_field_string(mitems[4].key, "actarg");
     cmd->actarg = cbor_get_string(mitems[4].value);
 
-    printf("5 \n");
-
     cbor_assert_field_string(mitems[5].key, "args");
-
-    printf("6 \n");
 
     cbor_item_t *arr = mitems[5].value;
     cmd->nargs = cbor_array_size(arr);
@@ -255,8 +243,6 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
     else
         cmd->args = NULL;
 
-    printf("6 cmd-length %d, nargs %d\n", cmd->length, cmd->nargs);
-
     if (fmt != NULL && strlen(fmt) != cmd->nargs) {
         printf("ERROR! Message does not match the validation specification\n");
         return NULL;
@@ -264,7 +250,6 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
     cbor_item_t **arrl = cbor_array_handle(arr);
     // parse the array of args and fill in the local command structure..
     for (i = 0; i < cmd->nargs; i++) {
-        printf("Processing arg \n");
         switch (cbor_typeof(arrl[i])) {
             case CBOR_TYPE_UINT:
             case CBOR_TYPE_NEGINT:
@@ -277,7 +262,6 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
                 break;
 
             case CBOR_TYPE_STRING:
-                printf("String \n");
                 if (fmt != NULL && fmt[i] != 's') {
                     printf("ERROR! Message does not match the validation specification\n");
                     return NULL;
@@ -287,7 +271,6 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
                 break;
 
             case CBOR_TYPE_FLOAT_CTRL:
-                printf("Float \n");
                 if (fmt != NULL && fmt[i] != 'd') {
                     printf("ERROR! Message does not match the validation specification\n");
                     return NULL;
@@ -296,7 +279,6 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
                 cmd->args[i].val.dval = cbor_float_get_float8(arrl[i]);
                 break;
             case CBOR_TYPE_BYTESTRING:
-                printf("Bytestring. \n");
                 if (fmt != NULL && fmt[i] != 'n') {
                     printf("ERROR! Message does not match the validation specification\n");
                     return NULL;
@@ -321,8 +303,9 @@ void command_free(command_t *cmd)
     free(cmd->cmd);
     free(cmd->opt);
     free(cmd->actname);
-
     free(cmd->actarg);
+    
+    // TODO: What else? Something is missing here..
 
     // decrement the reference to the CBOR object..
     if (cmd->cdata)

@@ -33,7 +33,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 void *timer_loop(void *arg);
 
 
-timertype_t *timer_init()
+timertype_t *timer_init(char *name)
 {
     int i;
 
@@ -43,12 +43,20 @@ timertype_t *timer_init()
 
     tmr->numevents = 0;
     tmr->timerqueue = queue_new(true);
+    tmr->name = strdup(name);
 
     int rval = pthread_create(&(tmr->tmrthread), NULL, timer_loop, (void *)tmr);
     if (rval != 0) {
         perror("ERROR! Unable to start the timer loop");
         exit(1);
     }
+
+    #ifdef DEBUG_LVL1
+        if (name != NULL)
+            printf("Timer [%s] initialization done\n", name);
+        else
+            printf("Timer initialization done\n");
+    #endif
 
     return tmr;
 }
@@ -60,6 +68,13 @@ bool timer_free(timertype_t *tmr)
 {
     pthread_cancel(tmr->tmrthread);
     queue_delete(tmr->timerqueue);
+
+    #ifdef DEBUG_LVL1
+        if (tmr->name != NULL)
+            printf("Timer [%s] initialization done\n", tmr->name);
+        else
+            printf("Timer initialization done\n");
+    #endif
 
     free(tmr);
     return true;
@@ -74,6 +89,14 @@ bool timer_add_event(timertype_t *tmr, int timerval, bool repeat, char *tag, tim
     sprintf(buf, "ADDEVENT %p", tev);
 
     queue_enq(tmr->timerqueue, buf, strlen(buf));
+    
+    #ifdef DEBUG_LVL1
+        if (tmr->name != NULL)
+            printf("Add event [tag=%s] to Timer [%s] done\n", tag, tmr->name);
+        else
+            printf("Add event [tag=%s] to timer\n", tag);
+    #endif
+
     return true;
 }
 
@@ -85,6 +108,13 @@ bool timer_del_event(timertype_t *tmr, char *tag)
     sprintf(buf, "DELEVENT %s", tag);
 
     queue_enq(tmr->timerqueue, buf, strlen(buf));
+    
+    #ifdef DEBUG_LVL1
+        if (tmr->name != NULL)
+            printf("Delete event [tag=%s] from Timer [%s] done\n", tag, tmr->name);
+        else
+            printf("Delete event [tag=%s] from timer done\n", tag);
+    #endif
     return true;
 }
 
@@ -96,6 +126,13 @@ bool timer_cancel_next(timertype_t *tmr, char *tag)
     sprintf(buf, "CANCELEVENT %s", tag);
 
     queue_enq(tmr->timerqueue, buf, strlen(buf));
+    
+    #ifdef DEBUG_LVL1
+        if (tmr->name != NULL)
+            printf("Cancel event [tag=%s] to Timer [%s] done\n", tag, tmr->name);
+        else
+            printf("Cancel event [tag=%s] to timer done\n", tag);
+    #endif
     return true;
 }
 

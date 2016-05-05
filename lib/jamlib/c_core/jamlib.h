@@ -71,21 +71,21 @@ typedef struct _temprecord_t
 
 
 jamstate_t *jam_init();
-void jam_create_bgthread(void *arg);
-bool jam_exit(jamstate_t *js);
+
+void jam_run_application(void *arg);
 void jam_event_loop(void *js);
-bool jam_core_ready(jamstate_t *js);
-int jam_execute_func(jamstate_t *js, const char *fname, const char *fmt, ...);
+
+event_t *get_event(jamstate_t *js);
+
 void jam_reg_callback(jamstate_t *js, char *aname, eventtype_t etype,
                                                 event_callback_f cb, void *data);
 
 void *jam_rexec_sync(jamstate_t *js, char *aname, ...);
-
+jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, ...);
 temprecord_t *jam_create_temprecord(jamstate_t *js, jactivity_t *jact, command_t *cmd);
 void jam_rexec_run_wrapper(void *arg);
 void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd);
 
-event_t *get_event(jamstate_t *js);
 
 /*
  * Functions defined in jamworker.c
