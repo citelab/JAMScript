@@ -161,6 +161,9 @@ void jamworker_process_reqsock(jamstate_t *js)
     printf("----- In request sock.. \n");
     
     command_t *rcmd = socket_recv_command(js->cstate->reqsock, 5000);
+    
+    printf("Actname %s\n", rcmd->actname);
+    
     if (rcmd != NULL)
     {
         if (strcmp(rcmd->actname, "EVENTLOOP") == 0)
@@ -172,7 +175,10 @@ void jamworker_process_reqsock(jamstate_t *js)
         else
         if (strcmp(rcmd->actname, "ACTIVITY") == 0)
         {
-            jactivity_t *jact = activity_getbyid(js->atable, rcmd->actarg);
+            printf("Activity ID: %s\n", rcmd->actid);
+            
+            jactivity_t *jact = activity_getbyid(js->atable, rcmd->actid);
+            activity_print(jact);
             
             // Send it to the activity and unblock the activity
             queue_enq(jact->inq, rcmd, sizeof(command_t));
@@ -337,16 +343,32 @@ void jam_send_ping(jamstate_t *js)
 }
 
 
-int jam_get_timer_from_reply(command_t *cmd)
+void tcallback(void *arg)
 {
-    return 0;
+    jactivity_t *jact = (jactivity_t *)arg;
+    
+    // stick the "TIMEOUT" message into the queue for the activity
+    command_t *tmsg = command_new("TIMEOUT", "__", "ACTIVITY", jact->actid, "__", "");
+    queue_enq(jact->inq, tmsg, sizeof(command_t));
+    // do a signal on the thread semaphore for the activity
+
+    thread_signal(jact->sem);
 }
 
-void jam_set_timer(jamstate_t *js, char *actarg, int tval)
+
+void jam_set_timer(jamstate_t *js, char *actid, int tval)
 {
-    
-    
+    jactivity_t *jact = activity_getbyid(js->atable, actid);
+    if (jact != NULL)   
+        timer_add_event(js->maintimer, tval, 0, actid, tcallback, jact);
 }
+
+
+void jam_clear_timer(jamstate_t *js, char *actid)
+{
+    timer_del_event(js->maintimer, actid);
+}
+
 
 // This is evaluating a JavaScript expression for the nodal predicate
 //

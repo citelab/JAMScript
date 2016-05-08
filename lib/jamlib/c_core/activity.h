@@ -42,9 +42,9 @@ enum activity_state_t
 {
     NEW,
     RUNNING,
-    TIMEDOUT,
-    COMPLETED,
-    ERROR,
+    EXEC_TIMEDOUT,
+    EXEC_COMPLETE,
+    EXEC_ERROR,
     DELETED
 };
 
@@ -62,7 +62,7 @@ typedef struct _jactivity_t
     char name[MAX_NAME_LEN];
     char *actid;
     char *actarg;
-    nvoid_t *code;
+    arg_t *code;
     simplequeue_t *inq;
     simplequeue_t *outq;
 
@@ -108,7 +108,7 @@ void activity_reg_print(activity_registry_t *areg);
 void activity_print(jactivity_t *ja);
 
 jactivity_t *activity_new(activitytable_t *atbl, char *name);
-jactivity_t *activity_getbyid(activitytable_t *at, char *actarg);
+jactivity_t *activity_getbyid(activitytable_t *at, char *actid);
 char *activity_getid(jactivity_t *jact);
 char *activity_getname(jactivity_t *jact);
 

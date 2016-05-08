@@ -30,7 +30,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <strings.h>
 #include <pthread.h>
 
-#define STACKSIZE                   30000
+
 
 
 // Initialize the JAM library.. nothing much done here.
@@ -84,7 +84,7 @@ jamstate_t *jam_init()
 }
 
 
-void jam_run_application(void *arg)
+void jam_run_app(void *arg)
 {
     jamstate_t *js = (jamstate_t *)arg;
             
@@ -103,7 +103,7 @@ void jam_event_loop(void *arg)
     jamstate_t *js = (jamstate_t *)arg;
     event_t *e = NULL;
 
-    while ((e = get_event(js))) {
+    while ((e = jam_get_event(js))) {
         if (e != NULL)
         {
             printf("=============== GOT EVENT %s=========\n", e->actname);
@@ -122,7 +122,7 @@ void jam_event_loop(void *arg)
 // TODO: Add many different types of events here with the new design!
 //
 //
-event_t *get_event(jamstate_t *js)
+event_t *jam_get_event(jamstate_t *js)
 {
     task_wait(js->atable->globalsem);
     command_t *cmd = (command_t *)queue_deq(js->atable->globalinq);
@@ -144,266 +144,6 @@ void jam_reg_callback(jamstate_t *js, char *aname, eventtype_t etype, event_call
 }
 
 
-//
-// TODO: Is there a better way to write this code?
-// At this point, a big chunk of the code is replicated.. too bad
-//
-//
-void *jam_rexec_sync(jamstate_t *js, char *aname, ...)
-{
-    va_list args;
-    nvoid_t *nv;
-    int i = 0;
-    arg_t *qargs;
-
-    // get the mask
-    char *fmask = activity_get_mask(js->atable, aname);
-    assert(fmask != NULL);
-    if (strlen(fmask) > 0)
-        qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
-    else
-        qargs = NULL;
-
-    cbor_item_t *arr = cbor_new_indefinite_array();
-    cbor_item_t *elem;
-
-    va_start(args, aname);
-
-    while(*fmask)
-    {
-        switch(*fmask++)
-        {
-            case 'n':
-                nv = va_arg(args, nvoid_t*);
-                elem = cbor_build_bytestring(nv->data, nv->len);
-                qargs[i].val.nval = nv;
-                qargs[i].type = NVOID_TYPE;
-                break;
-            case 's':
-                qargs[i].val.sval = strdup(va_arg(args, char *));
-                qargs[i].type = STRING_TYPE;
-                elem = cbor_build_string(qargs[i].val.sval);
-                break;
-            case 'i':
-                qargs[i].val.ival = va_arg(args, int);
-                qargs[i].type = INT_TYPE;
-                elem = cbor_build_uint32(abs(qargs[i].val.ival));
-                if (qargs[i].val.ival < 0)
-                    cbor_mark_negint(elem);
-                break;
-            case 'd':
-            case 'f':
-                qargs[i].val.dval = va_arg(args, double);
-                qargs[i].type = DOUBLE_TYPE;
-                elem = cbor_build_float8(qargs[i].val.dval);
-                break;
-            default:
-                break;
-        }
-        i++;
-        if (elem)
-            assert(cbor_array_push(arr, elem) == true);
-    }
-    va_end(args);
-
-    jactivity_t *jact = activity_new(js->atable, aname);
-
-    jact->actid = strdup(jact->actarg);
-
-
-    command_t *cmd = command_new_using_cbor("REXEC", "DEVICE", aname, jact->actid, jact->actarg, arr, qargs, i);
-    
-    #ifdef DEBUG_LVL1
-        printf("Starting JAM exec runner... \n");
-    #endif
-    
-    jam_rexec_runner(js, jact, cmd);
-    
-    if (jact->state == TIMEDOUT)
-    {
-        activity_del(js->atable, jact);
-        return NULL;
-    }
-    else
-    {
-        activity_del(js->atable, jact);
-        return jact->code->data;
-    }
-}
-
-
-jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, ...)
-{
-    va_list args;
-    nvoid_t *nv;
-    int i = 0;
-    arg_t *qargs;
-
-    // get the mask
-    char *fmask = activity_get_mask(js->atable, aname);
-    assert(fmask != NULL);
-    
-    if (strlen(fmask) > 0)
-        qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
-    else
-        qargs = NULL;
-        
-
-    printf("After mask \n");
-
-    cbor_item_t *arr = cbor_new_indefinite_array();
-    cbor_item_t *elem;
-
-    va_start(args, aname);
-
-    while(*fmask)
-    {
-        elem = NULL;
-        switch(*fmask++)
-        {
-            case 'n':
-                nv = va_arg(args, nvoid_t*);
-                elem = cbor_build_bytestring(nv->data, nv->len);
-                qargs[i].val.nval = nv;
-                qargs[i].type = NVOID_TYPE;
-                break;
-            case 's':
-                qargs[i].val.sval = strdup(va_arg(args, char *));
-                qargs[i].type = STRING_TYPE;
-                elem = cbor_build_string(qargs[i].val.sval);
-                break;
-            case 'i':
-                qargs[i].val.ival = va_arg(args, int);
-                qargs[i].type = INT_TYPE;
-                elem = cbor_build_uint32(abs(qargs[i].val.ival));
-                if (qargs[i].val.ival < 0)
-                    cbor_mark_negint(elem);
-                break;
-            case 'd':
-            case 'f':
-                qargs[i].val.dval = va_arg(args, double);
-                qargs[i].type = DOUBLE_TYPE;
-                elem = cbor_build_float8(qargs[i].val.dval);
-                break;
-            default:
-                break;
-        }
-        i++;
-        if (elem != NULL)
-            assert(cbor_array_push(arr, elem) == true);
-    }
-    va_end(args);
-
-    printf("Blah 1\n");
-    // Need to add start to activity_new()
-    jactivity_t *jact = activity_new(js->atable, aname);
-    printf("Blah 2\n");
-    
-    command_t *cmd = command_new_using_cbor("REXEC", "DEVICE", aname, "jact->actid", jact->actarg, arr, qargs, i);
-    printf("Blah 3\n");
-    
-    temprecord_t *trec = jam_create_temprecord(js, jact, cmd);
-    taskcreate(jam_rexec_run_wrapper, trec, STACKSIZE);
-    printf("Blah 4\n");
-    
-
-    return jact;
-}
-
-temprecord_t *jam_create_temprecord(jamstate_t *js, jactivity_t *jact, command_t *cmd)
-{
-    temprecord_t *trec = (temprecord_t *)calloc(1, sizeof(temprecord_t));
-    trec->jstate = js;
-    trec->jact = jact;
-    trec->cmd = cmd;
-
-    return trec;
-}
-
-void jam_rexec_run_wrapper(void *arg)
-{
-    temprecord_t *trec = (temprecord_t *)arg;
-    jam_rexec_runner(trec->jstate, trec->jact, trec->cmd);
-    free(trec);
-}
-
-
-void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
-{
-    int i = 0;
-    bool connected = false;
-    bool processed = false;
-    command_t *rcmd;
-
-    for (i = 0; i < js->cstate->conf->retries; i++)
-    {
-        queue_enq(jact->outq, cmd, sizeof(command_t));
-        task_wait(jact->sem);
-
-        rcmd  = (command_t *)queue_deq(jact->inq);
-        if (rcmd != NULL)
-        {
-            connected = true;
-            break;
-        }
-    }
-
-    // Mark the state as TIMEDOUT if we failed to connect..
-    if (!connected)
-    {
-        command_free(rcmd);
-        jact->state = TIMEDOUT;
-        return;
-    }
-
-    for (i = 0; i < js->maxleases && !processed; i++)
-    {
-        int timerval = jam_get_timer_from_reply(rcmd);
-        command_free(rcmd);
-        jam_set_timer(js, jact->actarg, timerval);
-        task_wait(jact->sem);
-
-        rcmd = (command_t *)queue_deq(jact->inq);
-
-        if (strcmp(rcmd->cmd, "TIMEOUT") == 0) {
-            command_t *lcmd = command_new("STATUS", "LEASE", jact->name, jact->actid, jact->actarg, "");
-            queue_enq(jact->outq, lcmd, sizeof(command_t));
-            command_free(lcmd);
-            task_wait(jact->sem);
-
-            rcmd = (command_t *)queue_deq(jact->inq);
-            continue;
-        }
-        else
-        if (strcmp(rcmd->cmd, "REXEC") == 0 &&
-            strcmp(rcmd->opt, "COMPLETE") == 0) {
-            // return code already retrived by the command parser
-            processed = true;
-            break;
-        }
-        else
-        if (strcmp(rcmd->cmd, "REXEC") == 0 &&
-            strcmp(rcmd->opt, "ERROR") == 0) {
-            // return code already retrived by the command parser
-            processed = true;
-            break;
-        }
-    }
-
-    if (!processed)
-    {
-        // activity timed out..
-        jact->state = TIMEDOUT;
-        // It is taking way too long to run at the J-core
-        // Send a kill commmand...
-        command_t *kcmd = command_new("REXEC", "KILL", jact->name, jact->actid, jact->actarg, "");
-        queue_enq(jact->outq, kcmd, sizeof(command_t));
-        command_free(kcmd);
-    }
-
-    // TODO: How to delete an async activity that was timed out?
-}
-
 
 void taskmain(int argc, char **argv)
 {   
@@ -414,6 +154,6 @@ void taskmain(int argc, char **argv)
     taskcreate(jam_event_loop, js, STACKSIZE);
 
     // create the application runner
-    taskcreate(jam_run_application, js, STACKSIZE);
-
+    taskcreate(jam_run_app, js, STACKSIZE);
+    printf("In main......................... \n");
 }

@@ -41,6 +41,42 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "command.h"
 #include "cborutils.h"
 
+
+arg_t *command_clone_arg(arg_t *arg)
+{
+    arg_t *val = (arg_t *)calloc(1, sizeof(arg_t));
+    assert(val != NULL);
+    
+    val->type = arg->type;
+    if (arg->type == INT_TYPE) 
+    {
+        val->val.ival = arg->val.ival;
+        return arg;
+    }
+    
+    if (arg->type == DOUBLE_TYPE) 
+    {
+        val->val.dval = arg->val.dval;
+        return arg;
+    }
+    
+    if (arg->type == STRING_TYPE) 
+    {
+        val->val.sval = strdup(arg->val.sval);
+        return arg;
+    }
+    
+    if (arg->type == NVOID_TYPE) 
+    {
+        val->val.nval = nvoid_new(arg->val.nval->data, arg->val.nval->len);
+        return arg;
+    }
+    
+    return NULL;
+}
+
+
+
 /*
  * Return a command in CBOR format (as an unsigned char array) that can be sent out..
  *

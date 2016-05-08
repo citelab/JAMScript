@@ -29,7 +29,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "simplequeue.h"
 
-
 typedef void (*timercallback_f)(void *arg);
 
 typedef struct _timerevent_t

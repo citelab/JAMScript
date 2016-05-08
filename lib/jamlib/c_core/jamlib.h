@@ -37,11 +37,14 @@ extern "C" {
 #include "callback.h"
 #include "event.h"
 #include "timer.h"
+#include "command.h"
 
 #include <pthread.h>
 
 #include "task.h"
 #include "threadsem.h"
+
+#define STACKSIZE                   20000
 
 typedef struct _jamstate_t
 {
@@ -72,20 +75,29 @@ typedef struct _temprecord_t
 
 jamstate_t *jam_init();
 
-void jam_run_application(void *arg);
+void jam_run_app(void *arg);
 void jam_event_loop(void *js);
 
-event_t *get_event(jamstate_t *js);
+event_t *jam_get_event(jamstate_t *js);
 
 void jam_reg_callback(jamstate_t *js, char *aname, eventtype_t etype,
                                                 event_callback_f cb, void *data);
 
-void *jam_rexec_sync(jamstate_t *js, char *aname, ...);
+
+/*
+ * Functions defined in jamsync.c
+ */
+
+arg_t *jam_rexec_sync(jamstate_t *js, char *aname, ...);
+void jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd);
+
+/*
+ * Functions defined in jamasync.c
+ */
+
 jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, ...);
 temprecord_t *jam_create_temprecord(jamstate_t *js, jactivity_t *jact, command_t *cmd);
 void jam_rexec_run_wrapper(void *arg);
-void jam_rexec_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd);
-
 
 /*
  * Functions defined in jamworker.c
@@ -105,8 +117,8 @@ command_t *jamworker_device_status(jamstate_t *js);
 command_t *jamworker_runid_kill(jamstate_t *js, char *runid);
 void jam_send_ping(jamstate_t *js);
 
-int jam_get_timer_from_reply(command_t *cmd);
 void jam_set_timer(jamstate_t *js, char *actarg, int tval);
+void jam_clear_timer(jamstate_t *js, char *actid);
 
 bool jam_eval_condition(char *expr);
 

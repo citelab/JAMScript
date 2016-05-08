@@ -94,7 +94,7 @@ void activity_print(jactivity_t *ja)
     printf("Activity state: %d\n", ja->state);
     printf("Activity name: %s\n", ja->name);
     if (ja->code != NULL)
-        nvoid_print(ja->code);
+        command_print_arg(ja->code);
     else
         printf("Activity code: NULL\n");
         
@@ -194,16 +194,14 @@ jactivity_t *activity_new(activitytable_t *at, char *name)
     jact->code = NULL;
     jact->sem = threadsem_new();
     jact->actid = activity_gettime();
-    // TODO: Temporary stuff..
-    // TODO: What should be done here?
-    jact->actarg = strdup(name);
+    jact->actarg = strdup("__");
 
     // Setup the I/O queues
     jact->inq = queue_new(true);
     jact->outq = queue_new(true);
 
     // Send a message to the background so it starts watching for messages
-    command_t *cmd = command_new("LOCAL", "NEW-ACTIVITY", name, jact->actid, jact->actarg, "s", "temp");
+    command_t *cmd = command_new("LOCAL", "NEW-ACTIVITY", name, jact->actid, jact->actarg, "s", "__");
 
     queue_enq(at->globaloutq, cmd, sizeof(command_t));
       
@@ -224,7 +222,7 @@ jactivity_t *activity_getbyid(activitytable_t *at, char *actid)
     {
         if (at->activities[i]->state == DELETED)
             continue;
-        if (at->activities[i]->actid == actid)
+        if (strcmp(at->activities[i]->actid, actid) == 0)
             return at->activities[i];
     }
     return NULL;
@@ -242,7 +240,7 @@ void activity_del(activitytable_t *at, jactivity_t *jact)
 
     // Send a message to the background so it starts watching for messages
     command_t *cmd = command_new("LOCAL", "DEL-ACTIVITY", jact->name, jact->actid, jact->actarg, "s", "temp");
-    queue_enq(at->globaloutq, cmd->buffer, cmd->length);
+    queue_enq(at->globaloutq, cmd, sizeof(command_t));
 }
 
 
@@ -263,15 +261,15 @@ void activity_start(jactivity_t *jact)
 
 void activity_timeout(jactivity_t *jact)
 {
-    jact->state = TIMEDOUT;
+    jact->state = EXEC_TIMEDOUT;
 }
 
 void activity_complete_success(jactivity_t *jact)
 {
-    jact->state = COMPLETED;
+    jact->state = EXEC_COMPLETE;
 }
 
 void activity_complete_error(jactivity_t *jact)
 {
-    jact->state = ERROR;
+    jact->state = EXEC_ERROR;
 }

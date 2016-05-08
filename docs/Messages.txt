@@ -80,44 +80,73 @@ Ping is originating from the device. This is heartbeat trigger from the device.
 
 Fog is replying to the "ping" sent by the device. 
 
+Remote Execution from C to J (Synchronous)
+==========================================
 
-Remote Execution from C to J
-============================
+First lets consider the synchronous version of C to J. 
 
-We have two types of activity executions: synchronous and asynchronous. We could have
-the same message protocol for both synchronous and asynchronous executions. 
+[[ REXEC SYN actname actid device_id args ]]
 
-[[ REXEC DEVICE actname device_id runid args ]] 
+[[ REXEC-ACK SYN ACTIVITY actid device_id lease-value (arg0) ]]
 
-Sent from the device to the Fog. The device is asking the Fog to run a particular
-activity. The Fog is reponsible for creating an instance of the activity. So the
-activity ID (actid) should be received back from the Fog.
+[[ REXEC-NAK SYN ACTIVITY actid device_id error-code (arg0) ]]
 
-[[ REXEC-ACK FOG ACTIVITY actid runid lease-value (arg0) ]]
+[[ REXEC-RES GET actname actid device_id ]]
 
-The arg0 would be lease value within which the Fog agreed to 
-get back regarding the execution of the activity. 
-
-[[ REXEC-NAC FOG ACTIVITY __  runid ]]
-
-The request for activity execution resulted in an error. Obviously, the activity 
-execution did not even start at the Fog. 
-
-[[ REXEC-SUC FOG actname actid ret-code (arguments - could depend on what the result code is) ]]
-
-At least according the C convention we need have only one result value.
-This is from Fog to the device.  
-
-[[ REXEC-FAI FOG actname actid error-code (arguments - could depend on the error routine?) ]]
-
-Again this is very similar to the previous one. This one is implying that the activity
-execution has ended in an erroneous condition and the error code is returned so that the
-receiving activity could continue with the correct execution path.
-Again, this is from the Fog to the cloud. 
+[[ REXEC-RES PUT actname actid code-type return-code ]] 
 
 
-Remote Execution from J to C
-============================
+Remote Execution from C to J (Asynchronous)
+===========================================
+
+[[ REXEC ASY actname device_id runid args ]]
+
+[[ REXEC-ACK ASY ACTIVITY actid runid lease-value (arg0) ]]
+
+[[ REXEC-NAK ASY ACTIVITY __ runid error-code (arg0) ]]
+
+
+>>>>>> OLD VERSION BEGINS >>>>>
+
+        We have two types of activity executions: synchronous and asynchronous. We could have
+        the same message protocol for both synchronous and asynchronous executions. 
+
+        [[ REXEC DEVICE actname device_id runid args ]] 
+
+        Sent from the device to the Fog. The device is asking the Fog to run a particular
+        activity. The Fog is reponsible for creating an instance of the activity. So the
+        activity ID (actid) should be received back from the Fog.
+
+        [[ REXEC-ACK FOG ACTIVITY actid runid lease-value (arg0) ]]
+
+        The arg0 would be lease value within which the Fog agreed to 
+        get back regarding the execution of the activity. 
+
+        [[ REXEC-NAK FOG ACTIVITY __  runid error-code (arg0)]]
+
+        The request for activity execution resulted in an error. Obviously, the activity 
+        execution did not even start at the Fog. 
+
+        [[ REXEC-SUC FOG actname actid ret-code (arguments - could depend on what the result code is) ]]
+
+        At least according the C convention we need have only one result value.
+        This is from Fog to the device.  
+
+        [[ REXEC-FAI FOG actname actid error-code (arguments - could depend on the error routine?) ]]
+
+        Again this is very similar to the previous one. This one is implying that the activity
+        execution has ended in an erroneous condition and the error code is returned so that the
+        receiving activity could continue with the correct execution path.
+        Again, this is from the Fog to the cloud. 
+
+>>>>>> OLD VERSION ENDS >>>>>
+
+
+Remote Execution from J to C (Synchronous)
+==========================================
+
+
+
 
 [[ REXEC FOG actname expression args (sent over publish) ]]
 
