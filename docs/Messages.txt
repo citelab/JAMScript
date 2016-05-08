@@ -93,7 +93,7 @@ First lets consider the synchronous version of C to J.
 
 [[ REXEC-RES GET actname actid device_id ]]
 
-[[ REXEC-RES PUT actname actid code-type return-code ]] 
+[[ REXEC-RES PUT ACTIVITY actid code-type return-code ]] 
 
 
 Remote Execution from C to J (Asynchronous)
@@ -145,7 +145,11 @@ Remote Execution from C to J (Asynchronous)
 Remote Execution from J to C (Synchronous)
 ==========================================
 
+[[ REXEC-CALL SYN actname runid/__ expression args ]] (published)
 
+[[ REXEC-RDY SYN actname actid runid ]] 
+
+[[ REXEC-STA SYN EVENTLOOP actid runid ]]
 
 
 [[ REXEC FOG actname expression args (sent over publish) ]]

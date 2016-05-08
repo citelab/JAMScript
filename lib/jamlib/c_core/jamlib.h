@@ -44,7 +44,7 @@ extern "C" {
 #include "task.h"
 #include "threadsem.h"
 
-#define STACKSIZE                   20000
+#define STACKSIZE                   30000
 
 typedef struct _jamstate_t
 {

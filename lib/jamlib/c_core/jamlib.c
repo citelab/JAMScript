@@ -90,7 +90,13 @@ void jam_run_app(void *arg)
             
     activity_make(js->atable, "test", "sii", SYNC);
     
-    jam_rexec_sync(js, "test", "f", 20, 10);
+    arg_t *res = jam_rexec_sync(js, "test", "f", 50, 36);
+    
+    if (res == NULL)
+        printf("Nothing come out...\n");
+    else
+    if (res->type == INT_TYPE)
+        printf("HEEEEHAAAAAA... Results = %d \n", res->val.ival);
         
 }
 
@@ -125,8 +131,10 @@ void jam_event_loop(void *arg)
 event_t *jam_get_event(jamstate_t *js)
 {
     task_wait(js->atable->globalsem);
-    command_t *cmd = (command_t *)queue_deq(js->atable->globalinq);
-
+    nvoid_t *nv = queue_deq(js->atable->globalinq);   
+    command_t *cmd = (command_t *)nv->data;
+    free(nv);
+    
     if (cmd == NULL)
         return NULL;
 

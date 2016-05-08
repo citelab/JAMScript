@@ -190,7 +190,6 @@ void jamworker_process_reqsock(jamstate_t *js)
             if (strcmp(rcmd->cmd, "PONG") == 0)
                 printf("Reply received for ping..\n");
         }
-        command_free(rcmd);
     }
 }
 
@@ -207,8 +206,8 @@ void jamworker_process_subsock(jamstate_t *js)
     command_t *rcmd = socket_recv_command(js->cstate->subsock, 100);
     if (rcmd != NULL)
     {
-        if (strcmp(rcmd->cmd, "REXEC") == 0 && 
-            strcmp(rcmd->opt, "FOG") == 0)
+        if (strcmp(rcmd->cmd, "REXEC-CALL") == 0 && 
+            strcmp(rcmd->opt, "SYN") == 0)
         {
             if (jam_eval_condition(rcmd->actarg)) 
             {
@@ -259,7 +258,8 @@ void jamworker_process_respsock(jamstate_t *js)
             socket_send(js->cstate->respsock, result);
             command_free(result);
         }
-        command_free(rcmd);
+        else
+            command_free(rcmd);
     }
 }
 
@@ -347,6 +347,7 @@ void tcallback(void *arg)
 {
     jactivity_t *jact = (jactivity_t *)arg;
     
+    printf("Callback.... \n");
     // stick the "TIMEOUT" message into the queue for the activity
     command_t *tmsg = command_new("TIMEOUT", "__", "ACTIVITY", jact->actid, "__", "");
     queue_enq(jact->inq, tmsg, sizeof(command_t));

@@ -88,7 +88,7 @@ bool timer_add_event(timertype_t *tmr, int timerval, bool repeat, char *tag, tim
 
     sprintf(buf, "ADDEVENT %p", tev);
 
-    queue_enq(tmr->timerqueue, buf, strlen(buf));
+    queue_enq(tmr->timerqueue, strdup(buf), strlen(buf));
     
     #ifdef DEBUG_LVL1
         if (tmr->name != NULL)
@@ -107,7 +107,7 @@ bool timer_del_event(timertype_t *tmr, char *tag)
 
     sprintf(buf, "DELEVENT %s", tag);
 
-    queue_enq(tmr->timerqueue, buf, strlen(buf));
+    queue_enq(tmr->timerqueue, strdup(buf), strlen(buf));
     
     #ifdef DEBUG_LVL1
         if (tmr->name != NULL)
@@ -125,7 +125,7 @@ bool timer_cancel_next(timertype_t *tmr, char *tag)
 
     sprintf(buf, "CANCELEVENT %s", tag);
 
-    queue_enq(tmr->timerqueue, buf, strlen(buf));
+    queue_enq(tmr->timerqueue, strdup(buf), strlen(buf));
     
     #ifdef DEBUG_LVL1
         if (tmr->name != NULL)
@@ -178,6 +178,7 @@ void *timer_loop(void *arg)
             char cmd[64], param[64];
             // Check whether we have an addition or deletion
             sscanf((char *)nv->data, "%s %s", cmd, param);
+            
             if (strcmp(cmd, "ADDEVENT") == 0)
             {
                 timerevent_t *tev;
@@ -189,7 +190,7 @@ void *timer_loop(void *arg)
             {
                 timer_delete_records_with_tag(tmr, param);
             }
-
+            nvoid_free(nv);
         }
     }
 
@@ -199,7 +200,7 @@ void *timer_loop(void *arg)
 void timer_decrement_and_fire_events(timertype_t *tmr)
 {
     int i;
-
+    
     for (i = 0; i < tmr->numevents; i++)
     {
         if (tmr->events[i] != NULL)

@@ -76,7 +76,7 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *aname, ...)
     #endif
     
     jam_sync_runner(js, jact, cmd);
-    
+        
     if (jact->state == EXEC_TIMEDOUT)
     {
         activity_del(js->atable, jact);
@@ -104,13 +104,16 @@ void jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     queue_enq(jact->outq, cmd, sizeof(command_t));
     task_wait(jact->sem);
     
-    rcmd = (command_t *)queue_deq(jact->inq);
+    nvoid_t *nv = queue_deq(jact->inq);
+    rcmd = (command_t *)nv->data;
+    free(nv);
+        
     if (rcmd == NULL) 
     {
         jact->state = EXEC_ERROR;
         return;
     }
-    
+        
     // What is the reply.. positive ACK and negative problem in that case 
     // stick the error code in the activity
     if (strcmp(rcmd->cmd, "REXEC-ACK") == 0)
@@ -128,7 +131,9 @@ void jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         jam_set_timer(js, jact->actid, timerval);
         task_wait(jact->sem);
         
-        rcmd = (command_t *)queue_deq(jact->inq);
+        nvoid_t *nv = queue_deq(jact->inq);
+        rcmd = (command_t *)nv->data;
+        free(nv);
 
         // If we did not get woken up by the timer, we need to cancel the
         // timer. The publish notification from the j-core should have 
@@ -153,7 +158,9 @@ void jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         queue_enq(jact->outq, lcmd, sizeof(command_t));
         task_wait(jact->sem);
 
-        rcmd = (command_t *)queue_deq(jact->inq);
+        nv = queue_deq(jact->inq);
+        rcmd = (command_t *)nv->data;
+        free(nv);
 
         // We expect the following: [[ REXEC-RES PUT actname actid code-type return-code ]] 
         if (strcmp(rcmd->cmd, "REXEC-RES") == 0 && strcmp(rcmd->opt, "PUT") == 0)
