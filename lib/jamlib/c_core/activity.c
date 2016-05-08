@@ -180,11 +180,6 @@ jactivity_t *activity_new(activitytable_t *at, char *name)
     if (i == at->numactivityregs)
         return NULL;
 
-    // Look for a deleted slot.. if available, we reuse it.
-    for (i = 0; i < at->numactivities; i++)
-        if (at->activities[i]->state == DELETED)
-            break;
-
     jact = (jactivity_t *)calloc(1, sizeof(jactivity_t));
     at->activities[at->numactivities++] = jact;
 
@@ -200,9 +195,70 @@ jactivity_t *activity_new(activitytable_t *at, char *name)
     jact->inq = queue_new(true);
     jact->outq = queue_new(true);
 
+    printf("Creating the message... \n");
     // Send a message to the background so it starts watching for messages
-    command_t *cmd = command_new("LOCAL", "NEW-ACTIVITY", name, jact->actid, jact->actarg, "s", "__");
+    command_t *cmd = command_new("ASMBL-FDS", "LOCAL", name, jact->actid, jact->actarg, "s", "__");
 
+    printf("Sending it.. \n");
+    
+    queue_enq(at->globaloutq, cmd, sizeof(command_t));
+      
+    #ifdef DEBUG_LVL1
+        printf("Created the activity: %s\n", jact->name);
+    #endif
+
+    // return the pointer
+    return jact;
+}
+
+
+
+jactivity_t *activity_new2(activitytable_t *at, char *name)
+{
+    int i;
+    jactivity_t *jact;
+
+    printf("Num activities %d\n", at->numactivities);
+    
+    // Look for the registration
+    for (i = 0; i <at->numactivityregs; i++)
+        if (strcmp(at->registrations[i]->name, name) == 0)
+            break;
+    // If the registration is not there, return NULL
+    assert(i < at->numactivityregs);
+
+
+    jact = (jactivity_t *)calloc(1, sizeof(jactivity_t));
+
+    
+  //  at->activities[0] = jact;
+//    at->numactivities = 1;
+    at->activities[at->numactivities++] = jact;
+
+//    while(1);
+
+    // Setup the new activity
+    jact->state = NEW;
+    strcpy(jact->name, name);
+    jact->code = NULL;
+    jact->sem = threadsem_new();
+    jact->actid = activity_gettime();
+    jact->actarg = strdup("__");
+
+
+    // Setup the I/O queues
+    jact->inq = queue_new(true);
+    jact->outq = queue_new(true);
+
+  //  while(1);
+    
+    printf("Creating the message... \n");
+    // Send a message to the background so it starts watching for messages
+    command_t *cmd = command_new("ASMBL-FDS", "LOCAL", name, jact->actid, jact->actarg, "s", "__");
+
+    printf("Sending it.. \n");
+  //  while(1);
+    
     queue_enq(at->globaloutq, cmd, sizeof(command_t));
       
     #ifdef DEBUG_LVL1
@@ -220,8 +276,6 @@ jactivity_t *activity_getbyid(activitytable_t *at, char *actid)
 
     for (i = 0; i < at->numactivities; i++)
     {
-        if (at->activities[i]->state == DELETED)
-            continue;
         if (strcmp(at->activities[i]->actid, actid) == 0)
             return at->activities[i];
     }
@@ -230,19 +284,45 @@ jactivity_t *activity_getbyid(activitytable_t *at, char *actid)
 
 void activity_del(activitytable_t *at, jactivity_t *jact)
 {
+    int i;
+    
+    // remove individual elements of the activity
+    threadsem_free(jact->sem);
+    free(jact->actid);
+    free(jact->actarg);
+    command_arg_free(jact->code);
+
     // delete the queues..
     queue_delete(jact->inq);
     queue_delete(jact->outq);
 
-    jact->state = DELETED;
-    // TODO: The memory is not touched.. may be we need to resize the memory pool if
-    // the number of activities goes below a certain number?
+    int j = activity_getactindx(at, jact);
+    
+    for (i = j; i < at->numactivities; i++)
+    {
+        if (i < (at->numactivities - 1)) 
+            at->activities[i] = at->activities[i+1];
+    }
+    
+    at->numactivities--;
 
     // Send a message to the background so it starts watching for messages
-    command_t *cmd = command_new("LOCAL", "DEL-ACTIVITY", jact->name, jact->actid, jact->actarg, "s", "temp");
-    queue_enq(at->globaloutq, cmd, sizeof(command_t));
+    command_t *cmd = command_new("ASMBL-FDS", "LOCAL", jact->name, jact->actid, jact->actarg, "s", "temp");
+ //   queue_enq(at->globaloutq, cmd, sizeof(command_t));
+    
+    free(jact);
 }
 
+
+int activity_getactindx(activitytable_t *at, jactivity_t *jact)
+{
+    int i;
+    
+    for (i = 0; i < at->numactivities; i++)
+        if (at->activities[i] == jact)
+            return i;
+    return -1;
+}
 
 char *activity_getid(jactivity_t *jact)
 {

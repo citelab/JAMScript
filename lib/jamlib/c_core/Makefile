@@ -1,5 +1,5 @@
 CC = clang -Wall -g 
-CFLAGS =  -DDEBUG_LVL1 
+//CFLAGS =  -DDEBUG_LVL1 
 LDFLAGS = -lcbor -lnanomsg ./libtask.a 
 
 OBJECTS = activity.o simplequeue.o command.o coreconf.o core.o jamlib.o jamworker.o callback.o \

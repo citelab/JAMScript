@@ -42,37 +42,65 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "cborutils.h"
 
 
-arg_t *command_clone_arg(arg_t *arg)
+arg_t *command_arg_clone(arg_t *arg)
 {
     arg_t *val = (arg_t *)calloc(1, sizeof(arg_t));
     assert(val != NULL);
     
     val->type = arg->type;
-    if (arg->type == INT_TYPE) 
+    switch (arg->type) 
     {
-        val->val.ival = arg->val.ival;
-        return arg;
-    }
-    
-    if (arg->type == DOUBLE_TYPE) 
-    {
-        val->val.dval = arg->val.dval;
-        return arg;
-    }
-    
-    if (arg->type == STRING_TYPE) 
-    {
-        val->val.sval = strdup(arg->val.sval);
-        return arg;
-    }
-    
-    if (arg->type == NVOID_TYPE) 
-    {
-        val->val.nval = nvoid_new(arg->val.nval->data, arg->val.nval->len);
-        return arg;
+        case INT_TYPE:
+            val->val.ival = arg->val.ival;
+            return val;
+        case DOUBLE_TYPE:
+            val->val.dval = arg->val.dval;
+            return val;
+        case STRING_TYPE:
+            val->val.sval = strdup(arg->val.sval);
+            return val;
+        case NVOID_TYPE:
+            val->val.nval = nvoid_new(arg->val.nval->data, arg->val.nval->len);
+            return val;
     }
     
     return NULL;
+}
+
+
+void command_arg_free(arg_t *arg)
+{
+    switch (arg->type)
+    {
+        case STRING_TYPE:
+            free(arg->val.sval);
+            break;
+        case NVOID_TYPE:
+            nvoid_free(arg->val.nval);
+            break;
+        default:
+            break;
+    }
+    free (arg);
+}
+
+
+void command_print_arg(arg_t *arg)
+{
+    printf("\t\t");
+    switch(arg->type) {
+        case INT_TYPE:
+            printf("Int: %d ", arg->val.ival);
+            break;
+        case STRING_TYPE:
+            printf("String: %s ", arg->val.sval);
+            break;
+        case DOUBLE_TYPE:
+            printf("Double: %f ", arg->val.dval);
+            break;
+        default:
+            break;
+    }
 }
 
 
@@ -348,25 +376,6 @@ void command_free(command_t *cmd)
         cbor_decref(&cmd->cdata);
     free(cmd->args);
     free(cmd);
-}
-
-
-void command_print_arg(arg_t *arg)
-{
-    printf("\t\t");
-    switch(arg->type) {
-        case INT_TYPE:
-            printf("Int: %d ", arg->val.ival);
-            break;
-        case STRING_TYPE:
-            printf("String: %s ", arg->val.sval);
-            break;
-        case DOUBLE_TYPE:
-            printf("Double: %f ", arg->val.dval);
-            break;
-        default:
-            break;
-    }
 }
 
 

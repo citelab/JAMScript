@@ -44,7 +44,7 @@ extern "C" {
 #include "task.h"
 #include "threadsem.h"
 
-#define STACKSIZE                   30000
+#define STACKSIZE                   50000
 
 typedef struct _jamstate_t
 {
@@ -91,6 +91,8 @@ void jam_reg_callback(jamstate_t *js, char *aname, eventtype_t etype,
 arg_t *jam_rexec_sync(jamstate_t *js, char *aname, ...);
 void jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd);
 
+arg_t *jam_rexec_sync2(jamstate_t *js, char *aname, ...);
+void jam_sync_runner2(jamstate_t *js, jactivity_t *jact, command_t *cmd);
 /*
  * Functions defined in jamasync.c
  */

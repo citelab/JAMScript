@@ -16,5 +16,6 @@ typedef struct _threadsem_t
 threadsem_t *threadsem_new();
 void task_wait(threadsem_t *sem);
 void thread_signal(threadsem_t *sem);
+void threadsem_free(threadsem_t *sem);
 
 #endif

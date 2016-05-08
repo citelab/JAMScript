@@ -38,4 +38,10 @@ void thread_signal(threadsem_t *sem)
     assert(res == 1);         
 }
 
+void threadsem_free(threadsem_t *sem)
+{
+    close(sem->fildes[0]);
+    close(sem->fildes[1]);
+    free(sem);   
+}
 

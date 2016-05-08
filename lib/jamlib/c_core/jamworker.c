@@ -108,8 +108,12 @@ void jamworker_assemble_fds(jamstate_t *js)
     js->pollfds[3].fd = js->atable->globaloutq->pullsock;
 
     // scan the number of activities and get their input queue hooked
-    for (i = 0; i < js->atable->numactivities; i++)
+    for (i = 0; i < js->atable->numactivities; i++) 
+    {
+        printf("Setting... i = %d\n", i);
         js->pollfds[i+4].fd = js->atable->activities[i]->outq->pullsock;
+    }
+    printf("DONE.................................\n");
 
     // pollfds structure is not complete..
     js->numpollfds = 4 + js->atable->numactivities;
@@ -178,7 +182,6 @@ void jamworker_process_reqsock(jamstate_t *js)
             printf("Activity ID: %s\n", rcmd->actid);
             
             jactivity_t *jact = activity_getbyid(js->atable, rcmd->actid);
-            activity_print(jact);
             
             // Send it to the activity and unblock the activity
             queue_enq(jact->inq, rcmd, sizeof(command_t));
@@ -276,9 +279,9 @@ void jamworker_process_globaloutq(jamstate_t *js)
         printf("Processing cmd: [%s] from GlobalOutQ\n", rcmd->cmd);
         
         // Many commands are in the output queue of the main thread
-        // QCMD: LOCAL NEW-ACTIVITY actname actarg
-        if (strcmp(rcmd->cmd, "LOCAL") == 0 &&
-            strcmp(rcmd->opt, "NEW-ACTIVITY") == 0)
+        // QCMD: ASMBL-FDS LOCAL actname actarg
+        if (strcmp(rcmd->cmd, "ASMBL-FDS") == 0 &&
+            strcmp(rcmd->opt, "LOCAL") == 0)
             jamworker_assemble_fds(js);
         else
             socket_send(js->cstate->reqsock, rcmd);

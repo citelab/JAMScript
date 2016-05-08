@@ -108,6 +108,8 @@ void activity_reg_print(activity_registry_t *areg);
 void activity_print(jactivity_t *ja);
 
 jactivity_t *activity_new(activitytable_t *atbl, char *name);
+jactivity_t *activity_new2(activitytable_t *atbl, char *name);
+
 jactivity_t *activity_getbyid(activitytable_t *at, char *actid);
 char *activity_getid(jactivity_t *jact);
 char *activity_getname(jactivity_t *jact);
@@ -118,5 +120,6 @@ void activity_complete_success(jactivity_t *act);
 void activity_complete_error(jactivity_t *act);
 
 void activity_del(activitytable_t *at, jactivity_t *jact);
+int activity_getactindx(activitytable_t *at, jactivity_t *jact);
 
 #endif
