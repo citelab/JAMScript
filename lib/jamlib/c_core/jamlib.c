@@ -92,22 +92,22 @@ void jam_run_app(void *arg)
     activity_make(js->atable, "testfg", "sii", SYNC);
 
     
-    arg_t *res = jam_rexec_sync(js, "test", "f", 50, 36);
+    // arg_t *res = jam_rexec_sync(js, "test", "f", 50, 36);
     
-    if (res == NULL)
-        printf("Nothing come out...\n");
-    else
-    if (res->type == INT_TYPE)
-        printf("*********************************\n HEEEEHAAAAAA... Results = %d \n*********************************\n", res->val.ival);
+    // if (res == NULL)
+    //     printf("Nothing come out...\n");
+    // else
+    // if (res->type == INT_TYPE)
+    //     printf("*********************************\n HEEEEHAAAAAA... Results = %d \n*********************************\n", res->val.ival);
 
 
-    res = jam_rexec_sync(js, "testfg", "f", 1250, 36);
+    // res = jam_rexec_sync(js, "testfg", "f", 1250, 36);
     
-    if (res == NULL)
-         printf("Nothing come out...\n");
-     else
-     if (res->type == INT_TYPE)
-        printf("*********************************\n HEEEEHAAAAAA... Results = %d \n*********************************\n", res->val.ival);
+    // if (res == NULL)
+    //      printf("Nothing come out...\n");
+    //  else
+    //  if (res->type == INT_TYPE)
+    //     printf("*********************************\n HEEEEHAAAAAA... Results = %d \n*********************************\n", res->val.ival);
         
 }
 
