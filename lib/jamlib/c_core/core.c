@@ -128,7 +128,7 @@ bool core_find_fog_from_cloud(corestate_t *cstate, int timeout)
     #endif
     
     // Send a "DISCOVER", "FOG" request to the cloud endpoints
-    command_t *scmd = command_new("DISCOVER", "FOG", "", 0, "s", cstate->conf->app_name);
+    command_t *scmd = command_new("DISCOVER", "FOG", "dfdf", "0ddfdf", "dfdfdf", "s", cstate->conf->app_name);
 
     for (i = 0; i < cstate->conf->num_cloud_servers; i++) {
 
@@ -204,12 +204,7 @@ void core_register_at_fog(corestate_t *cs, int timeout)
         socket_send(sock, scmd);
         command_t *rcmd = socket_recv_command(sock, timeout);
 
-        if (rcmd == NULL)
-        {
-            command_free(rcmd);
-            continue;
-        }
-        else
+        if (rcmd != NULL)
         {
             if (strcmp(rcmd->cmd, "REGISTER-ACK") == 0 &&
                 strcmp(rcmd->opt, "ORI") == 0)

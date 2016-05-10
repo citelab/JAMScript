@@ -27,6 +27,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "jamlib.h"
 #include "core.h"
 
+#include "jamrunner.h"
+
 #include <strings.h>
 #include <pthread.h>
 
@@ -53,9 +55,9 @@ jamstate_t *jam_init()
         exit(1);
     }
 
-    // Callback initialization
-    js->callbacks = callbacks_new();
+    // Initialization of the activity and task tables
     js->atable = activity_table_new();
+    js->taskdir = jrun_init();
 
     // Queue initialization
     // globalinq is used by the main thread for input purposes
@@ -92,22 +94,22 @@ void jam_run_app(void *arg)
     activity_make(js->atable, "testfg", "sii", SYNC);
 
     
-    // arg_t *res = jam_rexec_sync(js, "test", "f", 50, 36);
+    arg_t *res = jam_rexec_sync(js, "test", "f", 50, 36);
     
-    // if (res == NULL)
-    //     printf("Nothing come out...\n");
-    // else
-    // if (res->type == INT_TYPE)
-    //     printf("*********************************\n HEEEEHAAAAAA... Results = %d \n*********************************\n", res->val.ival);
+    if (res == NULL)
+        printf("Nothing come out...\n");
+    else
+    if (res->type == INT_TYPE)
+        printf("*********************************\n HEEEEHAAAAAA... Results = %d \n*********************************\n", res->val.ival);
 
 
-    // res = jam_rexec_sync(js, "testfg", "f", 1250, 36);
+    res = jam_rexec_sync(js, "testfg", "f", 1250, 36);
     
-    // if (res == NULL)
-    //      printf("Nothing come out...\n");
-    //  else
-    //  if (res->type == INT_TYPE)
-    //     printf("*********************************\n HEEEEHAAAAAA... Results = %d \n*********************************\n", res->val.ival);
+    if (res == NULL)
+         printf("Nothing come out...\n");
+     else
+     if (res->type == INT_TYPE)
+        printf("*********************************\n HEEEEHAAAAAA... Results = %d \n*********************************\n", res->val.ival);
         
 }
 
@@ -118,48 +120,45 @@ void jam_run_app(void *arg)
 void jam_event_loop(void *arg)
 {
     jamstate_t *js = (jamstate_t *)arg;
-    event_t *e = NULL;
-
-    while ((e = jam_get_event(js))) {
-        if (e != NULL)
+    
+    while (1) 
+    {
+        task_wait(js->atable->globalsem);
+        nvoid_t *nv = queue_deq(js->atable->globalinq);   
+        command_t *cmd = (command_t *)nv->data;
+        free(nv);
+    
+        if (cmd != NULL)
         {
-            printf("=============== GOT EVENT %s=========\n", e->actname);
-         //   callbacks_call(js->callbacks, js, e);
-        }
-        else
-            taskexit(0);
-
-        taskyield();
+            printf("=============== GOT EVENT %s=========\n", cmd->actname);  
+            
+            taskentry_t *ten = jrun_find_task(js->taskdir, cmd->actname);
+            if (ten == NULL) 
+            {
+                printf("Function not found.. \n");
+            }
+            else
+            {
+                jrun_run_task(ten, cmd);                
+            }                      
+        }        
+        taskyield();        
     }
 }
 
 
-// TODO: This needs to revamped. Timeouts come here too.
-// The RPC processing is complicated.. it could have changes here too.
-// TODO: Add many different types of events here with the new design!
-//
-//
-event_t *jam_get_event(jamstate_t *js)
+void hellofk(char *s, int x, char *e)
 {
-    task_wait(js->atable->globalsem);
-    nvoid_t *nv = queue_deq(js->atable->globalinq);   
-    command_t *cmd = (command_t *)nv->data;
-    free(nv);
-    
-    if (cmd == NULL)
-        return NULL;
-
-    if (cmd->cmd == NULL)
-        return NULL;
-
-    // TODO: This needs to be fixed ASAP!
-    return event_complete_new(cmd->actname, NULL, "temp");
+    printf("This is Hello from FK function \n");
+    printf("Here is the first string: %s, and last string: %s, \nAnd integer: %d\n", s, e, x);
+    printf("\n");
 }
 
 
-void jam_reg_callback(jamstate_t *js, char *aname, eventtype_t etype, event_callback_f cb, void *data)
+void callhellofk(void *ten, void *arg)
 {
-    callbacks_add(js->callbacks, aname, etype, cb, data);
+    command_t *cmd = (command_t *)arg;
+    hellofk(cmd->args[0].val.sval, cmd->args[1].val.ival, cmd->args[2].val.sval);    
 }
 
 
@@ -167,6 +166,8 @@ void jam_reg_callback(jamstate_t *js, char *aname, eventtype_t etype, event_call
 void taskmain(int argc, char **argv)
 {   
     jamstate_t *js = jam_init();
+
+    jrun_reg_task(js->taskdir, "hellofk", SYNC_TASK, "sis", callhellofk);
 
     // Start the event loop in another thread.. with cooperative threads.. we
     // to yield for that thread to start running

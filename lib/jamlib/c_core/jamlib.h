@@ -34,8 +34,6 @@ extern "C" {
 #include "core.h"
 #include "simplequeue.h"
 #include "activity.h"
-#include "callback.h"
-#include "event.h"
 #include "timer.h"
 #include "command.h"
 
@@ -44,6 +42,9 @@ extern "C" {
 #include "task.h"
 #include "threadsem.h"
 
+#include "jamrunner.h"
+
+
 #define STACKSIZE                   50000
 
 typedef struct _jamstate_t
@@ -51,8 +52,8 @@ typedef struct _jamstate_t
     char *appname;
     corestate_t *cstate;
     pthread_t bgthread;
-    callbacks_t *callbacks;
     activitytable_t *atable;
+    tasktable_t *taskdir;
 
     struct nn_pollfd *pollfds;
     int numpollfds;
@@ -77,11 +78,6 @@ jamstate_t *jam_init();
 
 void jam_run_app(void *arg);
 void jam_event_loop(void *js);
-
-event_t *jam_get_event(jamstate_t *js);
-
-void jam_reg_callback(jamstate_t *js, char *aname, eventtype_t etype,
-                                                event_callback_f cb, void *data);
 
 
 /*
@@ -123,6 +119,15 @@ void jam_set_timer(jamstate_t *js, char *actarg, int tval);
 void jam_clear_timer(jamstate_t *js, char *actid);
 
 bool jam_eval_condition(char *expr);
+
+
+/*
+ * Functions defined in jamrunner.c
+ */
+taskentry_t *jrun_find_task(tasktable_t *tt, char *name);
+void jrun_run_task(taskentry_t *ten, void *arg);
+tasktable_t *jrun_init();
+
 
 #endif  /* __JAMLIB_H__ */
 

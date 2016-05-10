@@ -1,10 +1,19 @@
-May 7th
+May 9th
 =======
 
-= Complete Sync. C-J
-= Complete Async. C-J
+C side. Design and Implmement a Task runner.
+= Check the incoming message. Is the task (func) available for running? If not, generate an error.
+= Check parameters. If parameters don't match, generate an error.
+= Send a RDY message and wait. 
+= If the RDY message is not received before expiry, then cancel offer.
 
-= J->C Sync and Async
+= Once the STA message is received, start the execution.
+
+
+NEXT
+====
+Split into Sync and Async.
+
 
 
 
