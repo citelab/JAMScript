@@ -1,47 +1,13 @@
-#include "../../lib/jamlib/jamlib.h"
-#include <stdio.h>
-#include <stdlib.h>
-
-jsync int stest(int b) {
+jsync int doubler(int b) {
     var a = b*2;
     return a;
 }
 
-jasync void test(){
-    void onload() {
-		var a;
-		console.log("Hello World");
-	};
-    void onerror() {
-        printf("Error received\n");
-    };
-    void oncomplete() {
-        int a;
-        printf("Completed!\n");
-    };
-}
 
 int main() {
-	int code;
-    int loop = 1;
-    while(loop) {
-        printf("Your choice: \n \
-                1 - ASync \n \
-                2 - Sync \n \
-                3 - Quit \n");
-
-        scanf("%d", &code);
-        switch (code) {
-            case 1:
-                test();
-                break;
-            case 2:
-                stest(3);
-                break;
-            case 3:
-                loop = 0;
-                break;
-        }
-    }
+	int res = doubler(3);
+    printf("===============\n");
+    printf("Result: %i\n", res);
+    printf("===============\n");
     return 0;
 }
