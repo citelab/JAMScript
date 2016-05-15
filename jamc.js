@@ -269,23 +269,16 @@ void jam_run_app(void *arg) {
 }
 
 void jam_event_loop(void *arg) {
-    while (1) 
-    {
+    while (1) {
         task_wait(js->atable->globalsem);
         nvoid_t *nv = queue_deq(js->atable->globalinq);   
         command_t *cmd = (command_t *)nv->data;
         free(nv);   
-        if (cmd != NULL)
-        {
-            printf("=============== GOT EVENT %s=========\\n", cmd->actname);  
-            
+        if (cmd != NULL) {
             taskentry_t *ten = jrun_find_task(js->taskdir, cmd->actname);
-            if (ten == NULL) 
-            {
+            if (ten == NULL) {
                 printf("Function not found.. \\n");
-            }
-            else
-            {
+            } else {
                 jrun_run_task(ten, cmd);                
             }                      
         }        
@@ -306,7 +299,6 @@ void taskmain(int argc, char **argv){
     jrun_reg_task(js->taskdir, "hellofk", SYNC_TASK, "sis", callhellofk);
     taskcreate(jam_event_loop, js, STACKSIZE);
     taskcreate(jam_run_app, js, STACKSIZE);
-    printf("In main......................... \\n");
 }`;
   return cFile;
 }
