@@ -99,11 +99,11 @@ First lets consider the synchronous version of C to J.
 Remote Execution from C to J (Asynchronous)
 ===========================================
 
-[[ REXEC ASY actname device_id runid args ]]
+[[ REXEC ASY actname actid device_id args ]]
 
-[[ REXEC-ACK ASY ACTIVITY actid runid lease-value (arg0) ]]
+[[ REXEC-ACK ASY ACTIVITY actid device_id lease-value (arg0) ]]
 
-[[ REXEC-NAK ASY ACTIVITY __ runid error-code (arg0) ]]
+[[ REXEC-NAK ASY ACTIVITY actid device_id error-code (arg0) ]]
 
 
 >>>>>> OLD VERSION BEGINS >>>>>
@@ -145,7 +145,7 @@ Remote Execution from C to J (Asynchronous)
 Remote Execution from J to C (Synchronous)
 ==========================================
 
-[[ REXEC-CALL SYN actname runid/__ expression args ]] (published)
+[[ REXEC-CALL SYN actname runid expression args ]] (published)
 
 [[ REXEC-RDY SYN actname actid runid ]] 
 
@@ -172,6 +172,20 @@ is the activity ID when the device starts executing it.
 
 Once the device receives the REXEC-STA message it is going to start the execution of the
 activity with the given actid. 
+
+
+Remote Execution from J to C (Asynchronous)
+==========================================
+
+[[ REXEC-CALL ASY actname runid/__ expression args ]] (published)
+
+[[ REXEC-RDY ASY actname actid runid ]] 
+
+[[ REXEC-STA ASY EVENTLOOP actid runid ]]
+
+[[ REXEC-QUI ASY EVENTLOOP actid runid ]]
+
+
 
 Obtaining Execution Reports from the Fog and Devices
 ====================================================

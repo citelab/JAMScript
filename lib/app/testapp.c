@@ -1,5 +1,5 @@
 #include "task.h"
-#include "jamlib.h"
+#include "jam.h"
 
 
 void taskmain(int argc, char *argv[])

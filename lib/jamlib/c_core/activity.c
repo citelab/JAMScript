@@ -52,23 +52,22 @@ activitytable_t *activity_table_new()
     assert(atbl != NULL);
 
     atbl->numactivities = 0;
-    atbl->numactivityregs = 0;
+    atbl->numcbackregs = 0;
 
     return atbl;
 }
-
 
 void activity_table_print(activitytable_t *at)
 {
     int i;
 
     printf("\n");
-    printf("Activity registrations: [%d] \n", at->numactivityregs);
+    printf("Activity callback regs.: [%d] \n", at->numcbackregs);
     printf("Activity instances: [%d]\n", at->numactivities);
     printf("Registrations::\n");
     
-    for (i = 0; i < at->numactivityregs; i++)
-        activity_reg_print(at->registrations[i]);
+    for (i = 0; i < at->numcbackregs; i++)
+        activity_callbackreg_print(at->callbackregs[i]);
 
     printf("Activity instances::\n");
     for (i = 0; i < at->numactivities; i++)
@@ -77,11 +76,11 @@ void activity_table_print(activitytable_t *at)
     printf("\n");
 }
 
-void activity_reg_print(activity_registry_t *areg)
+void activity_callbackreg_print(activity_callback_reg_t *areg)
 {
     printf("\n");
     printf("Activity reg. name: %s\n", areg->name);
-    printf("Activity reg. mask: %s\n", areg->mask);
+    printf("Activity reg. mask: %s\n", areg->signature);
     printf("Activity reg. type: %d\n", areg->type);
     printf("\n");
 }
@@ -94,7 +93,7 @@ void activity_print(jactivity_t *ja)
     printf("Activity state: %d\n", ja->state);
     printf("Activity name: %s\n", ja->name);
     if (ja->code != NULL)
-        command_print_arg(ja->code);
+        command_arg_print(ja->code);
     else
         printf("Activity code: NULL\n");
         
@@ -104,33 +103,25 @@ void activity_print(jactivity_t *ja)
         queue_print(ja->outq);    
         
     printf("\n");
-    
-    
 }
 
-activity_registry_t *activity_reg_new(char *name, char *mask, int type)
-{
-    activity_registry_t *reg = (activity_registry_t *)calloc(1, sizeof(activity_registry_t));
-    assert(reg != NULL);
-    
-    strcpy(reg->name, name);
-    strcpy(reg->mask, mask);
-    reg->type = type;
-    
-    return reg;
-}
-
-bool activity_make(activitytable_t *at, char *name, char *mask, int type)
+bool activity_regcallback(activitytable_t *at, char *name, int type, char *sig, activitycallback_f cback)
 {
     int i;
-
+    
     // if a registration already exists, return false
-    for (i = 0; i < at->numactivityregs; i++)
-        if (strcmp(at->registrations[i]->name, name) == 0)
+    for (i = 0; i < at->numcbackregs; i++)
+        if (strcmp(at->callbackregs[i]->name, name) == 0)
             return false;
 
     // otherwise, make a new activity registration.
-    at->registrations[at->numactivityregs++] = activity_reg_new(name, mask, type);
+    activity_callback_reg_t *creg = (activity_callback_reg_t *)calloc(1, sizeof(activity_callback_reg_t));
+    strcpy(creg->name, name);
+    strcpy(creg->signature, sig);
+    creg->type = type;
+    creg->cback = cback;
+    
+    at->callbackregs[at->numcbackregs++] = creg;
 
     #ifdef DEBUG_LVL1
         printf("Activity make success: %s.. made\n", name);
@@ -139,46 +130,22 @@ bool activity_make(activitytable_t *at, char *name, char *mask, int type)
     return true;
 }
 
-char *activity_get_mask(activitytable_t *at, char *name)
+
+activity_callback_reg_t *activity_findcallback(activitytable_t *at, char *name)
 {
     int i;
-
-    // Get the mask from the registration for the activity with the given name
-    for (i = 0; i < at->numactivityregs; i++)
-    {
-        if (strcmp(at->registrations[i]->name, name) == 0)
-            return at->registrations[i]->mask;
-    }
+    
+    for (i = 0; i < at->numcbackregs; i++)
+        if (strcmp(at->callbackregs[i]->name, name) == 0)
+            return at->callbackregs[i];
+    
     return NULL;
-}
-
-
-int activity_get_type(activitytable_t *at, char *name)
-{
-    int i;
-    // Get the type from the registration for the activity with the given name
-
-    for (i = 0; i < at->numactivityregs; i++)
-    {
-        if (strcmp(at->registrations[i]->name, name) == 0)
-            return at->registrations[i]->type;
-    }
-    return -1;
 }
 
 
 jactivity_t *activity_new(activitytable_t *at, char *name)
 {
-    int i;
     jactivity_t *jact;
-
-    // Look for the registration
-    for (i = 0; i <at->numactivityregs; i++)
-        if (strcmp(at->registrations[i]->name, name) == 0)
-            break;
-    // If the registration is not there, return NULL
-    if (i == at->numactivityregs)
-        return NULL;
 
     jact = (jactivity_t *)calloc(1, sizeof(jactivity_t));
     at->activities[at->numactivities++] = jact;
@@ -200,64 +167,6 @@ jactivity_t *activity_new(activitytable_t *at, char *name)
     command_t *cmd = command_new("ASMBL-FDS", "LOCAL", name, jact->actid, jact->actarg, "s", "__");
 
     printf("Sending it.. \n");
-    
-    queue_enq(at->globaloutq, cmd, sizeof(command_t));
-      
-    #ifdef DEBUG_LVL1
-        printf("Created the activity: %s\n", jact->name);
-    #endif
-
-    // return the pointer
-    return jact;
-}
-
-
-
-jactivity_t *activity_new2(activitytable_t *at, char *name)
-{
-    int i;
-    jactivity_t *jact;
-
-    printf("Num activities %d\n", at->numactivities);
-    
-    // Look for the registration
-    for (i = 0; i <at->numactivityregs; i++)
-        if (strcmp(at->registrations[i]->name, name) == 0)
-            break;
-    // If the registration is not there, return NULL
-    assert(i < at->numactivityregs);
-
-
-    jact = (jactivity_t *)calloc(1, sizeof(jactivity_t));
-
-    
-  //  at->activities[0] = jact;
-//    at->numactivities = 1;
-    at->activities[at->numactivities++] = jact;
-
-//    while(1);
-
-    // Setup the new activity
-    jact->state = NEW;
-    strcpy(jact->name, name);
-    jact->code = NULL;
-    jact->sem = threadsem_new();
-    jact->actid = activity_gettime();
-    jact->actarg = strdup("__");
-
-
-    // Setup the I/O queues
-    jact->inq = queue_new(true);
-    jact->outq = queue_new(true);
-
-  //  while(1);
-    
-    printf("Creating the message... \n");
-    // Send a message to the background so it starts watching for messages
-    command_t *cmd = command_new("ASMBL-FDS", "LOCAL", name, jact->actid, jact->actarg, "s", "__");
-
-    printf("Sending it.. \n");
-  //  while(1);
     
     queue_enq(at->globaloutq, cmd, sizeof(command_t));
       
@@ -324,15 +233,6 @@ int activity_getactindx(activitytable_t *at, jactivity_t *jact)
     return -1;
 }
 
-char *activity_getid(jactivity_t *jact)
-{
-    return jact->actid;
-}
-
-char *activity_getname(jactivity_t *jact)
-{
-    return jact->name;
-}
 
 void activity_start(jactivity_t *jact)
 {
@@ -342,14 +242,4 @@ void activity_start(jactivity_t *jact)
 void activity_timeout(jactivity_t *jact)
 {
     jact->state = EXEC_TIMEDOUT;
-}
-
-void activity_complete_success(jactivity_t *jact)
-{
-    jact->state = EXEC_COMPLETE;
-}
-
-void activity_complete_error(jactivity_t *jact)
-{
-    jact->state = EXEC_ERROR;
 }

@@ -1,15 +1,26 @@
 CC = clang -Wall -g 
-//CFLAGS =  -DDEBUG_LVL1 
+AR = ar rcs
+#CFLAGS =  -DDEBUG_LVL1 
 LDFLAGS = -lcbor -lnanomsg ./libtask.a 
 
-OBJECTS = activity.o simplequeue.o command.o coreconf.o core.o jamlib.o jamworker.o jamrunner.o \
-		timer.o socket.o nvoid.o mydb.o dbutil.o cborutils.o threadsem.o jamsync.o
+OBJECTS = activity.o simplequeue.o command.o coreconf.o core.o jam.o jamworker.o jamrunner.o \
+		timer.o socket.o nvoid.o mydb.o dbutil.o cborutils.o threadsem.o jamsync.o jamasync.o
 
-testjam: $(OBJECTS)
+TESTOBJS = activity.o simplequeue.o command.o coreconf.o core.o jam.o jamworker.o jamrunner.o \
+		timer.o socket.o nvoid.o mydb.o dbutil.o cborutils.o threadsem.o jamsync.o jamasync.o \
+		testjam.o
+
+libjam.a: $(OBJECTS)
+	$(AR) libjam.a $^ 
+	
+	
+testjam: $(TESTOBJS)
 	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
+	
 
-$(OBJECTS): %.o: %.c
+$(TESTOBJS): %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
+
 
 .PHONY: clean
 

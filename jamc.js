@@ -96,6 +96,7 @@ try {
   fs.writeFileSync("/usr/local/share/jam/lib/jamlib/c_core/jamlib.c", createCFile(output.C));
   child_process.execSync("make -C /usr/local/share/jam/lib/jamlib/c_core");
   fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/testjam').pipe(fs.createWriteStream('jamout'));
+  fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/jamconf.dat').pipe(fs.createWriteStream('jamconf.dat'));
   fs.writeFileSync("jamout.js", fs.readFileSync('/usr/local/share/jam/lib/jserver/jserver-clean.js') + output.JS);
 
   // if(!noCompile) {

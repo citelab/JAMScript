@@ -1,3 +1,40 @@
+May 14th
+========
+
+= Debug J->C - Asychronous execution
+= Get the C->J Asynchronous execution working..
+
+= Get J->C sychronous working.. need to code the generators, etc.
+
+
+
+May 12th
+========
+
+DONE    Duplicate elimination on C side for publish..
+
+DONE    Process the publish from J->C Async: take care of the
+        callback handlers;
+
+        NOTE: There is nothing to implement in the runtime. We need to
+        use the C->J (Sync) to deploy the callbacks. Since they are working we
+        are good to go.
+        
+= C->J Async
+    Send the request (command). Callback encoded as a string.
+    On the J side decode the string as a callback. We need to store the
+    decoding information.
+    
+= Figure out the J->C Sync method using generators and yielding.
+
+= Segfault on error from J-core on C->J invocations
+
+= Do error checking and see if all possibilities are covered...
+      
+
+
+
+
 May 9th
 =======
 
@@ -16,14 +53,7 @@ Split into Sync and Async.
 
 
 
-
-
-April 30th
-
-Complete jam_rexec_runner()
-    = REXEC should work End-to-end
-    
-    
+   
 
 Start the cloud side of things too..
     = Play with zookeeper

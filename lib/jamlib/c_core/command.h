@@ -98,7 +98,7 @@ void command_print(command_t *cmd);
  */
 arg_t *command_arg_clone(arg_t *arg); 
 void command_arg_free(arg_t *arg);
-void command_print_arg(arg_t *arg);
+void command_arg_print(arg_t *arg);
 
 #endif
 

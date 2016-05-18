@@ -85,7 +85,7 @@ void command_arg_free(arg_t *arg)
 }
 
 
-void command_print_arg(arg_t *arg)
+void command_arg_print(arg_t *arg)
 {
     printf("\t\t");
     switch(arg->type) {
@@ -251,7 +251,6 @@ command_t *command_new(const char *cmd, char *opt, char *actname, char *actid, c
     va_end(args);
 
     command_t *c = command_new_using_cbor(cmd, opt, actname, actid, actarg, arr, qargs, i);
-//    command_print(c);
     return c;
 }
 
@@ -400,7 +399,7 @@ void command_print(command_t *cmd)
     printf("\nCommand number of args: %d\n", cmd->nargs);
 
     for (i = 0; i < cmd->nargs; i++)
-        command_print_arg(&cmd->args[i]);
+        command_arg_print(&cmd->args[i]);
 
     printf("\n");
 

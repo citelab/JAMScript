@@ -24,7 +24,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#include "jamlib.h"
+#include "jam.h"
 #include "core.h"
 
 #include <task.h>
@@ -41,7 +41,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // library. It seems little brain dead. This should be rewritten for better performance
 // from a scalability point-of-view.
 //
-void *jamworker_bgthread(void *arg)
+void *jwork_bgthread(void *arg)
 {
     int oldstate, oldtype;
 
@@ -56,7 +56,7 @@ void *jamworker_bgthread(void *arg)
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldtype);
 
     // assemble the poller.. insert the FDs that should go into the poller
-    jamworker_assemble_fds(js);
+    jwork_assemble_fds(js);
 
     // heartbeat time is set to 1000 milliseconds    
     int beattime = 5000; 
@@ -65,7 +65,7 @@ void *jamworker_bgthread(void *arg)
     while (1)
     {
         // wait on the poller
-        int nfds = jamworker_wait_fds(js, beattime);
+        int nfds = jwork_wait_fds(js, beattime);
         if (nfds <= 0) 
         {
             jam_send_ping(js);
@@ -75,7 +75,7 @@ void *jamworker_bgthread(void *arg)
     #ifdef DEBUG_LVL1
         printf("Calling the JAM worker processor.. \n");
     #endif
-        jamworker_processor(js);
+        jwork_processor(js);
     }
 
     return NULL;
@@ -85,7 +85,7 @@ void *jamworker_bgthread(void *arg)
 // Put the FDs in a particular order..
 //
 //
-void jamworker_assemble_fds(jamstate_t *js)
+void jwork_assemble_fds(jamstate_t *js)
 {
     int i;
 
@@ -120,15 +120,14 @@ void jamworker_assemble_fds(jamstate_t *js)
 }
 
 
-int jamworker_wait_fds(jamstate_t *js, int beattime)
+int jwork_wait_fds(jamstate_t *js, int beattime)
 {
     // wait on the nn_pollfd array that is in the jamstate_t structure!
     //
     return nn_poll(js->pollfds, js->numpollfds, beattime);
 }
 
-
-void jamworker_processor(jamstate_t *js)
+void jwork_processor(jamstate_t *js)
 {
     int i;
     // We know at least one descriptor has something for input processing
@@ -136,26 +135,27 @@ void jamworker_processor(jamstate_t *js)
 
     // Use if constructs for the first 4 descriptors
     if (js->pollfds[0].revents & NN_POLLIN)
-        jamworker_process_reqsock(js);
+        jwork_process_reqsock(js);
     else
     if (js->pollfds[1].revents & NN_POLLIN)
-        jamworker_process_subsock(js);
+        jwork_process_subsock(js);
     else
     if (js->pollfds[2].revents & NN_POLLIN)
-        jamworker_process_respsock(js);
+        jwork_process_respsock(js);
     else
     if (js->pollfds[3].revents & NN_POLLIN)
-        jamworker_process_globaloutq(js);
+        jwork_process_globaloutq(js);
     else
     // Use a loop to scan the rest of the descriptors
     for (i = 4; i < js->numpollfds; i++)
     {
         if (js->pollfds[i].revents & NN_POLLIN)
-            jamworker_process_actoutq(js, i - 4);
+            jwork_process_actoutq(js, i - 4);
     }
 }
 
-void jamworker_process_reqsock(jamstate_t *js)
+
+void jwork_process_reqsock(jamstate_t *js)
 {
     // reqsock has input that is replies to what the main thread or an
     // activity might have requested. We need to distinguish that and route
@@ -200,18 +200,25 @@ void jamworker_process_reqsock(jamstate_t *js)
 // Subscribe socket processing
 // REXEC processing is done here.
 //
-void jamworker_process_subsock(jamstate_t *js)
+void jwork_process_subsock(jamstate_t *js)
 {
     // Data is available in the socket..  so timeout value
     // does not make much difference!
     //  
     printf("===================== In subsock processing...\n");
     command_t *rcmd = socket_recv_command(js->cstate->subsock, 100);
+    printf("Command %s, actid %s\n", rcmd->cmd, rcmd->actid);
+    
     if (rcmd != NULL)
     {
-        if (strcmp(rcmd->cmd, "REXEC-CALL") == 0 && 
-            strcmp(rcmd->opt, "SYN") == 0)
+        if (strcmp(rcmd->cmd, "REXEC-CALL") == 0)
         {
+            if (jwork_duplicate_call(rcmd)) 
+            {
+                command_free(rcmd);
+                return;
+            }
+            
             if (jam_eval_condition(rcmd->actarg)) 
             {
                 queue_enq(js->atable->globalinq, rcmd, sizeof(command_t));
@@ -226,14 +233,14 @@ void jamworker_process_subsock(jamstate_t *js)
 }
 
 
-void jamworker_process_respsock(jamstate_t *js)
+void jwork_process_respsock(jamstate_t *js)
 {
     // Data is available in the socket.. so timeout value
     // is not critical.. why wait for timeout?
     //
     printf("================= In respsock processing.. \n");
     command_t *rcmd = socket_recv_command(js->cstate->respsock, 5000);
-    
+     
     if (rcmd != NULL)
     {
         // We can respond to different types of survey questions..
@@ -241,7 +248,7 @@ void jamworker_process_respsock(jamstate_t *js)
         if (strcmp(rcmd->cmd, "REPORT-REQ") == 0 &&
             strcmp(rcmd->opt, "FOG") == 0)
         {
-            command_t *result = jamworker_runid_status(js, rcmd->actarg);
+            command_t *result = jwork_runid_status(js, rcmd->actarg);
             socket_send(js->cstate->respsock, result);
             command_free(result);
         }
@@ -249,7 +256,7 @@ void jamworker_process_respsock(jamstate_t *js)
         if (strcmp(rcmd->cmd, "RKILL") == 0 &&
             strcmp(rcmd->opt, "FOG") == 0)
         {
-            command_t *result = jamworker_runid_kill(js, rcmd->actarg);
+            command_t *result = jwork_runid_kill(js, rcmd->actarg);
             socket_send(js->cstate->respsock, result);
             command_free(result);
         }
@@ -257,7 +264,7 @@ void jamworker_process_respsock(jamstate_t *js)
         if (strcmp(rcmd->cmd, "DSTATUS-REQ") == 0 &&
             strcmp(rcmd->cmd, "FOG") == 0)
         {
-            command_t *result = jamworker_device_status(js);
+            command_t *result = jwork_device_status(js);
             socket_send(js->cstate->respsock, result);
             command_free(result);
         }
@@ -267,9 +274,11 @@ void jamworker_process_respsock(jamstate_t *js)
 }
 
 
-void jamworker_process_globaloutq(jamstate_t *js)
+void jwork_process_globaloutq(jamstate_t *js)
 {
     nvoid_t *nv = queue_deq(js->atable->globaloutq);
+    if (nv == NULL) return;
+    
     command_t *rcmd = (command_t *)nv->data;
     free(nv);
     // Don't use nvoid_free() .. it is not deep enough 
@@ -282,7 +291,7 @@ void jamworker_process_globaloutq(jamstate_t *js)
         // QCMD: ASMBL-FDS LOCAL actname actarg
         if (strcmp(rcmd->cmd, "ASMBL-FDS") == 0 &&
             strcmp(rcmd->opt, "LOCAL") == 0)
-            jamworker_assemble_fds(js);
+            jwork_assemble_fds(js);
         else
             socket_send(js->cstate->reqsock, rcmd);
 
@@ -297,9 +306,13 @@ void jamworker_process_globaloutq(jamstate_t *js)
 // Pointer could be referring to the command structure that was created by the
 // activity in this case and the main thread in the above case..
 //
-void jamworker_process_actoutq(jamstate_t *js, int indx)
+void jwork_process_actoutq(jamstate_t *js, int indx)
 {
+    printf("Indx %d\n", indx);
+    
     nvoid_t *nv = queue_deq(js->atable->activities[indx]->outq);
+    if (nv == NULL) return;
+    
     command_t *rcmd = (command_t *)nv->data;
     free(nv);
     // Don't use nvoid_free() .. it is not deep enough 
@@ -310,7 +323,7 @@ void jamworker_process_actoutq(jamstate_t *js, int indx)
         // Otherwise, send it to the reqsock
         if (strcmp(rcmd->cmd, "LOCAL") == 0 &&
             strcmp(rcmd->opt, "DEL-ACTIVITY") == 0)
-            jamworker_assemble_fds(js);
+            jwork_assemble_fds(js);
         else
             socket_send(js->cstate->reqsock, rcmd);
 
@@ -318,18 +331,18 @@ void jamworker_process_actoutq(jamstate_t *js, int indx)
     }
 }
 
-command_t *jamworker_runid_status(jamstate_t *js, char *runid)
+command_t *jwork_runid_status(jamstate_t *js, char *runid)
 {
     return NULL;
 }
 
-command_t *jamworker_device_status(jamstate_t *js)
+command_t *jwork_device_status(jamstate_t *js)
 {
     // Get the number of activities running on the device
     return NULL;
 }
 
-command_t *jamworker_runid_kill(jamstate_t *js, char *runid)
+command_t *jwork_runid_kill(jamstate_t *js, char *runid)
 {
     return NULL;
 }
@@ -339,7 +352,7 @@ void jam_send_ping(jamstate_t *js)
     command_t *scmd;
 
     // create a request-reply socket
-    scmd = command_new("PING", "DEVICE", "PINGER", js->cstate->conf->device_name, js->cstate->conf->device_id, "s", "temp");
+    scmd = command_new("PING", "DEVICE", "PINGER", js->cstate->conf->device_id, js->cstate->conf->device_name, "s", "temp");
 
     socket_send(js->cstate->reqsock, scmd);
     command_free(scmd);
@@ -375,8 +388,35 @@ void jam_clear_timer(jamstate_t *js, char *actid)
 
 
 // This is evaluating a JavaScript expression for the nodal predicate
+// TODO: Fix this.. this incomplete.
 //
 bool jam_eval_condition(char *expr)
 {
     return true;
+}
+
+bool jwork_duplicate_call(command_t *cmd)
+{
+    static int numentries = 0;
+    static int lastentry = 0;
+    static char *entries[MAX_DUP_ENTRIES];
+    
+    int i;
+    
+    for (i = 0; i < numentries; i++) 
+    {
+        if (strcmp(entries[i], cmd->actid) == 0)
+            return true;                    
+    }
+    
+    if (numentries < MAX_DUP_ENTRIES) 
+        entries[numentries++] = strdup(cmd->actid);
+    else
+    {
+        free(entries[lastentry]);
+        entries[lastentry] = strdup(cmd->actid);
+        lastentry = (lastentry + 1) % MAX_DUP_ENTRIES;
+    }
+    
+    return false;
 }
