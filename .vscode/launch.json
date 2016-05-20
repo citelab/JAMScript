@@ -12,7 +12,7 @@
 			"args": [],
 			"stopAtEntry": false,
 			"cwd": "${workspaceRoot}",
-			"environment": [{"APP_NAME" : "ffff"}]
+			"environment": []
 		},
 		{
 			"name": "C++ Attach (GDB)",
@@ -25,7 +25,7 @@
 			"args": [],
 			"stopAtEntry": false,
 			"cwd": "${workspaceRoot}",
-			"environment": [{"APP_NAME" : "ffff"}],
+			"environment": [],
 			"processId": "enter program's process ID"
 		}
 	]

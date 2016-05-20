@@ -111,12 +111,13 @@ bool coreconf_recover(coreconf_t *conf)
     return true;
 }
 
-char *load_env_param(char *param, char *emsg)
+char *load_env_param(char *param, char *dvalue)
 {
+    // Unable to load the specified environment variable? Return the default value...
     char *ptr;
     ptr = getenv(param);
     if (ptr == NULL)
-        printf("%s\n", emsg);
+        return strdup(dvalue);
     else
         return strdup(ptr);
 
@@ -131,11 +132,11 @@ coreconf_t *coreconf_make(coreconf_t *conf)
 {
     int i;
 
-    conf->app_name = load_env_param("APP_NAME", "ERROR!! APP_NAME should be set.");
+    conf->app_name = load_env_param("APP_NAME", "testapp");
     if (conf->app_name == NULL)
         exit(1);
 
-    conf->device_name = load_env_param("DEVICE_NAME", "ERROR!! DEVICE_NAME should be set.");
+    conf->device_name = load_env_param("DEVICE_NAME", "testdevice");
     if (conf->device_name == NULL)
         exit(1);
 
@@ -145,7 +146,7 @@ coreconf_t *coreconf_make(coreconf_t *conf)
 
     conf->retries = 3;
 
-    char *fservers = load_env_param("FOG_SERVERS", "WARNING! No FOG_SERVERS set.");
+    char *fservers = load_env_param("FOG_SERVERS", "127.0.0.1");
     if (fservers != NULL)
     {
         // find out how many we have in the list.. list is seperated by ':'
@@ -160,7 +161,7 @@ coreconf_t *coreconf_make(coreconf_t *conf)
     }
     free(fservers);
 
-    char *cservers = load_env_param("CLOUD_SERVERS", "WARNING! No CLOUD_SERVERS set.");
+    char *cservers = load_env_param("CLOUD_SERVERS", "127.0.0.1");
     if (cservers != NULL)
     {
         // find out how many we have in the list.. list is seperated by ':'

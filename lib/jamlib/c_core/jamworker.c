@@ -58,8 +58,8 @@ void *jwork_bgthread(void *arg)
     // assemble the poller.. insert the FDs that should go into the poller
     jwork_assemble_fds(js);
 
-    // heartbeat time is set to 1000 milliseconds    
-    int beattime = 5000; 
+    // heartbeat time is set to 10000 milliseconds    
+    int beattime = 10000; 
     thread_signal(js->bgsem);
     // get into the event processing..
     while (1)
