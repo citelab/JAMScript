@@ -87,9 +87,8 @@ bool timer_add_event(timertype_t *tmr, int timerval, bool repeat, char *tag, tim
     char buf[64];
 
     sprintf(buf, "ADDEVENT %p", tev);
-
     queue_enq(tmr->timerqueue, strdup(buf), strlen(buf));
-    
+
     #ifdef DEBUG_LVL1
         if (tmr->name != NULL)
             printf("Add event [tag=%s] to Timer [%s] done\n", tag, tmr->name);
@@ -108,7 +107,7 @@ bool timer_del_event(timertype_t *tmr, char *tag)
     sprintf(buf, "DELEVENT %s", tag);
 
     queue_enq(tmr->timerqueue, strdup(buf), strlen(buf));
-    
+
     #ifdef DEBUG_LVL1
         if (tmr->name != NULL)
             printf("Delete event [tag=%s] from Timer [%s] done\n", tag, tmr->name);
@@ -126,7 +125,7 @@ bool timer_cancel_next(timertype_t *tmr, char *tag)
     sprintf(buf, "CANCELEVENT %s", tag);
 
     queue_enq(tmr->timerqueue, strdup(buf), strlen(buf));
-    
+
     #ifdef DEBUG_LVL1
         if (tmr->name != NULL)
             printf("Cancel event [tag=%s] to Timer [%s] done\n", tag, tmr->name);
@@ -178,7 +177,7 @@ void *timer_loop(void *arg)
             char cmd[64], param[64];
             // Check whether we have an addition or deletion
             sscanf((char *)nv->data, "%s %s", cmd, param);
-            
+
             if (strcmp(cmd, "ADDEVENT") == 0)
             {
                 timerevent_t *tev;
@@ -200,7 +199,7 @@ void *timer_loop(void *arg)
 void timer_decrement_and_fire_events(timertype_t *tmr)
 {
     int i;
-    
+
     for (i = 0; i < tmr->numevents; i++)
     {
         if (tmr->events[i] != NULL)
@@ -218,6 +217,7 @@ void timer_decrement_and_fire_events(timertype_t *tmr)
                 {
                     if (tmr->events[i]->cback != NULL)
                         tmr->events[i]->cback(tmr->events[i]->arg);
+                    free(tmr->events[i]->tag);
                     free(tmr->events[i]);
                     tmr->events[i] = NULL;
                 }
@@ -261,6 +261,7 @@ void timer_delete_records_with_tag(timertype_t *tmr, char *tag)
 
         if (strcmp(tmr->events[i]->tag, tag) == 0)
         {
+            free(tmr->events[i]->tag);
             free(tmr->events[i]);
             tmr->events[i] = NULL;
         }

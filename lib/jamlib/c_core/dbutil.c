@@ -3,6 +3,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#ifdef linux
+#include <bsd/stdlib.h>
+#endif
+
 
 void print_key(mydb_t *db, char *label, void *key)
 {

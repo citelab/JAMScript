@@ -67,8 +67,9 @@ typedef struct _jactivity_t
 
     enum activity_state_t state;
     enum activity_type_t type;
-            
-    threadsem_t *sem;   
+
+    threadsem_t *sem;
+    int taskid;
     char *actid;
     char *actarg;
     arg_t *code;
@@ -83,15 +84,16 @@ typedef struct _activity_callback_reg_t
     char name[MAX_NAME_LEN];
     char signature[MAX_NAME_LEN];
     activitycallback_f cback;
-    
+
     enum activity_type_t type;
-    
+
 } activity_callback_reg_t;
 
 
 typedef struct _activitytable_t
 {
     int numactivities;
+    int numshadowacts;
     int numcbackregs;
     activity_callback_reg_t *callbackregs[MAX_ACTIVITIES];
     jactivity_t *activities[MAX_ACTIVITIES];
@@ -99,6 +101,7 @@ typedef struct _activitytable_t
     simplequeue_t *globalinq;
     simplequeue_t *globaloutq;
     threadsem_t *globalsem;
+    threadsem_t *delete_sem;
 
 } activitytable_t;
 
@@ -114,16 +117,19 @@ void activity_callbackreg_print(activity_callback_reg_t *areg);
 void activity_print(jactivity_t *ja);
 
 bool activity_regcallback(activitytable_t *at, char *name, int type, char *sig, activitycallback_f cback);
-activity_callback_reg_t *activity_findcallback(activitytable_t *at, char *name);
+activity_callback_reg_t *activity_findcallback(activitytable_t *at, char *name, char *opt);
 
 jactivity_t *activity_new(activitytable_t *atbl, char *name);
 
 jactivity_t *activity_getbyid(activitytable_t *at, char *actid);
+jactivity_t *activity_getmyactivity(activitytable_t *at);
 
 void activity_start(jactivity_t *act);
 void activity_timeout(jactivity_t *act);
 
 void activity_del(activitytable_t *at, jactivity_t *jact);
 int activity_getactindx(activitytable_t *at, jactivity_t *jact);
+
+void activity_complete(activitytable_t *at, char *fmt, ...);
 
 #endif

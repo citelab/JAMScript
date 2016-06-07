@@ -99,11 +99,11 @@ First lets consider the synchronous version of C to J.
 Remote Execution from C to J (Asynchronous)
 ===========================================
 
-[[ REXEC ASY actname actid device_id args ]]
+[[ REXEC ASY actname device_id runid args ]]
 
-[[ REXEC-ACK ASY ACTIVITY actid device_id lease-value (arg0) ]]
+[[ REXEC-ACK ASY ACTIVITY actid runid lease-value (arg0) ]]
 
-[[ REXEC-NAK ASY ACTIVITY actid device_id error-code (arg0) ]]
+[[ REXEC-NAK ASY ACTIVITY __ runid error-code (arg0) ]]
 
 
 >>>>>> OLD VERSION BEGINS >>>>>
@@ -145,15 +145,11 @@ Remote Execution from C to J (Asynchronous)
 Remote Execution from J to C (Synchronous)
 ==========================================
 
-[[ REXEC-CALL SYN actname runid expression args ]] (published)
+[[ REXEC-CALL SYN actname runid/__ expression args ]] (published)
 
 [[ REXEC-RDY SYN actname actid runid ]] 
 
-[[ REXEC-STA SYN EVENTLOOP actid runid survey_port (arg0)]]
-
-[[ REXEC-QUI SYN EVENTLOOP actid runid survey_port (arg0)]]
-
-
+[[ REXEC-STA SYN EVENTLOOP actid runid ]]
 
 
 [[ REXEC FOG actname expression args (sent over publish) ]]
@@ -177,59 +173,34 @@ is the activity ID when the device starts executing it.
 Once the device receives the REXEC-STA message it is going to start the execution of the
 activity with the given actid. 
 
-
-Remote Execution from J to C (Asynchronous)
-==========================================
-
-[[ REXEC-CALL ASY actname runid expression args ]] (published)
-
-[[ REXEC-RDY ASY actname actid runid ]] 
-
-[[ REXEC-STA ASY EVENTLOOP actid runid ]]
-
-[[ REXEC-QUI ASY EVENTLOOP actid runid ]]
-
-
-
 Obtaining Execution Reports from the Fog and Devices
 ====================================================
 
-[[ REPORT-REQ  SYN EVENTLOOP __ runid ]]
+Execution reports are necessary part of the protocol used by JAMScript.
+Fog or devices could be asking for status reports after or just before a lease on an
+ongoing activity execution is to expire. 
 
-[[ REPORT-REP FIN actname deviceid runid res (arg0)]
-                res is a single object
+[[ REPORT-REQ DEVICE actname actid __ ]]
 
-NOTE: There is no continuation message. We report back only
-when there is a positive completion. If there is a problem, just
-keep quiet. The receiver would correctly infer a problem.
+The device is requesting a report from the Fog on the execution of a particular activity.
 
+[[ REPORT-REP FOG actname actid __ message-type-code message-arg ]]
 
+The reply from the Fog could tell the device many things: extension of the lease (LEASE-EXT), or 
+activity completed successfully (COMPLETE-SUC), completed erroneously (COMPLETE-ERR).
+The second argument (message-arg) is the parameter for this one.
 
-        Execution reports are necessary part of the protocol used by JAMScript.
-        Fog or devices could be asking for status reports after or just before a lease on an
-        ongoing activity execution is to expire. 
+Like the devices, the Fog can request execution reports from the devices as well.
 
-        [[ REPORT-REQ DEVICE actname actid __ ]]
+[[ REPORT-REQ FOG actname __ runid ]]
 
-        The device is requesting a report from the Fog on the execution of a particular activity.
+The Fog is sending out a survey asking which devices are still working on the particular activity.
+May be we need another ID type to indicate whether a particular instance of an activity is still working.
 
-        [[ REPORT-REP FOG actname actid __ message-type-code message-arg ]]
+[[ REPORT-REP DEVICE actname actid message-type-code message-arg ]]
 
-        The reply from the Fog could tell the device many things: extension of the lease (LEASE-EXT), or 
-        activity completed successfully (COMPLETE-SUC), completed erroneously (COMPLETE-ERR).
-        The second argument (message-arg) is the parameter for this one.
-
-        Like the devices, the Fog can request execution reports from the devices as well.
-
-        [[ REPORT-REQ FOG actname __ runid ]]
-
-        The Fog is sending out a survey asking which devices are still working on the particular activity.
-        May be we need another ID type to indicate whether a particular instance of an activity is still working.
-
-        [[ REPORT-REP DEVICE actname actid message-type-code message-arg ]]
-
-        This is same as the previous case. However, the way it is delivered is different. In this case,
-        we are replying to a survey. 
+This is same as the previous case. However, the way it is delivered is different. In this case,
+we are replying to a survey. 
 
 
 Terminating Execution Commands in Fog and Devices

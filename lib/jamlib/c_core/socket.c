@@ -128,7 +128,7 @@ int socket_send(socket_t *sock, command_t *cmd)
     int bytes = nn_send(sock->sock_fd, cmd->buffer, cmd->length, 0);
     assert(bytes == cmd->length);
     #ifdef DEBUG_LVL1
-        printf("Sent %d bytes on sock \n", bytes);
+        //printf("Sent %d bytes on sock \n", bytes);
     #endif   
     // return the number of bytes sent out..
     return bytes;

@@ -34,6 +34,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "activity.h"
 
 
+
 // The JAM bgthread is run in another worker (pthread). Although it shares all
 // the memory with the master that runs the cooperative multi-threaded application
 //
@@ -57,20 +58,24 @@ void *jwork_bgthread(void *arg)
 
     // assemble the poller.. insert the FDs that should go into the poller
     jwork_assemble_fds(js);
-
-    // heartbeat time is set to 10000 milliseconds    
-    int beattime = 10000; 
+    // heartbeat time is set to 10000 milliseconds
+    int beattime = 10000;
     thread_signal(js->bgsem);
     // get into the event processing..
+    //int counter = 0;
     while (1)
     {
-        // wait on the poller
+     //  printf("\n\n COUNTER %d \n\n", counter++);
+
         int nfds = jwork_wait_fds(js, beattime);
-        if (nfds <= 0) 
+      //  printf("Activity Number After: %d\n", js->atable->numactivities);
+        if (nfds == 0)
         {
             jam_send_ping(js);
             continue;
         }
+        else if(nfds < 0)
+            printf("\nERROR! File descriptor corruption.. another race condition??\n");
 
     #ifdef DEBUG_LVL1
         printf("Calling the JAM worker processor.. \n");
@@ -79,6 +84,13 @@ void *jwork_bgthread(void *arg)
     }
 
     return NULL;
+}
+
+
+void jwork_reassemble_fds(jamstate_t *js, int nam)
+{
+    js->atable->numactivities = nam;
+    jwork_assemble_fds(js);
 }
 
 
@@ -95,8 +107,9 @@ void jwork_assemble_fds(jamstate_t *js)
 
     js->pollfds = (struct nn_pollfd *)calloc((4 + js->atable->numactivities), sizeof(struct nn_pollfd));
 
-    for (i = 0; i < 4 + js->atable->numactivities; i++)
+    for (i = 0; i < 4 + js->atable->numactivities; i++){
         js->pollfds[i].events = NN_POLLIN;
+      }
 
     // pick the external sockets: REQ, PUB, and SURV
     // TODO:
@@ -108,13 +121,8 @@ void jwork_assemble_fds(jamstate_t *js)
     js->pollfds[3].fd = js->atable->globaloutq->pullsock;
 
     // scan the number of activities and get their input queue hooked
-    for (i = 0; i < js->atable->numactivities; i++) 
-    {
-        printf("Setting... i = %d\n", i);
+    for (i = 0; i < js->atable->numactivities; i++)
         js->pollfds[i+4].fd = js->atable->activities[i]->outq->pullsock;
-    }
-    printf("DONE.................................\n");
-
     // pollfds structure is not complete..
     js->numpollfds = 4 + js->atable->numactivities;
 }
@@ -162,36 +170,32 @@ void jwork_process_reqsock(jamstate_t *js)
     // the reply to the appropriate destination
     //
     // TODO: What about the timeout value.. it could be inconsequential
-    printf("----- In request sock.. \n");
-    
+    printf("----- In request sock.......... \n");
     command_t *rcmd = socket_recv_command(js->cstate->reqsock, 5000);
-    
-    printf("Actname %s\n", rcmd->actname);
-    
+    printf("Command %s, %s\n", rcmd->cmd, rcmd->actname);
     if (rcmd != NULL)
     {
         if (strcmp(rcmd->actname, "EVENTLOOP") == 0)
         {
             // Send it to the main thread and unblock the thread
+            printf("Event Loop Detected ........\n");
             queue_enq(js->atable->globalinq, rcmd, sizeof(command_t));
             thread_signal(js->atable->globalsem);
         }
         else
         if (strcmp(rcmd->actname, "ACTIVITY") == 0)
         {
-            printf("Activity ID: %s\n", rcmd->actid);
-            
             jactivity_t *jact = activity_getbyid(js->atable, rcmd->actid);
-            
+            printf("Activity Detected ........\n");
             // Send it to the activity and unblock the activity
             queue_enq(jact->inq, rcmd, sizeof(command_t));
             thread_signal(jact->sem);
         }
-        else
-        if (strcmp(rcmd->actname, "PINGER") == 0)
+        else if (strcmp(rcmd->actname, "PINGER") == 0)
         {
             if (strcmp(rcmd->cmd, "PONG") == 0)
                 printf("Reply received for ping..\n");
+            command_free(rcmd);
         }
     }
 }
@@ -204,30 +208,35 @@ void jwork_process_subsock(jamstate_t *js)
 {
     // Data is available in the socket..  so timeout value
     // does not make much difference!
-    //  
+    //
     printf("===================== In subsock processing...\n");
     command_t *rcmd = socket_recv_command(js->cstate->subsock, 100);
-    printf("Command %s, actid %s\n", rcmd->cmd, rcmd->actid);
-    
+    printf("Command %s, actid %s.. actname %s\n", rcmd->cmd, rcmd->actid, rcmd->actname);
+
     if (rcmd != NULL)
     {
         if (strcmp(rcmd->cmd, "REXEC-CALL") == 0)
         {
-            if (jwork_duplicate_call(rcmd)) 
+            // No distinction is made between the SYNC and ASYNC calls here.
+            // They are both passed to the jam_event_loop in jam.c
+            // There we separate the two and process them differently.
+            /*
+            if (jwork_runtable_check(js->rtable, rcmd))
             {
+                printf("Duplicate found... \n");
                 command_free(rcmd);
                 return;
-            }
-            
-            if (jam_eval_condition(rcmd->actarg)) 
+            }*/
+
+            if (jam_eval_condition(rcmd->actarg))
             {
+
                 queue_enq(js->atable->globalinq, rcmd, sizeof(command_t));
                 thread_signal(js->atable->globalsem);
-                
                 // rcmd is released in the main thread after consumption
             }
             else
-                command_free(rcmd);            
+                command_free(rcmd);
         }
     }
 }
@@ -238,19 +247,22 @@ void jwork_process_respsock(jamstate_t *js)
     // Data is available in the socket.. so timeout value
     // is not critical.. why wait for timeout?
     //
-    printf("================= In respsock processing.. \n");
     command_t *rcmd = socket_recv_command(js->cstate->respsock, 5000);
-     
+    printf("====================================== In respsock processing.. cmd: %s, opt: %s\n", rcmd->cmd, rcmd->opt);
+
     if (rcmd != NULL)
     {
         // We can respond to different types of survey questions..
         // STATUS ACTIVITY actname actarg
         if (strcmp(rcmd->cmd, "REPORT-REQ") == 0 &&
-            strcmp(rcmd->opt, "FOG") == 0)
+            strcmp(rcmd->opt, "SYN") == 0)
         {
             command_t *result = jwork_runid_status(js, rcmd->actarg);
-            socket_send(js->cstate->respsock, result);
-            command_free(result);
+            if (result != NULL)
+            {
+                socket_send(js->cstate->respsock, result);
+                command_free(result);
+            }
         }
         else
         if (strcmp(rcmd->cmd, "RKILL") == 0 &&
@@ -260,9 +272,9 @@ void jwork_process_respsock(jamstate_t *js)
             socket_send(js->cstate->respsock, result);
             command_free(result);
         }
-        else 
-        if (strcmp(rcmd->cmd, "DSTATUS-REQ") == 0 &&
-            strcmp(rcmd->cmd, "FOG") == 0)
+        else
+        if (strcmp(rcmd->cmd, "DSTATUS") == 0 &&
+            strcmp(rcmd->cmd, "REQ") == 0)
         {
             command_t *result = jwork_device_status(js);
             socket_send(js->cstate->respsock, result);
@@ -278,24 +290,43 @@ void jwork_process_globaloutq(jamstate_t *js)
 {
     nvoid_t *nv = queue_deq(js->atable->globaloutq);
     if (nv == NULL) return;
-    
+
     command_t *rcmd = (command_t *)nv->data;
     free(nv);
-    // Don't use nvoid_free() .. it is not deep enough 
-    
+    // Don't use nvoid_free() .. it is not deep enough
+
     if (rcmd != NULL)
     {
-        printf("Processing cmd: [%s] from GlobalOutQ\n", rcmd->cmd);
-        
+        printf("Processing cmd: from GlobalOutQ.. ..\n");
+
         // Many commands are in the output queue of the main thread
-        // QCMD: ASMBL-FDS LOCAL actname actarg
-        if (strcmp(rcmd->cmd, "ASMBL-FDS") == 0 &&
-            strcmp(rcmd->opt, "LOCAL") == 0)
-            jwork_assemble_fds(js);
+        if (strcmp(rcmd->opt, "LOCAL") == 0)
+        {
+            printf("Processing........... %s \n", rcmd->cmd);
+
+            if (strcmp(rcmd->cmd, "COMPL-ACT") == 0)
+            {
+                if (rcmd->nargs == 0)
+                    jwork_runid_complete(js->rtable, rcmd->actarg, NULL);
+                else
+                    jwork_runid_complete(js->rtable, rcmd->actarg, &rcmd->args[0]);
+                    // TODO: Could there be a memory deallocation problem in the above line?
+
+                thread_signal(js->atable->delete_sem);
+            }
+            else
+            {
+                jwork_reassemble_fds(js, rcmd->args[0].val.ival);
+                if (strcmp(rcmd->cmd, "DELETE-FDS") == 0)
+                {
+                    thread_signal(js->atable->delete_sem);
+                }
+            }
+        }
         else
             socket_send(js->cstate->reqsock, rcmd);
 
-        command_free(rcmd);
+      command_free(rcmd);
     }
 }
 
@@ -306,54 +337,37 @@ void jwork_process_globaloutq(jamstate_t *js)
 // Pointer could be referring to the command structure that was created by the
 // activity in this case and the main thread in the above case..
 //
+
 void jwork_process_actoutq(jamstate_t *js, int indx)
 {
     printf("Indx %d\n", indx);
-    
+
     nvoid_t *nv = queue_deq(js->atable->activities[indx]->outq);
     if (nv == NULL) return;
-    
+
     command_t *rcmd = (command_t *)nv->data;
     free(nv);
-    // Don't use nvoid_free() .. it is not deep enough 
-    
+    // Don't use nvoid_free() .. it is not deep enough
+
     if (rcmd != NULL)
     {
-        // QCMD: LOCAL DEL-ACTIVITY actname actarg
-        // Otherwise, send it to the reqsock
-        if (strcmp(rcmd->cmd, "LOCAL") == 0 &&
-            strcmp(rcmd->opt, "DEL-ACTIVITY") == 0)
-            jwork_assemble_fds(js);
-        else
-            socket_send(js->cstate->reqsock, rcmd);
-
+        socket_send(js->cstate->reqsock, rcmd);
         command_free(rcmd);
     }
 }
 
-command_t *jwork_runid_status(jamstate_t *js, char *runid)
-{
-    return NULL;
-}
 
-command_t *jwork_device_status(jamstate_t *js)
-{
-    // Get the number of activities running on the device
-    return NULL;
-}
-
-command_t *jwork_runid_kill(jamstate_t *js, char *runid)
-{
-    return NULL;
-}
 
 void jam_send_ping(jamstate_t *js)
 {
     command_t *scmd;
 
-    // create a request-reply socket
+    // create a command structure for the PING.
     scmd = command_new("PING", "DEVICE", "PINGER", js->cstate->conf->device_id, js->cstate->conf->device_name, "s", "temp");
 
+    // send it through the request-reply socket.. we need to get the reply back to prevent
+    // socket from going haywire
+    //
     socket_send(js->cstate->reqsock, scmd);
     command_free(scmd);
 }
@@ -362,13 +376,13 @@ void jam_send_ping(jamstate_t *js)
 void tcallback(void *arg)
 {
     jactivity_t *jact = (jactivity_t *)arg;
-    
+
     printf("Callback.... \n");
     // stick the "TIMEOUT" message into the queue for the activity
     command_t *tmsg = command_new("TIMEOUT", "__", "ACTIVITY", jact->actid, "__", "");
     queue_enq(jact->inq, tmsg, sizeof(command_t));
     // do a signal on the thread semaphore for the activity
-
+    printf("Callback Occuring... \n");
     thread_signal(jact->sem);
 }
 
@@ -376,7 +390,7 @@ void tcallback(void *arg)
 void jam_set_timer(jamstate_t *js, char *actid, int tval)
 {
     jactivity_t *jact = activity_getbyid(js->atable, actid);
-    if (jact != NULL)   
+    if (jact != NULL)
         timer_add_event(js->maintimer, tval, 0, actid, tcallback, jact);
 }
 
@@ -395,28 +409,160 @@ bool jam_eval_condition(char *expr)
     return true;
 }
 
-bool jwork_duplicate_call(command_t *cmd)
+
+
+// Create the runtable that contains all the runid entries.
+//
+runtable_t *jwork_runtable_new()
 {
-    static int numentries = 0;
-    static int lastentry = 0;
-    static char *entries[MAX_DUP_ENTRIES];
-    
+    runtable_t *rtab = (runtable_t *)calloc(1, sizeof(runtable_t));
+
+    rtab->numruns = 0;
+
+    return rtab;
+}
+
+
+// Check the runtable for entry (with the same runid) presence.
+// If the entry is found, return true. If not return false.
+// Also, this one creates a new entry if the entry is not found.
+//
+// TODO: This is a fixed size array of entries.. We need a better
+// structure to accommodate large number of concurrent activities.
+// At this point, we are limited to MAX_RUN_ENTRIES
+//
+bool jwork_runtable_check(runtable_t *rtable,  command_t *cmd)
+{
     int i;
-    
-    for (i = 0; i < numentries; i++) 
+
+    for (i = 0; i < rtable->numruns; i++)
     {
-        if (strcmp(entries[i], cmd->actid) == 0)
-            return true;                    
+        if (strcmp(rtable->entries[i]->runid, cmd->actid) == 0)
+            return true;
     }
-    
-    if (numentries < MAX_DUP_ENTRIES) 
-        entries[numentries++] = strdup(cmd->actid);
-    else
+
+    if (rtable->numruns >= MAX_RUN_ENTRIES)
     {
-        free(entries[lastentry]);
-        entries[lastentry] = strdup(cmd->actid);
-        lastentry = (lastentry + 1) % MAX_DUP_ENTRIES;
+        printf("\n\nFATAL ERROR!! Maximum number of concurrent entries reached.\n\n");
+        exit(1);
     }
-    
+
+    runtableentry_t *ren = (runtableentry_t *)calloc(1, sizeof(runtableentry_t));
+    rtable->entries[rtable->numruns++] = ren;
+
+    // Yes, the runid is coming in the 'actid' field.. so this is not a bug!
+    // Check the Messages.txt file for the format of the messages.
+    //
+    ren->runid  = strdup(cmd->actid);
+    ren->actname = strdup(cmd->actname);
+
+    // The following initializations are not necessary because of calloc initialization.
+    // But.. included for clarity
+    ren->code = NULL;
+    ren->actid = NULL;
+    ren->status = NEW;
+
     return false;
+}
+
+
+command_t *jwork_runid_status(jamstate_t *js, char *runid)
+{
+    command_t *scmd;
+    int i;
+
+    char *deviceid = js->cstate->conf->device_id;
+
+    printf("Devide id %s\n", deviceid);
+
+    // search for the runtime entry..
+    for (i = 0; i < js->rtable->numruns; i++)
+    {
+        if (strcmp(js->rtable->entries[i]->runid, runid) == 0)
+            break;
+    }
+
+    // if not found, then return NULL
+    if (i >= js->rtable->numruns)
+        return NULL;
+
+    printf("I = %d.. Numruns %d........ \n", i, js->rtable->numruns);
+
+
+    runtableentry_t *ren = js->rtable->entries[i];
+
+    // create the command to reply with the status update..
+    // send [[ REPORT-REP FIN actname deviceid runid res (arg0)] (res is a single object) or
+    //
+    if (ren->status == EXEC_COMPLETE)
+    {
+        if (ren->code == NULL)
+        {
+            scmd = command_new("REPORT-REP", "FIN", ren->actname, deviceid, runid, "");
+            printf("Scmd.. ....................\n");
+
+            return scmd;
+        }
+
+        switch (ren->code->type)
+        {
+            case STRING_TYPE:
+                scmd = command_new("REPORT-REP", "FIN", ren->actname, deviceid, runid, "s", ren->code->val.sval);
+            break;
+
+            case INT_TYPE:
+                scmd = command_new("REPORT-REP", "FIN", ren->actname, deviceid, runid, "i", ren->code->val.ival);
+            break;
+
+            case DOUBLE_TYPE:
+                scmd = command_new("REPORT-REP", "FIN", ren->actname, deviceid, runid, "d", ren->code->val.dval);
+            break;
+
+            case NVOID_TYPE:
+                scmd = command_new("REPORT-REP", "FIN", ren->actname, deviceid, runid, "b", ren->code->val.nval);
+            break;
+        }
+        printf("Returning....\n");
+        return scmd;
+    }
+
+    return NULL;
+}
+
+
+// This emthod is going to be used to complete with success or flag error
+// for the runid.. this is done just before the activity deletion..
+//
+void jwork_runid_complete(runtable_t *rtab, char *runid, arg_t *arg)
+{
+    int i;
+
+    // search for the runtime entry..
+    for (i = 0; i < rtab->numruns; i++)
+    {
+        if (strcmp(rtab->entries[i]->runid, runid) == 0)
+            break;
+    }
+
+    // if not found, then return
+    if (i >= rtab->numruns)
+        return;
+
+    runtableentry_t *ren = rtab->entries[i];
+
+    ren->status = EXEC_COMPLETE;
+    ren->code = arg;
+    printf("RRRRRRRRRRR===============================================\n");
+}
+
+
+command_t *jwork_device_status(jamstate_t *js)
+{
+    // Get the number of activities running on the device
+    return NULL;
+}
+
+command_t *jwork_runid_kill(jamstate_t *js, char *runid)
+{
+    return NULL;
 }

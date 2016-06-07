@@ -3,7 +3,9 @@
 #include "core.h"
 
 #include <strings.h>
+#include <string.h>
 #include <pthread.h>
+#include "free_list.h"
 
 
 jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, char *fmask, ...)
@@ -13,15 +15,16 @@ jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, char *fmask, ...)
     int i = 0;
     arg_t *qargs;
 
-    assert(fmask != NULL);    
+    assert(fmask != NULL);
 
     if (strlen(fmask) > 0)
         qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
     else
         qargs = NULL;
-        
+
     cbor_item_t *arr = cbor_new_indefinite_array();
     cbor_item_t *elem;
+    struct alloc_memory_list *list = init_list_();
 
     va_start(args, fmask);
 
@@ -58,16 +61,19 @@ jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, char *fmask, ...)
                 break;
         }
         i++;
-        if (elem != NULL)
+        if (elem != NULL){
             assert(cbor_array_push(arr, elem) == true);
+            add_to_list_(elem, list);
+          }
     }
     va_end(args);
 
     // Need to add start to activity_new()
     jactivity_t *jact = activity_new(js->atable, aname);
-  
+
     command_t *cmd = command_new_using_cbor("REXEC", "ASY", aname, jact->actid, js->cstate->conf->device_id, arr, qargs, i);
-    
+    cmd->cbor_item_list = list;
+
     temprecord_t *trec = jam_newtemprecord(js, jact, cmd);
     taskcreate(jam_rexec_run_wrapper, trec, STACKSIZE);
 
@@ -78,7 +84,7 @@ jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, char *fmask, ...)
 void jam_rexec_run_wrapper(void *arg)
 {
     temprecord_t *trec = (temprecord_t *)arg;
-    
+
     jam_async_runner((jamstate_t *)trec->arg1, (jactivity_t *)trec->arg2, (command_t *)trec->arg3);
     free(trec);
 }
@@ -92,36 +98,37 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     // retries at this point. May be with nanomsg we don't need retries at the
     // RPC level. This is something we need to investigate closely by looking at
     // the reliability model that is provided by nanonmsg.
-    
+
     // Send the command.. and wait for reply..
     queue_enq(jact->outq, cmd, sizeof(command_t));
     task_wait(jact->sem);
-    
+
     nvoid_t *nv = queue_deq(jact->inq);
-    if (nv == NULL) 
-    {
-        jact->state = EXEC_ERROR;
-        return;        
-    }
-    rcmd = (command_t *)nv->data;
-    free(nv);
-        
-    if (rcmd == NULL) 
+    if (nv == NULL)
     {
         jact->state = EXEC_ERROR;
         return;
     }
-        
-    // What is the reply.. positive ACK and negative problem in that case 
+    rcmd = (command_t *)nv->data;
+    free(nv);
+
+    if (rcmd == NULL)
+    {
+        jact->state = EXEC_ERROR;
+        return;
+    }
+
+    // What is the reply.. positive ACK and negative problem in that case
     // stick the error code in the activity
     if (strcmp(rcmd->cmd, "REXEC-ACK") == 0)
     {
-        jact->code = command_arg_clone(&(rcmd->args[0]));
-        jact->state = EXEC_STARTED; 
+        jact->code = NULL;
+        jact->state = EXEC_STARTED;
     }
     else
     if (strcmp(rcmd->cmd, "REXEC-NAK") == 0) {
         jact->code = command_arg_clone(&(rcmd->args[0]));
         jact->state = EXEC_ABORTED;
     }
+    command_free(rcmd);
 }

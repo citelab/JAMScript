@@ -14,10 +14,10 @@ threadsem_t *threadsem_new()
 {
     threadsem_t *t = (threadsem_t *)calloc(1, sizeof(threadsem_t));
     assert(t != NULL);
-    
+
     int res = pipe(t->fildes);
     assert(res == 0);
-    
+
     return t;
 }
 
@@ -25,7 +25,6 @@ threadsem_t *threadsem_new()
 void task_wait(threadsem_t *sem)
 {
     char buf[2];
-    
     fdwait(sem->fildes[0], 'r');
     fdread(sem->fildes[0], buf, 1);
 }
@@ -35,13 +34,12 @@ void thread_signal(threadsem_t *sem)
 {
     char *str = "1";
     int res = write(sem->fildes[1], str, 1);
-    assert(res == 1);         
+    assert(res == 1);
 }
 
 void threadsem_free(threadsem_t *sem)
 {
     close(sem->fildes[0]);
     close(sem->fildes[1]);
-    free(sem);   
+    free(sem);
 }
-

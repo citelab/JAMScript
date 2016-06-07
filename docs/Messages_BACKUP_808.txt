@@ -181,7 +181,11 @@ activity with the given actid.
 Remote Execution from J to C (Asynchronous)
 ==========================================
 
+<<<<<<< HEAD
+[[ REXEC-CALL ASY actname runid/__ expression args ]] (published)
+=======
 [[ REXEC-CALL ASY actname runid expression args ]] (published)
+>>>>>>> jamlibimpl
 
 [[ REXEC-RDY ASY actname actid runid ]] 
 

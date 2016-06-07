@@ -29,6 +29,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "activity.h"
 
+#ifdef linux
+#include <bsd/stdlib.h>
+#endif
+
 #include <strings.h>
 #include <pthread.h>
 
@@ -40,7 +44,7 @@ jamstate_t *jam_init()
 {
     #ifdef DEBUG_LVL1
         printf("JAM Library initialization... ");
-    #endif 
+    #endif
 
     jamstate_t *js = (jamstate_t *)calloc(1, sizeof(jamstate_t));
 
@@ -56,6 +60,8 @@ jamstate_t *jam_init()
     // Initialization of the activity and task tables
     js->atable = activity_table_new();
 
+    js->rtable = jwork_runtable_new();
+
     // Queue initialization
     // globalinq is used by the main thread for input purposes
     // globaloutq is used by the main thread for output purposes
@@ -63,9 +69,10 @@ jamstate_t *jam_init()
     js->atable->globaloutq = queue_new(true);
 
     js->atable->globalsem = threadsem_new();
+    js->atable->delete_sem = threadsem_new();
 
     js->maintimer = timer_init("maintimer");
-    
+
     js->bgsem = threadsem_new();
 
     int rval = pthread_create(&(js->bgthread), NULL, jwork_bgthread, (void *)js);
@@ -73,12 +80,11 @@ jamstate_t *jam_init()
         perror("ERROR! Unable to start the jamworker thread");
         exit(1);
     }
-    
+    printf("\n\n--------------PLEASE WORK---------------\n\n");
     task_wait(js->bgsem);
-    
     #ifdef DEBUG_LVL1
-        printf("\t\t Done.");
-    #endif 
+        printf("\n ------------------------Done.-------------------------\n");
+    #endif
     return js;
 }
 
@@ -89,39 +95,50 @@ jamstate_t *jam_init()
 void jam_event_loop(void *arg)
 {
     jamstate_t *js = (jamstate_t *)arg;
-    
-    while (1) 
+    temprecord_t *tr;
+    command_t *cmd;
+    activity_callback_reg_t *areg;
+
+    while (1)
     {
         task_wait(js->atable->globalsem);
-        nvoid_t *nv = queue_deq(js->atable->globalinq);   
-        command_t *cmd = (command_t *)nv->data;
-        free(nv);
-    
+        nvoid_t *nv = queue_deq(js->atable->globalinq);
+        if (nv != NULL)
+        {
+            cmd = (command_t *)nv->data;
+            free(nv);
+        } else
+            cmd = NULL;
+
         if (cmd != NULL)
         {
-            activity_callback_reg_t *areg = activity_findcallback(js->atable, cmd->actname);
-            if (areg == NULL) 
+            areg = activity_findcallback(js->atable, cmd->actname, cmd->opt);
+            if (areg == NULL)
             {
-                printf("Function not found.. \n");
+                printf("Function not found.. %s\n", cmd->actname);
             }
             else
             {
-                temprecord_t *tr = jam_newtemprecord(js, cmd, areg);
+                printf("Command actname = %s\n", cmd->actname);
+
+                tr = jam_newtemprecord(js, cmd, areg);
                 taskcreate(jrun_run_task, tr, STACKSIZE);
-            }                      
-        }        
-        taskyield();        
+                printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
+            }
+        }
+        taskyield();
     }
+
 }
 
 
 temprecord_t *jam_newtemprecord(void *arg1, void *arg2, void *arg3)
 {
     temprecord_t *trec = (temprecord_t *)calloc(1, sizeof(temprecord_t));
+    assert(trec != NULL);
     trec->arg1 = arg1;
     trec->arg2 = arg2;
     trec->arg3 = arg3;
 
     return trec;
 }
-

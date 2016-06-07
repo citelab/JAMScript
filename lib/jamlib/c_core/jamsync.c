@@ -2,8 +2,9 @@
 #include "core.h"
 
 #include <strings.h>
+#include <string.h>
 #include <pthread.h>
-
+#include "free_list.h"
 
 //
 // TODO: Is there a better way to write this code?
@@ -26,6 +27,7 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
 
     cbor_item_t *arr = cbor_new_indefinite_array();
     cbor_item_t *elem;
+    struct alloc_memory_list *list = init_list_();
 
     va_start(args, fmask);
 
@@ -61,21 +63,22 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
                 break;
         }
         i++;
-        if (elem)
+        if (elem){
             assert(cbor_array_push(arr, elem) == true);
+            add_to_list_(elem, list);
+          }
     }
     va_end(args);
-    
     jactivity_t *jact = activity_new(js->atable, aname);
 
     command_t *cmd = command_new_using_cbor("REXEC", "SYN", aname, jact->actid, js->cstate->conf->device_id, arr, qargs, i);
-    
+    cmd->cbor_item_list = list;
     #ifdef DEBUG_LVL1
         printf("Starting JAM exec runner... \n");
     #endif
-    
+
     jam_sync_runner(js, jact, cmd);
-        
+
     if (jact->state == EXEC_TIMEDOUT)
     {
         activity_del(js->atable, jact);
@@ -99,59 +102,61 @@ void jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     // retries at this point. May be with nanomsg we don't need retries at the
     // RPC level. This is something we need to investigate closely by looking at
     // the reliability model that is provided by nanonmsg.
-    
+
     // Send the command.. and wait for reply..
     queue_enq(jact->outq, cmd, sizeof(command_t));
     task_wait(jact->sem);
-    
+
     nvoid_t *nv = queue_deq(jact->inq);
     rcmd = (command_t *)nv->data;
     free(nv);
-        
-    if (rcmd == NULL) 
+
+    if (rcmd == NULL)
     {
         jact->state = EXEC_ERROR;
         return;
     }
-        
-    // What is the reply.. positive ACK and negative problem in that case 
+
+    // What is the reply.. positive ACK and negative problem in that case
     // stick the error code in the activity
     if (strcmp(rcmd->cmd, "REXEC-ACK") == 0)
     {
         int timerval = 0;
         if ((rcmd->nargs == 0) ||
             (rcmd->nargs == 1 && rcmd->args[0].type != INT_TYPE))
-            // did not get a valid timerval, why?? 
+            // did not get a valid timerval, why??
             // may be somekind of bug? set 100 millisecs by default
             timerval = 100;
         else
             timerval = rcmd->args[0].val.ival;
-        
-        // Waiting for the lease time amount
+
+        // Waiting for the lease time amounts
+        command_free(rcmd);
         jam_set_timer(js, jact->actid, timerval);
         task_wait(jact->sem);
-        
+
         nvoid_t *nv = queue_deq(jact->inq);
         rcmd = (command_t *)nv->data;
         free(nv);
 
         // If we did not get woken up by the timer, we need to cancel the
-        // timer. The publish notification from the j-core should have 
-        // woken the activity        
+        // timer. The publish notification from the j-core should have
+        // woken the activity
         if (strcmp(rcmd->cmd, "TIMEOUT") != 0)
         {
             jam_clear_timer(js, jact->actid);
-            
-            // It is not a timer wake up.. so it better be because of a 
+
+            // It is not a timer wake up.. so it better be because of a
             // published message..
-            if (!(strcmp(rcmd->cmd, "REXEC-RES") == 0 && strcmp(rcmd->opt, "AVL") == 0)) 
+            if (!(strcmp(rcmd->cmd, "REXEC-RES") == 0 && strcmp(rcmd->opt, "AVL") == 0))
             {
                 jact->state = EXEC_ERROR;
+                command_free(rcmd);
                 return;
             }
         }
         command_free(rcmd);
-        
+
         // Now ask for the results from the j-core
         // [[ REXEC-RES GET actname actid device_id ]]
         command_t *lcmd = command_new("REXEC-RES", "GET", jact->name, jact->actid, js->cstate->conf->device_id, "");
@@ -162,19 +167,20 @@ void jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         rcmd = (command_t *)nv->data;
         free(nv);
 
-        // We expect the following: [[ REXEC-RES PUT actname actid code-type return-code ]] 
+        // We expect the following: [[ REXEC-RES PUT actname actid code-type return-code ]]
         if (strcmp(rcmd->cmd, "REXEC-RES") == 0 && strcmp(rcmd->opt, "PUT") == 0)
         {
             jact->code = command_arg_clone(&(rcmd->args[0]));
-            jact->state = EXEC_COMPLETE; 
+            jact->state = EXEC_COMPLETE;
         }
+
+        command_free(rcmd);
     }
-    else
-    if (strcmp(rcmd->cmd, "REXEC-NAK") == 0) {
-        jact->code = command_arg_clone(&(rcmd->args[0]));
-        jact->state = EXEC_ERROR;
+    else{
+      if (strcmp(rcmd->cmd, "REXEC-NAK") == 0) {
+          jact->code = command_arg_clone(&(rcmd->args[0]));
+          jact->state = EXEC_ERROR;
+        }
+        command_free(rcmd);
     }
 }
-
-
-

@@ -28,6 +28,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <string.h>
 #include <assert.h>
 
+#ifdef linux
+#include <bsd/stdlib.h>
+#endif
+
 #include "nvoid.h"
 
 #include "simplequeue.h"
@@ -57,7 +61,11 @@ simplequeue_t *queue_new(bool ownedbyq)
 	simplequeue_t *sq = (simplequeue_t *)calloc(1, sizeof(simplequeue_t));
 	assert(sq != NULL);
 	sq->pullsock = nn_socket(AF_SP, NN_PULL);
-	assert(sq->pullsock >= 0);
+	if (sq->pullsock < 0) 
+	{
+		printf("\n\nFATAL ERROR!! Unable to allocate file handles. \nUse 'ulimit' to increase available FDs \n\n");
+		exit(1);
+	}
 
 	// try to create a socket.. find a name that is not already used
 	while(1) {
@@ -68,6 +76,8 @@ simplequeue_t *queue_new(bool ownedbyq)
 		if (nn_bind(sq->pullsock, buf) >= 0) {
 			sq->name = strdup(buf);
 			break;
+		}else{
+			sq->name = NULL;
 		}
 	}
 
@@ -77,9 +87,9 @@ simplequeue_t *queue_new(bool ownedbyq)
 	sq->ownedbyq = false; //ownedbyq;
 
 	#ifdef DEBUG_LVL1
-		printf("Queue created at %s.. pullsock %d, pushsock %d\n", sq->name, sq->pushsock, sq->pullsock);
+		printf("Queue created at %s.. pullsock %d, pushsock %d\n", sq->name, sq->pullsock, sq->pushsock);
 	#endif
-		
+
 	return sq;
 }
 
@@ -91,7 +101,8 @@ bool queue_delete(simplequeue_t *sq)
 
 	rc = nn_close(sq->pullsock);
 	assert(rc == 0);
-		
+
+	free(sq->name);
 	free(sq);
 
 	return true;
