@@ -121,7 +121,7 @@ ometa ES5Pretty <: JsonMLWalker {
 
   NewExpr         :n = walk:cls                                                          -> join('new ', cls),
 
-  CallExpr        :n = walk:e walk*:args                                                 -> join(e, '(', args.join(', '), ')'),
+  CallExpr        :n = walk:e walk*:args                                                 -> { module.exports.calls.push(e); join(e, '(', args.join(', '), ')');},
 
   MemberExpr      :n = ?n.is('access', 'name') walk:e                                    -> join(e, '.', n.name())
                      | walk:e walk:ae                                                    -> join(e, '[', ae, ']'),
@@ -176,3 +176,4 @@ ES5Pretty.translate = function(input) {
 };
 
 module.exports = ES5Pretty;
+module.exports.calls = [];

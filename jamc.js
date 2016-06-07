@@ -93,23 +93,26 @@ try {
     console.log(output);
   }
 
-  fs.writeFileSync("/usr/local/share/jam/lib/jamlib/c_core/jamlib.c", createCFile(output.C));
-  child_process.execSync("make -C /usr/local/share/jam/lib/jamlib/c_core");
-  fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/testjam').pipe(fs.createWriteStream('jamout'));
-  fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/jamconf.dat').pipe(fs.createWriteStream('jamconf.dat'));
-  fs.writeFileSync("jamout.js", fs.readFileSync('/usr/local/share/jam/lib/jserver/jserver-clean.js') + output.JS);
+  // fs.writeFileSync("/usr/local/share/jam/lib/jamlib/c_core/jamlib.c", output.C);
+  // child_process.execSync("make -C /usr/local/share/jam/lib/jamlib/c_core");
+  // fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/testjam').pipe(fs.createWriteStream('jamout'));
+  // fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/jamconf.dat').pipe(fs.createWriteStream('jamconf.dat'));
+  fs.writeFileSync("jamout.js", "var jlib = require('./jamlib');\n" + output.JS);
+  fs.writeFileSync("jamout.c", output.C);
 
-  // if(!noCompile) {
-  //   flowCheck(output.annotated_JS)
-  // 	fs.mkdirSync(tmpDir);
-  //   fs.writeFileSync(`${tmpDir}/jamout.c`, output.C);
-  //   child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
-  //   createZip(createTOML(), output.JS, tmpDir, outputName);
+  if(!noCompile) {
+    flowCheck(output.annotated_JS)
+  	fs.mkdirSync(tmpDir);
+    fs.writeFileSync(`${tmpDir}/jamout.c`, output.C);
+    console.log(output.C);
+    child_process.execSync(`gcc -Wno-incompatible-library-redeclaration ${tmpDir}/jamout.c -I./lib/jamlib/c_core -lcbor -lnanomsg /usr/local/share/jam/lib/jamlib/c_core/libtask.a /usr/local/share/jam/lib/jamlib/c_core/libjam.a`);
+    // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
+    // createZip(createTOML(), output.JS, tmpDir, outputName);
     
-  //   if(!debug) {
-  //     deleteFolderRecursive(tmpDir);
-  //   }
-  // }
+    // if(!debug) {
+    //   deleteFolderRecursive(tmpDir);
+    // }
+  }
 } catch(e) {
     console.log("ERROR:");
     console.log(e);
@@ -122,8 +125,11 @@ function printAndExit(output) {
 
 function preprocess(file) {
   var contents = fs.readFileSync(file);
-  // contents = '#include "/usr/local/share/jam/lib/jamlib/jamlib.h"\n' + contents;
-  return child_process.execSync("tcc -E -P -w -", {input: contents}).toString();
+  contents = 'jamstate_t *js;\n' + contents;
+  contents = '#include "jam.h"\n' + contents;
+  contents = '#include "command.h"\n' + contents;
+  
+  return child_process.execSync("tcc -E -P -w -I/usr/local/share/jam/lib/jamlib/c_core -", {input: contents}).toString();
   // return child_process.execSync(`${cc} -E -P -std=iso9899:199409 ${file}`).toString();
 
 }
@@ -223,83 +229,4 @@ function printHelp() {
   console.log("\t-V \t\t\t Verbose mode");
   console.log("\t-T \t\t\t Translator only");
   process.exit();
-}
-
-function createCFile(cout) {
-  var cFile = `#include "jamlib.h"
-#include "core.h"
-#include "jamrunner.h"
-#include <strings.h>
-#include <pthread.h>
-
-jamstate_t *js;
-jamstate_t *jam_init() {
-    #ifdef DEBUG_LVL1 
-        printf("JAM Library initialization... ");
-    #endif 
-    js = (jamstate_t *)calloc(1, sizeof(jamstate_t));
-    js->cstate = core_init(10000);
-    if (js->cstate == NULL) {
-        printf("ERROR!! Core Init Failed. Exiting.\\n");
-        exit(1);
-    }
-    js->atable = activity_table_new();
-    js->taskdir = jrun_init();
-    js->atable->globalinq = queue_new(true);
-    js->atable->globaloutq = queue_new(true);
-    js->atable->globalsem = threadsem_new();
-    js->maintimer = timer_init("maintimer");    
-    js->bgsem = threadsem_new();
-    int rval = pthread_create(&(js->bgthread), NULL, jamworker_bgthread, (void *)js);
-    if (rval != 0) {
-        perror("ERROR! Unable to start the jamworker thread");
-        exit(1);
-    }
-    task_wait(js->bgsem);
-    #ifdef DEBUG_LVL1
-        printf("\\t\\t Done.");
-    #endif 
-    return js;
-}
-
-${cout}
-
-void jam_run_app(void *arg) {
-    user_setup();
-    user_main();
-}
-
-void jam_event_loop(void *arg) {
-    while (1) {
-        task_wait(js->atable->globalsem);
-        nvoid_t *nv = queue_deq(js->atable->globalinq);   
-        command_t *cmd = (command_t *)nv->data;
-        free(nv);   
-        if (cmd != NULL) {
-            taskentry_t *ten = jrun_find_task(js->taskdir, cmd->actname);
-            if (ten == NULL) {
-                printf("Function not found.. \\n");
-            } else {
-                jrun_run_task(ten, cmd);                
-            }                      
-        }        
-        taskyield();        
-    }
-}
-void hellofk(char *s, int x, char *e) {
-    printf("This is Hello from FK function \\n");
-    printf("Here is the first string: %s, and last string: %s, \\nAnd integer: %d\\n", s, e, x);
-    printf("\\n");
-}
-void callhellofk(void *ten, void *arg) {
-    command_t *cmd = (command_t *)arg;
-    hellofk(cmd->args[0].val.sval, cmd->args[1].val.ival, cmd->args[2].val.sval);    
-}
-void taskmain(int argc, char **argv){   
-    jam_init();
-    jrun_reg_task(js->taskdir, "hellofk", SYNC_TASK, "sis", callhellofk);
-    taskcreate(jam_event_loop, js, STACKSIZE);
-    taskcreate(jam_run_app, js, STACKSIZE);
-}`;
-  return cFile;
 }
