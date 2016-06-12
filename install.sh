@@ -1,10 +1,10 @@
 echo "Making C dependencies..."
-make
+# make
 echo "Installing nodejs dependencies..."
 # npm install
 
 cp "jamc" "/usr/local/bin"
-cp "lib/jamrun/jamrun" "/usr/local/bin"
+# cp "lib/jamrun/jamrun" "/usr/local/bin"
 
 mkdir -p "/usr/local/share/jam"
 cp -r "deps" "/usr/local/share/jam/"

@@ -194,6 +194,21 @@ register("BlockStmt", {}, function(stmts) {
 register("IfStmt");
 
 /**
+ * JCallbackStatement
+ * --------------
+ *
+ * Representation:
+ *     [#JCallbackStmt, {}, id, ...AssignExpr]
+ * 
+ * Call like:
+ *     ES5Builder.JCallbackStmt(id, ...args);
+ */
+register("JCallbackStmt", {name: ""}, function(name, args) {
+  this.name(name)
+      .appendAll(args);
+});
+
+/**
  * LabeledStatement
  * ----------------
  * 

@@ -126,6 +126,7 @@ function printAndExit(output) {
 function preprocess(file) {
   var contents = fs.readFileSync(file);
   contents = 'jamstate_t *js;\n' + contents;
+  contents = 'typedef char* jcallback;\n' + contents;
   contents = '#include "jam.h"\n' + contents;
   contents = '#include "command.h"\n' + contents;
   

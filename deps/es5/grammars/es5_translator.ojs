@@ -52,6 +52,9 @@ ometa ES5Pretty <: JsonMLWalker {
 
   EmptyStmt       :n                                                                     -> '',
 
+  JCallbackStmt   :n = walk*:args                                                       -> join('jlib.JServer.remoteSyncExec("', n.name(), '", [', args.join(', '), '], "true")'),
+  // join('jam_rexec_sync(js, "', n.name(), '", "s", ', args.join(', '), ')'),
+
   IfStmt          :n = walk:c assure_block:t ( assure_block:f                            -> join('if(', c, ') ', t, ' else ', f)
                                              | (undefined | empty)                       -> join('if(', c, ') ', t)
                                              ),

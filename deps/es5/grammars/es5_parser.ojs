@@ -40,12 +40,14 @@
 var unicode = require('../unicode.js'),
     _       = require('../nodes.js');
 
+var jcallbacks = new Set();
 
 ometa ES5Parser {
   
   // Helper Rules
   //
   isKeyword     :x = ?this.spec.keyword(x),
+
   //
   idFirst          = char:x ?this.spec.idFirst(x), 
   idPart           = char:x ?this.spec.idPart(x),
@@ -54,7 +56,7 @@ ometa ES5Parser {
   //
   // punctuator and keyword both won't occure in the AST
   token :tt        = spaces ( (punctuator | keyword):t ?(t.value() == tt)                -> t
-                            | (name | number | string):t ?(t[0] == tt)                   -> t
+                            | (name | number | string):t ?(t[0] == tt)       -> t
                             ),
 
   // 7.4 Comments
@@ -81,7 +83,7 @@ ometa ES5Parser {
   identifier       = <nameFirst namePart*>,  
   //                                                                 
   name             = identifier:n ~isKeyword(n)                                          -> _.Id(n),
-  keyword          = identifier:k isKeyword(k)                                           -> _.Keyword(k),  
+  keyword          = identifier:k isKeyword(k)                                           -> _.Keyword(k),
   
 
   // 7.8.3 Numeric Literals  
@@ -278,6 +280,7 @@ ometa ES5Parser {
   // 12. Statements
   //
   stmt             = bindings:bs sc                                                      -> bs
+                   | "Id":jc ?(jcallbacks.has(jc.value())) "(" listOf(#assignExpr, ','):as ")" sc   -> _.JCallbackStmt(jc.value(), as)
                    | "if" "(" expr:c ")" stmt:t ( "else" stmt:f                          -> _.IfStmt(c, t, f)
                                                 | empty                                  -> _.IfStmt(c, t)
                                                 )
@@ -416,11 +419,26 @@ ES5Parser.spec = {
   future_keywords: ["implements", "interface", "let", "package", "private", "protected", "public", "yield"],
 
   keyword: function(k) { return this.keywords.indexOf(k) != -1; }
-  
+
 };
 
 ES5Parser.parse = function(input) {
   return ES5Parser.matchAll(input, 'topLevel');
 };
+
+ES5Parser.setActivity = function(input) {
+  // Loop over each param in the declaration
+  for (var i = 2; i < input[2].length; i++) {
+    var param = input[2][i];
+    if(param[2][2].type() == 'jcallback') {
+      jcallbacks.add(param[3].name());
+    }
+  }
+}
+
+ES5Parser.clearActivity = function() {
+  jcallbacks = new Set();
+}
+
 
 module.exports = ES5Parser;
