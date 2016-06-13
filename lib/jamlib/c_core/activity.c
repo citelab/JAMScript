@@ -119,7 +119,7 @@ void activity_print(jactivity_t *ja)
 bool activity_regcallback(activitytable_t *at, char *name, int type, char *sig, activitycallback_f cback)
 {
     int i;
-    
+
     // if a registration already exists, return false
     for (i = 0; i < at->numcbackregs; i++)
         if (strcmp(at->callbackregs[i]->name, name) == 0)
@@ -158,7 +158,7 @@ activity_callback_reg_t *activity_findcallback(activitytable_t *at, char *name, 
     return NULL;
 }
 
-activity_callback_reg_t *activity_findcallback(activitytable_t *at, char *name)
+jactivity_t *activity_new(activitytable_t *at, char *name)
 {
     jactivity_t *jact = (jactivity_t *)calloc(1, sizeof(jactivity_t));
 

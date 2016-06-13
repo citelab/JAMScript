@@ -10,9 +10,8 @@ libjam.a: $(OBJECTS)
 	$(AR) libjam.a $^ 
 	cp libjam.a testers/.	
 
-$(TESTOBJS): %.o: %.c
+$(OBJECTS): %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@
-
 
 .PHONY: clean
 

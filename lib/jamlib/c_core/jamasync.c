@@ -76,7 +76,7 @@ jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, char *fmask, ...)
 
     temprecord_t *trec = jam_newtemprecord(js, jact, cmd);
     taskcreate(jam_rexec_run_wrapper, trec, STACKSIZE);
-
+    taskyield();
     return jact;
 }
 

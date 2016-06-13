@@ -19,7 +19,6 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
     arg_t *qargs;
 
     assert(fmask != NULL);
-    
     if (strlen(fmask) > 0)
         qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
     else

@@ -143,7 +143,6 @@ nvoid_t *queue_deq(simplequeue_t *sq)
 	if (bytes < 0) return NULL;
 
 	if (bytes != sizeof(nvoid_t)) {
-		printf("Bytes %d\n", bytes);
 		nn_freemsg(buf);
 		return NULL;
 	}
