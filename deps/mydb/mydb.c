@@ -23,6 +23,21 @@
  */
 
 
+// Local function prototypes
+
+int get_free_record(mydb_t *db);
+bool rebuild_free_list(mydb_t *db);
+void add_free_records(mydb_t *db, int *from);
+void add_to_freelist(mydb_t *db, int rec);
+bool check_zero_key(mydb_t *db, void *key);
+bool check_equal_key(mydb_t *db, void *ckey, void *rkey);
+bool check_equal_data(mydb_t *db, void *cdata, void *rdata);
+
+int search_database(mydb_t *db, void *rkey);
+int mywrite(int fd, void *data, int datalen, int offset);
+int myread(int fd, void *data, int datalen, int offset);
+
+
 /*
  * Helper functions...
  */
@@ -58,7 +73,6 @@ int get_free_record(mydb_t *db)
         }
     }
 }
-
 
 bool rebuild_free_list(mydb_t *db)
 {
@@ -177,6 +191,14 @@ int myread(int fd, void *data, int datalen, int offset)
 }
 
 
+bool database_put_sync(mydb_t *mydb, void *key, void *data)
+{
+    bool res = database_put(mydb, key, data);
+    if (res)
+        fsync(mydb->fdesc);
+    return res;
+}
+
 
 // If the key matches and already existing record, we overwrite the
 // previous record...
@@ -290,18 +312,37 @@ bool database_del(mydb_t *mydb, void *key)
         return false;
 }
 
-
-mydb_t *open_database(char *filename, int keylen, int datalen)
+mydb_t *open_database(char *filename)
 {
     int nmeta, fd;
 
-    mydb_t *db = (mydb_t *)calloc(1, sizeof(mydb_t));
-
     // Check for file existence...
     if ((fd = open(filename, O_RDWR)) < 0)  {
-        // File does not exist.. we are creating a new database
-        fd = open(filename, O_CREAT|O_RDWR);
-        assert(fd > 0);                                     // we fail if we are unable to get a valid FD
+        // File does not exist..
+        return NULL;
+    }
+    else
+    {
+        mydb_t *db = (mydb_t *)calloc(1, sizeof(mydb_t));
+        db->fdesc = fd;
+        // keylen and datalen are checked against the available meta data and a warning is
+        // flagged if there is a discrepancy..
+        nmeta = myread(db->fdesc, &(db->state), sizeof(mydbstate_t), 0);
+        return db;
+    }
+}
+
+
+mydb_t *create_database(char *filename, int keylen, int datalen)
+{
+    int nmeta, fd;
+
+    // Unlink existing file..
+    unlink(filename);
+    // Create the file..
+    if ((fd = open(filename, O_CREAT|O_RDWR, S_IRWXU)) >= 0)  {
+        mydb_t *db = (mydb_t *)calloc(1, sizeof(mydb_t));
+
         db->fdesc = fd;
         db->state.keylen = keylen;
         db->state.datalen = datalen;
@@ -311,20 +352,10 @@ mydb_t *open_database(char *filename, int keylen, int datalen)
             db->state.freelist[i] = i;
         db->state.beginoffset = sizeof(mydbstate_t);
         nmeta = mywrite(db->fdesc, &(db->state), sizeof(mydbstate_t), 0);
-    } else {
-        // We are using an existing database that is already open!
-        db->fdesc = fd;
-        // keylen and datalen are checked against the available meta data and a warning is
-        // flagged if there is a discrepancy..
-        nmeta = myread(db->fdesc, &(db->state), sizeof(mydbstate_t), 0);
-        if (!(db->state.keylen == keylen && db->state.datalen == datalen)) {
-            printf("ERROR! key and data lengths are specified inconsistent values\n");
-            printf("ERROR! database store is corrupted??\n\n");
 
-            return NULL;
-        }
+        return db;
     }
-    return db;
+    return NULL;
 }
 
 

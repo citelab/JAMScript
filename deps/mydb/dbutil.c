@@ -62,3 +62,19 @@ void *random_data(mydb_t *db)
 {
     return (void *)random_string(db->state.datalen);
 }
+
+void *create_key(mydb_t *db, const char *s)
+{
+    char *str = (char *)calloc(db->state.keylen +1, sizeof(char));
+    strcpy(str, s);
+
+    return (void *)str;
+}
+
+void *create_data(mydb_t *db, const char *s)
+{
+    char *str = (char *)calloc(db->state.keylen +1, sizeof(char));
+    strcpy(str, s);
+
+    return (void *)str;
+}

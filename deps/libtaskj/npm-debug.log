@@ -1,0 +1,1307 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/local/bin/node',
+1 verbose cli   '/usr/local/bin/npm',
+1 verbose cli   'install',
+1 verbose cli   'zkplus' ]
+2 info using npm@2.14.7
+3 info using node@v4.2.2
+4 verbose install initial load of /Users/maheswar/Documents/Programming/JAMScript/package.json
+5 verbose installManyTop reading scoped package data from /Users/maheswar/Documents/Programming/JAMScript/node_modules/node-persist/package.json
+6 verbose readDependencies loading dependencies from /Users/maheswar/Documents/Programming/JAMScript/package.json
+7 silly cache add args [ 'zkplus', null ]
+8 verbose cache add spec zkplus
+9 silly cache add parsed spec Result {
+9 silly cache add   raw: 'zkplus',
+9 silly cache add   scope: null,
+9 silly cache add   name: 'zkplus',
+9 silly cache add   rawSpec: '',
+9 silly cache add   spec: '*',
+9 silly cache add   type: 'range' }
+10 silly addNamed zkplus@*
+11 verbose addNamed "*" is a valid semver range for zkplus
+12 silly addNameRange { name: 'zkplus', range: '*', hasData: false }
+13 silly mapToRegistry name zkplus
+14 silly mapToRegistry using default registry
+15 silly mapToRegistry registry https://registry.npmjs.org/
+16 silly mapToRegistry uri https://registry.npmjs.org/zkplus
+17 verbose addNameRange registry:https://registry.npmjs.org/zkplus not in flight; fetching
+18 verbose request uri https://registry.npmjs.org/zkplus
+19 verbose request no auth needed
+20 info attempt registry request try #1 at 1:26:32 PM
+21 verbose request id 9293b82e2b490e34
+22 verbose etag "9ZJR78DRWEKHSQS5J0172QBHP"
+23 http request GET https://registry.npmjs.org/zkplus
+24 http 304 https://registry.npmjs.org/zkplus
+25 verbose headers { date: 'Sun, 01 May 2016 17:26:33 GMT',
+25 verbose headers   via: '1.1 varnish',
+25 verbose headers   'cache-control': 'max-age=300',
+25 verbose headers   etag: '"9ZJR78DRWEKHSQS5J0172QBHP"',
+25 verbose headers   age: '0',
+25 verbose headers   connection: 'keep-alive',
+25 verbose headers   'x-served-by': 'cache-iad2140-IAD',
+25 verbose headers   'x-cache': 'MISS',
+25 verbose headers   'x-cache-hits': '0',
+25 verbose headers   'x-timer': 'S1462123593.107128,VS0,VE102',
+25 verbose headers   vary: 'Accept-Encoding' }
+26 silly get cb [ 304,
+26 silly get   { date: 'Sun, 01 May 2016 17:26:33 GMT',
+26 silly get     via: '1.1 varnish',
+26 silly get     'cache-control': 'max-age=300',
+26 silly get     etag: '"9ZJR78DRWEKHSQS5J0172QBHP"',
+26 silly get     age: '0',
+26 silly get     connection: 'keep-alive',
+26 silly get     'x-served-by': 'cache-iad2140-IAD',
+26 silly get     'x-cache': 'MISS',
+26 silly get     'x-cache-hits': '0',
+26 silly get     'x-timer': 'S1462123593.107128,VS0,VE102',
+26 silly get     vary: 'Accept-Encoding' } ]
+27 verbose etag https://registry.npmjs.org/zkplus from cache
+28 verbose get saving zkplus to /Users/maheswar/.npm/registry.npmjs.org/zkplus/.cache.json
+29 silly addNameRange number 2 { name: 'zkplus', range: '*', hasData: true }
+30 silly addNameRange versions [ 'zkplus',
+30 silly addNameRange   [ '0.1.0',
+30 silly addNameRange     '0.2.0',
+30 silly addNameRange     '0.2.1',
+30 silly addNameRange     '0.2.2',
+30 silly addNameRange     '0.3.0-smartos-only',
+30 silly addNameRange     '0.3.1-smartos-only',
+30 silly addNameRange     '0.3.2-smartos-only' ] ]
+31 silly addNamed zkplus@0.2.2
+32 verbose addNamed "0.2.2" is a plain semver version for zkplus
+33 silly cache afterAdd zkplus@0.2.2
+34 verbose afterAdd /Users/maheswar/.npm/zkplus/0.2.2/package/package.json not in flight; writing
+35 verbose afterAdd /Users/maheswar/.npm/zkplus/0.2.2/package/package.json written
+36 silly install resolved [ { name: 'zkplus',
+36 silly install resolved     description: 'The ZooKeeper API you always wanted',
+36 silly install resolved     version: '0.2.2',
+36 silly install resolved     author: { name: 'Mark Cavage', email: 'mcavage@gmail.com' },
+36 silly install resolved     main: './lib/index.js',
+36 silly install resolved     dependencies:
+36 silly install resolved      { bunyan: '0.10.0',
+36 silly install resolved        'node-uuid': '1.3.3',
+36 silly install resolved        vasync: '1.3.1',
+36 silly install resolved        zookeeper: 'git://github.com/yfinkelstein/node-zookeeper.git#29d4726' },
+36 silly install resolved     devDependencies: { cover: '0.2.8', nodeunit: '0.7.4' },
+36 silly install resolved     scripts: { test: 'nodeunit ./test/*.test.js' },
+36 silly install resolved     readme: '# node-zkplus\n\n`zkplus` is the API you wish [ZooKeeper](http://zookeeper.apache.org/) had for\n[Node.js](http//nodejs.org). It closely resembles the\n[fs](http://nodejs.org/api/fs.html) module.  For more informtion, look\n[here](http://mcavage.github.com/node-zkplus).\n\n# Installation\n\n``` bash\nnpm install zkplus\n```\n\n# Usage\n\n```js\nvar assert = require(\'assert\');\nvar zkplus = require(\'zkplus\');\n\nvar client = zkplus.createClient({\n        servers: [{\n            host: \'localhost\'\n            , port: 2181\n        }]\n});\n\nclient.on(\'connect\', function () {\n        client.mkdirp(\'/foo/bar\', function (err) {\n                assert.ifError(err);\n                client.rmr(\'/foo\', function (err) {\n                        assert.ifError(err);\n                        client.close();\n                });\n        });\n});\n```\n\n# Tests\n\nTo launch tests you\'ll need a running zookeeper instance.\nYou can have one locally like this:\n\n```bash\ncd\nwget http://mirror.speednetwork.de/apache/zookeeper/stable/zookeeper-3.3.5.tar.gz\ntar -xzvf zookeeper-3.3.5.tar.gz\ncd zookeeper-3.3.5\ncp conf/zoo_sample.cfg conf/zoo.cfg\nsudo ./bin/zkServer.sh start|stop|status\n```\n\nThen to launch tests:\n\n```bash\ncd node-zkplus\nnpm test\n```\n\n## License\n\nThe MIT License (MIT)\nCopyright (c) 2012 Mark Cavage\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the "Software"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n\n## Bugs\n\nSee <https://github.com/mcavage/node-zkplus/issues>.\n',
+36 silly install resolved     readmeFilename: 'README.md',
+36 silly install resolved     _id: 'zkplus@0.2.2',
+36 silly install resolved     _from: 'zkplus@*' } ]
+37 info install zkplus@0.2.2 into /Users/maheswar/Documents/Programming/JAMScript
+38 info installOne zkplus@0.2.2
+39 verbose installOne of zkplus to /Users/maheswar/Documents/Programming/JAMScript not in flight; installing
+40 verbose lock using /Users/maheswar/.npm/_locks/zkplus-d30b7cf1fb03a44a.lock for /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus
+41 silly install write writing zkplus 0.2.2 to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus
+42 verbose unbuild node_modules/zkplus
+43 silly gentlyRm /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus is being purged from base /Users/maheswar/Documents/Programming/JAMScript
+44 verbose gentlyRm don't care about contents; nuking /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus
+45 verbose tar unpack /Users/maheswar/.npm/zkplus/0.2.2/package.tgz
+46 verbose tar unpacking to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus
+47 silly gentlyRm /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus is being purged
+48 verbose gentlyRm don't care about contents; nuking /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus
+49 silly gunzTarPerm modes [ '755', '644' ]
+50 silly gunzTarPerm extractEntry package.json
+51 silly gunzTarPerm extractEntry .npmignore
+52 silly gunzTarPerm extractEntry README.md
+53 silly gunzTarPerm extractEntry test/client.test.js
+54 silly gunzTarPerm extractEntry test/server-string.test.js
+55 silly gunzTarPerm extractEntry test/helper.js
+56 silly gunzTarPerm extractEntry test/election.test.js
+57 silly gunzTarPerm extractEntry .gitmodules
+58 silly gunzTarPerm extractEntry lib/error.js
+59 silly gunzTarPerm extractEntry lib/client.js
+60 silly gunzTarPerm extractEntry lib/election.js
+61 silly gunzTarPerm extractEntry lib/assert.js
+62 silly gunzTarPerm extractEntry lib/index.js
+63 verbose write writing to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/package.json
+64 info preinstall zkplus@0.2.2
+65 verbose readDependencies loading dependencies from /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/package.json
+66 silly prepareForInstallMany adding bunyan@0.10.0 from zkplus dependencies
+67 silly prepareForInstallMany adding node-uuid@1.3.3 from zkplus dependencies
+68 silly prepareForInstallMany adding vasync@1.3.1 from zkplus dependencies
+69 silly prepareForInstallMany adding zookeeper@git://github.com/yfinkelstein/node-zookeeper.git#29d4726 from zkplus dependencies
+70 verbose readDependencies loading dependencies from /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/package.json
+71 silly cache add args [ 'vasync@1.3.1', null ]
+72 verbose cache add spec vasync@1.3.1
+73 silly cache add parsed spec Result {
+73 silly cache add   raw: 'vasync@1.3.1',
+73 silly cache add   scope: null,
+73 silly cache add   name: 'vasync',
+73 silly cache add   rawSpec: '1.3.1',
+73 silly cache add   spec: '1.3.1',
+73 silly cache add   type: 'version' }
+74 silly addNamed vasync@1.3.1
+75 verbose addNamed "1.3.1" is a plain semver version for vasync
+76 silly mapToRegistry name vasync
+77 silly mapToRegistry using default registry
+78 silly mapToRegistry registry https://registry.npmjs.org/
+79 silly mapToRegistry uri https://registry.npmjs.org/vasync
+80 verbose addNameVersion registry:https://registry.npmjs.org/vasync not in flight; fetching
+81 silly cache add args [ 'zookeeper@git://github.com/yfinkelstein/node-zookeeper.git#29d4726',
+81 silly cache add   null ]
+82 verbose cache add spec zookeeper@git://github.com/yfinkelstein/node-zookeeper.git#29d4726
+83 silly cache add args [ 'bunyan@0.10.0', null ]
+84 verbose cache add spec bunyan@0.10.0
+85 silly cache add parsed spec Result {
+85 silly cache add   raw: 'bunyan@0.10.0',
+85 silly cache add   scope: null,
+85 silly cache add   name: 'bunyan',
+85 silly cache add   rawSpec: '0.10.0',
+85 silly cache add   spec: '0.10.0',
+85 silly cache add   type: 'version' }
+86 silly addNamed bunyan@0.10.0
+87 verbose addNamed "0.10.0" is a plain semver version for bunyan
+88 silly mapToRegistry name bunyan
+89 silly mapToRegistry using default registry
+90 silly mapToRegistry registry https://registry.npmjs.org/
+91 silly mapToRegistry uri https://registry.npmjs.org/bunyan
+92 verbose addNameVersion registry:https://registry.npmjs.org/bunyan not in flight; fetching
+93 silly cache add args [ 'node-uuid@1.3.3', null ]
+94 verbose cache add spec node-uuid@1.3.3
+95 silly cache add parsed spec Result {
+95 silly cache add   raw: 'node-uuid@1.3.3',
+95 silly cache add   scope: null,
+95 silly cache add   name: 'node-uuid',
+95 silly cache add   rawSpec: '1.3.3',
+95 silly cache add   spec: '1.3.3',
+95 silly cache add   type: 'version' }
+96 silly addNamed node-uuid@1.3.3
+97 verbose addNamed "1.3.3" is a plain semver version for node-uuid
+98 silly mapToRegistry name node-uuid
+99 silly mapToRegistry using default registry
+100 silly mapToRegistry registry https://registry.npmjs.org/
+101 silly mapToRegistry uri https://registry.npmjs.org/node-uuid
+102 verbose addNameVersion registry:https://registry.npmjs.org/node-uuid not in flight; fetching
+103 silly cache add parsed spec Result {
+103 silly cache add   raw: 'zookeeper@git://github.com/yfinkelstein/node-zookeeper.git#29d4726',
+103 silly cache add   scope: null,
+103 silly cache add   name: 'zookeeper',
+103 silly cache add   rawSpec: 'git://github.com/yfinkelstein/node-zookeeper.git#29d4726',
+103 silly cache add   spec: 'git://github.com/yfinkelstein/node-zookeeper.git#29d4726',
+103 silly cache add   type: 'hosted',
+103 silly cache add   hosted:
+103 silly cache add    { type: 'github',
+103 silly cache add      ssh: 'git@github.com:yfinkelstein/node-zookeeper.git#29d4726',
+103 silly cache add      sshUrl: 'git+ssh://git@github.com/yfinkelstein/node-zookeeper.git#29d4726',
+103 silly cache add      httpsUrl: 'git+https://github.com/yfinkelstein/node-zookeeper.git#29d4726',
+103 silly cache add      gitUrl: 'git://github.com/yfinkelstein/node-zookeeper.git#29d4726',
+103 silly cache add      shortcut: 'github:yfinkelstein/node-zookeeper#29d4726',
+103 silly cache add      directUrl: 'https://raw.githubusercontent.com/yfinkelstein/node-zookeeper/29d4726/package.json' } }
+104 verbose addRemoteGit caching git://github.com/yfinkelstein/node-zookeeper.git#29d4726
+105 verbose addRemoteGit git://github.com/yfinkelstein/node-zookeeper.git#29d4726 is a repository hosted by github
+106 silly tryClone cloning git://github.com/yfinkelstein/node-zookeeper.git#29d4726 via git://github.com/yfinkelstein/node-zookeeper.git#29d4726
+107 verbose tryClone git-github-com-yfinkelstein-node-zookeeper-git-0ab03380 not in flight; caching
+108 verbose request uri https://registry.npmjs.org/vasync
+109 verbose request no auth needed
+110 info attempt registry request try #1 at 1:26:33 PM
+111 verbose etag "3L2VTPF9CYSKW36BV2HPWJI54"
+112 http request GET https://registry.npmjs.org/vasync
+113 verbose request uri https://registry.npmjs.org/node-uuid
+114 verbose request no auth needed
+115 info attempt registry request try #1 at 1:26:33 PM
+116 verbose etag "CPA49P0ESTDYSR0LXKY5OR327"
+117 http request GET https://registry.npmjs.org/node-uuid
+118 verbose request uri https://registry.npmjs.org/bunyan
+119 verbose request no auth needed
+120 info attempt registry request try #1 at 1:26:33 PM
+121 verbose etag "B6Q0QS4Q3CDS04UFEWEL4EQ9J"
+122 http request GET https://registry.npmjs.org/bunyan
+123 info git [ 'config', '--get', 'remote.origin.url' ]
+124 silly validateExistingRemote git://github.com/yfinkelstein/node-zookeeper.git#29d4726 remote.origin.url: git://github.com/yfinkelstein/node-zookeeper.git
+125 verbose validateExistingRemote git://github.com/yfinkelstein/node-zookeeper.git#29d4726 is updating existing cached remote /Users/maheswar/.npm/_git-remotes/git-github-com-yfinkelstein-node-zookeeper-git-0ab03380
+126 info git [ 'fetch', '-a', 'origin' ]
+127 http 304 https://registry.npmjs.org/node-uuid
+128 verbose headers { date: 'Sun, 01 May 2016 17:26:33 GMT',
+128 verbose headers   via: '1.1 varnish',
+128 verbose headers   'cache-control': 'max-age=300',
+128 verbose headers   etag: '"CPA49P0ESTDYSR0LXKY5OR327"',
+128 verbose headers   age: '130',
+128 verbose headers   connection: 'keep-alive',
+128 verbose headers   'x-served-by': 'cache-iad2144-IAD',
+128 verbose headers   'x-cache': 'HIT',
+128 verbose headers   'x-cache-hits': '4',
+128 verbose headers   'x-timer': 'S1462123593.420092,VS0,VE0',
+128 verbose headers   vary: 'Accept-Encoding' }
+129 silly get cb [ 304,
+129 silly get   { date: 'Sun, 01 May 2016 17:26:33 GMT',
+129 silly get     via: '1.1 varnish',
+129 silly get     'cache-control': 'max-age=300',
+129 silly get     etag: '"CPA49P0ESTDYSR0LXKY5OR327"',
+129 silly get     age: '130',
+129 silly get     connection: 'keep-alive',
+129 silly get     'x-served-by': 'cache-iad2144-IAD',
+129 silly get     'x-cache': 'HIT',
+129 silly get     'x-cache-hits': '4',
+129 silly get     'x-timer': 'S1462123593.420092,VS0,VE0',
+129 silly get     vary: 'Accept-Encoding' } ]
+130 verbose etag https://registry.npmjs.org/node-uuid from cache
+131 verbose get saving node-uuid to /Users/maheswar/.npm/registry.npmjs.org/node-uuid/.cache.json
+132 http 304 https://registry.npmjs.org/vasync
+133 verbose headers { date: 'Sun, 01 May 2016 17:26:33 GMT',
+133 verbose headers   via: '1.1 varnish',
+133 verbose headers   'cache-control': 'max-age=300',
+133 verbose headers   etag: '"3L2VTPF9CYSKW36BV2HPWJI54"',
+133 verbose headers   age: '5',
+133 verbose headers   connection: 'keep-alive',
+133 verbose headers   'x-served-by': 'cache-iad2128-IAD',
+133 verbose headers   'x-cache': 'HIT',
+133 verbose headers   'x-cache-hits': '1',
+133 verbose headers   'x-timer': 'S1462123593.419774,VS0,VE0',
+133 verbose headers   vary: 'Accept-Encoding' }
+134 silly get cb [ 304,
+134 silly get   { date: 'Sun, 01 May 2016 17:26:33 GMT',
+134 silly get     via: '1.1 varnish',
+134 silly get     'cache-control': 'max-age=300',
+134 silly get     etag: '"3L2VTPF9CYSKW36BV2HPWJI54"',
+134 silly get     age: '5',
+134 silly get     connection: 'keep-alive',
+134 silly get     'x-served-by': 'cache-iad2128-IAD',
+134 silly get     'x-cache': 'HIT',
+134 silly get     'x-cache-hits': '1',
+134 silly get     'x-timer': 'S1462123593.419774,VS0,VE0',
+134 silly get     vary: 'Accept-Encoding' } ]
+135 verbose etag https://registry.npmjs.org/vasync from cache
+136 verbose get saving vasync to /Users/maheswar/.npm/registry.npmjs.org/vasync/.cache.json
+137 silly cache afterAdd vasync@1.3.1
+138 verbose afterAdd /Users/maheswar/.npm/vasync/1.3.1/package/package.json not in flight; writing
+139 silly cache afterAdd node-uuid@1.3.3
+140 verbose afterAdd /Users/maheswar/.npm/node-uuid/1.3.3/package/package.json not in flight; writing
+141 http 304 https://registry.npmjs.org/bunyan
+142 verbose headers { date: 'Sun, 01 May 2016 17:26:33 GMT',
+142 verbose headers   via: '1.1 varnish',
+142 verbose headers   'cache-control': 'max-age=300',
+142 verbose headers   etag: '"B6Q0QS4Q3CDS04UFEWEL4EQ9J"',
+142 verbose headers   age: '202',
+142 verbose headers   connection: 'keep-alive',
+142 verbose headers   'x-served-by': 'cache-iad2128-IAD',
+142 verbose headers   'x-cache': 'HIT',
+142 verbose headers   'x-cache-hits': '1',
+142 verbose headers   'x-timer': 'S1462123593.431698,VS0,VE0',
+142 verbose headers   vary: 'Accept-Encoding' }
+143 silly get cb [ 304,
+143 silly get   { date: 'Sun, 01 May 2016 17:26:33 GMT',
+143 silly get     via: '1.1 varnish',
+143 silly get     'cache-control': 'max-age=300',
+143 silly get     etag: '"B6Q0QS4Q3CDS04UFEWEL4EQ9J"',
+143 silly get     age: '202',
+143 silly get     connection: 'keep-alive',
+143 silly get     'x-served-by': 'cache-iad2128-IAD',
+143 silly get     'x-cache': 'HIT',
+143 silly get     'x-cache-hits': '1',
+143 silly get     'x-timer': 'S1462123593.431698,VS0,VE0',
+143 silly get     vary: 'Accept-Encoding' } ]
+144 verbose etag https://registry.npmjs.org/bunyan from cache
+145 verbose get saving bunyan to /Users/maheswar/.npm/registry.npmjs.org/bunyan/.cache.json
+146 verbose afterAdd /Users/maheswar/.npm/vasync/1.3.1/package/package.json written
+147 verbose afterAdd /Users/maheswar/.npm/node-uuid/1.3.3/package/package.json written
+148 silly cache afterAdd bunyan@0.10.0
+149 verbose afterAdd /Users/maheswar/.npm/bunyan/0.10.0/package/package.json not in flight; writing
+150 verbose afterAdd /Users/maheswar/.npm/bunyan/0.10.0/package/package.json written
+151 verbose updateRemote git fetch -a origin (git://github.com/yfinkelstein/node-zookeeper.git)
+152 verbose setPermissions git://github.com/yfinkelstein/node-zookeeper.git#29d4726 set permissions on /Users/maheswar/.npm/_git-remotes/git-github-com-yfinkelstein-node-zookeeper-git-0ab03380
+153 verbose resolveHead git://github.com/yfinkelstein/node-zookeeper.git#29d4726 original treeish: 29d4726
+154 info git [ 'rev-list', '-n1', '29d4726' ]
+155 silly resolveHead git://github.com/yfinkelstein/node-zookeeper.git#29d4726 resolved treeish: 29d472669e96e58b96e4614dcf2b3018cc93eb4d
+156 verbose resolveHead git://github.com/yfinkelstein/node-zookeeper.git#29d4726 resolved Git URL: git://github.com/yfinkelstein/node-zookeeper.git#29d472669e96e58b96e4614dcf2b3018cc93eb4d
+157 silly resolveHead Git working directory: /tmp/npm-26610-050fad3f/git-cache-9cd3ef3a6282/29d472669e96e58b96e4614dcf2b3018cc93eb4d
+158 info git [ 'clone',
+158 info git   '/Users/maheswar/.npm/_git-remotes/git-github-com-yfinkelstein-node-zookeeper-git-0ab03380',
+158 info git   '/tmp/npm-26610-050fad3f/git-cache-9cd3ef3a6282/29d472669e96e58b96e4614dcf2b3018cc93eb4d' ]
+159 verbose cloneResolved git://github.com/yfinkelstein/node-zookeeper.git#29d4726 clone Cloning into '/tmp/npm-26610-050fad3f/git-cache-9cd3ef3a6282/29d472669e96e58b96e4614dcf2b3018cc93eb4d'...
+159 verbose cloneResolved done.
+160 info git [ 'checkout', '29d472669e96e58b96e4614dcf2b3018cc93eb4d' ]
+161 verbose checkoutTreeish git://github.com/yfinkelstein/node-zookeeper.git#29d4726 checkout Note: checking out '29d472669e96e58b96e4614dcf2b3018cc93eb4d'.
+161 verbose checkoutTreeish
+161 verbose checkoutTreeish You are in 'detached HEAD' state. You can look around, make experimental
+161 verbose checkoutTreeish changes and commit them, and you can discard any commits you make in this
+161 verbose checkoutTreeish state without impacting any branches by performing another checkout.
+161 verbose checkoutTreeish
+161 verbose checkoutTreeish If you want to create a new branch to retain commits you create, you may
+161 verbose checkoutTreeish do so (now or later) by using -b with the checkout command again. Example:
+161 verbose checkoutTreeish
+161 verbose checkoutTreeish   git checkout -b <new-branch-name>
+161 verbose checkoutTreeish
+161 verbose checkoutTreeish HEAD is now at 29d4726... Update lib/zookeeper.js
+162 verbose addLocalDirectory /Users/maheswar/.npm/zookeeper/3.4.4/package.tgz not in flight; packing
+163 verbose tar pack [ '/Users/maheswar/.npm/zookeeper/3.4.4/package.tgz',
+163 verbose tar pack   '/tmp/npm-26610-050fad3f/git-cache-9cd3ef3a6282/29d472669e96e58b96e4614dcf2b3018cc93eb4d' ]
+164 verbose tarball /Users/maheswar/.npm/zookeeper/3.4.4/package.tgz
+165 verbose folder /tmp/npm-26610-050fad3f/git-cache-9cd3ef3a6282/29d472669e96e58b96e4614dcf2b3018cc93eb4d
+166 verbose addLocalTarball adding from inside cache /Users/maheswar/.npm/zookeeper/3.4.4/package.tgz
+167 verbose addRemoteGit data._from: git://github.com/yfinkelstein/node-zookeeper.git#29d4726
+168 verbose addRemoteGit data._resolved: git://github.com/yfinkelstein/node-zookeeper.git#29d472669e96e58b96e4614dcf2b3018cc93eb4d
+169 silly cache afterAdd zookeeper@3.4.4
+170 verbose afterAdd /Users/maheswar/.npm/zookeeper/3.4.4/package/package.json not in flight; writing
+171 verbose afterAdd /Users/maheswar/.npm/zookeeper/3.4.4/package/package.json written
+172 silly install resolved [ { name: 'vasync',
+172 silly install resolved     version: '1.3.1',
+172 silly install resolved     description: 'utilities for observable asynchronous control flow',
+172 silly install resolved     main: './lib/vasync.js',
+172 silly install resolved     repository:
+172 silly install resolved      { type: 'git',
+172 silly install resolved        url: 'git://github.com/davepacheco/node-vasync.git' },
+172 silly install resolved     dependencies: { verror: '1.1.0' },
+172 silly install resolved     engines: [ 'node >=0.6.0' ],
+172 silly install resolved     _npmUser: { name: 'dap', email: 'dap@cs.brown.edu' },
+172 silly install resolved     _id: 'vasync@1.3.1',
+172 silly install resolved     devDependencies: {},
+172 silly install resolved     optionalDependencies: {},
+172 silly install resolved     _engineSupported: true,
+172 silly install resolved     _npmVersion: '1.1.24',
+172 silly install resolved     _nodeVersion: 'v0.6.19',
+172 silly install resolved     _defaultsLoaded: true,
+172 silly install resolved     dist:
+172 silly install resolved      { shasum: 'c094498733effa12456fe6aca603895c44f0f15a',
+172 silly install resolved        tarball: 'https://registry.npmjs.org/vasync/-/vasync-1.3.1.tgz' },
+172 silly install resolved     maintainers: [ [Object] ],
+172 silly install resolved     directories: {},
+172 silly install resolved     _shasum: 'c094498733effa12456fe6aca603895c44f0f15a',
+172 silly install resolved     _resolved: 'https://registry.npmjs.org/vasync/-/vasync-1.3.1.tgz',
+172 silly install resolved     _from: 'vasync@1.3.1',
+172 silly install resolved     bugs: { url: 'https://github.com/davepacheco/node-vasync/issues' },
+172 silly install resolved     readme: 'ERROR: No README data found!',
+172 silly install resolved     homepage: 'https://github.com/davepacheco/node-vasync' },
+172 silly install resolved   { name: 'node-uuid',
+172 silly install resolved     description: 'Rigorous implementation of RFC4122 (v1 and v4) UUIDs.',
+172 silly install resolved     url: 'http://github.com/broofa/node-uuid',
+172 silly install resolved     keywords: [ 'uuid', 'guid', 'rfc4122' ],
+172 silly install resolved     author: { name: 'Robert Kieffer', email: 'robert@broofa.com' },
+172 silly install resolved     contributors: [ [Object] ],
+172 silly install resolved     lib: '.',
+172 silly install resolved     main: './uuid.js',
+172 silly install resolved     repository: { type: 'git', url: 'git://github.com/broofa/node-uuid.git' },
+172 silly install resolved     version: '1.3.3',
+172 silly install resolved     _npmUser: { name: 'broofa', email: 'robert@broofa.com' },
+172 silly install resolved     _id: 'node-uuid@1.3.3',
+172 silly install resolved     dependencies: {},
+172 silly install resolved     devDependencies: {},
+172 silly install resolved     engines: { node: '*' },
+172 silly install resolved     _engineSupported: true,
+172 silly install resolved     _npmVersion: '1.0.106',
+172 silly install resolved     _nodeVersion: 'v0.4.6',
+172 silly install resolved     _defaultsLoaded: true,
+172 silly install resolved     dist:
+172 silly install resolved      { shasum: 'd3db4d7b56810d9e4032342766282af07391729b',
+172 silly install resolved        tarball: 'https://registry.npmjs.org/node-uuid/-/node-uuid-1.3.3.tgz' },
+172 silly install resolved     maintainers: [ [Object] ],
+172 silly install resolved     directories: {},
+172 silly install resolved     _shasum: 'd3db4d7b56810d9e4032342766282af07391729b',
+172 silly install resolved     _resolved: 'https://registry.npmjs.org/node-uuid/-/node-uuid-1.3.3.tgz',
+172 silly install resolved     _from: 'node-uuid@1.3.3',
+172 silly install resolved     bugs: { url: 'https://github.com/broofa/node-uuid/issues' },
+172 silly install resolved     readme: 'ERROR: No README data found!',
+172 silly install resolved     homepage: 'https://github.com/broofa/node-uuid' },
+172 silly install resolved   { name: 'bunyan',
+172 silly install resolved     version: '0.10.0',
+172 silly install resolved     description: 'a JSON Logger library for node.js services',
+172 silly install resolved     author:
+172 silly install resolved      { name: 'Trent Mick',
+172 silly install resolved        email: 'trentm@gmail.com',
+172 silly install resolved        url: 'http://trentm.com' },
+172 silly install resolved     main: './lib/bunyan.js',
+172 silly install resolved     bin: { bunyan: './bin/bunyan' },
+172 silly install resolved     repository: { type: 'git', url: 'git://github.com/trentm/node-bunyan.git' },
+172 silly install resolved     engines: [ 'node >=0.6.0' ],
+172 silly install resolved     keywords: [ 'log', 'logging', 'log4j', 'json' ],
+172 silly install resolved     devDependencies: { tap: '0.2.0', ben: '0.0.0' },
+172 silly install resolved     _npmUser: { name: 'trentm', email: 'trentm@gmail.com' },
+172 silly install resolved     _id: 'bunyan@0.10.0',
+172 silly install resolved     contributors: [ [Object], [Object], [Object], [Object] ],
+172 silly install resolved     dependencies: {},
+172 silly install resolved     optionalDependencies: {},
+172 silly install resolved     _engineSupported: true,
+172 silly install resolved     _npmVersion: '1.1.24',
+172 silly install resolved     _nodeVersion: 'v0.6.19',
+172 silly install resolved     _defaultsLoaded: true,
+172 silly install resolved     dist:
+172 silly install resolved      { shasum: '51b6270f4e6f151a6eaf9a9f188acaebec2101eb',
+172 silly install resolved        tarball: 'https://registry.npmjs.org/bunyan/-/bunyan-0.10.0.tgz' },
+172 silly install resolved     maintainers: [ [Object] ],
+172 silly install resolved     directories: {},
+172 silly install resolved     _shasum: '51b6270f4e6f151a6eaf9a9f188acaebec2101eb',
+172 silly install resolved     _resolved: 'https://registry.npmjs.org/bunyan/-/bunyan-0.10.0.tgz',
+172 silly install resolved     _from: 'bunyan@0.10.0',
+172 silly install resolved     bugs: { url: 'https://github.com/trentm/node-bunyan/issues' },
+172 silly install resolved     readme: 'ERROR: No README data found!',
+172 silly install resolved     homepage: 'https://github.com/trentm/node-bunyan' },
+172 silly install resolved   { name: 'zookeeper',
+172 silly install resolved     description: 'apache zookeeper client (zookeeper async API >= 3.4.0)',
+172 silly install resolved     version: '3.4.4',
+172 silly install resolved     author: { name: 'Yuri Finkelstein', email: 'yurif2003@yahoo.com' },
+172 silly install resolved     contributors: [ [Object], [Object], [Object], [Object], [Object], [Object] ],
+172 silly install resolved     repository:
+172 silly install resolved      { type: 'git',
+172 silly install resolved        url: 'https://github.com/yfinkelstein/node-zookeeper' },
+172 silly install resolved     keywords: [ 'apache', 'zookeeper', 'client' ],
+172 silly install resolved     dependencies: { async: '~0.1.18', underscore: '*' },
+172 silly install resolved     devDependencies: { log4js: '~0.4.3', webworker: '>=0.8.2' },
+172 silly install resolved     main: 'lib/index',
+172 silly install resolved     'directories.lib': 'build/default/',
+172 silly install resolved     scripts:
+172 silly install resolved      { build: 'node-gyp configure build',
+172 silly install resolved        test: 'pushd test; ./test; popd',
+172 silly install resolved        install: 'node-gyp rebuild' },
+172 silly install resolved     engines: { node: '>=0.6' },
+172 silly install resolved     gypfile: true,
+172 silly install resolved     gitHead: '29d472669e96e58b96e4614dcf2b3018cc93eb4d',
+172 silly install resolved     readme: '# Overview\n\nnode-zookeeper - A Node.js client for Apache Zookeeper.\n\nThis module is implemented on top of the ZooKeeper C API; consult the [ZK Reference](http://zookeeper.apache.org/doc/r3.4.0/index.html) for further details on behavior.\n\n# Example\n\n```javascript\nvar ZooKeeper = require ("zookeeper");\nvar zk = new ZooKeeper({\n  connect: "localhost:2181"\n ,timeout: 200000\n ,debug_level: ZooKeeper.ZOO_LOG_LEVEL_WARNING\n ,host_order_deterministic: false\n});\nzk.connect(function (err) {\n    if(err) throw err;\n    console.log ("zk session established, id=%s", zk.client_id);\n    zk.a_create ("/node.js1", "some value", ZooKeeper.ZOO_SEQUENCE | ZooKeeper.ZOO_EPHEMERAL, function (rc, error, path)  {\n        if (rc != 0) {\n            console.log ("zk node create result: %d, error: \'%s\', path=%s", rc, error, path);\n        } else {\n            console.log ("created zk node %s", path);\n            process.nextTick(function () {\n                zk.close ();\n            });\n        }\n    });\n});\n```\n\n# API Reference\n\n### Methods ###\n\n* init ( options )\n* close ( )\n* a_create ( path, data, flags, path_cb )\n* mkdirp ( path, callback(Error) )\n* a_exists ( path, watch, stat_cb )\n* a_get ( path, watch, data_cb )\n* a_get_children ( path, watch, child_cb )\n* a_get_children2 ( path, watch, child2_cb )\n* a_set ( path, data, version, stat_cb )\n* a_delete`_` ( path, version, void_cb )\n    * (trailing `_` is added to avoid conflict with reserved word `_delete_` since zk_promise.js strips off prefix `a_` from all operations)\n\n*The watcher methods are forward-looking subscriptions that can recieve multiple callbacks whenever a matching event occurs.*\n\n* aw_exists ( path, watch_cb, stat_cb )\n* aw_get ( path, watch_cb, data_cb )\n* aw_get_children ( path, watch_cb, child_cb )\n* aw_get_children2 ( path, watch_cb, child2_cb )\n\n### Callback Signatures ###\n\n * path_cb : function ( rc, error, path )\n * stat_cb : function ( rc, error, stat )\n * data_cb : function ( rc, error, stat, data )\n * child_cb : function ( rc, error, children )\n * child2_cb : function ( rc, error, children, stat )\n * void_cb : function ( rc, error )\n * watch_cb : function ( type, state, path )\n\n### Input Parameters ###\n\n * options : object. valid keys: { connect, timeout, debug_level, host_order_deterministic, data_as_buffer}\n * path : string\n * data : string or Buffer\n * flags : int32\n * version : int32\n * watch : boolean\n\n### Output Parameters ###\n\n * path is a string\n * data is either a Buffer (default), or a string (this is controlled by data_as_buffer = true/false)\n * children is an array of strings\n * rc is an int (error codes from zk api)\n * error is a string (error string from zk api)\n * type is an int event type (from zk api)\n * state is an int (state when the watcher fired from zk api)\n * stat is an object with the following attributes:\n     * long czxid              // created zxid\n     * long mzxid              // last modified zxid\n     * long ctime              // created\n     * long mtime              // last modified\n     * int version             // version\n     * int cversion            // child version\n     * int aversion            // acl version\n     * string ephemeralOwner   // owner session id if ephemeral, 0 otw\n     * int dataLength          //length of the data in the node\n     * int numChildren         //number of children of this node\n     * long pzxid              // last modified children\n\n\nSession state machine is well described in Zookeeper docs, i.e.\n![here](http://hadoop.apache.org/zookeeper/docs/r3.3.1/images/state_dia.jpg "State Diagram")\n\n# Limitations\n* no zookeeper ACL support\n* no support for authentication\n* tests are not standalone, must run a zk server (easiest if you run at localhost:2181, if not you must pass the connect string to the tests)\n* only asynchronous ZK methods are implemented. Hey, this is node.js ... no sync calls are allowed\n\n# Implementation Notes\n\n### NOTE on Module Status (DDOPSON-2011-11-30):\n* I ported this module to Node v0.6.0.  I did my best to retain compatibility with Node v0.4.x.  File bugs if you find any.\n* I have also worked to normalized the API style to be more conformant with Node conventions.  Again, I did my best to keep backwards compatibility with the old version.  File bugs if you find any.\n* The test coverage is pretty spotty.  It would be really great if someone converted the tests to Vows and / or using a mock instead of depending on a live ZK server.  I can\'t test and don\'t really trust the "promise" stuff in this module, but the core module itself works and makes my tests pass on downstream dependencies.\n\nFixes:\n* Node v0.6.0 compatibility - There is no native EventEmitter class anymore.  Need a JS shim.\n* Node v0.6.0 compatibility - MODULE_INIT macro just plain doesn\'t work.  not sure why, but an init function works just fine.\n* Node v0.6.0 compatibility - \'sys\' ==> \'util\'\n* Node v0.6.0 compatibility - There was an issue with the EV_A macro in yield();  was able to comment it out without harming behavior\n* events should be strings like \'connect\' instead of ZK.on_connected.  follow convention here.\n* no sense in "require(\'zookeeper\').ZooKeeper" instead of simply "require(\'zookeeper\')"\n\nTODO:\n* convert error codes to the names of the constants (eg, ZOO_CONNECT_FAIL instead of -110).\n* method names should map to convention. The "a_method" pattern is quite redundant in node.\n* Init should be called "connect", and should take a callback.  Forcing clients to use the events is awkward and error prone\n* Why do the watchers take two callbacks?\n\n\n### v0.2.x ==> v0.4.x Transition\nData coming out of ZooKeepr (in callbacks) will now default to being Buffer objects. The main ZK handle now has a boolean attribute called \'data_as_buffer\', which defaults to true. If you are storing strings only, as was only allowed in the initial implementation, or you wish to have data in callbacks arrive as strings, you add \'data_as_buffer:false\' to the init options, or add \'zk.data_as_buffer = false;\' before using the handle. The behavior defaults to Buffer objects because this aligns more closely with ZooKeeper itself which uses byte arrays. They are interchangable on input, if the input is a Buffer it will be used directly, otherwise the toString() of the input is used (this will work with utf8 data as well) regardless of mode.\n\nWith the new Buffer changes in the 0.3+ and 0.4+ branches, these will be internal \'SlowBuffer\' objects, and you should use Buffer.isBuffer if you are checking the type, as \'instanceof Buffer\' will return false.\n\n### yfinkelstein\'s original implementation notes\n\n* Zookeeper C API library comes in 2 flavours: single-threaded and multi-threaded. For node.js, single-threaded library provides the most sense since all events coming from ZK responses have to be dispatched to the main JS thread.\n* The C++ code uses the same logging facility that ZK C API uses internally. Hence zk_log.h file checked into this project. The file is considered ZK internal and is not installed into /usr/local/include\n* Multiple simultaneous ZK connections are supported and tested\n* All ZK constants are exposed as read-only properties of the ZooKeeper function, like ZK.ZOO_EPHEMERAL\n* All ZK API methods including watchers are supported.\n* lib/zk_promise.js is an optional module that makes use of the very cool **node-promise** library;\n see tests/zk_test_shootout_promise.js for illustration of how it can simplify coding. Isn\'t the following looking nicer?\n\n```javascript\nzk_r.on_connected().\nthen (\n    function (zkk){\n        console.log ("reader on_connected: zk=%j", zkk);\n        return zkk.create ("/node.js2", "some value", ZK.ZOO_SEQUENCE | ZK.ZOO_EPHEMERAL);\n    }\n).then (\n    function (path) {\n        zk_r.context.path = path;\n        console.log ("node created path=%s", path);\n        return zk_r.w_get (path,\n            function (type, state, path_w) { // this is a watcher\n                console.log ("watcher for path %s triggered", path_w);\n                deferred_watcher_triggered.resolve (path_w);\n            }\n        );\n    }\n).then (\n    function (stat_and_value) { // this is the response from w_get above\n        console.log ("get node: stat=%j, value=%s", stat_and_value[0], stat_and_value[1]);\n        deferred_watcher_ready.resolve (zk_r.context.path);\n        return deferred_watcher_triggered;\n    }\n).then (\n    function () {\n        console.log ("zk_reader is finished");\n        process.nextTick( function () {\n            zk_r.close ();\n        });\n    }\n);\n```\n\n* Also compare test/zk_test_watcher.js with test/zk_test_watcher_promise.js\n* tests/zk_master.js and tests/zk_worker.js illustrate launching multiple ZK client workers using webworker library. You have to install it first with **"npm install webworker"**\n\n# Building the module by hand\n-----\n\n```javascript\nnode-gyp configure build\n```\n\n- note: for more details on the zk c-client build process, see [here](http://hadoop.apache.org/zookeeper/docs/r3.3.1/zookeeperProgrammers.html#C+Binding "Build C client")\n- note: node_compat.h (ala node-png) handles Buffer changes from .2 to .3+, so you should be able to build against older node versions.\n- note: if you wish to build with a specific version of zookeeper C lib, use --zookeeper VERSION (will download/build it) or --zookeeper PATH (if you have downloaded it and possibly made changes etc.)\n- note: if you wish to link against an existing zookeeper lib: use --zoookeeper \'\', and put your lib/headers it in /usr/local/ (or edit the wscript appropriately)\n- note: if you are building on osx and you get a compile error regarding "mmacosx-version-min", you may need to edit the wscript and remove it  (anyone with the answer please explain/fix if possible).\n- note: on SmartOS, you must have installed zookeeper-client-3.4.3 via pkgsrc; ZooKeeper does not build "out of the box" on SunOS variants.\n- note: if you are building on a platform for which the options are not working, please add a specific elif for that platform and create a pull request.\n\n# Known Bugs & Issues\n\nDDOPSON-2011-11-30 - are these issues still relevant?  unknown.\n\n- The lib will segfault if you try to use a ZooKeeper intance after the on_closed event is delivered (possibly as a result of session timeout etc.) YOU MAY NOT re-use the closed ZooKeeper instance. You should allocate a new one and initialize it as a completely new client. Any and all watchers from your first instance are lost, though they may fire (before the on_close) see below.\n- Any established watches may/will be fired once each when/if your client is expired by the ZK server, the input arguments are observed to be: type=-1, state=1, path="". Care should be taken to handle this differently than a "real" watch event if that matters to your application.\n- Otherwise, it just works!\n\n# See Also\n\n- [http://hadoop.apache.org/zookeeper/releases.html](http://hadoop.apache.org/zookeeper/releases.html)\n- [http://hadoop.apache.org/zookeeper/docs/r3.3.1/zookeeperProgrammers.html#ZooKeeper+C+client+API](http://hadoop.apache.org/zookeeper/docs/r3.3.1/zookeeperProgrammers.html#ZooKeeper+C+client+API)\n- [http://github.com/kriszyp/node-promise](http://github.com/kriszyp/node-promise)\n- [http://github.com/pgriess/node-webworker](http://github.com/pgriess/node-webworker)\n\n# Acknowledgments\n\n- **[node-promise](http://github.com/kriszyp/node-promise "node-promise") by kriszyp** is a fantastic tool imho. I wish it was distributed as a module so that I could easily \'require\' it rather then\n resort to distribution by copy.\n- **[node-webworker](http://github.com/pgriess/node-webworker "node-webworker") by pgriess** is used to spawn multiple ZK workers in one of the tests.\n\n# LICENSE\n\nSee [LICENSE-MIT.txt](./LICENSE-MIT.txt) file in the top level folder.\n\n# ORIGINAL AUTHOR\n\nYuri Finkelstein (yurif2003 at yahoo dot com)\n\nwith awesome contributions from:\n\n- Woody Anderson (Woodya)\n- Dave Dopson (ddopson)\n- Ryan Phillips (rphillips)\n- David Trejo (DTrejo)\n- Mark Cavage (mcavage)\n',
+172 silly install resolved     readmeFilename: 'README.md',
+172 silly install resolved     bugs: { url: 'https://github.com/yfinkelstein/node-zookeeper/issues' },
+172 silly install resolved     homepage: 'https://github.com/yfinkelstein/node-zookeeper',
+172 silly install resolved     _id: 'zookeeper@3.4.4',
+172 silly install resolved     _shasum: '2ff27f91bff55e7c26ce921a2dd48252a9cac9f8',
+172 silly install resolved     _from: 'git://github.com/yfinkelstein/node-zookeeper.git#29d4726',
+172 silly install resolved     _resolved: 'git://github.com/yfinkelstein/node-zookeeper.git#29d472669e96e58b96e4614dcf2b3018cc93eb4d' } ]
+173 info install vasync@1.3.1 into /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus
+174 info install node-uuid@1.3.3 into /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus
+175 info install bunyan@0.10.0 into /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus
+176 info install zookeeper@3.4.4 into /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus
+177 info installOne vasync@1.3.1
+178 verbose installOne of vasync to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus not in flight; installing
+179 info installOne node-uuid@1.3.3
+180 verbose installOne of node-uuid to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus not in flight; installing
+181 info installOne bunyan@0.10.0
+182 verbose installOne of bunyan to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus not in flight; installing
+183 info installOne zookeeper@3.4.4
+184 verbose installOne of zookeeper to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus not in flight; installing
+185 verbose lock using /Users/maheswar/.npm/_locks/vasync-98616e4cfbeaccfa.lock for /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync
+186 silly install write writing vasync 1.3.1 to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync
+187 verbose lock using /Users/maheswar/.npm/_locks/node-uuid-5b7e8f67da493209.lock for /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/node-uuid
+188 verbose lock using /Users/maheswar/.npm/_locks/zookeeper-dea2d22951996148.lock for /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper
+189 silly install write writing node-uuid 1.3.3 to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/node-uuid
+190 silly install write writing zookeeper 3.4.4 to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper
+191 verbose lock using /Users/maheswar/.npm/_locks/bunyan-cc770065b809e262.lock for /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/bunyan
+192 silly install write writing bunyan 0.10.0 to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/bunyan
+193 verbose unbuild node_modules/zkplus/node_modules/vasync
+194 verbose unbuild node_modules/zkplus/node_modules/node-uuid
+195 verbose unbuild node_modules/zkplus/node_modules/zookeeper
+196 silly gentlyRm /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync is being purged from base /Users/maheswar/Documents/Programming/JAMScript
+197 verbose gentlyRm don't care about contents; nuking /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync
+198 verbose tar unpack /Users/maheswar/.npm/vasync/1.3.1/package.tgz
+199 verbose tar unpacking to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync
+200 silly gentlyRm /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync is being purged
+201 verbose gentlyRm don't care about contents; nuking /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync
+202 silly gentlyRm /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/node-uuid is being purged from base /Users/maheswar/Documents/Programming/JAMScript
+203 verbose gentlyRm don't care about contents; nuking /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/node-uuid
+204 silly gentlyRm /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper is being purged from base /Users/maheswar/Documents/Programming/JAMScript
+205 verbose gentlyRm don't care about contents; nuking /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper
+206 verbose unbuild node_modules/zkplus/node_modules/bunyan
+207 silly gunzTarPerm modes [ '755', '644' ]
+208 verbose tar unpack /Users/maheswar/.npm/node-uuid/1.3.3/package.tgz
+209 verbose tar unpacking to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/node-uuid
+210 silly gentlyRm /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/node-uuid is being purged
+211 verbose gentlyRm don't care about contents; nuking /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/node-uuid
+212 verbose tar unpack /Users/maheswar/.npm/zookeeper/3.4.4/package.tgz
+213 verbose tar unpacking to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper
+214 silly gentlyRm /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper is being purged
+215 verbose gentlyRm don't care about contents; nuking /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper
+216 silly gunzTarPerm modes [ '755', '644' ]
+217 silly gunzTarPerm modes [ '755', '644' ]
+218 silly gentlyRm /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/bunyan is being purged from base /Users/maheswar/Documents/Programming/JAMScript
+219 verbose gentlyRm don't care about contents; nuking /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/bunyan
+220 verbose tar unpack /Users/maheswar/.npm/bunyan/0.10.0/package.tgz
+221 verbose tar unpacking to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/bunyan
+222 silly gentlyRm /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/bunyan is being purged
+223 verbose gentlyRm don't care about contents; nuking /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/bunyan
+224 silly gunzTarPerm modes [ '755', '644' ]
+225 silly gunzTarPerm extractEntry package.json
+226 silly gunzTarPerm extractEntry uuid.js
+227 silly gunzTarPerm extractEntry package.json
+228 silly gunzTarPerm extractEntry package.json
+229 silly gunzTarPerm extractEntry package.json
+230 silly gunzTarPerm extractEntry LICENSE.md
+231 silly gunzTarPerm extractEntry README.md
+232 silly gunzTarPerm extractEntry example.js
+233 silly gunzTarPerm extractEntry .npmignore
+234 silly gunzTarPerm extractEntry README.md
+235 silly gunzTarPerm extractEntry .npmignore
+236 silly gunzTarPerm extractEntry README.md
+237 silly gunzTarPerm extractEntry LICENSE
+238 silly gunzTarPerm extractEntry .gitignore
+239 silly gunzTarPerm extractEntry README.md
+240 silly gunzTarPerm extractEntry LICENSE-MIT.txt
+241 silly gunzTarPerm extractEntry binding.gyp
+242 silly gunzTarPerm extractEntry lib/fs-promise.js
+243 silly gunzTarPerm extractEntry lib/index.js
+244 silly gunzTarPerm extractEntry lib/promise.js
+245 silly gunzTarPerm extractEntry lib/test-promise.js
+246 silly gunzTarPerm extractEntry lib/zk_promise.js
+247 silly gunzTarPerm extractEntry lib/zookeeper.js
+248 silly gunzTarPerm extractEntry libzk-build.sh
+249 silly gunzTarPerm extractEntry src/buffer_compat.h
+250 silly gunzTarPerm extractEntry src/node-zk.cpp
+251 silly gunzTarPerm extractEntry src/zk_log.h
+252 silly gunzTarPerm extractEntry test/README
+253 silly gunzTarPerm extractEntry test/zk_test_a_get_children.js
+254 silly gunzTarPerm extractEntry test/zk_test_buffer.js
+255 silly gunzTarPerm extractEntry test/zk_test_chain.js
+256 silly gunzTarPerm extractEntry test/zk_test_create.js
+257 silly gunzTarPerm extractEntry test/zk_master.js
+258 silly gunzTarPerm extractEntry test/zk_test_mkdirp.js
+259 silly gunzTarPerm extractEntry test/zk_test_shootout_promise.js
+260 silly gunzTarPerm extractEntry test/zk_test_utf8.js
+261 silly gunzTarPerm extractEntry test/zk_test_watcher.js
+262 silly gunzTarPerm extractEntry test/zk_test_watcher_promise.js
+263 silly gunzTarPerm extractEntry test/zk_test_watcher_session.js
+264 silly gunzTarPerm extractEntry test/zk_worker.js
+265 silly gunzTarPerm extractEntry test/zk_test_end_session.js
+266 silly gunzTarPerm extractEntry test/test
+267 silly gunzTarPerm extractEntry CHANGES.md
+268 silly gunzTarPerm extractEntry jsl.node.conf
+269 silly gunzTarPerm extractEntry Makefile.targ
+270 silly gunzTarPerm extractEntry test/test.js
+271 silly gunzTarPerm extractEntry examples/err.js
+272 silly gunzTarPerm extractEntry examples/handle-fs-error.js
+273 silly gunzTarPerm extractEntry examples/hi.js
+274 silly gunzTarPerm extractEntry examples/level.js
+275 silly gunzTarPerm extractEntry test/compare_v1.js
+276 silly gunzTarPerm extractEntry test/test.html
+277 silly gunzTarPerm extractEntry examples/foreach-parallel.js
+278 silly gunzTarPerm extractEntry examples/parallel.js
+279 silly gunzTarPerm extractEntry examples/multi.js
+280 silly gunzTarPerm extractEntry examples/raw-stream.js
+281 silly gunzTarPerm extractEntry benchmark/benchmark.js
+282 silly gunzTarPerm extractEntry benchmark/bench.gnu
+283 silly gunzTarPerm extractEntry examples/nofail.js
+284 silly gunzTarPerm extractEntry examples/pipeline.js
+285 silly gunzTarPerm extractEntry examples/ringbuffer.js
+286 silly gunzTarPerm extractEntry examples/server.js
+287 silly gunzTarPerm extractEntry benchmark/bench.sh
+288 silly gunzTarPerm extractEntry benchmark/README.md
+289 silly gunzTarPerm extractEntry examples/queue-stat.js
+290 silly gunzTarPerm extractEntry examples/queue-serializer.js
+291 silly gunzTarPerm extractEntry examples/src.js
+292 silly gunzTarPerm extractEntry examples/unstringifyable.js
+293 silly gunzTarPerm extractEntry benchmark/benchmark-native.c
+294 silly gunzTarPerm extractEntry lib/vasync.js
+295 silly gunzTarPerm extractEntry .gitmodules
+296 silly gunzTarPerm extractEntry lib/bunyan.js
+297 silly gunzTarPerm extractEntry AUTHORS
+298 silly gunzTarPerm extractEntry Makefile
+299 silly gunzTarPerm extractEntry Makefile.deps
+300 silly gunzTarPerm extractEntry tools/timechild.js
+301 silly gunzTarPerm extractEntry tools/timeguard.js
+302 silly gunzTarPerm extractEntry tools/timesrc.js
+303 silly gunzTarPerm extractEntry tools/cutarelease.py
+304 silly gunzTarPerm extractEntry tools/jsstyle
+305 silly gunzTarPerm extractEntry tools/statsd-notes.txt
+306 silly gunzTarPerm extractEntry bin/bunyan
+307 silly gunzTarPerm extractEntry test/cli.test.js
+308 silly gunzTarPerm extractEntry test/ctor.test.js
+309 silly gunzTarPerm extractEntry test/error-event.test.js
+310 silly gunzTarPerm extractEntry test/log.test.js
+311 silly gunzTarPerm extractEntry test/raw-stream.test.js
+312 silly gunzTarPerm extractEntry test/ringbuffer.test.js
+313 silly gunzTarPerm extractEntry test/std-serializers.test.js
+314 verbose write writing to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/node-uuid/package.json
+315 info preinstall node-uuid@1.3.3
+316 silly gunzTarPerm extractEntry test/corpus/all.log
+317 silly gunzTarPerm extractEntry test/corpus/bogus.log
+318 silly gunzTarPerm extractEntry test/corpus/extrafield.log
+319 verbose readDependencies loading dependencies from /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/node-uuid/package.json
+320 silly gunzTarPerm extractEntry test/corpus/log1.log
+321 verbose readDependencies loading dependencies from /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/node-uuid/package.json
+322 silly install resolved []
+323 verbose about to build /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/node-uuid
+324 info build /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/node-uuid
+325 silly gunzTarPerm extractEntry test/corpus/log1.log.gz
+326 silly gunzTarPerm extractEntry test/corpus/log2.log
+327 info linkStuff node-uuid@1.3.3
+328 silly linkStuff node-uuid@1.3.3 has /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules as its parent node_modules
+329 silly gunzTarPerm extractEntry test/corpus/simple.log
+330 silly gunzTarPerm extractEntry TODO.md
+331 verbose write writing to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/package.json
+332 verbose linkBins node-uuid@1.3.3
+333 verbose linkMans node-uuid@1.3.3
+334 verbose rebuildBundles node-uuid@1.3.3
+335 info install node-uuid@1.3.3
+336 info preinstall vasync@1.3.1
+337 info postinstall node-uuid@1.3.3
+338 verbose readDependencies loading dependencies from /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/package.json
+339 silly gunzTarPerm extractEntry Makefile
+340 verbose unlock done using /Users/maheswar/.npm/_locks/node-uuid-5b7e8f67da493209.lock for /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/node-uuid
+341 silly prepareForInstallMany adding verror@1.1.0 from vasync dependencies
+342 verbose readDependencies loading dependencies from /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/package.json
+343 silly cache add args [ 'verror@1.1.0', null ]
+344 verbose cache add spec verror@1.1.0
+345 silly cache add parsed spec Result {
+345 silly cache add   raw: 'verror@1.1.0',
+345 silly cache add   scope: null,
+345 silly cache add   name: 'verror',
+345 silly cache add   rawSpec: '1.1.0',
+345 silly cache add   spec: '1.1.0',
+345 silly cache add   type: 'version' }
+346 silly addNamed verror@1.1.0
+347 verbose addNamed "1.1.0" is a plain semver version for verror
+348 silly mapToRegistry name verror
+349 silly mapToRegistry using default registry
+350 silly mapToRegistry registry https://registry.npmjs.org/
+351 silly mapToRegistry uri https://registry.npmjs.org/verror
+352 verbose addNameVersion registry:https://registry.npmjs.org/verror not in flight; fetching
+353 verbose request uri https://registry.npmjs.org/verror
+354 verbose request no auth needed
+355 info attempt registry request try #1 at 1:26:33 PM
+356 verbose etag "2X93ISV5H5IFRWWX1XTBDBZ2V"
+357 http request GET https://registry.npmjs.org/verror
+358 verbose write writing to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/package.json
+359 info preinstall zookeeper@3.4.4
+360 verbose readDependencies loading dependencies from /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/package.json
+361 silly prepareForInstallMany adding async@~0.1.18 from zookeeper dependencies
+362 silly prepareForInstallMany adding underscore@* from zookeeper dependencies
+363 verbose readDependencies loading dependencies from /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/package.json
+364 silly cache add args [ 'async@~0.1.18', null ]
+365 verbose cache add spec async@~0.1.18
+366 silly cache add args [ 'underscore@*', null ]
+367 verbose cache add spec underscore@*
+368 silly cache add parsed spec Result {
+368 silly cache add   raw: 'async@~0.1.18',
+368 silly cache add   scope: null,
+368 silly cache add   name: 'async',
+368 silly cache add   rawSpec: '~0.1.18',
+368 silly cache add   spec: '>=0.1.18 <0.2.0',
+368 silly cache add   type: 'range' }
+369 silly addNamed async@>=0.1.18 <0.2.0
+370 verbose addNamed ">=0.1.18 <0.2.0" is a valid semver range for async
+371 silly addNameRange { name: 'async', range: '>=0.1.18 <0.2.0', hasData: false }
+372 silly mapToRegistry name async
+373 silly mapToRegistry using default registry
+374 silly mapToRegistry registry https://registry.npmjs.org/
+375 silly mapToRegistry uri https://registry.npmjs.org/async
+376 verbose addNameRange registry:https://registry.npmjs.org/async not in flight; fetching
+377 silly cache add parsed spec Result {
+377 silly cache add   raw: 'underscore@*',
+377 silly cache add   scope: null,
+377 silly cache add   name: 'underscore',
+377 silly cache add   rawSpec: '*',
+377 silly cache add   spec: '*',
+377 silly cache add   type: 'range' }
+378 silly addNamed underscore@*
+379 verbose addNamed "*" is a valid semver range for underscore
+380 silly addNameRange { name: 'underscore', range: '*', hasData: false }
+381 silly mapToRegistry name underscore
+382 silly mapToRegistry using default registry
+383 silly mapToRegistry registry https://registry.npmjs.org/
+384 silly mapToRegistry uri https://registry.npmjs.org/underscore
+385 verbose addNameRange registry:https://registry.npmjs.org/underscore not in flight; fetching
+386 verbose request uri https://registry.npmjs.org/async
+387 verbose request no auth needed
+388 info attempt registry request try #1 at 1:26:33 PM
+389 verbose etag "F1AAF7Q54N294Q9RJDHYZ86GD"
+390 http request GET https://registry.npmjs.org/async
+391 verbose request uri https://registry.npmjs.org/underscore
+392 verbose request no auth needed
+393 info attempt registry request try #1 at 1:26:33 PM
+394 verbose etag "5U2C90741S0OGYJZDF5NSSBSD"
+395 http request GET https://registry.npmjs.org/underscore
+396 verbose write writing to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/bunyan/package.json
+397 info preinstall bunyan@0.10.0
+398 verbose readDependencies loading dependencies from /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/bunyan/package.json
+399 verbose readDependencies loading dependencies from /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/bunyan/package.json
+400 silly install resolved []
+401 verbose about to build /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/bunyan
+402 info build /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/bunyan
+403 info linkStuff bunyan@0.10.0
+404 silly linkStuff bunyan@0.10.0 has /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules as its parent node_modules
+405 verbose linkBins bunyan@0.10.0
+406 verbose link bins [ { bunyan: './bin/bunyan' },
+406 verbose link bins   '/Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/.bin',
+406 verbose link bins   false ]
+407 verbose linkMans bunyan@0.10.0
+408 verbose rebuildBundles bunyan@0.10.0
+409 silly gentlyRm /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/.bin/bunyan is being purged
+410 verbose gentlyRm don't care about contents; nuking /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/.bin/bunyan
+411 info install bunyan@0.10.0
+412 info postinstall bunyan@0.10.0
+413 verbose unlock done using /Users/maheswar/.npm/_locks/bunyan-cc770065b809e262.lock for /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/bunyan
+414 http 304 https://registry.npmjs.org/verror
+415 verbose headers { date: 'Sun, 01 May 2016 17:26:33 GMT',
+415 verbose headers   via: '1.1 varnish',
+415 verbose headers   'cache-control': 'max-age=300',
+415 verbose headers   etag: '"2X93ISV5H5IFRWWX1XTBDBZ2V"',
+415 verbose headers   age: '85',
+415 verbose headers   connection: 'keep-alive',
+415 verbose headers   'x-served-by': 'cache-iad2135-IAD',
+415 verbose headers   'x-cache': 'HIT',
+415 verbose headers   'x-cache-hits': '1',
+415 verbose headers   'x-timer': 'S1462123593.824295,VS0,VE0',
+415 verbose headers   vary: 'Accept-Encoding' }
+416 silly get cb [ 304,
+416 silly get   { date: 'Sun, 01 May 2016 17:26:33 GMT',
+416 silly get     via: '1.1 varnish',
+416 silly get     'cache-control': 'max-age=300',
+416 silly get     etag: '"2X93ISV5H5IFRWWX1XTBDBZ2V"',
+416 silly get     age: '85',
+416 silly get     connection: 'keep-alive',
+416 silly get     'x-served-by': 'cache-iad2135-IAD',
+416 silly get     'x-cache': 'HIT',
+416 silly get     'x-cache-hits': '1',
+416 silly get     'x-timer': 'S1462123593.824295,VS0,VE0',
+416 silly get     vary: 'Accept-Encoding' } ]
+417 verbose etag https://registry.npmjs.org/verror from cache
+418 verbose get saving verror to /Users/maheswar/.npm/registry.npmjs.org/verror/.cache.json
+419 silly cache afterAdd verror@1.1.0
+420 verbose afterAdd /Users/maheswar/.npm/verror/1.1.0/package/package.json not in flight; writing
+421 verbose afterAdd /Users/maheswar/.npm/verror/1.1.0/package/package.json written
+422 silly install resolved [ { name: 'verror',
+422 silly install resolved     version: '1.1.0',
+422 silly install resolved     description: 'richer JavaScript errors',
+422 silly install resolved     main: './lib/verror.js',
+422 silly install resolved     repository:
+422 silly install resolved      { type: 'git',
+422 silly install resolved        url: 'git://github.com/davepacheco/node-verror.git' },
+422 silly install resolved     dependencies: { extsprintf: '1.0.0' },
+422 silly install resolved     engines: [ 'node >=0.6.0' ],
+422 silly install resolved     _npmUser: { name: 'dap', email: 'dap@cs.brown.edu' },
+422 silly install resolved     _id: 'verror@1.1.0',
+422 silly install resolved     devDependencies: {},
+422 silly install resolved     optionalDependencies: {},
+422 silly install resolved     _engineSupported: true,
+422 silly install resolved     _npmVersion: '1.1.4',
+422 silly install resolved     _nodeVersion: 'v0.6.10',
+422 silly install resolved     _defaultsLoaded: true,
+422 silly install resolved     dist:
+422 silly install resolved      { shasum: '2a4b4eb14a207051e75a6f94ee51315bf173a1b0',
+422 silly install resolved        tarball: 'https://registry.npmjs.org/verror/-/verror-1.1.0.tgz' },
+422 silly install resolved     maintainers: [ [Object] ],
+422 silly install resolved     directories: {},
+422 silly install resolved     _shasum: '2a4b4eb14a207051e75a6f94ee51315bf173a1b0',
+422 silly install resolved     _resolved: 'https://registry.npmjs.org/verror/-/verror-1.1.0.tgz',
+422 silly install resolved     _from: 'verror@1.1.0',
+422 silly install resolved     bugs: { url: 'https://github.com/davepacheco/node-verror/issues' },
+422 silly install resolved     readme: 'ERROR: No README data found!',
+422 silly install resolved     homepage: 'https://github.com/davepacheco/node-verror' } ]
+423 info install verror@1.1.0 into /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync
+424 info installOne verror@1.1.0
+425 verbose installOne of verror to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync not in flight; installing
+426 verbose lock using /Users/maheswar/.npm/_locks/verror-11adc75e40b5f34f.lock for /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror
+427 silly install write writing verror 1.1.0 to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror
+428 verbose unbuild node_modules/zkplus/node_modules/vasync/node_modules/verror
+429 silly gentlyRm /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror is being purged from base /Users/maheswar/Documents/Programming/JAMScript
+430 verbose gentlyRm don't care about contents; nuking /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror
+431 verbose tar unpack /Users/maheswar/.npm/verror/1.1.0/package.tgz
+432 verbose tar unpacking to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror
+433 silly gentlyRm /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror is being purged
+434 verbose gentlyRm don't care about contents; nuking /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror
+435 silly gunzTarPerm modes [ '755', '644' ]
+436 silly gunzTarPerm extractEntry .gitmodules
+437 silly gunzTarPerm extractEntry .npmignore
+438 silly gunzTarPerm extractEntry examples/
+439 silly gunzTarPerm extractEntry examples/missingcause.js
+440 silly gunzTarPerm extractEntry examples/simple.js
+441 silly gunzTarPerm extractEntry jsl.node.conf
+442 silly gunzTarPerm extractEntry lib/
+443 silly gunzTarPerm extractEntry lib/verror.js
+444 silly gunzTarPerm extractEntry LICENSE
+445 silly gunzTarPerm extractEntry Makefile
+446 silly gunzTarPerm extractEntry Makefile.deps
+447 silly gunzTarPerm extractEntry Makefile.targ
+448 silly gunzTarPerm extractEntry package.json
+449 silly gunzTarPerm extractEntry README.md
+450 http 304 https://registry.npmjs.org/underscore
+451 verbose headers { date: 'Sun, 01 May 2016 17:26:33 GMT',
+451 verbose headers   via: '1.1 varnish',
+451 verbose headers   'cache-control': 'max-age=300',
+451 verbose headers   etag: '"5U2C90741S0OGYJZDF5NSSBSD"',
+451 verbose headers   age: '245',
+451 verbose headers   connection: 'keep-alive',
+451 verbose headers   'x-served-by': 'cache-iad2142-IAD',
+451 verbose headers   'x-cache': 'HIT',
+451 verbose headers   'x-cache-hits': '5',
+451 verbose headers   'x-timer': 'S1462123593.854089,VS0,VE0',
+451 verbose headers   vary: 'Accept-Encoding' }
+452 silly get cb [ 304,
+452 silly get   { date: 'Sun, 01 May 2016 17:26:33 GMT',
+452 silly get     via: '1.1 varnish',
+452 silly get     'cache-control': 'max-age=300',
+452 silly get     etag: '"5U2C90741S0OGYJZDF5NSSBSD"',
+452 silly get     age: '245',
+452 silly get     connection: 'keep-alive',
+452 silly get     'x-served-by': 'cache-iad2142-IAD',
+452 silly get     'x-cache': 'HIT',
+452 silly get     'x-cache-hits': '5',
+452 silly get     'x-timer': 'S1462123593.854089,VS0,VE0',
+452 silly get     vary: 'Accept-Encoding' } ]
+453 verbose etag https://registry.npmjs.org/underscore from cache
+454 verbose get saving underscore to /Users/maheswar/.npm/registry.npmjs.org/underscore/.cache.json
+455 silly addNameRange number 2 { name: 'underscore', range: '*', hasData: true }
+456 silly addNameRange versions [ 'underscore',
+456 silly addNameRange   [ '1.0.3',
+456 silly addNameRange     '1.0.4',
+456 silly addNameRange     '1.1.0',
+456 silly addNameRange     '1.1.1',
+456 silly addNameRange     '1.1.2',
+456 silly addNameRange     '1.1.3',
+456 silly addNameRange     '1.1.4',
+456 silly addNameRange     '1.1.5',
+456 silly addNameRange     '1.1.6',
+456 silly addNameRange     '1.1.7',
+456 silly addNameRange     '1.2.0',
+456 silly addNameRange     '1.2.1',
+456 silly addNameRange     '1.2.2',
+456 silly addNameRange     '1.2.3',
+456 silly addNameRange     '1.2.4',
+456 silly addNameRange     '1.3.0',
+456 silly addNameRange     '1.3.1',
+456 silly addNameRange     '1.3.2',
+456 silly addNameRange     '1.3.3',
+456 silly addNameRange     '1.4.0',
+456 silly addNameRange     '1.4.1',
+456 silly addNameRange     '1.4.2',
+456 silly addNameRange     '1.4.3',
+456 silly addNameRange     '1.4.4',
+456 silly addNameRange     '1.5.0',
+456 silly addNameRange     '1.5.1',
+456 silly addNameRange     '1.5.2',
+456 silly addNameRange     '1.6.0',
+456 silly addNameRange     '1.7.0',
+456 silly addNameRange     '1.8.0',
+456 silly addNameRange     '1.8.1',
+456 silly addNameRange     '1.8.2',
+456 silly addNameRange     '1.8.3' ] ]
+457 silly addNamed underscore@1.8.3
+458 verbose addNamed "1.8.3" is a plain semver version for underscore
+459 silly cache afterAdd underscore@1.8.3
+460 verbose afterAdd /Users/maheswar/.npm/underscore/1.8.3/package/package.json not in flight; writing
+461 http 304 https://registry.npmjs.org/async
+462 verbose headers { date: 'Sun, 01 May 2016 17:26:33 GMT',
+462 verbose headers   via: '1.1 varnish',
+462 verbose headers   'cache-control': 'max-age=300',
+462 verbose headers   etag: '"F1AAF7Q54N294Q9RJDHYZ86GD"',
+462 verbose headers   age: '127',
+462 verbose headers   connection: 'keep-alive',
+462 verbose headers   'x-served-by': 'cache-iad2129-IAD',
+462 verbose headers   'x-cache': 'HIT',
+462 verbose headers   'x-cache-hits': '3',
+462 verbose headers   'x-timer': 'S1462123593.852878,VS0,VE0',
+462 verbose headers   vary: 'Accept-Encoding' }
+463 silly get cb [ 304,
+463 silly get   { date: 'Sun, 01 May 2016 17:26:33 GMT',
+463 silly get     via: '1.1 varnish',
+463 silly get     'cache-control': 'max-age=300',
+463 silly get     etag: '"F1AAF7Q54N294Q9RJDHYZ86GD"',
+463 silly get     age: '127',
+463 silly get     connection: 'keep-alive',
+463 silly get     'x-served-by': 'cache-iad2129-IAD',
+463 silly get     'x-cache': 'HIT',
+463 silly get     'x-cache-hits': '3',
+463 silly get     'x-timer': 'S1462123593.852878,VS0,VE0',
+463 silly get     vary: 'Accept-Encoding' } ]
+464 verbose etag https://registry.npmjs.org/async from cache
+465 verbose get saving async to /Users/maheswar/.npm/registry.npmjs.org/async/.cache.json
+466 verbose afterAdd /Users/maheswar/.npm/underscore/1.8.3/package/package.json written
+467 silly addNameRange number 2 { name: 'async', range: '>=0.1.18 <0.2.0', hasData: true }
+468 silly addNameRange versions [ 'async',
+468 silly addNameRange   [ '0.1.0',
+468 silly addNameRange     '0.1.1',
+468 silly addNameRange     '0.1.2',
+468 silly addNameRange     '0.1.3',
+468 silly addNameRange     '0.1.4',
+468 silly addNameRange     '0.1.5',
+468 silly addNameRange     '0.1.6',
+468 silly addNameRange     '0.1.7',
+468 silly addNameRange     '0.1.8',
+468 silly addNameRange     '0.1.9',
+468 silly addNameRange     '0.1.10',
+468 silly addNameRange     '0.1.11',
+468 silly addNameRange     '0.1.12',
+468 silly addNameRange     '0.1.13',
+468 silly addNameRange     '0.1.14',
+468 silly addNameRange     '0.1.15',
+468 silly addNameRange     '0.1.16',
+468 silly addNameRange     '0.1.17',
+468 silly addNameRange     '0.1.18',
+468 silly addNameRange     '0.1.19',
+468 silly addNameRange     '0.1.20',
+468 silly addNameRange     '0.1.21',
+468 silly addNameRange     '0.1.22',
+468 silly addNameRange     '0.2.0',
+468 silly addNameRange     '0.2.1',
+468 silly addNameRange     '0.2.2',
+468 silly addNameRange     '0.2.3',
+468 silly addNameRange     '0.2.4',
+468 silly addNameRange     '0.2.5',
+468 silly addNameRange     '0.2.6',
+468 silly addNameRange     '0.2.7',
+468 silly addNameRange     '0.2.8',
+468 silly addNameRange     '0.2.9',
+468 silly addNameRange     '0.2.10',
+468 silly addNameRange     '0.3.0',
+468 silly addNameRange     '0.4.0',
+468 silly addNameRange     '0.4.1',
+468 silly addNameRange     '0.5.0',
+468 silly addNameRange     '0.6.0',
+468 silly addNameRange     '0.6.1',
+468 silly addNameRange     '0.6.2',
+468 silly addNameRange     '0.7.0',
+468 silly addNameRange     '0.8.0',
+468 silly addNameRange     '0.9.0',
+468 silly addNameRange     '0.9.2',
+468 silly addNameRange     '1.0.0',
+468 silly addNameRange     '1.1.0',
+468 silly addNameRange     '1.2.0',
+468 silly addNameRange     '1.1.1',
+468 silly addNameRange     '1.2.1',
+468 silly addNameRange     '1.3.0',
+468 silly addNameRange     '1.4.0',
+468 silly addNameRange     '1.4.1',
+468 silly addNameRange     '1.4.2',
+468 silly addNameRange     '1.5.0',
+468 silly addNameRange     '1.5.1',
+468 silly addNameRange     '1.5.2',
+468 silly addNameRange     '2.0.0-alpha.0',
+468 silly addNameRange     '2.0.0-rc.1',
+468 silly addNameRange     '2.0.0-rc.2',
+468 silly addNameRange     '2.0.0-rc.3' ] ]
+469 silly addNamed async@0.1.22
+470 verbose addNamed "0.1.22" is a plain semver version for async
+471 verbose write writing to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror/package.json
+472 info preinstall verror@1.1.0
+473 verbose readDependencies loading dependencies from /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror/package.json
+474 silly cache afterAdd async@0.1.22
+475 verbose afterAdd /Users/maheswar/.npm/async/0.1.22/package/package.json not in flight; writing
+476 silly prepareForInstallMany adding extsprintf@1.0.0 from verror dependencies
+477 verbose readDependencies loading dependencies from /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror/package.json
+478 verbose afterAdd /Users/maheswar/.npm/async/0.1.22/package/package.json written
+479 silly install resolved [ { name: 'underscore',
+479 silly install resolved     description: 'JavaScript\'s functional programming helper library.',
+479 silly install resolved     homepage: 'http://underscorejs.org',
+479 silly install resolved     keywords: [ 'util', 'functional', 'server', 'client', 'browser' ],
+479 silly install resolved     author: { name: 'Jeremy Ashkenas', email: 'jeremy@documentcloud.org' },
+479 silly install resolved     repository:
+479 silly install resolved      { type: 'git',
+479 silly install resolved        url: 'git://github.com/jashkenas/underscore.git' },
+479 silly install resolved     main: 'underscore.js',
+479 silly install resolved     version: '1.8.3',
+479 silly install resolved     devDependencies:
+479 silly install resolved      { docco: '*',
+479 silly install resolved        eslint: '0.6.x',
+479 silly install resolved        karma: '~0.12.31',
+479 silly install resolved        'karma-qunit': '~0.1.4',
+479 silly install resolved        'qunit-cli': '~0.2.0',
+479 silly install resolved        'uglify-js': '2.4.x' },
+479 silly install resolved     scripts:
+479 silly install resolved      { test: 'npm run test-node && npm run lint',
+479 silly install resolved        lint: 'eslint underscore.js test/*.js',
+479 silly install resolved        'test-node': 'qunit-cli test/*.js',
+479 silly install resolved        'test-browser': 'npm i karma-phantomjs-launcher && ./node_modules/karma/bin/karma start',
+479 silly install resolved        build: 'uglifyjs underscore.js -c "evaluate=false" --comments "/    .*/" -m --source-map underscore-min.map -o underscore-min.js',
+479 silly install resolved        doc: 'docco underscore.js' },
+479 silly install resolved     license: 'MIT',
+479 silly install resolved     files:
+479 silly install resolved      [ 'underscore.js',
+479 silly install resolved        'underscore-min.js',
+479 silly install resolved        'underscore-min.map',
+479 silly install resolved        'LICENSE' ],
+479 silly install resolved     gitHead: 'e4743ab712b8ab42ad4ccb48b155034d02394e4d',
+479 silly install resolved     bugs: { url: 'https://github.com/jashkenas/underscore/issues' },
+479 silly install resolved     _id: 'underscore@1.8.3',
+479 silly install resolved     _shasum: '4f3fb53b106e6097fcf9cb4109f2a5e9bdfa5022',
+479 silly install resolved     _from: 'underscore@*',
+479 silly install resolved     _npmVersion: '1.4.28',
+479 silly install resolved     _npmUser: { name: 'jashkenas', email: 'jashkenas@gmail.com' },
+479 silly install resolved     maintainers: [ [Object] ],
+479 silly install resolved     dist:
+479 silly install resolved      { shasum: '4f3fb53b106e6097fcf9cb4109f2a5e9bdfa5022',
+479 silly install resolved        tarball: 'https://registry.npmjs.org/underscore/-/underscore-1.8.3.tgz' },
+479 silly install resolved     directories: {},
+479 silly install resolved     _resolved: 'https://registry.npmjs.org/underscore/-/underscore-1.8.3.tgz',
+479 silly install resolved     readme: 'ERROR: No README data found!' },
+479 silly install resolved   { name: 'async',
+479 silly install resolved     description: 'Higher-order functions and common patterns for asynchronous code',
+479 silly install resolved     main: './index',
+479 silly install resolved     author: { name: 'Caolan McMahon' },
+479 silly install resolved     version: '0.1.22',
+479 silly install resolved     repository: { type: 'git', url: 'git://github.com/caolan/async.git' },
+479 silly install resolved     bugs: { url: 'http://github.com/caolan/async/issues' },
+479 silly install resolved     licenses: [ [Object] ],
+479 silly install resolved     devDependencies: { nodeunit: '>0.0.0', 'uglify-js': '1.2.x', nodelint: '>0.0.0' },
+479 silly install resolved     _npmUser: { name: 'caolan', email: 'caolan@caolanmcmahon.com' },
+479 silly install resolved     _id: 'async@0.1.22',
+479 silly install resolved     dependencies: {},
+479 silly install resolved     optionalDependencies: {},
+479 silly install resolved     engines: { node: '*' },
+479 silly install resolved     _engineSupported: true,
+479 silly install resolved     _npmVersion: '1.1.21',
+479 silly install resolved     _nodeVersion: 'v0.6.18',
+479 silly install resolved     _defaultsLoaded: true,
+479 silly install resolved     dist:
+479 silly install resolved      { shasum: '0fc1aaa088a0e3ef0ebe2d8831bab0dcf8845061',
+479 silly install resolved        tarball: 'http://registry.npmjs.org/async/-/async-0.1.22.tgz' },
+479 silly install resolved     maintainers: [ [Object] ],
+479 silly install resolved     directories: {},
+479 silly install resolved     _shasum: '0fc1aaa088a0e3ef0ebe2d8831bab0dcf8845061',
+479 silly install resolved     _resolved: 'https://registry.npmjs.org/async/-/async-0.1.22.tgz',
+479 silly install resolved     _from: 'async@>=0.1.18 <0.2.0',
+479 silly install resolved     readme: 'ERROR: No README data found!',
+479 silly install resolved     homepage: 'https://github.com/caolan/async' } ]
+480 info install underscore@1.8.3 into /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper
+481 info install async@0.1.22 into /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper
+482 info installOne underscore@1.8.3
+483 verbose installOne of underscore to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper not in flight; installing
+484 info installOne async@0.1.22
+485 verbose installOne of async to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper not in flight; installing
+486 silly cache add args [ 'extsprintf@1.0.0', null ]
+487 verbose cache add spec extsprintf@1.0.0
+488 silly cache add parsed spec Result {
+488 silly cache add   raw: 'extsprintf@1.0.0',
+488 silly cache add   scope: null,
+488 silly cache add   name: 'extsprintf',
+488 silly cache add   rawSpec: '1.0.0',
+488 silly cache add   spec: '1.0.0',
+488 silly cache add   type: 'version' }
+489 silly addNamed extsprintf@1.0.0
+490 verbose addNamed "1.0.0" is a plain semver version for extsprintf
+491 silly mapToRegistry name extsprintf
+492 silly mapToRegistry using default registry
+493 silly mapToRegistry registry https://registry.npmjs.org/
+494 silly mapToRegistry uri https://registry.npmjs.org/extsprintf
+495 verbose addNameVersion registry:https://registry.npmjs.org/extsprintf not in flight; fetching
+496 verbose lock using /Users/maheswar/.npm/_locks/underscore-c50e25f815c6ac5c.lock for /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/underscore
+497 verbose lock using /Users/maheswar/.npm/_locks/async-33a9baeb4dff55ca.lock for /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/async
+498 silly install write writing underscore 1.8.3 to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/underscore
+499 silly install write writing async 0.1.22 to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/async
+500 verbose unbuild node_modules/zkplus/node_modules/zookeeper/node_modules/underscore
+501 verbose unbuild node_modules/zkplus/node_modules/zookeeper/node_modules/async
+502 silly gentlyRm /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/underscore is being purged from base /Users/maheswar/Documents/Programming/JAMScript
+503 verbose gentlyRm don't care about contents; nuking /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/underscore
+504 silly gentlyRm /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/async is being purged from base /Users/maheswar/Documents/Programming/JAMScript
+505 verbose gentlyRm don't care about contents; nuking /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/async
+506 verbose tar unpack /Users/maheswar/.npm/underscore/1.8.3/package.tgz
+507 verbose tar unpacking to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/underscore
+508 silly gentlyRm /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/underscore is being purged
+509 verbose gentlyRm don't care about contents; nuking /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/underscore
+510 verbose tar unpack /Users/maheswar/.npm/async/0.1.22/package.tgz
+511 verbose tar unpacking to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/async
+512 silly gentlyRm /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/async is being purged
+513 verbose gentlyRm don't care about contents; nuking /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/async
+514 silly gunzTarPerm modes [ '755', '644' ]
+515 silly gunzTarPerm modes [ '755', '644' ]
+516 verbose request uri https://registry.npmjs.org/extsprintf
+517 verbose request no auth needed
+518 info attempt registry request try #1 at 1:26:33 PM
+519 verbose etag "8SZHSWXY2AGI2KX70GQFVOSWW"
+520 http request GET https://registry.npmjs.org/extsprintf
+521 silly gunzTarPerm extractEntry package.json
+522 silly gunzTarPerm extractEntry package.json
+523 silly gunzTarPerm extractEntry README.md
+524 silly gunzTarPerm extractEntry LICENSE
+525 silly gunzTarPerm extractEntry .npmignore
+526 silly gunzTarPerm extractEntry README.md
+527 silly gunzTarPerm extractEntry underscore.js
+528 silly gunzTarPerm extractEntry underscore-min.js
+529 silly gunzTarPerm extractEntry underscore-min.map
+530 silly gunzTarPerm extractEntry LICENSE
+531 silly gunzTarPerm extractEntry index.js
+532 silly gunzTarPerm extractEntry Makefile
+533 silly gunzTarPerm extractEntry lib/async.js
+534 silly gunzTarPerm extractEntry .gitmodules
+535 verbose write writing to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/underscore/package.json
+536 info preinstall underscore@1.8.3
+537 verbose readDependencies loading dependencies from /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/underscore/package.json
+538 verbose write writing to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/async/package.json
+539 verbose readDependencies loading dependencies from /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/underscore/package.json
+540 info preinstall async@0.1.22
+541 silly install resolved []
+542 verbose about to build /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/underscore
+543 info build /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/underscore
+544 verbose readDependencies loading dependencies from /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/async/package.json
+545 info linkStuff underscore@1.8.3
+546 silly linkStuff underscore@1.8.3 has /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules as its parent node_modules
+547 verbose readDependencies loading dependencies from /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/async/package.json
+548 silly install resolved []
+549 verbose about to build /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/async
+550 info build /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/async
+551 verbose linkBins underscore@1.8.3
+552 verbose linkMans underscore@1.8.3
+553 verbose rebuildBundles underscore@1.8.3
+554 info install underscore@1.8.3
+555 info linkStuff async@0.1.22
+556 silly linkStuff async@0.1.22 has /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules as its parent node_modules
+557 info postinstall underscore@1.8.3
+558 verbose unlock done using /Users/maheswar/.npm/_locks/underscore-c50e25f815c6ac5c.lock for /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/underscore
+559 verbose linkBins async@0.1.22
+560 verbose linkMans async@0.1.22
+561 verbose rebuildBundles async@0.1.22
+562 info install async@0.1.22
+563 info postinstall async@0.1.22
+564 verbose unlock done using /Users/maheswar/.npm/_locks/async-33a9baeb4dff55ca.lock for /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper/node_modules/async
+565 verbose about to build /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper
+566 info build /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper
+567 info linkStuff zookeeper@3.4.4
+568 silly linkStuff zookeeper@3.4.4 has /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules as its parent node_modules
+569 verbose linkBins zookeeper@3.4.4
+570 verbose linkMans zookeeper@3.4.4
+571 verbose rebuildBundles zookeeper@3.4.4
+572 verbose rebuildBundles [ 'async', 'underscore' ]
+573 info install zookeeper@3.4.4
+574 verbose unsafe-perm in lifecycle false
+575 http 304 https://registry.npmjs.org/extsprintf
+576 verbose headers { date: 'Sun, 01 May 2016 17:26:33 GMT',
+576 verbose headers   via: '1.1 varnish',
+576 verbose headers   'cache-control': 'max-age=300',
+576 verbose headers   etag: '"8SZHSWXY2AGI2KX70GQFVOSWW"',
+576 verbose headers   age: '6',
+576 verbose headers   connection: 'keep-alive',
+576 verbose headers   'x-served-by': 'cache-iad2123-IAD',
+576 verbose headers   'x-cache': 'HIT',
+576 verbose headers   'x-cache-hits': '1',
+576 verbose headers   'x-timer': 'S1462123593.966749,VS0,VE0',
+576 verbose headers   vary: 'Accept-Encoding' }
+577 silly get cb [ 304,
+577 silly get   { date: 'Sun, 01 May 2016 17:26:33 GMT',
+577 silly get     via: '1.1 varnish',
+577 silly get     'cache-control': 'max-age=300',
+577 silly get     etag: '"8SZHSWXY2AGI2KX70GQFVOSWW"',
+577 silly get     age: '6',
+577 silly get     connection: 'keep-alive',
+577 silly get     'x-served-by': 'cache-iad2123-IAD',
+577 silly get     'x-cache': 'HIT',
+577 silly get     'x-cache-hits': '1',
+577 silly get     'x-timer': 'S1462123593.966749,VS0,VE0',
+577 silly get     vary: 'Accept-Encoding' } ]
+578 verbose etag https://registry.npmjs.org/extsprintf from cache
+579 verbose get saving extsprintf to /Users/maheswar/.npm/registry.npmjs.org/extsprintf/.cache.json
+580 silly cache afterAdd extsprintf@1.0.0
+581 verbose afterAdd /Users/maheswar/.npm/extsprintf/1.0.0/package/package.json not in flight; writing
+582 verbose afterAdd /Users/maheswar/.npm/extsprintf/1.0.0/package/package.json written
+583 silly install resolved [ { name: 'extsprintf',
+583 silly install resolved     version: '1.0.0',
+583 silly install resolved     description: 'extended POSIX-style sprintf',
+583 silly install resolved     main: './lib/extsprintf.js',
+583 silly install resolved     repository:
+583 silly install resolved      { type: 'git',
+583 silly install resolved        url: 'git://github.com/davepacheco/node-extsprintf.git' },
+583 silly install resolved     engines: [ 'node >=0.6.0' ],
+583 silly install resolved     _npmUser: { name: 'dap', email: 'dap@cs.brown.edu' },
+583 silly install resolved     _id: 'extsprintf@1.0.0',
+583 silly install resolved     dependencies: {},
+583 silly install resolved     devDependencies: {},
+583 silly install resolved     optionalDependencies: {},
+583 silly install resolved     _engineSupported: true,
+583 silly install resolved     _npmVersion: '1.1.4',
+583 silly install resolved     _nodeVersion: 'v0.6.12',
+583 silly install resolved     _defaultsLoaded: true,
+583 silly install resolved     dist:
+583 silly install resolved      { shasum: '4d58b815ace5bebfc4ebf03cf98b0a7604a99b86',
+583 silly install resolved        tarball: 'http://registry.npmjs.org/extsprintf/-/extsprintf-1.0.0.tgz' },
+583 silly install resolved     maintainers: [ [Object] ],
+583 silly install resolved     directories: {},
+583 silly install resolved     _shasum: '4d58b815ace5bebfc4ebf03cf98b0a7604a99b86',
+583 silly install resolved     _resolved: 'https://registry.npmjs.org/extsprintf/-/extsprintf-1.0.0.tgz',
+583 silly install resolved     _from: 'extsprintf@1.0.0',
+583 silly install resolved     bugs: { url: 'https://github.com/davepacheco/node-extsprintf/issues' },
+583 silly install resolved     readme: 'ERROR: No README data found!',
+583 silly install resolved     homepage: 'https://github.com/davepacheco/node-extsprintf' } ]
+584 info install extsprintf@1.0.0 into /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror
+585 info installOne extsprintf@1.0.0
+586 verbose installOne of extsprintf to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror not in flight; installing
+587 verbose lock using /Users/maheswar/.npm/_locks/extsprintf-3b2143a8c509007f.lock for /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror/node_modules/extsprintf
+588 silly install write writing extsprintf 1.0.0 to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror/node_modules/extsprintf
+589 verbose unbuild node_modules/zkplus/node_modules/vasync/node_modules/verror/node_modules/extsprintf
+590 silly gentlyRm /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror/node_modules/extsprintf is being purged from base /Users/maheswar/Documents/Programming/JAMScript
+591 verbose gentlyRm don't care about contents; nuking /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror/node_modules/extsprintf
+592 verbose tar unpack /Users/maheswar/.npm/extsprintf/1.0.0/package.tgz
+593 verbose tar unpacking to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror/node_modules/extsprintf
+594 silly gentlyRm /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror/node_modules/extsprintf is being purged
+595 verbose gentlyRm don't care about contents; nuking /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror/node_modules/extsprintf
+596 silly gunzTarPerm modes [ '755', '644' ]
+597 silly gunzTarPerm extractEntry Makefile
+598 silly gunzTarPerm extractEntry README.md
+599 silly gunzTarPerm extractEntry .gitmodules
+600 silly gunzTarPerm extractEntry lib/
+601 silly gunzTarPerm extractEntry lib/extsprintf.js
+602 silly gunzTarPerm extractEntry jsl.node.conf
+603 silly gunzTarPerm extractEntry package.json
+604 silly gunzTarPerm extractEntry examples/
+605 silly gunzTarPerm extractEntry examples/simple.js
+606 silly gunzTarPerm extractEntry Makefile.targ
+607 silly gunzTarPerm extractEntry Makefile.deps
+608 silly gunzTarPerm extractEntry LICENSE
+609 verbose write writing to /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror/node_modules/extsprintf/package.json
+610 info preinstall extsprintf@1.0.0
+611 verbose readDependencies loading dependencies from /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror/node_modules/extsprintf/package.json
+612 verbose readDependencies loading dependencies from /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror/node_modules/extsprintf/package.json
+613 silly install resolved []
+614 verbose about to build /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror/node_modules/extsprintf
+615 info build /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror/node_modules/extsprintf
+616 info linkStuff extsprintf@1.0.0
+617 silly linkStuff extsprintf@1.0.0 has /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror/node_modules as its parent node_modules
+618 verbose linkBins extsprintf@1.0.0
+619 verbose linkMans extsprintf@1.0.0
+620 verbose rebuildBundles extsprintf@1.0.0
+621 info install extsprintf@1.0.0
+622 info postinstall extsprintf@1.0.0
+623 verbose unlock done using /Users/maheswar/.npm/_locks/extsprintf-3b2143a8c509007f.lock for /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror/node_modules/extsprintf
+624 verbose about to build /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror
+625 info build /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror
+626 info linkStuff verror@1.1.0
+627 silly linkStuff verror@1.1.0 has /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules as its parent node_modules
+628 verbose linkBins verror@1.1.0
+629 verbose linkMans verror@1.1.0
+630 verbose rebuildBundles verror@1.1.0
+631 verbose rebuildBundles [ 'extsprintf' ]
+632 info install verror@1.1.0
+633 info postinstall verror@1.1.0
+634 verbose unlock done using /Users/maheswar/.npm/_locks/verror-11adc75e40b5f34f.lock for /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync/node_modules/verror
+635 verbose about to build /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync
+636 info build /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync
+637 info linkStuff vasync@1.3.1
+638 silly linkStuff vasync@1.3.1 has /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules as its parent node_modules
+639 verbose linkBins vasync@1.3.1
+640 verbose linkMans vasync@1.3.1
+641 verbose rebuildBundles vasync@1.3.1
+642 verbose rebuildBundles [ 'verror' ]
+643 info install vasync@1.3.1
+644 info postinstall vasync@1.3.1
+645 verbose unlock done using /Users/maheswar/.npm/_locks/vasync-98616e4cfbeaccfa.lock for /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/vasync
+646 info zookeeper@3.4.4 Failed to exec install script
+647 verbose unlock done using /Users/maheswar/.npm/_locks/zookeeper-dea2d22951996148.lock for /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper
+648 verbose about to build /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus
+649 verbose unlock done using /Users/maheswar/.npm/_locks/zkplus-d30b7cf1fb03a44a.lock for /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus
+650 verbose stack Error: zookeeper@3.4.4 install: `node-gyp rebuild`
+650 verbose stack Exit status 1
+650 verbose stack     at EventEmitter.<anonymous> (/usr/local/lib/node_modules/npm/lib/utils/lifecycle.js:214:16)
+650 verbose stack     at emitTwo (events.js:87:13)
+650 verbose stack     at EventEmitter.emit (events.js:172:7)
+650 verbose stack     at ChildProcess.<anonymous> (/usr/local/lib/node_modules/npm/lib/utils/spawn.js:24:14)
+650 verbose stack     at emitTwo (events.js:87:13)
+650 verbose stack     at ChildProcess.emit (events.js:172:7)
+650 verbose stack     at maybeClose (internal/child_process.js:818:16)
+650 verbose stack     at Process.ChildProcess._handle.onexit (internal/child_process.js:211:5)
+651 verbose pkgid zookeeper@3.4.4
+652 verbose cwd /Users/maheswar/Documents/Programming/JAMScript/deps/libtask
+653 error Darwin 15.4.0
+654 error argv "/usr/local/bin/node" "/usr/local/bin/npm" "install" "zkplus"
+655 error node v4.2.2
+656 error npm  v2.14.7
+657 error code ELIFECYCLE
+658 error zookeeper@3.4.4 install: `node-gyp rebuild`
+658 error Exit status 1
+659 error Failed at the zookeeper@3.4.4 install script 'node-gyp rebuild'.
+659 error This is most likely a problem with the zookeeper package,
+659 error not with npm itself.
+659 error Tell the author that this fails on your system:
+659 error     node-gyp rebuild
+659 error You can get their info via:
+659 error     npm owner ls zookeeper
+659 error There is likely additional logging output above.
+660 verbose exit [ 1, true ]
+661 verbose unbuild node_modules/zkplus/node_modules/zookeeper
+662 info preuninstall zookeeper@3.4.4
+663 info uninstall zookeeper@3.4.4
+664 verbose unbuild rmStuff zookeeper@3.4.4 from /Users/maheswar/Documents/Programming/JAMScript/node_modules
+665 verbose unbuild rmStuff in /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules
+666 info postuninstall zookeeper@3.4.4
+667 silly gentlyRm /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper is being purged from base /Users/maheswar/Documents/Programming/JAMScript
+668 verbose gentlyRm don't care about contents; nuking /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper
+669 silly vacuum-fs purging /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules/zookeeper
+670 silly vacuum-fs quitting because other entries in /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus/node_modules
+671 verbose unbuild node_modules/zkplus
+672 info preuninstall zkplus@0.2.2
+673 info uninstall zkplus@0.2.2
+674 verbose unbuild rmStuff zkplus@0.2.2 from /Users/maheswar/Documents/Programming/JAMScript/node_modules
+675 info postuninstall zkplus@0.2.2
+676 silly gentlyRm /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus is being purged from base /Users/maheswar/Documents/Programming/JAMScript
+677 verbose gentlyRm don't care about contents; nuking /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus
+678 silly vacuum-fs purging /Users/maheswar/Documents/Programming/JAMScript/node_modules/zkplus
+679 silly vacuum-fs quitting because other entries in /Users/maheswar/Documents/Programming/JAMScript/node_modules

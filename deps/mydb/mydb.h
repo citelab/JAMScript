@@ -38,27 +38,35 @@ typedef struct _mydbiter
 
 
 /*
- * Function prototypes..
+ * Function prototypes for the simple key value store. This is good for implementing
+ * persistence at the C-core for certain configuration data.
  */
 
-int get_free_record(mydb_t *db);
-bool rebuild_free_list(mydb_t *db);
-void add_free_records(mydb_t *db, int *from);
-void add_to_freelist(mydb_t *db, int rec);
-bool check_zero_key(mydb_t *db, void *key);
-bool check_equal_key(mydb_t *db, void *ckey, void *rkey);
-bool check_equal_data(mydb_t *db, void *cdata, void *rdata);
+// Open an existing database with the given name.. returns NULL if such a database
+// does not exist or is unable to open for some reason
+mydb_t *open_database(char *filename);
 
-int search_database(mydb_t *db, void *rkey);
-int mywrite(int fd, void *data, int datalen, int offset);
-int myread(int fd, void *data, int datalen, int offset);
+// Close the given database
+void close_database(mydb_t *db);
 
+// Create a new database with the given filename, key length, and data length
+mydb_t *create_database(char *filename, int keylen, int datalen);
+
+// Put records into the key-value store. This is the synchronous method where the
+// record is inserted (flushed) in the method to ensure durability
+bool database_put_sync(mydb_t *mydb, void *key, void *data);
+
+// Same as previous one without flushing. Less durable but more performant
 bool database_put(mydb_t *mydb, void *key, void *data);
+
+// Get the record. The data should be allocated with memory before calling this method.
 bool database_get(mydb_t *mydb, void *key, void *data);
+
+// Delete the record if it there. Returns true if the record could be deleted.
+// Note that there is only one matching record
 bool database_del(mydb_t *mydb, void *key);
 
-mydb_t *open_database(char *filename, int keylen, int datalen);
-void close_database(mydb_t *db);
+// Get an iterator to the database
 mydbiter_t *get_iterator(mydb_t *db);
 void destroy_iterator(mydbiter_t *dbi);
 bool get_next_record(mydbiter_t *dbi, char *key, void *data);

@@ -93,16 +93,24 @@ try {
     console.log(output);
   }
 
+  // fs.writeFileSync("/usr/local/share/jam/lib/jamlib/c_core/jamlib.c", output.C);
+  // child_process.execSync("make -C /usr/local/share/jam/lib/jamlib/c_core");
+  // fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/testjam').pipe(fs.createWriteStream('jamout'));
+  // fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/jamconf.dat').pipe(fs.createWriteStream('jamconf.dat'));
+  fs.writeFileSync("jamout.js", "var jlib = require('./jamlib');\n" + output.JS);
+  fs.writeFileSync("jamout.c", output.C);
+
   if(!noCompile) {
     flowCheck(output.annotated_JS)
   	fs.mkdirSync(tmpDir);
     fs.writeFileSync(`${tmpDir}/jamout.c`, output.C);
-    child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
-    createZip(createTOML(), output.JS, tmpDir, outputName);
+    child_process.execSync(`gcc -Wno-incompatible-library-redeclaration ${tmpDir}/jamout.c -I./lib/jamlib/c_core -lcbor -lnanomsg /usr/local/share/jam/lib/jamlib/c_core/libtask.a /usr/local/share/jam/lib/jamlib/c_core/libjam.a`);
+    // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
+    // createZip(createTOML(), output.JS, tmpDir, outputName);
     
-    if(!debug) {
-      deleteFolderRecursive(tmpDir);
-    }
+    // if(!debug) {
+    //   deleteFolderRecursive(tmpDir);
+    // }
   }
 } catch(e) {
     console.log("ERROR:");
@@ -116,8 +124,12 @@ function printAndExit(output) {
 
 function preprocess(file) {
   var contents = fs.readFileSync(file);
-  contents = '#include "/usr/local/share/jam/lib/jamlib/jamlib.h"\n' + contents;
-  return child_process.execSync("tcc -E -P -w -", {input: contents}).toString();
+  contents = 'jamstate_t *js;\n' + contents;
+  contents = 'typedef char* jcallback;\n' + contents;
+  contents = '#include "jam.h"\n' + contents;
+  contents = '#include "command.h"\n' + contents;
+  
+  return child_process.execSync("tcc -E -P -w -I/usr/local/share/jam/lib/jamlib/c_core -", {input: contents}).toString();
   // return child_process.execSync(`${cc} -E -P -std=iso9899:199409 ${file}`).toString();
 
 }
@@ -141,7 +153,7 @@ function flowCheck(input) {
 function createZip(toml, jsout, tmpDir, outputName) {
   var zip = new JSZip();
   zip.file("MANIFEST.tml", toml);
-  zip.file("jamout.js", jsout);
+  zip.file("jamout.js", fs.readFileSync('/usr/local/share/jam/lib/jserver/jserver-clean.js') + jsout);
   zip.file("libjamout.so", fs.readFileSync(`${tmpDir}/libjamout.so`));
   fs.writeFileSync(`${outputName}.jxe`, zip.generate({type:"nodebuffer"}));
 }

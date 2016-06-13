@@ -1,4 +1,4 @@
-#include "../../lib/jamlib/jamlib.h"
+#include "../../lib/jamlib/jam.h"
 #include <stdio.h>
 #include <stdlib.h>
 

@@ -437,7 +437,11 @@ int jxe_load_js_file(jxe_file *j)
       printf("Failed to find the file name TOML values of jxe... \n Exiting ... \n");
       return -1;
     }
+<<<<<<< HEAD
     snprintf(execute, 512, "node /usr/local/share/jam/lib/server/server.js %s/%s\n", j->path, j->potential_dir_name);
+=======
+    snprintf(execute, 512, "node %s/%s\n", j->path, j->potential_dir_name);
+>>>>>>> may-syntax
     printf("Executing jsfile: %s...\n", file->val.sval);
     system(execute);
     return 0;

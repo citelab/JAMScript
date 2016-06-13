@@ -52,6 +52,9 @@ ometa ES5Pretty <: JsonMLWalker {
 
   EmptyStmt       :n                                                                     -> '',
 
+  JCallbackStmt   :n = walk*:args                                                       -> join('jlib.JServer.remoteSyncExec("', n.name(), '", [', args.join(', '), '], "true")'),
+  // join('jam_rexec_sync(js, "', n.name(), '", "s", ', args.join(', '), ')'),
+
   IfStmt          :n = walk:c assure_block:t ( assure_block:f                            -> join('if(', c, ') ', t, ' else ', f)
                                              | (undefined | empty)                       -> join('if(', c, ') ', t)
                                              ),
@@ -121,7 +124,7 @@ ometa ES5Pretty <: JsonMLWalker {
 
   NewExpr         :n = walk:cls                                                          -> join('new ', cls),
 
-  CallExpr        :n = walk:e walk*:args                                                 -> join(e, '(', args.join(', '), ')'),
+  CallExpr        :n = walk:e walk*:args                                                 -> { module.exports.calls.push(e); join(e, '(', args.join(', '), ')');},
 
   MemberExpr      :n = ?n.is('access', 'name') walk:e                                    -> join(e, '.', n.name())
                      | walk:e walk:ae                                                    -> join(e, '[', ae, ']'),
@@ -176,3 +179,4 @@ ES5Pretty.translate = function(input) {
 };
 
 module.exports = ES5Pretty;
+module.exports.calls = [];
