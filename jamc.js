@@ -97,11 +97,16 @@ try {
   // child_process.execSync("make -C /usr/local/share/jam/lib/jamlib/c_core");
   // fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/testjam').pipe(fs.createWriteStream('jamout'));
   // fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/jamconf.dat').pipe(fs.createWriteStream('jamconf.dat'));
-  fs.writeFileSync("jamout.js", "var jlib = require('./jamlib');\n" + output.JS);
+  var requires = '';
+  requires += "var jlib = require('./jamlib');\n";
+  requires += "var async = require('asyncawait/async');\n";
+  requires += "var await = require('asyncawait/await');\n";
+
+  fs.writeFileSync("jamout.js", requires + output.JS);
   fs.writeFileSync("jamout.c", output.C);
 
   if(!noCompile) {
-    flowCheck(output.annotated_JS)
+    // flowCheck(output.annotated_JS)
   	fs.mkdirSync(tmpDir);
     fs.writeFileSync(`${tmpDir}/jamout.c`, output.C);
     child_process.execSync(`gcc -Wno-incompatible-library-redeclaration ${tmpDir}/jamout.c -I./lib/jamlib/c_core -lcbor -lnanomsg /usr/local/share/jam/lib/jamlib/c_core/libtask.a /usr/local/share/jam/lib/jamlib/c_core/libjam.a`);
