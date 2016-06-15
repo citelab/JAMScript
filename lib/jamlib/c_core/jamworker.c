@@ -170,9 +170,13 @@ void jwork_process_reqsock(jamstate_t *js)
     // the reply to the appropriate destination
     //
     // TODO: What about the timeout value.. it could be inconsequential
+    #ifdef DEBUG_LVL1
     printf("----- In request sock.......... \n");
+    #endif
     command_t *rcmd = socket_recv_command(js->cstate->reqsock, 5000);
+    #ifdef DEBUG_LVL1
     printf("Command %s, %s\n", rcmd->cmd, rcmd->actname);
+    #endif
     if (rcmd != NULL)
     {
         if (strcmp(rcmd->actname, "EVENTLOOP") == 0)
@@ -186,15 +190,20 @@ void jwork_process_reqsock(jamstate_t *js)
         if (strcmp(rcmd->actname, "ACTIVITY") == 0)
         {
             jactivity_t *jact = activity_getbyid(js->atable, rcmd->actid);
+            #ifdef DEBUG_LVL1
             printf("Activity Detected ........\n");
+            #endif
             // Send it to the activity and unblock the activity
             queue_enq(jact->inq, rcmd, sizeof(command_t));
             thread_signal(jact->sem);
         }
         else if (strcmp(rcmd->actname, "PINGER") == 0)
         {
-            if (strcmp(rcmd->cmd, "PONG") == 0)
+            if (strcmp(rcmd->cmd, "PONG") == 0){
+                #ifdef DEBUG_LVL1
                 printf("Reply received for ping..\n");
+                #endif
+              }
             command_free(rcmd);
         }
     }
@@ -209,9 +218,11 @@ void jwork_process_subsock(jamstate_t *js)
     // Data is available in the socket..  so timeout value
     // does not make much difference!
     //
+    #ifdef DEBUG_LVL1
     printf("===================== In subsock processing...\n");
+    #endif
     command_t *rcmd = socket_recv_command(js->cstate->subsock, 100);
-    printf("Command %s, actid %s.. actname %s\n", rcmd->cmd, rcmd->actid, rcmd->actname);
+    //printf("Command %s, actid %s.. actname %s\n", rcmd->cmd, rcmd->actid, rcmd->actname);
 
     if (rcmd != NULL)
     {
@@ -297,12 +308,13 @@ void jwork_process_globaloutq(jamstate_t *js)
 
     if (rcmd != NULL)
     {
+        #ifdef DEBUG_LVL1
         printf("Processing cmd: from GlobalOutQ.. ..\n");
-
+        #endif
         // Many commands are in the output queue of the main thread
         if (strcmp(rcmd->opt, "LOCAL") == 0)
         {
-            printf("Processing........... %s \n", rcmd->cmd);
+            //printf("Processing........... %s \n", rcmd->cmd);
 
             if (strcmp(rcmd->cmd, "COMPL-ACT") == 0)
             {
@@ -340,7 +352,7 @@ void jwork_process_globaloutq(jamstate_t *js)
 
 void jwork_process_actoutq(jamstate_t *js, int indx)
 {
-    printf("Indx %d\n", indx);
+    //printf("Indx %d\n", indx);
 
     nvoid_t *nv = queue_deq(js->atable->activities[indx]->outq);
     if (nv == NULL) return;
@@ -377,12 +389,16 @@ void tcallback(void *arg)
 {
     jactivity_t *jact = (jactivity_t *)arg;
 
+    #ifdef DEBUG_LVL1
     printf("Callback.... \n");
+    #endif
     // stick the "TIMEOUT" message into the queue for the activity
     command_t *tmsg = command_new("TIMEOUT", "__", "ACTIVITY", jact->actid, "__", "");
     queue_enq(jact->inq, tmsg, sizeof(command_t));
     // do a signal on the thread semaphore for the activity
+    #ifdef DEBUG_LVL1
     printf("Callback Occuring... \n");
+    #endif
     thread_signal(jact->sem);
 }
 

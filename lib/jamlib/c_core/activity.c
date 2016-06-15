@@ -176,16 +176,21 @@ jactivity_t *activity_new(activitytable_t *at, char *name)
     // Setup the I/O queues
     jact->inq = queue_new(true);
     jact->outq = queue_new(true);
+    #ifdef DEBUG_LVL1
     printf("Pointer of new activity %p\n", jact);
-
+    #endif
     at->activities[at->numshadowacts++] = jact;
 
+    #ifdef DEBUG_LVL1
     printf("Creating the message... \n");
+    #endif
     // Send a message to the background so it starts watching for messages
     command_t *cmd = command_new("INCREASE-FDS", "LOCAL", name, jact->actid, jact->actarg, "i", at->numshadowacts);
     //command_free(cmd);
+    #ifdef DEBUG_LVL1
     printf("Sending it.. \n");
-
+    #endif
+    
     queue_enq(at->globaloutq, cmd, sizeof(command_t));
 
     #ifdef DEBUG_LVL1

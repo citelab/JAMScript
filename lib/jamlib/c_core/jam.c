@@ -80,7 +80,7 @@ jamstate_t *jam_init()
         perror("ERROR! Unable to start the jamworker thread");
         exit(1);
     }
-    printf("\n\n--------------PLEASE WORK---------------\n\n");
+    //printf("\n\n--------------PLEASE WORK---------------\n\n");
     task_wait(js->bgsem);
     #ifdef DEBUG_LVL1
         printf("\n ------------------------Done.-------------------------\n");
@@ -115,15 +115,20 @@ void jam_event_loop(void *arg)
             areg = activity_findcallback(js->atable, cmd->actname, cmd->opt);
             if (areg == NULL)
             {
+
                 printf("Function not found.. %s\n", cmd->actname);
             }
             else
             {
+                #ifdef DEBUG_LVL1
                 printf("Command actname = %s\n", cmd->actname);
+                #endif
 
                 tr = jam_newtemprecord(js, cmd, areg);
                 taskcreate(jrun_run_task, tr, STACKSIZE);
+                #ifdef DEBUG_LVL1
                 printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
+                #endif
             }
         }
         taskyield();

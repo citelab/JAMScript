@@ -9,6 +9,7 @@
 #define NUM_MSG 20
 
 int ID = 0;
+int current_msg_id = -1;
 
 struct pollfd qpollfds[2];
 
@@ -38,14 +39,13 @@ void jam_run_app(void *arg)
     qpollfds[0].events = POLLIN;
 
     while(1){
-        buf = NULL;
+      buf = NULL;
       int numfds = poll(qpollfds, 1, 500);
 
       if (qpollfds[0].revents & POLLIN)
         {
-          printf("\n\n\n%s: ", usr_name);
           getline(&buf, &len, stdin);
-          printf("\nYour input: %s\n", buf);
+          printf("%s: %s", usr_name, buf);
           jam_rexec_async(js, "j_node_get_msg", "ssi" , usr_name, buf, ID);
         }
       taskyield();
@@ -59,21 +59,21 @@ void jam_run_app(void *arg)
 
 
 
-void c_node_get_msg(char * usr_name, char * msg, int msg_id){
-    if(msg_id != ID){
-      printf("\n----------------You have received a Message-------------------\n");
-      printf("%s:%s", usr_name, msg);
+void c_node_get_msg(char * usr_name, char * msg, int usr_id, int msg_id){
+    if(usr_id != ID){
+      if(current_msg_id != msg_id){
+        //printf("----------------You have received a Message-------------------\n");
+        printf("%s:%s", usr_name, msg);
+        current_msg_id = msg_id;
+      }
     }
 }
 
 
 void callc_node_get_msg(void *act, void *arg)
 {
-    printf("\n\n----------------------------------------------\n");
     command_t *cmd = (command_t *)arg;
-    c_node_get_msg(cmd->args[0].val.sval, cmd->args[1].val.sval, cmd->args[2].val.ival);
-    printf("\n------------------------------------------------\n\n");
-    //command_free(cmd);
+    c_node_get_msg(cmd->args[0].val.sval, cmd->args[1].val.sval, cmd->args[2].val.ival, cmd->args[3].val.ival);
 }
 
 
@@ -87,7 +87,7 @@ void taskmain(int argc, char **argv)
 
     // create the application runner
     taskcreate(jam_run_app, js, STACKSIZE);
-    activity_regcallback(js->atable, "c_node_get_msg", ASYNC, "ssi", callc_node_get_msg);
+    activity_regcallback(js->atable, "c_node_get_msg", ASYNC, "ssii", callc_node_get_msg);
 
     printf("Commencing JAM operation \n");
 }

@@ -56,31 +56,38 @@ void jrun_run_task(void *arg)
     jact->actarg = strdup(cmd->actid);
     jact->taskid = taskid();
 
+    #ifdef DEBUG_LVL1
     printf("Sending the ready..........................\n");
+    #endif
     // Send the ready...
     if (creg->type == ASYNC)
         rcmd = command_new("REXEC-RDY", "ASY", cmd->actname, jact->actid, cmd->actid, "s", "__");
     else
         rcmd = command_new("REXEC-RDY", "SYN", cmd->actname, jact->actid, cmd->actid, "s", "__");
 
+    #ifdef DEBUG_LVL1
     printf("----Waitnnnn..........................\n");
+    #endif
 
     // Wait for the start or quit and act accordingly...
     queue_enq(jact->outq, rcmd, sizeof(command_t));
     task_wait(jact->sem);
+
+    #ifdef DEBUG_LVL1
     printf("----Waitnnnn..........................\n");
+    #endif
 
     nvoid_t *nv = queue_deq(jact->inq);
     assert (nv != NULL);
     rcmd = (command_t *)nv->data;
     free(nv);
-    printf("What %s\n", rcmd->cmd);
     if (rcmd != NULL)
     {
         if (strcmp(rcmd->cmd, "REXEC-STA") == 0)
         {
+            #ifdef DEBUG_LVL1
             printf("Starting the function.........................\n");
-
+            #endif
             creg->cback(jact, cmd);
         }
         command_free(rcmd);
