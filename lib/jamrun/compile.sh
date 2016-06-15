@@ -20,7 +20,7 @@ case $OS in
     ;;
   'Darwin') 
     OS='Mac'
-    CC="clang Wall -g"
+    CC="clang -Wall -g"
     LDFLAGS="-D__APPLE__ -I/usr/local/share/jam/lib/jamlib/c_core -lcbor -lnanomsg -ljam -ltask"
     ;;
   'SunOS')
