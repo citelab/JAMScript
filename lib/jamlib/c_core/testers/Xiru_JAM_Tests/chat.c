@@ -1,6 +1,7 @@
 #include "jam.h"
 #include "command.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "task.h"
 #include <poll.h>
@@ -42,9 +43,9 @@ void jam_run_app(void *arg)
 
       if (qpollfds[0].revents & POLLIN)
         {
-          printf("\n\n\n%s: ", usr_name);            
+          printf("\n\n\n%s: ", usr_name);
           getline(&buf, &len, stdin);
-          printf("Your input: %s\n", buf);
+          printf("\nYour input: %s\n", buf);
           jam_rexec_async(js, "j_node_get_msg", "ssi" , usr_name, buf, ID);
         }
       taskyield();
@@ -59,9 +60,10 @@ void jam_run_app(void *arg)
 
 
 void c_node_get_msg(char * usr_name, char * msg, int msg_id){
-    printf("\n----------------You have received a Message-------------------\n");
-    //if(msg_id != ID)
+    if(msg_id != ID){
+      printf("\n----------------You have received a Message-------------------\n");
       printf("%s:%s", usr_name, msg);
+    }
 }
 
 
