@@ -6,6 +6,18 @@ echo "Installing nodejs dependencies..."
 cp "jamc" "/usr/local/bin"
 # cp "lib/jamrun/jamrun" "/usr/local/bin"
 
+make clean -C ./deps/libtaskj
+make -C ./deps/libtaskj
+make install -C ./deps/libtaskj
+
+make clean -C ./lib/jamlib/c_core
+make -C ./lib/jamlib/c_core
+
+cp "./lib/jamlib/c_core/jam.h" "/usr/local/include"
+cp "./lib/jamlib/c_core/libjam.a" "/usr/local/lib"
+
+echo "Copying backup files.... "
+
 mkdir -p "/usr/local/share/jam"
 cp -r "deps" "/usr/local/share/jam/"
 cp "jamc.js" "/usr/local/share/jam/"
@@ -16,3 +28,5 @@ cp -r "lib/jserver" "/usr/local/share/jam/lib/"
 cp "LICENSE" "/usr/local/share/jam/"
 cp -r "node_modules" "/usr/local/share/jam/"
 cp "utils.js" "/usr/local/share/jam/"
+
+echo "Success...."
