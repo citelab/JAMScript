@@ -58,7 +58,7 @@ void alive(char *device){
         jam_rexec_async(js, "report_device", "ss",device_id, "All Good");
         status = 0;
       }else{
-        printf("This device is not responding... \n");
+        printf("Device %s is not responding... \n", device_id);
         status = 1;
       }
 }
@@ -74,7 +74,7 @@ void workasync(char * device_list){
   printf("Device_list: %s\n", device_list);
   if(strstr(device_list, device_id)){
     if(status){
-      printf("\n--------This device is not responding... ---------\n\n");
+      printf("\n--------Device %s is not responding... ---------\n\n", device_id);
     }else{
       printf("\n----------------------------------\nDevice %s is doing work\n------------------------------\n\n", device_id);
       jam_rexec_async(js, "report_device_work", "ss",device_id, "Work is finished");
@@ -92,7 +92,7 @@ void worksync(char * device_list){
   printf("Device_list: %s\n", device_list);
   if(strstr(device_list, device_id)){
     if(status){
-      printf("\n--------This device is not responding... ---------\n\n");
+      printf("\n--------Device %s is not responding... ---------\n\n", device_id);
     }else{
       printf("\n----------------------------------\nDevice %s is doing work\n------------------------------\n\n", device_id);
     }

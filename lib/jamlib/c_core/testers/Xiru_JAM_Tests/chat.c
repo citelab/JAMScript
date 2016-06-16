@@ -5,7 +5,6 @@
 #include <string.h>
 #include "task.h"
 #include <poll.h>
-#include "jam_time.h"
 
 #define NUM_MSG 20
 
@@ -44,7 +43,7 @@ void jam_run_app(void *arg)
 
       if (qpollfds[0].revents & POLLIN)
         {
-          jam_start_timer();
+          //jam_start_timer();
           getline(&buf, &len, stdin);
           printf("%s: %s", usr_name, buf);
           jam_rexec_async(js, "j_node_get_msg", "ssi" , usr_name, buf, ID);
@@ -68,7 +67,7 @@ void c_node_get_msg(char * usr_name, char * msg, int usr_id, int msg_id){
         current_msg_id = msg_id;
       }
     }
-    jam_end_timer();
+    //jam_end_timer();
 }
 
 
