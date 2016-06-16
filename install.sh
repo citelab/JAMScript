@@ -6,12 +6,12 @@ echo "Installing nodejs dependencies..."
 cp "jamc" "/usr/local/bin"
 # cp "lib/jamrun/jamrun" "/usr/local/bin"
 
-make clean -C ./deps/libtaskj
-make -C ./deps/libtaskj
-make install -C ./deps/libtaskj
+# make clean -C ./deps/libtask
+# make -C ./deps/libtask
+# make install -C ./deps/libtask
 
-make clean -C ./lib/jamlib/c_core
-make -C ./lib/jamlib/c_core
+# make clean -C ./lib/jamlib/c_core
+# make -C ./lib/jamlib/c_core
 
 cp "./lib/jamlib/c_core/jam.h" "/usr/local/include"
 cp "./lib/jamlib/c_core/libjam.a" "/usr/local/lib"
