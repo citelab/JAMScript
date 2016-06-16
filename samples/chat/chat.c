@@ -8,16 +8,16 @@ jsync int setup() {
   var a;
   ID = 1;
   msg_list = ["Chat Service Initiated... ", "Hope this works ... "];
-  return 1;
+  return 0;
 }
 
 jsync char * get_past_msg(int num_msg){
   var begin = 0;
   var end = num_msg;
   var ret = "";
-  if(num_msg > msg_list.length){
+  if(num_msg > msg_list.length) {
     begin = msg_list.length - num_msg;
-  }else{
+  } else {
     end = 0;
   }
   ret += msg_list.slice(begin, end).join("\n");
@@ -52,13 +52,13 @@ int main() {
     char * res;
     char * usr_name;
     int numfds;
-    
+
     setup();
     printf("Enter your desired username: ");
     getline(&buf, &len, stdin);
     id = get_new_id("GET_ID");
     printf("Currently ID :%d\n", id);
-    res = get_past_msg(20);
+    res = get_past_msg(NUM_MSG);
     printf("\n\n-----------------BEGIN--------------------\n\n");
     printf("Client Service Initiated ...  \n%s\n", res);
     usr_name = strdup(buf);
@@ -73,13 +73,12 @@ int main() {
         buf = NULL;
         numfds = poll(qpollfds, 1, 500);
 
-      if (qpollfds[0].revents & POLLIN)
-        {
+      if (qpollfds[0].revents & POLLIN) {
           printf("\n\n\n%s: ", usr_name);            
           getline(&buf, &len, stdin);
           printf("Your input: %s\n", buf);
           j_node_get_msg(usr_name, buf, id);
-        }
+      }
       taskyield();
       len = 0;
       free(buf);
