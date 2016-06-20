@@ -32,6 +32,7 @@ char *redisServerIP;
 int redisServerPort;
 
 redisAsyncContext *loggerContext;//for asynchronous calls to logger
+redisContext *getContext;
 
 struct event_base *base;
 
@@ -68,6 +69,17 @@ void initiateRedisConnection(){
     redisAsyncSetConnectCallback(loggerContext, connectCallback);
     redisAsyncSetDisconnectCallback(loggerContext, disconnectCallback);
     //TODO set disconnect callback on the loggerContext to known when the connection has been broken so that we can reconnect
+
+    struct timeval timeout = { 1, 500000 }; // 1.5 seconds
+    getContext = redisConnectWithTimeout(redisServerIP, redisServerPort, timeout);
+    if (getContext == NULL || getContext->err) {
+        if (getContext) {
+            printf("Connection error: %s\n", getContext->errstr);
+            redisFree(getContext);
+        } else {
+            printf("Connection error: can't allocate redis context\n");
+        }
+    }
 }
 
 void dispatchEvent(){
@@ -118,7 +130,22 @@ void loggerResponse(redisAsyncContext *c, void *reply, void *privdata){
 }
 
 char* retrieveData(char *key){
-    return NULL;
+    redisReply *reply;
+    char *value;
+
+    reply = redisCommand(getContext, "ZRANGE %s %d %d", key, -1, -1);
+
+    if( reply->type == REDIS_REPLY_ARRAY ){
+        value = reply->element[0]->str;
+    }
+    else
+        value = reply->str;
+
+    printf("VALUE RESPONSE: %s\n", value);
+
+    freeReplyObject(reply);
+
+    return value;
 }
 
 void connectCallback(const redisAsyncContext *c, int status) {
@@ -173,6 +200,7 @@ void jam_run_app(void *arg){
     while(1){
       printf("Really Blocking\n");
       taskdelay(1000);
+      retrieveData("richboy");
     }
 }
 
