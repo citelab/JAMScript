@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JAM Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.min.js"></script>
+    <script>
+        function sendCommand(){
+            var command = $('#command').val();
+            var input = $('#input').val();
+            var fromMillis = $('#fromMillis').val();
+            var toMillis = $('#toMillis').val();
+
+            $.post('http://127.0.0.1:3000', {command: command, input: input, fromMillis: fromMillis, toMillis: toMillis}, function(data){
+                $('#log').append($('</p>').html(JSON.stringify(data)));
+            }, 'json');
+        }
+    </script>
+</head>
+<body>
+    <table>
+        <tr>
+            <td>Command: </td>
+            <td>
+                <select id="command">
+                    <option value="">--Choose--</option>
+                    <option value="add">ADD</option>
+                    <option value="series">RANGE</option>
+                    <option value="del">DELETE</option>
+                    <option value="pub">PUBLISH</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>Input: </td>
+            <td><input type="text" id="input" /></td>
+        </tr>
+        <tr>
+            <td>From Millis: </td>
+            <td><input type="text" id="fromMillis" /></td>
+        </tr>
+        <tr>
+            <td>To Millis: </td>
+            <td><input type="text" id="toMillis" /></td>
+        </tr>
+        <tr>
+            <td colspan="2"><input type="button" value="Send" onclick="sendCommand();"></td>
+        </tr>
+    </table>
+    <hr/>
+    <div id="log"></div>
+</body>
+</html>
