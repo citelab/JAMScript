@@ -41,6 +41,9 @@ var unicode = require('../unicode.js'),
     _       = require('../nodes.js');
 
 var jcallbacks = new Set();
+var callGraph = new Map();
+var calls = new Set();
+var currentFunction = "";
 
 ometa ES5Parser {
   
@@ -197,7 +200,16 @@ ometa ES5Parser {
                    | funcExpr
                    | primExpr,
   //
-  callExpr      :p = "(" listOf(#assignExpr, ','):as ")"                                 -> _.CallExpr(p, as),
+  callExpr      :p = "(" listOf(#assignExpr, ','):as ")"                                 -> {
+                                                                                              if(p[0] == "MemberExpr") {
+                                                                                                calls.add(p.name());
+                                                                                              } else if(p[0] == "CallExpr") {
+                                                                                                calls.add("anonymous");
+                                                                                              } else {
+                                                                                                calls.add(p.value());
+                                                                                              }
+                                                                                              _.CallExpr(p, as)
+                                                                                            },
   //
   memberExpr    :p = ( "[" expr:i "]"                                                    -> _.MemberExpr(p, i)
                      | "." "Id":f                                                        -> _.MemberExpr(p).name(f.value())
@@ -255,7 +267,7 @@ ometa ES5Parser {
   
   // Functions
   //
-  funcDecl         = "function" "Id":n funcRest:f                                        -> _.Function(f.args, f.body).id(n.value()),
+  funcDecl         = "function" "Id":n {calls = new Set();} funcRest:f {callGraph.set(n.name(), calls);}  ->  _.Function(f.args, f.body).id(n.value()),
   funcExpr         = "function" funcRest:f                                               -> _.Function(f.args, f.body).expr(true)
                    | funcDecl:f                                                          -> f.expr(true),
   //
@@ -427,6 +439,8 @@ ES5Parser.parse = function(input) {
 };
 
 ES5Parser.setActivity = function(input) {
+  currentFunction = input[2].name();
+  calls = new Set();
   // Loop over each param in the declaration
   for (var i = 2; i < input[2].length; i++) {
     var param = input[2][i];
@@ -436,9 +450,17 @@ ES5Parser.setActivity = function(input) {
   }
 }
 
+ES5Parser.setSyncActivity = function(input) {
+  currentFunction = input[3].name();
+  calls = new Set();
+}
+
 ES5Parser.clearActivity = function() {
+  callGraph.set(currentFunction, calls);
+  currentFunction = "";
   jcallbacks = new Set();
 }
 
+ES5Parser.callGraph = callGraph;
 
 module.exports = ES5Parser;
