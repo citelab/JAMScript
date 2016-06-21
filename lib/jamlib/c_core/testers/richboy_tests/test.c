@@ -71,7 +71,8 @@ void initiateRedisConnection(){
 }
 
 void dispatchEvent(){
-    event_base_dispatch(base);
+    //event_base_dispatch(base);
+    //event_base_loop(base, EVLOOP_NONBLOCK);
 }
 
 void jam_log(char *key, char *value){
@@ -166,12 +167,17 @@ void onMessage(redisAsyncContext *c, void *reply, void *privdata) {
     //freeReplyObject(reply);
 }
 
+
 void jam_run_app(void *arg){
-    printf("Really Blocking\n");
+    jam_log("richboy", "Hello World");
+    while(1){
+      printf("Really Blocking\n");
+      taskdelay(1000);
+    }
 }
 
 
-void redis_event_loop(void *arg){
+void jam_redis_event_loop(void *arg){
     init();
 
     //for implementation, this requestHandle would be replaced by a call to the JNode to retrive a handle for the Redis server (as requested by Professor)
@@ -183,9 +189,10 @@ void redis_event_loop(void *arg){
     //for broadcast implementation
     registerForBroadcast();
 
-    //start the event dispatcher
-    dispatchEvent();
-
+    while(1){
+      event_base_loop(base, EVLOOP_NONBLOCK);
+      taskyield();
+    }
 }
 
 
@@ -197,7 +204,7 @@ void taskmain(int argc, char **argv){
 
     taskcreate(jam_event_loop, js, STACKSIZE);
 
-    taskcreate(redis_event_loop, js, STACKSIZE);
+    taskcreate(jam_redis_event_loop, js, STACKSIZE);
     // create the application runner
     taskcreate(jam_run_app, js, STACKSIZE);
     /*
