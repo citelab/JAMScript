@@ -1,10 +1,10 @@
 CC = clang -Wall -g 
 AR = ar rcs
 # CFLAGS =  -DDEBUG_LVL1 
-LDFLAGS = libcbor.a -lnanomsg -ltask 
+LDFLAGS = -lbsd libcbor.a -lnanomsg -ltask -levent -lhiredis 
 
 OBJECTS = activity.o simplequeue.o command.o coreconf.o core.o jam.o jamworker.o jamrunner.o \
-		timer.o socket.o nvoid.o mydb.o dbutil.o cborutils.o threadsem.o jamsync.o jamasync.o
+		timer.o socket.o nvoid.o mydb.o dbutil.o cborutils.o threadsem.o jamsync.o jamasync.o jdata.o
 
 libjam.a: $(OBJECTS)
 	$(AR) libjam.a $^ 

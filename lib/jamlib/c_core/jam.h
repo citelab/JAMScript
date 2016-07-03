@@ -53,7 +53,7 @@ typedef struct _runtableentry_t
     char *actid;
     int status;
     arg_t *code;
-    
+
 } runtableentry_t;
 
 
@@ -61,7 +61,7 @@ typedef struct _runtable_t
 {
     int numruns;
     runtableentry_t *entries[MAX_RUN_ENTRIES];
-    
+
 } runtable_t;
 
 
@@ -70,8 +70,9 @@ typedef struct _jamstate_t
     char *appname;
     corestate_t *cstate;
     pthread_t bgthread;
+    pthread_t jdata_event_thread;
     activitytable_t *atable;
-    
+
     runtable_t *rtable;
 
     struct nn_pollfd *pollfds;
@@ -79,6 +80,7 @@ typedef struct _jamstate_t
 
     timertype_t *maintimer;
     threadsem_t *bgsem;
+    threadsem_t *jdata_sem;
 
     int maxleases;
 
