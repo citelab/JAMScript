@@ -1,3 +1,7 @@
+/*
+ * Author: Xiru Zhu
+ * Date: July 4 2016
+ */
 #include "jdata.h"
 
 char app_id[256];
@@ -100,11 +104,6 @@ void jdata_default_msg_received(redisAsyncContext *c, void *reply, void *privdat
 
 void jdata_log_to_server(char *key, char *value, msg_rcv_callback callback){
   jdata_seq_num++;
-  int length = strlen(key) + strlen(value) + strlen(DELIM) + strlen(app_id) + strlen(DELIM) + strlen(dev_id) + strlen(DELIM) + 12;
-  char newValue[length];
-  sprintf(newValue , "PUBLISH %s %s%s%s%s%s%s%d", key, value, DELIM, app_id, DELIM, dev_id, DELIM, jdata_seq_num);
-
-  printf("New Value: %s\n", newValue);
   //the loggerResponse is the onMessage handler (when something is received from the redis server),
   //the third parameter is anything to pass to the handler. In this case i think we need to pass a
   //reference to the key being saved so that we can cache the data on the client and/or report to the client
