@@ -111,7 +111,12 @@ void jdata_log_to_server(char *key, char *value, msg_rcv_callback callback){
   //after execution. The limitation to this is that the key would only be returned on successful execution
   if(callback == NULL)
     callback = jdata_default_msg_received;
-  redisAsyncCommand(jdata_async_context, callback, NULL, "PUBLISH %s %s%s%s%s%s%s%d", key, value, DELIM, app_id, DELIM, dev_id, DELIM, jdata_seq_num);
+
+  int length = strlen(value) + strlen(DELIM) + strlen(app_id) + strlen(DELIM) + strlen(dev_id) + strlen(DELIM) + 10;
+  char newValue[length];
+  sprintf(newValue , "%s%s%s%s%s%s%d", value, delimiter, appID, delimiter, deviceID, delimiter, jdata_seq_num);
+
+  redisAsyncCommand(jdata_async_context, callback, NULL, "EVAL %s 1 %s %s", "redis.replicate_commands(); local t = (redis.call('TIME'))[1]; redis.call('ZADD', KEYS[1], t, ARGV[1]); return {t}", key, newValue);
   #ifdef DEBUG_LVL1
     printf("Logging executed...\n");
   #endif
