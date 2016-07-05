@@ -122,7 +122,7 @@ void jdata_log_to_server(char *key, char *value, msg_rcv_callback callback){
 
   int length = strlen(value) + strlen(DELIM) + strlen(app_id) + strlen(DELIM) + strlen(dev_id) + strlen(DELIM) + 10;
   char newValue[length];
-  sprintf(newValue , "%s%s%s%s%s%s%d", value, delimiter, appID, delimiter, deviceID, delimiter, jdata_seq_num);
+  sprintf(newValue , "%s%s%s%s%s%s%d", value, DELIM, app_id, DELIM, dev_id, DELIM, jdata_seq_num);
 
   redisAsyncCommand(jdata_async_context, callback, NULL, "EVAL %s 1 %s %s", "redis.replicate_commands(); local t = (redis.call('TIME'))[1]; redis.call('ZADD', KEYS[1], t, ARGV[1]); return {t}", key, newValue);
   #ifdef DEBUG_LVL1
