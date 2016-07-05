@@ -11,9 +11,11 @@
 typedef void (*connection_callback)(const redisAsyncContext *c, int status);
 typedef void (*msg_rcv_callback)(redisAsyncContext *c, void *reply, void *privdata);
 
-void jdata_get_server_ip(jamstate_t * js);
+char *jdata_strip_reply(redisReply *r);
 
-void jdata_init(jamstate_t * js);
+void jdata_get_server_ip(jamstate_t *js);
+
+void jdata_init(jamstate_t *js);
 
 void *jdata_event_loop(void *js);
 

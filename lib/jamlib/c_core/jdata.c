@@ -17,7 +17,15 @@ redisContext *jdata_sync_context;
 
 struct event_base *base;
 
-void jdata_get_server_ip(jamstate_t * js){
+char *jdata_strip_reply(redisReply *r){
+  if (r == NULL) return NULL;
+  if (r->type == REDIS_REPLY_ARRAY) {
+
+  }
+  return NULL;
+}
+
+void jdata_get_server_ip(jamstate_t *js){
   arg_t *res = jam_rexec_sync(js, "jdata_registration", "ss", app_id, dev_id);
   if(res == NULL){
     printf("Error... Server Connection Issues... \n");
@@ -27,7 +35,7 @@ void jdata_get_server_ip(jamstate_t * js){
   command_arg_free(res);
 }
 
-void jdata_init(jamstate_t * js){
+void jdata_init(jamstate_t *js){
   sprintf(app_id, "%s", js->cstate->conf->app_name);
   sprintf(dev_id, "%s", js->cstate->conf->device_id);
   jdata_seq_num = 0;
@@ -155,7 +163,7 @@ void jdata_run_async_cmd(char *cmd, msg_rcv_callback callback){
 }
 
 redisReply *jdata_run_sync_cmd(char *cmd){
-  redisReply * ret = redisCommand(jdata_sync_context, NULL, cmd);
+  redisReply * ret = redisCommand(jdata_sync_context, cmd);
   if(ret == NULL){
     printf("Error, NULL return....");
   }
