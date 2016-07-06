@@ -12,6 +12,7 @@ void msg_rcv_custom(redisAsyncContext *c, void *reply, void *privdata){
           printf("Message Received: %s\n",r->element[j]->str);
       }
   }
+
 }
 
 void jam_run_app(void *arg){
@@ -23,7 +24,7 @@ void jam_run_app(void *arg){
   while(1){
     getline(&buf, &len, stdin);
     buf[strlen(buf) - 1] = '\0';
-    jdata_log_to_server("chat_channel_1", buf, NULL);
+    jdata_log_to_server("chat_channel_1", buf, jdata_default_msg_received);
     len = 0;
     free(buf);
   }

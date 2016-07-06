@@ -16,7 +16,7 @@ void msg_rcv_custom(redisAsyncContext *c, void *reply, void *privdata){
             printf("Message Received: %s\n",r->element[j]->str);
             duk_eval_string(ctx, r->element[j]->str);
             result = strdup(duk_get_string(ctx, -1));
-            jdata_log_to_server("results",result,NULL);
+            jdata_log_to_server("results",result, jdata_default_msg_received);
             free(result);
             printf("result is: %s\n", duk_get_string(ctx, -1));
             duk_pop(ctx);
