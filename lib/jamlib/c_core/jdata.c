@@ -17,6 +17,10 @@ redisContext *jdata_sync_context;
 
 struct event_base *base;
 
+char *get_dev_id(){
+  return dev_id;
+}
+
 char *jdata_strip_reply(redisReply *r){
   if (r == NULL) return NULL;
   if (r->type == REDIS_REPLY_ARRAY) {

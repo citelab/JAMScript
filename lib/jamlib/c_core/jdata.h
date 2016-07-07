@@ -35,4 +35,6 @@ redisReply *jdata_run_sync_cmd(char *cmd);
 
 void jdata_free();
 
+char *get_dev_id();
+
 #endif
