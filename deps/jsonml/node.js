@@ -110,15 +110,16 @@ Node.prototype = Object.create(Array.prototype, {
   find: method(function(selector) {
     var collected = [];
     var children = this.children();
-
     for(var i=0,len=children.length; i<len;i++) {
       var child = children[i];
 
-      if(child.match(selector))
-        collected.push(child);
+      if(child !== undefined) {
+        if(child.match(selector))
+          collected.push(child);
 
-      // recursive call
-      [].push.apply(collected, this.find.apply(child, arguments))
+        // recursive call
+        [].push.apply(collected, this.find.apply(child, arguments));
+      }
     }
     return collected;
   })

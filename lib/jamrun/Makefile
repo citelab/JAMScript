@@ -1,6 +1,6 @@
 OS := $(shell uname)
 ifeq ($(OS),Darwin)
-	CC := gcc-5
+	CC := gcc-6
 else
 	CC := gcc
 endif
