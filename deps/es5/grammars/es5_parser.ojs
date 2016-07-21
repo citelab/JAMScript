@@ -203,10 +203,10 @@ ometa ES5Parser {
   callExpr      :p = "(" listOf(#assignExpr, ','):as ")"                                 -> {
                                                                                               if(p[0] == "MemberExpr") {
                                                                                                 calls.add(p.name());
-                                                                                              } else if(p[0] == "CallExpr") {
-                                                                                                calls.add("anonymous");
-                                                                                              } else {
+                                                                                              } else if(p[0] == "Id") {
                                                                                                 calls.add(p.value());
+                                                                                              } else {
+                                                                                                calls.add("anonymous");
                                                                                               }
                                                                                               _.CallExpr(p, as)
                                                                                             },
@@ -267,7 +267,7 @@ ometa ES5Parser {
   
   // Functions
   //
-  funcDecl         = "function" "Id":n {calls = new Set();} funcRest:f {callGraph.set(n.name(), calls);}  ->  _.Function(f.args, f.body).id(n.value()),
+  funcDecl         = "function" "Id":n {calls = new Set();} funcRest:f {callGraph.set(n.value(), calls);}  ->  _.Function(f.args, f.body).id(n.value()),
   funcExpr         = "function" funcRest:f                                               -> _.Function(f.args, f.body).expr(true)
                    | funcDecl:f                                                          -> f.expr(true),
   //
