@@ -148,7 +148,7 @@ C  {
     // Statements that do "type" specification
     //
     
-    Declaration     = Decl_specs Init_decl_lst ";"          
+    Decl            = Decl_specs Init_decl_lst ";"          
 
     Decl_specs      = (Store_cl_spec | Func_spec | type_qualifier | Gcc_decl_spec)* Type_spec
     
@@ -307,14 +307,14 @@ C  {
                     | case Const_expr ":" Stmt                                      -- CaseStmt
                     | default ":" Stmt                                              -- DefaultStmt
 
-    Compound_stmt   =  "{" (Declaration|Stmt)* "}"
+    Compound_stmt   =  "{" (Decl|Stmt)* "}"
 
     Selection_stmt  = if "(" Expr ")" Stmt (else Stmt)?                             -- IfStmt
                     | switch "(" Expr ")" Stmt                                      -- SwitchStmt
 
     Iteration_stmt  = while "(" Expr ")" Stmt                                       -- WhileStmt
                     | do Stmt while "(" Expr ")" ";"                                -- DoWhileStmt
-                    | for "(" (Declaration | Expr_stmt) Expr_stmt Expr ")" Stmt     -- ForStmt
+                    | for "(" (Decl | Expr_stmt) Expr_stmt Expr ")" Stmt     -- ForStmt
 
     Jump_stmt       = goto id ";"                         -- GotoStmt
                     | continue ";"                        -- ContinueStmt
@@ -322,7 +322,7 @@ C  {
                     | return Expr? ";"                    -- ReturnStmt
 
     External_decl   = Function_def
-                    | Declaration
+                    | Decl
 
     Function_def    = Decl_specs Declarator Compound_stmt
 
