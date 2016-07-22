@@ -1,16 +1,16 @@
-C  {
-    Program = External_decl*
+C <: ES5 {
+    Program := External_decl*
 
     // Helper Rules
     //
-    identifierStart       = letter | "_"
-    identifierPart        = identifierStart | decimalDigit
-    linebreak             = "\n"
+    identStart       = letter | "_"
+    identPart        = identStart | decimalDigit
+    linebreak        = "\n"
 
 
     // Comments
     //
-    comment         = "//" (~linebreak any)* &linebreak
+    comment         := "//" (~linebreak any)* &linebreak
                     | "/*" (~"*/" any)* "*/"
 
     space           += comment
@@ -18,7 +18,7 @@ C  {
 
     // Identifiers and Names
     //
-    identifierName  = identifierStart identifierPart*
+    identName       = identStart identPart*
     id              = ~keyword identifierName
 
     // Numeric Literals
@@ -32,14 +32,14 @@ C  {
     decimalInt      = nonZeroDigit decimalDigit*    -- Full
                     | "0"                           -- Zero
 
-    decimalDigit    = "0".."9"
-    nonZeroDigit    = "1".."9"
+    decimalDigit    := "0".."9"
+    nonZeroDigit    := "1".."9"
 
     expPart         = ("e" | "E") ("+" | "-")? digit+
 
     octal           = "0" octalDigit+ ("l"|"L")?
 
-    octalDigit      = "0".."7"
+    octalDigit      := "0".."7"
 
     decimal         = decimalValue ("l"|"L")
                     | decimalValue ("f"|"F")?
@@ -52,7 +52,7 @@ C  {
     charLit         = "'" "\\" octalDigit octalDigit? octalDigit? "\'"      -- Octal
                     | "'" "\\" "x" (~"'" hexDigit)+ "'"                     -- Hex
                     | "'" escapeChar "'"                                    -- Escape
-                    | "'" (~"'" letter)* "'"                                  -- Char
+                    | "'" (~"'" any)* "'"                                  -- Char
 
     number          = charLit | hex | octal | decimal | integer
 
@@ -150,7 +150,7 @@ C  {
     
     Decl            = Decl_specs Init_decl_lst ";"          
 
-    Decl_specs      = (Store_cl_spec | Func_spec | type_qualifier | Gcc_decl_spec)* Type_spec
+    Decl_specs      = (Store_cl_spec | Func_spec | type_qualifier | Gcc_decl_spec)* Type_spec (Store_cl_spec | Func_spec | type_qualifier | Gcc_decl_spec)*
     
     Init_decl_lst   = ListOf<Init_decl, ",">
 
@@ -285,7 +285,7 @@ C  {
     // gcc_asm_operand = ("[" ("Id"|"Typename") "]")? string "(" expr ")",
 
 
-    Gcc_asm_expr    = asm type_qualifier "(" (~")" any)* ")"+
+    Gcc_asm_expr    = asm type_qualifier? "(" (~")" any)* ")"+
 
 
     // C Statements
@@ -326,7 +326,7 @@ C  {
 
     Function_def    = Decl_specs Declarator Compound_stmt
 
-    keyword         =  attribute__ | asm | auto | based | bool | break | case 
+    keyword         :=  attribute__ | asm | auto | based | bool | break | case 
                     | cdecl | char | const | continue | default | do | double | else | enum 
                     | extension | extern | fascall | float | for | forceinline | goto 
                     | if | inline | inline__ | int | long 
@@ -339,45 +339,45 @@ C  {
     auto = "auto" ~identifierPart
     based = "__based" ~identifierPart
     bool = "_Bool" ~identifierPart
-    break = "break" ~identifierPart
-    case = "case" ~identifierPart
+    break := "break" ~identifierPart
+    case := "case" ~identifierPart
     cdecl = "__cdecl" ~identifierPart
     char = "char" ~identifierPart
-    const = "const" ~identifierPart
-    continue = "continue" ~identifierPart
-    default = "default" ~identifierPart
-    do = "do" ~identifierPart
+    const := "const" ~identifierPart
+    continue := "continue" ~identifierPart
+    default := "default" ~identifierPart
+    do := "do" ~identifierPart
     double = "double" ~identifierPart
-    else = "else" ~identifierPart
-    enum = "enum" ~identifierPart
+    else := "else" ~identifierPart
+    enum := "enum" ~identifierPart
     extension = "__extension__" ~identifierPart
     extern = "extern" ~identifierPart
     fascall = "__fascall" ~identifierPart
     float = "float" ~identifierPart
-    for = "for" ~identifierPart
+    for := "for" ~identifierPart
     forceinline = "__forceinline" ~identifierPart
     goto = "goto" ~identifierPart
-    if = "if" ~identifierPart
+    if := "if" ~identifierPart
     inline = "inline" ~identifierPart
     inline__ = ("__inline__" | "__inline") ~identifierPart
     int = "int" ~identifierPart
     long = "long" ~identifierPart
     register = "register" ~identifierPart
     restrict = ("restrict" | "__restrict" | "__restrict__") ~identifierPart
-    return = "return" ~identifierPart
+    return := "return" ~identifierPart
     short = "short" ~identifierPart
     signed = "signed" ~identifierPart
     sizeof = "sizeof" ~identifierPart
-    static = "static" ~identifierPart
+    static := "static" ~identifierPart
     stdcall = "__stdcall" ~identifierPart
     struct = "struct" ~identifierPart
-    switch = "switch" ~identifierPart
+    switch := "switch" ~identifierPart
     typedef = "typedef" ~identifierPart
     union = "union" ~identifierPart
     unsigned = "unsigned" ~identifierPart
-    void = "void" ~identifierPart
+    void := "void" ~identifierPart
     volatile = "volatile" ~identifierPart
-    while = "while" ~identifierPart
+    while := "while" ~identifierPart
 }
 
 

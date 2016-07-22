@@ -488,7 +488,3 @@ ES5 {
 
   Directive = stringLiteral #sc
 }
-
-ES5Lax <: ES5 {
-  futureReservedWord := futureReservedWordLax
-}
