@@ -1,4 +1,4 @@
-var ometa = require('./deps/ohm'),
+var ohm = require('./deps/ohm'),
     jam = require('./lib/ohm/jamscript/jam'),
     fs = require('fs'),
     JSZip = require('jszip'),
