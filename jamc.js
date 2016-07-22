@@ -1,6 +1,5 @@
-var ometa = require('./deps/ometa'),
-    JAMCParser = require('./lib/jamscript/grammars/jamc_parser.ojs'),
-    JAMCTranslator = require('./lib/jamscript/grammars/jamc_translator.ojs'),
+var ometa = require('./deps/ohm'),
+    jam = require('./lib/ohm/jamscript/jam'),
     fs = require('fs'),
     JSZip = require('jszip'),
     child_process = require('child_process'),
@@ -77,15 +76,18 @@ try {
     console.log(preprocessed);
   }
 
-	var tree = JAMCParser.parse(preprocessed);
+  var result = jam.grammar.match(preprocessed, 'Program');
+  if(result.failed()) {
+    throw result.message;
+  }
   if(parseOnly) {
-    printAndExit(tree);
+    printAndExit(result);
   }
   if(verbose) {
-    console.log(tree);
+    console.log(result);
   }
 
-	var output = JAMCTranslator.translate(tree);
+	var output = jam.semantics(result).prettyish;
   if(translateOnly) {
     printAndExit(output);
   }
