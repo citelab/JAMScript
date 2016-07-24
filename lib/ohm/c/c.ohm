@@ -159,7 +159,11 @@ C <: ES5 {
 
     Type_name       = Spec_qual_list Abs_declarator?
 
-    Store_cl_spec   = (typedef | extern | static | auto | register)
+    Store_cl_spec   = typedef 
+                    | extern 
+                    | static 
+                    | auto 
+                    | register
 
     Type_modifier   = (long | short | signed | unsigned)+
 
@@ -178,7 +182,7 @@ C <: ES5 {
                     | union gcc_attribute* id                                          -- Empty
                     | union gcc_attribute* "{" Struct_decl+ "}"                        -- Anonymous
         
-    Struct_decl     = Spec_qual_list ListOf<Sdeclarator, ","> ";"
+    Struct_decl     = Spec_qual_list NonemptyListOf<Sdeclarator, ","> ";"
 
     Spec_qual_list  = (type_qualifier | Gcc_decl_spec)* Type_spec
 
@@ -198,8 +202,7 @@ C <: ES5 {
                     | restrict
                     | volatile
 
-    Declarator      = Pointer_list Dir_declarator Gcc_asm_expr? gcc_attribute*         -- PointerListDirDeclarator
-                    | Dir_declarator Gcc_asm_expr? gcc_attribute*                      -- DirDeclarator
+    Declarator      = Pointer_list? Dir_declarator Gcc_asm_expr? gcc_attribute*
 
     Dir_declarator  = Dir_declarator Pmember_decl                                      -- PMember
                     | Dir_declarator Pcall_decl                                        -- PCall
@@ -231,10 +234,10 @@ C <: ES5 {
     Pointer_list    = Pointer+
 
 
-    Ident_list      = ListOf<id, ",">
+    Ident_list      = NonemptyListOf<id, ",">
 
-    Param_type_lst  = ListOf<Param_decl, ","> "," var_args         -- List
-                    | ListOf<Param_decl, ",">
+    Param_type_lst  = NonemptyListOf<Param_decl, ","> "," var_args         -- List
+                    | NonemptyListOf<Param_decl, ",">
 
     var_args        = "..."
 
