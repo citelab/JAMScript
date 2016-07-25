@@ -12,14 +12,15 @@ int jdata_seq_num = 0;
 char *redis_serv_IP;
 int redis_serv_port;
 
-redisAsyncContext *jdata_async_context;//for asynchronous calls to logger
+//redisAsyncContext *jdata_async_subscriber_context;//for asynchronous calls to logger
+redisAsyncContext *jdata_async_non_sub_context;//for asynchronous calls to logger
+
 redisContext *jdata_sync_context;
 
 struct event_base *base;
 
-char *get_dev_id(){
-  return dev_id;
-}
+jdata_list_node *jdata_list_head = NULL;
+jdata_list_node *jdata_list_tail = NULL;
 
 char *jdata_strip_reply(redisReply *r){
   if (r == NULL) return NULL;
@@ -45,17 +46,28 @@ void jdata_init(jamstate_t *js){
   jdata_seq_num = 0;
   redis_serv_IP = NULL;
   //redis_serv_IP = strdup("127.0.0.1");
-  redis_serv_port = 6379;
+  redis_serv_port = 6379; //Default Port Number
 
   base = event_base_new();
-  jdata_async_context = redisAsyncConnect(redis_serv_IP, redis_serv_port);
-  if (jdata_async_context->err) {
-      printf("Error: %s\n", jdata_async_context->errstr);
+  /*
+  jdata_async_subscriber_context = redisAsyncConnect(redis_serv_IP, redis_serv_port);
+  if (jdata_async_subscriber_context->err) {
+      printf("Error: %s\n", jdata_async_subscriber_context->errstr);
+      // handle error
+  }*/
+  jdata_async_non_sub_context = redisAsyncConnect(redis_serv_IP, redis_serv_port);
+  if (jdata_async_non_sub_context->err) {
+      printf("Error: %s\n", jdata_async_non_sub_context->errstr);
       // handle error
   }
-  redisLibeventAttach(jdata_async_context, base);
-  redisAsyncSetConnectCallback(jdata_async_context, jdata_default_connection);
-  redisAsyncSetDisconnectCallback(jdata_async_context, jdata_default_disconnection);
+  /*
+  redisLibeventAttach(jdata_async_subscriber_context, base);
+  redisAsyncSetConnectCallback(jdata_async_subscriber_context, jdata_default_connection);
+  redisAsyncSetDisconnectCallback(jdata_async_subscriber_context, jdata_default_disconnection);
+  */
+  redisLibeventAttach(jdata_async_non_sub_context, base);
+  redisAsyncSetConnectCallback(jdata_async_non_sub_context, jdata_default_connection);
+  redisAsyncSetDisconnectCallback(jdata_async_non_sub_context, jdata_default_disconnection);
 
   struct timeval timeout = { 1, 500000 }; // 1.5 seconds
   jdata_sync_context = redisConnectWithTimeout(redis_serv_IP, redis_serv_port, timeout);
@@ -128,9 +140,13 @@ void jdata_log_to_server(char *key, char *value, msg_rcv_callback callback){
 
   int length = strlen(value) + strlen(DELIM) + strlen(app_id) + strlen(DELIM) + strlen(dev_id) + strlen(DELIM) + 10;
   char newValue[length];
-  sprintf(newValue , "%s%s%s%s%s%s%d", value, DELIM, app_id, DELIM, dev_id, DELIM, jdata_seq_num);
+  sprintf(newValue , "%s%s%s%s%s", value, DELIM, app_id, DELIM, dev_id);
   printf("%d\n", jdata_seq_num);
-  redisAsyncCommand(jdata_async_context, callback, NULL, "EVAL %s 1 %s %s", "redis.replicate_commands(); local t = (redis.call('TIME'))[1]; redis.call('ZADD', KEYS[1], t, ARGV[1]); return {t}", key, newValue);
+  redisAsyncCommand(jdata_async_non_sub_context, callback, NULL, "EVAL %s 1 %s %s", "redis.replicate_commands(); \
+                                                          local t = (redis.call('TIME'))[1]; \
+                                                          local insert_order =  redis.call('ZCARD', KEYS[1]) + 1; \
+                                                          redis.call('ZADD', KEYS[1], t, ARGV[1] .. \"$$$\" .. insert_order .. \"$$$\" .. t); \
+                                                          return {t}", key, newValue);
   #ifdef DEBUG_LVL1
     printf("Logging executed...\n");
   #endif
@@ -167,7 +183,7 @@ redisAsyncContext *jdata_subscribe_to_server(char *key, msg_rcv_callback on_msg,
 void jdata_run_async_cmd(char *cmd, msg_rcv_callback callback){
   if(callback == NULL)
     callback = jdata_default_msg_received;
-  redisAsyncCommand(jdata_async_context, callback, NULL, cmd);
+  redisAsyncCommand(jdata_async_non_sub_context, callback, NULL, cmd);
   #ifdef DEBUG_LVL1
     printf("Async Command Run...\n");
   #endif
@@ -186,4 +202,198 @@ redisReply *jdata_run_sync_cmd(char *cmd){
 
 void jdata_free(){
   // To do
+}
+
+void free_jbroadcaster(jbroadcaster *j){
+  //To do
+  jdata_list_node *k;
+  for(jdata_list_node *i = jdata_list_head; i != NULL;){
+    k = i;
+    i = i->next;
+    if(i->data.jbroadcaster_data == j){
+      k->next = i->next;
+      free(i);
+      break;
+    }
+  }
+  free(j->data);
+  threadsem_free(j->write_sem);
+  free(j->key);
+  free(j);
+}
+
+jbroadcaster *jbroadcaster_init(int type, char *variable_name, jdata_callback usr_callback){
+  jbroadcaster *ret;
+  switch(type){
+    case JBROADCAST_INT: break;
+    case JBROADCAST_STRING: break;
+    case JBROADCAST_FLOAT: break;
+    default:
+      printf("Invalid type...\n");
+      return NULL;
+  }
+  ret = (jbroadcaster *)calloc(1, sizeof(jbroadcaster));
+  ret->type = type;
+  ret->write_sem = threadsem_new();
+  ret->data = NULL;
+  ret->key = strdup(variable_name);
+  ret->usr_callback = usr_callback;
+  //Now we need to add it to the list
+  if(jdata_list_head == NULL){
+    jdata_list_head = (jdata_list_node *)calloc(1, sizeof(jdata_list_node));
+    jdata_list_head->data.jbroadcaster_data = ret;
+    jdata_list_tail = jdata_list_head;
+    jdata_list_tail->next = NULL;
+  }else{
+    jdata_list_tail->next = (jdata_list_node *)calloc(1, sizeof(jdata_list_node));
+    jdata_list_tail = jdata_list_tail->next;
+    jdata_list_tail->data.jbroadcaster_data = ret;
+    jdata_list_tail->next = NULL;
+  }
+  jdata_subscribe_to_server( variable_name, jbroadcaster_msg_rcv_callback, NULL, NULL);
+  return ret;
+}
+
+void jbroadcaster_msg_rcv_callback(redisAsyncContext *c, void *reply, void *privdata){
+  redisReply *r = reply;
+  char *result;
+  char *var_name;
+  if (reply == NULL) return;
+  if (r->type == REDIS_REPLY_ARRAY) {
+    var_name = r->element[1]->str;
+    result = r->element[2]->str;
+
+    if(result != NULL){
+      for(jdata_list_node *i = jdata_list_head; i != NULL; i = i->next){
+        if(strcmp(i->data.jbroadcaster_data->key, var_name) == 0){
+          result = strdup(result);
+
+          //At this point, we may need to add a lock to prevent race condition
+          void *to_free = i->data.jbroadcaster_data->data;
+          i->data.jbroadcaster_data->data = result;
+          free(to_free);
+          if(i->data.jbroadcaster_data->usr_callback != NULL){
+            i->data.jbroadcaster_data->usr_callback(i->data.jbroadcaster_data);
+          }
+          return;
+        }
+      }
+      printf("Variable not found ... \n");
+    }
+  }
+}
+
+void *get_jbroadcaster_value(jbroadcaster *j){
+  return j->data;
+}
+
+jshuffler *jshuffler_init(int type, char *var_name, jdata_callback usr_callback){
+  jshuffler *ret = calloc(1, sizeof(jshuffler));
+  ret->key = strdup(var_name);
+  sprintf(ret->rr_queue, "JSHUFFLER_rr_queue|%s", app_id);
+  sprintf(ret->data_queue, "JSHUFFLER_data_queue|%s", app_id);
+  sprintf(ret->subscribe_key, "JSHUFFLER|%s", app_id);
+  ret->data = NULL;
+  ret->usr_callback = usr_callback;
+  sem_init(&ret->lock, 0, 0);
+  redisAsyncContext *subscriber_context = redisAsyncConnect(redis_serv_IP, redis_serv_port);
+  if (subscriber_context->err) {
+      printf("error: %s\n", subscriber_context->errstr);
+      return NULL;
+  }
+  if(jdata_list_head == NULL){
+    jdata_list_head = (jdata_list_node *)calloc(1, sizeof(jdata_list_node));
+    jdata_list_head->data.jshuffler_data = ret;
+    jdata_list_tail = jdata_list_head;
+    jdata_list_tail->next = NULL;
+  }else{
+    jdata_list_tail->next = (jdata_list_node *)calloc(1, sizeof(jdata_list_node));
+    jdata_list_tail = jdata_list_tail->next;
+    jdata_list_tail->data.jshuffler_data = ret;
+    jdata_list_tail->next = NULL;
+  }
+
+  redisAsyncSetConnectCallback(subscriber_context, jdata_default_connection);
+  redisAsyncSetConnectCallback(subscriber_context, jdata_default_disconnection);
+  redisLibeventAttach(subscriber_context, base);
+  redisAsyncCommand(subscriber_context, jshuffler_callback, NULL, "SUBSCRIBE %s", ret->subscribe_key);
+  return ret;
+}
+
+void jshuffler_callback(redisAsyncContext *c, void *reply, void *privdata){
+  redisReply *r = (redisReply *)reply;
+  char var_name[256];
+  char *result;
+  char *result_ptr;
+  if(r == NULL) return;
+  if (r->type == REDIS_REPLY_ARRAY) {
+    if(strcmp(r->element[0]->str, "message") == 0){
+      result_ptr = strstr(r->element[2]->str, "$$$");
+      memcpy(var_name, r->element[2]->str, result_ptr - r->element[2]->str);
+      var_name[result_ptr - r->element[2]->str] = '\0';
+      result = calloc(strlen(r->element[2]->str) - strlen(var_name), sizeof(char));
+      sprintf(result, "%s", result_ptr + 3);
+
+      for(jdata_list_node *i = jdata_list_head; i != NULL; i = i->next){
+        if(strcmp(i->data.jshuffler_data->key, var_name) == 0){
+          //At this point, we may need to add a lock to prevent race condition
+          void *to_free = i->data.jshuffler_data->data;
+          i->data.jshuffler_data->data = result;
+          free(to_free);
+          if(i->data.jshuffler_data->usr_callback != NULL){
+            i->data.jshuffler_data->usr_callback(i->data.jshuffler_data);
+          }
+          printf("Result Received:%s\n", result);
+          //sem_post(&i->data.jshuffler_data->lock);
+          return;
+        }
+      }
+      printf("Variable name not found ...\n");
+    }
+  }
+}
+
+void jshuffler_push(jshuffler *j, char *data){
+  #ifdef DEBUG_LVL1
+    printf("%s %s %s\n", j->subscribe_key, j->rr_queue,  j->data_queue);
+  #endif
+  redisAsyncCommand(jdata_async_non_sub_context, jdata_default_msg_received, NULL,
+                    "EVAL %s 3 %s %s %s %s",
+                    "redis.replicate_commands(); \
+                    local send_to = redis.call('LLEN', KEYS[1]); \
+                    if (send_to == 0) or (send_to == nil) then \
+                      redis.call('RPUSH', KEYS[3], ARGV[1]); \
+                      return {0}; \
+                    else \
+                      local var_name = redis.call('RPOP', KEYS[1]); \
+                      redis.call('PUBLISH', KEYS[2] , var_name .. '$$$' .. ARGV[1]); \
+                      return {send_to}; \
+                    end", j->rr_queue, j->subscribe_key, j->data_queue, data);
+}
+
+void jshuffler_poll(jshuffler *j){
+  //#ifdef DEBUG_LVL1
+    printf("%s %s %s\n", j->subscribe_key, j->rr_queue,  j->data_queue);
+  //#endif
+    redisReply *ret  = redisCommand(jdata_sync_context,
+                      "EVAL %s 2 %s %s %s",
+                      "redis.replicate_commands(); \
+                      local rr_queue_size = redis.call('LLEN', KEYS[1]); \
+                      local data_queue_size = redis.call('LLEN', KEYS[2]); \
+                      if (rr_queue_size == 0 or rr_queue_size == nil) and (data_queue_size > 0) then \
+                        local ret = redis.call('RPOP', KEYS[2]); \
+                        return {ret}; \
+                      else \
+                        redis.call('RPUSH', KEYS[1], ARGV[1]); \
+                        return {'JSHUFFLER_WAIT'}; \
+                      end", j->rr_queue, j->data_queue, j->key);
+  jdata_default_msg_received(jdata_sync_context, ret, NULL);
+  if (ret->type == REDIS_REPLY_ARRAY) {
+  if(strcmp(ret->element[0]->str, "JSHUFFLER_WAIT") == 0){
+    printf("Polling ... \n");
+    //sem_wait(&j->lock);
+
+  }
+    j->data = ret;
+  }
 }
