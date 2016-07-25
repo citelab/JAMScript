@@ -1,7 +1,9 @@
 JAM <: C {
     Program         := External_decl+
 
-    jdata_type      = broadcaster | logger | shuffler
+    jdata_type      = broadcaster 
+                    | logger 
+                    | shuffler
     
     Jdata_spec      = Type_spec id as jdata_type ";"
 
@@ -48,5 +50,3 @@ JAM <: C {
     shuffler = "shuffler" ~identifierPart
     jcallback = "jcallback" ~identifierPart
 }
-
-

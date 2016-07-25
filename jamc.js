@@ -87,7 +87,7 @@ try {
     console.log(result);
   }
 
-	var output = jam.semantics(result).prettyish;
+	var output = jam.semantics(result).jamTranslator;
   if(translateOnly) {
     printAndExit(output);
   }
@@ -104,6 +104,7 @@ try {
   requires += "var async = require('asyncawait/async');\n";
   requires += "var await = require('asyncawait/await');\n";
 
+  // console.log(output.C);
   fs.writeFileSync("jamout.js", requires + output.JS);
   fs.writeFileSync("jamout.c", output.C);
 
