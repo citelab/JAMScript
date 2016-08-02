@@ -371,7 +371,7 @@ void jshuffler_push(jshuffler *j, char *data){
                     end", j->rr_queue, j->subscribe_key, j->data_queue, data);
 }
 
-void jshuffler_poll(jshuffler *j){
+void *jshuffler_poll(jshuffler *j){
   //#ifdef DEBUG_LVL1
     printf("%s %s %s\n", j->subscribe_key, j->rr_queue,  j->data_queue);
   //#endif
@@ -387,7 +387,6 @@ void jshuffler_poll(jshuffler *j){
                         redis.call('RPUSH', KEYS[1], ARGV[1]); \
                         return {'JSHUFFLER_WAIT'}; \
                       end", j->rr_queue, j->data_queue, j->key);
-  jdata_default_msg_received(jdata_sync_context, ret, NULL);
   if (ret->type == REDIS_REPLY_ARRAY) {
   if(strcmp(ret->element[0]->str, "JSHUFFLER_WAIT") == 0){
     printf("Polling ... \n");
@@ -396,4 +395,5 @@ void jshuffler_poll(jshuffler *j){
   }
     j->data = ret;
   }
+  return j->data;
 }

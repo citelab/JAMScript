@@ -64,7 +64,7 @@ void jbroadcaster_msg_rcv_callback(redisAsyncContext *c, void *reply, void *priv
 
 void jshuffler_callback(redisAsyncContext *c, void *reply, void *privdata);
 jshuffler *jshuffler_init(int type, char *var_name, jdata_callback usr_callback);
-void jshuffler_poll(jshuffler *j);
+void *jshuffler_poll(jshuffler *j);
 void jshuffler_push(jshuffler *j, char *data);
 
 #endif
