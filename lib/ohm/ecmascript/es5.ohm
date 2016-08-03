@@ -389,6 +389,7 @@ ES5 {
 
   Statement
     = Block
+    | AssignmentStatement
     | VariableStatement
     | EmptyStatement
     | ExpressionStatement
@@ -415,6 +416,8 @@ ES5 {
   VariableDeclaration<guardIn> = identifier Initialiser<guardIn>?
 
   Initialiser<guardIn> = "=" AssignmentExpression<guardIn>
+
+  AssignmentStatement = identifier "=" AssignmentExpression<withIn>
 
   EmptyStatement = ";" // note: this semicolon eats newlines
 

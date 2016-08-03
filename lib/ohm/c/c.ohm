@@ -29,8 +29,8 @@ C <: ES5 {
 
 
 
-    decimalInt      = nonZeroDigit decimalDigit*                            -- Full
-                    | "0"                                                   -- Zero
+    decimalInt      = nonZeroDigit decimalDigit*                                        -- Full
+                    | "0"                                                               -- Zero
 
     decimalDigit    := "0".."9"
     nonZeroDigit    := "1".."9"
@@ -44,15 +44,15 @@ C <: ES5 {
     decimal         = decimalValue ("l"|"L")
                     | decimalValue ("f"|"F")?
 
-    decimalValue    = "-"? decimalInt expPart                               -- IntOnly
-                    | "-"? decimalInt? "." digit+ expPart?                  -- Decimal
+    decimalValue    = "-"? decimalInt expPart                                           -- IntOnly
+                    | "-"? decimalInt? "." digit+ expPart?                              -- Decimal
 
     integer         = "-"? decimalInt ("l"|"L")?
 
-    charLit         = "'" "\\" octalDigit octalDigit? octalDigit? "\'"      -- Octal
-                    | "'" "\\" "x" (~"'" hexDigit)+ "'"                     -- Hex
-                    | "'" escapeChar "'"                                    -- Escape
-                    | "'" (~"'" any)* "'"                                   -- Char
+    charLit         = "'" "\\" octalDigit octalDigit? octalDigit? "\'"                  -- Octal
+                    | "'" "\\" "x" (~"'" hexDigit)+ "'"                                 -- Hex
+                    | "'" escapeChar "'"                                                -- Escape
+                    | "'" (~"'" any)* "'"                                               -- Char
 
     number (a number) = charLit | hex | octal | decimal | integer
 
@@ -60,8 +60,8 @@ C <: ES5 {
     //
     escapeChar      = "\\" letter
 
-    string          = "\"" (escapeChar | ~"\"" any)* "\""                   -- String
-                    | ("#" | "`") identifierName                            -- Id
+    string          = "\"" (escapeChar | ~"\"" any)* "\""                               -- String
+                    | ("#" | "`") identifierName                                        -- Id
 
 
     // Expressions
@@ -70,34 +70,34 @@ C <: ES5 {
     Expr            = NonemptyListOf<Assign_expr, ",">
 
 
-    Assign_expr     = Unary_expr Assign_op Assign_expr                      -- assign
+    Assign_expr     = Unary_expr Assign_op Assign_expr                                  -- assign
                     | Cond_expr
 
-    Cond_expr       = Lor_expr "?" Expr ":" Cond_expr                       -- cond
+    Cond_expr       = Lor_expr "?" Expr ":" Cond_expr                                   -- cond
                     | Lor_expr
 
 
     // Binary operations
     //
-    Lor_expr        = Lor_expr "||" Lar_expr                                -- lor
+    Lor_expr        = Lor_expr "||" Lar_expr                                            -- lor
                     | Lar_expr
-    Lar_expr        = Lar_expr "&&" Ior_expr                                -- lar
+    Lar_expr        = Lar_expr "&&" Ior_expr                                            -- lar
                     | Ior_expr
-    Ior_expr        = Ior_expr "|" Xor_expr                                 -- ior
+    Ior_expr        = Ior_expr "|" Xor_expr                                             -- ior
                     | Xor_expr
-    Xor_expr        = Xor_expr "^" And_expr                                 -- xor
+    Xor_expr        = Xor_expr "^" And_expr                                             -- xor
                     | And_expr
-    And_expr        = And_expr "&" Eq_expr                                  -- and
+    And_expr        = And_expr "&" Eq_expr                                              -- and
                     | Eq_expr
-    Eq_expr         = Eq_expr ( "==" | "!=" ) Rel_expr                      -- eq
+    Eq_expr         = Eq_expr ( "==" | "!=" ) Rel_expr                                  -- eq
                     | Rel_expr
-    Rel_expr        = Rel_expr ( "<=" | "<" | ">=" | ">") Shift_expr        -- rel
+    Rel_expr        = Rel_expr ( "<=" | "<" | ">=" | ">") Shift_expr                    -- rel
                     | Shift_expr
-    Shift_expr      = Shift_expr ( "<<" | ">>" ) Add_expr                   -- shift
+    Shift_expr      = Shift_expr ( "<<" | ">>" ) Add_expr                               -- shift
                     | Add_expr
-    Add_expr        = Add_expr ( "+" | "-" ) Mult_expr                      -- add
+    Add_expr        = Add_expr ( "+" | "-" ) Mult_expr                                  -- add
                     | Mult_expr
-    Mult_expr       = Mult_expr ( "*" | "/" | "%" ) Prefix_expr             -- mult
+    Mult_expr       = Mult_expr ( "*" | "/" | "%" ) Prefix_expr                         -- mult
                     | Prefix_expr
 
     Assign_op       = "=" | "*=" | "/=" | ">>=" | "<<=" | "+=" | "-="
@@ -108,37 +108,37 @@ C <: ES5 {
     //
 
     //
-    Prefix_expr     = ( "++" | "--" ) spacesNoNl Unary_expr                 -- Unary
+    Prefix_expr     = ( "++" | "--" ) spacesNoNl Unary_expr                             -- Unary
                     | Cast_expr                                     
                     | Unary_expr
 
     //
-    Unary_expr      = ( "&" | "*" | "+" | "-" | "~" | "!" ) Prefix_expr     -- Prefix
-                    | sizeof Unary_expr                                     -- Sizeof
-                    | sizeof "(" Type_name ")"                              -- SizeofBracketed
+    Unary_expr      = ( "&" | "*" | "+" | "-" | "~" | "!" ) Prefix_expr                 -- Prefix
+                    | sizeof Unary_expr                                                 -- Sizeof
+                    | sizeof "(" Type_name ")"                                          -- SizeofBracketed
                     | Postfix_expr
 
     Cast_expr       = Unary_expr
-                    | "(" Type_name ")" Cast_expr                           -- Cast
+                    | "(" Type_name ")" Cast_expr                                       -- Cast
 
-    Postfix_expr    = Left_expr spacesNoNl "++"                             -- Increment
-                    | Left_expr spacesNoNl "--"                             -- Decrement
+    Postfix_expr    = Left_expr spacesNoNl "++"                                         -- Increment
+                    | Left_expr spacesNoNl "--"                                         -- Decrement
                     | Left_expr
 
-    Left_expr       = Left_expr Call_expr                                   -- Call                
-                    | Left_expr Member_expr                                 -- Member
+    Left_expr       = Left_expr Call_expr                                               -- Call                
+                    | Left_expr Member_expr                                             -- Member
                     | Primary_expr
 
     Call_expr       = "(" ListOf<Assign_expr, ","> ")"
 
-    Member_expr     = "[" Expr "]"                                          -- Array
-                    | "." id                                                -- Struct
-                    | "->" id                                               -- Pointer
+    Member_expr     = "[" Expr "]"                                                      -- Array
+                    | "." id                                                            -- Struct
+                    | "->" id                                                           -- Pointer
 
     Primary_expr    = id
                     | number
                     | string
-                    | "(" Expr ")"                                          -- GroupExpr
+                    | "(" Expr ")"                                                      -- GroupExpr
 
     Const_expr      = Cond_expr
 
@@ -233,17 +233,17 @@ C <: ES5 {
 
     Ident_list      = NonemptyListOf<id, ",">
 
-    Param_type_lst  = NonemptyListOf<Param_decl, ","> "," var_args          -- List
+    Param_type_lst  = NonemptyListOf<Param_decl, ","> "," var_args                      -- List
                     | NonemptyListOf<Param_decl, ",">
 
     var_args        = "..."
 
-    Param_decl      = Decl_specs Declarator                                 -- Declarator
-                    | Decl_specs Abs_declarator                             -- AbsDeclarator
+    Param_decl      = Decl_specs Declarator                                             -- Declarator
+                    | Decl_specs Abs_declarator                                         -- AbsDeclarator
                     | Decl_specs
 
-    Initializer     = "{" ListOf<Initializer, ","> ","? "}"                 -- InitializerList
-                    | "{" ListOf<Designator, ","> ","? "}"                  -- DesignatorList
+    Initializer     = "{" ListOf<Initializer, ","> ","? "}"                             -- InitializerList
+                    | "{" ListOf<Designator, ","> ","? "}"                              -- DesignatorList
                     | Assign_expr
     
     Designator      = "." Assign_expr
@@ -258,7 +258,7 @@ C <: ES5 {
     gcc_attribute   = attribute__ "(" "(" (~(")" ")") any)* ")" ")"+
 
     Attribute_param = Gcc_any_word?
-                    | Gcc_any_word "(" (Assign_expr ("," Assign_expr)* )? ")"    -- Assign
+                    | Gcc_any_word "(" (Assign_expr ("," Assign_expr)* )? ")"           -- Assign
 
     Gcc_any_word    = id 
                     | Store_cl_spec
@@ -292,7 +292,8 @@ C <: ES5 {
     // C Statements
     //
 
-    Stmt            = Labeled_stmt
+    Stmt            = Assign_stmt
+                    | Labeled_stmt
                     | Compound_stmt
                     | Selection_stmt
                     | Iteration_stmt
@@ -302,25 +303,28 @@ C <: ES5 {
 
     // jcallback_stmt  = "Typename":jc ?(jcallbacks.has(jc.value())) "(" listOf(#assign_expr, ","):as ")" ";"  -> __.JCallbackStmt(jc.value(), as),
 
-    Expr_stmt       = Expr? ";"                                                     -- ExprStmt
+    //JAM Addition
+    Assign_stmt     = id "=" Expr ";"
 
-    Labeled_stmt    = id ":" Stmt                                                   -- LabeledStmt
-                    | case Const_expr ":" Stmt                                      -- CaseStmt
-                    | default ":" Stmt                                              -- DefaultStmt
+    Expr_stmt       = Expr? ";"                                                         -- ExprStmt
+
+    Labeled_stmt    = id ":" Stmt                                                       -- LabeledStmt
+                    | case Const_expr ":" Stmt                                          -- CaseStmt
+                    | default ":" Stmt                                                  -- DefaultStmt
 
     Compound_stmt   =  "{" (Decl|Stmt)* "}"
 
-    Selection_stmt  = if "(" Expr ")" Stmt (else Stmt)?                             -- IfStmt
-                    | switch "(" Expr ")" Stmt                                      -- SwitchStmt
+    Selection_stmt  = if "(" Expr ")" Stmt (else Stmt)?                                 -- IfStmt
+                    | switch "(" Expr ")" Stmt                                          -- SwitchStmt
 
-    Iteration_stmt  = while "(" Expr ")" Stmt                                       -- WhileStmt
-                    | do Stmt while "(" Expr ")" ";"                                -- DoWhileStmt
-                    | for "(" (Decl | Expr_stmt) Expr_stmt Expr ")" Stmt            -- ForStmt
+    Iteration_stmt  = while "(" Expr ")" Stmt                                           -- WhileStmt
+                    | do Stmt while "(" Expr ")" ";"                                    -- DoWhileStmt
+                    | for "(" (Decl | Expr_stmt) Expr_stmt Expr ")" Stmt                -- ForStmt
 
-    Jump_stmt       = goto id ";"                                                   -- GotoStmt
-                    | continue ";"                                                  -- ContinueStmt
-                    | break ";"                                                     -- BreakStmt
-                    | return Expr? ";"                                              -- ReturnStmt
+    Jump_stmt       = goto id ";"                                                       -- GotoStmt
+                    | continue ";"                                                      -- ContinueStmt
+                    | break ";"                                                         -- BreakStmt
+                    | return Expr? ";"                                                  -- ReturnStmt
 
     External_decl   = Function_def
                     | Decl
