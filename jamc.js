@@ -1,4 +1,4 @@
-var ohm = require('./deps/ohm'),
+var ohm = require('ohm-js'),
     jam = require('./lib/ohm/jamscript/jam'),
     fs = require('fs'),
     JSZip = require('jszip'),
@@ -104,6 +104,16 @@ try {
   requires += "var async = require('asyncawait/async');\n";
   requires += "var await = require('asyncawait/await');\n";
 
+  requires += "var http = require('http');\n";
+  requires += "var cbor = require('cbor');\n";
+  requires += "var qs = require('querystring');\n";
+  requires += "var path = require('path');\n";
+  requires += "var mime = require('mime');\n";
+  requires += "var fs = require('fs');\n";
+  
+  requires += "var JManager = require('./jmanager');\n";
+  requires += "var JLogger = require('./jlogger');\n";  
+
   // console.log(output.C);
   fs.writeFileSync("jamout.js", requires + output.JS);
   fs.writeFileSync("jamout.c", output.C);
@@ -135,6 +145,7 @@ function preprocess(file) {
   contents = 'jamstate_t *js;\n' + contents;
   contents = 'typedef char* jcallback;\n' + contents;
   contents = '#include "jam.h"\n' + contents;
+  contents = '#include "jdata.h"\n' + contents;
   contents = '#include "command.h"\n' + contents;
   
   return child_process.execSync("tcc -E -P -w -I/usr/local/share/jam/lib/jamlib/c_core -", {input: contents}).toString();

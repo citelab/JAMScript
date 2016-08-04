@@ -174,25 +174,25 @@ C <: ES5 {
                     | Union_spec                                                        -- Union
                     | id                                                                -- Id
 
-    Struct_spec     = struct gcc_attribute* id "{" Struct_decl+ "}"                     -- Full
-                    | struct gcc_attribute* id                                          -- Empty
-                    | struct gcc_attribute* "{" Struct_decl+ "}"                        -- Anonymous
+    Struct_spec     = struct Gcc_attribute* id "{" Struct_decl+ "}"                     -- Full
+                    | struct Gcc_attribute* id                                          -- Empty
+                    | struct Gcc_attribute* "{" Struct_decl+ "}"                        -- Anonymous
 
-    Union_spec      = union gcc_attribute* id "{" Struct_decl+ "}"                      -- Full
-                    | union gcc_attribute* id                                           -- Empty
-                    | union gcc_attribute* "{" Struct_decl+ "}"                         -- Anonymous
+    Union_spec      = union Gcc_attribute* id "{" Struct_decl+ "}"                      -- Full
+                    | union Gcc_attribute* id                                           -- Empty
+                    | union Gcc_attribute* "{" Struct_decl+ "}"                         -- Anonymous
         
     Struct_decl     = Spec_qual_list NonemptyListOf<Sdeclarator, ","> ";"
 
     Spec_qual_list  = (type_qualifier | Gcc_decl_spec)* Type_spec
 
-    Sdeclarator     = Declarator ":" Const_expr gcc_attribute*                          -- DeclExpr
+    Sdeclarator     = Declarator ":" Const_expr Gcc_attribute*                          -- DeclExpr
                     | Declarator                                                        -- Decl
-                    | ":" Const_expr gcc_attribute*                                     -- Expr
+                    | ":" Const_expr Gcc_attribute*                                     -- Expr
 
-    Enum_spec       = enum gcc_attribute* id "{" ListOf<Enumerator, ","> ","? "}"       -- Full
-                    | enum gcc_attribute* id                                            -- Empty
-                    | enum gcc_attribute* "{" ListOf<Enumerator, ","> ","? "}"          -- Anonymous
+    Enum_spec       = enum Gcc_attribute* id "{" ListOf<Enumerator, ","> ","? "}"       -- Full
+                    | enum Gcc_attribute* id                                            -- Empty
+                    | enum Gcc_attribute* "{" ListOf<Enumerator, ","> ","? "}"          -- Anonymous
 
     Enumerator      = id "=" Const_expr                                                 -- IdExpr
                     | id                                                                -- Id
@@ -202,26 +202,26 @@ C <: ES5 {
                     | restrict
                     | volatile
 
-    Declarator      = Pointer_list? Dir_declarator Gcc_asm_expr? gcc_attribute*
+    Declarator      = Pointer_list? Dir_declarator Gcc_asm_expr? Gcc_attribute*
 
     Dir_declarator  = Dir_declarator Pmember_decl                                       -- PMember
                     | Dir_declarator Pcall_decl                                         -- PCall
-                    | "(" gcc_attribute* Declarator ")"                                 -- Declarator
+                    | "(" Gcc_attribute* Declarator ")"                                 -- Declarator
                     | id                                                                -- Id
 
 
-    Abs_declarator  = Pointer_list Dir_abs_declarator Gcc_asm_expr? gcc_attribute*      -- PointerListDirAbsDeclarator
+    Abs_declarator  = Pointer_list Dir_abs_declarator Gcc_asm_expr? Gcc_attribute*      -- PointerListDirAbsDeclarator
                     | Pointer_list                                                      -- PointerList
-                    | Dir_abs_declarator Gcc_asm_expr? gcc_attribute*                   -- DirAbsDeclarator
+                    | Dir_abs_declarator Gcc_asm_expr? Gcc_attribute*                   -- DirAbsDeclarator
 
     Dir_abs_declarator  = Dir_abs_declarator "[" Const_expr? "]"                        -- DirAbsDeclaratorConstExpr
                         | "[" Const_expr? "]"                                           -- ConstExpr
                         | Dir_abs_declarator "(" Param_type_lst? ")"                    -- DirAbsDeclaratorParamTypeList
                         | "(" Param_type_lst? ")"                                       -- ParamTypeList
-                        | "(" gcc_attribute* Abs_declarator ")"                         -- AbsDeclarator
+                        | "(" Gcc_attribute* Abs_declarator ")"                         -- AbsDeclarator
 
-    Pmember_decl    = "[" gcc_array_type_modifier* Const_expr "]"                       -- ConstExpr
-                    | "[" gcc_array_type_modifier* "]"                                  -- Empty
+    Pmember_decl    = "[" Gcc_array_type_modifier* Const_expr "]"                       -- ConstExpr
+                    | "[" Gcc_array_type_modifier* "]"                                  -- Empty
 
     Pcall_decl      = "(" Param_type_lst ")"                                            -- ParamTypeList
                     | "(" Ident_list ")"                                                -- IdentList
@@ -251,11 +251,11 @@ C <: ES5 {
     // GCC Statements
     //
     
-    Gcc_decl_spec   = gcc_attribute
+    Gcc_decl_spec   = Gcc_attribute
                     | gcc_ext_spec
 
-    // gcc_attribute   = "__attribute__" "(" "(" attribute_param ("," attribute_param)* ")" ")",
-    gcc_attribute   = attribute__ "(" "(" (~(")" ")") any)* ")" ")"+
+    // Gcc_attribute   = "__attribute__" "(" "(" attribute_param ("," attribute_param)* ")" ")",
+    Gcc_attribute   = attribute__ "(" "(" (~(")" ")") any)* ")" ")"+
 
     Attribute_param = Gcc_any_word?
                     | Gcc_any_word "(" (Assign_expr ("," Assign_expr)* )? ")"           -- Assign
@@ -273,8 +273,8 @@ C <: ES5 {
 
     msvs_func_spec  = inline__
 
-    gcc_array_type_modifier = type_qualifier
-                            | gcc_attribute
+    Gcc_array_type_modifier = type_qualifier
+                            | Gcc_attribute
 
     Gcc_asm_stmt    = Gcc_asm_expr ";"
 
