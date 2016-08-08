@@ -1,0 +1,392 @@
+C <: ES5 {
+    Program         := External_decl*
+
+    // Helper Rules
+    //
+    identStart      = letter | "_"
+    identPart       = identStart | decimalDigit
+    linebreak       = "\n"
+
+
+    // Comments
+    //
+    comment         := "//" (~linebreak any)* &linebreak
+                    | "/*" (~"*/" any)* "*/"
+
+    space           += comment
+    spacesNoNl      = (~linebreak space)*
+
+    // Identifiers and Names
+    //
+    identName       = identStart identPart*
+    id              = ~keyword identifierName
+
+    // Numeric Literals
+    //
+    hex             = ( "0x" | "0X" ) hexDigit+ ("u"|"U")? ("l"|"L")? ("l"|"L")?
+
+    // hexDigit defined in Ohm"s built-in rules (otherwise: hexDigit = "0".."9" | "a".."f" | "A".."F")
+
+
+
+    decimalInt      = nonZeroDigit decimalDigit*                                        -- Full
+                    | "0"                                                               -- Zero
+
+    decimalDigit    := "0".."9"
+    nonZeroDigit    := "1".."9"
+
+    expPart         = ("e" | "E") ("+" | "-")? digit+
+
+    octal           = "0" octalDigit+ ("l"|"L")?
+
+    octalDigit      := "0".."7"
+
+    decimal         = decimalValue ("l"|"L")
+                    | decimalValue ("f"|"F")?
+
+    decimalValue    = "-"? decimalInt expPart                                           -- IntOnly
+                    | "-"? decimalInt? "." digit+ expPart?                              -- Decimal
+
+    integer         = "-"? decimalInt ("l"|"L")?
+
+    charLit         = "'" "\\" octalDigit octalDigit? octalDigit? "\'"                  -- Octal
+                    | "'" "\\" "x" (~"'" hexDigit)+ "'"                                 -- Hex
+                    | "'" escapeChar "'"                                                -- Escape
+                    | "'" (~"'" any)* "'"                                               -- Char
+
+    number (a number) = charLit | hex | octal | decimal | integer
+
+    // String Literals
+    //
+    escapeChar      = "\\" letter
+
+    string          = "\"" (escapeChar | ~"\"" any)* "\""                               -- String
+                    | ("#" | "`") identifierName                                        -- Id
+
+
+    // Expressions
+    //
+
+    Expr            = NonemptyListOf<Assign_expr, ",">
+
+
+    Assign_expr     = Unary_expr Assign_op Assign_expr                                  -- assign
+                    | Cond_expr
+
+    Cond_expr       = Lor_expr "?" Expr ":" Cond_expr                                   -- cond
+                    | Lor_expr
+
+
+    // Binary operations
+    //
+    Lor_expr        = Lor_expr "||" Lar_expr                                            -- lor
+                    | Lar_expr
+    Lar_expr        = Lar_expr "&&" Ior_expr                                            -- lar
+                    | Ior_expr
+    Ior_expr        = Ior_expr "|" Xor_expr                                             -- ior
+                    | Xor_expr
+    Xor_expr        = Xor_expr "^" And_expr                                             -- xor
+                    | And_expr
+    And_expr        = And_expr "&" Eq_expr                                              -- and
+                    | Eq_expr
+    Eq_expr         = Eq_expr ( "==" | "!=" ) Rel_expr                                  -- eq
+                    | Rel_expr
+    Rel_expr        = Rel_expr ( "<=" | "<" | ">=" | ">") Shift_expr                    -- rel
+                    | Shift_expr
+    Shift_expr      = Shift_expr ( "<<" | ">>" ) Add_expr                               -- shift
+                    | Add_expr
+    Add_expr        = Add_expr ( "+" | "-" ) Mult_expr                                  -- add
+                    | Mult_expr
+    Mult_expr       = Mult_expr ( "*" | "/" | "%" ) Prefix_expr                         -- mult
+                    | Prefix_expr
+
+    Assign_op       = "=" | "*=" | "/=" | ">>=" | "<<=" | "+=" | "-="
+                    | "%=" | "&=" | "|=" | "^="
+
+
+    // Unary operators
+    //
+
+    //
+    Prefix_expr     = ( "++" | "--" ) spacesNoNl Unary_expr                             -- Unary
+                    | Cast_expr                                     
+                    | Unary_expr
+
+    //
+    Unary_expr      = ( "&" | "*" | "+" | "-" | "~" | "!" ) Prefix_expr                 -- Prefix
+                    | sizeof Unary_expr                                                 -- Sizeof
+                    | sizeof "(" Type_name ")"                                          -- SizeofBracketed
+                    | Postfix_expr
+
+    Cast_expr       = Unary_expr
+                    | "(" Type_name ")" Cast_expr                                       -- Cast
+
+    Postfix_expr    = Left_expr spacesNoNl "++"                                         -- Increment
+                    | Left_expr spacesNoNl "--"                                         -- Decrement
+                    | Left_expr
+
+    Left_expr       = Left_expr Call_expr                                               -- Call                
+                    | Left_expr Member_expr                                             -- Member
+                    | Primary_expr
+
+    Call_expr       = "(" ListOf<Assign_expr, ","> ")"
+
+    Member_expr     = "[" Expr "]"                                                      -- Array
+                    | "." id                                                            -- Struct
+                    | "->" id                                                           -- Pointer
+
+    Primary_expr    = id
+                    | number
+                    | string
+                    | "(" Expr ")"                                                      -- GroupExpr
+
+    Const_expr      = Cond_expr
+
+    // Declaration statements
+    // Statements that do "type" specification
+    //
+    
+    Decl            = Decl_specs Init_decl_lst ";"          
+
+    Decl_specs      = (Store_cl_spec | Func_spec | type_qualifier | Gcc_decl_spec)* 
+                        Type_spec 
+                        (Store_cl_spec | Func_spec | type_qualifier | Gcc_decl_spec)*
+    
+    Init_decl_lst   = ListOf<Init_decl, ",">
+
+    Init_decl       = Declarator "=" Initializer                                        -- Init
+                    | Declarator
+
+    Type_name       = Spec_qual_list Abs_declarator?
+
+    Store_cl_spec   = typedef 
+                    | extern 
+                    | static 
+                    | auto 
+                    | register
+
+    Type_modifier   = (long | short | signed | unsigned)+
+
+    Type_spec       = Type_modifier (int | char | double)?                              -- Modified
+                    | (void | bool | float | int | char | double) 
+                    | Enum_spec                                                         -- Enum
+                    | Struct_spec                                                       -- Sturct
+                    | Union_spec                                                        -- Union
+                    | id                                                                -- Id
+
+    Struct_spec     = struct Gcc_attribute* id "{" Struct_decl+ "}"                     -- Full
+                    | struct Gcc_attribute* id                                          -- Empty
+                    | struct Gcc_attribute* "{" Struct_decl+ "}"                        -- Anonymous
+
+    Union_spec      = union Gcc_attribute* id "{" Struct_decl+ "}"                      -- Full
+                    | union Gcc_attribute* id                                           -- Empty
+                    | union Gcc_attribute* "{" Struct_decl+ "}"                         -- Anonymous
+        
+    Struct_decl     = Spec_qual_list NonemptyListOf<Sdeclarator, ","> ";"
+
+    Spec_qual_list  = (type_qualifier | Gcc_decl_spec)* Type_spec
+
+    Sdeclarator     = Declarator ":" Const_expr Gcc_attribute*                          -- DeclExpr
+                    | Declarator                                                        -- Decl
+                    | ":" Const_expr Gcc_attribute*                                     -- Expr
+
+    Enum_spec       = enum Gcc_attribute* id "{" ListOf<Enumerator, ","> ","? "}"       -- Full
+                    | enum Gcc_attribute* id                                            -- Empty
+                    | enum Gcc_attribute* "{" ListOf<Enumerator, ","> ","? "}"          -- Anonymous
+
+    Enumerator      = id "=" Const_expr                                                 -- IdExpr
+                    | id                                                                -- Id
+
+
+    type_qualifier  = const
+                    | restrict
+                    | volatile
+
+    Declarator      = Pointer_list? Dir_declarator Gcc_asm_expr? Gcc_attribute*
+
+    Dir_declarator  = Dir_declarator Pmember_decl                                       -- PMember
+                    | Dir_declarator Pcall_decl                                         -- PCall
+                    | "(" Gcc_attribute* Declarator ")"                                 -- Declarator
+                    | id                                                                -- Id
+
+
+    Abs_declarator  = Pointer_list Dir_abs_declarator Gcc_asm_expr? Gcc_attribute*      -- PointerListDirAbsDeclarator
+                    | Pointer_list                                                      -- PointerList
+                    | Dir_abs_declarator Gcc_asm_expr? Gcc_attribute*                   -- DirAbsDeclarator
+
+    Dir_abs_declarator  = Dir_abs_declarator "[" Const_expr? "]"                        -- DirAbsDeclaratorConstExpr
+                        | "[" Const_expr? "]"                                           -- ConstExpr
+                        | Dir_abs_declarator "(" Param_type_lst? ")"                    -- DirAbsDeclaratorParamTypeList
+                        | "(" Param_type_lst? ")"                                       -- ParamTypeList
+                        | "(" Gcc_attribute* Abs_declarator ")"                         -- AbsDeclarator
+
+    Pmember_decl    = "[" Gcc_array_type_modifier* Const_expr "]"                       -- ConstExpr
+                    | "[" Gcc_array_type_modifier* "]"                                  -- Empty
+
+    Pcall_decl      = "(" Param_type_lst ")"                                            -- ParamTypeList
+                    | "(" Ident_list ")"                                                -- IdentList
+                    | "(" ")"                                                           -- Empty
+    
+    Pointer         = "*" type_qualifier*
+
+    Pointer_list    = Pointer+
+
+    Ident_list      = NonemptyListOf<id, ",">
+
+    Param_type_lst  = NonemptyListOf<Param_decl, ","> "," var_args                      -- List
+                    | NonemptyListOf<Param_decl, ",">
+
+    var_args        = "..."
+
+    Param_decl      = Decl_specs Declarator                                             -- Declarator
+                    | Decl_specs Abs_declarator                                         -- AbsDeclarator
+                    | Decl_specs
+
+    Initializer     = "{" ListOf<Initializer, ","> ","? "}"                             -- InitializerList
+                    | "{" ListOf<Designator, ","> ","? "}"                              -- DesignatorList
+                    | Assign_expr
+    
+    Designator      = "." Assign_expr
+
+    // GCC Statements
+    //
+    
+    Gcc_decl_spec   = Gcc_attribute
+                    | gcc_ext_spec
+
+    // Gcc_attribute   = "__attribute__" "(" "(" attribute_param ("," attribute_param)* ")" ")",
+    Gcc_attribute   = attribute__ "(" "(" (~(")" ")") any)* ")" ")"+
+
+    Attribute_param = Gcc_any_word?
+                    | Gcc_any_word "(" (Assign_expr ("," Assign_expr)* )? ")"           -- Assign
+
+    Gcc_any_word    = id 
+                    | Store_cl_spec
+                    | Type_spec
+                    | type_qualifier
+                    | Func_spec
+
+    gcc_ext_spec    = extension
+
+    Func_spec       = inline
+                    | msvs_func_spec
+
+    msvs_func_spec  = inline__
+
+    Gcc_array_type_modifier = type_qualifier
+                            | Gcc_attribute
+
+    Gcc_asm_stmt    = Gcc_asm_expr ";"
+
+    // gcc_asm_expr = ("__asm__" | "__asm") type_qualifier? "(" expr 
+    //                  (":" ( gcc_asm_operand ("," gcc_asm_operand)* )? 
+    //                      (":" (gcc_asm_operand ("," gcc_asm_operand)*)? 
+    //                          (":" string ("," string)*)?)?)? ")",
+
+    // gcc_asm_operand = ("[" ("Id"|"Typename") "]")? string "(" expr ")",
+
+
+    Gcc_asm_expr    = asm type_qualifier? "(" (~")" any)* ")"+
+
+
+    // C Statements
+    //
+
+    Stmt            = Assign_stmt
+                    | Labeled_stmt
+                    | Compound_stmt
+                    | Selection_stmt
+                    | Iteration_stmt
+                    | Jump_stmt
+                    | Expr_stmt
+                    | Gcc_asm_stmt
+
+    // jcallback_stmt  = "Typename":jc ?(jcallbacks.has(jc.value())) "(" listOf(#assign_expr, ","):as ")" ";"  -> __.JCallbackStmt(jc.value(), as),
+
+    //JAM Addition
+    Assign_stmt     = id "=" Expr ";"
+
+    Expr_stmt       = Expr? ";"                                                         -- ExprStmt
+
+    Labeled_stmt    = id ":" Stmt                                                       -- LabeledStmt
+                    | case Const_expr ":" Stmt                                          -- CaseStmt
+                    | default ":" Stmt                                                  -- DefaultStmt
+
+    Compound_stmt   =  "{" (Decl|Stmt)* "}"
+
+    Selection_stmt  = if "(" Expr ")" Stmt (else Stmt)?                                 -- IfStmt
+                    | switch "(" Expr ")" Stmt                                          -- SwitchStmt
+
+    Iteration_stmt  = while "(" Expr ")" Stmt                                           -- WhileStmt
+                    | do Stmt while "(" Expr ")" ";"                                    -- DoWhileStmt
+                    | for "(" (Decl | Expr_stmt) Expr_stmt Expr ")" Stmt                -- ForStmt
+
+    Jump_stmt       = goto id ";"                                                       -- GotoStmt
+                    | continue ";"                                                      -- ContinueStmt
+                    | break ";"                                                         -- BreakStmt
+                    | return Expr? ";"                                                  -- ReturnStmt
+
+    External_decl   = Function_def
+                    | Decl
+
+    Function_def    = Decl_specs Declarator Compound_stmt
+
+    keyword         :=  attribute__ | asm | auto | based | bool | break | case 
+                    | cdecl | char | const | continue | default | do | double 
+                    | else | enum | extension | extern | fascall | float | for 
+                    | forceinline | goto | if | inline | inline__ | int | long 
+                    | restrict | register | return | short | signed | sizeof 
+                    | static | stdcall | struct | switch | typedef | union 
+                    | unsigned | void | volatile | while
+
+    // Convenience rules for parsing keyword tokens.
+    attribute__ = "__attribute__" ~identifierPart
+    asm = ("__asm" | "__asm__") ~identifierPart
+    auto = "auto" ~identifierPart
+    based = "__based" ~identifierPart
+    bool = "_Bool" ~identifierPart
+    break := "break" ~identifierPart
+    case := "case" ~identifierPart
+    cdecl = "__cdecl" ~identifierPart
+    char = "char" ~identifierPart
+    const := "const" ~identifierPart
+    continue := "continue" ~identifierPart
+    default := "default" ~identifierPart
+    do := "do" ~identifierPart
+    double = "double" ~identifierPart
+    else := "else" ~identifierPart
+    enum := "enum" ~identifierPart
+    extension = "__extension__" ~identifierPart
+    extern = "extern" ~identifierPart
+    fascall = "__fascall" ~identifierPart
+    float = "float" ~identifierPart
+    for := "for" ~identifierPart
+    forceinline = "__forceinline" ~identifierPart
+    goto = "goto" ~identifierPart
+    if := "if" ~identifierPart
+    inline = "inline" ~identifierPart
+    inline__ = ("__inline__" | "__inline") ~identifierPart
+    int = "int" ~identifierPart
+    long = "long" ~identifierPart
+    register = "register" ~identifierPart
+    restrict = ("restrict" | "__restrict" | "__restrict__") ~identifierPart
+    return := "return" ~identifierPart
+    short = "short" ~identifierPart
+    signed = "signed" ~identifierPart
+    sizeof = "sizeof" ~identifierPart
+    static := "static" ~identifierPart
+    stdcall = "__stdcall" ~identifierPart
+    struct = "struct" ~identifierPart
+    switch := "switch" ~identifierPart
+    typedef = "typedef" ~identifierPart
+    union = "union" ~identifierPart
+    unsigned = "unsigned" ~identifierPart
+    void := "void" ~identifierPart
+    volatile = "volatile" ~identifierPart
+    while := "while" ~identifierPart
+}
+
+
+
+
+  
