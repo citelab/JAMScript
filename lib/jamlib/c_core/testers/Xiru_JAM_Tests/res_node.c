@@ -11,18 +11,17 @@ void msg_rcv_custom(jbroadcaster *j){
   printf("Message Received: %s\n", get_jbroadcaster_value(j));
   duk_eval_string(ctx, get_jbroadcaster_value(j));
   result = strdup(duk_get_string(ctx, -1));
-  jdata_log_to_server("results",result, jdata_default_msg_received);
+  jdata_log_to_server("results",result, jdata_default_msg_received); 
   free(result);
   printf("result is: %s\n", duk_get_string(ctx, -1));
   duk_pop(ctx);
   duk_destroy_heap(ctx);
 }
-
 void jam_run_app(void *arg){
   jamstate_t *js = arg;
   jdata_get_server_ip(arg);
   printf("Device ID %s\n", js->cstate->conf->device_id);
-  jbroadcaster_init(JBROADCAST_STRING, js->cstate->conf->device_id, msg_rcv_custom);
+  jbroadcaster *j = jbroadcaster_init(JBROADCAST_STRING, js->cstate->conf->device_id, msg_rcv_custom);
 }
 
 void taskmain(int argc, char **argv)

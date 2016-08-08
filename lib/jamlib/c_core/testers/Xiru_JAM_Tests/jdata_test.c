@@ -19,6 +19,7 @@ void jam_run_app(void *arg){
   sleep(1);
   jshuffler_poll(j);
   jshuffler_push(j, "Second run ...");
+  jdata_log_to_server("testing", "heeeeeeeey", NULL);
   printf("Hey ... \n");
 }
 

@@ -30,6 +30,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <task.h>
 #include <string.h>
 #include "threadsem.h"
+#include "jdata.h"
 
 #include "activity.h"
 
@@ -174,9 +175,18 @@ void jwork_process_reqsock(jamstate_t *js)
     printf("----- In request sock.......... \n");
     #endif
     command_t *rcmd = socket_recv_command(js->cstate->reqsock, 5000);
+    
     #ifdef DEBUG_LVL1
-    printf("Command %s, %s\n", rcmd->cmd, rcmd->actname);
+    printf("Command %s, %s %s %s\n", rcmd->cmd, rcmd->actname, rcmd->actid, rcmd->actarg);
     #endif
+    if(strcmp(rcmd->cmd, "REXEC-ACK") == 0){
+        printf("Add Pending Activity ... \n");
+        jcmd_log_pending_activity(js->cstate->conf->device_id, rcmd->actid);
+    }else if(strcmp(rcmd->cmd, "REXEC-RES") == 0){
+        printf("Remove Pending Activity ... \n");
+        jcmd_remove_acknowledged_activity(js->cstate->conf->device_id, rcmd->actid);
+    }
+    //So at this point, we can automatically set up a permanent log system for calls
     if (rcmd != NULL)
     {
         if (strcmp(rcmd->actname, "EVENTLOOP") == 0)
@@ -241,7 +251,6 @@ void jwork_process_subsock(jamstate_t *js)
 
             if (jam_eval_condition(rcmd->actarg))
             {
-
                 queue_enq(js->atable->globalinq, rcmd, sizeof(command_t));
                 thread_signal(js->atable->globalsem);
                 // rcmd is released in the main thread after consumption

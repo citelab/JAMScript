@@ -141,7 +141,6 @@ void jdata_log_to_server(char *key, char *value, msg_rcv_callback callback){
   int length = strlen(value) + strlen(DELIM) + strlen(app_id) + strlen(DELIM) + strlen(dev_id) + strlen(DELIM) + 10;
   char newValue[length];
   sprintf(newValue , "%s%s%s%s%s", value, DELIM, app_id, DELIM, dev_id);
-  printf("%d\n", jdata_seq_num);
   redisAsyncCommand(jdata_async_non_sub_context, callback, NULL, "EVAL %s 1 %s %s", "redis.replicate_commands(); \
                                                           local t = (redis.call('TIME'))[1]; \
                                                           local insert_order =  redis.call('ZCARD', KEYS[1]) + 1; \
@@ -149,6 +148,15 @@ void jdata_log_to_server(char *key, char *value, msg_rcv_callback callback){
                                                           return {t}", key, newValue);
   #ifdef DEBUG_LVL1
     printf("Logging executed...\n");
+  #endif
+}
+
+void jdata_remove_element(char *key, char *value, msg_rcv_callback callback){
+  if(callback == NULL)
+    callback = jdata_default_msg_received;  
+  redisAsyncCommand(jdata_async_non_sub_context, callback, NULL, "ZREM %s %s", key, value);
+  #ifdef DEBUG_LVL1
+    printf("Element Removed...\n");
   #endif
 }
 
@@ -396,4 +404,39 @@ void *jshuffler_poll(jshuffler *j){
     j->data = ret;
   }
   return j->data;
+}
+
+void jcmd_log_pending_activity(char *app_id, char *actid){
+    char key[256];
+    sprintf(key, "%s%s%s", CMD_LOGGER, DELIM, app_id);
+    redisAsyncCommand(jdata_async_non_sub_context, jdata_default_msg_received, NULL, "EVAL %s 1 %s %s", "redis.replicate_commands(); \
+                                                            local t = (redis.call('TIME'))[1]; \
+                                                            redis.call('ZADD', KEYS[1], t, ARGV[1]); \
+                                                            return {t}", key, actid);
+}
+
+void jcmd_remove_acknowledged_activity(char *app_id, char *actid){
+    char key[256];
+    sprintf(key, "%s%s%s", CMD_LOGGER, DELIM, app_id);
+    jdata_remove_element(key, actid, NULL);
+}
+
+void jcmd_delete_pending_activity_log(char *key, msg_rcv_callback callback){
+  if(callback == NULL)
+    callback = jdata_default_msg_received;
+  redisAsyncCommand(jdata_async_non_sub_context, callback, NULL, "DEL %s", key);
+}
+
+char **jcmd_get_pending_activity_log(char *key, msg_rcv_callback callback){
+  if(callback == NULL)
+    callback = jdata_default_msg_received;
+   redisReply * r = redisCommand(jdata_async_non_sub_context, "ZRANGE %s 0 -1", key);
+   if (r->type == REDIS_REPLY_ARRAY) {
+     char **ret = (char **)calloc(r->elements, sizeof(char *));
+     for (int j = 0; j < r->elements; j++) {
+       ret[j] = strdup(r->element[j]->str);
+     }
+     return ret;
+   }
+   return NULL;
 }
