@@ -9,6 +9,7 @@ int ID = 0;
 int current_msg_id = -1;
 
 jsync int setup() {
+    1>>>2;
   var a;
   if(typeof ID == "undefined") {
     ID = 1;
@@ -19,6 +20,7 @@ jsync int setup() {
 }
 
 jsync char * get_past_msg(int num_msg){
+    1>>>2;
   var begin = 0;
   var end = num_msg;
   var ret = "";
@@ -34,6 +36,7 @@ jsync char * get_past_msg(int num_msg){
 }
 
 jsync int get_new_id(char * status_msg) {
+    1>>>2;
   var a;
   console.log(status_msg + " and " + ID);
   ID += 1;
@@ -41,6 +44,7 @@ jsync int get_new_id(char * status_msg) {
 }
 
 jasync j_node_get_msg(char * usr_name, char * msg, int user_id) {
+    1>>>2;
   var a;
   msg_list.push(usr_name + ":" + msg);
   c_node_get_msg(usr_name, msg, user_id, msg_id++);
