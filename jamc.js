@@ -122,7 +122,7 @@ try {
     // flowCheck(output.annotated_JS)
   	fs.mkdirSync(tmpDir);
     fs.writeFileSync(`${tmpDir}/jamout.c`, output.C);
-    child_process.execSync(`gcc -Wno-incompatible-library-redeclaration ${tmpDir}/jamout.c -I./lib/jamlib/c_core -lcbor -lnanomsg -lhiredis -levent /usr/local/share/jam/deps/libtask/libtask.a /usr/local/share/jam/lib/c_core/libjam.a`);
+    child_process.execSync(`gcc -Wno-incompatible-library-redeclaration ${tmpDir}/jamout.c -I./lib/jamlib/c_core -lcbor -lnanomsg -lhiredis -levent /usr/local/share/jam/deps/libtask/libtask.a /usr/local/share/jam/lib/jamlib/c_core/libjam.a`);
     // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
     // createZip(createTOML(), output.JS, tmpDir, outputName);
     
@@ -148,7 +148,7 @@ function preprocess(file) {
   contents = '#include "jdata.h"\n' + contents;
   contents = '#include "command.h"\n' + contents;
   
-  return child_process.execSync("tcc -E -P -w -I/usr/local/share/jam/lib/c_core -", {input: contents}).toString();
+  return child_process.execSync("tcc -E -P -w -I/usr/local/share/jam/lib/jamlib/c_core -", {input: contents}).toString();
   // return child_process.execSync(`${cc} -E -P -std=iso9899:199409 ${file}`).toString();
 
 }
