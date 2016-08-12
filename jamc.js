@@ -122,7 +122,7 @@ try {
     // flowCheck(output.annotated_JS)
   	fs.mkdirSync(tmpDir);
     fs.writeFileSync(`${tmpDir}/jamout.c`, output.C);
-    child_process.execSync(`gcc -Wno-incompatible-library-redeclaration ${tmpDir}/jamout.c -I./lib/jamlib/c_core -lcbor -lnanomsg -lhiredis -levent /usr/local/share/jam/deps/libtask/libtask.a /usr/local/share/jam/lib/jamlib/c_core/libjam.a`);
+    child_process.execSync(`gcc -Wno-incompatible-library-redeclaration ${tmpDir}/jamout.c -I./lib/jamlib/c_core -lcbor -lnanomsg -lhiredis -levent /usr/local/share/jam/deps/libtask/libtask.a /usr/local/lib/libjam.a`);
     // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
     // createZip(createTOML(), output.JS, tmpDir, outputName);
     
