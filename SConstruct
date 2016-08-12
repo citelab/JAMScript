@@ -52,14 +52,38 @@ c_files.append('lib/jamlib/c_core/duktape/duktape.c')
 
 library = Library('jam', Glob('lib/jamlib/c_core/*.c'), LIBS=req_c_lib, LIBPATH = ['/usr/lib', '/usr/local/lib'])
 
-env.InstallAs("/usr/local/bin/jamc", "jamc" );
-env.InstallAs("/usr/local/include/jam.h", "./lib/jamlib/c_core/jam.h");
-env.InstallAs("/usr/local/share/jam/jamc.js", "jamc.js");
-env.InstallAs("/usr/local/share/jam/lib/jamlib", "lib/jamlib");
-env.InstallAs("/usr/local/share/jam/lib/jserver", "lib/jserver");
-env.InstallAs("/usr/local/share/jam/lib/ohm", "lib/ohm");
-env.InstallAs("/usr/local/share/jam/LICENSE", "LICENSE");
-env.InstallAs("/usr/local/share/jam/node_modules", "node_modules");
-compiled_library = env.InstallAs("/usr/local/lib/libjam.a", "libjam.a");
+env.Install("/usr/local/bin", "jamc" );
+env.Install("/usr/local/include", "./lib/jamlib/c_core/jam.h");
+env.Install("/usr/local/share/jam", "jamc.js");
+env.Install("/usr/local/share/jam", "LICENSE");
+env.Install("/usr/local/share/jam", "node_modules");
+compiled_library = env.Install("/usr/local/lib", "libjam.a");
+
+ib = env.Alias('install-bin', "/usr/local/bin");
+il = env.Alias('install-share', "/usr/local/share/jam");
+ii = env.Alias('install-include', "/usr/local/include");
+ill = env.Alias('install-lib', "/usr/local/lib");
+
+c_core_files = Glob('./lib/jamlib/c_core/*.h');
+ohm_c_files = Glob('./lib/ohm/c/*.js') + Glob('./lib/ohm/c/*.ohm')
+ohm_ecma_files = Glob('./lib/ohm/ecmascript/*.js') + Glob('./lib/ohm/ecmascript/*.ohm')
+ohm_jamscript_files = Glob('./lib/ohm/jamscript/*.js') + Glob('./lib/ohm/jamscript/*.ohm')
+
+env.Install("/usr/local/share/jam/lib/c_core", c_core_files);
+env.Install('/usr/local/share/jam/lib/ohm/c', ohm_c_files);
+env.Install('/usr/local/share/jam/lib/ohm/ecmascript', ohm_ecma_files);
+env.Install('/usr/local/share/jam/lib/ohm/jamscript', ohm_jamscript_files);
+env.Install('/usr/local/share/jam/deps/libtask/', "./deps/libtask/libtask.a");
+env.Install('/usr/local/share/jam/lib/jserver', Glob('./lib/jserver/*.js'));
+
+
+a1 = env.Alias('a1', "/usr/local/share/jam/lib/c_core");
+a2 = env.Alias('a2', '/usr/local/share/jam/lib/ohm/c');
+a3 = env.Alias('a3', '/usr/local/share/jam/lib/ohm/ecmascript');
+a4 = env.Alias('a4', '/usr/local/share/jam/lib/ohm/jamscript');
+a5 = env.Alias('a5', '/usr/local/share/jam/deps/libtask');
+a6 = env.Alias('a6', '/usr/local/share/jam/lib/jserver');
+
+env.Alias('install', [ib, ii, il, il, il, ill, a1, a2, a3, a4, a5, a6])
 
 Depends(compiled_library, library);
