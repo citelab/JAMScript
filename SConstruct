@@ -50,5 +50,17 @@ for iterating_var in req_c_lib:
 c_files = Glob('lib/jamlib/c_core/*.c');
 c_files.append('lib/jamlib/c_core/duktape/duktape.c')
 
-Library('jam', Glob('lib/jamlib/c_core/*.c'), LIBS=req_c_lib, LIBPATH = ['/usr/lib', '/usr/local/lib'])
+library = Library('jam', Glob('lib/jamlib/c_core/*.c'), LIBS=req_c_lib, LIBPATH = ['/usr/lib', '/usr/local/lib'])
 subprocess.check_output("./copy.sh")
+
+env.InstallAs("/usr/local/bin/jamc", "jamc" );
+env.InstallAs("/usr/local/include/jam.h", "./lib/jamlib/c_core/jam.h");
+env.InstallAs("/usr/local/share/jam/jamc.js", "jamc.js");
+env.InstallAs("/usr/local/share/jam/lib/jamlib", "lib/jamlib");
+env.InstallAs("/usr/local/share/jam/lib/jserver", "lib/jserver");
+env.InstallAs("/usr/local/share/jam/lib/ohm", "lib/ohm");
+env.InstallAs("/usr/local/share/jam/LICENSE", "LICENSE");
+env.InstallAs("/usr/local/share/jam/node_modules", "node_modules");
+compiled_library = env.InstallAs("/usr/local/lib/lijam.a", "libjam.a");
+
+Depends(compiled_library, library);
