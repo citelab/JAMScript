@@ -19,7 +19,7 @@ C <: ES5 {
     // Identifiers and Names
     //
     identName       = identStart identPart*
-    id              = ~keyword identifierName
+    id              = ~keyword identName
 
     // Numeric Literals
     //
@@ -61,7 +61,7 @@ C <: ES5 {
     escapeChar      = "\\" letter
 
     string          = "\"" (escapeChar | ~"\"" any)* "\""                               -- String
-                    | ("#" | "`") identifierName                                        -- Id
+                    | ("#" | "`") identName                                        -- Id
 
 
     // Expressions
@@ -340,50 +340,50 @@ C <: ES5 {
                     | unsigned | void | volatile | while
 
     // Convenience rules for parsing keyword tokens.
-    attribute__ = "__attribute__" ~identifierPart
-    asm = ("__asm" | "__asm__") ~identifierPart
-    auto = "auto" ~identifierPart
-    based = "__based" ~identifierPart
-    bool = "_Bool" ~identifierPart
-    break := "break" ~identifierPart
-    case := "case" ~identifierPart
-    cdecl = "__cdecl" ~identifierPart
-    char = "char" ~identifierPart
-    const := "const" ~identifierPart
-    continue := "continue" ~identifierPart
-    default := "default" ~identifierPart
-    do := "do" ~identifierPart
-    double = "double" ~identifierPart
-    else := "else" ~identifierPart
-    enum := "enum" ~identifierPart
-    extension = "__extension__" ~identifierPart
-    extern = "extern" ~identifierPart
-    fascall = "__fascall" ~identifierPart
-    float = "float" ~identifierPart
-    for := "for" ~identifierPart
-    forceinline = "__forceinline" ~identifierPart
-    goto = "goto" ~identifierPart
-    if := "if" ~identifierPart
-    inline = "inline" ~identifierPart
-    inline__ = ("__inline__" | "__inline") ~identifierPart
-    int = "int" ~identifierPart
-    long = "long" ~identifierPart
-    register = "register" ~identifierPart
-    restrict = ("restrict" | "__restrict" | "__restrict__") ~identifierPart
-    return := "return" ~identifierPart
-    short = "short" ~identifierPart
-    signed = "signed" ~identifierPart
-    sizeof = "sizeof" ~identifierPart
-    static := "static" ~identifierPart
-    stdcall = "__stdcall" ~identifierPart
-    struct = "struct" ~identifierPart
-    switch := "switch" ~identifierPart
-    typedef = "typedef" ~identifierPart
-    union = "union" ~identifierPart
-    unsigned = "unsigned" ~identifierPart
-    void := "void" ~identifierPart
-    volatile = "volatile" ~identifierPart
-    while := "while" ~identifierPart
+    attribute__ = "__attribute__" ~identPart
+    asm = ("__asm__" | "__asm") ~identPart
+    auto = "auto" ~identPart
+    based = "__based" ~identPart
+    bool = "_Bool" ~identPart
+    break := "break" ~identPart
+    case := "case" ~identPart
+    cdecl = "__cdecl" ~identPart
+    char = "char" ~identPart
+    const := "const" ~identPart
+    continue := "continue" ~identPart
+    default := "default" ~identPart
+    do := "do" ~identPart
+    double = "double" ~identPart
+    else := "else" ~identPart
+    enum := "enum" ~identPart
+    extension = "__extension__" ~identPart
+    extern = "extern" ~identPart
+    fascall = "__fascall" ~identPart
+    float = "float" ~identPart
+    for := "for" ~identPart
+    forceinline = "__forceinline" ~identPart
+    goto = "goto" ~identPart
+    if := "if" ~identPart
+    inline = "inline" ~identPart
+    inline__ = ("__inline__" | "__inline") ~identPart
+    int = "int" ~identPart
+    long = "long" ~identPart
+    register = "register" ~identPart
+    restrict = ("restrict" | "__restrict__" | "__restrict") ~identPart
+    return := "return" ~identPart
+    short = "short" ~identPart
+    signed = "signed" ~identPart
+    sizeof = "sizeof" ~identPart
+    static := "static" ~identPart
+    stdcall = "__stdcall" ~identPart
+    struct = "struct" ~identPart
+    switch := "switch" ~identPart
+    typedef = "typedef" ~identPart
+    union = "union" ~identPart
+    unsigned = "unsigned" ~identPart
+    void := "void" ~identPart
+    volatile = "volatile" ~identPart
+    while := "while" ~identPart
 }
 
 
