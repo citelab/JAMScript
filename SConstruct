@@ -9,16 +9,16 @@ if node_loc==None:
 else:
     node_v = node_v[1:len(node_v) -1];
     version = node_v.split('.', 2);
-    if(version[0] < 6):
-        print "Please reinstall node. Current version is " + version + "\n This application requires 6.3.1"
+    if(int(version[0]) < 6):
+        print "Please reinstall node. Current version is " + ".".join(version) + "\n This application requires 6.3.1"
         Exit(1);
-    if(version[1] < 3):
-        print "Please reinstall node. Current version is " + version + "\n This application requires 6.3.1"
+    if(int(version[1]) < 3):
+        print "Please reinstall node. Current version is " + ".".join(version) + "\n This application requires 6.3.1"
         Exit(1);
-    if(version[2] < 1):
-        print "Please reinstall node. Current version is " + version + "\n This application requires 6.3.1"
+    if(int(version[2]) < 1):
+        print "Please reinstall node. Current version is " + ".".join(version) + "\n This application requires 6.3.1"
         Exit(1);
-        
+
 npm_v = subprocess.check_output(["npm", "-v"])
 npm_loc = re.search("[0-9]+.[0-9]+.[0-9]+", npm_v)
 if npm_loc==None:
