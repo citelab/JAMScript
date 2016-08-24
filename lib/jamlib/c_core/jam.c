@@ -27,12 +27,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "jam.h"
 #include "core.h"
 #include "activity.h"
-#include "jdata.h"
 
 #ifdef linux
 #include <bsd/stdlib.h>
 #endif
 
+#include "jdata.h"
 #include <strings.h>
 #include <pthread.h>
 
@@ -75,6 +75,7 @@ jamstate_t *jam_init()
 
     js->bgsem = threadsem_new();
     js->jdata_sem = threadsem_new();
+    //jcond_read_context();
 
     int rval = pthread_create(&(js->bgthread), NULL, jwork_bgthread, (void *)js);
     if (rval != 0) {

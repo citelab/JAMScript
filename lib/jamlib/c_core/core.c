@@ -48,8 +48,9 @@ corestate_t *core_init(int timeout)
         exit(1);
     }
 
-    if (!cs->conf->registered)
+    if (!cs->conf->registered){
         core_do_register(cs, timeout);
+    }
 
     if (cs->conf->registered)
     {
@@ -72,8 +73,6 @@ corestate_t *core_init(int timeout)
     return cs;
 }
 
-
-
 // This function does not need to have a return value
 // The 'registered' parameter in the config. holds the state value
 // Also, that value is stored in the key-value store. So we are good
@@ -82,13 +81,11 @@ corestate_t *core_init(int timeout)
 void core_do_register(corestate_t *cs, int timeout)
 {
     int i;
-
     #ifdef DEBUG_MSGS
         printf("Core Registration ..... ");
     #endif
-
     for (i = 0; i < cs->conf->retries; i++)
-    {
+    {   
         core_register_at_fog(cs, timeout);
         if (cs->conf->registered)
         {
@@ -114,7 +111,6 @@ void core_do_register(corestate_t *cs, int timeout)
             }
         }
     }
-
 }
 
 
@@ -189,6 +185,7 @@ void core_insert_fog_addr(corestate_t *cstate, char *host)
 void core_register_at_fog(corestate_t *cs, int timeout)
 {
     int i;
+    int to_add;
     command_t *scmd;
 
     #ifdef DEBUG_MSGS
@@ -196,7 +193,6 @@ void core_register_at_fog(corestate_t *cs, int timeout)
     #endif
 
     scmd = command_new("REGISTER", "DEVICE", cs->conf->app_name, cs->conf->device_id, cs->conf->device_name, "");
-
     for (i = 0; i < cs->conf->num_fog_servers; i++) {
         // create a request-reply socket
         socket_t *sock = socket_new(SOCKET_REQU);
@@ -214,6 +210,24 @@ void core_register_at_fog(corestate_t *cs, int timeout)
             #endif
                 if (rcmd->nargs > 0 && rcmd->args[0].type == INT_TYPE)
                 {
+                    #ifdef DEBUG_LVL1
+                    printf("Commencing Basic Attempting of multi connection ...\n");
+                    #endif
+                    for(int k = 3; k < rcmd->nargs; k += 3){
+                        to_add = 1;
+                        printf("Debugging: %d %s %s %s\n", rcmd->nargs, rcmd->args[k - 2].val.sval, rcmd->args[k - 1].val.sval, rcmd->args[k].val.sval);
+                        for(int j = 0; j < cs->conf->num_fog_servers; j++){
+                            if(strcmp(cs->conf->fog_servers[i], rcmd->args[k - 2].val.sval) == 0){
+                                to_add = 0;
+                                break;
+                            }
+                        }
+                        if(to_add && cs->conf->num_cloud_servers < MAX_SERVERS){
+                            cs->conf->fog_servers[cs->conf->num_cloud_servers++] = strdup(rcmd->args[k - 2].val.sval);
+                        }
+
+                    }
+
                     cs->conf->port = rcmd->args[0].val.ival;
                     database_put_int(cs->conf->db, "REQREP_PORT", cs->conf->port);
                     cs->conf->registered = 1;

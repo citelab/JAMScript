@@ -55,42 +55,48 @@ void jrun_run_task(void *arg)
     free(jact->actarg);
     jact->actarg = strdup(cmd->actid);
     jact->taskid = taskid();
-
-    #ifdef DEBUG_LVL1
-    printf("Sending the ready..........................\n");
-    #endif
+    if(strcmp(cmd->cmd, "REXEC-JDATA") != 0){
+        #ifdef DEBUG_LVL1
+            printf("Sending the ready..........................\n");
+        #endif
     // Send the ready...
-    if (creg->type == ASYNC)
-        rcmd = command_new("REXEC-RDY", "ASY", cmd->actname, jact->actid, cmd->actid, "s", "__");
-    else
-        rcmd = command_new("REXEC-RDY", "SYN", cmd->actname, jact->actid, cmd->actid, "s", "__");
+        if (creg->type == ASYNC)
+            rcmd = command_new("REXEC-RDY", "ASY", cmd->actname, jact->actid, cmd->actid, "s", "__");
+        else
+            rcmd = command_new("REXEC-RDY", "SYN", cmd->actname, jact->actid, cmd->actid, "s", "__");
 
-    #ifdef DEBUG_LVL1
-    printf("----Waitnnnn..........................\n");
-    #endif
+        #ifdef DEBUG_LVL1
+            printf("----Waitnnnn..........................\n");
+        #endif
 
     // Wait for the start or quit and act accordingly...
-    queue_enq(jact->outq, rcmd, sizeof(command_t));
-    task_wait(jact->sem);
+        queue_enq(jact->outq, rcmd, sizeof(command_t));
+        task_wait(jact->sem);
 
-    #ifdef DEBUG_LVL1
-    printf("----Waitnnnn..........................\n");
-    #endif
+        #ifdef DEBUG_LVL1
+            printf("----Waitnnnn..........................\n");
+        #endif
 
-    nvoid_t *nv = queue_deq(jact->inq);
-    assert (nv != NULL);
-    rcmd = (command_t *)nv->data;
-    free(nv);
-    if (rcmd != NULL)
-    {
-        if (strcmp(rcmd->cmd, "REXEC-STA") == 0)
+        nvoid_t *nv = queue_deq(jact->inq);
+        assert (nv != NULL);
+        rcmd = (command_t *)nv->data;
+        free(nv);
+        if (rcmd != NULL)
         {
-            #ifdef DEBUG_LVL1
-            printf("Starting the function.........................\n");
-            #endif
-            creg->cback(jact, cmd);
+            if (strcmp(rcmd->cmd, "REXEC-STA") == 0)
+            {
+                #ifdef DEBUG_LVL1
+                    printf("Starting the function.........................\n");
+                #endif
+                creg->cback(jact, cmd);
+            }
+            command_free(rcmd);
         }
-        command_free(rcmd);
+    }else{
+        #ifdef DEBUG_LVL1
+            printf("Starting the jdata function.........................\n");
+        #endif
+        creg->cback(jact, cmd);    
     }
     command_free(cmd);
     activity_del(js->atable ,jact);

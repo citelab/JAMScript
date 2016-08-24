@@ -75,6 +75,10 @@ typedef struct _corestate_t
     socket_t *subsock;
     socket_t *respsock;
 
+    int req_sock_num;
+    int sub_sock_num;
+    int resp_sock_num;
+
 } corestate_t;
 
 // ------------------------------

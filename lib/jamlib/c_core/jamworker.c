@@ -143,23 +143,33 @@ void jwork_processor(jamstate_t *js)
     // Need to scan all the decriptors
 
     // Use if constructs for the first 4 descriptors
-    if (js->pollfds[0].revents & NN_POLLIN)
+    if (js->pollfds[0].revents & NN_POLLIN){
+        //printf("REQ_SOCK\n");
         jwork_process_reqsock(js);
+    }
     else
-    if (js->pollfds[1].revents & NN_POLLIN)
+    if (js->pollfds[1].revents & NN_POLLIN){
+        //printf("SUB_SOCK\n");
         jwork_process_subsock(js);
+    }
     else
-    if (js->pollfds[2].revents & NN_POLLIN)
+    if (js->pollfds[2].revents & NN_POLLIN){
+        //printf("RESP_SOCK\n");
         jwork_process_respsock(js);
+    }
     else
-    if (js->pollfds[3].revents & NN_POLLIN)
+    if (js->pollfds[3].revents & NN_POLLIN){
+       // printf("GLB_OUTQ\n");
         jwork_process_globaloutq(js);
-    else
+    }
+    else{
     // Use a loop to scan the rest of the descriptors
-    for (i = 4; i < js->numpollfds; i++)
-    {
-        if (js->pollfds[i].revents & NN_POLLIN)
-            jwork_process_actoutq(js, i - 4);
+        //printf("OTHER\n");
+        for (i = 4; i < js->numpollfds; i++)
+        {
+            if (js->pollfds[i].revents & NN_POLLIN)
+                jwork_process_actoutq(js, i - 4);
+        }
     }
 }
 
@@ -180,10 +190,14 @@ void jwork_process_reqsock(jamstate_t *js)
     printf("Command %s, %s %s %s\n", rcmd->cmd, rcmd->actname, rcmd->actid, rcmd->actarg);
     #endif
     if(strcmp(rcmd->cmd, "REXEC-ACK") == 0){
-        printf("Add Pending Activity ... \n");
+        #ifdef DEBUG_LVL1
+            printf("Add Pending Activity ... \n");
+        #endif
         jcmd_log_pending_activity(js->cstate->conf->device_id, rcmd->actid);
     }else if(strcmp(rcmd->cmd, "REXEC-RES") == 0){
-        printf("Remove Pending Activity ... \n");
+        #ifdef DEBUG_LVL1
+            printf("Remove Pending Activity ... \n");
+        #endif 
         jcmd_remove_acknowledged_activity(js->cstate->conf->device_id, rcmd->actid);
     }
     //So at this point, we can automatically set up a permanent log system for calls
@@ -319,6 +333,7 @@ void jwork_process_globaloutq(jamstate_t *js)
     {
         #ifdef DEBUG_LVL1
         printf("Processing cmd: from GlobalOutQ.. ..\n");
+        printf("====================================== In respsock processing.. cmd: %s, opt: %s\n", rcmd->cmd, rcmd->opt);
         #endif
         // Many commands are in the output queue of the main thread
         if (strcmp(rcmd->opt, "LOCAL") == 0)
@@ -343,6 +358,8 @@ void jwork_process_globaloutq(jamstate_t *js)
                     thread_signal(js->atable->delete_sem);
                 }
             }
+        }else if(strcmp(rcmd->cmd , "REXEC_JDATA") == 0){
+            socket_send(js->cstate->reqsock, rcmd);
         }
         else
             socket_send(js->cstate->reqsock, rcmd);

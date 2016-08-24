@@ -67,7 +67,10 @@ arg_t *command_arg_clone(arg_t *arg)
 {
     arg_t *val = (arg_t *)calloc(1, sizeof(arg_t));
     assert(val != NULL);
-
+    if(arg == NULL){
+        printf("Error... Sync call requires a return statement ...\n");
+        assert(arg != NULL);
+    }
     val->type = arg->type;
     switch (arg->type)
     {
@@ -258,6 +261,11 @@ command_t *command_new(const char *cmd, char *opt, char *actname, char *actid, c
                     cbor_mark_negint(elem);
                 break;
             case 'd':
+            case 'p':                 
+                qargs[i].val.nval = va_arg(args, void *);
+                qargs[i].type = NVOID_TYPE;
+                elem = cbor_build_uint64(qargs[i].val.nval);
+                break;
             case 'f':
                 qargs[i].val.dval = va_arg(args, double);
                 qargs[i].type = DOUBLE_TYPE;

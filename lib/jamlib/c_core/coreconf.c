@@ -90,6 +90,7 @@ bool coreconf_recover(coreconf_t *conf)
         char key[128];
         sprintf(key, "FOG_SERVERS(%d)", i);
         conf->fog_servers[i] = database_get_string(conf->db, key);
+        printf("Fog server [%d]: %s\n", i, conf->fog_servers[i]);
     }
 
     for (i = 0; i < conf->num_cloud_servers; i++)
@@ -97,6 +98,7 @@ bool coreconf_recover(coreconf_t *conf)
         char key[128];
         sprintf(key, "CLOUD_SERVERS(%d)", i);
         conf->cloud_servers[i] = database_get_string(conf->db, key);
+        printf("Cloud server [%d]: %s\n", i, conf->cloud_servers[i]);
     }
 
     conf->registered = database_get_int(conf->db, "REGISTERED");
@@ -152,8 +154,10 @@ coreconf_t *coreconf_make(coreconf_t *conf)
         // find out how many we have in the list.. list is seperated by ':'
         for (i = 0; i < MAX_SERVERS; i++) {
             char *tstr = strsep(&fservers, ":");
-            if (tstr != NULL)
+            if (tstr != NULL){
                 conf->fog_servers[i] = strdup(tstr);
+                printf("Fog Servers: %s\n", conf->fog_servers[i]);
+            }
             else
                 break;
         }
@@ -167,8 +171,10 @@ coreconf_t *coreconf_make(coreconf_t *conf)
         // find out how many we have in the list.. list is seperated by ':'
         for (i = 0; i < MAX_SERVERS; i++) {
             char *tstr = strsep(&cservers, ":");
-            if (tstr != NULL)
+            if (tstr != NULL){
                 conf->cloud_servers[i] = strdup(tstr);
+                printf("Fog Servers: %s\n", conf->cloud_servers[i]);
+            }
             else
                 break;
         }

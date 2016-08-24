@@ -5,27 +5,28 @@
 #include <hiredis/async.h>
 #include <hiredis/adapters/libevent.h>
 #include "jam.h"
+#include "activity.h"
 #include <string.h>
-#include <unistd.h>
 #include <semaphore.h>
+#include <unistd.h>
 
 #define DELIM "$$$"
 #define CMD_LOGGER "COMMAND_LOGGER"
 
 typedef void (*connection_callback)(const redisAsyncContext *c, int status);
 typedef void (*msg_rcv_callback)(redisAsyncContext *c, void *reply, void *privdata);
-typedef void (*jdata_callback)(void * j);
 
 typedef struct jbroadcaster{
   char *key;
   void *data;
-  jdata_callback usr_callback;
+  activitycallback_f usr_callback;
   enum{
     JBROADCAST_INT,
     JBROADCAST_STRING,
     JBROADCAST_FLOAT
   }type;
   threadsem_t *write_sem;
+  redisAsyncContext *context;
 }jbroadcaster;
 
 typedef struct jshuffler{
@@ -33,7 +34,7 @@ typedef struct jshuffler{
   char data_queue[128];
   char subscribe_key[128];
   char *key;
-  jdata_callback usr_callback;
+  activitycallback_f usr_callback;
   void *data;
   sem_t lock;
 }jshuffler;
@@ -59,13 +60,13 @@ redisAsyncContext *jdata_subscribe_to_server(char *key, msg_rcv_callback on_msg,
 void jdata_run_async_cmd(char *cmd, msg_rcv_callback callback);
 redisReply *jdata_run_sync_cmd(char *cmd);
 void jdata_free();
-jbroadcaster *jbroadcaster_init(int type, char *var_name, jdata_callback usr_callback);
+jbroadcaster *jbroadcaster_init(int type, char *var_name, activitycallback_f usr_callback);
 void *get_jbroadcaster_value(jbroadcaster *j);
 void free_jbroadcaster_list();
 void jbroadcaster_msg_rcv_callback(redisAsyncContext *c, void *reply, void *privdata);
 
 void jshuffler_callback(redisAsyncContext *c, void *reply, void *privdata);
-jshuffler *jshuffler_init(int type, char *var_name, jdata_callback usr_callback);
+jshuffler *jshuffler_init(int type, char *var_name, activitycallback_f usr_callback);
 void *jshuffler_poll(jshuffler *j);
 void jshuffler_push(jshuffler *j, char *data);
 
@@ -73,6 +74,7 @@ void jcmd_log_pending_activity(char *app_id, char *actid);
 void jcmd_remove_acknowledged_activity(char *app_id, char *actid);
 void jcmd_delete_pending_activity_log(char *key, msg_rcv_callback callback);
 char **jcmd_get_pending_activity_log(char *key, msg_rcv_callback callback);
+
 
 
 #endif

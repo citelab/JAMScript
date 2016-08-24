@@ -37,6 +37,7 @@ extern "C" {
 #include "timer.h"
 #include "command.h"
 #include <pthread.h>
+#include "jcondition.h"
 
 #include "task.h"
 #include "threadsem.h"
@@ -44,7 +45,6 @@ extern "C" {
 
 #define STACKSIZE                   50000
 #define MAX_RUN_ENTRIES             256
-
 
 typedef struct _runtableentry_t
 {

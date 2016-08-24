@@ -33,10 +33,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // originating routine.
 //
 nvoid_t *nvoid_new(void *data, int len)
-{
+{    
     nvoid_t *nv = (nvoid_t *)calloc(1, sizeof(nvoid_t));
     assert(nv != NULL);
-
     void *dc = (void *)malloc(len);
     assert(dc != NULL);
 

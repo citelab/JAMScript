@@ -12,6 +12,8 @@ int jdata_seq_num = 0;
 char *redis_serv_IP;
 int redis_serv_port;
 
+jamstate_t *j_s;
+
 //redisAsyncContext *jdata_async_subscriber_context;//for asynchronous calls to logger
 redisAsyncContext *jdata_async_non_sub_context;//for asynchronous calls to logger
 
@@ -43,6 +45,7 @@ void jdata_get_server_ip(jamstate_t *js){
 void jdata_init(jamstate_t *js){
   sprintf(app_id, "%s", js->cstate->conf->app_name);
   sprintf(dev_id, "%s", js->cstate->conf->device_id);
+  j_s = js;
   jdata_seq_num = 0;
   redis_serv_IP = NULL;
   //redis_serv_IP = strdup("127.0.0.1");
@@ -230,8 +233,9 @@ void free_jbroadcaster(jbroadcaster *j){
   free(j);
 }
 
-jbroadcaster *jbroadcaster_init(int type, char *variable_name, jdata_callback usr_callback){
+jbroadcaster *jbroadcaster_init(int type, char *variable_name, activitycallback_f usr_callback){
   jbroadcaster *ret;
+  char buf[256];
   switch(type){
     case JBROADCAST_INT: break;
     case JBROADCAST_STRING: break;
@@ -258,7 +262,9 @@ jbroadcaster *jbroadcaster_init(int type, char *variable_name, jdata_callback us
     jdata_list_tail->data.jbroadcaster_data = ret;
     jdata_list_tail->next = NULL;
   }
-  jdata_subscribe_to_server( variable_name, jbroadcaster_msg_rcv_callback, NULL, NULL);
+  ret->context = jdata_subscribe_to_server( variable_name, jbroadcaster_msg_rcv_callback, NULL, NULL);
+  sprintf(buf, "jbroadcast_func_%s", variable_name);
+  activity_regcallback(j_s->atable, buf, ASYNC, "v", usr_callback);
   return ret;
 }
 
@@ -266,6 +272,7 @@ void jbroadcaster_msg_rcv_callback(redisAsyncContext *c, void *reply, void *priv
   redisReply *r = reply;
   char *result;
   char *var_name;
+  char buf[256];
   if (reply == NULL) return;
   if (r->type == REDIS_REPLY_ARRAY) {
     var_name = r->element[1]->str;
@@ -275,13 +282,17 @@ void jbroadcaster_msg_rcv_callback(redisAsyncContext *c, void *reply, void *priv
       for(jdata_list_node *i = jdata_list_head; i != NULL; i = i->next){
         if(strcmp(i->data.jbroadcaster_data->key, var_name) == 0){
           result = strdup(result);
-
           //At this point, we may need to add a lock to prevent race condition
           void *to_free = i->data.jbroadcaster_data->data;
           i->data.jbroadcaster_data->data = result;
           free(to_free);
           if(i->data.jbroadcaster_data->usr_callback != NULL){
-            i->data.jbroadcaster_data->usr_callback(i->data.jbroadcaster_data);
+            //So here instead of executing this function here, we need to insert this into the work queue
+            sprintf(buf, "jbroadcast_func_%s", i->data.jbroadcaster_data->key);
+            command_t *rcmd = command_new("REXEC-JDATA", "ASY", buf, "__", "0", "p", i->data.jbroadcaster_data);
+            queue_enq(j_s->atable->globalinq, rcmd, sizeof(command_t));
+            thread_signal(j_s->atable->globalsem);
+            //i->data.jbroadcaster_data->usr_callback(NULL, i->data.jbroadcaster_data);
           }
           return;
         }
@@ -295,8 +306,9 @@ void *get_jbroadcaster_value(jbroadcaster *j){
   return j->data;
 }
 
-jshuffler *jshuffler_init(int type, char *var_name, jdata_callback usr_callback){
+jshuffler *jshuffler_init(int type, char *var_name, activitycallback_f usr_callback){
   jshuffler *ret = calloc(1, sizeof(jshuffler));
+  char buf[256];
   ret->key = strdup(var_name);
   sprintf(ret->rr_queue, "JSHUFFLER_rr_queue|%s", app_id);
   sprintf(ret->data_queue, "JSHUFFLER_data_queue|%s", app_id);
@@ -325,12 +337,15 @@ jshuffler *jshuffler_init(int type, char *var_name, jdata_callback usr_callback)
   redisAsyncSetConnectCallback(subscriber_context, jdata_default_disconnection);
   redisLibeventAttach(subscriber_context, base);
   redisAsyncCommand(subscriber_context, jshuffler_callback, NULL, "SUBSCRIBE %s", ret->subscribe_key);
+  sprintf(buf, "jshuffler_func_%s", var_name);
+  activity_regcallback(j_s->atable, var_name, ASYNC, "v", usr_callback);
   return ret;
 }
 
 void jshuffler_callback(redisAsyncContext *c, void *reply, void *privdata){
   redisReply *r = (redisReply *)reply;
   char var_name[256];
+  char buf[256];
   char *result;
   char *result_ptr;
   if(r == NULL) return;
@@ -349,9 +364,14 @@ void jshuffler_callback(redisAsyncContext *c, void *reply, void *privdata){
           i->data.jshuffler_data->data = result;
           free(to_free);
           if(i->data.jshuffler_data->usr_callback != NULL){
-            i->data.jshuffler_data->usr_callback(i->data.jshuffler_data);
+            sprintf(buf, "jshuffler_func_%s", i->data.jbroadcaster_data->key);
+            command_t *rcmd = command_new("REXEC-JDATA", "ASY", buf, "__", "0", "p", i->data.jshuffler_data);
+            queue_enq(j_s->atable->globalinq, rcmd, sizeof(command_t));
+            thread_signal(j_s->atable->globalsem);
           }
-          printf("Result Received:%s\n", result);
+          #ifdef DEBUG_LVL1
+            printf("Result Received:%s\n", result);
+          #endif
           //sem_post(&i->data.jshuffler_data->lock);
           return;
         }
@@ -398,8 +418,9 @@ void *jshuffler_poll(jshuffler *j){
   if (ret->type == REDIS_REPLY_ARRAY) {
   if(strcmp(ret->element[0]->str, "JSHUFFLER_WAIT") == 0){
     printf("Polling ... \n");
+    sleep(1);
+    return jshuffler_poll(j);
     //sem_wait(&j->lock);
-
   }
     j->data = ret;
   }
@@ -430,7 +451,7 @@ void jcmd_delete_pending_activity_log(char *key, msg_rcv_callback callback){
 char **jcmd_get_pending_activity_log(char *key, msg_rcv_callback callback){
   if(callback == NULL)
     callback = jdata_default_msg_received;
-   redisReply * r = redisCommand(jdata_async_non_sub_context, "ZRANGE %s 0 -1", key);
+   redisReply * r = redisCommand(jdata_sync_context, "ZRANGE %s 0 -1", key);
    if (r->type == REDIS_REPLY_ARRAY) {
      char **ret = (char **)calloc(r->elements, sizeof(char *));
      for (int j = 0; j < r->elements; j++) {
