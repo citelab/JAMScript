@@ -3,10 +3,10 @@ var ohm = require('ohm-js'),
     fs = require('fs'),
     JSZip = require('jszip'),
     child_process = require('child_process'),
-    crypto = require('crypto');
+    crypto = require('crypto'),
+    path = require('path');
 
 var cc;
-var inputPath;
 var outputName;
 
 
@@ -22,7 +22,8 @@ var debug = false,
 var args = process.argv.slice(2);
 var jamlibPath = args[0];
 var tmpDir = "/tmp/jam-" + randomValueHex(20);
-
+var cPath = undefined;
+var jsPath = undefined;
 
 for (var i = 1; i < args.length; i++) {
   if(args[i].charAt(0) == "-") {
@@ -42,21 +43,31 @@ for (var i = 1; i < args.length; i++) {
       translateOnly = true;
     }
   } else {
-    inputPath = args[i];
-    if(args.length > i+1) {
-      outputName = args[i+1];
-    } else {
-      outputName = "jamout"
+    var inputPath = args[i];
+    var extension = path.extname(inputPath);
+    if(extension == '.js') {
+      jsPath = inputPath;
+    } else if(extension == '.c') {
+      cPath = inputPath;
     }
-    break;
   }
-
 }
 
-if(inputPath === undefined) {
-  inputArgsError();
+if(cPath === undefined) {
+  console.error("Error: C input file not specified");
+}
+if(jsPath === undefined) {
+  console.error("Error: JavaScript input file not specified");
+}
+if(cPath === undefined || jsPath === undefined) {
+  // inputArgsError();
   process.exit(1);
 }
+
+// if(inputPath === undefined) {
+//   inputArgsError();
+//   process.exit(1);
+// }
 
 // Set compiler
 if(process.platform == "darwin") {
@@ -68,7 +79,7 @@ if(process.platform == "darwin") {
 
 
 try {
-  var preprocessed = preprocess(inputPath);
+  var preprocessed = preprocess(cPath);
   if(preprocessOnly) {
     printAndExit(preprocessed);
   }
@@ -76,24 +87,34 @@ try {
     console.log(preprocessed);
   }
 
-  var result = jam.grammar.match(preprocessed, 'Program');
-  if(result.failed()) {
-    throw result.message;
+  var cTree = jam.jamCGrammar.match(preprocessed, 'Source');
+  var jsTree = jam.jamJSGrammar.match(fs.readFileSync(jsPath).toString(), 'Program');
+
+
+  if(cTree.failed()) {
+    throw cTree.message;
+  }
+  if(jsTree.failed()) {
+    throw jsTree.message;
   }
   if(parseOnly) {
-    printAndExit(result);
+    printAndExit(cTree + jsTree);
   }
   if(verbose) {
-    console.log(result);
+    console.log(cTree);
+    console.log(jsTree);
   }
 
-	var output = jam.semantics(result).jamTranslator;
-  if(translateOnly) {
-    printAndExit(output);
-  }
-  if(verbose) {
-    console.log(output);
-  }
+	var cOutput = jam.cSemantics(cTree).jamCTranslator;
+	var jsOutput = jam.jsSemantics(jsTree).jamJSTranslator;
+
+  // if(translateOnly) {
+  //   printAndExit(output);
+  // }
+  // if(verbose) {
+  //   console.log(output);
+  // }
+
 
   // fs.writeFileSync("/usr/local/share/jam/lib/jamlib/c_core/jamlib.c", output.C);
   // child_process.execSync("make -C /usr/local/share/jam/lib/jamlib/c_core");
@@ -114,14 +135,13 @@ try {
   requires += "var JManager = require('./jmanager');\n";
   requires += "var JLogger = require('./jlogger');\n";  
 
-  // console.log(output.C);
-  fs.writeFileSync("jamout.js", requires + output.JS);
-  fs.writeFileSync("jamout.c", output.C);
+  fs.writeFileSync("jamout.js", requires + jsOutput.JS + cOutput.JS);
+  fs.writeFileSync("jamout.c", cOutput.C + jsOutput.C);
 
   if(!noCompile) {
     // flowCheck(output.annotated_JS)
   	fs.mkdirSync(tmpDir);
-    fs.writeFileSync(`${tmpDir}/jamout.c`, output.C);
+    fs.writeFileSync(`${tmpDir}/jamout.c`, cOutput.C);
     child_process.execSync(`gcc -Wno-incompatible-library-redeclaration ${tmpDir}/jamout.c -I./lib/jamlib/c_core -lcbor -lnanomsg -lhiredis -levent /usr/local/share/jam/deps/libtask/libtask.a /usr/local/lib/libjam.a`);
     // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
     // createZip(createTOML(), output.JS, tmpDir, outputName);
@@ -212,9 +232,9 @@ function createTOML() {
 }
 
 function inputArgsError() {
-  console.log("No input file specified");
-  console.log("Input format:");
-  console.log("\tjamc [options] <input file> <output name>");
+  console.error("No input file specified");
+  console.error("Input format:");
+  console.error("\tjamc [options] <input file> <output name>");
 }
 
 function randomValueHex (len) {

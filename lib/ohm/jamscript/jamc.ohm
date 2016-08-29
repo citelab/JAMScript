@@ -1,0 +1,24 @@
+JAMC <: C {
+    Source         := External_decl+
+
+    Namespace_spec  = in id
+
+    Type_spec       += jcallback
+
+    Async_activity  = jasync Declarator Namespace_spec? Compound_stmt
+
+    Sync_activity   = jsync Decl_specs Declarator Namespace_spec? Compound_stmt
+
+    Activity_def    = Sync_activity
+                    | Async_activity
+
+    External_decl   := Activity_def
+                    | Prototype
+                    | Function_def
+                    | Decl
+
+    jasync = "jasync" ~identPart
+    jsync = "jsync" ~identPart
+    in = "in" ~identPart
+    jcallback = "jcallback" ~identPart
+}

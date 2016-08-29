@@ -1,5 +1,5 @@
-C <: ES5 {
-    Program         := External_decl*
+C {
+    Source         = External_decl*
 
     // Helper Rules
     //
@@ -10,7 +10,7 @@ C <: ES5 {
 
     // Comments
     //
-    comment         := "//" (~linebreak any)* &linebreak
+    comment         = "//" (~linebreak any)* &linebreak
                     | "/*" (~"*/" any)* "*/"
 
     space           += comment
@@ -32,14 +32,14 @@ C <: ES5 {
     decimalInt      = nonZeroDigit decimalDigit*                                        -- Full
                     | "0"                                                               -- Zero
 
-    decimalDigit    := "0".."9"
-    nonZeroDigit    := "1".."9"
+    decimalDigit    = "0".."9"
+    nonZeroDigit    = "1".."9"
 
     expPart         = ("e" | "E") ("+" | "-")? digit+
 
     octal           = "0" octalDigit+ ("l"|"L")?
 
-    octalDigit      := "0".."7"
+    octalDigit      = "0".."7"
 
     decimal         = decimalValue ("l"|"L")
                     | decimalValue ("f"|"F")?
@@ -145,7 +145,8 @@ C <: ES5 {
     // Declaration statements
     // Statements that do "type" specification
     //
-    
+    Prototype       = Decl_specs Pointer_list? id "(" Param_type_lst? ")" ";"
+
     Decl            = Decl_specs Init_decl_lst ";"          
 
     Decl_specs      = (Store_cl_spec | Func_spec | type_qualifier | Gcc_decl_spec)* 
@@ -327,11 +328,12 @@ C <: ES5 {
                     | return Expr? ";"                                                  -- ReturnStmt
 
     External_decl   = Function_def
+                    | Prototype
                     | Decl
 
     Function_def    = Decl_specs Declarator Compound_stmt
 
-    keyword         :=  attribute__ | asm | auto | based | bool | break | case 
+    keyword         =  attribute__ | asm | auto | based | bool | break | case 
                     | cdecl | char | const | continue | default | do | double 
                     | else | enum | extension | extern | fascall | float | for 
                     | forceinline | goto | if | inline | inline__ | int | long 
@@ -345,45 +347,45 @@ C <: ES5 {
     auto = "auto" ~identPart
     based = "__based" ~identPart
     bool = "_Bool" ~identPart
-    break := "break" ~identPart
-    case := "case" ~identPart
+    break = "break" ~identPart
+    case = "case" ~identPart
     cdecl = "__cdecl" ~identPart
     char = "char" ~identPart
-    const := "const" ~identPart
-    continue := "continue" ~identPart
-    default := "default" ~identPart
-    do := "do" ~identPart
+    const = "const" ~identPart
+    continue = "continue" ~identPart
+    default = "default" ~identPart
+    do = "do" ~identPart
     double = "double" ~identPart
-    else := "else" ~identPart
-    enum := "enum" ~identPart
+    else = "else" ~identPart
+    enum = "enum" ~identPart
     extension = "__extension__" ~identPart
     extern = "extern" ~identPart
     fascall = "__fascall" ~identPart
     float = "float" ~identPart
-    for := "for" ~identPart
+    for = "for" ~identPart
     forceinline = "__forceinline" ~identPart
     goto = "goto" ~identPart
-    if := "if" ~identPart
+    if = "if" ~identPart
     inline = "inline" ~identPart
     inline__ = ("__inline__" | "__inline") ~identPart
     int = "int" ~identPart
     long = "long" ~identPart
     register = "register" ~identPart
     restrict = ("restrict" | "__restrict__" | "__restrict") ~identPart
-    return := "return" ~identPart
+    return = "return" ~identPart
     short = "short" ~identPart
     signed = "signed" ~identPart
     sizeof = "sizeof" ~identPart
-    static := "static" ~identPart
+    static = "static" ~identPart
     stdcall = "__stdcall" ~identPart
     struct = "struct" ~identPart
-    switch := "switch" ~identPart
+    switch = "switch" ~identPart
     typedef = "typedef" ~identPart
     union = "union" ~identPart
     unsigned = "unsigned" ~identPart
-    void := "void" ~identPart
+    void = "void" ~identPart
     volatile = "volatile" ~identPart
-    while := "while" ~identPart
+    while = "while" ~identPart
 }
 
 
