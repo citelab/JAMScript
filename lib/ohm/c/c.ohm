@@ -287,8 +287,9 @@ C {
     // gcc_asm_operand = ("[" ("Id"|"Typename") "]")? string "(" expr ")",
 
 
-    Gcc_asm_expr    = asm type_qualifier? "(" (~")" any)* ")"+
+    Gcc_asm_expr    = asm type_qualifier? "(" Gcc_asm_expr_string* ")"
 
+    Gcc_asm_expr_string = "\"" (~"\"" any)* "\""
 
     // C Statements
     //
