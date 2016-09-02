@@ -4,54 +4,16 @@
 
 #define NUM_MSG 20
 
+int setup();
+char* get_past_msg(int);
+int get_new_id(char*);
+jactivity_t* j_node_get_msg(char*, char*, int);
+
 struct pollfd qpollfds[2];
 int ID = 0;
 int current_msg_id = -1;
 
-jsync int setup() {
-    1>>>2;
-  var a;
-  if(typeof ID == "undefined") {
-    ID = 1;
-    msg_list = ["Chat Service Initiated... "];
-    msg_id = 1;
-  }
-  return 0;
-}
-
-jsync char * get_past_msg(int num_msg){
-    1>>>2;
-  var begin = 0;
-  var end = num_msg;
-  var ret = "";
-  if(num_msg < msg_list.length) {
-    begin = msg_list.length - num_msg;
-  } else {
-    end = msg_list.length;
-  }
-  ret += msg_list.slice(begin, end).join("");
-  ret.replace(",","");
-  console.log("We are sending.... \n-------------------------------------------------\n" + ret)
-  return ret;
-}
-
-jsync int get_new_id(char * status_msg) {
-    1>>>2;
-  var a;
-  console.log(status_msg + " and " + ID);
-  ID += 1;
-  return ID;
-}
-
-jasync j_node_get_msg(char * usr_name, char * msg, int user_id) {
-    1>>>2;
-  var a;
-  msg_list.push(usr_name + ":" + msg);
-  c_node_get_msg(usr_name, msg, user_id, msg_id++);
-}
-
 jasync c_node_get_msg(char * usr_name, char * msg, int usr_id, int msg_id){
-
     if(usr_id != ID){
       printf("hey\n");
       if(current_msg_id != msg_id){

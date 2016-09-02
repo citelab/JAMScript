@@ -1,0 +1,29 @@
+JAMJS <: ES5 {
+    Declaration     += Jdata_decl
+                    | Activity_def
+
+    jdata_type      = broadcaster 
+                    | logger 
+                    | shuffler
+    
+    Jdata_spec      = "int" identifier as jdata_type ";"
+
+    Jdata_decl      = jdata "{" Jdata_spec* "}"
+
+    Async_activity  = jasync FunctionDeclaration
+
+    Sync_activity   = jsync FunctionDeclaration
+
+    Activity_def    = Sync_activity
+                    | Async_activity
+
+    jasync = "jasync" ~identifierPart
+    jsync = "jsync" ~identifierPart
+    in := "in" ~identifierPart
+    jdata = "jdata" ~identifierPart
+    as = "as" ~identifierPart
+    broadcaster = "broadcaster" ~identifierPart
+    logger = "logger" ~identifierPart
+    shuffler = "shuffler" ~identifierPart
+    jcallback = "jcallback" ~identifierPart
+}

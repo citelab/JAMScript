@@ -1,6 +1,11 @@
 import subprocess
 import re
 
+
+########################
+# Check program versions
+########################
+
 node_v = subprocess.check_output(["node", "-v"])
 node_loc = re.search('v[0-9]+.[0-9]+.[0-9]+', node_v)
 if node_loc==None:
@@ -12,12 +17,14 @@ else:
     if(int(version[0]) < 6):
         print "Please reinstall node. Current version is " + ".".join(version) + "\n This application requires 6.3.1"
         Exit(1);
-    if(int(version[1]) < 3):
-        print "Please reinstall node. Current version is " + ".".join(version) + "\n This application requires 6.3.1"
-        Exit(1);
-    if(int(version[2]) < 1):
-        print "Please reinstall node. Current version is " + ".".join(version) + "\n This application requires 6.3.1"
-        Exit(1);
+    elif(int(version[0] == 6)):
+	    if(int(version[1]) < 3):
+	        print "Please reinstall node. Current version is " + ".".join(version) + "\n This application requires 6.3.1"
+	        Exit(1);
+	    elif(int(version[1]) == 3):
+		    if(int(version[2]) < 1):
+		        print "Please reinstall node. Current version is " + ".".join(version) + "\n This application requires 6.3.1"
+		        Exit(1);
 
 npm_v = subprocess.check_output(["npm", "-v"])
 npm_loc = re.search("[0-9]+.[0-9]+.[0-9]+", npm_v)
