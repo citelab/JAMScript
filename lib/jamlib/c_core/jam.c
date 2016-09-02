@@ -129,7 +129,7 @@ void jam_event_loop(void *arg)
             else
             {
                 #ifdef DEBUG_LVL1
-                printf("Command actname = %s\n", cmd->actname);
+                printf("Command actname = %s %s %s\n", cmd->actname, cmd->cmd, cmd->opt);
                 #endif
 
                 tr = jam_newtemprecord(js, cmd, areg);

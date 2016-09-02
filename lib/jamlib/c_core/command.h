@@ -75,6 +75,7 @@ typedef struct _command_t
     char *actname;                          // Activity name
     char *actid;                            // Activity ID
     char *actarg;                           // Activity arg
+    int socket_indx;
     unsigned char *buffer;                  // CBOR byte array in raw byte form
     int length;                             // length of the raw CBOR data
     cbor_item_t *cdata;                     // handle to the CBOR array

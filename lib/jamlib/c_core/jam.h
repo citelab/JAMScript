@@ -52,8 +52,12 @@ typedef struct _runtableentry_t
     char *actname;
     char *actid;
     int status;
-    arg_t *code;
+    int index;
 
+    int num_response;
+    int num_rcv_response;
+    arg_t *result_list[MAX_SERVERS]; //The results
+    int socket_list[MAX_SERVERS];
 } runtableentry_t;
 
 
@@ -125,9 +129,9 @@ void jwork_reassemble_fds(jamstate_t *js, int nam);
 void jwork_assemble_fds(jamstate_t *js);
 int jwork_wait_fds(jamstate_t *js, int beattime);
 void jwork_processor(jamstate_t *js);
-void jwork_process_reqsock(jamstate_t *js);
-void jwork_process_subsock(jamstate_t *js);
-void jwork_process_respsock(jamstate_t *js);
+void jwork_process_reqsock(jamstate_t *js, int index);
+void jwork_process_subsock(jamstate_t *js, int index);
+void jwork_process_respsock(jamstate_t *js, int index);
 void jwork_process_globaloutq(jamstate_t *js);
 void jwork_process_actoutq(jamstate_t *js, int indx);
 command_t *jwork_runid_status(jamstate_t *js, char *runid);
@@ -141,9 +145,12 @@ void jam_clear_timer(jamstate_t *js, char *actid);
 
 bool jam_eval_condition(char *expr);
 runtable_t *jwork_runtable_new();
-void jwork_runid_complete(runtable_t *rtab, char *runid, arg_t *arg);
+void jwork_runid_complete(jamstate_t *js, runtable_t *rtab, char *runid, arg_t *arg);
 bool jwork_runtable_check(runtable_t *rtable,  command_t *cmd);
-
+runtableentry_t *find_table_entry(runtable_t *rtable, command_t *cmd);
+command_t *prepare_sync_return_result(runtableentry_t *r, command_t *cmd);
+void free_rtable_entry(runtableentry_t *entry, runtable_t *table);
+command_t *return_err_arg(command_t *rcmd, char *err_msg);
 /*
  * Functions defined in jamrunner.c
  */

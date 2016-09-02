@@ -313,7 +313,6 @@ void activity_complete(activitytable_t *at, char *fmt, ...)
 
                 scmd = command_new("COMPL-ACT", "LOCAL", jact->name, jact->actid, jact->actarg, "i", va_arg(args, int));
                 break;
-
             case 'd':
             case 'f':
                 printf("Format for real..... \n");

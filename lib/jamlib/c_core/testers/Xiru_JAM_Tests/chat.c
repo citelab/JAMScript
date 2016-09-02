@@ -88,7 +88,7 @@ void taskmain(int argc, char **argv)
 
     // create the application runner
     taskcreate(jam_run_app, js, STACKSIZE);
-    activity_regcallback(js->atable, "c_node_get_msg", ASYNC, "ssii", callc_node_get_msg);
+    activity_regcallback(js->atable, "c_node_get_msg", SYNC, "ssii", callc_node_get_msg);
 
     printf("Commencing JAM operation \n");
 }

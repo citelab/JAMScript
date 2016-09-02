@@ -1,0 +1,4 @@
+{
+		"device_id":7,
+		"type":"central_server"
+}

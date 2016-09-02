@@ -71,13 +71,11 @@ typedef struct _corestate_t
 {
     coreconf_t *conf;
 
-    socket_t *reqsock;
-    socket_t *subsock;
-    socket_t *respsock;
+    socket_t *reqsock[MAX_SERVERS];
+    socket_t *subsock[MAX_SERVERS];
+    socket_t *respsock[MAX_SERVERS];
 
-    int req_sock_num;
-    int sub_sock_num;
-    int resp_sock_num;
+    int num_serv;
 
 } corestate_t;
 

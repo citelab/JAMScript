@@ -25,6 +25,6 @@ void taskmain(int argc, char **argv)
     taskcreate(jam_event_loop, js, STACKSIZE);
 
     // create the application runner
-    taskcreate(jam_run_app, js, STACKSIZE);
+    //taskcreate(jam_run_app, js, STACKSIZE);
     printf("Commencing JAM operation \n");
 }

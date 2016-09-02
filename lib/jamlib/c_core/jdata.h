@@ -70,8 +70,8 @@ jshuffler *jshuffler_init(int type, char *var_name, activitycallback_f usr_callb
 void *jshuffler_poll(jshuffler *j);
 void jshuffler_push(jshuffler *j, char *data);
 
-void jcmd_log_pending_activity(char *app_id, char *actid);
-void jcmd_remove_acknowledged_activity(char *app_id, char *actid);
+void jcmd_log_pending_activity(char *app_id, char *actid, int index);
+void jcmd_remove_acknowledged_activity(char *app_id, char *actid, int index);
 void jcmd_delete_pending_activity_log(char *key, msg_rcv_callback callback);
 char **jcmd_get_pending_activity_log(char *key, msg_rcv_callback callback);
 

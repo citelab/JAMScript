@@ -13,10 +13,8 @@
 bool jrun_check_signature(activity_callback_reg_t *creg, command_t *cmd)
 {
     int i;
-
     if (strlen(creg->signature) != cmd->nargs)
         return false;
-
     for (i = 0; i < strlen(creg->signature); i++)
     {
         if (creg->signature[i] == 'i' && cmd->args[i].type != INT_TYPE)
@@ -64,7 +62,8 @@ void jrun_run_task(void *arg)
             rcmd = command_new("REXEC-RDY", "ASY", cmd->actname, jact->actid, cmd->actid, "s", "__");
         else
             rcmd = command_new("REXEC-RDY", "SYN", cmd->actname, jact->actid, cmd->actid, "s", "__");
-
+        
+        rcmd->socket_indx = cmd->socket_indx;
         #ifdef DEBUG_LVL1
             printf("----Waitnnnn..........................\n");
         #endif

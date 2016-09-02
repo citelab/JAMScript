@@ -125,6 +125,8 @@ void jdata_default_msg_received(redisAsyncContext *c, void *reply, void *privdat
       }
   }else if(r->type == REDIS_REPLY_ERROR){
     printf("%s\n", r->str);
+  }else{
+    printf("BUGS .... \n");
   }
     #ifdef DEBUG_LVL1
     printf("Broadcast received...\n");
@@ -427,17 +429,21 @@ void *jshuffler_poll(jshuffler *j){
   return j->data;
 }
 
-void jcmd_log_pending_activity(char *app_id, char *actid){
+void jcmd_log_pending_activity(char *app_id, char *actid, int index){
     char key[256];
+    char actid_expanded[128];
     sprintf(key, "%s%s%s", CMD_LOGGER, DELIM, app_id);
+    sprintf(actid_expanded, "%s|%d", actid, index);
     redisAsyncCommand(jdata_async_non_sub_context, jdata_default_msg_received, NULL, "EVAL %s 1 %s %s", "redis.replicate_commands(); \
                                                             local t = (redis.call('TIME'))[1]; \
                                                             redis.call('ZADD', KEYS[1], t, ARGV[1]); \
                                                             return {t}", key, actid);
 }
 
-void jcmd_remove_acknowledged_activity(char *app_id, char *actid){
+void jcmd_remove_acknowledged_activity(char *app_id, char *actid, int index){
     char key[256];
+    char actid_expanded[128];
+    sprintf(actid_expanded, "%s|%d", actid, index);
     sprintf(key, "%s%s%s", CMD_LOGGER, DELIM, app_id);
     jdata_remove_element(key, actid, NULL);
 }

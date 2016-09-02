@@ -126,6 +126,8 @@ bool socket_connect(socket_t *socket, char *addr, int port)
 int socket_send(socket_t *sock, command_t *cmd)
 {
     int bytes = nn_send(sock->sock_fd, cmd->buffer, cmd->length, 0);
+    if(bytes < 0)
+        printf("\n-----------Error code: %s, %d------------\n",nn_strerror(errno), bytes);
     assert(bytes == cmd->length);
     #ifdef DEBUG_LVL1
         //printf("Sent %d bytes on sock \n", bytes);

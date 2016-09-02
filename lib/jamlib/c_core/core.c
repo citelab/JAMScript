@@ -301,16 +301,18 @@ bool core_do_connect(corestate_t *cs, int timeout)
 
     // We already have a port that is allocated for this device.
     // Connect to the Fog at the given port (REQREP)
-
-    cs->reqsock = socket_new(SOCKET_REQU);
-    socket_connect(cs->reqsock, cs->conf->my_fog_server, cs->conf->port);
+    for(int i = 0; i < cs->conf->num_fog_servers; i++){
+        cs->reqsock[i] = socket_new(SOCKET_REQU);
+        socket_connect(cs->reqsock[i], cs->conf->my_fog_server, cs->conf->port);
 
     // Connect to the Fog at the Publish and Survey sockets
-    cs->subsock = socket_new(SOCKET_SUBS);
-    socket_connect(cs->subsock, cs->conf->my_fog_server, PUBLISH_PORT);
+        cs->subsock[i] = socket_new(SOCKET_SUBS);
+        socket_connect(cs->subsock[i], cs->conf->my_fog_server, PUBLISH_PORT);
 
-    cs->respsock = socket_new(SOCKET_RESP);
-    socket_connect(cs->respsock, cs->conf->my_fog_server, SURVEY_PORT);
+        cs->respsock[i] = socket_new(SOCKET_RESP);
+        socket_connect(cs->respsock[i], cs->conf->my_fog_server, SURVEY_PORT);
+
+    }
 
     time_t now = time(&now);
     cs->conf->stime = localtime(&now);

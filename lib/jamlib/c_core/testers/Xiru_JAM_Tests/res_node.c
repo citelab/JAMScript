@@ -5,10 +5,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-void msg_rcv_custom(jbroadcaster *j){
+void msg_rcv_custom(void *ten, void *arg){
+  jbroadcaster *j = (jbroadcaster *)arg;
   char *result;
   duk_context *ctx = duk_create_heap_default();
-  printf("Message Received: %s\n", get_jbroadcaster_value(j));
+  printf("Message Received: %s\n", (char *)get_jbroadcaster_value(j));
   duk_eval_string(ctx, get_jbroadcaster_value(j));
   result = strdup(duk_get_string(ctx, -1));
   jdata_log_to_server("results",result, jdata_default_msg_received); 
