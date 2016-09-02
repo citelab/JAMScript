@@ -1,6 +1,11 @@
 import subprocess
 import re
 
+
+########################
+# Check program versions
+########################
+
 node_v = subprocess.check_output(["node", "-v"])
 node_loc = re.search('v[0-9]+.[0-9]+.[0-9]+', node_v)
 if node_loc==None:
