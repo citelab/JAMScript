@@ -67,40 +67,37 @@ make
 sudo make install
 ```
 
-
-libcborgit clone http://github.com/wenger/tcc.git
-nanomsg
-
-
-Now install the libraries that are needed for JAMScript compilation.
-
-sudo apt-get install xz-utils
-sudo tar -C /usr/local --strip-components 1 -xJf node-v6.5.0-linux-x64.tar.xz
-
-
-
-
-
-Next, install a NodeJS 6.3.1 or later. Check your node version if it is already
-You need to install the latest NodeJS
-
-It is best to have a scons version 2.5 or later.
-
-
-The gcc version needs to be 5.0 or above. Following commands can be
-used to install a version 5 gcc compiler.
-
+Libcbor needs to be installed; use the following commands.
 ```
-sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-sudo apt-get update
-sudo apt-get install gcc-5 g++-5
-
-sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 1
+wget https://github.com/PJK/libcbor/releases/download/v0.4.0/libcbor-0.4.0-Linux.deb
+sudo dpkg -i libcbor-0.4.0-Linux.deb
 ```
 
+Install nanomsg using the following commands.
+```
+wget https://github.com/nanomsg/nanomsg/archive/1.0.0.tar.gz
+cd nanomsg-1.0.0
+./configure
+make
+sudo make install
+```
+
+The JAMScript source has a slightly modified task library in the deps folder.
+Run the following commands to install it.
+```
+cd deps
+make
+sudo make install
+```
+
+using the Ubuntu package manager.
+```
+sudo apt-get install libhiredis-dev
+sudo apt-get install libevent-dev
+sudo apt-get install libbsd-dev
 
 
-to set first priority to gcc-5
+Now you should have a system that can run the JAMScript compiler.
 
 ## Preparing your system (macOS)
 
@@ -119,40 +116,35 @@ Need testing and documentation.
 
 ## Installing JAMScript
 
+If everything is done according the previous instructions to prepare the system,
+installing JAMScript is very simple; run the following commands.
+```
+cd into the JAMScript source directory
+scons
+sudo scons install
+```
 
-## Hello World
+You should have the JAMScript compiler installed in the system. Run `which jamc`
+and you should see `jamc` in your system if everything went well.
+
+## Trying out the JAMScript compiler
+
+### Running the example programs
+
+JAMScript comes with a bunch of sample programs. You can cd into samples/chat
+and run `jamc chat.c chat.js` to compile the program. You should see `chat.jxe` in
+that directory.
+
+A JAMScript executable has native (compiled C) and Node (JavaScript) components.
+To run the C and J nodes use the following commands.
+```
+jamrun -c chat.jxe
+jamrun -j chat.jxe
+```
+
+### Hello World
+
+Need a simple program to illustrate JAMScript.
 
 
 ## More advanced JAMScript deployments
-
-
-
-
-JavaScript Machine: A Middleware for Things, Web, and Cloud
-
-#### Installing jam
-Run:
-```sh
-./install.sh
-```
-
-##### Compiling a JAM program
-
-```sh
-jamc [input file] [output name (optional)]
-```
-This will produce a jxe file in the output folder, by default it will be named jamout.jxe
-
-
-
-##### Running a JAM progarm
-
-JavaScript Mode:
-```sh
-jamrun -j [jxe path]
-```
-
-C Mode:
-```sh
-jamrun -c [jxe path]
-```
