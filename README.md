@@ -95,7 +95,7 @@ using the Ubuntu package manager.
 sudo apt-get install libhiredis-dev
 sudo apt-get install libevent-dev
 sudo apt-get install libbsd-dev
-
+```
 
 Now you should have a system that can run the JAMScript compiler.
 
