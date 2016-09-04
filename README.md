@@ -28,6 +28,18 @@ for more information.
 
 ## Preparing your system (Ubuntu)    
 
+Using the Ubuntu package manager install the following packages.
+```
+sudo apt-get install xz-utils
+sudo apt-get install texinfo
+sudo apt-get install libc-dev
+sudo apt-get install cmake
+sudo apt-get install libhiredis-dev
+sudo apt-get install libevent-dev
+sudo apt-get install libbsd-dev
+sudo apt-get install g++
+```
+
 Unfortunately, Ubuntu package distribution does not have the latest version for
 all required software. So we need to install them manually.
 
@@ -44,23 +56,26 @@ sudo python setup.py install
 Check your node version. If you have a node that is 6.3.1 or later you can skip this
 step. Here are the instructions for Node 6.5.0.
 ```
-sudo apt-get install xz-utils
 wget https://nodejs.org/dist/v6.5.0/node-v6.5.0-linux-x64.tar.xz
 sudo tar -C /usr/local --strip-components 1 -xJf node-v6.5.0-linux-x64.tar.xz
-
 ```
 You should have the NodeJS and NPM installed now.
 
-JAMScript uses tcc. You need to install it.
-If you have makeinfo you can proceed. Otherwise, you need install makeinfo using
+Check whether your system has gcc 5 or newer. If not, you need to upgrade it
+using the following commands.
 ```
-sudo apt-get install texinfo
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+sudo apt-get update
+sudo apt-get install gcc-5 g++-5
+
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 1
 ```
 
-Now get tcc and install it as follows.
+JAMScript uses tcc. You can get tcc and install it as follows.
 ```
 cd to your downloads directory
 git clone http://github.com/wenger/tcc.git
+
 cd tcc
 ./configure
 make
@@ -76,6 +91,7 @@ sudo dpkg -i libcbor-0.4.0-Linux.deb
 Install nanomsg using the following commands.
 ```
 wget https://github.com/nanomsg/nanomsg/archive/1.0.0.tar.gz
+tar zxvf 1.0.0.tar.gz
 cd nanomsg-1.0.0
 ./configure
 make
@@ -85,16 +101,9 @@ sudo make install
 The JAMScript source has a slightly modified task library in the deps folder.
 Run the following commands to install it.
 ```
-cd deps
+cd deps/libtask
 make
 sudo make install
-```
-
-using the Ubuntu package manager.
-```
-sudo apt-get install libhiredis-dev
-sudo apt-get install libevent-dev
-sudo apt-get install libbsd-dev
 ```
 
 Now you should have a system that can run the JAMScript compiler.
