@@ -106,7 +106,7 @@ make
 sudo make install
 ```
 
-Now you should have a system that can run the JAMScript compiler.
+Now, you should have a system that can run the JAMScript compiler.
 
 ## Preparing your system (macOS)
 
@@ -128,13 +128,14 @@ Need testing and documentation.
 If everything is done according the previous instructions to prepare the system,
 installing JAMScript is very simple; run the following commands.
 ```
-cd into the JAMScript source directory
+cd into the JAMScript source directory (directory that contains this README.md)
 scons
 sudo scons install
 ```
 
-You should have the JAMScript compiler installed in the system. Run `which jamc`
-and you should see `jamc` in your system if everything went well.
+Now, you should have the JAMScript compiler installed in the system. To verify whether
+`jamc` got installed, run `which jamc`.
+
 
 ## Trying out the JAMScript compiler
 
