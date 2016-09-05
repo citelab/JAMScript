@@ -1,4 +1,4 @@
-# JAMScript: A Language and Middleware for Cloud of Things
+# JAMScript: A Language and Middleware for Cloud of Moving Things
 
 ## Overview
 
@@ -71,7 +71,7 @@ sudo apt-get install gcc-5 g++-5
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 1
 ```
 
-JAMScript uses tcc. You can get tcc and install it as follows.
+JAMScript uses a slightly modified tcc. You can get tcc and install it as follows.
 ```
 cd to your downloads directory
 git clone http://github.com/wenger/tcc.git
