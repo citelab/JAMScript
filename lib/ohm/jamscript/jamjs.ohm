@@ -29,10 +29,10 @@ JAMJS <: ES5 {
 
     Jcond_specifier = "{" ListOf<identifier, ","> "}"
 
-    Jcond_expr      = "(" Jcond_expr ")                             -- brackets
+    Jcond_expr      = "(" Jcond_expr ")"                            -- brackets
                     | "!" Jcond_expr                                -- not
                     | Jcond_expr jcond_expr_op Jcond_expr           -- bin_op
-                    | id
+                    | identifier
 
     jcond_expr_op   = "&&" | "||"
 

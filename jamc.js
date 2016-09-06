@@ -72,9 +72,9 @@ if(cPath === undefined || jsPath === undefined) {
 // Set compiler
 if(process.platform == "darwin") {
   // gcc-5 for mac
-  cc = "gcc-5";
+  cc = "gcc -Wno-incompatible-library-redeclaration";
 } else {
-  cc = "gcc";
+  cc = "tcc";
 }
 
 
@@ -142,7 +142,7 @@ try {
     // flowCheck(output.annotated_JS)
   	fs.mkdirSync(tmpDir);
     fs.writeFileSync(`${tmpDir}/jamout.c`, cOutput.C + jsOutput.C);
-    child_process.execSync(`tcc ${tmpDir}/jamout.c -I/usr/local/share/jam/lib/jamlib/c_core -lcbor -lnanomsg -lhiredis -levent /usr/local/share/jam/deps/libtask/libtask.a /usr/local/lib/libjam.a`);
+    child_process.execSync(`${cc} ${tmpDir}/jamout.c -I/usr/local/share/jam/lib/jamlib/c_core -lcbor -lnanomsg -lhiredis -levent /usr/local/share/jam/deps/libtask/libtask.a /usr/local/lib/libjam.a`);
     // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
     // createZip(createTOML(), output.JS, tmpDir, outputName);
     
