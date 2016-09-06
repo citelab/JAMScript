@@ -16,6 +16,7 @@ JAMC <: C {
                     | Prototype
                     | Function_def
                     | Decl
+                    | Preprocess_line
 
     jasync = "jasync" ~identPart
     jsync = "jsync" ~identPart

@@ -1,5 +1,6 @@
 JAMJS <: ES5 {
-    Declaration     += Jdata_decl
+    Declaration     += Jconditional
+                    | Jdata_decl
                     | Activity_def
 
     jdata_type      = broadcaster 
@@ -10,9 +11,30 @@ JAMJS <: ES5 {
 
     Jdata_decl      = jdata "{" Jdata_spec* "}"
 
-    Async_activity  = jasync FunctionDeclaration
+    Jconditional    = jconditional identifier "{" Jcond_entry* "}"
 
-    Sync_activity   = jsync FunctionDeclaration
+	Jcond_entry     = jcond_type "{" Jcond_rule* "}"
+
+	jcond_type      = "device" | "fog" | "cloud"
+
+	Jcond_rule      = identifier jcond_op numericLiteral ";"
+    
+    jcond_op        = "==" | ">=" | ">" | "<=" | "<" | "!="
+    
+    // EqualityExpression<withIn> ";"
+
+    Async_activity  = jasync Jcond_specifier? FunctionDeclaration
+
+    Sync_activity   = jsync Jcond_specifier? FunctionDeclaration
+
+    Jcond_specifier = "{" ListOf<identifier, ","> "}"
+
+    Jcond_expr      = "(" Jcond_expr ")                             -- brackets
+                    | "!" Jcond_expr                                -- not
+                    | Jcond_expr jcond_expr_op Jcond_expr           -- bin_op
+                    | id
+
+    jcond_expr_op   = "&&" | "||"
 
     Activity_def    = Sync_activity
                     | Async_activity
@@ -26,4 +48,5 @@ JAMJS <: ES5 {
     logger = "logger" ~identifierPart
     shuffler = "shuffler" ~identifierPart
     jcallback = "jcallback" ~identifierPart
+    jconditional = "jconditional" ~identifierPart
 }
