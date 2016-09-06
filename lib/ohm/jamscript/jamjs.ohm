@@ -27,12 +27,12 @@ JAMJS <: ES5 {
 
     Sync_activity   = jsync Jcond_specifier? FunctionDeclaration
 
-    Jcond_specifier = "{" ListOf<identifier, ","> "}"
+    Jcond_specifier = "{" Jcond_expr "}"
 
-    Jcond_expr      = "(" Jcond_expr ")"                            -- brackets
+    Jcond_expr      = "(" Jcond_expr ")"                            -- paran
                     | "!" Jcond_expr                                -- not
                     | Jcond_expr jcond_expr_op Jcond_expr           -- bin_op
-                    | identifier
+                    | identifier                                    -- id
 
     jcond_expr_op   = "&&" | "||"
 
