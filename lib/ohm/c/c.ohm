@@ -16,6 +16,8 @@ C {
     space           += comment
     spacesNoNl      = (~linebreak space)*
 
+    Preprocess_line = "#" decimalInt "\"" (~"\"" any)* "\"" decimalInt
+
     // Identifiers and Names
     //
     identName       = identStart identPart*
@@ -61,7 +63,7 @@ C {
     escapeChar      = "\\" letter
 
     string          = "\"" (escapeChar | ~"\"" any)* "\""                               -- String
-                    | ("#" | "`") identName                                        -- Id
+                    | ("#" | "`") identName                                             -- Id
 
 
     // Expressions
@@ -195,8 +197,8 @@ C {
                     | enum Gcc_attribute* id                                            -- Empty
                     | enum Gcc_attribute* "{" ListOf<Enumerator, ","> ","? "}"          -- Anonymous
 
-    Enumerator      = id "=" Const_expr                                                 -- IdExpr
-                    | id                                                                -- Id
+    Enumerator      = Preprocess_line? id "=" Const_expr                                -- IdExpr
+                    | Preprocess_line? id                                               -- Id
 
 
     type_qualifier  = const
@@ -331,6 +333,7 @@ C {
     External_decl   = Function_def
                     | Prototype
                     | Decl
+                    | Preprocess_line
 
     Function_def    = Decl_specs Declarator Compound_stmt
 

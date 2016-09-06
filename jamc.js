@@ -168,7 +168,7 @@ function preprocess(file) {
   contents = '#include "jdata.h"\n' + contents;
   contents = '#include "command.h"\n' + contents;
   
-  return child_process.execSync("tcc -E -P -w -I/usr/local/share/jam/lib/jamlib/c_core -", {input: contents}).toString();
+  return child_process.execSync("tcc -E -w -I/usr/local/share/jam/lib/jamlib/c_core -", {input: contents}).toString();
   // return child_process.execSync(`${cc} -E -P -std=iso9899:199409 ${file}`).toString();
 
 }
