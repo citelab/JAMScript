@@ -121,7 +121,7 @@ try {
   // fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/testjam').pipe(fs.createWriteStream('jamout'));
   // fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/jamconf.dat').pipe(fs.createWriteStream('jamconf.dat'));
   var requires = '';
-  requires += "var jlib = require('./jamlib');\n";
+  requires += "var jlib = require('/usr/local/share/jam/lib/jserver/jamlib');\n";
   requires += "var async = require('asyncawait/async');\n";
   requires += "var await = require('asyncawait/await');\n";
 
@@ -132,8 +132,8 @@ try {
   requires += "var mime = require('mime');\n";
   requires += "var fs = require('fs');\n";
   
-  requires += "var JManager = require('./jmanager');\n";
-  requires += "var JLogger = require('./jlogger');\n";  
+  requires += "var JManager = require('/usr/local/share/jam/lib/jserver/jmanager');\n";
+  requires += "var JLogger = require('/usr/local/share/jam/lib/jserver/jlogger');\n";  
 
   fs.writeFileSync("jamout.js", requires + jsOutput.JS + cOutput.JS);
   fs.writeFileSync("jamout.c", cOutput.C + jsOutput.C);
