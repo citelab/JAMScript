@@ -16,7 +16,7 @@ C {
     space           += comment
     spacesNoNl      = (~linebreak space)*
 
-    Preprocess_line = "#" decimalInt "\"" (~"\"" any)* "\"" decimalInt
+    Preprocess_line = "#" decimalInt "\"" (~"\"" any)* "\"" decimalInt?
 
     // Identifiers and Names
     //
