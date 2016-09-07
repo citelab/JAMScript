@@ -185,7 +185,7 @@ C {
                     | union Gcc_attribute* id                                           -- Empty
                     | union Gcc_attribute* "{" Struct_decl+ "}"                         -- Anonymous
         
-    Struct_decl     = Spec_qual_list ListOf<Sdeclarator, ","> ";"
+    Struct_decl     = Preprocess_line? Spec_qual_list ListOf<Sdeclarator, ","> ";"
 
     Spec_qual_list  = (type_qualifier | Gcc_decl_spec)* Type_spec
 
