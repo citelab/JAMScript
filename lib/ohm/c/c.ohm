@@ -16,7 +16,7 @@ C {
     space           += comment
     spacesNoNl      = (~linebreak space)*
 
-    Preprocess_line = "#" decimalInt "\"" (~"\"" any)* "\"" decimalInt?
+    Preprocess_line = "#" decimalInt "\"" (~"\"" any)* "\"" decimalInt*
 
     // Identifiers and Names
     //
@@ -89,7 +89,7 @@ C {
                     | Xor_expr
     Xor_expr        = Xor_expr "^" And_expr                                             -- xor
                     | And_expr
-    And_expr        = And_expr "&" Eq_expr                                              -- and
+    And_expr        = And_expr (~"&&" "&") Eq_expr                                      -- and
                     | Eq_expr
     Eq_expr         = Eq_expr ( "==" | "!=" ) Rel_expr                                  -- eq
                     | Rel_expr
@@ -290,7 +290,7 @@ C {
     // gcc_asm_operand = ("[" ("Id"|"Typename") "]")? string "(" expr ")",
 
 
-    Gcc_asm_expr    = asm type_qualifier? "(" Gcc_asm_expr_string* ")"
+    Gcc_asm_expr    = asm type_qualifier? "(" (~")" any)* ")"+
 
     Gcc_asm_expr_string = "\"" (~"\"" any)* "\""
 

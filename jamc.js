@@ -79,6 +79,7 @@ if(process.platform == "darwin") {
 
 
 try {
+  fs.mkdirSync(tmpDir);
   var preprocessed = preprocess(cPath);
   if(preprocessOnly) {
     printAndExit(preprocessed);
@@ -140,7 +141,6 @@ try {
 
   if(!noCompile) {
     // flowCheck(output.annotated_JS)
-  	fs.mkdirSync(tmpDir);
     fs.writeFileSync(`${tmpDir}/jamout.c`, cOutput.C + jsOutput.C);
     child_process.execSync(`${cc} ${tmpDir}/jamout.c -I/usr/local/share/jam/lib/c_core -lcbor -lnanomsg -lhiredis -levent /usr/local/share/jam/deps/libtask/libtask.a /usr/local/lib/libjam.a`);
     // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
@@ -168,7 +168,8 @@ function preprocess(file) {
   contents = '#include "jdata.h"\n' + contents;
   contents = '#include "command.h"\n' + contents;
   
-  return child_process.execSync("tcc -E -w -I/usr/local/share/jam/lib/c_core -", {input: contents}).toString();
+  fs.writeFileSync(`${tmpDir}/pre.c`, contents);
+  return child_process.execSync(`cparser -E -I/usr/local/share/jam/lib/c_core ${tmpDir}/pre.c`).toString();
   // return child_process.execSync(`${cc} -E -P -std=iso9899:199409 ${file}`).toString();
 
 }
