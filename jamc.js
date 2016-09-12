@@ -70,12 +70,12 @@ if(cPath === undefined || jsPath === undefined) {
 // }
 
 // Set compiler
-if(process.platform == "darwin") {
+// if(process.platform == "darwin") {
   // gcc-5 for mac
   cc = "gcc -Wno-incompatible-library-redeclaration";
-} else {
-  cc = "tcc";
-}
+// } else {
+//   cc = "tcc";
+// }
 
 
 try {
