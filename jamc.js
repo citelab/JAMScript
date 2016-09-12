@@ -137,7 +137,6 @@ try {
   requires += "var JLogger = require('/usr/local/share/jam/lib/jserver/jlogger');\n";  
 
   fs.writeFileSync("jamout.js", requires + jsOutput.JS + cOutput.JS);
-  fs.writeFileSync("jamout.c", cOutput.C + jsOutput.C);
 
   if(!noCompile) {
     // flowCheck(output.annotated_JS)
@@ -145,7 +144,8 @@ try {
     includes = '#include "jdata.h"\n' + includes;
     includes = '#include "command.h"\n' + includes;
 
-    fs.writeFileSync(`${tmpDir}/jamout.c`, includes + preprocessDecls.join("\n")+ cOutput.C + jsOutput.C);
+    fs.writeFileSync("jamout.c",includes + preprocessDecls.join("\n") + "\n" + cOutput.C + jsOutput.C);
+    fs.writeFileSync(`${tmpDir}/jamout.c`, includes + preprocessDecls.join("\n") + "\n" + cOutput.C + jsOutput.C);
     child_process.execSync(`${cc} ${tmpDir}/jamout.c -I/usr/local/share/jam/lib/c_core -lcbor -lnanomsg -lhiredis -levent /usr/local/share/jam/deps/libtask/libtask.a /usr/local/lib/libjam.a`);
     // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
     // createZip(createTOML(), output.JS, tmpDir, outputName);
