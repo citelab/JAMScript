@@ -75,6 +75,7 @@ env.Install('/usr/local/share/jam/lib/ohm/ecmascript', ohm_ecma_files);
 env.Install('/usr/local/share/jam/lib/ohm/jamscript', ohm_jamscript_files);
 env.Install('/usr/local/share/jam/deps/libtask/', "./deps/libtask/libtask.a");
 env.Install('/usr/local/share/jam/lib/jserver', Glob('./lib/jserver/*.js'));
+env.Install('/usr/local/share/jam/deps/', "./deps/fake_libc_include/");
 
 ib = env.Alias('install-bin', "/usr/local/bin");
 il = env.Alias('install-share', "/usr/local/share/jam");
@@ -86,7 +87,8 @@ a3 = env.Alias('a3', '/usr/local/share/jam/lib/ohm/ecmascript');
 a4 = env.Alias('a4', '/usr/local/share/jam/lib/ohm/jamscript');
 a5 = env.Alias('a5', '/usr/local/share/jam/deps/libtask');
 a6 = env.Alias('a6', '/usr/local/share/jam/lib/jserver');
+a7 = env.Alias('a5', '/usr/local/share/jam/deps/');
 
-env.Alias('install', [ib, ii, il, il, il, ill, a1, a2, a3, a4, a5, a6])
+env.Alias('install', [ib, ii, il, il, il, ill, a1, a2, a3, a4, a5, a6, a7])
 
 Depends(compiled_library, library);
