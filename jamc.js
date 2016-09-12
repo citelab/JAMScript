@@ -171,10 +171,10 @@ function preprocess(file) {
   includes = '#include "jdata.h"\n' + includes;
   includes = '#include "command.h"\n' + includes;
 
-  contents = includes + contents;
+  contents = includes + "int main();\n" + contents;
   
   fs.writeFileSync(`${tmpDir}/pre.c`, contents);
-  return child_process.execSync(`gcc -E -I/usr/local/share/jam/deps/fake_libc_include -I/usr/local/share/jam/lib/c_core ${tmpDir}/pre.c`).toString();
+  return child_process.execSync(`gcc -E -P -I/usr/local/share/jam/deps/fake_libc_include -I/usr/local/share/jam/lib/c_core ${tmpDir}/pre.c`).toString();
   // return child_process.execSync(`${cc} -E -P -std=iso9899:199409 ${file}`).toString();
 
 }

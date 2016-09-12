@@ -120,8 +120,8 @@ C {
                     | sizeof "(" Type_name ")"                                          -- SizeofBracketed
                     | Postfix_expr
 
-    Cast_expr       = Unary_expr
-                    | "(" Type_name ")" Cast_expr                                       -- Cast
+    Cast_expr       = "(" Type_name ")" Cast_expr                                       -- Cast
+                    | Unary_expr
 
     Postfix_expr    = Left_expr spacesNoNl "++"                                         -- Increment
                     | Left_expr spacesNoNl "--"                                         -- Decrement
@@ -172,11 +172,10 @@ C {
     Type_modifier   = (long | short | signed | unsigned)+
 
     Type_spec       = Type_modifier (int | char | double)?                              -- Modified
-                    | (void | bool | float | int | char | double) 
+                    | (id | void | bool | float | int | char | double) 
                     | Enum_spec                                                         -- Enum
                     | Struct_spec                                                       -- Sturct
                     | Union_spec                                                        -- Union
-                    | id                                                                -- Id
 
     Struct_spec     = struct Gcc_attribute* id "{" Struct_decl+ "}"                     -- Full
                     | struct Gcc_attribute* id                                          -- Empty
