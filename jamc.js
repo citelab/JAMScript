@@ -8,7 +8,7 @@ var ohm = require('ohm-js'),
 
 var cc;
 var outputName;
-
+var preprocessDecls;
 
 // Flags
 var debug = false,
@@ -141,7 +141,11 @@ try {
 
   if(!noCompile) {
     // flowCheck(output.annotated_JS)
-    fs.writeFileSync(`${tmpDir}/jamout.c`, cOutput.C + jsOutput.C);
+    var includes = '#include "jam.h"\n'
+    includes = '#include "jdata.h"\n' + includes;
+    includes = '#include "command.h"\n' + includes;
+
+    fs.writeFileSync(`${tmpDir}/jamout.c`, includes + preprocessDecls.join("\n")+ cOutput.C + jsOutput.C);
     child_process.execSync(`${cc} ${tmpDir}/jamout.c -I/usr/local/share/jam/lib/c_core -lcbor -lnanomsg -lhiredis -levent /usr/local/share/jam/deps/libtask/libtask.a /usr/local/lib/libjam.a`);
     // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
     // createZip(createTOML(), output.JS, tmpDir, outputName);
@@ -161,15 +165,16 @@ function printAndExit(output) {
 }
 
 function preprocess(file) {
-  var contents = fs.readFileSync(file);
-  contents = 'jamstate_t *js;\n' + contents;
-  contents = 'typedef char* jcallback;\n' + contents;
-  contents = '#include "jam.h"\n' + contents;
-  contents = '#include "jdata.h"\n' + contents;
-  contents = '#include "command.h"\n' + contents;
+  var contents = fs.readFileSync(file).toString();
+  preprocessDecls = contents.match(/^[#;].*/gm);
+  var includes = '#include "jam.h"\n'
+  includes = '#include "jdata.h"\n' + includes;
+  includes = '#include "command.h"\n' + includes;
+
+  contents = includes + contents;
   
   fs.writeFileSync(`${tmpDir}/pre.c`, contents);
-  return child_process.execSync(`cparser -E -I/usr/local/share/jam/lib/c_core ${tmpDir}/pre.c`).toString();
+  return child_process.execSync(`gcc -E -I/usr/local/share/jam/deps/fake_libc_include -I/usr/local/share/jam/lib/c_core ${tmpDir}/pre.c`).toString();
   // return child_process.execSync(`${cc} -E -P -std=iso9899:199409 ${file}`).toString();
 
 }

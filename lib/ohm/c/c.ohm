@@ -147,7 +147,8 @@ C {
     // Declaration statements
     // Statements that do "type" specification
     //
-    Prototype       = Decl_specs Pointer_list? id "(" Param_type_lst? ")" ";"
+    Prototype       = extern Pointer_list? id "(" Param_type_lst? ")" Gcc_attribute? ";"
+                    | Decl_specs Pointer_list? id "(" Param_type_lst? ")" Gcc_attribute? ";"
 
     Decl            = Decl_specs Init_decl_lst ";"          
 
