@@ -69,14 +69,6 @@ if(cPath === undefined || jsPath === undefined) {
 //   process.exit(1);
 // }
 
-// Set compiler
-// if(process.platform == "darwin") {
-  // gcc-5 for mac
-  cc = "gcc -Wno-incompatible-library-redeclaration";
-// } else {
-//   cc = "tcc";
-// }
-
 
 try {
   fs.mkdirSync(tmpDir);
@@ -137,16 +129,22 @@ try {
   requires += "var JLogger = require('/usr/local/share/jam/lib/jserver/jlogger');\n";  
 
   fs.writeFileSync("jamout.js", requires + jsOutput.JS + cOutput.JS);
-  fs.writeFileSync("jamout.c", cOutput.C + jsOutput.C);
 
   if(!noCompile) {
+    // Set platform options
+    var options = "";
+    if(process.platform != "darwin") {
+      options = "-lm -lbsd";
+    }
+
     // flowCheck(output.annotated_JS)
     var includes = '#include "jam.h"\n'
     includes = '#include "jdata.h"\n' + includes;
     includes = '#include "command.h"\n' + includes;
 
+    fs.writeFileSync("jamout.c", includes + preprocessDecls.join("\n") + "\n" + cOutput.C + jsOutput.C);
     fs.writeFileSync(`${tmpDir}/jamout.c`, includes + preprocessDecls.join("\n") + "\n" + cOutput.C + jsOutput.C);
-    child_process.execSync(`clang -g ${tmpDir}/jamout.c -I/usr/local/share/jam/lib/c_core -lm -lbsd -pthread -lcbor -lnanomsg /usr/local/lib/libjam.a -ltask -levent -lhiredis`) ;
+    child_process.execSync(`clang -g ${tmpDir}/jamout.c -I/usr/local/share/jam/lib/c_core ${options} -pthread -lcbor -lnanomsg /usr/local/lib/libjam.a -ltask -levent -lhiredis`) ;
     // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
     // createZip(createTOML(), output.JS, tmpDir, outputName);
     
@@ -167,6 +165,9 @@ function printAndExit(output) {
 function preprocess(file) {
   var contents = fs.readFileSync(file).toString();
   preprocessDecls = contents.match(/^[#;].*/gm);
+  if(preprocessDecls == null) {
+    preprocessDecls = [];
+  }
   var includes = '#include "jam.h"\n'
   includes = '#include "jdata.h"\n' + includes;
   includes = '#include "command.h"\n' + includes;
@@ -174,7 +175,7 @@ function preprocess(file) {
   contents = includes + "int main();\n" + contents;
   
   fs.writeFileSync(`${tmpDir}/pre.c`, contents);
-  return child_process.execSync(`gcc -E -P -I/usr/local/share/jam/deps/fake_libc_include -I/usr/local/share/jam/lib/c_core ${tmpDir}/pre.c`).toString();
+  return child_process.execSync(`clang -E -P -I/usr/local/share/jam/deps/fake_libc_include -I/usr/local/share/jam/lib/c_core ${tmpDir}/pre.c`).toString();
   // return child_process.execSync(`${cc} -E -P -std=iso9899:199409 ${file}`).toString();
 
 }
@@ -243,7 +244,7 @@ function inputArgsError() {
   console.error("\tjamc [options] <input file> <output name>");
 }
 
-function randomValueHex (len) {
+function randomValueHex(len) {
     return crypto.randomBytes(Math.ceil(len/2))
         .toString('hex') // convert to hexadecimal format
         .slice(0,len);   // return required number of characters
