@@ -142,7 +142,7 @@ try {
     includes = '#include "jdata.h"\n' + includes;
     includes = '#include "command.h"\n' + includes;
 
-    fs.writeFileSync("jamout.c",includes + preprocessDecls.join("\n") + "\n" + cOutput.C + jsOutput.C);
+    fs.writeFileSync("jamout.c", includes + preprocessDecls.join("\n") + "\n" + cOutput.C + jsOutput.C);
     fs.writeFileSync(`${tmpDir}/jamout.c`, includes + preprocessDecls.join("\n") + "\n" + cOutput.C + jsOutput.C);
     child_process.execSync(`clang -g ${tmpDir}/jamout.c -I/usr/local/share/jam/lib/c_core ${options} -pthread -lcbor -lnanomsg /usr/local/lib/libjam.a -ltask -levent -lhiredis`) ;
     // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
@@ -165,6 +165,9 @@ function printAndExit(output) {
 function preprocess(file) {
   var contents = fs.readFileSync(file).toString();
   preprocessDecls = contents.match(/^[#;].*/gm);
+  if(preprocessDecls == null) {
+    preprocessDecls = [];
+  }
   var includes = '#include "jam.h"\n'
   includes = '#include "jdata.h"\n' + includes;
   includes = '#include "command.h"\n' + includes;
@@ -241,7 +244,7 @@ function inputArgsError() {
   console.error("\tjamc [options] <input file> <output name>");
 }
 
-function randomValueHex (len) {
+function randomValueHex(len) {
     return crypto.randomBytes(Math.ceil(len/2))
         .toString('hex') // convert to hexadecimal format
         .slice(0,len);   // return required number of characters
