@@ -216,14 +216,28 @@ void core_register_at_fog(corestate_t *cs, int timeout)
                     for(int k = 3; k < rcmd->nargs; k += 3){
                         to_add = 1;
                         printf("Debugging: %d %s %s %s\n", rcmd->nargs, rcmd->args[k - 2].val.sval, rcmd->args[k - 1].val.sval, rcmd->args[k].val.sval);
-                        for(int j = 0; j < cs->conf->num_fog_servers; j++){
-                            if(strcmp(cs->conf->fog_servers[i], rcmd->args[k - 2].val.sval) == 0){
-                                to_add = 0;
-                                break;
+                        if(strcmp("FOG_SERVERS", rcmd->args[k].val.sval) == 0){
+                            for(int j = 0; j < cs->conf->num_fog_servers; j++){
+                                if(strcmp(cs->conf->fog_servers[i], rcmd->args[k - 2].val.sval) == 0){
+                                    to_add = 0;
+                                    break;
+                                }
                             }
-                        }
-                        if(to_add && cs->conf->num_cloud_servers < MAX_SERVERS){
-                            cs->conf->fog_servers[cs->conf->num_cloud_servers++] = strdup(rcmd->args[k - 2].val.sval);
+                            if(to_add && cs->conf->num_fog_servers < MAX_SERVERS){
+                                cs->conf->fog_servers[cs->conf->num_fog_servers++] = strdup(rcmd->args[k - 2].val.sval);
+                            }
+                        }else if(strcmp("CLOUD_SERVERS", rcmd->args[k].val.sval) == 0){
+                            for(int j = 0; j < cs->conf->num_cloud_servers; j++){
+                                if(strcmp(cs->conf->cloud_servers[i], rcmd->args[k - 2].val.sval) == 0){
+                                    to_add = 0;
+                                    break;
+                                }
+                            }
+                            if(to_add && cs->conf->num_cloud_servers < MAX_SERVERS){
+                                cs->conf->cloud_servers[cs->conf->num_cloud_servers++] = strdup(rcmd->args[k - 2].val.sval);
+                            }
+                        }else{
+                            printf("Error .... Invalid Server type\n");
                         }
 
                     }
@@ -301,18 +315,30 @@ bool core_do_connect(corestate_t *cs, int timeout)
 
     // We already have a port that is allocated for this device.
     // Connect to the Fog at the given port (REQREP)
-    for(int i = 0; i < cs->conf->num_fog_servers; i++){
+    int i;
+    for(i = 0; i < cs->conf->num_fog_servers; i++){
         cs->reqsock[i] = socket_new(SOCKET_REQU);
-        socket_connect(cs->reqsock[i], cs->conf->my_fog_server, cs->conf->port);
+        socket_connect(cs->reqsock[i], cs->conf->fog_servers[i], cs->conf->port);
 
     // Connect to the Fog at the Publish and Survey sockets
         cs->subsock[i] = socket_new(SOCKET_SUBS);
-        socket_connect(cs->subsock[i], cs->conf->my_fog_server, PUBLISH_PORT);
+        socket_connect(cs->subsock[i], cs->conf->fog_servers[i], PUBLISH_PORT);
 
         cs->respsock[i] = socket_new(SOCKET_RESP);
-        socket_connect(cs->respsock[i], cs->conf->my_fog_server, SURVEY_PORT);
-
+        socket_connect(cs->respsock[i], cs->conf->fog_servers[i], SURVEY_PORT);
     }
+    for(;i < cs->conf->num_cloud_servers; i++){
+        cs->reqsock[i] = socket_new(SOCKET_REQU);
+        socket_connect(cs->reqsock[i], cs->conf->cloud_servers[i], cs->conf->port);
+
+    // Connect to the Fog at the Publish and Survey sockets
+        cs->subsock[i] = socket_new(SOCKET_SUBS);
+        socket_connect(cs->subsock[i], cs->conf->cloud_servers[i], PUBLISH_PORT);
+
+        cs->respsock[i] = socket_new(SOCKET_RESP);
+        socket_connect(cs->respsock[i], cs->conf->cloud_servers[i], SURVEY_PORT);
+    }
+
 
     time_t now = time(&now);
     cs->conf->stime = localtime(&now);

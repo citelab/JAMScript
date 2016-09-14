@@ -69,8 +69,6 @@ coreconf_t *coreconf_get()
 
 bool coreconf_recover(coreconf_t *conf)
 {
-    int i;
-
     conf->db = open_database("jamconf.dat");
     // return false: we were unable to find an old core config file
     if (conf->db == NULL)
@@ -82,13 +80,18 @@ bool coreconf_recover(coreconf_t *conf)
     conf->device_id = database_get_string(conf->db, "DEVICE_ID");
     conf->retries = database_get_int(conf->db, "RETRIES");
 
+    conf->num_fog_servers = 1;
+    conf->num_cloud_servers = 0;
+
+    conf->fog_servers[0] = strdup("127.0.0.1");
+    /*
     conf->num_fog_servers = database_get_int(conf->db, "NUM_FOG_SERVERS");
     conf->num_cloud_servers = database_get_int(conf->db, "NUM_CLOUD_SERVERS");
 
     for (i = 0; i < conf->num_fog_servers; i++)
     {
         char key[128];
-        sprintf(key, "FOG_SERVERS(%d)", i);
+        sprintf(key, "FOG_SERVERS(%d)\n", i);
         conf->fog_servers[i] = database_get_string(conf->db, key);
         printf("Fog server [%d]: %s\n", i, conf->fog_servers[i]);
     }
@@ -96,11 +99,11 @@ bool coreconf_recover(coreconf_t *conf)
     for (i = 0; i < conf->num_cloud_servers; i++)
     {
         char key[128];
-        sprintf(key, "CLOUD_SERVERS(%d)", i);
+        sprintf(key, "CLOUD_SERVERS(%d)\n", i);
         conf->cloud_servers[i] = database_get_string(conf->db, key);
         printf("Cloud server [%d]: %s\n", i, conf->cloud_servers[i]);
     }
-
+    */
     conf->registered = database_get_int(conf->db, "REGISTERED");
     if (conf->registered)
     {
@@ -165,6 +168,7 @@ coreconf_t *coreconf_make(coreconf_t *conf)
     }
     free(fservers);
 
+    /*
     char *cservers = load_env_param("CLOUD_SERVERS", "127.0.0.1");
     if (cservers != NULL)
     {
@@ -173,7 +177,7 @@ coreconf_t *coreconf_make(coreconf_t *conf)
             char *tstr = strsep(&cservers, ":");
             if (tstr != NULL){
                 conf->cloud_servers[i] = strdup(tstr);
-                printf("Fog Servers: %s\n", conf->cloud_servers[i]);
+                printf("Cloud Servers: %s\n", conf->cloud_servers[i]);
             }
             else
                 break;
@@ -181,6 +185,8 @@ coreconf_t *coreconf_make(coreconf_t *conf)
         conf->num_cloud_servers = i;
     }
     free(cservers);
+    */
+    conf->num_cloud_servers = 0;
 
     if (conf->num_cloud_servers == 0 && conf->num_fog_servers == 0)
     {
@@ -201,6 +207,7 @@ coreconf_t *coreconf_make(coreconf_t *conf)
     database_put_string(conf->db, "DEVICE_ID", conf->device_id);
     database_put_int(conf->db, "RETRIES", conf->retries);
 
+    /*
     database_put_int(conf->db, "NUM_FOG_SERVERS", conf->num_fog_servers);
     for (i = 0; i < conf->num_fog_servers; i++)
     {
@@ -215,7 +222,7 @@ coreconf_t *coreconf_make(coreconf_t *conf)
         char tempkey[128];
         sprintf(tempkey, "CLOUD_SERVERS(%d)", i);
         database_put_string(conf->db, tempkey, conf->cloud_servers[i]);
-    }
+    }*/
 
     database_put_int(conf->db, "REGISTERED", conf->registered);
 
