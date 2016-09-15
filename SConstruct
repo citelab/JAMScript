@@ -56,6 +56,8 @@ for iterating_var in req_c_lib:
 
 c_files = Glob('lib/jamlib/c_core/*.c');
 
+libtask = env.Command("./deps/libtask/libtask.a", "", "cd deps/libtask && make")
+
 library = Library('jam', Glob('lib/jamlib/c_core/*.c'), LIBS=req_c_lib, LIBPATH = ['/usr/lib', '/usr/local/lib'])
 c_core_files = Glob('./lib/jamlib/c_core/*.h');
 ohm_c_files = Glob('./lib/ohm/c/*.js') + Glob('./lib/ohm/c/*.ohm')
@@ -73,7 +75,7 @@ env.Install("/usr/local/share/jam/lib/c_core", c_core_files);
 env.Install('/usr/local/share/jam/lib/ohm/c', ohm_c_files);
 env.Install('/usr/local/share/jam/lib/ohm/ecmascript', ohm_ecma_files);
 env.Install('/usr/local/share/jam/lib/ohm/jamscript', ohm_jamscript_files);
-env.Install('/usr/local/share/jam/deps/libtask/', "./deps/libtask/libtask.a");
+compiled_libtask = env.Install('/usr/local/share/jam/deps/libtask/', "./deps/libtask/libtask.a");
 env.Install('/usr/local/share/jam/lib/jserver', Glob('./lib/jserver/*.js'));
 env.Install('/usr/local/share/jam/deps/', "./deps/fake_libc_include/");
 
@@ -92,3 +94,4 @@ a7 = env.Alias('a5', '/usr/local/share/jam/deps/');
 env.Alias('install', [ib, ii, il, il, il, ill, a1, a2, a3, a4, a5, a6, a7])
 
 Depends(compiled_library, library);
+Depends(compiled_libtask, libtask);
