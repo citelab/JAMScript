@@ -80,8 +80,8 @@ try {
     console.log(preprocessed);
   }
 
-  var cTree = jam.jamCGrammar.match(preprocessed, 'Source');
   var jsTree = jam.jamJSGrammar.match(fs.readFileSync(jsPath).toString(), 'Program');
+  var cTree = jam.jamCGrammar.match(preprocessed, 'Source');
 
 
   if(cTree.failed()) {
@@ -98,8 +98,9 @@ try {
     console.log(jsTree);
   }
 
-	var cOutput = jam.cSemantics(cTree).jamCTranslator;
 	var jsOutput = jam.jsSemantics(jsTree).jamJSTranslator;
+	var cOutput = jam.cSemantics(cTree).jamCTranslator;
+
 
   // if(translateOnly) {
   //   printAndExit(output);
