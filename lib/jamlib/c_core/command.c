@@ -397,13 +397,6 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
 void command_free(command_t *cmd)
 {
   // free the field allocations
-  free(cmd->cmd);
-  free(cmd->opt);
-  free(cmd->actname);
-  free(cmd->actid);
-  free(cmd->actarg);
-  free(cmd->buffer);
-
   // TODO: What else? Something is missing here..
   // Yeah, we need to free a few more things
 
@@ -418,12 +411,18 @@ void command_free(command_t *cmd)
       case STRING_TYPE: free(cmd->args[i].val.sval);
                         break;
       case NVOID_TYPE:
-                        if(cmd->args[i].val.nval != NULL)
+                        if(cmd->args[i].val.nval != NULL && strcmp(cmd->cmd, "REXEC-JDATA") != 0)
                           nvoid_free(cmd->args[i].val.nval);
                         break;
       default: break;
     }
   }
+  free(cmd->cmd);
+  free(cmd->opt);
+  free(cmd->actname);
+  free(cmd->actid);
+  free(cmd->actarg);
+  free(cmd->buffer);
 
   if(cmd->cbor_item_list){
     for(int i = 0; i < cmd->cbor_item_list->size; i++){
