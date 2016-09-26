@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+  <!-- Beautiful Jekyll | MIT license | Copyright Dean Attali 2016 -->
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <title>Install</title>
+
+  <meta name="author" content="Robert Wenger" />
+  
+  
+  <meta name="description" content="Installing JAMScript on Linux">
+  
+
+  <link rel="alternate" type="application/rss+xml" title="JAMScript - Programming language for the fog" href="/feed.xml" />
+
+  
+    
+      <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.0/css/font-awesome.min.css" />
+    
+      
+  
+  
+    
+      <link rel="stylesheet" href="/css/bootstrap.min.css" />
+    
+      <link rel="stylesheet" href="/css/bootstrap-social.css" />
+    
+      <link rel="stylesheet" href="/css/main.css" />
+    
+    
+  
+  
+    
+      <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" />
+    
+      <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" />
+    
+  
+
+    
+  
+  
+
+  
+
+  <!-- Facebook OpenGraph tags -->
+  <meta property="og:title" content="Install" />
+  <meta property="og:type" content="website" />
+  
+  <meta property="og:url" content="http://localhost/linux/" />
+  
+  
+  <meta property="og:image" content="" />
+  
+  
+  <!-- Twitter summary cards -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="@" />
+  <meta name="twitter:creator" content="@" />
+  <meta name="twitter:title" content="Install" />
+  <meta name="twitter:description" content="Preparing your system (Ubuntu) Using the Ubuntu package manager install the following packages. sudo apt-get install xz-utils sudo apt-get install texinfo sudo apt-get install libc-dev sudo apt-get install cmake sudo apt-get install libhiredis-dev sudo apt-get install libevent-dev sudo apt-get install libbsd-dev sudo apt-get install g++ Unfortunately, Ubuntu package distribution does..." />
+  
+  
+</head>
+
+
+  <body>
+  
+    <nav class="navbar navbar-default navbar-fixed-top navbar-custom">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="http://localhost">JAMScript</a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="main-navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+          <li class="navlinks-container">
+            <a class="navlinks-parent" href="javascript:void(0)">Install</a>
+            <div class="navlinks-children">
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/linux">Linux</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/mac">Mac</a>
+
+                
+              
+            </div>
+          </li>
+        
+        
+        
+          <li class="navlinks-container">
+            <a class="navlinks-parent" href="javascript:void(0)">Write</a>
+            <div class="navlinks-children">
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/write">Basics</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/hello">Hello World</a>
+
+                
+              
+            </div>
+          </li>
+        
+        
+        
+          <li>
+            
+            
+
+
+
+
+
+<a href="/run">Run</a>
+
+          </li>
+        
+        
+      </ul>
+    </div>
+
+	
+
+  </div>
+</nav>
+
+
+    <!-- TODO this file has become a mess, refactor it -->
+
+
+
+
+
+<header class="header-section ">
+
+<div class="intro-header no-img">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="page-heading">
+          <h1>Install</h1>
+		  
+		    
+            <hr class="small">
+            <span class="page-subheading">Installing JAMScript on Linux</span>
+			
+		  
+		  
+		  
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</header>
+
+
+
+
+<div class="container" role="main">
+  <div class="row">
+    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+      <h2 id="preparing-your-system-ubuntu">Preparing your system (Ubuntu)</h2>
+
+<p>Using the Ubuntu package manager install the following packages.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>sudo apt-get install xz-utils
+sudo apt-get install texinfo
+sudo apt-get install libc-dev
+sudo apt-get install cmake
+sudo apt-get install libhiredis-dev
+sudo apt-get install libevent-dev
+sudo apt-get install libbsd-dev
+sudo apt-get install g++
+</code></pre>
+</div>
+
+<p>Unfortunately, Ubuntu package distribution does not have the latest version for
+all required software. So we need to install them manually.</p>
+
+<p>scons version 2.5 or later is best. Following commands can be used to install
+scons.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nb">cd</span> /tmp or a download directory
+wget http://prdownloads.sourceforge.net/scons/scons-2.5.0.tar.gz
+tar zxvf scons-2.5.0.tar.gz
+<span class="nb">cd </span>scons-2.5.0
+sudo python setup.py install
+</code></pre>
+</div>
+
+<p>Check your node version. If you have a node that is 6.3.1 or later you can skip this
+step. Here are the instructions for Node 6.5.0.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>wget https://nodejs.org/dist/v6.5.0/node-v6.5.0-linux-x64.tar.xz
+sudo tar -C /usr/local --strip-components 1 -xJf node-v6.5.0-linux-x64.tar.xz
+</code></pre>
+</div>
+<p>You should have the NodeJS and NPM installed now.</p>
+
+<p>Check whether your system has gcc 5 or newer. If not, you need to upgrade it
+using the following commands.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+sudo apt-get update
+sudo apt-get install gcc-5 g++-5
+
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 1
+</code></pre>
+</div>
+
+<p>Libcbor needs to be installed; use the following commands.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>wget https://github.com/PJK/libcbor/releases/download/v0.4.0/libcbor-0.4.0-Linux.deb
+sudo dpkg -i libcbor-0.4.0-Linux.deb
+</code></pre>
+</div>
+
+<p>Install nanomsg using the following commands.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>wget https://github.com/nanomsg/nanomsg/archive/1.0.0.tar.gz
+tar zxvf 1.0.0.tar.gz
+<span class="nb">cd </span>nanomsg-1.0.0
+./configure
+make
+sudo make install
+</code></pre>
+</div>
+
+<p>The JAMScript source has a slightly modified task library in the deps folder.
+Run the following commands to install it.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nb">cd </span>deps/libtask
+make
+sudo make install
+</code></pre>
+</div>
+
+<p>Now, you should have a system that can run the JAMScript compiler.</p>
+
+<h2 id="preparing-your-raspberry-pi">Preparing your Raspberry Pi</h2>
+
+<p>Not yet tested. It is best to cross compile JAMScript to Raspberry Pi although
+RPI3 is powerful enough to compile JAMScript.</p>
+
+<h2 id="preparing-your-arduino-yun">Preparing your Arduino Yun</h2>
+
+<p>Definitely need a JAMScript cross compiler.
+Need testing and documentation.</p>
+
+<h2 id="installing-jamscript">Installing JAMScript</h2>
+
+<p>If everything is done according the previous instructions to prepare the system,
+installing JAMScript is very simple; run the following commands.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nb">cd </span>into the JAMScript <span class="nb">source </span>directory
+scons
+sudo scons install
+</code></pre>
+</div>
+
+<p>Now, you should have the JAMScript compiler installed in the system. To verify whether
+<code class="highlighter-rouge">jamc</code> got installed, run <code class="highlighter-rouge">which jamc</code>.</p>
+
+	    
+    </div>
+  </div>
+</div>
+
+
+    <footer>
+  <div class="container beautiful-jekyll-footer">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <ul class="list-inline text-center footer-links">
+          
+          
+          <li>
+            <a href="https://github.com/wenger" title="GitHub">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          
+		  
+      
+		  
+          <li>
+            <a href="mailto:robert.wenger@mail.mcgill.ca" title="Email me">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          
+		  
+		  
+		  
+      
+      
+      
+      
+		  
+        </ul>
+        <p class="copyright text-muted">
+		  Robert Wenger
+		  &nbsp;&bull;&nbsp;
+		  2016
+
+		  
+	    </p>
+	        <!-- Please don't remove this, keep my open source work credited :) -->
+		<p class="theme-by text-muted">
+		  Theme by
+		  <a href="http://deanattali.com/beautiful-jekyll/">beautiful-jekyll</a>
+		</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+  
+    
+
+
+
+
+
+
+  
+    <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
+    
+      <script>
+      	if (typeof jQuery == 'undefined') {
+      	  document.write('<script src="/js/jquery-1.11.2.min.js"></scr' + 'ipt>');
+      	}
+      </script>
+    
+  
+    <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
+    
+	<script src="/js/bootstrap.min.js"></script>
+    
+  
+    <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
+    
+	<script src="/js/main.js"></script>
+    
+  
+
+
+
+
+  
+  </body>
+</html>
