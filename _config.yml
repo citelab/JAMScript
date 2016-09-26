@@ -4,8 +4,8 @@
 # baseurl is the website's URL without the hostname
 
 # If you are building a simple GitHub user page (http://username.github.io) then use these settings:
-url: "http://wenger.github.io"
-baseurl: "/test"
+url: "http://anrl.github.io"
+baseurl: "/JAMScript"
 
 # If you are building a GitHub project page then use these settings:
 #url: "http://username.github.io/projectname"
@@ -17,7 +17,7 @@ baseurl: "/test"
 title: JAMScript
 
 # Short description of your site
-description: Programming language for the fog
+description: A Language and Middleware for Cloud of Moving Things
 
 # --- Navigation bar options --- #
 
