@@ -42,15 +42,14 @@ sudo tar -C /usr/local --strip-components 1 -xJf node-v6.5.0-linux-x64.tar.xz
 ```
 You should have the NodeJS and NPM installed now.
 
-Check whether your system has gcc 5 or newer. If not, you need to upgrade it
+Check whether your system has clang. If not, you need to install it
 using the following commands.
 
 ```shell
-sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
+deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-3.9 main
 sudo apt-get update
-sudo apt-get install gcc-5 g++-5
-
-sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 1
+sudo apt-get install clang-3.9 lldb-3.9
 ```
 
 Libcbor needs to be installed; use the following commands.
