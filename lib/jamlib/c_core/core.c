@@ -191,34 +191,36 @@ void core_register_at_fog(corestate_t *cs, int timeout)
     #ifdef DEBUG_MSGS
         printf("Registering the device at the Fog.. ");
     #endif
-
     scmd = command_new("REGISTER", "DEVICE", cs->conf->app_name, cs->conf->device_id, cs->conf->device_name, "");
     for (i = 0; i < cs->conf->num_fog_servers; i++) {
         // create a request-reply socket
         socket_t *sock = socket_new(SOCKET_REQU);
+        printf("Attempting to connect to ... %s\n", cs->conf->fog_servers[i]);
         socket_connect(sock, cs->conf->fog_servers[i], REQUEST_PORT);
         socket_send(sock, scmd);
         command_t *rcmd = socket_recv_command(sock, timeout);
-
+        printf("Is here ... \n");
         if (rcmd != NULL)
         {
-            if (strcmp(rcmd->cmd, "REGISTER-ACK") == 0 &&
-                strcmp(rcmd->opt, "ORI") == 0)
+            printf("PLEASE ... \n");
+            if (strcmp(rcmd->cmd, "REGISTER-ACK") == 0) //&&
+                //strcmp(rcmd->opt, "ORI") == 0)
             {
             #ifdef DEBUG_MSGS
                 printf("\t\t Done. Got original registration \n");
             #endif
+            printf("ALL GOOD \n");
                 if (rcmd->nargs > 0 && rcmd->args[0].type == INT_TYPE)
                 {
                     #ifdef DEBUG_LVL1
                     printf("Commencing Basic Attempting of multi connection ...\n");
                     #endif
-                    for(int k = 3; k < rcmd->nargs; k += 3){
+                    for(int k = 4; k < rcmd->nargs; k += 3){
                         to_add = 1;
-                        printf("Debugging: %d %s %s %s\n", rcmd->nargs, rcmd->args[k - 2].val.sval, rcmd->args[k - 1].val.sval, rcmd->args[k].val.sval);
+                        printf("Debugging: %d IP4:%s IP6:%s Type:%s\n", rcmd->nargs, rcmd->args[k - 2].val.sval, rcmd->args[k - 1].val.sval, rcmd->args[k].val.sval);
                         if(strcmp("FOG_SERVERS", rcmd->args[k].val.sval) == 0){
                             for(int j = 0; j < cs->conf->num_fog_servers; j++){
-                                if(strcmp(cs->conf->fog_servers[i], rcmd->args[k - 2].val.sval) == 0){
+                                if(strcmp(cs->conf->fog_servers[j], rcmd->args[k - 2].val.sval) == 0){
                                     to_add = 0;
                                     break;
                                 }
@@ -228,7 +230,7 @@ void core_register_at_fog(corestate_t *cs, int timeout)
                             }
                         }else if(strcmp("CLOUD_SERVERS", rcmd->args[k].val.sval) == 0){
                             for(int j = 0; j < cs->conf->num_cloud_servers; j++){
-                                if(strcmp(cs->conf->cloud_servers[i], rcmd->args[k - 2].val.sval) == 0){
+                                if(strcmp(cs->conf->cloud_servers[j], rcmd->args[k - 2].val.sval) == 0){
                                     to_add = 0;
                                     break;
                                 }
@@ -242,56 +244,13 @@ void core_register_at_fog(corestate_t *cs, int timeout)
 
                     }
 
-                    cs->conf->port = rcmd->args[0].val.ival;
-                    database_put_int(cs->conf->db, "REQREP_PORT", cs->conf->port);
+                    cs->conf->fog_port[i] = rcmd->args[0].val.ival;
+                    database_put_int(cs->conf->db, "REQREP_PORT", cs->conf->fog_port[i]);
                     cs->conf->registered = 1;
                     database_put_int(cs->conf->db, "REGISTER-ACK", cs->conf->registered);
-                    cs->conf->my_fog_server = cs->conf->fog_servers[i];
-                    database_put_string(cs->conf->db, "MY_FOG_SERVER", cs->conf->my_fog_server);
-
-                    command_free(rcmd);
-                    command_free(scmd);
-                    socket_free(sock);
-                    return;
-                }
-                else
-                {
-                    printf("WARNING! Malformed REGISTERED reply received.\n");
                     command_free(rcmd);
                     socket_free(sock);
                     continue;
-                }
-            }
-            else
-            if (strcmp(rcmd->cmd, "REGISTER-ACK") == 0 &&
-                strcmp(rcmd->opt, "ALT") == 0)
-            {
-            #ifdef DEBUG_MSGS
-                printf("\t\t Done. Got alternate registration \n");
-            #endif
-                // TODO: Anything else here?
-                //
-                if (rcmd->nargs > 0 && rcmd->args[0].type == INT_TYPE)
-                {
-                    cs->conf->port = rcmd->args[0].val.ival;
-                    database_put_int(cs->conf->db, "REQREP_PORT", cs->conf->port);
-                    cs->conf->registered = 1;
-                    database_put_int(cs->conf->db, "REGISTER-ACK", cs->conf->registered);
-                    cs->conf->my_fog_server = cs->conf->fog_servers[i];
-                    database_put_string(cs->conf->db, "MY_FOG_SERVER", cs->conf->my_fog_server);
-
-                    // Get the new device ID and store it as well..
-                    if (rcmd->args[1].val.sval != NULL)
-                    {
-                        free(cs->conf->device_id);
-                        cs->conf->device_id = strdup(rcmd->args[1].val.sval);
-                        database_put_string(cs->conf->db, "DEVICE_ID", cs->conf->device_id);
-                    }
-
-                    command_free(rcmd);
-                    command_free(scmd);
-                    socket_free(sock);
-                    return;
                 }
                 else
                 {
@@ -303,6 +262,27 @@ void core_register_at_fog(corestate_t *cs, int timeout)
             }
         }
     }
+    for (i = 0; i < cs->conf->num_cloud_servers; i++) {
+        // create a request-reply socket
+        socket_t *sock = socket_new(SOCKET_REQU);
+        socket_connect(sock, cs->conf->cloud_servers[i], REQUEST_PORT);
+        socket_send(sock, scmd);
+        command_t *rcmd = socket_recv_command(sock, timeout);
+        if (rcmd != NULL)
+        {
+            printf("PLEASE ... \n");
+            if (strcmp(rcmd->cmd, "REGISTER-ACK") != 0){
+                printf("WARNING! Malformed REGISTERED reply received.\n");
+            }else{
+                cs->conf->cloud_port[i] = rcmd->args[0].val.ival;
+                database_put_int(cs->conf->db, "REQREP_PORT", cs->conf->cloud_port[i]);
+                cs->conf->registered = 1;
+                database_put_int(cs->conf->db, "REGISTER-ACK", cs->conf->registered);
+            }
+            command_free(rcmd);
+            socket_free(sock);
+        }
+    }
     command_free(scmd);
 }
 
@@ -310,16 +290,17 @@ void core_register_at_fog(corestate_t *cs, int timeout)
 bool core_do_connect(corestate_t *cs, int timeout)
 {
     #ifdef DEBUG_MSGS
-        printf("Setting up the sockets to the Fog..server - %s:%d\n", cs->conf->my_fog_server, cs->conf->port);
+        printf("Setting up the sockets to the Fog..server - %s:%d\n", cs->conf->my_fog_server, cs->conf->port[0]);
     #endif
 
     // We already have a port that is allocated for this device.
     // Connect to the Fog at the given port (REQREP)
+    printf("Num of servers ... %d %d\n", cs->conf->num_fog_servers, cs->conf->num_cloud_servers);
     int i;
     for(i = 0; i < cs->conf->num_fog_servers; i++){
         cs->reqsock[i] = socket_new(SOCKET_REQU);
-        socket_connect(cs->reqsock[i], cs->conf->fog_servers[i], cs->conf->port);
-
+        socket_connect(cs->reqsock[i], cs->conf->fog_servers[i], cs->conf->fog_port[i]);
+        
     // Connect to the Fog at the Publish and Survey sockets
         cs->subsock[i] = socket_new(SOCKET_SUBS);
         socket_connect(cs->subsock[i], cs->conf->fog_servers[i], PUBLISH_PORT);
@@ -327,21 +308,19 @@ bool core_do_connect(corestate_t *cs, int timeout)
         cs->respsock[i] = socket_new(SOCKET_RESP);
         socket_connect(cs->respsock[i], cs->conf->fog_servers[i], SURVEY_PORT);
     }
-    for(;i < cs->conf->num_cloud_servers; i++){
-        cs->reqsock[i] = socket_new(SOCKET_REQU);
-        socket_connect(cs->reqsock[i], cs->conf->cloud_servers[i], cs->conf->port);
+    for(int j = 0; j < cs->conf->num_cloud_servers; j++){
+        cs->reqsock[i+j] = socket_new(SOCKET_REQU);
+        socket_connect(cs->reqsock[i+j], cs->conf->cloud_servers[j], cs->conf->cloud_port[j]);
 
     // Connect to the Fog at the Publish and Survey sockets
-        cs->subsock[i] = socket_new(SOCKET_SUBS);
-        socket_connect(cs->subsock[i], cs->conf->cloud_servers[i], PUBLISH_PORT);
+        cs->subsock[i+j] = socket_new(SOCKET_SUBS);
+        socket_connect(cs->subsock[i+j], cs->conf->cloud_servers[j], PUBLISH_PORT);
 
-        cs->respsock[i] = socket_new(SOCKET_RESP);
-        socket_connect(cs->respsock[i], cs->conf->cloud_servers[i], SURVEY_PORT);
+        cs->respsock[i+j] = socket_new(SOCKET_RESP);
+        socket_connect(cs->respsock[i+j], cs->conf->cloud_servers[j], SURVEY_PORT);
     }
-
 
     time_t now = time(&now);
     cs->conf->stime = localtime(&now);
-
     return true;
 }

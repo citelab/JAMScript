@@ -100,6 +100,8 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     // the reliability model that is provided by nanonmsg.
 
     // Send the command.. and wait for reply..
+    insert_table_entry(js, cmd, 0);
+    printf("Was here bois ... ");
     queue_enq(jact->outq, cmd, sizeof(command_t));
     task_wait(jact->sem);
 

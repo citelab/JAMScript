@@ -279,7 +279,6 @@ void jbroadcaster_msg_rcv_callback(redisAsyncContext *c, void *reply, void *priv
   if (r->type == REDIS_REPLY_ARRAY) {
     var_name = r->element[1]->str;
     result = r->element[2]->str;
-
     if(result != NULL){
       for(jdata_list_node *i = jdata_list_head; i != NULL; i = i->next){
         if(strcmp(i->data.jbroadcaster_data->key, var_name) == 0){
@@ -305,6 +304,9 @@ void jbroadcaster_msg_rcv_callback(redisAsyncContext *c, void *reply, void *priv
 }
 
 void *get_jbroadcaster_value(jbroadcaster *j){
+  if(j->data == NULL)
+    printf("Invalid get attempt ...\n");
+  assert(j->data != NULL);
   return j->data;
 }
 

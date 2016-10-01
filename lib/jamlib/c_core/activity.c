@@ -232,7 +232,7 @@ jactivity_t *activity_getmyactivity(activitytable_t *at)
 void activity_del(activitytable_t *at, jactivity_t *jact)
 {
     int i;
-
+    printf("Deleting activity ... %s\n", jact->actid);
     int j = activity_getactindx(at, jact);
 
     for (i = j; i < at->numshadowacts; i++)

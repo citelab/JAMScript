@@ -60,7 +60,8 @@ typedef struct _coreconf_t
     int retries;
 
     int registered;
-    int port;
+    int fog_port[MAX_SERVERS];
+    int cloud_port[MAX_SERVERS];
     char *my_fog_server;
     struct tm *stime;
 

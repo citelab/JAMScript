@@ -101,8 +101,12 @@ bool socket_create(socket_t *socket, char *host, int port)
         exit(1);
     }
 
-    char *url = socket_new_url(host, port);
-    assert(nn_bind(socket->sock_fd, url) >= 0);
+    char *url = socket_new_url(host, port); 
+    printf("%s\n", url);
+    int val = nn_bind(socket->sock_fd, url);
+    if(val < 0)
+        printf("Failure %s\n", nn_strerror(errno));
+    assert(val >= 0);
     free(url);
 
     return true;
@@ -112,11 +116,18 @@ bool socket_create(socket_t *socket, char *host, int port)
 bool socket_connect(socket_t *socket, char *addr, int port)
 {
     char *url = socket_new_url(addr, port);
-    
+    printf("Connecting to URL: %s\n", url);
+
     #ifdef DEBUG_LVL1
         printf("Connecting to URL: %s\n", url);
     #endif
-    assert(nn_connect(socket->sock_fd, url) >= 0);
+    int val = nn_connect(socket->sock_fd, url);
+    if(val < 0){
+        printf ("connect failed: %s\n", nn_strerror (errno));
+        printf("%d\n", errno);
+    }
+    assert(val >= 0);
+
     free(url);
 
     return true;

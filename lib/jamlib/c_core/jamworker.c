@@ -53,7 +53,6 @@ void *jwork_bgthread(void *arg)
     #ifdef DEBUG_LVL1
         printf("BG Thread processor started in JAM Worker..\n");
     #endif
-
     // setup the thread.. make it async. cancellable
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldstate);
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldtype);
@@ -68,7 +67,6 @@ void *jwork_bgthread(void *arg)
     while (1)
     {
      //  printf("\n\n COUNTER %d \n\n", counter++);
-
         int nfds = jwork_wait_fds(js, beattime);
       //  printf("Activity Number After: %d\n", js->atable->numactivities);
         if (nfds == 0)
@@ -120,19 +118,22 @@ void jwork_assemble_fds(jamstate_t *js)
     js->pollfds[1].fd = js->cstate->subsock[0]->sock_fd;
     js->pollfds[2].fd = js->cstate->respsock[0]->sock_fd;
     */
-    for(int i = 0; i < js->cstate->conf->num_fog_servers; i++){
+    for(i = 0; i < js->cstate->conf->num_fog_servers + js->cstate->conf->num_cloud_servers; i++){
         js->pollfds[1 + i * 3].fd = js->cstate->reqsock[i]->sock_fd;
         js->pollfds[2 + i * 3].fd = js->cstate->subsock[i]->sock_fd;
         js->pollfds[3 + i * 3].fd = js->cstate->respsock[i]->sock_fd;
+        //printf("Values: %d %d %d\n", 1+i*3, 2+i*3, 3+i*3);
+        //printf("%d %d %d, \n", js->pollfds[1 + i * 3].fd, js->pollfds[2 + i * 3].fd, js->pollfds[3 + i * 3].fd);
     }
     // pick the output queue of the main thread .. it is the input for the bgthread
     js->pollfds[0].fd = js->atable->globaloutq->pullsock;
 
     // scan the number of activities and get their input queue hooked
+    //printf("%d\n", js->atable->numactivities);
     for (i = 0; i < js->atable->numactivities; i++){
-        js->pollfds[i + js->cstate->conf->num_fog_servers * 3 + 1].fd = js->atable->activities[i]->outq->pullsock;
+        js->pollfds[i + js->cstate->conf->num_fog_servers * 3 + js->cstate->conf->num_cloud_servers * 3 + 1].fd = js->atable->activities[i]->outq->pullsock;
+        //printf("Values: %d\n", i + js->cstate->conf->num_fog_servers * 3 + js->cstate->conf->num_cloud_servers * 3 + 1);
     }
-
     // pollfds structure is not complete..
 }
 
@@ -200,13 +201,13 @@ void jwork_process_reqsock(jamstate_t *js, int index)
     // TODO: What about the timeout value.. it could be inconsequential
     #ifdef DEBUG_LVL1
     printf("----- In request sock.......... \n");
-
+    printf("Command %s, %s %s %s %s\n", rcmd->cmd, rcmd->actname, rcmd->actid, rcmd->actarg, rcmd->opt);
     #endif
     command_t *rcmd = socket_recv_command(js->cstate->reqsock[index], 5000);
-    
     #ifdef DEBUG_LVL1
     printf("Command %s, %s %s %s %s\n", rcmd->cmd, rcmd->actname, rcmd->actid, rcmd->actarg, rcmd->opt);
     #endif
+
     if(strcmp(rcmd->cmd, "REXEC-ACK") && strcmp(rcmd->opt, "SYN") == 0){
         #ifdef DEBUG_LVL1
             printf("Add Pending Activity ... \n");
@@ -221,6 +222,7 @@ void jwork_process_reqsock(jamstate_t *js, int index)
     //So at this point, we can automatically set up a permanent log system for calls
     if (rcmd != NULL)
     {
+
         if (strcmp(rcmd->actname, "EVENTLOOP") == 0)
         {
             // Send it to the main thread and unblock the thread
@@ -232,22 +234,33 @@ void jwork_process_reqsock(jamstate_t *js, int index)
         if (strcmp(rcmd->actname, "ACTIVITY") == 0)
         {
             jactivity_t *jact = activity_getbyid(js->atable, rcmd->actid);
+            printf("Looking for activity %s\n", rcmd->actid);
+            printf("Command %s, %s %s %s %s %s\n", rcmd->cmd, rcmd->actname, rcmd->actid, rcmd->actarg, rcmd->opt, rcmd->actarg);
+            if(jact == NULL){
+                printf("Activity already finished ... \n");
+                return;
+            }
             #ifdef DEBUG_LVL1
             printf("Activity Detected ........\n");
             #endif
             if(strcmp(rcmd->cmd, "REXEC-RES") == 0 && strcmp(rcmd->opt, "PUT") == 0){
                 runtableentry_t *act_entry = find_table_entry(js->rtable, rcmd);
                 if(act_entry != NULL){
-                    for(int i = 0; i < act_entry->num_response; i++){
-                        if(index == act_entry->socket_list[i]){
-                            act_entry->result_list[i] = rcmd->args;
-                            act_entry->num_rcv_response++;
-                            break;
-                        }
+                    if(act_entry->num_rcv_response < act_entry->num_response){
+                        act_entry->result_list[act_entry->num_rcv_response] = command_arg_clone(rcmd->args);
+                        act_entry->num_rcv_response++;
                     }
+                    printf("Nums Fog ... %d, Num Clouds ... %d\n", js->cstate->conf->num_fog_servers, js->cstate->conf->num_cloud_servers);
+                    printf("TOTAL NUMBER %d %d %d what\n", act_entry->num_rcv_response, act_entry->num_response, index);
                     if(act_entry->num_rcv_response == act_entry->num_response){
-                        queue_enq(jact->inq, prepare_sync_return_result(act_entry, rcmd) , sizeof(command_t));
-                        thread_signal(jact->sem);                    
+                        prepare_sync_return_result(act_entry, rcmd);
+                        printf("WHYYYYYYYYYYYYYYYYY\n");
+                        printf("%p %p\n", jact, rcmd);
+                        queue_enq(jact->inq, rcmd , sizeof(command_t));
+                        printf("Signaled .. 1 !\n");
+                        thread_signal(jact->sem);       
+                    }else{
+                        command_free(rcmd);
                     }
                 }
             }else{
@@ -259,13 +272,24 @@ void jwork_process_reqsock(jamstate_t *js, int index)
                            #ifdef DEBUG_LVL1
                                 printf("Removing async activity from table ... \n");
                            #endif
+                           jactivity_t *jact = activity_getbyid(js->atable, rcmd->actid);
                            free_rtable_entry(act_entry, js->rtable);
                         }
+                        /*
+                        else{
+                            command_free(rcmd);
+                            queue_enq(jact->outq, act_entry->cmd, sizeof(command_t));
+                            thread_signal(jact->sem);
+                            return;
+                        }*/
 
                     }
                 }
+            //#ifdef DEBUG_LVL1
+            //#endif
             // Send it to the activity and unblock the activity
                 queue_enq(jact->inq, rcmd, sizeof(command_t));
+                printf("Signaled .. 2!\n");
                 thread_signal(jact->sem);
             }
         }
@@ -312,21 +336,8 @@ void jwork_process_subsock(jamstate_t *js, int index)
                 command_free(rcmd);
                 return;
             }*/
-            if(find_table_entry(js->rtable, rcmd) == NULL){
-            runtableentry_t *act_entry = calloc(1, sizeof(runtableentry_t));
-            act_entry->actname = strdup(rcmd->actname);
-            act_entry->actid = strdup(rcmd->actid);
-            act_entry->index = index;
-            //To insert the entry into the table
-            
-            for(int i = 0; i < MAX_RUN_ENTRIES; i++){
-                if(js->rtable->entries[i] == NULL){
-                    js->rtable->entries[i] = act_entry;
-                    js->rtable->numruns++;
-                    break;
-                }
-            }
-
+            printf("\n\n\n\nHere .... \n\n\n\n");
+            //insert_table_entry(js, rcmd, index);
             //printf("\n\nHOOOOOOOOOOW %d %s\n\n", js->rtable->numruns, act_entry->actid);
             if (jam_eval_condition(rcmd->actarg))
             {
@@ -337,7 +348,6 @@ void jwork_process_subsock(jamstate_t *js, int index)
             }
             else
                 command_free(rcmd);
-            }
         }
     }
 }
@@ -368,7 +378,6 @@ void jwork_process_respsock(jamstate_t *js, int index)
                 command_free(result);
             }
         }
-        else
         if (strcmp(rcmd->cmd, "RKILL") == 0 &&
             strcmp(rcmd->opt, "FOG") == 0)
         {
@@ -380,7 +389,6 @@ void jwork_process_respsock(jamstate_t *js, int index)
                 command_free(result);
             }
         }
-        else
         if (strcmp(rcmd->cmd, "DSTATUS") == 0 &&
             strcmp(rcmd->cmd, "REQ") == 0)
         {
@@ -467,25 +475,31 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
     #endif
     // Don't use nvoid_free() .. it is not deep enough
     //Anyhow here we are ....
+    printf("\n\nIMPORTANT %s, opt: %s actarg: %s actid: %s\n\n\n", rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
     if (rcmd != NULL)
     {   
-        if(strcmp(rcmd->cmd, "REXEC") == 0){
-            runtableentry_t *act_entry = calloc(1, sizeof(runtableentry_t));
-            act_entry->actname = strdup(rcmd->actname);
-            act_entry->actid = strdup(rcmd->actid);
-            act_entry->index = indx;
-            for(int i = 0; i < js->cstate->conf->num_fog_servers; i++){
+        if(strcmp(rcmd->cmd, "REXEC") == 0 || strcmp(rcmd->cmd, "REXEC-RES") == 0){
+            for(int i = 0; i < js->cstate->conf->num_fog_servers + js->cstate->conf->num_cloud_servers; i++){
+                printf("Servers Request Sent .. \n");
+                //runtableentry_t *act_entry = find_table_entry(js->rtable, rcmd);
                 socket_send(js->cstate->reqsock[i], rcmd);
-                act_entry->socket_list[act_entry->num_response++] = i;
-            }
+            }    
+            // printf("What .... \n");
+            // runtableentry_t *act_entry = find_table_entry(js->rtable, rcmd);
+            // socket_send(js->cstate->reqsock[act_entry->num_response - act_entry->num_rcv_response - 1], rcmd);
+            // struct nn_pollfd pfd[1];
+            // pfd[0].fd = js->cstate->reqsock[act_entry->num_response - act_entry->num_rcv_response - 1]->sock_fd;
+            // printf("What .... \n");
+            // int rc = nn_poll(pfd, 1, 2000);
+            // if(pfd[0].revents & NN_POLLIN){
+            //     printf("\n\nIMPORTANT %s, opt: %s actarg: %s actid: %s\n\n\n", rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
+            // }
+            // if(rc == 0){
+            //     printf("EPIC FAILURE ... \n");
+            // }
+            return;
+            //}            
             //To insert the entry into the table
-            for(int i = 0; i < MAX_RUN_ENTRIES; i++){
-                if(js->rtable->entries[i] == NULL){
-                    js->rtable->entries[i] = act_entry;
-                    js->rtable->numruns++;
-                    break;
-                }
-            }
         }else{
             #ifdef DEBUG_LVL1
                 printf("Sending something important to js side... \n");
@@ -528,6 +542,7 @@ void tcallback(void *arg)
     #ifdef DEBUG_LVL1
     printf("Callback Occuring... \n");
     #endif
+    printf("Signaled .. 3!\n");
     thread_signal(jact->sem);
 }
 
@@ -699,7 +714,6 @@ void jwork_runid_complete(jamstate_t *js, runtable_t *rtab, char *actid, arg_t *
     ren->result_list[0] = arg;
     
     command_t *result = jwork_runid_status(js, actid);
-    printf("OIIIIIIIIII\n");
     if (result != NULL){
         for(int i = 0; i < js->cstate->conf->num_fog_servers; i++)
             socket_send(js->cstate->reqsock[i], result);
@@ -720,8 +734,10 @@ command_t *jwork_runid_kill(jamstate_t *js, char *runid)
 }
 
 runtableentry_t *find_table_entry(runtable_t *table, command_t *cmd){
+    printf("Attempting to find %s\n", cmd->actid);
     for(int i = 0; i < MAX_RUN_ENTRIES; i++){
         if(table->entries[i] != NULL){
+            //printf("%p %s %s\n", table->entries[i], cmd->actid, table->entries[i]->actid);
             if(strcmp(cmd->actid, table->entries[i]->actid) == 0)
                 return table->entries[i];
         }
@@ -746,19 +762,19 @@ command_t *prepare_sync_return_result(runtableentry_t *act_entry, command_t *rcm
         switch(act_entry->result_list[0]->type){
             case INT_TYPE:
                 if(act_entry->result_list[0]->val.ival != act_entry->result_list[i]->val.ival){
-                    printf("Inconsistent Results ... \n");
+                    printf("Inconsistent Results ... int ... \n");
                     return return_err_arg(rcmd, "RET-FAILURE");
                 }
                 break;
             case STRING_TYPE:
-                if(strcmp(act_entry->result_list[0]->val.sval, act_entry->result_list[i]->val.sval) == 0){
-                    printf("Inconsistent Results ... \n");
+                if(strcmp(act_entry->result_list[0]->val.sval, act_entry->result_list[i]->val.sval) != 0){
+                    printf("Inconsistent Results ... string ... %s %s\n", act_entry->result_list[0]->val.sval, act_entry->result_list[i]->val.sval);
                     return return_err_arg(rcmd, "RET-FAILURE");
                 }
                 break;
             case DOUBLE_TYPE:
                 if(act_entry->result_list[0]->val.dval != act_entry->result_list[i]->val.dval){
-                    printf("Inconsistent Results ... \n");
+                    printf("Inconsistent Results ... double ... \n");
                     return return_err_arg(rcmd, "RET-FAILURE");
                 }
                 break;
@@ -767,12 +783,16 @@ command_t *prepare_sync_return_result(runtableentry_t *act_entry, command_t *rcm
                 break;
         }
     }
+    printf("Was here ... \n");
     return rcmd;
 }
 
 void free_rtable_entry(runtableentry_t *entry, runtable_t *table){
     if(entry == NULL)
         return;
+    #ifdef DEBUG_LVL1
+        printf("Removing Value: %p %s\n", entry, entry->actid);
+    #endif
     for(int i = 0; i < MAX_RUN_ENTRIES; i++){
         if(table->entries[i] == entry){
             table->entries[i] = NULL;
@@ -786,6 +806,8 @@ void free_rtable_entry(runtableentry_t *entry, runtable_t *table){
         free(entry->actid);
     if(entry->actname != NULL)
         free(entry->actname);
+    if(entry->cmd != NULL)
+        command_free(entry->cmd);
     free(entry);
 }
 
@@ -802,4 +824,24 @@ command_t *return_err_arg(command_t *rcmd, char *err_msg){
     rcmd->args[0].type = STRING_TYPE;
     rcmd->nargs = 1;
     return rcmd;
+}
+
+void insert_table_entry(jamstate_t * js, command_t *rcmd, int indx){
+    runtableentry_t *act_entry = calloc(1, sizeof(runtableentry_t));
+    act_entry->actname = strdup(rcmd->actname);
+    act_entry->actid = strdup(rcmd->actid);
+    act_entry->index = indx;
+    act_entry->num_response = js->cstate->conf->num_fog_servers + js->cstate->conf->num_cloud_servers;
+    act_entry->cmd = rcmd;
+    //To insert the entry into the table
+    #ifdef DEBUG_LVL1
+        printf("Added Value: %p %s\n", act_entry, act_entry->actid);
+    #endif
+    for(int i = 0; i < MAX_RUN_ENTRIES; i++){
+        if(js->rtable->entries[i] == NULL){
+            js->rtable->entries[i] = act_entry;
+            js->rtable->numruns++;
+            break;
+        }
+    }
 }

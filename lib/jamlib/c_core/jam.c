@@ -90,9 +90,9 @@ jamstate_t *jam_init()
         exit(1);
     }
     task_wait(js->jdata_sem);
-    #ifdef DEBUG_LVL1
+    //#ifdef DEBUG_LVL1
         printf("\n ------------------------Done.-------------------------\n");
-    #endif
+    //#endif
     return js;
 }
 

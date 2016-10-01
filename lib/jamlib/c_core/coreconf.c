@@ -107,7 +107,7 @@ bool coreconf_recover(coreconf_t *conf)
     conf->registered = database_get_int(conf->db, "REGISTERED");
     if (conf->registered)
     {
-        conf->port = database_get_int(conf->db, "REQREP_PORT");
+        conf->fog_port[0] = database_get_int(conf->db, "REQREP_PORT");
         conf->my_fog_server = database_get_string(conf->db, "MY_FOG_SERVER");
     }
 

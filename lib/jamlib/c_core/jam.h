@@ -54,6 +54,8 @@ typedef struct _runtableentry_t
     int status;
     int index;
 
+    command_t *cmd;
+
     int num_response;
     int num_rcv_response;
     arg_t *result_list[MAX_SERVERS]; //The results
@@ -147,6 +149,7 @@ bool jam_eval_condition(char *expr);
 runtable_t *jwork_runtable_new();
 void jwork_runid_complete(jamstate_t *js, runtable_t *rtab, char *runid, arg_t *arg);
 bool jwork_runtable_check(runtable_t *rtable,  command_t *cmd);
+void insert_table_entry(jamstate_t *js, command_t *rcmd, int index);
 runtableentry_t *find_table_entry(runtable_t *rtable, command_t *cmd);
 command_t *prepare_sync_return_result(runtableentry_t *r, command_t *cmd);
 void free_rtable_entry(runtableentry_t *entry, runtable_t *table);
@@ -159,6 +162,7 @@ command_t *return_err_arg(command_t *rcmd, char *err_msg);
 
 bool jrun_check_signature(activity_callback_reg_t *creg, command_t *cmd);
 void jrun_run_task(void *arg);
+
 
 
 #endif  /* __JAMLIB_H__ */
