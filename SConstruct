@@ -35,7 +35,7 @@ if npm_loc==None:
 subprocess.check_output(["npm", "install"])
 #Now we test for C library dependencies
 
-env = Environment()
+env = Environment(CC = 'clang')
 conf = Configure(env)
 
 req_c_lib = None;
@@ -58,7 +58,7 @@ c_files = Glob('lib/jamlib/c_core/*.c');
 
 libtask = env.Command("./deps/libtask/libtask.a", "", "cd deps/libtask && make")
 
-library = Library('jam', Glob('lib/jamlib/c_core/*.c'), LIBS=req_c_lib, LIBPATH = ['/usr/lib', '/usr/local/lib'])
+library = env.Library('jam', Glob('lib/jamlib/c_core/*.c'), LIBS=req_c_lib, LIBPATH = ['/usr/lib', '/usr/local/lib'])
 c_core_files = Glob('./lib/jamlib/c_core/*.h');
 ohm_c_files = Glob('./lib/ohm/c/*.js') + Glob('./lib/ohm/c/*.ohm')
 ohm_ecma_files = Glob('./lib/ohm/ecmascript/*.js') + Glob('./lib/ohm/ecmascript/*.ohm')
