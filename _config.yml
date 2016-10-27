@@ -30,7 +30,11 @@ navbar-links:
     - Basics: write
     - Hello World: hello
   Run: run
-
+  Docs:
+    - Activities: activities
+    - jdata: jdata
+    - jconditional: jconditional
+    
   # Install: "install"
   # Resources:
   #   - Beautiful Jekyll: "http://deanattali.com/beautiful-jekyll/"
