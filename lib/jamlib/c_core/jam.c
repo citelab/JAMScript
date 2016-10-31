@@ -75,7 +75,9 @@ jamstate_t *jam_init()
 
     js->bgsem = threadsem_new();
     js->jdata_sem = threadsem_new();
+    js->jasync_sem = threadsem_new();
     //jcond_read_context();
+    thread_signal(js->jasync_sem);
 
     int rval = pthread_create(&(js->bgthread), NULL, jwork_bgthread, (void *)js);
     if (rval != 0) {
@@ -91,7 +93,7 @@ jamstate_t *jam_init()
     }
     task_wait(js->jdata_sem);
     //#ifdef DEBUG_LVL1
-        printf("\n ------------------------Done.-------------------------\n");
+        printf("\n ------------------------Done-------------------------\n");
     //#endif
     return js;
 }

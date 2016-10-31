@@ -92,7 +92,6 @@ void jam_rexec_run_wrapper(void *arg)
 
 void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
 {
-    command_t *rcmd;
 
     // The protocol for REXEC processing is still evolving.. it is without
     // retries at this point. May be with nanomsg we don't need retries at the
@@ -100,37 +99,63 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     // the reliability model that is provided by nanonmsg.
 
     // Send the command.. and wait for reply..
+
+    // runtableentry_t *act_entry = find_table_entry(js->rtable, cmd);
+    command_t *rcmd;
     insert_table_entry(js, cmd, 0);
-    printf("Was here bois ... ");
-    queue_enq(jact->outq, cmd, sizeof(command_t));
-    task_wait(jact->sem);
+    //task_wait(js->jasync_sem);
 
-    nvoid_t *nv = queue_deq(jact->inq);
-    if (nv == NULL)
-    {
+    runtableentry_t *act_entry = find_table_entry(js->rtable, cmd);
+    if(act_entry == NULL){
+        printf("Cannot find activity ... \n");
         jact->state = EXEC_ERROR;
         return;
     }
-    rcmd = (command_t *)nv->data;
-    free(nv);
+    printf("Initiating Activity ... \n");
+    for(int i = 0; i < act_entry->num_response; i++){
+        queue_enq(jact->outq, cmd, sizeof(command_t));
+        task_wait(jact->sem);
+        nvoid_t *nv = queue_deq(jact->inq);
+        if(nv == NULL){
+            jact->state = EXEC_ERROR;
+            thread_signal(js->jasync_sem);
+            return;
+        }
+        jam_set_timer(js, jact->actid, 200);
+        rcmd = (command_t *)nv->data;
+        free(nv);
+        printf("Round : %d\n", i);
+        if(rcmd == NULL){
+            jact->state = EXEC_ERROR;
+            thread_signal(js->jasync_sem);
+            jam_clear_timer(js, jact->actid);
+            return;
+        }else if(strcmp(rcmd->cmd,"REXEC-NAK") == 0){
+            printf("Failure to acknowledge ...\n");
+            jact->code = command_arg_clone(&(rcmd->args[0]));
+            jact->state = EXEC_ERROR;
+            command_free(rcmd);
+            thread_signal(js->jasync_sem);
+            jam_clear_timer(js, jact->actid);
+            return;
+        }else if(strcmp(rcmd->cmd, "REXEC-ACK") == 0){
+            printf("Acknowledged ... \n");
+            act_entry->num_rcv_response++;
+            if(i == act_entry->num_response){
+                nvoid_t *nv = queue_deq(jact->inq);
+                rcmd = (command_t *)nv->data;
+                free(nv);
+                jam_clear_timer(js, jact->actid);
+            }
+        }else if(strcmp(rcmd->cmd, "TIMEOUT") == 0){
+            printf("Request timed out ... \n");
+            jact->state = EXEC_ERROR;
+            thread_signal(js->jasync_sem);
+            jam_clear_timer(js, jact->actid);
+            return;
+        }
+        free(rcmd);
+    }
+    //thread_signal(js->jasync_sem);
 
-    if (rcmd == NULL)
-    {
-        jact->state = EXEC_ERROR;
-        return;
-    }
-
-    // What is the reply.. positive ACK and negative problem in that case
-    // stick the error code in the activity
-    if (strcmp(rcmd->cmd, "REXEC-ACK") == 0)
-    {
-        jact->code = NULL;
-        jact->state = EXEC_STARTED;
-    }
-    else
-    if (strcmp(rcmd->cmd, "REXEC-NAK") == 0) {
-        jact->code = command_arg_clone(&(rcmd->args[0]));
-        jact->state = EXEC_ABORTED;
-    }
-    command_free(rcmd);
 }

@@ -118,6 +118,10 @@ void jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         queue_enq(jact->outq, cmd, sizeof(command_t));
         task_wait(jact->sem);
         nvoid_t *nv = queue_deq(jact->inq);
+        if(nv == NULL){
+            jact->state = EXEC_ERROR;
+            return;
+        }
         rcmd = (command_t *)nv->data;
         free(nv);
         printf("Round : %d\n", i);
@@ -142,7 +146,31 @@ void jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         free(rcmd);
     }
 
-    printf("Reached end ... %d\n", act_entry->num_response);;
+    act_entry->num_rcv_response = 0;            
+    //Now Retrive the data 
+    for(int i = 0; i < act_entry->num_response; i++){
+        command_t *lcmd = command_new("REXEC-RES", "GET", jact->name, jact->actid, js->cstate->conf->device_id, "");
+        queue_enq(jact->outq, lcmd, sizeof(command_t));
+        printf("After enqueuing stuff\n");
+        jam_set_timer(js, jact->actid, 200);
+        printf("Before wait !\n");
+        task_wait(jact->sem);
+        nvoid_t *nv = queue_deq(jact->inq);
+        rcmd = (command_t *)nv->data;
+        free(nv);
+        if (strcmp(rcmd->cmd, "REXEC-RES") == 0 && strcmp(rcmd->opt, "PUT") == 0){
+            printf("Results Received ... \n");
+            jact->code = command_arg_clone(&(rcmd->args[0]));
+            jact->state = EXEC_COMPLETE;
+            command_free(rcmd);
+            jam_clear_timer(js, jact->actid);
+            act_entry->num_rcv_response++;
+        }else if(strcmp(rcmd->cmd, "TIMEOUT") == 0){
+            printf("Request timed out ... \n");
+            jact->state = EXEC_ERROR;
+            return;
+        }
+    }
     // command_t *rcmd;
     // queue_enq(jact->outq, cmd, sizeof(command_t));
     // task_wait(jact->sem);

@@ -309,7 +309,8 @@ bool core_do_connect(corestate_t *cs, int timeout)
         cs->respsock[i] = socket_new(SOCKET_RESP);
         socket_connect(cs->respsock[i], cs->conf->fog_servers[i], SURVEY_PORT);
     }
-    for(int j = 1; j < cs->conf->num_cloud_servers; j++){
+    for(int j = 0; j < cs->conf->num_cloud_servers; j++){
+        printf("Index: %d\n", i+j);
         cs->reqsock[i+j] = socket_new(SOCKET_REQU);
         socket_connect(cs->reqsock[i+j], cs->conf->cloud_servers[j], cs->conf->cloud_port[j]);
 
