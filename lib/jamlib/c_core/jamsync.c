@@ -96,309 +96,127 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
 }
 
 
-
 void jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
 {
-
     command_t *rcmd;
-    queue_enq(jact->outq, cmd, sizeof(command_t));
-    task_wait(jact->sem);
-    int args = 0;
-    int current_stuff = 0;
-    int sent = 0;
-    while(1){
+    runtableentry_t *act_entry = find_table_entry(js->rtable, cmd);
+    if(act_entry == NULL){
+        printf("Cannot find activity ... \n");
+        jact->state = EXEC_ERROR;
+        return;
+    }
+    // for(int i = 0; i < act_entry->num_response; i++){
+    //     printf("Sending msg ...\n");
+    //     socket_send(js->cstate->reqsock[i], cmd);
+    //     printf("Was here .... \n");
+    //     if(socket_recv_command(js->cstate->reqsock[i], 5000) == NULL)
+    //         printf("ERROR ... \n");
+    //     printf("WAIT WHAT \n");
+    // }
+    printf("Initiating Activity ... \n");
+    for(int i = 0; i < act_entry->num_response; i++){
+        queue_enq(jact->outq, cmd, sizeof(command_t));
+        task_wait(jact->sem);
         nvoid_t *nv = queue_deq(jact->inq);
         rcmd = (command_t *)nv->data;
         free(nv);
-        if (rcmd == NULL){
-           jact->state = EXEC_ERROR;
+        printf("Round : %d\n", i);
+        if(rcmd == NULL){
+            jact->state = EXEC_ERROR;
             return;
-        }else if(strcmp(rcmd->cmd, "REXEC-NAK") == 0){
+        }else if(strcmp(rcmd->cmd,"REXEC-NAK") == 0){
             printf("Failure to acknowledge ...\n");
             jact->code = command_arg_clone(&(rcmd->args[0]));
             jact->state = EXEC_ERROR;
             command_free(rcmd);
             return;
-        }else if (strcmp(rcmd->cmd, "REXEC-ACK") == 0){
-            printf("Acknowledged ...\n");
-            int timerval = 0;
-            if ((rcmd->nargs == 0) ||
-                (rcmd->nargs == 1 && rcmd->args[0].type != INT_TYPE))
-            // did not get a valid timerval, why??
-            // may be somekind of bug? set 100 millisecs by default
-                timerval = 200;
-            else
-                timerval = rcmd->args[0].val.ival + 200;
-
-        // Waiting for the lease time amounts
-            runtableentry_t *act_entry = find_table_entry(js->rtable, rcmd);
-            if(act_entry == NULL){
-                printf("Act Entry Not Found ... \n");
-                break;
-            }            
-            if(args == act_entry->num_response){
-                command_free(rcmd);
-                task_wait(jact->sem);
-                args++;
-            }else{
-                command_free(rcmd);
-                jam_set_timer(js, jact->actid, timerval);
-                task_wait(jact->sem);
+        }else if(strcmp(rcmd->cmd, "REXEC-ACK") == 0){
+            printf("Acknowledged ... \n");
+            act_entry->num_rcv_response++;
+            if(i == act_entry->num_response){
+                nvoid_t *nv = queue_deq(jact->inq);
+                rcmd = (command_t *)nv->data;
+                free(nv);
             }
-        }else if(strcmp(rcmd->cmd, "TIMEOUT") == 0){
-            printf("Timeout! ...\n");
-            runtableentry_t *act_entry = find_table_entry(js->rtable, rcmd);
-            if(act_entry == NULL){
-                printf("Cannot find activity ... \n");
-                break;
-            }
-            printf("So we got here ... \n");
-            act_entry->num_rcv_response = 0;            
-            command_t *lcmd = command_new("REXEC-RES", "GET", jact->name, jact->actid, js->cstate->conf->device_id, "");
-            queue_enq(jact->outq, lcmd, sizeof(command_t));
-            printf("After enqueuing stuff\n");
-            command_free(rcmd);
-            jam_set_timer(js, jact->actid, 300);
-            args = 0;
-            printf("Before wait !\n");
-            task_wait(jact->sem);
-        }else if (strcmp(rcmd->cmd, "REXEC-RES") == 0 && strcmp(rcmd->opt, "PUT") == 0){
-            printf("Results Received ... \n");
-            jact->code = command_arg_clone(&(rcmd->args[0]));
-            jact->state = EXEC_COMPLETE;
-            command_free(rcmd);
-            jam_clear_timer(js, jact->actid);
-            break;
         }
+        free(rcmd);
     }
+
+    printf("Reached end ... %d\n", act_entry->num_response);;
+    // command_t *rcmd;
+    // queue_enq(jact->outq, cmd, sizeof(command_t));
+    // task_wait(jact->sem);
+    // int args = 0;
+    // int current_stuff = 0;
+    // int sent = 0;
+    // while(1){
+    //     nvoid_t *nv = queue_deq(jact->inq);
+    //     rcmd = (command_t *)nv->data;
+    //     free(nv);
+    //     if (rcmd == NULL){
+    //        jact->state = EXEC_ERROR;
+    //         return;
+    //     }else if(strcmp(rcmd->cmd, "REXEC-NAK") == 0){
+    //         printf("Failure to acknowledge ...\n");
+    //         jact->code = command_arg_clone(&(rcmd->args[0]));
+    //         jact->state = EXEC_ERROR;
+    //         command_free(rcmd);
+    //         return;
+    //     }else if (strcmp(rcmd->cmd, "REXEC-ACK") == 0){
+    //         printf("Acknowledged ...\n");
+    //         int timerval = 0;
+    //         if ((rcmd->nargs == 0) ||
+    //             (rcmd->nargs == 1 && rcmd->args[0].type != INT_TYPE))
+    //         // did not get a valid timerval, why??
+    //         // may be somekind of bug? set 100 millisecs by default
+    //             timerval = 200;
+    //         else
+    //             timerval = rcmd->args[0].val.ival + 200;
+
+    //     // Waiting for the lease time amounts
+    //         runtableentry_t *act_entry = find_table_entry(js->rtable, rcmd);
+    //         if(act_entry == NULL){
+    //             printf("Act Entry Not Found ... \n");
+    //             break;
+    //         }            
+    //         if(args == act_entry->num_response){
+    //             command_free(rcmd);
+    //             task_wait(jact->sem);
+    //             args++;
+    //         }else{
+    //             command_free(rcmd);
+    //             jam_set_timer(js, jact->actid, timerval);
+    //             task_wait(jact->sem);
+    //         }
+    //     }else if(strcmp(rcmd->cmd, "TIMEOUT") == 0){
+    //         printf("Timeout! ...\n");
+    //         runtableentry_t *act_entry = find_table_entry(js->rtable, rcmd);
+    //         if(act_entry == NULL){
+    //             printf("Cannot find activity ... \n");
+    //             break;
+    //         }
+    //         printf("So we got here ... \n");
+    //         act_entry->num_rcv_response = 0;            
+    //         command_t *lcmd = command_new("REXEC-RES", "GET", jact->name, jact->actid, js->cstate->conf->device_id, "");
+    //         queue_enq(jact->outq, lcmd, sizeof(command_t));
+    //         printf("After enqueuing stuff\n");
+    //         command_free(rcmd);
+    //         jam_set_timer(js, jact->actid, 300);
+    //         args = 0;
+    //         printf("Before wait !\n");
+    //         task_wait(jact->sem);
+    //     }else if (strcmp(rcmd->cmd, "REXEC-RES") == 0 && strcmp(rcmd->opt, "PUT") == 0){
+    //         printf("Results Received ... \n");
+    //         jact->code = command_arg_clone(&(rcmd->args[0]));
+    //         jact->state = EXEC_COMPLETE;
+    //         command_free(rcmd);
+    //         jam_clear_timer(js, jact->actid);
+    //         break;
+    //     }
+    // }
     // 
     // command_t *rcmd;
 
-    // // The protocol for REXEC processing is still evolving.. it is without
-    // // retries at this point. May be with nanomsg we don't need retries at the
-    // // RPC level. This is something we need to investigate closely by looking at
-    // // the reliability model that is provided by nanonmsg.
-
-    // // Send the command.. and wait for reply..
-
-    // queue_enq(jact->outq, cmd, sizeof(command_t));
-    // task_wait(jact->sem);
-
-    // nvoid_t *nv = queue_deq(jact->inq);
-    // rcmd = (command_t *)nv->data;
-    // free(nv);
-
-    // if (rcmd == NULL)
-    // {
-    //     jact->state = EXEC_ERROR;
-    //     return;
-    // }
-    
-    // runtableentry_t *act_entry = find_table_entry(js->rtable, rcmd);
-    // int args = 0;
-    // // What is the reply.. positive ACK and negative problem in that case
-    // // stick the error code in the activity
-    // if (strcmp(rcmd->cmd, "REXEC-ACK") == 0)
-    // {
-    //     int timerval = 0;
-    //     if ((rcmd->nargs == 0) ||
-    //         (rcmd->nargs == 1 && rcmd->args[0].type != INT_TYPE))
-    //         // did not get a valid timerval, why??
-    //         // may be somekind of bug? set 100 millisecs by default
-    //         timerval = 100;
-    //     else
-    //         timerval = rcmd->args[0].val.ival;
-
-    //     // Waiting for the lease time amounts
-    //     command_free(rcmd);
-    //     jam_set_timer(js, jact->actid, timerval);
-    //     task_wait(jact->sem);
-
-        
-    //     nvoid_t *nv = queue_deq(jact->inq);
-    //     rcmd = (command_t *)nv->data;
-    //     free(nv);
-    //     args++;
-    //     // If we did not get woken up by the timer, we need to cancel the
-    //     // timer. The publish notification from the j-core should have
-    //     // woken the activity
-    //     printf("Command special %s, %s %s %s %s\n", rcmd->cmd, rcmd->actname, rcmd->actid, rcmd->actarg, rcmd->opt);
-    //     if (strcmp(rcmd->cmd, "REXEC-ACK") == 0){
-    //         args++;
-    //     }
-    //     else if (strcmp(rcmd->cmd, "TIMEOUT") != 0)
-    //     {
-    //         jam_clear_timer(js, jact->actid);
-
-    //         // It is not a timer wake up.. so it better be because of a
-    //         // published message..
-    //         if (!(strcmp(rcmd->cmd, "REXEC-RES") == 0 && strcmp(rcmd->opt, "AVL") == 0))
-    //         {
-    //             jact->state = EXEC_ERROR;
-    //             command_free(rcmd);
-    //             return;
-    //         }
-    //     }
-    // command_t *rcmd;
-
-    // // The protocol for REXEC processing is still evolving.. it is without
-    // // retries at this point. May be with nanomsg we don't need retries at the
-    // // RPC level. This is something we need to investigate closely by looking at
-    // // the reliability model that is provided by nanonmsg.
-
-    // // Send the command.. and wait for reply..
-
-    // queue_enq(jact->outq, cmd, sizeof(command_t));
-    // task_wait(jact->sem);
-
-    // nvoid_t *nv = queue_deq(jact->inq);
-    // rcmd = (command_t *)nv->data;
-    // free(nv);
-
-    // if (rcmd == NULL)
-    // {
-    //     jact->state = EXEC_ERROR;
-    //     return;
-    // }
-    
-    // runtableentry_t *act_entry = find_table_entry(js->rtable, rcmd);
-    // int args = 0;
-    // // What is the reply.. positive ACK and negative problem in that case
-    // // stick the error code in the activity
-    // if (strcmp(rcmd->cmd, "REXEC-ACK") == 0)
-    // {
-    //     int timerval = 0;
-    //     if ((rcmd->nargs == 0) ||
-    //         (rcmd->nargs == 1 && rcmd->args[0].type != INT_TYPE))
-    //         // did not get a valid timerval, why??
-    //         // may be somekind of bug? set 100 millisecs by default
-    //         timerval = 100;
-    //     else
-    //         timerval = rcmd->args[0].val.ival;
-
-    //     // Waiting for the lease time amounts
-    //     command_free(rcmd);
-    //     jam_set_timer(js, jact->actid, timerval);
-    //     task_wait(jact->sem);
-
-        
-    //     nvoid_t *nv = queue_deq(jact->inq);
-    //     rcmd = (command_t *)nv->data;
-    //     free(nv);
-    //     args++;
-    //     // If we did not get woken up by the timer, we need to cancel the
-    //     // timer. The publish notification from the j-core should have
-    //     // woken the activity
-    //     printf("Command special %s, %s %s %s %s\n", rcmd->cmd, rcmd->actname, rcmd->actid, rcmd->actarg, rcmd->opt);
-    //     if (strcmp(rcmd->cmd, "REXEC-ACK") == 0){
-    //         args++;
-    //     }
-    //     else if (strcmp(rcmd->cmd, "TIMEOUT") != 0)
-    //     {
-    //         jam_clear_timer(js, jact->actid);
-
-    //         // It is not a timer wake up.. so it better be because of a
-    //         // published message..
-    //         if (!(strcmp(rcmd->cmd, "REXEC-RES") == 0 && strcmp(rcmd->opt, "AVL") == 0))
-    //         {
-    //             jact->state = EXEC_ERROR;
-    //             command_free(rcmd);
-    //             return;
-    //         }
-    //     }
-    //     command_free(rcmd);
-    //     }else{
-    //     if (strcmp(rcmd->cmd, "REXEC-NAK") == 0) {
-    //         jact->code = command_arg_clone(&(rcmd->args[0]));
-    //         jact->state = EXEC_ERROR;
-    //         }
-    //         command_free(rcmd);
-    //     }
-    //     // Now ask for the results from the j-core
-    //     // [[ REXEC-RES GET actname actid device_id ]]
-    //     while(1){
-    //         command_t *lcmd = command_new("REXEC-RES", "GET", jact->name, jact->actid, js->cstate->conf->device_id, "");
-    //         args++;
-    //         queue_enq(jact->outq, lcmd, sizeof(command_t));
-    //         printf("New Orders Sent ... \n");
-    //         task_wait(jact->sem);
-
-    //         nv = queue_deq(jact->inq);
-    //         rcmd = (command_t *)nv->data;
-    //         free(nv);
-
-    //         if (strcmp(rcmd->cmd, "REXEC-RES") == 0 && strcmp(rcmd->opt, "PUT") == 0)
-    //         {
-    //             printf("Was here ... \n");
-    //             jact->code = command_arg_clone(&(rcmd->args[0]));
-    //             jact->state = EXEC_COMPLETE;
-    //             command_free(rcmd);
-    //             break;
-    //         }else if(strcmp(rcmd->cmd, "REXEC-ACK") == 0){
-    //             args++;
-    //             printf("Whats up .... \n");
-    //         }
-    //     }
-    //     printf("IT reached here ...\n");
-    //     command_free(rcmd);
-    //     }else{
-    //     if (strcmp(rcmd->cmd, "REXEC-NAK") == 0) {
-    //         jact->code = command_arg_clone(&(rcmd->args[0]));
-    //         jact->state = EXEC_ERROR;
-    //         }
-    //         command_free(rcmd);
-    //     }
-    //     // Now ask for the results from the j-core
-    //     // [[ REXEC-RES GET actname actid device_id ]]
-    //     while(1){
-    //         command_t *lcmd = command_new("REXEC-RES", "GET", jact->name, jact->actid, js->cstate->conf->device_id, "");
-    //         args++;
-    //         queue_enq(jact->outq, lcmd, sizeof(command_t));
-    //         printf("New Orders Sent ... \n");
-    //         task_wait(jact->sem);
-
-    //         nv = queue_deq(jact->inq);
-    //         rcmd = (command_t *)nv->data;
-    //         free(nv);
-
-    //         if (strcmp(rcmd->cmd, "REXEC-RES") == 0 && strcmp(rcmd->opt, "PUT") == 0)
-    //         {
-    //             printf("Was here ... \n");
-    //             jact->code = command_arg_clone(&(rcmd->args[0]));
-    //             jact->state = EXEC_COMPLETE;
-    //             command_free(rcmd);
-    //             break;
-    //         }else if(strcmp(rcmd->cmd, "REXEC-ACK") == 0){
-    //             args++;
-    //             printf("Whats up .... \n");
-    //         }
-    //     }
-    //     printf("IT reached here ...\n");
-        // We expect the following: [[ REXEC-RES PUT actname actid code-type return-code ]]
-        /*
-            if (strcmp(rcmd->cmd, "REXEC-RES") == 0 && strcmp(rcmd->opt, "PUT") == 0)
-            {
-                //jact->code = command_arg_clone(&(rcmd->args[0]));
-                //jact->state = EXEC_COMPLETE;
-                command_free(rcmd);
-            }else if(strcmp(rcmd->cmd, "REXEC-ACK") == 0){
-                command_t *lcmd = command_new("REXEC-RES", "GET", jact->name, jact->actid, js->cstate->conf->device_id, "");
-                queue_enq(jact->outq, lcmd, sizeof(command_t));
-                task_wait(jact->sem);
-                command_free(rcmd);
-                nv = queue_deq(jact->inq);
-                rcmd = (command_t *)nv->data;
-                free(nv);
-                 printf("Command special %s, %s %s %s %s\n", rcmd->cmd, rcmd->actname, rcmd->actid, rcmd->actarg, rcmd->opt);
-                if (strcmp(rcmd->cmd, "REXEC-RES") == 0 && strcmp(rcmd->opt, "PUT") == 0)
-                {
-                    jact->code = command_arg_clone(&(rcmd->args[0]));
-                    jact->state = EXEC_COMPLETE;
-                    command_free(rcmd);
-                }
-            }
-            */
-        //}
     
     
 }

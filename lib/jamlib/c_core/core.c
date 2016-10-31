@@ -215,6 +215,7 @@ void core_register_at_fog(corestate_t *cs, int timeout)
                     #ifdef DEBUG_LVL1
                     printf("Commencing Basic Attempting of multi connection ...\n");
                     #endif
+                    printf("Debugging: %d\n", rcmd->nargs);
                     for(int k = 4; k < rcmd->nargs; k += 3){
                         to_add = 1;
                         printf("Debugging: %d IP4:%s IP6:%s Type:%s\n", rcmd->nargs, rcmd->args[k - 2].val.sval, rcmd->args[k - 1].val.sval, rcmd->args[k].val.sval);
@@ -308,7 +309,7 @@ bool core_do_connect(corestate_t *cs, int timeout)
         cs->respsock[i] = socket_new(SOCKET_RESP);
         socket_connect(cs->respsock[i], cs->conf->fog_servers[i], SURVEY_PORT);
     }
-    for(int j = 0; j < cs->conf->num_cloud_servers; j++){
+    for(int j = 1; j < cs->conf->num_cloud_servers; j++){
         cs->reqsock[i+j] = socket_new(SOCKET_REQU);
         socket_connect(cs->reqsock[i+j], cs->conf->cloud_servers[j], cs->conf->cloud_port[j]);
 
