@@ -1,0 +1,16 @@
+{
+    "language": "en_US",
+    "ignoreWordsList": [
+        "MQTT",
+        "Heartbeating",
+        "heartbeating"
+    ],
+    "documentTypes": [
+        "markdown",
+        "latex",
+        "plaintext"
+    ],
+    "ignoreRegExp": [],
+    "ignoreFileExtensions": [],
+    "checkInterval": 5000
+}

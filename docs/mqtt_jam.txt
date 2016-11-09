@@ -18,7 +18,6 @@ the LWT messages.
 
 At each MQTT broker, we have the "machine" messages and "level" messages. 
 
-
 A Fog node subscribes to the machine messages at the cloud level. Any messages it gets
 are injected into its broker as a machine level message. The devices do the same. 
 
@@ -59,3 +58,29 @@ Here is the topic hierarchy.
 
 /level/functions
 
+
+Plan
+====
+
+1. Put the MQTT server at each J node
+2. Let the C node connect to the MQTT server
+3. Get connections and disconnections working. 
+4. Use the connections and disconnections to figure out network partitioning.
+5. Network partitioning and node failures should be figured out.
+6. Use LWT as well.
+ 
+7. Implement the level function invocations
+8. Revise the C-J and get it working. Use the concurrent mode
+9. Test the C-J in different modes. 
+
+10. Implement the machine messages
+11. Use the machine messages to implement the J-C side
+12. Test the J-C in different modes.
+
+14. How does C-J and J-C work in failure and disconnection scenarios? 
+    Test and fine tune the protocol configurations.
+
+
+15. Get the eventing working.
+
+16. Get the data pumping working through the MQTT server
