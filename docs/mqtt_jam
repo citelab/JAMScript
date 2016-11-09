@@ -1,0 +1,61 @@
+Design Notes for MQTT JAM
+=========================
+
+We want to use MQTT to simplify many of the JAM actions. 
+
+At each J node, we put a MQTT server (broker). The broker is responsible for the following
+functions. 
+
+Heartbeating. We use the built-in heartbeating functionality of the MQTT server. The servers
+can detect disconnection. The clients can get a callback and react to the disconnection or
+LWT messages from the broker. 
+
+The connection is always to the up-level. That is, fog connects to the cloud and devices
+connect to the fog. Not the other way around. 
+
+The cloud or fog can detect about the departure of a low-level node by subscribing to
+the LWT messages. 
+
+At each MQTT broker, we have the "machine" messages and "level" messages. 
+
+
+A Fog node subscribes to the machine messages at the cloud level. Any messages it gets
+are injected into its broker as a machine level message. The devices do the same. 
+
+So the machine level messages propagate down the hierarchy in a machine. At each stage
+the message is interpreted. If the message is valid or relevant (depending on the logic
+condition), it is propagated downwards.
+
+The level messages work at the given level. No downward or upward propagation. 
+This facility can be used in different ways, but it is used by the devices or C part of 
+in the following way.
+
+Device-C invokes the level functions by publishing the run request. It can happen
+in two different ways:
+    = Concurrent: All levels are told about the execution at the same time. The
+    levels independently process the request and let the device know about the
+    outcome. 
+
+    = Sequential: The device is going through the level calls in a sequential manner.
+    The device is responsible for figuring out which level it would call first. 
+    
+    From the level function implementation point-of-view, there is no difference between
+    the two different schemes. 
+
+
+Summary
+=======
+= Machines messages
+= Level messages
+= Disconnections to detect up failures
+= LWT to detect down failures
+
+= What else? We need events support as well. Events are propagated in the machine. 
+Here is the topic hierarchy.
+
+/machine/functions
+/machine/events/internal
+/machine/events/external
+
+/level/functions
+

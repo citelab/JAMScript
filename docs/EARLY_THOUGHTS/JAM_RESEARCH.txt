@@ -1,5 +1,4 @@
 
-
 1. Why use containers?
 
    We have developer supplied code for execution in the cloud. Also, this developer supplied
