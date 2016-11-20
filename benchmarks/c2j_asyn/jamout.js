@@ -10,7 +10,7 @@ var fs = require('fs');
 var JManager = require('/usr/local/share/jam/lib/jserver/jmanager');
 var JLogger = require('/usr/local/share/jam/lib/jserver/jlogger');
 var jcondition = new Map();
-varnum_calls=0;
+var num_calls = 0;
 function ping_asyn(msg) {
 if (msg != "PING") {
 console.log("DAMMIT ROBERT ON JAVSCRIPT");

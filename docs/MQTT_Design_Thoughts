@@ -1,0 +1,15 @@
+
+Tree time
+    What is this useful for?
+
+    We can detect inconsistent scenarios that needs user application intervention.
+
+    How the tree time advances?
+
+    What happens when a new device joins?
+
+    Tree time inheritence?
+    What actions should be executed on the newly arriving device?
+
+We also assume that the clock is synchronized across the system. So, why do weed a tree time??
+

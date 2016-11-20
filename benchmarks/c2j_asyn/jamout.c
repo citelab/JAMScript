@@ -8,9 +8,17 @@
 #define ITERATIONS 100
 typedef char* jcallback;
 jamstate_t *js;
-int   main();
-jactivity_t *  ping_asyn(char*);
-int   get_num_ping();
+jactivity_t *ping_asyn(char* msg) {
+jactivity_t *res = jam_rexec_async(js, "ping_asyn", "s",msg);
+return res;}
+
+int get_num_ping() {
+arg_t *res = jam_rexec_sync(js, "get_num_ping", "");
+int ret = res->val.ival;
+command_arg_free(res);
+return ret;
+}
+
 int user_main() {
 int errors = 0;
 for (int i = 0; i < 100; i++) {
@@ -46,14 +54,4 @@ void taskmain(int argc, char **argv) {
      
     taskcreate(jam_event_loop, js, 50000);
     taskcreate(jam_run_app, js, 50000);
-  }jactivity_t *ping_asyn(char* msg) {
-jactivity_t *res = jam_rexec_async(js, "ping_asyn", "s",msg);
-return res;}
-
-int get_num_ping() {
-arg_t *res = jam_rexec_sync(js, "get_num_ping", "");
-int ret = res->val.ival;
-command_arg_free(res);
-return ret;
-}
-
+  }

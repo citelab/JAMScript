@@ -80,7 +80,6 @@ Plan
 14. How does C-J and J-C work in failure and disconnection scenarios? 
     Test and fine tune the protocol configurations.
 
-
 15. Get the eventing working.
 
 16. Get the data pumping working through the MQTT server

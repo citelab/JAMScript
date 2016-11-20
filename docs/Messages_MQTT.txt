@@ -1,0 +1,439 @@
+Message format
+
+cmd:    Command String (e.g., PING, REGISTER). This gives the major operation that
+        needs to be done. That is the purpose of the message.
+
+opt:    An option that is relevant for the given command. This is highly context
+        dependent.
+      
+actname:    The name of the sender. In most cases the name of the module that is
+        sending the message. The activity name, the main thread ("MAIN") or 
+        the pinging thread ("PINGER") and so on.
+
+actid:  The activity ID. 
+   
+actarg:  An optional argument associated with the activity. 
+        
+args:   Arguments that are necessary for the given command. Some commands may not have
+        any arguments.
+ 
+ 
+Note: In the following section, we show the message format. The way it is described
+is the following.
+
+[[ Message format ]]
+
+Description of the message format and where it is used.        
+The [[ ]] are not part of the message format. 
+
+Register a device in a Fog/Cloud
+================================
+
+Phase One:
+==========
+Create a unique device_serial and send the following request to the fog/cloud.
+This request needs to be sent to the /admin/request/all topic.
+
+[[ REGISTER DEVICE app_name _ device_serial ]]
+
+The broker will check the device_id in its table. If it is found in the table, 
+sends the following message to /admin/announce/all. 
+
+[[ REGISTER-ACK OLD broker_serial device_id device_serial ]]
+
+This tells the device that a device is already registered with the same device_serial.
+The device could generate another device_serial and retry the registration until it
+gets the following message in /admin/announce/all.
+
+[[ REGISTER-ACT NEW broker_serial device_id device_serial reg_time]]
+
+When this message is sent out, the broker maintains a binding between the device_id and
+device_serial in its memory. We might need two associative tables for both directions.
+
+Device disconnects from the broker and connects for Phase Two.
+
+Phase Two:
+==========
+Connect with LWT. The LWT message is setup to announce departure in /admin/announce/all.
+
+Then the client proceeds with the normal activity. 
+
+Crashing broker
+===============
+What if the broker crashes and reboots? All the soft state is lost in the broker. 
+The broker sends the following message to /admin/announce/all.
+
+[[ REBOOT BROKER broker_serial _ _ reboot_time ]]
+
+The broker sends this message to the announce list for sometime expecting the nodes
+to pick it up and respond with new registration messages. So the responsibility
+to maintain a current registration is left to the device. 
+
+
+Remote Execution from C to J (Synchronous)
+==========================================
+
+We assume that the device has a valid registration with the broker. 
+Also the device has already subscribed to the following topics.
+
+/admin/announce/all
+/level/func/reply/all
+/level/func/reply/device_id
+
+The device sends the following message to /level/func/request.
+
+[[ REXEC-SYN condition-string/- actname actid device_id args ]]
+
+Only the broker is subscribing to this channel. So it gets the request.
+
+The broker replies to the device with the following messages depending
+on whether it successfully started the activity or not.
+
+The reply is sent to the /level/func/reply/device_id
+
+Broker sends this on success:
+
+[[ REXEC-ACK - ACTIVITY actid device_id lease-value (arg0) ]]
+
+Sends this on failure:
+
+[[ REXEC-NAK - ACTIVITY actid device_id error-code (arg0) ]]
+
+After some time given by the lease-value, the device can get back
+to the broker with the following message asking for the return
+value.
+
+The device sends the following to /level/func/request
+
+[[ REXEC-RES GET actname actid device_id ]]
+
+And the reply comes to /level/func/reply/device_id
+
+[[ REXEC-RES PUT ACTIVITY actid code-type return-code ]] 
+
+TODO: We need another version to extend the lease to handle the situation where the
+result is not yet ready.
+
+
+Remote Execution from C to J (Asynchronous)
+===========================================
+
+To execute a C-to-J asychronously, the device issues the following command
+to the /level/func/request topic.
+
+[[ REXEC-ASY condition-string/- actname actid device_id args ]]
+
+The broker will respond with one of the following replies in /local/func/reply/device_id.
+
+On success:
+[[ REXEC-ACK ASY ACTIVITY actid device_id lease-value (arg0) ]]
+
+On failure:
+[[ REXEC-NAK ASY ACTIVITY actid device_id error-code (arg0) ]]
+
+There is no waiting for the reply or requesting for the reply.
+
+
+J Machine Execution
+===================
+
+All function executions in the JAM machine are subjected to the following rules.
+
+A function execution can be of two types: synchronous or asynchronous.
+By default a statement is actually asynchronous. That is, you run a function in the
+J machine, it just runs on a particular node (cloud or fog) without invoking any
+synchronization overhead. When we mark the function declaration with a
+'jsync', the function becomes synchronous. Calling that function causes a machine-wide
+synchronization. That is the whole tree undergoes a synchronization. 
+
+# There are some discarded thoughts here. Earlier I thought that we could use 
+# promotion to determine which functions are synchronous and which are not. For
+# instance a function with a synchronous call inside it is synchronous. 
+# I ditched this idea because I thought it would be programmer unfriendly. 
+# You need to watch out for promotions. 
+
+# With the current setup, each function is marked independently as synchronous or
+# asynchronous. So, we can react differently for functions that are synchronous.
+
+
+        For asynchronous J machine execution:
+        =====================================
+
+        Announce the following command in the /machine/func/announce topic. any
+        underlying (sub) machine would subscribe to that channel and get the command.
+
+        [[ EXEC-ASY src funcname actid device_id args ]]
+
+        The above command is calling the receiver to run funcname(args) in an asynchronous
+        manner. 
+
+        The receiver is expected to publish an acknowledgement like the following in 
+        /machine/func/ack so that the initiator knows that the announced request has triggered
+        certain number of actions on several receivers. 
+
+        [[ EXEC-ACK ASY funcname actid device_id lease_time (arg0) ]]
+
+        For synchronous J machine execution:
+        ====================================
+
+        This is bit problematic! We need to perform the synchronization. 
+        The root will try to synchronize the participating nodes. How??
+
+        Protocol Sketch
+        ===============
+        = Request synchronization     
+
+        [[ REQ-SYN src - actid device_id time_limit (arg0) ]]
+
+        = Agree to synchronize by advertising the time slots that are available for synchronization
+
+        [[ AGREE-SYN  
+
+        = Disagree to synchronize by advertising an empty list of time slots
+
+        [[ REJECT-SYN 
+
+        = Create a synchronization schedule with maximum participation and occurs the soonest
+
+        [[ SYNC-SCHED PRI 
+
+        = Create one or two backup synchronization schedules that could be used 
+                if many nodes fail on the first one
+
+        [[ SYNC-SCHED BAK 
+
+        = Detect failure on a schedule 
+        = Should the number of failures on a schedule exceed a certain threshold, 
+                abandon that schedule
+        = If no backup schedule is available, the synchronization fails
+
+        # This algorithm achieves a maximal synchronization within a given amount of time 
+        # or does not achieve synchronization at all.
+
+        # There are different types of costs associated with this algorithm:
+                # number of nodes unable to participate in the synchronization
+                # time delay incurred to achieve synchronization
+                # probability of failing to achieve synchronization
+
+
+Remote Execution from J to C (Synchronous)
+==========================================
+
+A slightly different version of the above protocol can be used here too. So, what is the
+problem that needs a small change?
+
+EXEC to REXEC??
+
+
+This is command from the system (tree) side. The devices are being told what they should
+run. Like the C-to-J, we can have conditional runs. 
+
+We need to run a remote function from the cloud. The cloud (machine) checks the
+condition. If the condition indicates that we should proceed with the execution,
+we push the announce to the /machine/func/announce topic. 
+
+
+===============
+The JAM machine has a hierarchical scope. If a function runs in the cloud, then
+it runs at the fog, but not the other way around. 
+
+A function is triggered at the cloud. It is announced as running in the /machine/func/announce
+topic. The fogs 
+
+
+
+J function runs at the cloud. It will be 
+
+The devices or fogs connected to the node are subscribing to this announcement
+topic. 
+
+They get it and ev
+
+
+We need to resolve few issues here. Cloud-J is running a function. It needs to ask 
+the fogs to run the function as well. Should it run it and then ask or get the fogs to
+run the function and then run it itself?
+
+C-to-J:
+        = run at the cloud
+        = push the function to the fogs - run it there
+        = 
+
+
+
+
+[[ REXEC-CALL SYN actname runid expression args ]] (published)
+
+[[ REXEC-RDY SYN actname actid runid ]] 
+
+[[ REXEC-STA SYN EVENTLOOP actid runid survey_port (arg0)]]
+
+[[ REXEC-QUI SYN EVENTLOOP actid runid survey_port (arg0)]]
+
+
+
+
+[[ REXEC FOG actname expression args (sent over publish) ]]
+
+The Fog controller is publishing the above REXEC asking whether any device
+is willing to execute the given activity.
+
+Devices interested in executing the activity would run the expression to check
+whether they are eligible. If they are eligible, the devices would send in
+their response using the following message. 
+
+[[ REXEC-RDY DEVICE actname actid runid lease-value (arg0) expiry-time (arg1) ]]
+
+The Fog controller can select one or more of the devices to execute 
+the given activity. The Fog needs to respond within the expiry-time. Otherwise, the device
+will throw away the previous offer to execute the activity. The actid
+is the activity ID when the device starts executing it.
+
+[[ REXEC-STA FOG EVENTLOOP actid ]] 
+
+Once the device receives the REXEC-STA message it is going to start the execution of the
+activity with the given actid. 
+
+
+Remote Execution from J to C (Asynchronous)
+==========================================
+
+[[ REXEC-CALL ASY actname runid expression args ]] (published)
+
+[[ REXEC-RDY ASY actname actid runid ]] 
+
+[[ REXEC-STA ASY EVENTLOOP actid runid ]]
+
+[[ REXEC-QUI ASY EVENTLOOP actid runid ]]
+
+
+
+Obtaining Execution Reports from the Fog and Devices
+====================================================
+
+[[ REPORT-REQ  SYN EVENTLOOP __ runid ]]
+
+[[ REPORT-REP FIN actname deviceid runid res (arg0)]
+                res is a single object
+
+NOTE: There is no continuation message. We report back only
+when there is a positive completion. If there is a problem, just
+keep quiet. The receiver would correctly infer a problem.
+
+
+
+        Execution reports are necessary part of the protocol used by JAMScript.
+        Fog or devices could be asking for status reports after or just before a lease on an
+        ongoing activity execution is to expire. 
+
+        [[ REPORT-REQ DEVICE actname actid __ ]]
+
+        The device is requesting a report from the Fog on the execution of a particular activity.
+
+        [[ REPORT-REP FOG actname actid __ message-type-code message-arg ]]
+
+        The reply from the Fog could tell the device many things: extension of the lease (LEASE-EXT), or 
+        activity completed successfully (COMPLETE-SUC), completed erroneously (COMPLETE-ERR).
+        The second argument (message-arg) is the parameter for this one.
+
+        Like the devices, the Fog can request execution reports from the devices as well.
+
+        [[ REPORT-REQ FOG actname __ runid ]]
+
+        The Fog is sending out a survey asking which devices are 
+        still working on the particular activity.
+        May be we need another ID type to indicate whether a particular 
+        instance of an activity is still working.
+
+        [[ REPORT-REP DEVICE actname actid message-type-code message-arg ]]
+
+        This is same as the previous case. However, the way it is delivered is different. In this case,
+        we are replying to a survey. 
+
+
+Terminating Execution Commands in Fog and Devices
+=================================================
+
+There would be situations when we need to terminate activities that are running in the devices or Fog.
+We have a command in the protocol to allow that.
+
+[[ RKILL DEVICE actname actid __ ]] 
+
+In the above command the device is asking the Fog to terminate an activity that is already ongoing.
+The device gives the activity ID
+
+[[ RKILL-ACK FOG actname actid __ ]]
+
+The Fog replies with an acknowledgement if it is able to kill the activity.
+
+[[ RKILL-IGN FOG actname __ ]]
+
+The Fog replies with an ignored message if the kill is ignored. The kill is ignored because
+the activity has already expired.
+
+[[ RKILL FOG actname __ runid ]]
+
+The Fog sends out the above message as a survey to kill all ongoing instances of the activity in the
+devices. The devices would respond with one of the following messages.
+
+[[ RKILL-ACK DEVICE actname actid ]]
+[[ RKILL-IGN DEVICE actname __ ]]
+
+The actid in the acknowledgement represents the ID of the activity that was terminated.
+
+
+Cloud Connection
+================
+
+We need protocols for joining and leaving for the Fogs.
+ When a Fog comes in contact with the Cloud, it should join with the shadow Fog.
+In addition, when a Fog comes in contact with another Fog, they should join 
+too provided the trust negotiation works out.
+
+Fog Discovery Protocol
+======================
+This for a Fog to discover the cloud connectivity and the presence of other Fogs.
+TODO: We need ad-hoc discoverability. Unfortunately, that 
+support is not there in Nano Messages. So we
+need to go through the cloud. 
+
+[[ DISCOVER FOG app_name fog_name fog_id ]]
+
+The above message is sent as a request-reply to the cloud. The cloud would respond to the above
+discovery with the following messages.
+
+[[ FOUND CLOUD app_name Qualifier list-of-fog-servers ]]
+
+Here the cloud is reporting a list of Fog servers that are available in the system or near vicinity
+The Qualifier could be "NEAR" or "ALL".
+
+[[ FOUND CLOUD app_name "ALL" ]] 
+
+This indicates an empty response and not Fog. A Fog is not told its own address. 
+
+If the cloud is out of reach, the disovery message would just time out.
+
+
+Fog Joining Protocol
+====================
+
+
+
+Fog Leaving Protocol
+====================
+
+
+
+
+Data Handling
+=============
+
+
+
+
+Event Handling
+==============
+
+
+
+

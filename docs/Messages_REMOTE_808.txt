@@ -16,8 +16,7 @@ actarg:  An optional argument associated with the activity.
         
 args:   Arguments that are necessary for the given command. Some commands may not have
         any arguments.
- 
- 
+
 Note: In the following section, we show the message format. The way it is described
 is the following.
 
@@ -25,7 +24,6 @@ is the following.
 
 Description of the message format and where it is used.        
 The [[ ]] are not part of the message format. 
-
 
 Register a device in a Fog
 ==========================
@@ -74,7 +72,6 @@ The message formats are given below.
 [[ PING DEVICE PINGER device_id device_name ]]
 
 Ping is originating from the device. This is heartbeat trigger from the device.
-
 
 [[ PONG FOG PINGER device_id device_name ]]
 
@@ -152,7 +149,6 @@ Remote Execution from J to C (Synchronous)
 [[ REXEC-STA SYN EVENTLOOP actid runid survey_port (arg0)]]
 
 [[ REXEC-QUI SYN EVENTLOOP actid runid survey_port (arg0)]]
-
 
 
 
