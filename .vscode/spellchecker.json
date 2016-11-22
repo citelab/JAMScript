@@ -1,9 +1,10 @@
 {
     "language": "en_US",
     "ignoreWordsList": [
-        "MQTT",
         "Heartbeating",
-        "heartbeating"
+        "heartbeating",
+        "MQTT",
+        "cancelling"
     ],
     "documentTypes": [
         "markdown",

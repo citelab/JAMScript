@@ -118,7 +118,7 @@ result is not yet ready.
 Remote Execution from C to J (Asynchronous)
 ===========================================
 
-To execute a C-to-J asychronously, the device issues the following command
+To execute a C-to-J asynchronously, the device issues the following command
 to the /level/func/request topic.
 
 [[ REXEC-ASY condition-string/- actname actid device_id args ]]
@@ -151,27 +151,44 @@ synchronization. That is the whole tree undergoes a synchronization.
 # instance a function with a synchronous call inside it is synchronous. 
 # I ditched this idea because I thought it would be programmer unfriendly. 
 # You need to watch out for promotions. 
-
+###
 # With the current setup, each function is marked independently as synchronous or
 # asynchronous. So, we can react differently for functions that are synchronous.
+
+###
+# We have J-J and J-C. What is the difference?
+# J-C: We are exporting the C functions so that they could be called from the J side.
+# The compiler has already written a wrapper so that the runtime can call the J function
+# which actually triggers the C function.
+##  
+# The J-C and J-J have no difference here. Surprise! 
+# How does the last step take place in J-C execution? The function to execute is pushed into the /machine/func/request
+# The submachine is receives the announcement and tries to execute it. What is the differences between a J-J and J-C?
+# J-J: get the announcement and run it
+# J-C: get the announcement and run it; there may not be much difference. The announcement is coming from
+# a J node. The C node runs the function. How does it interpret things? 
 
 
         For asynchronous J machine execution:
         =====================================
 
-        Announce the following command in the /machine/func/announce topic. any
-        underlying (sub) machine would subscribe to that channel and get the command.
+        Announce the following command in the /machine/func/request topic. 
+        Any underlying (sub) machine would subscribe to that channel and get the command.
 
-        [[ EXEC-ASY src funcname actid device_id args ]]
+        [[ REXEC-ASY src funcname actid device_id args ]]
 
         The above command is calling the receiver to run funcname(args) in an asynchronous
         manner. 
 
         The receiver is expected to publish an acknowledgement like the following in 
-        /machine/func/ack so that the initiator knows that the announced request has triggered
+        /machine/func/reply so that the initiator knows that the announced request has triggered
         certain number of actions on several receivers. 
 
-        [[ EXEC-ACK ASY funcname actid device_id lease_time (arg0) ]]
+        [[ REXEC-ACK ASY funcname actid device_id lease_time (arg0) ]]
+
+        There is no negative acknowledgements here. The sender can inject the call for execution and
+        then count the number of replies (acknowledgements) it has received. If the sender hasn't received
+        sufficient acknowledgements it could re-inject the call for execution. 
 
         For synchronous J machine execution:
         ====================================
@@ -181,24 +198,67 @@ synchronization. That is the whole tree undergoes a synchronization.
 
         Protocol Sketch
         ===============
+        The first step is for the root to request synchronization among all the participating nodes
+        by pushing the following command in /machine/sync/request.
+        
         = Request synchronization     
-
         [[ REQ-SYN src - actid device_id time_limit (arg0) ]]
 
-        = Agree to synchronize by advertising the time slots that are available for synchronization
+        Here src could be CLOUD or FOG. 
 
-        [[ AGREE-SYN  
+        Synchronization is requested for performing activity (actid) by device (device_id). Remember 
+        clouds and fogs could have device_id too. The device_id in that case is a unique serial number of the
+        actual element that is originating the command. 
+
+        The sub-machines (fogs or devices) can respond with one of the following commands in 
+        /machine/sync/reply 
+
+        = Agree to synchronize by advertising the time slots that are available for synchronization
+        [[ AGREE-SYN src - actid device_id number-of-slots (slot-list) ]] 
+
+        Here src could be FOG or DEVICE. That is the element that is replying to the request for 
+        synchronization.
+
+        Here slot-list is an array of tuples. Each tuple has two values: slot time and preference. 
+        The slots start at predefined time points at which the sub-machine is willing to synchronize. 
+        The slot time possibilities are defined by the machine. 
+        For example, at the beginning of every second, every multiple of 5 seconds,
+        every multiple of 10 seconds, etc. A device or fog that joins the machine is either accepting the policy
+        or renegotiating it and comes to a global agreement. So there is a global value for the slot start times.
 
         = Disagree to synchronize by advertising an empty list of time slots
+        [[ REJECT-SYN src - actid device_id ]] 
 
-        [[ REJECT-SYN 
+        Here src could be FOG or DEVICE. That is the element that is replying to the request for 
+        synchronization.
 
-        = Create a synchronization schedule with maximum participation and occurs the soonest
+        Each node receiving the agreement or rejection will formulate its own reply and
+        propagate it up the tree. For instance, if the REQ-SYN was generated by the cloud, 
+        a fog node can receive all the replies from its devices and formulate the best 
+        synchronization slots for its devices and propagates the answer upwards towards the
+        cloud. 
 
-        [[ SYNC-SCHED PRI 
+        The originator of the REQ-SYN would generate the schedule: PRIMARY and BACKUP schedules
+        and send them down. The schedule is an ordered slot times in the same format that was
+        used by the devices and fogs to relay their preferences. The preferences this time is
+        the global utility. The first one in the list should have the highest global utility. 
 
-        = Create one or two backup synchronization schedules that could be used 
-                if many nodes fail on the first one
+        To request the synchronization schedule the requester would inject the following
+        command into /machine/sync/request.
+
+        [[ SYNC-SCHED src - actid device_id number-of-schedules (schedule-list) ]]
+
+        ## Note that /machine/sync/request is a downward channel and /machine/sync/reply is an
+        upward channel. We need another upward channel /machine/sync/status
+
+        /machine/sync/status is updated by element that are missing the request for
+        synchronization or some of the elements that have completed the requested 
+        tasks with synchronization could report as well. 
+
+        ## May be to simplify the protocol we can just allow negative messages only for now.
+        That is the synchronization violators could be pushing the messages.
+
+        
 
         [[ SYNC-SCHED BAK 
 
@@ -218,6 +278,10 @@ synchronization. That is the whole tree undergoes a synchronization.
 
 Remote Execution from J to C (Synchronous)
 ==========================================
+
+We need to describe very carefully the differences and similarities between this one and the J-J
+protocol defined in the above paragraphs.
+
 
 A slightly different version of the above protocol can be used here too. So, what is the
 problem that needs a small change?
