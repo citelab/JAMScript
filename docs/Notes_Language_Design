@@ -44,8 +44,13 @@ J-to-C Calls
 
     Similarly, asynchronous J-to-C calls can include C-to-J calls of both types.
 
-Any other patterns??
-====================
+J-to-J Calls
+============
+    J-to-J calls can be synchronous or asynchronous. However, they are restricted 
+    so that it works from cloud to fog. Not from fog to cloud. 
+
+    We should be able to implement staggered calls using this pattern. I think I will
+    work on the staggered pattern afterwards. 
 
 ??
 

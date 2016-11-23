@@ -168,33 +168,33 @@ synchronization. That is the whole tree undergoes a synchronization.
 # J-C: get the announcement and run it; there may not be much difference. The announcement is coming from
 # a J node. The C node runs the function. How does it interpret things? 
 
+For asynchronous J machine execution:
+=====================================
 
-        For asynchronous J machine execution:
-        =====================================
+Announce the following command in the /machine/func/request topic. 
+Any underlying (sub) machine would subscribe to that channel and get the command.
 
-        Announce the following command in the /machine/func/request topic. 
-        Any underlying (sub) machine would subscribe to that channel and get the command.
+[[ REXEC-ASY src funcname actid device_id args ]]
 
-        [[ REXEC-ASY src funcname actid device_id args ]]
+The above command is calling the receiver to run funcname(args) in an asynchronous
+manner. 
 
-        The above command is calling the receiver to run funcname(args) in an asynchronous
-        manner. 
+The receiver is expected to publish an acknowledgement like the following in 
+/machine/func/reply so that the initiator knows that the announced request has triggered
+certain number of actions on several receivers. 
 
-        The receiver is expected to publish an acknowledgement like the following in 
-        /machine/func/reply so that the initiator knows that the announced request has triggered
-        certain number of actions on several receivers. 
+[[ REXEC-ACK ASY funcname actid device_id lease_time (arg0) ]]
 
-        [[ REXEC-ACK ASY funcname actid device_id lease_time (arg0) ]]
+There is no negative acknowledgements here. The sender can inject the call for execution and
+then count the number of replies (acknowledgements) it has received. If the sender hasn't received
+sufficient acknowledgements it could re-inject the call for execution. 
 
-        There is no negative acknowledgements here. The sender can inject the call for execution and
-        then count the number of replies (acknowledgements) it has received. If the sender hasn't received
-        sufficient acknowledgements it could re-inject the call for execution. 
 
-        For synchronous J machine execution:
-        ====================================
+For synchronous J machine execution:
+====================================
 
-        This is bit problematic! We need to perform the synchronization. 
-        The root will try to synchronize the participating nodes. How??
+This is bit problematic! We need to perform the synchronization. 
+The root will try to synchronize the participating nodes. How??
 
         Protocol Sketch
         ===============
@@ -202,7 +202,7 @@ synchronization. That is the whole tree undergoes a synchronization.
         by pushing the following command in /machine/sync/request.
         
         = Request synchronization     
-        [[ REQ-SYN src - actid device_id time_limit (arg0) ]]
+        [[ REQ-SYN src condition-string/- actid device_id time_limit (arg0) ]]
 
         Here src could be CLOUD or FOG. 
 
@@ -210,11 +210,14 @@ synchronization. That is the whole tree undergoes a synchronization.
         clouds and fogs could have device_id too. The device_id in that case is a unique serial number of the
         actual element that is originating the command. 
 
+        We are also sending a 'condition-string' that specifies the JCOND statement for restricting the
+        synchronization request.         
+
         The sub-machines (fogs or devices) can respond with one of the following commands in 
         /machine/sync/reply 
 
-        = Agree to synchronize by advertising the time slots that are available for synchronization
-        [[ AGREE-SYN src - actid device_id number-of-slots (slot-list) ]] 
+        = Available to synchronize by advertising the time slots that are available for synchronization
+        [[ AVAI-SYN src - actid device_id number-of-slots (slot-list) ]] 
 
         Here src could be FOG or DEVICE. That is the element that is replying to the request for 
         synchronization.
@@ -226,13 +229,15 @@ synchronization. That is the whole tree undergoes a synchronization.
         every multiple of 10 seconds, etc. A device or fog that joins the machine is either accepting the policy
         or renegotiating it and comes to a global agreement. So there is a global value for the slot start times.
 
-        = Disagree to synchronize by advertising an empty list of time slots
-        [[ REJECT-SYN src - actid device_id ]] 
+        = Synchronization request is not applicable because the condition-string evaluated to false. 
+        The node sends the response with an empty list of time slots. 
+        [[ NOTAPP-SYN src - actid device_id ]] 
 
         Here src could be FOG or DEVICE. That is the element that is replying to the request for 
         synchronization.
 
-        Each node receiving the agreement or rejection will formulate its own reply and
+        Each node receiving the availability slots from its sub machine elements 
+        will formulate its own reply and
         propagate it up the tree. For instance, if the REQ-SYN was generated by the cloud, 
         a fog node can receive all the replies from its devices and formulate the best 
         synchronization slots for its devices and propagates the answer upwards towards the
@@ -244,260 +249,70 @@ synchronization. That is the whole tree undergoes a synchronization.
         the global utility. The first one in the list should have the highest global utility. 
 
         To request the synchronization schedule the requester would inject the following
-        command into /machine/sync/request.
+        command into /machine/sync/notify.
 
         [[ SYNC-SCHED src - actid device_id number-of-schedules (schedule-list) ]]
 
-        ## Note that /machine/sync/request is a downward channel and /machine/sync/reply is an
-        upward channel. We need another upward channel /machine/sync/status
+        ## Note that /machine/sync/notify is a downward channel and /machine/sync/reply is an
+        upward channel. 
 
-        /machine/sync/status is updated by element that are missing the request for
-        synchronization or some of the elements that have completed the requested 
-        tasks with synchronization could report as well. 
+        The elements of the sub machines that are going to synchronize according to the requested
+        schedule reply like the following.
 
-        ## May be to simplify the protocol we can just allow negative messages only for now.
-        That is the synchronization violators could be pushing the messages.
+        [[ SYNC-ACK src - actid device_id number-of-schedules (schedule-list) ]]
 
-        
+        Here the sub machine elements are responding with one or two schedule slots that they
+        are willing to synchronize on. 
 
-        [[ SYNC-SCHED BAK 
+        This ends the synchronization phase of the protocol. Now the initiator has a sychronized
+        sub machine (i.e., the portion of the machine that is willing to engage at the given time.
+        The rest of the machine are doing a computational task or they are going to end up cancelling
+        whatever the actions they are doing because once the synchronous tree task gets underway
+        no asynchronous action that started earlier can complete. 
 
-        = Detect failure on a schedule 
-        = Should the number of failures on a schedule exceed a certain threshold, 
-                abandon that schedule
-        = If no backup schedule is available, the synchronization fails
+J to C (Synchronous) Execution
+==============================
 
-        # This algorithm achieves a maximal synchronization within a given amount of time 
-        # or does not achieve synchronization at all.
+Ok. We have achieved the synchronization using the above protocol. Now, we launch the execution
+request in the synchronized machine.
 
-        # There are different types of costs associated with this algorithm:
-                # number of nodes unable to participate in the synchronization
-                # time delay incurred to achieve synchronization
-                # probability of failing to achieve synchronization
+On /machine/func/request we publish the following request for remote execution.
 
+[[ REXEC_SYN slot-info funcname actid device_id args ]]
 
-Remote Execution from J to C (Synchronous)
-==========================================
+We are using the actid to run the funcname(args) on the synchronized machine we just created.
+We are specifying the slot-info on which the devices should run the given function. 
 
-We need to describe very carefully the differences and similarities between this one and the J-J
-protocol defined in the above paragraphs.
+We receive replies that indicate how long it would take for the execution to complete.
 
+[[ REXEC-ACK - ACTIVITY actid device_id lease-value (arg0) ]]
 
-A slightly different version of the above protocol can be used here too. So, what is the
-problem that needs a small change?
+These replies will be posted to /machine/func/reply
 
-EXEC to REXEC??
+After the lease period, the initiator will request for the results using a GET message published
+at /machine/func/request
 
+[[ REXEC-RES GET funcname actid device_id ]]
 
-This is command from the system (tree) side. The devices are being told what they should
-run. Like the C-to-J, we can have conditional runs. 
+The replies from the devices would be posted at /machine/func/reply.
 
-We need to run a remote function from the cloud. The cloud (machine) checks the
-condition. If the condition indicates that we should proceed with the execution,
-we push the announce to the /machine/func/announce topic. 
+[[ REXEC-RES PUT - actid code-type return-code ]] 
 
 
+Other protocols
 ===============
-The JAM machine has a hierarchical scope. If a function runs in the cloud, then
-it runs at the fog, but not the other way around. 
 
-A function is triggered at the cloud. It is announced as running in the /machine/func/announce
-topic. The fogs 
+We can implement protocols for terminating jobs, and finding the status, setting parameters on remote
+devices using the remote execution methods. There is no need for an explicit protocol for that purpose.
 
 
-
-J function runs at the cloud. It will be 
-
-The devices or fogs connected to the node are subscribing to this announcement
-topic. 
-
-They get it and ev
-
-
-We need to resolve few issues here. Cloud-J is running a function. It needs to ask 
-the fogs to run the function as well. Should it run it and then ask or get the fogs to
-run the function and then run it itself?
-
-C-to-J:
-        = run at the cloud
-        = push the function to the fogs - run it there
-        = 
-
-
-
-
-[[ REXEC-CALL SYN actname runid expression args ]] (published)
-
-[[ REXEC-RDY SYN actname actid runid ]] 
-
-[[ REXEC-STA SYN EVENTLOOP actid runid survey_port (arg0)]]
-
-[[ REXEC-QUI SYN EVENTLOOP actid runid survey_port (arg0)]]
-
-
-
-
-[[ REXEC FOG actname expression args (sent over publish) ]]
-
-The Fog controller is publishing the above REXEC asking whether any device
-is willing to execute the given activity.
-
-Devices interested in executing the activity would run the expression to check
-whether they are eligible. If they are eligible, the devices would send in
-their response using the following message. 
-
-[[ REXEC-RDY DEVICE actname actid runid lease-value (arg0) expiry-time (arg1) ]]
-
-The Fog controller can select one or more of the devices to execute 
-the given activity. The Fog needs to respond within the expiry-time. Otherwise, the device
-will throw away the previous offer to execute the activity. The actid
-is the activity ID when the device starts executing it.
-
-[[ REXEC-STA FOG EVENTLOOP actid ]] 
-
-Once the device receives the REXEC-STA message it is going to start the execution of the
-activity with the given actid. 
-
-
-Remote Execution from J to C (Asynchronous)
-==========================================
-
-[[ REXEC-CALL ASY actname runid expression args ]] (published)
-
-[[ REXEC-RDY ASY actname actid runid ]] 
-
-[[ REXEC-STA ASY EVENTLOOP actid runid ]]
-
-[[ REXEC-QUI ASY EVENTLOOP actid runid ]]
-
-
-
-Obtaining Execution Reports from the Fog and Devices
-====================================================
-
-[[ REPORT-REQ  SYN EVENTLOOP __ runid ]]
-
-[[ REPORT-REP FIN actname deviceid runid res (arg0)]
-                res is a single object
-
-NOTE: There is no continuation message. We report back only
-when there is a positive completion. If there is a problem, just
-keep quiet. The receiver would correctly infer a problem.
-
-
-
-        Execution reports are necessary part of the protocol used by JAMScript.
-        Fog or devices could be asking for status reports after or just before a lease on an
-        ongoing activity execution is to expire. 
-
-        [[ REPORT-REQ DEVICE actname actid __ ]]
-
-        The device is requesting a report from the Fog on the execution of a particular activity.
-
-        [[ REPORT-REP FOG actname actid __ message-type-code message-arg ]]
-
-        The reply from the Fog could tell the device many things: extension of the lease (LEASE-EXT), or 
-        activity completed successfully (COMPLETE-SUC), completed erroneously (COMPLETE-ERR).
-        The second argument (message-arg) is the parameter for this one.
-
-        Like the devices, the Fog can request execution reports from the devices as well.
-
-        [[ REPORT-REQ FOG actname __ runid ]]
-
-        The Fog is sending out a survey asking which devices are 
-        still working on the particular activity.
-        May be we need another ID type to indicate whether a particular 
-        instance of an activity is still working.
-
-        [[ REPORT-REP DEVICE actname actid message-type-code message-arg ]]
-
-        This is same as the previous case. However, the way it is delivered is different. In this case,
-        we are replying to a survey. 
-
-
-Terminating Execution Commands in Fog and Devices
-=================================================
-
-There would be situations when we need to terminate activities that are running in the devices or Fog.
-We have a command in the protocol to allow that.
-
-[[ RKILL DEVICE actname actid __ ]] 
-
-In the above command the device is asking the Fog to terminate an activity that is already ongoing.
-The device gives the activity ID
-
-[[ RKILL-ACK FOG actname actid __ ]]
-
-The Fog replies with an acknowledgement if it is able to kill the activity.
-
-[[ RKILL-IGN FOG actname __ ]]
-
-The Fog replies with an ignored message if the kill is ignored. The kill is ignored because
-the activity has already expired.
-
-[[ RKILL FOG actname __ runid ]]
-
-The Fog sends out the above message as a survey to kill all ongoing instances of the activity in the
-devices. The devices would respond with one of the following messages.
-
-[[ RKILL-ACK DEVICE actname actid ]]
-[[ RKILL-IGN DEVICE actname __ ]]
-
-The actid in the acknowledgement represents the ID of the activity that was terminated.
-
-
-Cloud Connection
-================
-
-We need protocols for joining and leaving for the Fogs.
- When a Fog comes in contact with the Cloud, it should join with the shadow Fog.
-In addition, when a Fog comes in contact with another Fog, they should join 
-too provided the trust negotiation works out.
-
-Fog Discovery Protocol
-======================
-This for a Fog to discover the cloud connectivity and the presence of other Fogs.
-TODO: We need ad-hoc discoverability. Unfortunately, that 
-support is not there in Nano Messages. So we
-need to go through the cloud. 
-
-[[ DISCOVER FOG app_name fog_name fog_id ]]
-
-The above message is sent as a request-reply to the cloud. The cloud would respond to the above
-discovery with the following messages.
-
-[[ FOUND CLOUD app_name Qualifier list-of-fog-servers ]]
-
-Here the cloud is reporting a list of Fog servers that are available in the system or near vicinity
-The Qualifier could be "NEAR" or "ALL".
-
-[[ FOUND CLOUD app_name "ALL" ]] 
-
-This indicates an empty response and not Fog. A Fog is not told its own address. 
-
-If the cloud is out of reach, the disovery message would just time out.
-
-
-Fog Joining Protocol
-====================
-
-
-
-Fog Leaving Protocol
-====================
-
-
-
-
-Data Handling
-=============
-
-
-
-
-Event Handling
+Data protocols
 ==============
 
+We need to develop data management protocols. This is essentially to support JDATA.
 
+Event protocols
+===============
 
+Event management also requires its own protocols.
 
