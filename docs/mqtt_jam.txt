@@ -58,7 +58,6 @@ Here is the topic hierarchy.
 
 /level/functions
 
-
 Plan
 ====
 

@@ -1,0 +1,36 @@
+= Use Mosquitto MQTT broker
+
+= Create the cloud part first. Get it working. 
+= Create the fog part next. Get it working.. it should connect
+  to the cloud part. Use the defined protocol. 
+
+= Write the NodeJS side of the system according to the protocol
+= Write the C side of the system according the protocol
+= Integrate and test
+= Debug and ensure the full compliance of the Remote execution protocol
+= Test with multiple configurations
+= Test the failure or disconnection tolerance of the protocol
+= Test the scalability of the protocol
+= Benchmarking experiments..
+
+===========================
+
+JDATA Implementation Plan
+
+= We should be able to generate synchronization conditions to handle RAW 
+dependencies. 
+
+JEVENT Implementation Plan
+
+JCOND Implementation Plan
+
+
+==========================
+Fault and disconnection tolerance and what are we doing about it?
+
+Disconnection tolerance is built into the JAM protocol design. The 
+asynchronous protocol can progress in a staggered manner to aid 
+in the disconnection tolerance. 
+
+Fault tolerance is covered via disconnection tolerance and nothing special,
+otherwise. 

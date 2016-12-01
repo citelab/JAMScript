@@ -1,4 +1,5 @@
 Message format
+==============
 
 cmd:    Command String (e.g., PING, REGISTER). This gives the major operation that
         needs to be done. That is the purpose of the message.
@@ -17,7 +18,6 @@ actarg:  An optional argument associated with the activity.
 args:   Arguments that are necessary for the given command. Some commands may not have
         any arguments.
  
- 
 Note: In the following section, we show the message format. The way it is described
 is the following.
 
@@ -28,6 +28,12 @@ The [[ ]] are not part of the message format.
 
 Register a device in a Fog/Cloud
 ================================
+
+Phase Zero:
+===========
+A cloud node does not register anywhere. It just boots itself. The
+parameters like device_id and others are created by the device
+using values given in the command line.
 
 Phase One:
 ==========
@@ -77,7 +83,7 @@ We assume that the device has a valid registration with the broker.
 Also the device has already subscribed to the following topics.
 
 /admin/announce/all
-/level/func/reply/all
+/level/func/reply/all  -- NOT used???
 /level/func/reply/device_id
 
 The device sends the following message to /level/func/request.
@@ -114,7 +120,6 @@ And the reply comes to /level/func/reply/device_id
 TODO: We need another version to extend the lease to handle the situation where the
 result is not yet ready.
 
-
 Remote Execution from C to J (Asynchronous)
 ===========================================
 
@@ -123,7 +128,7 @@ to the /level/func/request topic.
 
 [[ REXEC-ASY condition-string/- actname actid device_id args ]]
 
-The broker will respond with one of the following replies in /local/func/reply/device_id.
+The broker will respond with one of the following replies in /level/func/reply/device_id.
 
 On success:
 [[ REXEC-ACK ASY ACTIVITY actid device_id lease-value (arg0) ]]
