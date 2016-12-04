@@ -14,6 +14,84 @@
 = Benchmarking experiments..
 
 ===========================
+JSERVER Implementation Plan
+
+= Get command options
+= Get device parameters
+= Get machine registry
+= Set machine state
+
+= Start the service
+= Start the client - it does the registration at the start
+= The registration does the tree joining. Note
+  the parent in the machine state. 
+
+= 
+
+= C-J implementation: lift from the old one - revisions to use
+  MQTT instead of Nanomsg
+
+= J-C implementation: get the Async done.
+
+= J-C Sync ?? Challenging..
+
+### In the C-J/J-C, we might have to export a "wait for" condition. This
+# condition could be created by the compiler. The up-tree node waits
+# for the satisfaction of that condition before proceeding with the 
+# execution of the requested function.
+### Decide which way we need to have the wait-for condition. should
+# it be up-tree or down-tree or both?
+# Seems like up-tree is less important than down-tree. 
+# Need to come up with a proper implementation.
+
+
+
+
+ 
+
+
+=======
+JSERVER Machine Registry
+
+= Create a machine registry. We can make it a local storage so it works with
+  mininet. TODO: Make it work with Xiru's remote registry as well.
+
+  Creation/addition:
+    = Create machine registry - with a name - filename reflects the machine name
+      (machine name and app name are the same)
+    = Only one cloud node for now. Fail if multiple cloud nodes are added to the
+      registry. This could be a problem with the UUID4 generation.
+    = Add as many fog and device nodes. If the fog/device is already there, don't add.
+  Updates:
+    = Update the IP address of the node. If the node is not the cloud, it should
+      have a parent. The parent should be active (any node that is not updated for the
+      last K seconds is considered inactive. If the parent is inactive, select another
+      parent.
+  Query:
+    = find the fog:
+      Used by the device to find the fog
+    = find the cloud:
+      Used by the fog to find the cloud
+
+=========
+JSERVER Machine state
+
+= Create a machine state and maintain that at each J node.
+    = nodetype - cloud, fog, device
+    = deviceId - device ID
+    = deviceAddr - IPv4 address of the device (can change)
+    = cloudsize - estimate of the nodes in the cloud (could be stale)
+    = fogsize - estimate of the nodes in the fog (could be stale)
+
+
+
+
+
+
+
+
+
+===========================
 
 JDATA Implementation Plan
 
