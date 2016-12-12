@@ -71,7 +71,7 @@ jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, char *fmask, ...)
     // Need to add start to activity_new()
     jactivity_t *jact = activity_new(js->atable, aname);
 
-    command_t *cmd = command_new_using_cbor("REXEC", "ASY", aname, jact->actid, js->cstate->conf->device_id, arr, qargs, i);
+    command_t *cmd = command_new_using_cbor("REXEC", "ASY", aname, jact->actid, js->cstate->device_id, arr, qargs, i);
     cmd->cbor_item_list = list;
 
     temprecord_t *trec = jam_newtemprecord(js, jact, cmd);

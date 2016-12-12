@@ -87,6 +87,7 @@ typedef struct _jamstate_t
     timertype_t *maintimer;
     threadsem_t *bgsem;
     threadsem_t *jdata_sem;
+    threadsem_t *jasync_sem;
 
     int maxleases;
 

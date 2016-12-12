@@ -43,8 +43,8 @@ void jdata_get_server_ip(jamstate_t *js){
 }
 
 void jdata_init(jamstate_t *js){
-  sprintf(app_id, "%s", js->cstate->conf->app_name);
-  sprintf(dev_id, "%s", js->cstate->conf->device_id);
+  sprintf(app_id, "%s", js->cstate->app_name);
+  sprintf(dev_id, "%s", js->cstate->device_id);
   j_s = js;
   jdata_seq_num = 0;
   redis_serv_IP = NULL;

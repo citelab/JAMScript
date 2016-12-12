@@ -25,80 +25,37 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <time.h>
 #include <stdbool.h>
-#include "socket.h"
-#include "mydb.h"
+#include <MQTTClient.h>
 
-#define MAX_SERVERS                                 8
-
-// TODO: This is problematic.. do we need these? If so, when should we use them??
-#define REQUEST_PORT                                5555
-#define SURVEY_PORT                                 7777
-#define PUBLISH_PORT                                6666
-
-
-typedef struct _connect_state_t
-{
-    char *server;
-    int port;                                       // TODO: Dynamically probed
-    struct tm *stime;                               // start time of the connection
-
-} connect_state_t;
-
-
-typedef struct _coreconf_t
-{
-    mydb_t *db;
-
-    char *cloud_servers[MAX_SERVERS];
-    int num_cloud_servers;
-    char *fog_servers[MAX_SERVERS];
-    int num_fog_servers;
-
-    char *app_name;
-    char *device_name;
-    char *device_id;
-    int retries;
-
-    int registered;
-    int fog_port[MAX_SERVERS];
-    int cloud_port[MAX_SERVERS];
-    char *my_fog_server;
-    struct tm *stime;
-
-} coreconf_t;
-
+#define MAX_SERVERS             3
 
 typedef struct _corestate_t
 {
-    coreconf_t *conf;
+    char *app_name;
+    char *device_id;
 
-    socket_t *reqsock[MAX_SERVERS];
-    socket_t *subsock[MAX_SERVERS];
-    socket_t *respsock[MAX_SERVERS];
+    int timeout;
 
-    int num_serv;
+    int num_fog_servers, num_cloud_servers;
+
+    MQTTClient mqttserv[3];
+    bool mqttenabled[3];
 
 } corestate_t;
+
+typedef struct  _corecontext_t
+{
+    int xx;
+
+} corecontext_t;
 
 // ------------------------------
 // Function prototypes..
 // ------------------------------
 
-// Environment functions...
-void coreconf_print(coreconf_t *conf);
-coreconf_t *coreconf_get();
-
-// ------------------------------
-// Core functions..
-// ------------------------------
-
 // Initialize the core.. the first thing we need to call
 corestate_t *core_init(int timeout);
-
-void core_do_register(corestate_t *cs, int timeout);
-bool core_find_fog_from_cloud(corestate_t *cstate, int timeout);
-void core_insert_fog_addr(corestate_t *cstate, char *host);
-void core_register_at_fog(corestate_t *cs, int timeout);
-bool core_do_connect(corestate_t *cs, int timeout);
+void core_setup(corestate_t *cs, int timeout);
+void core_reinit(corestate_t *cs);
 
 #endif

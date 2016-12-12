@@ -49,7 +49,7 @@ jamstate_t *jam_init()
     jamstate_t *js = (jamstate_t *)calloc(1, sizeof(jamstate_t));
 
     // TODO: Remove the hardcoded timeout values
-    // 200 milliseconds timeout now set
+    // 10 second timeout now set
     js->cstate = core_init(10000);
     if (js->cstate == NULL)
     {

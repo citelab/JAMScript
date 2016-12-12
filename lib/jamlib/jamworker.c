@@ -37,7 +37,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 
-// The JAM bgthread is run in another worker (pthread). Although it shares all
+// The JAM bgthread is run in another worker (pthread). It shares all
 // the memory with the master that runs the cooperative multi-threaded application
 //
 // NOTE: This implementation is using the nn_poll() provided by the nano message
@@ -59,21 +59,13 @@ void *jwork_bgthread(void *arg)
 
     // assemble the poller.. insert the FDs that should go into the poller
     jwork_assemble_fds(js);
-    // heartbeat time is set to 10000 milliseconds
-    int beattime = 10000;
     thread_signal(js->bgsem);
-    // get into the event processing..
-    //int counter = 0;
+    // process the events..
     while (1)
     {
-     //  printf("\n\n COUNTER %d \n\n", counter++);
-        int nfds = jwork_wait_fds(js, beattime);
-      //  printf("Activity Number After: %d\n", js->atable->numactivities);
+        int nfds = jwork_wait_fds(js);
         if (nfds == 0)
-        {
-            jam_send_ping(js);
             continue;
-        }
         else if(nfds < 0)
             printf("\nERROR! File descriptor corruption.. another race condition??\n");
 
@@ -86,7 +78,6 @@ void *jwork_bgthread(void *arg)
     return NULL;
 }
 
-
 void jwork_reassemble_fds(jamstate_t *js, int nam)
 {
     js->atable->numactivities = nam;
@@ -94,14 +85,12 @@ void jwork_reassemble_fds(jamstate_t *js, int nam)
 }
 
 
-
 // Put the FDs in a particular order..
-//
 //
 void jwork_assemble_fds(jamstate_t *js)
 {
     int i;
-    int total = js->cstate->conf->num_fog_servers + js->cstate->conf->num_cloud_servers;
+    int total = js->cstate->num_fog_servers + js->cstate->num_cloud_servers;
     // release old one..
     if (js->pollfds)
         free(js->pollfds);
@@ -121,9 +110,9 @@ void jwork_assemble_fds(jamstate_t *js)
     */
     js->pollfds[0].fd = js->atable->globaloutq->pullsock;
     for(i = 0; i < total; i++){
-        js->pollfds[1 + i * 3].fd = js->cstate->reqsock[i]->sock_fd;
-        js->pollfds[2 + i * 3].fd = js->cstate->subsock[i]->sock_fd;
-        js->pollfds[3 + i * 3].fd = js->cstate->respsock[i]->sock_fd;
+   //     js->pollfds[1 + i * 3].fd = js->cstate->reqsock[i]->sock_fd;
+     //   js->pollfds[2 + i * 3].fd = js->cstate->subsock[i]->sock_fd;
+       // js->pollfds[3 + i * 3].fd = js->cstate->respsock[i]->sock_fd;
         printf("Vals: %d %d %d\n", js->pollfds[1 + i * 3].fd, js->pollfds[2 + i * 3].fd, js->pollfds[3 + i * 3].fd);
         //printf("Values: %d %d %d\n", 1+i*3, 2+i*3, 3+i*3);
         //printf("%d %d %d, \n", js->pollfds[1 + i * 3].fd, js->pollfds[2 + i * 3].fd, js->pollfds[3 + i * 3].fd);
@@ -134,7 +123,7 @@ void jwork_assemble_fds(jamstate_t *js)
     //printf("%d\n", js->atable->numactivities);
     for (i = 0; i < js->atable->numactivities; i++){
         js->pollfds[i + total * 3 + 1].fd = js->atable->activities[i]->outq->pullsock;
-        //printf("Values: %d\n", i + js->cstate->conf->num_fog_servers * 3 + js->cstate->conf->num_cloud_servers * 3 + 1);
+        //printf("Values: %d\n", i + js->cstate->num_fog_servers * 3 + js->cstate->num_cloud_servers * 3 + 1);
     }
     // pollfds structure is not complete..
 }
@@ -153,7 +142,7 @@ void jwork_processor(jamstate_t *js)
     // Need to scan all the decriptors
 
     // Use if constructs for the first 4 descriptors
-    int total = js->cstate->conf->num_fog_servers + js->cstate->conf->num_cloud_servers;
+    int total = js->cstate->num_fog_servers + js->cstate->num_cloud_servers;
     if (js->pollfds[0].revents & NN_POLLIN){
         #ifdef DEBUG_LVL1
             printf("GLOBAL_SOCK\n");
@@ -197,7 +186,8 @@ void jwork_process_reqsock(jamstate_t *js, int index)
     // the reply to the appropriate destination
     //
     // TODO: What about the timeout value.. it could be inconsequential
-    command_t *rcmd = socket_recv_command(js->cstate->reqsock[index], 5000);
+    command_t *rcmd;
+    // = socket_recv_command(js->cstate->reqsock[index], 5000);
     //#ifdef DEBUG_LVL1
     printf("----- In request sock.......... \n");
     printf("Command %s, %s %s %s %s\n", rcmd->cmd, rcmd->actname, rcmd->actid, rcmd->actarg, rcmd->opt);
@@ -210,12 +200,12 @@ void jwork_process_reqsock(jamstate_t *js, int index)
         #ifdef DEBUG_LVL1
             printf("Add Pending Activity ... \n");
         #endif
-        //jcmd_log_pending_activity(js->cstate->conf->device_id, rcmd->actid, index);
+        //jcmd_log_pending_activity(js->cstate->device_id, rcmd->actid, index);
     }else if(strcmp(rcmd->cmd, "REXEC-RES") == 0){
         #ifdef DEBUG_LVL1
             printf("Remove Pending Activity ... \n");
         #endif 
-        //jcmd_remove_acknowledged_activity(js->cstate->conf->device_id, rcmd->actid, index);
+        //jcmd_remove_acknowledged_activity(js->cstate->device_id, rcmd->actid, index);
     }
     //So at this point, we can automatically set up a permanent log system for calls
     if (rcmd != NULL)
@@ -289,7 +279,7 @@ void jwork_process_subsock(jamstate_t *js, int index)
     // does not make much difference!
     //
 
-    command_t *rcmd = socket_recv_command(js->cstate->subsock[index], 100);
+    command_t *rcmd; // = socket_recv_command(js->cstate->subsock[index], 100);
     #ifdef DEBUG_LVL1
     printf("===================== In subsock processing... %s, %s %s %s %s\n",  rcmd->cmd, rcmd->actname, rcmd->actid, rcmd->actarg, rcmd->opt);
     #endif
@@ -332,7 +322,7 @@ void jwork_process_respsock(jamstate_t *js, int index)
     // Data is available in the socket.. so timeout value
     // is not critical.. why wait for timeout?
     //
-    command_t *rcmd = socket_recv_command(js->cstate->respsock[index], 5000);
+    command_t *rcmd; // = socket_recv_command(js->cstate->respsock[index], 5000);
     #ifdef DEBUG_LVL1
         printf("====================================== In respsock processing.. cmd: %s, opt: %s\n", rcmd->cmd, rcmd->opt);
     #endif
@@ -347,8 +337,8 @@ void jwork_process_respsock(jamstate_t *js, int index)
             command_t *result = jwork_runid_status(js, rcmd->actarg);
             if (result != NULL)
             {
-                for(int i = 0; i < js->cstate->conf->num_fog_servers; i++)
-                    socket_send(js->cstate->respsock[i], result);
+         //       for(int i = 0; i < js->cstate->num_fog_servers; i++)
+         //           socket_send(js->cstate->respsock[i], result);
                 command_free(result);
             }
         }
@@ -358,8 +348,8 @@ void jwork_process_respsock(jamstate_t *js, int index)
             command_t *result = jwork_runid_kill(js, rcmd->actarg);
             if (result != NULL)
             {
-                for(int i = 0; i < js->cstate->conf->num_fog_servers; i++)
-                    socket_send(js->cstate->respsock[i], result);
+           //     for(int i = 0; i < js->cstate->num_fog_servers; i++)
+            //        socket_send(js->cstate->respsock[i], result);
                 command_free(result);
             }
         }
@@ -369,8 +359,8 @@ void jwork_process_respsock(jamstate_t *js, int index)
             command_t *result = jwork_device_status(js);
             if (result != NULL)
             {
-                for(int i = 0; i < js->cstate->conf->num_fog_servers; i++)
-                    socket_send(js->cstate->respsock[i], result);
+       //         for(int i = 0; i < js->cstate->num_fog_servers; i++)
+       //             socket_send(js->cstate->respsock[i], result);
                 command_free(result);
             }
         }
@@ -420,8 +410,9 @@ void jwork_process_globaloutq(jamstate_t *js)
                     thread_signal(js->atable->delete_sem);
                 }
             }
-        }else
-            socket_send(js->cstate->reqsock[0], rcmd);
+        }
+        //else
+          //  socket_send(js->cstate->reqsock[0], rcmd);
 
       command_free(rcmd);
     }
@@ -455,13 +446,13 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
         if(strcmp(rcmd->cmd, "REXEC") == 0 || strcmp(rcmd->cmd, "REXEC-RES") == 0){
                 runtableentry_t *act_entry = find_table_entry(js->rtable, rcmd);
                 printf("sending to socket %d\n", act_entry->num_rcv_response);
-                socket_send(js->cstate->reqsock[act_entry->num_rcv_response], rcmd);
+        //        socket_send(js->cstate->reqsock[act_entry->num_rcv_response], rcmd);
             return;
         }else{
             #ifdef DEBUG_LVL1
                 printf("Sending something important to js side... \n");
             #endif
-            socket_send(js->cstate->reqsock[rcmd->socket_indx], rcmd);
+       //     socket_send(js->cstate->reqsock[rcmd->socket_indx], rcmd);
         }
         command_free(rcmd);
     }
@@ -474,13 +465,13 @@ void jam_send_ping(jamstate_t *js)
     command_t *scmd;
 
     // create a command structure for the PING.
-    scmd = command_new("PING", "DEVICE", "PINGER", js->cstate->conf->device_id, js->cstate->conf->device_name, "s", "temp");
+    scmd = command_new("PING", "DEVICE", "PINGER", js->cstate->device_id, "-", "s", "temp");
 
     // send it through the request-reply socket.. we need to get the reply back to prevent
     // socket from going haywire
     //
-    for(int i = 0; i < js->cstate->conf->num_fog_servers; i++)
-        socket_send(js->cstate->reqsock[i], scmd);
+//for(int i = 0; i < js->cstate->num_fog_servers; i++)
+  //      socket_send(js->cstate->reqsock[i], scmd);
     command_free(scmd);
 }
 
@@ -588,7 +579,7 @@ command_t *jwork_runid_status(jamstate_t *js, char *runid)
     command_t *scmd;
     int i;
 
-    char *deviceid = js->cstate->conf->device_id;
+    char *deviceid = js->cstate->device_id;
 
     #ifdef DEBUG_LVL1
         printf("Devide id %s\n", deviceid);
@@ -672,8 +663,8 @@ void jwork_runid_complete(jamstate_t *js, runtable_t *rtab, char *actid, arg_t *
     
     command_t *result = jwork_runid_status(js, actid);
     if (result != NULL){
-        for(int i = 0; i < js->cstate->conf->num_fog_servers + js->cstate->conf->num_cloud_servers; i++)
-            socket_send(js->cstate->reqsock[i], result);
+      //  for(int i = 0; i < js->cstate->num_fog_servers + js->cstate->num_cloud_servers; i++)
+      //      socket_send(js->cstate->reqsock[i], result);
         command_free(result);
     }
 }
@@ -788,7 +779,7 @@ void insert_table_entry(jamstate_t * js, command_t *rcmd, int indx){
     act_entry->actname = strdup(rcmd->actname);
     act_entry->actid = strdup(rcmd->actid);
     act_entry->index = indx;
-    act_entry->num_response = js->cstate->conf->num_fog_servers + js->cstate->conf->num_cloud_servers;
+  //  act_entry->num_response = js->cstate->num_fog_servers + js->cstate->num_cloud_servers;
     act_entry->cmd = rcmd;
     //To insert the entry into the table
     #ifdef DEBUG_LVL1

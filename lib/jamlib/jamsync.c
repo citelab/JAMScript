@@ -70,7 +70,7 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
     va_end(args);
     jactivity_t *jact = activity_new(js->atable, aname);
 
-    command_t *cmd = command_new_using_cbor("REXEC", "SYN", aname, jact->actid, js->cstate->conf->device_id, arr, qargs, i);
+    command_t *cmd = command_new_using_cbor("REXEC", "SYN", aname, jact->actid, js->cstate->device_id, arr, qargs, i);
     insert_table_entry(js, cmd, 0);
     runtableentry_t *act_entry = find_table_entry(js->rtable, cmd);
     cmd->cbor_item_list = list;
@@ -149,7 +149,7 @@ void jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     act_entry->num_rcv_response = 0;            
     //Now Retrive the data 
     for(int i = 0; i < act_entry->num_response; i++){
-        command_t *lcmd = command_new("REXEC-RES", "GET", jact->name, jact->actid, js->cstate->conf->device_id, "");
+        command_t *lcmd = command_new("REXEC-RES", "GET", jact->name, jact->actid, js->cstate->device_id, "");
         queue_enq(jact->outq, lcmd, sizeof(command_t));
         printf("After enqueuing stuff\n");
         jam_set_timer(js, jact->actid, 200);

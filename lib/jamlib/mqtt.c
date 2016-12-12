@@ -1,8 +1,10 @@
 
+#include <unistd.h>
 #include <MQTTClient.h>
+#include <string.h>
+
 #include "mqtt.h"
 #include "command.h"
-
 
 MQTTClient mqtt_open(char *mhost) 
 {
@@ -22,6 +24,8 @@ MQTTClient mqtt_open(char *mhost)
     if ((rc = MQTTClient_connect(mcl, &conn_opts)) != MQTTCLIENT_SUCCESS)
         return NULL;
 
+    MQTTClient_subscribe(mcl, "/admin/announce/all", 1);
+
     return mcl;
 }
 
@@ -37,11 +41,15 @@ command_t *mqtt_receive(MQTTClient mcl, char *cmdstr, char *topic, int timeout)
 {
     char *topicname;
     int tlen;
-    MOTTClient_message *msg;
+    MQTTClient_message *msg;
     command_t *cmd;
+
+    printf("Calling MQTT receive...\n");
 
     if (MQTTClient_receive(mcl, &topicname, &tlen, &msg, timeout) == MQTTCLIENT_SUCCESS)
     {
+        printf("Got a message for topic %s", topicname);
+
         // timeout occured..
         if (msg == NULL)
             return NULL;

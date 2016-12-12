@@ -1,0 +1,122 @@
+file /Users/maheswar/Documents/Programming/JAMScript/SConstruct,line 40:
+	Configure(confdir = .sconf_temp)
+scons: Configure: Checking for C library cbor... 
+scons: Configure: ".sconf_temp/conftest_0.c" is up to date.
+scons: Configure: The original builder output was:
+  |.sconf_temp/conftest_0.c <-
+  |  |
+  |  |
+  |  |
+  |  |int
+  |  |main() {
+  |  |  
+  |  |return 0;
+  |  |}
+  |  |
+  |
+scons: Configure: ".sconf_temp/conftest_0.o" is up to date.
+scons: Configure: The original builder output was:
+  |clang -o .sconf_temp/conftest_0.o -c .sconf_temp/conftest_0.c
+  |
+scons: Configure: ".sconf_temp/conftest_0" is up to date.
+scons: Configure: The original builder output was:
+  |clang -o .sconf_temp/conftest_0 .sconf_temp/conftest_0.o -lcbor
+  |
+scons: Configure: (cached) yes
+
+scons: Configure: Checking for C library nanomsg... 
+scons: Configure: ".sconf_temp/conftest_1.c" is up to date.
+scons: Configure: The original builder output was:
+  |.sconf_temp/conftest_1.c <-
+  |  |
+  |  |
+  |  |
+  |  |int
+  |  |main() {
+  |  |  
+  |  |return 0;
+  |  |}
+  |  |
+  |
+scons: Configure: ".sconf_temp/conftest_1.o" is up to date.
+scons: Configure: The original builder output was:
+  |clang -o .sconf_temp/conftest_1.o -c .sconf_temp/conftest_1.c
+  |
+scons: Configure: ".sconf_temp/conftest_1" is up to date.
+scons: Configure: The original builder output was:
+  |clang -o .sconf_temp/conftest_1 .sconf_temp/conftest_1.o -lcbor -lnanomsg
+  |
+scons: Configure: (cached) yes
+
+scons: Configure: Checking for C library task... 
+scons: Configure: ".sconf_temp/conftest_2.c" is up to date.
+scons: Configure: The original builder output was:
+  |.sconf_temp/conftest_2.c <-
+  |  |
+  |  |
+  |  |
+  |  |int
+  |  |main() {
+  |  |  
+  |  |return 0;
+  |  |}
+  |  |
+  |
+scons: Configure: ".sconf_temp/conftest_2.o" is up to date.
+scons: Configure: The original builder output was:
+  |clang -o .sconf_temp/conftest_2.o -c .sconf_temp/conftest_2.c
+  |
+scons: Configure: ".sconf_temp/conftest_2" is up to date.
+scons: Configure: The original builder output was:
+  |clang -o .sconf_temp/conftest_2 .sconf_temp/conftest_2.o -lcbor -lnanomsg -ltask
+  |
+scons: Configure: (cached) yes
+
+scons: Configure: Checking for C library event... 
+scons: Configure: ".sconf_temp/conftest_3.c" is up to date.
+scons: Configure: The original builder output was:
+  |.sconf_temp/conftest_3.c <-
+  |  |
+  |  |
+  |  |
+  |  |int
+  |  |main() {
+  |  |  
+  |  |return 0;
+  |  |}
+  |  |
+  |
+scons: Configure: ".sconf_temp/conftest_3.o" is up to date.
+scons: Configure: The original builder output was:
+  |clang -o .sconf_temp/conftest_3.o -c .sconf_temp/conftest_3.c
+  |
+scons: Configure: ".sconf_temp/conftest_3" is up to date.
+scons: Configure: The original builder output was:
+  |clang -o .sconf_temp/conftest_3 .sconf_temp/conftest_3.o -lcbor -lnanomsg -ltask -levent
+  |
+scons: Configure: (cached) yes
+
+scons: Configure: Checking for C library hiredis... 
+scons: Configure: ".sconf_temp/conftest_4.c" is up to date.
+scons: Configure: The original builder output was:
+  |.sconf_temp/conftest_4.c <-
+  |  |
+  |  |
+  |  |
+  |  |int
+  |  |main() {
+  |  |  
+  |  |return 0;
+  |  |}
+  |  |
+  |
+scons: Configure: ".sconf_temp/conftest_4.o" is up to date.
+scons: Configure: The original builder output was:
+  |clang -o .sconf_temp/conftest_4.o -c .sconf_temp/conftest_4.c
+  |
+scons: Configure: ".sconf_temp/conftest_4" is up to date.
+scons: Configure: The original builder output was:
+  |clang -o .sconf_temp/conftest_4 .sconf_temp/conftest_4.o -lcbor -lnanomsg -ltask -levent -lhiredis
+  |
+scons: Configure: (cached) yes
+

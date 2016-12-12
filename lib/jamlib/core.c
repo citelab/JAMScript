@@ -25,16 +25,22 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "core.h"
 #include "mqtt.h"
 #include "uuid4.h"
 #include "command.h"
 
+// The core_init() is the bootstrapping function for JAMlib. It runs the MQTT client
+// (Paho) library in single thread mode - synchronous send and receive. Later we switch
+// it to multi-threaded mode. 
+//
+
 
 corestate_t *core_init(int timeout)
 {
-    command_t *scmd;
+    command_t *scmd, *rcmd;
 
     #ifdef DEBUG_MSGS
         printf("Core initialization...");
@@ -42,10 +48,10 @@ corestate_t *core_init(int timeout)
 
     // create the core state structure..
     corestate_t *cs = (corestate_t *)calloc(1, sizeof(corestate_t));
-    core_setup(cs);
+    core_setup(cs, timeout);
 
     // open an mqtt connection to localhost
-    cs->mqttserv[0] = mqtt_open("mqtt://localhost");
+    cs->mqttserv[0] = mqtt_open("tcp://localhost:1883");
     if (cs->mqttserv[0] == NULL)
     {
         printf("ERROR! Unable to connect to the MQTT server at localhost..\n");
@@ -53,7 +59,7 @@ corestate_t *core_init(int timeout)
     }
 
     // send register message
-    scmd = command_new("REGISTER", "DEVICE", cs->app_name, "-", cs->device_id);
+    scmd = command_new("REGISTER", "DEVICE", cs->app_name, "-", cs->device_id, "");
     mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd); 
     command_free(scmd);
     // get the register acknowledge message 
@@ -64,10 +70,10 @@ corestate_t *core_init(int timeout)
         exit(1);
     }
     command_free(rcmd);
-    cs->mqttenabled[0] = TRUE;
+    cs->mqttenabled[0] = true;
 
     // get information about the machine state: fog address, cloud address
-    scmd = command_new("GET-CF-INFO", "DEVICE", cs->app_name, "-", cs->device_id);
+    scmd = command_new("GET-CF-INFO", "DEVICE", cs->app_name, "-", cs->device_id, "");
     mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd); 
     if ((rcmd = mqtt_receive(cs->mqttserv[0], "PUT-CF-INFO", "/admin/announce/all", cs->timeout)) == NULL) 
     {
@@ -76,23 +82,25 @@ corestate_t *core_init(int timeout)
         exit(1);
     } else
     {
+        printf("We received %d servers\n", rcmd->nargs);
+        
         // process the information that we just received..
         for (int i = 0; i < rcmd->nargs; i++) 
         {
             char target[64];
-            sprintf(target, "mqtt://%s", rcmd->args[0].val->sval);
+            sprintf(target, "mqtt://%s", rcmd->args[0].val.sval);
             cs->mqttserv[i+1] = mqtt_open(target);
             if (cs->mqttserv[i+1] != NULL) 
             {
-                scmd = command_new("REGISTER", "DEVICE", cs->app_name, "-", cs->device_id);
+                scmd = command_new("REGISTER", "DEVICE", cs->app_name, "-", cs->device_id, "");
                 mqtt_publish(cs->mqttserv[i+1], "/admin/request/all", scmd); 
                 command_free(scmd);
     
                 // get the register acknowledge message 
                 if ((rcmd = mqtt_receive(cs->mqttserv[i+1], "REGISTER-ACK", "/admin/announce/all", cs->timeout)) == NULL)
-                    cs->mqttenabled[i+1] = FALSE;
+                    cs->mqttenabled[i+1] = false;
                 else
-                    cs->mqttenabled[i+1] = TRUE;
+                    cs->mqttenabled[i+1] = true;
             }
         }
     }
@@ -103,14 +111,33 @@ corestate_t *core_init(int timeout)
 }
 
 
-void core_setup(corestate_t *cs)
+void core_setup(corestate_t *cs, int timeout)
 {
     // TODO: set the app_name properly
     cs->app_name = strdup("APP_NAME");
+    cs->timeout = timeout;
 
     char buf[UUID4_LEN];
     uuid4_generate(buf);
     cs->device_id = strdup(buf);
+}
+
+// Core callback handlers for MQTT in Async mode 
+void core_connlost(void *ctx, char *cause)
+{
+
+}
+
+int core_msgarr(void *ctx, char *topicname, int tlen, MQTTClient_message *msg)
+{
+    printf("Message arrived for %s\n", topicname);
+
+    return 0;
+}
+
+void core_delcomp(void *ctx, MQTTClient_deliveryToken dt)
+{
+    
 }
 
 
@@ -128,7 +155,6 @@ void core_reinit(corestate_t *cs)
 {
     int i;
     command_t *scmd;
-    corecontext_t *ctx;
 
     corecontext_t *ctx = (corecontext_t *)calloc(1, sizeof(corecontext_t));
 
@@ -139,7 +165,7 @@ void core_reinit(corestate_t *cs)
     for (i = 0; i < 3; i++) 
     {
         // send a ping message
-        scmd = command_new("PING", "DEVICE", cs->app_name, "-", cs->device_id);
+        scmd = command_new("PING", "DEVICE", cs->app_name, "-", cs->device_id, "");
         mqtt_publish(cs->mqttserv[i], "/admin/request/all", scmd);
 
     }
