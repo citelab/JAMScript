@@ -6,6 +6,8 @@
 #include "mqtt.h"
 #include "command.h"
 
+
+
 MQTTClient mqtt_open(char *mhost) 
 {
     MQTTClient mcl;
@@ -29,6 +31,31 @@ MQTTClient mqtt_open(char *mhost)
     return mcl;
 }
 
+
+MQTTClient mqtt_reopen(MQTTClient mcl)
+{
+    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
+    conn_opts.keepAliveInterval = 20;
+    conn_opts.cleansession = 1;
+
+    int rc;
+
+    // OK, MQTTClient is actually a typedef on void *
+    if ((rc = MQTTClient_connect(mcl, &conn_opts)) != MQTTCLIENT_SUCCESS)
+        return NULL;
+
+    MQTTClient_subscribe(mcl, "/admin/announce/all", 1);
+
+    return mcl;
+}
+
+// Subscribe using QoS level 1
+//
+void mqtt_subscribe(MQTTClient mcl, char *topic) 
+{
+    if (topic != NULL)
+        MQTTClient_subscribe(mcl, topic, 1);
+}
 
 void mqtt_publish(MQTTClient mcl, char *topic, command_t *cmd)
 {

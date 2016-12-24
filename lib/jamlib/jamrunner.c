@@ -70,13 +70,12 @@ void jrun_run_task(void *arg)
 
     // Wait for the start or quit and act accordingly...
         queue_enq(jact->outq, rcmd, sizeof(command_t));
-        task_wait(jact->sem);
 
         #ifdef DEBUG_LVL1
             printf("----Waitnnnn..........................\n");
         #endif
 
-        nvoid_t *nv = queue_deq(jact->inq);
+        nvoid_t *nv = pqueue_deq(jact->inq);
         assert (nv != NULL);
         rcmd = (command_t *)nv->data;
         free(nv);

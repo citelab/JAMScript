@@ -20,44 +20,34 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef __CORE_H__
-#define __CORE_H__
+#ifndef __PUSH_QUEUE_H__
+#define __PUSH_QUEUE_H__
 
-#include <time.h>
-#include <stdbool.h>
-#include <MQTTClient.h>
+#include "threadsem.h"
+#include "simplequeue.h"
 
-#define MAX_SERVERS             3
+/*
+ * This "push" queue is asymmetric. The thread that is waiting for the input 
+ * is woken up when a message put into the queue. 
+ */
 
-typedef struct _corestate_t
+typedef struct _pushqueue_t
 {
-    char *app_name;
-    char *device_id;
+	simplequeue_t *queue;
+    threadsem_t *sem;
 
-    // TODO: May be unused? Can we remove this one??
-    int timeout;
+} pushqueue_t;
 
-    MQTTClient mqttserv[3];
-    bool mqttenabled[3];
 
-} corestate_t;
+/*
+ * function prototypes
+ */
 
-typedef struct  _corecontext_t
-{
-    int xx;
+pushqueue_t *pqueue_new(bool ownedbyq);
+bool pqueue_delete(pushqueue_t *queue);
 
-} corecontext_t;
-
-// ------------------------------
-// Function prototypes..
-// ------------------------------
-
-// Initialize the core.. the first thing we need to call
-corestate_t *core_init(int timeout);
-void core_setup(corestate_t *cs, int timeout);
-void core_reinit(corestate_t *cs);
-
-void core_disconnect(corestate_t *cs);
-void core_reconnect(corestate_t *cs);
+bool pqueue_enq(pushqueue_t *queue, void *data, int len);
+nvoid_t *pqueue_deq(pushqueue_t *queue);
+nvoid_t *pqueue_deq_timeout(pushqueue_t *sq, int timeout);
 
 #endif

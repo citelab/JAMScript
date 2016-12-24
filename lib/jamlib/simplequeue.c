@@ -86,10 +86,6 @@ simplequeue_t *queue_new(bool ownedbyq)
 	nn_connect(sq->pushsock, sq->name);
 	sq->ownedbyq = false; //ownedbyq;
 
-	#ifdef DEBUG_LVL1
-		printf("Queue created at %s.. pullsock %d, pushsock %d\n", sq->name, sq->pullsock, sq->pushsock);
-	#endif
-
 	return sq;
 }
 

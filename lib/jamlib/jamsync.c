@@ -71,7 +71,7 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
     jactivity_t *jact = activity_new(js->atable, aname);
 
     command_t *cmd = command_new_using_cbor("REXEC", "SYN", aname, jact->actid, js->cstate->device_id, arr, qargs, i);
-    insert_table_entry(js, cmd, 0);
+    insert_runtable_entry(js, cmd);
     runtableentry_t *act_entry = find_table_entry(js->rtable, cmd);
     cmd->cbor_item_list = list;
     #ifdef DEBUG_LVL1
@@ -80,7 +80,7 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
 
     jam_sync_runner(js, jact, cmd);
 
-    if (jact->state == EXEC_TIMEDOUT)
+    if (jact->state == TIMEDOUT)
     {
         activity_del(js->atable, jact);
         free_rtable_entry(act_entry, js->rtable);
@@ -88,10 +88,10 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
     }
     else
     {
-        arg_t *code = command_arg_clone(jact->code);
+ //       arg_t *code = command_arg_clone(jact->code);
         activity_del(js->atable, jact);
         free_rtable_entry(act_entry, js->rtable);
-        return code;
+        return NULL;  // TODO: CHeck .. this was "code"
     }
 }
 
@@ -102,10 +102,10 @@ void jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     runtableentry_t *act_entry = find_table_entry(js->rtable, cmd);
     if(act_entry == NULL){
         printf("Cannot find activity ... \n");
-        jact->state = EXEC_ERROR;
+        jact->state = FATAL_ERROR;
         return;
     }
-    // for(int i = 0; i < act_entry->num_response; i++){
+    // for(int i = 0; i < act_entry->num_replies; i++){
     //     printf("Sending msg ...\n");
     //     socket_send(js->cstate->reqsock[i], cmd);
     //     printf("Was here .... \n");
@@ -114,31 +114,31 @@ void jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     //     printf("WAIT WHAT \n");
     // }
     printf("Initiating Activity ... \n");
-    for(int i = 0; i < act_entry->num_response; i++){
+    for(int i = 0; i < act_entry->num_replies; i++){
         queue_enq(jact->outq, cmd, sizeof(command_t));
-        task_wait(jact->sem);
-        nvoid_t *nv = queue_deq(jact->inq);
+
+        nvoid_t *nv = pqueue_deq(jact->inq);
         if(nv == NULL){
-            jact->state = EXEC_ERROR;
+            jact->state = FATAL_ERROR;
             return;
         }
         rcmd = (command_t *)nv->data;
         free(nv);
         printf("Round : %d\n", i);
         if(rcmd == NULL){
-            jact->state = EXEC_ERROR;
+            jact->state = FATAL_ERROR;
             return;
         }else if(strcmp(rcmd->cmd,"REXEC-NAK") == 0){
             printf("Failure to acknowledge ...\n");
-            jact->code = command_arg_clone(&(rcmd->args[0]));
-            jact->state = EXEC_ERROR;
+          //  jact->code = command_arg_clone(&(rcmd->args[0]));
+            jact->state = FATAL_ERROR;
             command_free(rcmd);
             return;
         }else if(strcmp(rcmd->cmd, "REXEC-ACK") == 0){
             printf("Acknowledged ... \n");
-            act_entry->num_rcv_response++;
-            if(i == act_entry->num_response){
-                nvoid_t *nv = queue_deq(jact->inq);
+          //  act_entry->num_rcv_response++;
+            if(i == act_entry->num_replies){
+                nvoid_t *nv = pqueue_deq(jact->inq);
                 rcmd = (command_t *)nv->data;
                 free(nv);
             }
@@ -146,28 +146,28 @@ void jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         free(rcmd);
     }
 
-    act_entry->num_rcv_response = 0;            
+   // act_entry->num_rcv_response = 0;            
     //Now Retrive the data 
-    for(int i = 0; i < act_entry->num_response; i++){
+    for(int i = 0; i < act_entry->num_replies; i++){
         command_t *lcmd = command_new("REXEC-RES", "GET", jact->name, jact->actid, js->cstate->device_id, "");
         queue_enq(jact->outq, lcmd, sizeof(command_t));
         printf("After enqueuing stuff\n");
         jam_set_timer(js, jact->actid, 200);
         printf("Before wait !\n");
-        task_wait(jact->sem);
-        nvoid_t *nv = queue_deq(jact->inq);
+
+        nvoid_t *nv = pqueue_deq(jact->inq);
         rcmd = (command_t *)nv->data;
         free(nv);
         if (strcmp(rcmd->cmd, "REXEC-RES") == 0 && strcmp(rcmd->opt, "PUT") == 0){
             printf("Results Received ... \n");
-            jact->code = command_arg_clone(&(rcmd->args[0]));
-            jact->state = EXEC_COMPLETE;
+           // jact->code = command_arg_clone(&(rcmd->args[0]));
+            jact->state = COMPLETED;
             command_free(rcmd);
             jam_clear_timer(js, jact->actid);
-            act_entry->num_rcv_response++;
+      //      act_entry->num_rcv_response++;
         }else if(strcmp(rcmd->cmd, "TIMEOUT") == 0){
             printf("Request timed out ... \n");
-            jact->state = EXEC_ERROR;
+            jact->state = FATAL_ERROR;
             return;
         }
     }
@@ -182,12 +182,12 @@ void jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     //     rcmd = (command_t *)nv->data;
     //     free(nv);
     //     if (rcmd == NULL){
-    //        jact->state = EXEC_ERROR;
+    //        jact->state = FATAL_ERROR;
     //         return;
     //     }else if(strcmp(rcmd->cmd, "REXEC-NAK") == 0){
     //         printf("Failure to acknowledge ...\n");
     //         jact->code = command_arg_clone(&(rcmd->args[0]));
-    //         jact->state = EXEC_ERROR;
+    //         jact->state = FATAL_ERROR;
     //         command_free(rcmd);
     //         return;
     //     }else if (strcmp(rcmd->cmd, "REXEC-ACK") == 0){
@@ -207,7 +207,7 @@ void jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     //             printf("Act Entry Not Found ... \n");
     //             break;
     //         }            
-    //         if(args == act_entry->num_response){
+    //         if(args == act_entry->num_replies){
     //             command_free(rcmd);
     //             task_wait(jact->sem);
     //             args++;
@@ -236,7 +236,7 @@ void jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     //     }else if (strcmp(rcmd->cmd, "REXEC-RES") == 0 && strcmp(rcmd->opt, "PUT") == 0){
     //         printf("Results Received ... \n");
     //         jact->code = command_arg_clone(&(rcmd->args[0]));
-    //         jact->state = EXEC_COMPLETE;
+    //         jact->state = COMPLETED;
     //         command_free(rcmd);
     //         jam_clear_timer(js, jact->actid);
     //         break;

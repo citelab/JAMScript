@@ -291,8 +291,7 @@ void jbroadcaster_msg_rcv_callback(redisAsyncContext *c, void *reply, void *priv
             //So here instead of executing this function here, we need to insert this into the work queue
             sprintf(buf, "jbroadcast_func_%s", i->data.jbroadcaster_data->key);
             command_t *rcmd = command_new("REXEC-JDATA", "ASY", buf, "__", "0", "p", i->data.jbroadcaster_data);
-            queue_enq(j_s->atable->globalinq, rcmd, sizeof(command_t));
-            thread_signal(j_s->atable->globalsem);
+            pqueue_enq(j_s->atable->globalinq, rcmd, sizeof(command_t));
             //i->data.jbroadcaster_data->usr_callback(NULL, i->data.jbroadcaster_data);
           }
           return;
@@ -370,8 +369,7 @@ void jshuffler_callback(redisAsyncContext *c, void *reply, void *privdata){
           if(i->data.jshuffler_data->usr_callback != NULL){
             sprintf(buf, "jshuffler_func_%s", i->data.jbroadcaster_data->key);
             command_t *rcmd = command_new("REXEC-JDATA", "ASY", buf, "__", "0", "p", i->data.jshuffler_data);
-            queue_enq(j_s->atable->globalinq, rcmd, sizeof(command_t));
-            thread_signal(j_s->atable->globalsem);
+            pqueue_enq(j_s->atable->globalinq, rcmd, sizeof(command_t));
           }
           #ifdef DEBUG_LVL1
             printf("Result Received:%s\n", result);

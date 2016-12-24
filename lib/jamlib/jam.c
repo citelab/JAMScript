@@ -59,39 +59,31 @@ jamstate_t *jam_init()
 
     // Initialization of the activity and task tables
     js->atable = activity_table_new();
-
     js->rtable = jwork_runtable_new();
 
     // Queue initialization
-    // globalinq is used by the main thread for input purposes
-    // globaloutq is used by the main thread for output purposes
-    js->atable->globalinq = queue_new(true);
-    js->atable->globaloutq = queue_new(true);
+    js->deviceinq = queue_new(true);
+    js->foginq = queue_new(true);
+    js->cloudinq = queue_new(true);
 
-    js->atable->globalsem = threadsem_new();
-    js->atable->delete_sem = threadsem_new();
-
-    js->maintimer = timer_init("maintimer");
 
     js->bgsem = threadsem_new();
     js->jdata_sem = threadsem_new();
     js->jasync_sem = threadsem_new();
-    //jcond_read_context();
-    thread_signal(js->jasync_sem);
 
     int rval = pthread_create(&(js->bgthread), NULL, jwork_bgthread, (void *)js);
     if (rval != 0) {
         perror("ERROR! Unable to start the jamworker thread");
         exit(1);
     }
-    //printf("\n\n--------------PLEASE WORK---------------\n\n");
+    printf("\n\n--------------PLEASE WORK---------------\n\n");
     task_wait(js->bgsem);
-    rval = pthread_create(&(js->jdata_event_thread), NULL, jdata_event_loop, (void *)js);
-    if (rval != 0) {
-        perror("ERROR! Unable to start the jdata event thread");
-        exit(1);
-    }
-    task_wait(js->jdata_sem);
+    // rval = pthread_create(&(js->jdata_event_thread), NULL, jdata_event_loop, (void *)js);
+    // if (rval != 0) {
+    //     perror("ERROR! Unable to start the jdata event thread");
+    //     exit(1);
+    // }
+    // task_wait(js->jdata_sem);
     //#ifdef DEBUG_LVL1
         printf("\n ------------------------Done-------------------------\n");
     //#endif
@@ -111,8 +103,7 @@ void jam_event_loop(void *arg)
 
     while (1)
     {
-        task_wait(js->atable->globalsem);
-        nvoid_t *nv = queue_deq(js->atable->globalinq);
+        nvoid_t *nv = pqueue_deq(js->atable->globalinq);
         if (nv != NULL)
         {
             cmd = (command_t *)nv->data;

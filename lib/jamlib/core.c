@@ -172,3 +172,22 @@ void core_reinit(corestate_t *cs)
     // TODO: This is totally incomplete.
 }
 
+
+void core_disconnect(corestate_t *cs)
+{
+    int i;
+
+    for(i = 0; i < 3; i++)
+        if (cs->mqttenabled[i] == true)
+            MQTTClient_disconnect(cs->mqttserv[i], 500);
+    usleep(500 * 1000);
+}
+
+void core_reconnect(corestate_t *cs)
+{
+    int i;
+
+    for(i = 0; i < 3; i++)
+        if (cs->mqttenabled[i] == true)
+            cs->mqttserv[i] = mqtt_reopen(cs->mqttserv[i]);
+}

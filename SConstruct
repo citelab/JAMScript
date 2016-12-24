@@ -35,7 +35,7 @@ if npm_loc==None:
 subprocess.check_output(["npm", "install"])
 #Now we test for C library dependencies
 
-env = Environment(CC = 'clang')
+env = Environment(CC = 'clang', CCFLAGS='-g -DDEBUG_LVL1')
 env.Append(CPPPATH='/usr/local/share/paho/include')
 conf = Configure(env)
 

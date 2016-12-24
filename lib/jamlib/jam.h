@@ -46,6 +46,7 @@ extern "C" {
 #define STACKSIZE                   50000
 #define MAX_RUN_ENTRIES             256
 
+
 typedef struct _runtableentry_t
 {
     char *runid;
@@ -56,10 +57,8 @@ typedef struct _runtableentry_t
 
     command_t *cmd;
 
-    int num_response;
-    int num_rcv_response;
+    int num_replies;
     arg_t *result_list[MAX_SERVERS]; //The results
-    int socket_list[MAX_SERVERS];
 } runtableentry_t;
 
 
@@ -73,23 +72,29 @@ typedef struct _runtable_t
 
 typedef struct _jamstate_t
 {
-    char *appname;
     corestate_t *cstate;
-    pthread_t bgthread;
-    pthread_t jdata_event_thread;
     activitytable_t *atable;
-
     runtable_t *rtable;
+
+    // No need to use the pushqueue_t here.
+    // We are watching the file descriptors of these queues
+    simplequeue_t *deviceinq;
+    simplequeue_t *foginq;
+    simplequeue_t *cloudinq;
 
     struct nn_pollfd *pollfds;
     int numpollfds;
 
-    timertype_t *maintimer;
+    pthread_t bgthread;
+    pthread_t jdata_event_thread;
+
     threadsem_t *bgsem;
     threadsem_t *jdata_sem;
     threadsem_t *jasync_sem;
 
     int maxleases;
+
+    timertype_t *maintimer;
 
 } jamstate_t;
 
@@ -128,20 +133,33 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd);
  * Functions defined in jamworker.c
  */
 void *jwork_bgthread(void *arg);
-void jwork_reassemble_fds(jamstate_t *js, int nam);
+void jwork_set_subscriptions(jamstate_t *js);
+
+void jwork_set_callbacks(jamstate_t *js);
+void jwork_msg_delivered(void *ctx, MQTTClient_deliveryToken dt);
+int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTClient_message *msg);
+void jwork_connect_lost(void *context, char *cause);
+
 void jwork_assemble_fds(jamstate_t *js);
-int jwork_wait_fds(jamstate_t *js, int beattime);
+int jwork_wait_fds(jamstate_t *js);
 void jwork_processor(jamstate_t *js);
-void jwork_process_reqsock(jamstate_t *js, int index);
-void jwork_process_subsock(jamstate_t *js, int index);
-void jwork_process_respsock(jamstate_t *js, int index);
 void jwork_process_globaloutq(jamstate_t *js);
 void jwork_process_actoutq(jamstate_t *js, int indx);
+
+void jwork_process_device(jamstate_t *js);
+void jwork_process_fog(jamstate_t *js);
+void jwork_process_cloud(jamstate_t *js);
+
+void jwork_send_error(MQTTClient mcl, command_t *cmd, char *estr);
+void jwork_send_nak(MQTTClient mcl, command_t *cmd, char *estr);
+bool jwork_check_condition(jamstate_t *js, command_t *cmd);
+bool jwork_check_args(jamstate_t *js, command_t *cmd);
+bool jwork_synchronize(jamstate_t *js);
+
 command_t *jwork_runid_status(jamstate_t *js, char *runid);
 command_t *jwork_device_status(jamstate_t *js);
 
 command_t *jwork_runid_kill(jamstate_t *js, char *runid);
-void jam_send_ping(jamstate_t *js);
 
 void jam_set_timer(jamstate_t *js, char *actarg, int tval);
 void jam_clear_timer(jamstate_t *js, char *actid);
@@ -150,7 +168,7 @@ bool jam_eval_condition(char *expr);
 runtable_t *jwork_runtable_new();
 void jwork_runid_complete(jamstate_t *js, runtable_t *rtab, char *runid, arg_t *arg);
 bool jwork_runtable_check(runtable_t *rtable,  command_t *cmd);
-void insert_table_entry(jamstate_t *js, command_t *rcmd, int index);
+bool insert_runtable_entry(jamstate_t *js, command_t *rcmd);
 runtableentry_t *find_table_entry(runtable_t *rtable, command_t *cmd);
 command_t *prepare_sync_return_result(runtableentry_t *r, command_t *cmd);
 void free_rtable_entry(runtableentry_t *entry, runtable_t *table);

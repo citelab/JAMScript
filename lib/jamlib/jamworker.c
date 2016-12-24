@@ -32,9 +32,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "threadsem.h"
 #include "jdata.h"
 #include "nvoid.h"
-
+#include "mqtt.h"
 #include "activity.h"
-
 
 
 // The JAM bgthread is run in another worker (pthread). It shares all
@@ -57,10 +56,25 @@ void *jwork_bgthread(void *arg)
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldstate);
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldtype);
 
+    // Hookup the callback handlers for the different packet sources
+    core_disconnect(js->cstate);
+    jwork_set_callbacks(js);
+    printf("Calling reconnect... \n");
+    core_reconnect(js->cstate);
+    printf("After reconnect.. \n");
+
+    // Setup the subscriptions
+    jwork_set_subscriptions(js);
+
     // assemble the poller.. insert the FDs that should go into the poller
     jwork_assemble_fds(js);
+    
     thread_signal(js->bgsem);
     // process the events..
+
+    #ifdef DEBUG_LVL1
+        printf("Setup done. Waiting for the messages...\n");
+    #endif
     while (1)
     {
         int nfds = jwork_wait_fds(js);
@@ -69,71 +83,151 @@ void *jwork_bgthread(void *arg)
         else if(nfds < 0)
             printf("\nERROR! File descriptor corruption.. another race condition??\n");
 
-    #ifdef DEBUG_LVL1
-        printf("Calling the JAM worker processor.. %d\n", js->rtable->numruns);
-    #endif
+        #ifdef DEBUG_LVL1
+            printf("Calling the JAM worker processor.. %d\n", js->rtable->numruns);
+        #endif
         jwork_processor(js);
     }
 
     return NULL;
 }
 
-void jwork_reassemble_fds(jamstate_t *js, int nam)
+
+void jwork_set_subscriptions(jamstate_t *js)
 {
-    js->atable->numactivities = nam;
-    jwork_assemble_fds(js);
+    // the /admin/announce/all subscription is already set.. 
+
+    for (int i = 0; i < 3; i++) 
+    {
+        if (js->cstate->mqttenabled[i]) 
+        {
+            printf("-------------Subscribing.... \n");
+            mqtt_subscribe(js->cstate->mqttserv[i], "/level/func/reply/#");
+            mqtt_subscribe(js->cstate->mqttserv[i], "/mach/func/request/");
+        }
+    }
 }
 
 
-// Put the FDs in a particular order..
+/* 
+ * Set all the callback handlers
+ * 
+ */
+void jwork_set_callbacks(jamstate_t *js)
+{
+    if (js->cstate->mqttenabled[0] == true)
+    {
+        MQTTClient_setCallbacks(js->cstate->mqttserv[0], js->deviceinq, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
+        printf("Hello 0\n");
+    }
+    
+    if (js->cstate->mqttenabled[1] == true)
+    {
+        MQTTClient_setCallbacks(js->cstate->mqttserv[1], js->foginq, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
+        printf("Hello 1\n");
+    }        
+
+    if (js->cstate->mqttenabled[2] == true)
+    {
+        MQTTClient_setCallbacks(js->cstate->mqttserv[2], js->cloudinq, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
+        printf("Hello 2\n");        
+    }
+}
+
+
+void jwork_msg_delivered(void *ctx, MQTTClient_deliveryToken dt)
+{
+    printf("Message with token value %d delivery confirmed\n", dt);
+}
+
+/*
+ * The most important callback handler. This is executed in another anonymous thread
+ * by the MQTT (Paho) Client library. We are not explicitly spawning the thread. 
+ *
+ */
+
+int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTClient_message *msg)
+{
+    int i;
+
+    printf("SDSDSDS \n");
+    // the ctx pointer is actually pointing towards the queue - cast it
+    simplequeue_t *queue = (simplequeue_t *)ctx;
+
+    printf("Message arrived....\n");
+
+    // We need handle the message based on the topic.. 
+    if (strcmp(topicname, "/admin/announce/all") == 0) 
+    {
+        printf("/admin/announce messages.. ignoring them \n");
+        // TODO: Ignore these messages??
+        //
+    } else 
+    if (strncmp(topicname, "/level/func/reply", strlen("/level/func/reply") -1) == 0) 
+    {
+        printf("/level messages.. queueing them \n");
+        
+        nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
+        command_t *cmd = command_from_data(NULL, nv);
+        nvoid_free(nv);
+        queue_enq(queue, cmd, sizeof(command_t));
+        // Don't free the command structure.. the queue is still carrying it
+    } else
+    if (strncmp(topicname, "/mach/func/request", strlen("/mach/func/request") -1) == 0)
+    {
+        nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
+        command_t *cmd = command_from_data(NULL, nv);
+        nvoid_free(nv);
+        queue_enq(queue, cmd, sizeof(command_t));
+        // Don't free the command structure.. the queue is still carrying it        
+    }
+
+    MQTTClient_freeMessage(&msg);
+    MQTTClient_free(topicname);
+    return 1;
+}
+
+void jwork_connect_lost(void *context, char *cause)
+{
+    printf("\nConnection lost\n");
+    printf("     cause: %s\n", cause);
+}
+
+
+// The FDs are put into a static array. 
+// Put the FDs in a particular order: OutQueue, DeviceQueue, FogQueue, CloudQueue,
+// ActivityOutQueue[1..maxActQ]: 
+// Total slots (fixed): 1 + 3 + maxActQ
+// No reassembling required.. but we are restricted to creating maxActQ activities.
+// The Activity Queues are prespawned
 //
 void jwork_assemble_fds(jamstate_t *js)
 {
     int i;
-    int total = js->cstate->num_fog_servers + js->cstate->num_cloud_servers;
-    // release old one..
-    if (js->pollfds)
-        free(js->pollfds);
-    js->numpollfds = 1 + total * 3 + js->atable->numactivities;
+    
+    js->numpollfds = 1 + 3 + MAX_ACTIVITIES;
     js->pollfds = (struct nn_pollfd *)calloc((js->numpollfds), sizeof(struct nn_pollfd));
 
-    for (i = 0; i < js->numpollfds; i++){
+    for (i = 0; i < js->numpollfds; i++)
         js->pollfds[i].events = NN_POLLIN;
-      }
 
-    // pick the external sockets: REQ, PUB, and SURV
-    // TODO:
-    /*
-    js->pollfds[0].fd = js->cstate->reqsock[0]->sock_fd;
-    js->pollfds[1].fd = js->cstate->subsock[0]->sock_fd;
-    js->pollfds[2].fd = js->cstate->respsock[0]->sock_fd;
-    */
     js->pollfds[0].fd = js->atable->globaloutq->pullsock;
-    for(i = 0; i < total; i++){
-   //     js->pollfds[1 + i * 3].fd = js->cstate->reqsock[i]->sock_fd;
-     //   js->pollfds[2 + i * 3].fd = js->cstate->subsock[i]->sock_fd;
-       // js->pollfds[3 + i * 3].fd = js->cstate->respsock[i]->sock_fd;
-        printf("Vals: %d %d %d\n", js->pollfds[1 + i * 3].fd, js->pollfds[2 + i * 3].fd, js->pollfds[3 + i * 3].fd);
-        //printf("Values: %d %d %d\n", 1+i*3, 2+i*3, 3+i*3);
-        //printf("%d %d %d, \n", js->pollfds[1 + i * 3].fd, js->pollfds[2 + i * 3].fd, js->pollfds[3 + i * 3].fd);
-    }
-    // pick the output queue of the main thread .. it is the input for the bgthread
 
-    // scan the number of activities and get their input queue hooked
-    //printf("%d\n", js->atable->numactivities);
-    for (i = 0; i < js->atable->numactivities; i++){
-        js->pollfds[i + total * 3 + 1].fd = js->atable->activities[i]->outq->pullsock;
-        //printf("Values: %d\n", i + js->cstate->num_fog_servers * 3 + js->cstate->num_cloud_servers * 3 + 1);
-    }
-    // pollfds structure is not complete..
+    js->pollfds[1].fd = js->deviceinq->pullsock;
+    js->pollfds[2].fd = js->foginq->pullsock;
+    js->pollfds[3].fd = js->cloudinq->pullsock;
+
+    for (i = 0; i < MAX_ACTIVITIES; i++)
+        js->pollfds[4 + i].fd = js->atable->activities[i]->outq->pullsock;
+
 }
 
 
-int jwork_wait_fds(jamstate_t *js, int beattime)
+int jwork_wait_fds(jamstate_t *js)
 {
-    // wait on the nn_pollfd array that is in the jamstate_t structure!
+    // TODO: we timeout every 1 second.. why?
     //
-    return nn_poll(js->pollfds, js->numpollfds, beattime);
+    return nn_poll(js->pollfds, js->numpollfds, 1000);
 }
 
 void jwork_processor(jamstate_t *js)
@@ -141,235 +235,50 @@ void jwork_processor(jamstate_t *js)
     // We know at least one descriptor has something for input processing
     // Need to scan all the decriptors
 
-    // Use if constructs for the first 4 descriptors
-    int total = js->cstate->num_fog_servers + js->cstate->num_cloud_servers;
-    if (js->pollfds[0].revents & NN_POLLIN){
+    // Use if constructs for the first 4 descriptors.. note we have a
+    // fixed set of descriptors.. 
+    //
+    if (js->pollfds[0].revents & NN_POLLIN)
+    {
         #ifdef DEBUG_LVL1
-            printf("GLOBAL_SOCK\n");
+            printf("GLOBAL_OUT_SOCK has message \n");
         #endif
         jwork_process_globaloutq(js);
     }
-    for(int i = 0; i < total; i++){
-        if (js->pollfds[1 + i * 3].revents & NN_POLLIN){
-            #ifdef DEBUG_LVL1
-                printf("REQ_SOCK\n");
-            #endif
-            jwork_process_reqsock(js, i);
-        }
-        else
-        if (js->pollfds[2 + i * 3].revents & NN_POLLIN){
-            #ifdef DEBUG_LVL1
-                printf("SUB_SOCK\n");
-            #endif
-            jwork_process_subsock(js, i);
-        }
-        else
-        if (js->pollfds[3 + i * 3].revents & NN_POLLIN){
-            #ifdef DEBUG_LVL1
-                printf("RESP_SOCK\n");
-            #endif
-            jwork_process_respsock(js, i);
-        }
-    }
-    for (int i = 0; i < js->atable->numactivities; i++){
-        if (js->pollfds[i + total*3 + 1].revents & NN_POLLIN)
-            jwork_process_actoutq(js, i);
-    }
-}
-
-
-
-void jwork_process_reqsock(jamstate_t *js, int index)
-{
-    // reqsock has input that is replies to what the main thread or an
-    // activity might have requested. We need to distinguish that and route
-    // the reply to the appropriate destination
-    //
-    // TODO: What about the timeout value.. it could be inconsequential
-    command_t *rcmd;
-    // = socket_recv_command(js->cstate->reqsock[index], 5000);
-    //#ifdef DEBUG_LVL1
-    printf("----- In request sock.......... \n");
-    printf("Command %s, %s %s %s %s\n", rcmd->cmd, rcmd->actname, rcmd->actid, rcmd->actarg, rcmd->opt);
-    //#endif
-    #ifdef DEBUG_LVL1
-    printf("Command %s, %s %s %s %s\n", rcmd->cmd, rcmd->actname, rcmd->actid, rcmd->actarg, rcmd->opt);
-    #endif
-
-    if(strcmp(rcmd->cmd, "REXEC-ACK") && strcmp(rcmd->opt, "SYN") == 0){
+    if (js->pollfds[1].revents & NN_POLLIN)
+    {
         #ifdef DEBUG_LVL1
-            printf("Add Pending Activity ... \n");
+            printf("DEVICE_IN_SOCK has message\n");
         #endif
-        //jcmd_log_pending_activity(js->cstate->device_id, rcmd->actid, index);
-    }else if(strcmp(rcmd->cmd, "REXEC-RES") == 0){
+        jwork_process_device(js);
+    }
+    if (js->pollfds[2].revents & NN_POLLIN)
+    {
         #ifdef DEBUG_LVL1
-            printf("Remove Pending Activity ... \n");
-        #endif 
-        //jcmd_remove_acknowledged_activity(js->cstate->device_id, rcmd->actid, index);
+            printf("FOG_IN_SOCK has message\n");
+        #endif
+        jwork_process_fog(js);
     }
-    //So at this point, we can automatically set up a permanent log system for calls
-    if (rcmd != NULL)
+    if (js->pollfds[3].revents & NN_POLLIN)
     {
-
-        if (strcmp(rcmd->actname, "EVENTLOOP") == 0)
-        {
-            // Send it to the main thread and unblock the thread
-            printf("Event Loop Detected ........\n");
-            queue_enq(js->atable->globalinq, rcmd, sizeof(command_t));
-            thread_signal(js->atable->globalsem);
-        }
-        else
-        if (strcmp(rcmd->actname, "ACTIVITY") == 0)
-        {
-            jactivity_t *jact = activity_getbyid(js->atable, rcmd->actid);
-            if(jact == NULL){
-                printf("Activity already finished ... \n");
-                return;
-            }
-            #ifdef DEBUG_LVL1
-            printf("Activity Detected ........\n");
-            #endif
-            queue_enq(jact->inq, rcmd, sizeof(command_t));
-            printf("Signaled .. 2!\n");
-            thread_signal(jact->sem);
-        }
-        else if (strcmp(rcmd->actname, "PINGER") == 0)
-        {
-            if (strcmp(rcmd->cmd, "PONG") == 0){
-                #ifdef DEBUG_LVL1
-                printf("Reply received for ping..\n");
-                #endif
-              }
-            command_free(rcmd);
-        }
+        #ifdef DEBUG_LVL1
+            printf("CLOUD_IN_SOCK has message\n");
+        #endif
+        jwork_process_cloud(js);
     }
+
+    for (int i = 0; i < MAX_ACTIVITIES; i++)
+    {
+        if (js->pollfds[i + 4].revents & NN_POLLIN)
+            jwork_process_actoutq(js, i);
+    }    
 }
 
 
-// Subscribe socket processing
-// REXEC processing is done here.
-//ue_enq(jact->outq, cmd, sizeof(command_t));
-    // task_wait(jact->sem);
-    // for(int i = 1; i < act_entry->num_response; i++){
-    //     nvoid_t *nv = queue_deq(jact->inq);
-    //     rcmd = (command_t *)nv->data;
-    //     free(nv);
-    //     printf("Round : %d\n", i);
-    //     if(rcmd == NULL){
-    //         jact->state = EXEC_ERROR;
-    //         return;
-    //     }else if(strcmp(rcmd->cmd,"REXEC-NAK") == 0){
-    //         printf("Failure to acknowledge ...\n");
-    //         jact->code = command_arg_clone(&(rcmd->args[0]));
-    //         jact->state = EXEC_ERROR;
-    //         command_free(rcmd);
-    //         return;
-    //     }else if(strcmp(rcmd->cmd, "REXEC-ACK") == 0){
-    //         act_entry->num_rcv_response++;
-    //         if(i < act_entry->num_response){
-    //             queue_enq(jact->outq, act_entry->cmd, sizeof(command_t));
-    //             task_wait(jact->sem);
-    //         }
-    //     }
-    //     free(rcmd);
-    // }
-void jwork_process_subsock(jamstate_t *js, int index)
-{
-    // Data is available in the socket..  so timeout value
-    // does not make much difference!
-    //
-
-    command_t *rcmd; // = socket_recv_command(js->cstate->subsock[index], 100);
-    #ifdef DEBUG_LVL1
-    printf("===================== In subsock processing... %s, %s %s %s %s\n",  rcmd->cmd, rcmd->actname, rcmd->actid, rcmd->actarg, rcmd->opt);
-    #endif
-    //printf("Command %s, actid %s.. actname %s\n", rcmd->cmd, rcmd->actid, rcmd->actname);
-    //printf("Command %s, %s %s %s %s\n", rcmd->cmd, rcmd->actname, rcmd->actid, rcmd->actarg, rcmd->opt);
-
-    if (rcmd != NULL)
-    {
-        if (strcmp(rcmd->cmd, "REXEC-CALL") == 0)
-        {
-            // No distinction is made between the SYNC and ASYNC calls here.
-            // They are both passed to the jam_event_loop in jam.c
-            // There we separate the two and process them differently.
-            /*
-            if (jwork_runtable_check(js->rtable, rcmd))
-            {
-                printf("Duplicate found... \n");
-                command_free(rcmd);
-                return;
-            }*/
-            printf("\n\n\n\nHere .... \n\n\n\n");
-            //insert_table_entry(js, rcmd, index);
-            //printf("\n\nHOOOOOOOOOOW %d %s\n\n", js->rtable->numruns, act_entry->actid);
-            if (jam_eval_condition(rcmd->actarg))
-            {
-                rcmd->socket_indx = index;
-                queue_enq(js->atable->globalinq, rcmd, sizeof(command_t));
-                thread_signal(js->atable->globalsem);
-                // rcmd is released in the main thread after consumption
-            }
-            else
-                command_free(rcmd);
-        }
-    }
-}
-
-
-void jwork_process_respsock(jamstate_t *js, int index)
-{
-    // Data is available in the socket.. so timeout value
-    // is not critical.. why wait for timeout?
-    //
-    command_t *rcmd; // = socket_recv_command(js->cstate->respsock[index], 5000);
-    #ifdef DEBUG_LVL1
-        printf("====================================== In respsock processing.. cmd: %s, opt: %s\n", rcmd->cmd, rcmd->opt);
-    #endif
-
-    if (rcmd != NULL)
-    {
-        // We can respond to different types of survey questions..
-        // STATUS ACTIVITY actname actarg
-        if (strcmp(rcmd->cmd, "REPORT-REQ") == 0 &&
-            strcmp(rcmd->opt, "SYN") == 0)
-        {
-            command_t *result = jwork_runid_status(js, rcmd->actarg);
-            if (result != NULL)
-            {
-         //       for(int i = 0; i < js->cstate->num_fog_servers; i++)
-         //           socket_send(js->cstate->respsock[i], result);
-                command_free(result);
-            }
-        }
-        if (strcmp(rcmd->cmd, "RKILL") == 0 &&
-            strcmp(rcmd->opt, "FOG") == 0)
-        {
-            command_t *result = jwork_runid_kill(js, rcmd->actarg);
-            if (result != NULL)
-            {
-           //     for(int i = 0; i < js->cstate->num_fog_servers; i++)
-            //        socket_send(js->cstate->respsock[i], result);
-                command_free(result);
-            }
-        }
-        if (strcmp(rcmd->cmd, "DSTATUS") == 0 &&
-            strcmp(rcmd->cmd, "REQ") == 0)
-        {
-            command_t *result = jwork_device_status(js);
-            if (result != NULL)
-            {
-       //         for(int i = 0; i < js->cstate->num_fog_servers; i++)
-       //             socket_send(js->cstate->respsock[i], result);
-                command_free(result);
-            }
-        }
-        else
-            command_free(rcmd);
-    }
-}
-
-
+// The global Output Q has all the commands the main thread wants to 
+// get executed: LOCAL and non LOCAL. If the "opt" field of the message 
+// is "LOCAL" we execute the command locally. Otherwise, it is sent to the 
+// remote node for 
 void jwork_process_globaloutq(jamstate_t *js)
 {
     nvoid_t *nv = queue_deq(js->atable->globaloutq);
@@ -382,45 +291,37 @@ void jwork_process_globaloutq(jamstate_t *js)
     if (rcmd != NULL)
     {
         #ifdef DEBUG_LVL1
-        printf("Processing cmd: from GlobalOutQ.. ..\n");
-        printf("====================================== In global processing.. cmd: %s, opt: %s\n", rcmd->cmd, rcmd->opt);
+            printf("Processing cmd: from GlobalOutQ.. ..\n");
+            printf("====================================== In global processing.. cmd: %s, opt: %s\n", rcmd->cmd, rcmd->opt);
         #endif
-        // Many commands are in the output queue of the main thread
+        // For local commands, we process them in this thread.. right here!
+        // TODO: Figure out what type of commands should go in here
         if (strcmp(rcmd->opt, "LOCAL") == 0)
         {
-            //printf("Processing........... %s \n", rcmd->cmd);
+            #ifdef DEBUG_LVL1
+                printf("Processing the command in LOCAL mode.. \n");
+            #endif
 
-            if (strcmp(rcmd->cmd, "COMPL-ACT") == 0)
-            {
-                if (rcmd->nargs == 0)
-                    jwork_runid_complete(js, js->rtable, rcmd->actarg, NULL);
-                else{
-                    printf("\n\n\n---------------------HELL YEAH--------------------------\n\n\n");
-                    jwork_runid_complete(js, js->rtable, rcmd->actarg, &rcmd->args[0]);
-                }
-                    // TODO: Could there be a memory deallocation problem in the above line?
-
-                thread_signal(js->atable->delete_sem);
-            }
-            else
-            {
-                jwork_reassemble_fds(js, rcmd->args[0].val.ival);
-                if (strcmp(rcmd->cmd, "DELETE-FDS") == 0)
-                {
-                    thread_signal(js->atable->delete_sem);
-                }
-            }
+            // TODO: Do we have any LOCAL actions to do? With the new protocol design
+            // this need may not exist anymore..
         }
-        //else
-          //  socket_send(js->cstate->reqsock[0], rcmd);
-
-      command_free(rcmd);
+        else
+        {
+            for (int i = 0; i < 3; i++)
+                if (js->cstate->mqttenabled[i] == true)
+                    mqtt_publish(js->cstate->mqttserv[i], "/leve/func/request", rcmd);
+        } 
+        command_free(rcmd);
     }
 }
 
 
+
 //
-// TODO: There is huge inefficiency here. We are encoding and decoding the data
+// TODO: Do we have an inefficiency here? I am tracking an old comment that did not
+// make much sense. The old comment follows. 
+//
+// There is huge inefficiency here. We are encoding and decoding the data
 // unnecessarily. We should just do pointer passing through the queue.
 // Pointer could be referring to the command structure that was created by the
 // activity in this case and the main thread in the above case..
@@ -428,9 +329,42 @@ void jwork_process_globaloutq(jamstate_t *js)
 
 void jwork_process_actoutq(jamstate_t *js, int indx)
 {
-    //printf("Indx %d\n", indx);
-
     nvoid_t *nv = queue_deq(js->atable->activities[indx]->outq);
+    if (nv == NULL) return;
+
+    command_t *rcmd = (command_t *)nv->data;
+    free(nv);
+    #ifdef DEBUG_LVL1
+        printf("\n\nACTOUTQ[%d]::  %s, opt: %s actarg: %s actid: %s\n\n\n", indx, rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
+    #endif
+    // Don't use nvoid_free() .. it is not deep enough
+    
+    if (rcmd != NULL)
+    {
+        // TODO: What else goes here..???
+        // TODO: Revise this part...
+
+        // relay the command to the remote servers..
+        for (int i = 0; i < 3; i++)
+            if (js->cstate->mqttenabled[i] == true) 
+            {
+                printf("Published to /level  \n");
+                mqtt_publish(js->cstate->mqttserv[i], "/level/func/request", rcmd);
+            }
+
+        command_free(rcmd);
+    }
+}
+
+
+// We have an incoming message from the J at device
+// We need to process it here..
+//
+void jwork_process_device(jamstate_t *js)
+{
+    // Get the message from the device to process
+    // 
+    nvoid_t *nv = queue_deq(js->deviceinq);
     if (nv == NULL) return;
 
     command_t *rcmd = (command_t *)nv->data;
@@ -439,74 +373,166 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
         printf("\n\nIMPORTANT %s, opt: %s actarg: %s actid: %s\n\n\n", rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
     #endif
     // Don't use nvoid_free() .. it is not deep enough
-    //Anyhow here we are ....
-    printf("\n\nIMPORTANT %s, opt: %s actarg: %s actid: %s\n\n\n", rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
+    
     if (rcmd != NULL)
-    {   
-        if(strcmp(rcmd->cmd, "REXEC") == 0 || strcmp(rcmd->cmd, "REXEC-RES") == 0){
-                runtableentry_t *act_entry = find_table_entry(js->rtable, rcmd);
-                printf("sending to socket %d\n", act_entry->num_rcv_response);
-        //        socket_send(js->cstate->reqsock[act_entry->num_rcv_response], rcmd);
-            return;
-        }else{
-            #ifdef DEBUG_LVL1
-                printf("Sending something important to js side... \n");
-            #endif
-       //     socket_send(js->cstate->reqsock[rcmd->socket_indx], rcmd);
+    {
+        printf("Hello2 %s\n", rcmd->cmd);
+        // TODO: Implement a synchronization sub protocol.. 
+        //
+        if (strcmp(rcmd->cmd, "REXEC-SYN") == 0) 
+        {
+            // TODO: Need to synchronize
+            if (jwork_synchronize(js)) 
+            {
+                if (jwork_check_args(js, rcmd))
+                {
+                    if (jwork_check_condition(js, rcmd))
+                        pqueue_enq(js->atable->globalinq, rcmd, sizeof(command_t));
+                    else 
+                        jwork_send_nak(js->cstate->mqttserv[0], rcmd, "CONDITION FALSE");
+                }
+                else
+                    jwork_send_error(js->cstate->mqttserv[0], rcmd, "ARGUMENT ERROR");
+            }
+            else
+                jwork_send_nak(js->cstate->mqttserv[0], rcmd, "SYNC FAILED");
         }
-        command_free(rcmd);
+        else 
+        if (strcmp(rcmd->cmd, "REXEC-ASY") == 0)
+        {
+            if (jwork_check_args(js, rcmd))
+            {
+                if (jwork_check_condition(js, rcmd))
+                    pqueue_enq(js->atable->globalinq, rcmd, sizeof(command_t));
+                else 
+                    jwork_send_nak(js->cstate->mqttserv[0], rcmd, "CONDITION FALSE");
+            }
+            else
+                jwork_send_error(js->cstate->mqttserv[0], rcmd, "ARGUMENT ERROR");
+        }
+        else
+        if (strcmp(rcmd->cmd, "REXEC-RES") == 0)
+        {
+            // TODO: Implement this to get the results back
+        }
+        else 
+        if ((strcmp(rcmd->cmd, "REXEC-ACK") == 0) ||
+            (strcmp(rcmd->cmd, "REXEC-NAK") == 0))
+        {
+            printf("Helllo\n");
+            // resolve the activity id to index
+            int aindx = activity_id2indx(js->atable, rcmd->actid);
+            if (aindx >= 0)
+            {
+                printf("~~~~~~~~~~~~~~~~ pushing to queue\n");
+                jactivity_t *jact = js->atable->activities[aindx];
+                // send the rcmd to that queue.. this is a pushqueue
+                pqueue_enq(jact->inq, rcmd, sizeof(command_t));    
+            }
+        }
+        else
+        {
+            printf("Freeingn,....\n");
+            command_free(rcmd);
+        }
     }
 }
 
 
-
-void jam_send_ping(jamstate_t *js)
+void jwork_send_error(MQTTClient mcl, command_t *cmd, char *estr)
 {
-    command_t *scmd;
-
-    // create a command structure for the PING.
-    scmd = command_new("PING", "DEVICE", "PINGER", js->cstate->device_id, "-", "s", "temp");
-
-    // send it through the request-reply socket.. we need to get the reply back to prevent
-    // socket from going haywire
-    //
-//for(int i = 0; i < js->cstate->num_fog_servers; i++)
-  //      socket_send(js->cstate->reqsock[i], scmd);
-    command_free(scmd);
+    
 }
 
-
-void tcallback(void *arg)
+void jwork_send_nak(MQTTClient mcl, command_t *cmd, char *estr)
 {
-    jactivity_t *jact = (jactivity_t *)arg;
+    
+}
 
+bool jwork_check_condition(jamstate_t *js, command_t *cmd)
+{
+    return true;
+}
+
+bool jwork_check_args(jamstate_t *js, command_t *cmd)
+{
+    return true;
+}
+
+bool jwork_synchronize(jamstate_t *js)
+{
+
+    return true;
+
+}
+
+// We have an incoming message from the J at fog
+// We need to process it here..
+//
+void jwork_process_fog(jamstate_t *js)
+{
+    // Get the message from the fog to process
+    // 
+    nvoid_t *nv = queue_deq(js->foginq);
+    if (nv == NULL) return;
+
+    command_t *rcmd = (command_t *)nv->data;
+    free(nv);
     #ifdef DEBUG_LVL1
-    printf("Callback.... \n");
+        printf("\n\nIMPORTANT %s, opt: %s actarg: %s actid: %s\n\n\n", rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
     #endif
-    // stick the "TIMEOUT" message into the queue for the activity
-    command_t *tmsg = command_new("TIMEOUT", "__", "ACTIVITY", jact->actid, "__", "");
-    queue_enq(jact->inq, tmsg, sizeof(command_t));
-    // do a signal on the thread semaphore for the activity
+    // Don't use nvoid_free() .. it is not deep enough
+    
+    if (rcmd != NULL)
+    {
+        // We are getting replies from the fog level for requests that
+        // were sent from the C. There is no unsolicited replies.
+
+        // TODO: Can we detect unsolicited replies and discard them?
+
+        // Find the activityID from rcmd 
+
+        // Retrieve the activity record
+
+
+        // Send the command (rcmd) to the activity given the above pointer is non NULL
+
+    }
+}
+
+
+// We have an incoming message from the J at cloud
+// We need to process it here..
+//
+void jwork_process_cloud(jamstate_t *js)
+{
+    // Get the message from the cloud to process
+    // 
+    nvoid_t *nv = queue_deq(js->cloudinq);
+    if (nv == NULL) return;
+
+    command_t *rcmd = (command_t *)nv->data;
+    free(nv);
     #ifdef DEBUG_LVL1
-    printf("Callback Occuring... \n");
+        printf("\n\nIMPORTANT %s, opt: %s actarg: %s actid: %s\n\n\n", rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
     #endif
-    printf("Signaled .. 3!\n");
-    thread_signal(jact->sem);
+    // Don't use nvoid_free() .. it is not deep enough
+    
+    if (rcmd != NULL)
+    {
+        // We are getting replies from the fog level for requests that
+        // were sent from the C. There is no unsolicited replies.
+
+        // TODO: Can we detect unsolicited replies and discard them?
+
+        // Find the activityID from rcmd 
+
+        // Retrieve the activity record
+
+        // Send the command (rcmd) to the activity given the above pointer is non NULL
+    }
 }
 
-
-void jam_set_timer(jamstate_t *js, char *actid, int tval)
-{
-    jactivity_t *jact = activity_getbyid(js->atable, actid);
-    if (jact != NULL)
-        timer_add_event(js->maintimer, tval, 0, actid, tcallback, jact);
-}
-
-
-void jam_clear_timer(jamstate_t *js, char *actid)
-{
-    timer_del_event(js->maintimer, actid);
-}
 
 
 // This is evaluating a JavaScript expression for the nodal predicate
@@ -516,7 +542,6 @@ bool jam_eval_condition(char *expr)
 {
     return true;
 }
-
 
 
 // Create the runtable that contains all the runid entries.
@@ -603,7 +628,7 @@ command_t *jwork_runid_status(jamstate_t *js, char *runid)
     // create the command to reply with the status update..
     // send [[ REPORT-REP FIN actname deviceid runid res (arg0)] (res is a single object) or
     //
-    if (ren->status == EXEC_COMPLETE)
+    if (ren->status == COMPLETED)
     {
         if (ren->result_list[0] == NULL)
         {
@@ -658,7 +683,7 @@ void jwork_runid_complete(jamstate_t *js, runtable_t *rtab, char *actid, arg_t *
 
     runtableentry_t *ren = rtab->entries[i];
 
-    ren->status = EXEC_COMPLETE;
+    ren->status = COMPLETED;
     ren->result_list[0] = arg;
     
     command_t *result = jwork_runid_status(js, actid);
@@ -681,6 +706,7 @@ command_t *jwork_runid_kill(jamstate_t *js, char *runid)
     return NULL;
 }
 
+
 runtableentry_t *find_table_entry(runtable_t *table, command_t *cmd){
     printf("Attempting to find %s\n", cmd->actid);
     for(int i = 0; i < MAX_RUN_ENTRIES; i++){
@@ -693,6 +719,7 @@ runtableentry_t *find_table_entry(runtable_t *table, command_t *cmd){
     return NULL;
 }
 
+
 command_t *prepare_sync_return_result(runtableentry_t *act_entry, command_t *rcmd){
 
     printf("\n\n-------Command %s, %s %s %s %s %d---\n\n", rcmd->cmd, rcmd->actname, rcmd->actid, rcmd->actarg, rcmd->opt, rcmd->nargs);
@@ -702,7 +729,7 @@ command_t *prepare_sync_return_result(runtableentry_t *act_entry, command_t *rcm
         printf("Invalid return arguments ... \nError ...\n");
         return return_err_arg(rcmd, "RET-FAILURE");
     }
-    for(int i = 1; i < act_entry->num_rcv_response; i++){
+    for(int i = 1; i < 1; i++){ // TODO check ; num_rcv_something.. was here.
         if(act_entry->result_list[0]->type != act_entry->result_list[i]->type){
             printf("Inconsistent Results ... \n");
             return return_err_arg(rcmd, "RET-FAILURE");
@@ -735,30 +762,6 @@ command_t *prepare_sync_return_result(runtableentry_t *act_entry, command_t *rcm
     return rcmd;
 }
 
-void free_rtable_entry(runtableentry_t *entry, runtable_t *table){
-    if(entry == NULL)
-        return;
-    #ifdef DEBUG_LVL1
-        printf("Removing Value: %p %s\n", entry, entry->actid);
-    #endif
-    for(int i = 0; i < MAX_RUN_ENTRIES; i++){
-        if(table->entries[i] == entry){
-            table->entries[i] = NULL;
-            table->numruns--;
-            break;
-        }
-    }
-    if(entry->runid != NULL)
-        free(entry->runid);
-    if(entry->actid != NULL)
-        free(entry->actid);
-    if(entry->actname != NULL)
-        free(entry->actname);
-    if(entry->cmd != NULL)
-        command_free(entry->cmd);
-    free(entry);
-}
-
 command_t *return_err_arg(command_t *rcmd, char *err_msg){
     for(int i = 0; i < rcmd->nargs; i++){
         if(rcmd->args[i].type == STRING_TYPE)
@@ -774,22 +777,93 @@ command_t *return_err_arg(command_t *rcmd, char *err_msg){
     return rcmd;
 }
 
-void insert_table_entry(jamstate_t * js, command_t *rcmd, int indx){
+
+bool insert_runtable_entry(jamstate_t * js, command_t *rcmd)
+{
     runtableentry_t *act_entry = calloc(1, sizeof(runtableentry_t));
+
     act_entry->actname = strdup(rcmd->actname);
     act_entry->actid = strdup(rcmd->actid);
-    act_entry->index = indx;
-  //  act_entry->num_response = js->cstate->num_fog_servers + js->cstate->num_cloud_servers;
     act_entry->cmd = rcmd;
+    act_entry->num_replies = js->cstate->mqttenabled[0] + js->cstate->mqttenabled[1] + js->cstate->mqttenabled[2];
+
     //To insert the entry into the table
     #ifdef DEBUG_LVL1
         printf("Added Value: %p %s\n", act_entry, act_entry->actid);
     #endif
-    for(int i = 0; i < MAX_RUN_ENTRIES; i++){
-        if(js->rtable->entries[i] == NULL){
+    
+    for(int i = 0; i < MAX_RUN_ENTRIES; i++)
+    {
+        if(js->rtable->entries[i] == NULL)
+        {
             js->rtable->entries[i] = act_entry;
             js->rtable->numruns++;
+            act_entry->index = i;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+void free_rtable_entry(runtableentry_t *entry, runtable_t *table)
+{
+    if (entry == NULL)
+        return;
+
+    #ifdef DEBUG_LVL1
+        printf("Removing Value: %p %s\n", entry, entry->actid);
+    #endif
+
+    for (int i = 0; i < MAX_RUN_ENTRIES; i++)
+    {
+        if(table->entries[i] == entry)
+        {
+            table->entries[i] = NULL;
+            table->numruns--;
             break;
         }
     }
+
+    if (entry->runid != NULL)
+        free(entry->runid);
+    if (entry->actid != NULL)
+        free(entry->actid);
+    if (entry->actname != NULL)
+        free(entry->actname);
+    if (entry->cmd != NULL)
+        command_free(entry->cmd);
+    free(entry);
+}
+
+
+void tcallback(void *arg)
+{
+    jactivity_t *jact = (jactivity_t *)arg;
+
+    #ifdef DEBUG_LVL1
+    printf("Callback.... \n");
+    #endif
+    // stick the "TIMEOUT" message into the queue for the activity
+    command_t *tmsg = command_new("TIMEOUT", "__", "ACTIVITY", jact->actid, "__", "");
+    pqueue_enq(jact->inq, tmsg, sizeof(command_t));
+    // do a signal on the thread semaphore for the activity
+    #ifdef DEBUG_LVL1
+    printf("Callback Occuring... \n");
+    #endif
+}
+
+
+void jam_set_timer(jamstate_t *js, char *actid, int tval)
+{
+    jactivity_t *jact = activity_getbyid(js->atable, actid);
+    if (jact != NULL)
+        timer_add_event(js->maintimer, tval, 0, actid, tcallback, jact);
+}
+
+
+void jam_clear_timer(jamstate_t *js, char *actid)
+{
+    timer_del_event(js->maintimer, actid);
 }

@@ -57,13 +57,24 @@ char *activity_gettime()
 
 activitytable_t *activity_table_new()
 {
+    int i;
+
     activitytable_t *atbl = (activitytable_t *)calloc(1, sizeof(activitytable_t));
     assert(atbl != NULL);
 
     atbl->numactivities = 0;
-    atbl->numshadowacts = 0;
-
     atbl->numcbackregs = 0;
+
+    for (i = 0; i < MAX_CALLBACKS; i++)
+        atbl->callbackregs[i] = NULL;
+
+    for (i = 0; i < MAX_ACTIVITIES; i++)
+        atbl->activities[i] = activity_init();
+
+    // globalinq is used by the main thread for input purposes
+    // globaloutq is used by the main thread for output purposes
+    atbl->globalinq = pqueue_new(true);
+    atbl->globaloutq = queue_new(true);
 
     return atbl;
 }
@@ -81,7 +92,7 @@ void activity_table_print(activitytable_t *at)
         activity_callbackreg_print(at->callbackregs[i]);
 
     printf("Activity instances::\n");
-    for (i = 0; i < at->numactivities; i++)
+    for (i = 0; i < MAX_ACTIVITIES; i++)
         activity_print(at->activities[i]);
 
     printf("\n");
@@ -98,20 +109,14 @@ void activity_callbackreg_print(activity_callback_reg_t *areg)
 
 void activity_print(jactivity_t *ja)
 {
+    if (ja->state == EMPTY)
+        return;
+
     printf("\n");
     printf("Activity ID: %s\n", ja->actid);
     printf("Activity arg: %s\n", ja->actarg);
     printf("Activity state: %d\n", ja->state);
     printf("Activity name: %s\n", ja->name);
-    if (ja->code != NULL)
-        command_arg_print(ja->code);
-    else
-        printf("Activity code: NULL\n");
-
-    if (ja->inq != NULL)
-        queue_print(ja->inq);
-    if (ja->outq != NULL)
-        queue_print(ja->outq);
 
     printf("\n");
 }
@@ -158,44 +163,62 @@ activity_callback_reg_t *activity_findcallback(activitytable_t *at, char *name, 
     return NULL;
 }
 
-jactivity_t *activity_new(activitytable_t *at, char *name)
+// Only the memory is initialized..
+jactivity_t *activity_init()
 {
     jactivity_t *jact = (jactivity_t *)calloc(1, sizeof(jactivity_t));
 
-    // Setup the new activity
-    jact->state = NEW;
-    strcpy(jact->name, name);
-    jact->code = NULL;
-    jact->sem = threadsem_new();
-    jact->actid = activity_gettime();
+    // Setup the dummy activity
+    jact->state = EMPTY;
+    jact->name[0] = 0;
+    jact->actid = NULL;
     jact->actarg = strdup("__");
 
-    // Save the task ID.. this is specific to libtask..
-    jact->taskid = taskid();
+    jact->taskid = 0;
 
     // Setup the I/O queues
-    jact->inq = queue_new(true);
+    jact->inq = pqueue_new(true);
     jact->outq = queue_new(true);
-    #ifdef DEBUG_LVL1
-    printf("Pointer of new activity %p\n", jact);
-    #endif
-    at->activities[at->numshadowacts++] = jact;
 
-    #ifdef DEBUG_LVL1
-    printf("Creating the message... \n");
-    #endif
-    // Send a message to the background so it starts watching for messages
-    command_t *cmd = command_new("INCREASE-FDS", "LOCAL", name, jact->actid, jact->actarg, "i", at->numshadowacts);
-    //command_free(cmd);
-    #ifdef DEBUG_LVL1
-    printf("Sending it.. \n");
-    #endif
-    
-    queue_enq(at->globaloutq, cmd, sizeof(command_t));
+    // initialize the reply placeholders
+    for (int i = 0; i < MAX_REPLIES; i++)
+        jact->replies[i] = NULL;
 
-    #ifdef DEBUG_LVL1
-        printf("Created the activity: %s\n", jact->name);
-    #endif
+    // return the pointer
+    return jact;
+}
+
+
+jactivity_t *activity_new(activitytable_t *at, char *name)
+{
+    jactivity_t *jact = NULL;
+    // Cannot create another activity..
+    if (at->numactivities >= MAX_ACTIVITIES)
+        return NULL;
+
+    // Find an empty activity entry. 
+    for (int i = 0; i < MAX_ACTIVITIES; i++)
+        if (at->activities[i]->state == EMPTY)
+        {
+            jact = at->activities[i];
+            break;
+        }
+
+    if (jact != NULL) 
+    {
+        // Setup the new activity
+        jact->state = NEW;
+        strcpy(jact->name, name);
+        jact->actid = activity_gettime();
+        jact->actarg = strdup("__");
+
+        // Save the task ID.. this is specific to libtask..
+        jact->taskid = taskid();
+
+        // Set the replies' pointer to NULL for good measure
+        for (int i = 0; i < MAX_REPLIES; i++)
+            jact->replies[i] = NULL;
+    }
 
     // return the pointer
     return jact;
@@ -206,13 +229,29 @@ jactivity_t *activity_getbyid(activitytable_t *at, char *actid)
 {
     int i;
 
-    for (i = 0; i < at->numshadowacts; i++)
+    for (i = 0; i < MAX_ACTIVITIES; i++)
     {
-        if (strcmp(at->activities[i]->actid, actid) == 0)
+        if ((at->activities[i]->state != EMPTY) &&
+            (strcmp(at->activities[i]->actid, actid) == 0))
             return at->activities[i];
     }
     return NULL;
 }
+
+
+// returns -1 if the activity with given actid is not there
+int activity_id2indx(activitytable_t *at, char *actid)
+{
+    int i;
+
+    for (i = 0; i < MAX_ACTIVITIES; i++)
+    {
+        if ((at->activities[i]->state != EMPTY) &&
+            (strcmp(at->activities[i]->actid, actid) == 0))
+            return i;
+    }
+    return -1;
+} 
 
 
 jactivity_t *activity_getmyactivity(activitytable_t *at)
@@ -220,9 +259,10 @@ jactivity_t *activity_getmyactivity(activitytable_t *at)
     int i;
     int tid = taskid();
 
-    for (i = 0; i < at->numshadowacts; i++)
+    for (i = 0; i < MAX_ACTIVITIES; i++)
     {
-        if (at->activities[i]->taskid == tid)
+        if ((at->activities[i]->state != EMPTY) &&
+            (at->activities[i]->taskid == tid))
             return at->activities[i];
     }
     return NULL;
@@ -233,52 +273,38 @@ void activity_del(activitytable_t *at, jactivity_t *jact)
 {
     int i;
     printf("Deleting activity ... %s\n", jact->actid);
-    int j = activity_getactindx(at, jact);
+    int j = activity_id2indx(at, jact->actid);
 
-    for (i = j; i < at->numshadowacts; i++)
-    {
-        if (i < (at->numshadowacts - 1))
-            at->activities[i] = at->activities[i+1];
-    }
-    at->numshadowacts--;
-    // Send a message to the background so it starts watching for messages
-    command_t *cmd = command_new("DELETE-FDS", "LOCAL", jact->name, jact->actid, jact->actarg, "i", at->numshadowacts);
-    queue_enq(at->globaloutq, cmd, sizeof(command_t));
-    task_wait(at->delete_sem);
+    // If the activity is pointing to one not in the table 
+    // don't do anything. Something is Wrong!
+    if (j < 0)
+        return;
 
-    // remove individual elements of the activity
-    threadsem_free(jact->sem);
-    command_arg_free(jact->code);
-
-    // delete the queues..
-    queue_delete(jact->inq);
-    queue_delete(jact->outq);
-
+    jact->state = EMPTY;
+    // Free memory that is not reuseable
     free(jact->actid);
     free(jact->actarg);
-    free(jact);
-}
 
+    for (i = 0; i < MAX_REPLIES; i++)
+        if (jact->replies[i] != NULL)
+            command_free(jact->replies[i]);
 
-int activity_getactindx(activitytable_t *at, jactivity_t *jact)
-{
-    int i;
+    // Set to save value
+    jact->taskid = 0;
+    jact->name[0] = 0;  
 
-    for (i = 0; i < at->numshadowacts; i++)
-        if (at->activities[i] == jact)
-            return i;
-    return -1;
+    at->numactivities--;
 }
 
 
 void activity_start(jactivity_t *jact)
 {
-    jact->state = RUNNING;
+    jact->state = STARTED;
 }
 
 void activity_timeout(jactivity_t *jact)
 {
-    jact->state = EXEC_TIMEDOUT;
+    jact->state = TIMEDOUT;
 }
 
 
@@ -325,7 +351,6 @@ void activity_complete(activitytable_t *at, char *fmt, ...)
     queue_enq(at->globaloutq, scmd, sizeof(command_t));
     // TODO: do we have to use another semaphore?
     // TODO: check??
-    task_wait(at->delete_sem);
 
     // Now.. delete the activity.
     //activity_del(at, jact);

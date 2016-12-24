@@ -28,7 +28,7 @@ jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, char *fmask, ...)
 
     va_start(args, fmask);
 
-    while(*fmask)
+    while (*fmask)
     {
         elem = NULL;
         switch(*fmask++)
@@ -71,91 +71,82 @@ jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, char *fmask, ...)
     // Need to add start to activity_new()
     jactivity_t *jact = activity_new(js->atable, aname);
 
-    command_t *cmd = command_new_using_cbor("REXEC", "ASY", aname, jact->actid, js->cstate->device_id, arr, qargs, i);
+    command_t *cmd = command_new_using_cbor("REXEC-ASY", "-", aname, jact->actid, js->cstate->device_id, arr, qargs, i);
     cmd->cbor_item_list = list;
 
-    temprecord_t *trec = jam_newtemprecord(js, jact, cmd);
-    taskcreate(jam_rexec_run_wrapper, trec, STACKSIZE);
-    taskyield();
+    jam_async_runner(js, jact, cmd);
     return jact;
-}
-
-
-void jam_rexec_run_wrapper(void *arg)
-{
-    temprecord_t *trec = (temprecord_t *)arg;
-
-    jam_async_runner((jamstate_t *)trec->arg1, (jactivity_t *)trec->arg2, (command_t *)trec->arg3);
-    free(trec);
 }
 
 
 void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
 {
-
-    // The protocol for REXEC processing is still evolving.. it is without
-    // retries at this point. May be with nanomsg we don't need retries at the
-    // RPC level. This is something we need to investigate closely by looking at
-    // the reliability model that is provided by nanonmsg.
-
-    // Send the command.. and wait for reply..
-
-    // runtableentry_t *act_entry = find_table_entry(js->rtable, cmd);
     command_t *rcmd;
-    insert_table_entry(js, cmd, 0);
-    //task_wait(js->jasync_sem);
+    int error_count = 0;
 
+    // TODO: Why should we use a runtable? Long term tracking 
+    // of activities we have run? When are the entries deleted?
+    // Can we just use the activity table?
+    // May be we can't because the activity table is tied to the 
+    // socket (queue) and we need to reuse them sooner?
+    //
+    insert_runtable_entry(js, cmd);
     runtableentry_t *act_entry = find_table_entry(js->rtable, cmd);
-    if(act_entry == NULL){
+
+    if (act_entry == NULL)
+    {
         printf("Cannot find activity ... \n");
-        jact->state = EXEC_ERROR;
+        jact->state = FATAL_ERROR;
         return;
     }
-    printf("Initiating Activity ... \n");
-    for(int i = 0; i < act_entry->num_response; i++){
-        queue_enq(jact->outq, cmd, sizeof(command_t));
-        task_wait(jact->sem);
-        nvoid_t *nv = queue_deq(jact->inq);
-        if(nv == NULL){
-            jact->state = EXEC_ERROR;
-            thread_signal(js->jasync_sem);
-            return;
-        }
-        jam_set_timer(js, jact->actid, 200);
-        rcmd = (command_t *)nv->data;
+
+    // Send the command to the remote side  
+    // The send is executed via the worker thread..
+    queue_enq(jact->outq, cmd, sizeof(command_t));
+
+    // We expect act_entry->num_replies from the remote side 
+    for (int i = 0; i < act_entry->num_replies; i++)
+    {
+        nvoid_t *nv = pqueue_deq_timeout(jact->inq, 300);
+
+        rcmd = NULL;
+        if (nv != NULL)
+            rcmd = (command_t *)nv->data;
         free(nv);
-        printf("Round : %d\n", i);
-        if(rcmd == NULL){
-            jact->state = EXEC_ERROR;
-            thread_signal(js->jasync_sem);
-            jam_clear_timer(js, jact->actid);
-            return;
-        }else if(strcmp(rcmd->cmd,"REXEC-NAK") == 0){
-            printf("Failure to acknowledge ...\n");
-            jact->code = command_arg_clone(&(rcmd->args[0]));
-            jact->state = EXEC_ERROR;
-            command_free(rcmd);
-            thread_signal(js->jasync_sem);
-            jam_clear_timer(js, jact->actid);
-            return;
-        }else if(strcmp(rcmd->cmd, "REXEC-ACK") == 0){
-            printf("Acknowledged ... \n");
-            act_entry->num_rcv_response++;
-            if(i == act_entry->num_response){
-                nvoid_t *nv = queue_deq(jact->inq);
-                rcmd = (command_t *)nv->data;
-                free(nv);
-                jam_clear_timer(js, jact->actid);
-            }
-        }else if(strcmp(rcmd->cmd, "TIMEOUT") == 0){
-            printf("Request timed out ... \n");
-            jact->state = EXEC_ERROR;
-            thread_signal(js->jasync_sem);
-            jam_clear_timer(js, jact->actid);
-            return;
-        }
-        free(rcmd);
+
+        if (nv == NULL)
+            error_count++;
+        else
+        if (rcmd == NULL)
+            error_count++;
+        else
+            jact->replies[i - error_count] = rcmd;
     }
-    //thread_signal(js->jasync_sem);
+
+    if (error_count > 0) 
+        jact->state = PARTIAL;
+    else
+    {
+        // Examine the replies to form the status code
+        for (int i = 0; i < act_entry->num_replies; i++)
+        {
+            if (strcmp(jact->replies[i]->cmd, "REXEC-ACK") == 0)
+                jact->state = MAX(jact->state, STARTED);
+            else
+            if ((strcmp(jact->replies[i]->cmd, "REXEC-NAK") == 0) &&
+                (strcmp(jact->replies[i]->args[0].val.sval, "ILLEGAL-PARAMS") == 0))
+                jact->state = MAX(jact->state, PARAMETER_ERROR);
+            else
+            if ((strcmp(jact->replies[i]->cmd, "REXEC-NAK") == 0) &&
+                (strcmp(jact->replies[i]->args[0].val.sval, "NOT-FOUND") == 0))
+                jact->state = MAX(jact->state, FATAL_ERROR);
+            else
+            if ((strcmp(jact->replies[i]->cmd, "REXEC-NAK") == 0) &&
+                (strcmp(jact->replies[i]->args[0].val.sval, "CONDITION-FALSE") == 0))
+                jact->state = MAX(jact->state, NEGATIVE_COND);
+        }
+    }
+
+    // rcmd should not be freed.. it will be freed when activity is released
 
 }

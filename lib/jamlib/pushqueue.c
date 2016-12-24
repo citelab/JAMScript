@@ -20,44 +20,50 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef __CORE_H__
-#define __CORE_H__
+#include <stdlib.h>
 
-#include <time.h>
-#include <stdbool.h>
-#include <MQTTClient.h>
+#include "pushqueue.h"
+#include "threadsem.h"
 
-#define MAX_SERVERS             3
-
-typedef struct _corestate_t
+pushqueue_t *pqueue_new(bool ownedbyq)
 {
-    char *app_name;
-    char *device_id;
+	pushqueue_t *pq = (pushqueue_t *)calloc(1, sizeof(pushqueue_t));
 
-    // TODO: May be unused? Can we remove this one??
-    int timeout;
+    pq->queue = queue_new(ownedbyq);
+    pq->sem = threadsem_new();
 
-    MQTTClient mqttserv[3];
-    bool mqttenabled[3];
+    return pq;
+}
 
-} corestate_t;
-
-typedef struct  _corecontext_t
+bool pqueue_delete(pushqueue_t *pq)
 {
-    int xx;
+    if (queue_delete(pq->queue) == true)
+    {
+        threadsem_free(pq->sem);
+        return true;
+    }
 
-} corecontext_t;
+    return false;    
+}
 
-// ------------------------------
-// Function prototypes..
-// ------------------------------
 
-// Initialize the core.. the first thing we need to call
-corestate_t *core_init(int timeout);
-void core_setup(corestate_t *cs, int timeout);
-void core_reinit(corestate_t *cs);
+bool pqueue_enq(pushqueue_t *queue, void *data, int len)
+{
+    queue_enq(queue->queue, data, len);
+    thread_signal(queue->sem);
 
-void core_disconnect(corestate_t *cs);
-void core_reconnect(corestate_t *cs);
+    // TODO: Fix the return value..
+    return true;
+}
 
-#endif
+nvoid_t *pqueue_deq(pushqueue_t *queue)
+{
+    task_wait(queue->sem);
+    return queue_deq(queue->queue);
+}
+
+nvoid_t *pqueue_deq_timeout(pushqueue_t *queue, int timeout)
+{
+    task_wait(queue->sem);
+    return queue_deq_timeout(queue->queue, timeout);
+}

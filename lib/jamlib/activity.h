@@ -27,32 +27,33 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "task.h"
 #include "command.h"
 #include "simplequeue.h"
-#include "threadsem.h"
+#include "pushqueue.h"
 
 #include <stdbool.h>
 #include <stdint.h>
 
 #define MAX_NAME_LEN            64
-#define MAX_MASK_LEN            64
-#define ALLOCATE_SLICE          32
-
-#define MAX_ACTIVITIES          256
-
+#define MAX_ACTIVITIES          16
+#define MAX_CALLBACKS           32
+#define MAX_REPLIES             5
 
 typedef void (*activitycallback_f)(void *ten, void *arg);
 
 
 enum activity_state_t
 {
+    EMPTY,
+    COMPLETED,
     NEW,
-    RUNNING,
-    EXEC_TIMEDOUT,
-    EXEC_COMPLETE,
-    EXEC_ERROR,
-    EXEC_STARTED,
-    EXEC_ABORTED,
-    DELETED
+    STARTED,
+    NEGATIVE_COND,    
+    PARAMETER_ERROR,
+    TIMEDOUT,
+    PARTIAL,
+    FATAL_ERROR,
+    ABORTED    
 };
+
 
 enum activity_type_t
 {
@@ -68,13 +69,16 @@ typedef struct _jactivity_t
     enum activity_state_t state;
     enum activity_type_t type;
 
-    threadsem_t *sem;
     int taskid;
     char *actid;
     char *actarg;
-    arg_t *code;
-    simplequeue_t *inq;
+
+    pushqueue_t *inq;
     simplequeue_t *outq;
+
+    // Store all the replies we get... 
+    // TODO: Wasting memory.. but we know what happened at different levels    
+    command_t *replies[MAX_REPLIES];
 
 } jactivity_t;
 
@@ -93,15 +97,14 @@ typedef struct _activity_callback_reg_t
 typedef struct _activitytable_t
 {
     int numactivities;
-    int numshadowacts;
     int numcbackregs;
-    activity_callback_reg_t *callbackregs[MAX_ACTIVITIES];
+    // Callbacks are NOT pre-initialized..
+    activity_callback_reg_t *callbackregs[MAX_CALLBACKS];
+    // Activities are pre-initialized: they can be empty.. but the placeholdler is not released
     jactivity_t *activities[MAX_ACTIVITIES];
 
-    simplequeue_t *globalinq;
     simplequeue_t *globaloutq;
-    threadsem_t *globalsem;
-    threadsem_t *delete_sem;
+    pushqueue_t *globalinq;
 
 } activitytable_t;
 
@@ -119,16 +122,16 @@ void activity_print(jactivity_t *ja);
 bool activity_regcallback(activitytable_t *at, char *name, int type, char *sig, activitycallback_f cback);
 activity_callback_reg_t *activity_findcallback(activitytable_t *at, char *name, char *opt);
 
-jactivity_t *activity_new(activitytable_t *atbl, char *name);
+jactivity_t *activity_init();
+jactivity_t *activity_new(activitytable_t *at, char *name);
 
 jactivity_t *activity_getbyid(activitytable_t *at, char *actid);
+int activity_id2indx(activitytable_t *at, char *actid);
 jactivity_t *activity_getmyactivity(activitytable_t *at);
+void activity_del(activitytable_t *at, jactivity_t *jact);
 
 void activity_start(jactivity_t *act);
 void activity_timeout(jactivity_t *act);
-
-void activity_del(activitytable_t *at, jactivity_t *jact);
-int activity_getactindx(activitytable_t *at, jactivity_t *jact);
 
 void activity_complete(activitytable_t *at, char *fmt, ...);
 
