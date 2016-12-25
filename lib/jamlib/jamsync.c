@@ -7,9 +7,8 @@
 #include "free_list.h"
 
 //
-// TODO: Is there a better way to write this code?
-// At this point, a big chunk of the code is replicated.. too bad
-//
+// This is running remote function synchronously.. so we wait here
+// for the reply value..
 //
 arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
 {
@@ -71,9 +70,10 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
     jactivity_t *jact = activity_new(js->atable, aname);
 
     command_t *cmd = command_new_using_cbor("REXEC", "SYN", aname, jact->actid, js->cstate->device_id, arr, qargs, i);
+    cmd->cbor_item_list = list;
+    
     insert_runtable_entry(js, cmd);
     runtableentry_t *act_entry = find_table_entry(js->rtable, cmd);
-    cmd->cbor_item_list = list;
     #ifdef DEBUG_LVL1
         printf("Starting JAM exec runner... \n");
     #endif

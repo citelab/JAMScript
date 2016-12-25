@@ -40,7 +40,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 corestate_t *core_init(int timeout)
 {
-    command_t *scmd, *rcmd;
+    command_t *scmd, *rcmd,  *rcmd2;
 
     #ifdef DEBUG_MSGS
         printf("Core initialization...");
@@ -87,9 +87,7 @@ corestate_t *core_init(int timeout)
         // process the information that we just received..
         for (int i = 0; i < rcmd->nargs; i++) 
         {
-            char target[64];
-            sprintf(target, "mqtt://%s", rcmd->args[0].val.sval);
-            cs->mqttserv[i+1] = mqtt_open(target);
+            cs->mqttserv[i+1] = mqtt_open(rcmd->args[i].val.sval);
             if (cs->mqttserv[i+1] != NULL) 
             {
                 scmd = command_new("REGISTER", "DEVICE", cs->app_name, "-", cs->device_id, "");
@@ -97,7 +95,7 @@ corestate_t *core_init(int timeout)
                 command_free(scmd);
     
                 // get the register acknowledge message 
-                if ((rcmd = mqtt_receive(cs->mqttserv[i+1], "REGISTER-ACK", "/admin/announce/all", cs->timeout)) == NULL)
+                if ((rcmd2 = mqtt_receive(cs->mqttserv[i+1], "REGISTER-ACK", "/admin/announce/all", cs->timeout)) == NULL)
                     cs->mqttenabled[i+1] = false;
                 else
                     cs->mqttenabled[i+1] = true;
