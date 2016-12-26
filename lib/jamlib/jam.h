@@ -119,7 +119,8 @@ temprecord_t *jam_newtemprecord(void *arg1, void *arg2, void *arg3);
  */
 
 arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...);
-void jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd);
+arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd);
+int get_sleep_time(jactivity_t *jact);
 
 /*
  * Functions defined in jamasync.c
@@ -171,7 +172,7 @@ bool jwork_runtable_check(runtable_t *rtable,  command_t *cmd);
 bool insert_runtable_entry(jamstate_t *js, command_t *rcmd);
 runtableentry_t *find_table_entry(runtable_t *rtable, command_t *cmd);
 command_t *prepare_sync_return_result(runtableentry_t *r, command_t *cmd);
-void free_rtable_entry(runtableentry_t *entry, runtable_t *table);
+void free_rtable_entry(runtable_t *table, runtableentry_t *entry);
 command_t *return_err_arg(command_t *rcmd, char *err_msg);
 /*
  * Functions defined in jamrunner.c

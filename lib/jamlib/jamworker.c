@@ -411,20 +411,16 @@ void jwork_process_device(jamstate_t *js)
                 jwork_send_error(js->cstate->mqttserv[0], rcmd, "ARGUMENT ERROR");
         }
         else
-        if (strcmp(rcmd->cmd, "REXEC-RES") == 0)
-        {
-            // TODO: Implement this to get the results back
-        }
-        else 
         if ((strcmp(rcmd->cmd, "REXEC-ACK") == 0) ||
-            (strcmp(rcmd->cmd, "REXEC-NAK") == 0))
+            (strcmp(rcmd->cmd, "REXEC-NAK") == 0) ||
+            (strcmp(rcmd->cmd, "REXEC-RES") == 0))
         {
             printf("Helllo\n");
             // resolve the activity id to index
             int aindx = activity_id2indx(js->atable, rcmd->actid);
             if (aindx >= 0)
             {
-                printf("~~~~~~~~~~~~~~~~ pushing to queue\n");
+                printf("~~~~~~~~~~~~~~~~ pushing to queue %d\n", aindx);
                 jactivity_t *jact = js->atable->activities[aindx];
                 // send the rcmd to that queue.. this is a pushqueue
                 pqueue_enq(jact->inq, rcmd, sizeof(command_t));    
@@ -489,14 +485,26 @@ void jwork_process_fog(jamstate_t *js)
         // were sent from the C. There is no unsolicited replies.
 
         // TODO: Can we detect unsolicited replies and discard them?
-
-        // Find the activityID from rcmd 
-
-        // Retrieve the activity record
-
-
-        // Send the command (rcmd) to the activity given the above pointer is non NULL
-
+        if ((strcmp(rcmd->cmd, "REXEC-ACK") == 0) ||
+            (strcmp(rcmd->cmd, "REXEC-NAK") == 0) ||
+            (strcmp(rcmd->cmd, "REXEC-RES") == 0))
+        {
+            printf("Helllo\n");
+            // resolve the activity id to index
+            int aindx = activity_id2indx(js->atable, rcmd->actid);
+            if (aindx >= 0)
+            {
+                printf("~~~~~~~~~~~~~~~~ pushing to queue %d\n", aindx);
+                jactivity_t *jact = js->atable->activities[aindx];
+                // send the rcmd to that queue.. this is a pushqueue
+                pqueue_enq(jact->inq, rcmd, sizeof(command_t));    
+            }
+        }
+        else
+        {
+            printf("Freeingn,....\n");
+            command_free(rcmd);
+        }
     }
 }
 
@@ -524,11 +532,26 @@ void jwork_process_cloud(jamstate_t *js)
         // were sent from the C. There is no unsolicited replies.
 
         // TODO: Can we detect unsolicited replies and discard them?
-
-        // Find the activityID from rcmd 
-
-        // Retrieve the activity record
-
+        if ((strcmp(rcmd->cmd, "REXEC-ACK") == 0) ||
+            (strcmp(rcmd->cmd, "REXEC-NAK") == 0) ||
+            (strcmp(rcmd->cmd, "REXEC-RES") == 0))
+        {
+            printf("Helllo\n");
+            // resolve the activity id to index
+            int aindx = activity_id2indx(js->atable, rcmd->actid);
+            if (aindx >= 0)
+            {
+                printf("~~~~~~~~~~~~~~~~ pushing to queue %d\n", aindx);
+                jactivity_t *jact = js->atable->activities[aindx];
+                // send the rcmd to that queue.. this is a pushqueue
+                pqueue_enq(jact->inq, rcmd, sizeof(command_t));    
+            }
+        }
+        else
+        {
+            printf("Freeingn,....\n");
+            command_free(rcmd);
+        }
         // Send the command (rcmd) to the activity given the above pointer is non NULL
     }
 }
@@ -655,6 +678,8 @@ command_t *jwork_runid_status(jamstate_t *js, char *runid)
             case NVOID_TYPE:
                 scmd = command_new("REPORT-REP", "FIN", ren->actname, deviceid, runid, "b", ren->result_list[0]->val.nval);
             break;
+            case NULL_TYPE:
+            break;
         }
         printf("Returning....\n");
         return scmd;
@@ -720,12 +745,14 @@ runtableentry_t *find_table_entry(runtable_t *table, command_t *cmd){
 }
 
 
-command_t *prepare_sync_return_result(runtableentry_t *act_entry, command_t *rcmd){
+command_t *prepare_sync_return_result(runtableentry_t *act_entry, command_t *rcmd)
+{
 
     printf("\n\n-------Command %s, %s %s %s %s %d---\n\n", rcmd->cmd, rcmd->actname, rcmd->actid, rcmd->actarg, rcmd->opt, rcmd->nargs);
     //Now we need to compare the values ... 
     //Here we assume that we can only return a single value and hence rcmd->nargs = 1
-    if(rcmd->nargs != 1){
+    if(rcmd->nargs != 1)
+    {
         printf("Invalid return arguments ... \nError ...\n");
         return return_err_arg(rcmd, "RET-FAILURE");
     }
@@ -756,19 +783,24 @@ command_t *prepare_sync_return_result(runtableentry_t *act_entry, command_t *rcm
             case NVOID_TYPE: 
                 printf("Not yet implemented ...\n");
                 break;
+            case NULL_TYPE:
+                break;
         }
     }
-    printf("Was here ... \n");
     return rcmd;
 }
 
-command_t *return_err_arg(command_t *rcmd, char *err_msg){
-    for(int i = 0; i < rcmd->nargs; i++){
-        if(rcmd->args[i].type == STRING_TYPE)
+command_t *return_err_arg(command_t *rcmd, char *err_msg)
+{
+
+    for (int i = 0; i < rcmd->nargs; i++)
+    {
+        if (rcmd->args[i].type == STRING_TYPE)
             free(rcmd->args[i].val.sval);
-        else if(rcmd->args[i].type == NVOID_TYPE)
+        else if (rcmd->args[i].type == NVOID_TYPE)
             nvoid_free(rcmd->args[i].val.nval);
     }
+    
     free(rcmd->args);
     rcmd->args = calloc(1, sizeof(arg_t));
     rcmd->args[0].val.sval = strdup(err_msg);
@@ -807,7 +839,7 @@ bool insert_runtable_entry(jamstate_t * js, command_t *rcmd)
 }
 
 
-void free_rtable_entry(runtableentry_t *entry, runtable_t *table)
+void free_rtable_entry(runtable_t *table, runtableentry_t *entry)
 {
     if (entry == NULL)
         return;
@@ -832,8 +864,6 @@ void free_rtable_entry(runtableentry_t *entry, runtable_t *table)
         free(entry->actid);
     if (entry->actname != NULL)
         free(entry->actname);
-    if (entry->cmd != NULL)
-        command_free(entry->cmd);
     free(entry);
 }
 

@@ -107,16 +107,18 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     // We expect act_entry->num_replies from the remote side 
     for (int i = 0; i < act_entry->num_replies; i++)
     {
+        // TODO: Fix the constant 300 milliseconds here..        
         nvoid_t *nv = pqueue_deq_timeout(jact->inq, 300);
 
         rcmd = NULL;
-        if (nv != NULL)
+        if (nv != NULL) 
+        {
             rcmd = (command_t *)nv->data;
-        free(nv);
-
-        if (nv == NULL)
+            free(nv);
+        } 
+        else 
             error_count++;
-        else
+
         if (rcmd == NULL)
             error_count++;
         else
@@ -130,6 +132,7 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         // Examine the replies to form the status code
         for (int i = 0; i < act_entry->num_replies; i++)
         {
+            printf("Waiting for reply...................... %d\n", i);
             if (strcmp(jact->replies[i]->cmd, "REXEC-ACK") == 0)
                 jact->state = MAX(jact->state, STARTED);
             else

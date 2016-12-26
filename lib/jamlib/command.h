@@ -41,6 +41,7 @@ extern "C" {
  */
 
 enum argtype_t {
+    NULL_TYPE,
     STRING_TYPE,
     INT_TYPE,
     DOUBLE_TYPE,
@@ -97,6 +98,7 @@ void command_print(command_t *cmd);
 /*
  * Arg manipulation functions
  */
+void command_arg_copy(arg_t *darg, arg_t *sarg);
 arg_t *command_arg_clone(arg_t *arg);
 void command_arg_free(arg_t *arg);
 void command_arg_print(arg_t *arg);

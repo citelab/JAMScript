@@ -63,6 +63,29 @@ void list_free(struct alloc_memory_list * list){
   free(list);
 }
 
+
+void command_arg_copy(arg_t *darg, arg_t *sarg)
+{
+    darg->type = sarg->type;
+    switch (sarg->type) 
+    {
+        case INT_TYPE:
+            darg->val.ival = sarg->val.ival;
+            return;
+        case DOUBLE_TYPE:
+            darg->val.dval = sarg->val.dval;
+            return;
+        case STRING_TYPE:
+            darg->val.sval = strdup(sarg->val.sval);
+            return;
+        case NVOID_TYPE:
+            darg->val.nval = nvoid_new(sarg->val.nval->data, sarg->val.nval->len);
+            return;
+        default:
+            return;
+    }
+}
+
 arg_t *command_arg_clone(arg_t *arg)
 {
     arg_t *val = (arg_t *)calloc(1, sizeof(arg_t));
@@ -406,7 +429,7 @@ void command_free(command_t *cmd)
       cbor_decref(&cmd->cdata);
   }
 
-  for(int i = 0; i < cmd->nargs; i++){
+  for(int i = 0; i < cmd->nargs && cmd->args != NULL; i++){
     switch(cmd->args[i].type){
       case STRING_TYPE: free(cmd->args[i].val.sval);
                         break;

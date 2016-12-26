@@ -1,16 +1,22 @@
 #include "jam.h"
+#include <unistd.h>
 
 void taskmain(int argc, char *arg[])
 {
     jamstate_t *js = jam_init();
 
 
-    jactivity_t *res = jam_rexec_async(js, "testfunc", "s", "hello");
+    arg_t *res = jam_rexec_sync(js, "resultfunc", "s", "hello");
 
-    printf("Status %d\n", res->state);
+   // jactivity_t *res = jam_rexec_async(js, "testfunc", "s", "hello");
 
-    while(1)
-        sleep(1);
+    //printf("Result %d \n", res->state);
+
+   for (int i = 0; i < 3; i++) 
+        printf("Type %d \n", res[i].type);
+
+ //   while(1)
+   //     sleep(1);
 }
 
 
