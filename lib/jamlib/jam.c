@@ -36,7 +36,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <strings.h>
 #include <pthread.h>
 
-
 // Initialize the JAM library.. nothing much done here.
 // We just initialize the Core ..
 //
@@ -69,7 +68,6 @@ jamstate_t *jam_init()
 
     js->bgsem = threadsem_new();
     js->jdata_sem = threadsem_new();
-    js->jasync_sem = threadsem_new();
 
     int rval = pthread_create(&(js->bgthread), NULL, jwork_bgthread, (void *)js);
     if (rval != 0) {
@@ -78,12 +76,14 @@ jamstate_t *jam_init()
     }
     printf("\n\n--------------PLEASE WORK---------------\n\n");
     task_wait(js->bgsem);
+
     // rval = pthread_create(&(js->jdata_event_thread), NULL, jdata_event_loop, (void *)js);
     // if (rval != 0) {
     //     perror("ERROR! Unable to start the jdata event thread");
     //     exit(1);
     // }
     // task_wait(js->jdata_sem);
+
     //#ifdef DEBUG_LVL1
         printf("\n ------------------------Done-------------------------\n");
     //#endif

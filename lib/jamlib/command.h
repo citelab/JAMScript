@@ -34,6 +34,7 @@ extern "C" {
 #include <cbor.h>
 #include <stdint.h>
 #include "nvoid.h"
+
 /*
  * TODO: May be we could have user defined structures and unions in the
  * argument definitions. This would help serialization of arbitrary structures.

@@ -1,0 +1,11 @@
+
+
+
+== Cleanup the startup of the jamlib.. 
+
+== Can we package it better so that it can be loaded as a module?
+
+== Registration cleanup and testing.
+        - Configuration file already ensures that a componenet gets a unique ID - unless change the conf.
+
+        - Register with the UUID

@@ -13,7 +13,7 @@ void taskmain(int argc, char *arg[])
     //printf("Result %d \n", res->state);
 
    for (int i = 0; i < 3; i++) 
-        printf("Type %d \n", res[i].type);
+        command_arg_print(&res[i]);
 
  //   while(1)
    //     sleep(1);
