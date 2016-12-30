@@ -12,7 +12,7 @@
 
 == JCond testing..
 
-== 
+
 
 == Get J->C working in Async mode.
 == Get J->C working in Sync mode..
@@ -20,6 +20,4 @@
 == Design and implement the time slotting.
 == Synchronization support in the language
 
-Remove??
-        // temprecord_t *jam_newtemprecord(void *arg1, void *arg2, void *arg3)
 
