@@ -9,3 +9,17 @@
         - Configuration file already ensures that a componenet gets a unique ID - unless change the conf.
 
         - Register with the UUID
+
+== JCond testing..
+
+== 
+
+== Get J->C working in Async mode.
+== Get J->C working in Sync mode..
+
+== Design and implement the time slotting.
+== Synchronization support in the language
+
+Remove??
+        // temprecord_t *jam_newtemprecord(void *arg1, void *arg2, void *arg3)
+

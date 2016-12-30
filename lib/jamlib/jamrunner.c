@@ -30,16 +30,30 @@ bool jrun_check_signature(activity_callback_reg_t *creg, command_t *cmd)
 }
 
 
-void jrun_run_task(void *arg)
+void jrun_arun_callback(jamstate_t *js, command_t *cmd, activity_callback_reg_t *creg)
 {
-    temprecord_t *trec = (temprecord_t *)arg;
-    jamstate_t *js = (jamstate_t *)trec->arg1;
-    command_t *cmd = (command_t *)trec->arg2;
-    activity_callback_reg_t *creg = (activity_callback_reg_t *)trec->arg3;
-
     command_t *rcmd;
 
-    free(arg);          // free the temprecord... we don't need it
+    // Create an activity to run the callback function. 
+    // 
+    jactivity_t *jact = activity_new(js->atable, cmd->actname);
+    jact->actarg = strdup(cmd->actid);
+    jact->taskid = taskid();
+
+    #ifdef DEBUG_LVL1
+        printf("Starting the function....................\n");
+    #endif
+
+    creg->cback(jact, cmd);
+
+    command_free(cmd);
+    activity_del(js->atable ,jact);
+}
+
+
+void jrun_run_callback(jamstate_t *js, command_t *cmd, activity_callback_reg_t *creg)
+{
+    command_t *rcmd;
 
     // if signature does not match get out...
     // TODO: We could avoid this check... because the signature is not reliable
@@ -50,9 +64,9 @@ void jrun_run_task(void *arg)
     // Otherwise, we are going to run the task...
     // Create an activity
     jactivity_t *jact = activity_new(js->atable, cmd->actname);
-    free(jact->actarg);
     jact->actarg = strdup(cmd->actid);
     jact->taskid = taskid();
+
     if(strcmp(cmd->cmd, "REXEC-JDATA") != 0){
         #ifdef DEBUG_LVL1
             printf("Sending the ready..........................\n");

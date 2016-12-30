@@ -97,13 +97,13 @@ jamstate_t *jam_init()
 void jam_event_loop(void *arg)
 {
     jamstate_t *js = (jamstate_t *)arg;
-    temprecord_t *tr;
     command_t *cmd;
     activity_callback_reg_t *areg;
 
     while (1)
     {
         nvoid_t *nv = pqueue_deq(js->atable->globalinq);
+        printf("Got a message for the event loop...  \n");
         if (nv != NULL)
         {
             cmd = (command_t *)nv->data;
@@ -113,38 +113,36 @@ void jam_event_loop(void *arg)
 
         if (cmd != NULL)
         {
-            areg = activity_findcallback(js->atable, cmd->actname, cmd->opt);
-            if (areg == NULL)
+            if (strcmp(cmd->cmd, "REXEC-ASY") == 0) 
             {
+                printf("Finding.. fname: %s, opt: %s\n", cmd->actname, cmd->opt);
+                
+                // We have an asynchronous execution request.. lets do it in the event loop itself
+                // However, a new activity is created. The request could go to wait and and switch over to another request 
+                areg = activity_findcallback(js->atable, cmd->actname, cmd->opt);
+                if (areg == NULL)
+                    printf("Function not found.. %s\n", cmd->actname);
+                else 
+                {
+                    #ifdef DEBUG_LVL1
+                    printf("Command actname = %s %s %s\n", cmd->actname, cmd->cmd, cmd->opt);
+                    #endif
 
-                printf("Function not found.. %s\n", cmd->actname);
+                    jrun_arun_callback(js, cmd, areg);
+                    #ifdef DEBUG_LVL1
+                    printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
+                    #endif
+                }
             }
-            else
+            else 
+            if (strcmp(cmd->cmd, "REXEC-SYN") == 0)
             {
-                #ifdef DEBUG_LVL1
-                printf("Command actname = %s %s %s\n", cmd->actname, cmd->cmd, cmd->opt);
-                #endif
-
-                tr = jam_newtemprecord(js, cmd, areg);
-                taskcreate(jrun_run_task, tr, STACKSIZE);
-                #ifdef DEBUG_LVL1
-                printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
-                #endif
+                // We have a synchronous execution request..
             }
+            // Check for other cmd options should go in here...
         }
         taskyield();
     }
 
 }
 
-
-temprecord_t *jam_newtemprecord(void *arg1, void *arg2, void *arg3)
-{
-    temprecord_t *trec = (temprecord_t *)calloc(1, sizeof(temprecord_t));
-    assert(trec != NULL);
-    trec->arg1 = arg1;
-    trec->arg2 = arg2;
-    trec->arg3 = arg3;
-
-    return trec;
-}

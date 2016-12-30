@@ -103,7 +103,9 @@ void jwork_set_subscriptions(jamstate_t *js)
         {
             printf("-------------Subscribing.... \n");
             mqtt_subscribe(js->cstate->mqttserv[i], "/level/func/reply/#");
-            mqtt_subscribe(js->cstate->mqttserv[i], "/mach/func/request/");
+
+            printf("-------------Subscribing.... %s\n", "/mach/func/request/");
+            mqtt_subscribe(js->cstate->mqttserv[i], "/mach/func/request");
         }
     }
 }
@@ -150,7 +152,6 @@ int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTClient_messa
 {
     int i;
 
-    printf("SDSDSDS \n");
     // the ctx pointer is actually pointing towards the queue - cast it
     simplequeue_t *queue = (simplequeue_t *)ctx;
 
@@ -400,6 +401,8 @@ void jwork_process_device(jamstate_t *js)
         else 
         if (strcmp(rcmd->cmd, "REXEC-ASY") == 0)
         {
+            printf("================== Received.... REXEC-ASY    \n");
+
             if (jwork_check_args(js, rcmd))
             {
                 if (jwork_check_condition(js, rcmd))
@@ -434,27 +437,32 @@ void jwork_process_device(jamstate_t *js)
     }
 }
 
-
+// TODO: Implement this properly.
 void jwork_send_error(MQTTClient mcl, command_t *cmd, char *estr)
 {
     
 }
 
+// TODO: Implement this properly.
 void jwork_send_nak(MQTTClient mcl, command_t *cmd, char *estr)
 {
     
 }
 
+
+// TODO: Implement this properly.
 bool jwork_check_condition(jamstate_t *js, command_t *cmd)
 {
     return true;
 }
 
+// TODO: Implement this properly.
 bool jwork_check_args(jamstate_t *js, command_t *cmd)
 {
     return true;
 }
 
+// TODO: Implement this properly.
 bool jwork_synchronize(jamstate_t *js)
 {
 

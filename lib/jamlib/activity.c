@@ -147,17 +147,14 @@ bool activity_regcallback(activitytable_t *at, char *name, int type, char *sig, 
 }
 
 
+// TODO: What is the use of opt??
+//
 activity_callback_reg_t *activity_findcallback(activitytable_t *at, char *name, char *opt)
 {
     int i;
-    int type;
-    if(strcmp(opt, "ASY") == 0)
-      type = ASYNC;
-    else
-      type = SYNC;
 
     for (i = 0; i < at->numcbackregs; i++)
-        if ((strcmp(at->callbackregs[i]->name, name) == 0) && at->callbackregs[i]->type == type)
+        if (strcmp(at->callbackregs[i]->name, name) == 0)
             return at->callbackregs[i];
 
     return NULL;

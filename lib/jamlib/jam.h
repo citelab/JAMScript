@@ -44,7 +44,7 @@ extern "C" {
 
 
 #define STACKSIZE                   50000
-#define MAX_RUN_ENTRIES             256
+#define MAX_RUN_ENTRIES             32
 
 
 typedef struct _runtableentry_t
@@ -97,20 +97,11 @@ typedef struct _jamstate_t
 
 } jamstate_t;
 
-typedef struct _temprecord_t
-{
-    void *arg1;
-    void *arg2;
-    void *arg3;
-
-} temprecord_t;
-
 
 jamstate_t *jam_init();
 
 void jam_run_app(void *arg);
 void jam_event_loop(void *js);
-temprecord_t *jam_newtemprecord(void *arg1, void *arg2, void *arg3);
 
 
 /*
@@ -180,8 +171,8 @@ command_t *return_err_arg(command_t *rcmd, char *err_msg);
 // TODO: Fix these tasks...
 
 bool jrun_check_signature(activity_callback_reg_t *creg, command_t *cmd);
-void jrun_run_task(void *arg);
-
+void jrun_arun_callback(jamstate_t *js, command_t *cmd, activity_callback_reg_t *creg);
+void jrun_run_callback(jamstate_t *js, command_t *cmd, activity_callback_reg_t *arg);
 
 
 #endif  /* __JAMLIB_H__ */
