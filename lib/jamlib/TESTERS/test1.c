@@ -4,12 +4,22 @@
 
 void hello(char* msg) {
 
-    printf("\n\n ------------HELLO: %s\n", msg);
+    while(1) 
+    {
+        printf("\n\n ===============>>> FROM HELLO ==========: %s\n", msg);
+        usleep(10);
+        taskyield();
+    }
 }
 
 void hello3(char* msg) {
 
-    printf("\n\n ------------HELLO 33333: %s\n", msg);
+    while(1)
+    {
+        printf("\n\n ===============>>> FROM HELLO33333 ==========: %s\n", msg);
+        usleep(1000);
+        taskyield();
+    }
 }
 
 
@@ -28,6 +38,7 @@ void callhello3(void *act, void *arg)
 jamstate_t *js;
 
 void user_setup() {
+    printf("Registering.. callbacks for hello and hello3.. \n");
     activity_regcallback(js->atable, "hello", ASYNC, "s", callhello);
     activity_regcallback(js->atable, "hello3", ASYNC, "s", callhello3);
 }

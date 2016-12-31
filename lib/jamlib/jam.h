@@ -171,7 +171,7 @@ command_t *return_err_arg(command_t *rcmd, char *err_msg);
 // TODO: Fix these tasks...
 
 bool jrun_check_signature(activity_callback_reg_t *creg, command_t *cmd);
-void jrun_arun_callback(jamstate_t *js, command_t *cmd, activity_callback_reg_t *creg);
+void jrun_arun_callback(activitytable_t *at, command_t *cmd, activity_callback_reg_t *creg);
 void jrun_run_callback(jamstate_t *js, command_t *cmd, activity_callback_reg_t *arg);
 
 

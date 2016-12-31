@@ -69,16 +69,19 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
           }
     }
     va_end(args);
-    jactivity_t *jact = activity_new(js->atable, aname);
+    jactivity_t *jact = activity_new(js->atable, activity_gettime());
 
-    command_t *cmd = command_new_using_cbor("REXEC-SYN", "-", aname, jact->actid, js->cstate->device_id, arr, qargs, i);
-    cmd->cbor_item_list = list;
+    if (jact != NULL)
+    {
+        command_t *cmd = command_new_using_cbor("REXEC-SYN", "-", aname, jact->actid, js->cstate->device_id, arr, qargs, i);
+        cmd->cbor_item_list = list;
     
-    rargs = jam_sync_runner(js, jact, cmd);
-
-    activity_del(js->atable, jact);
- 
-    return rargs;
+        rargs = jam_sync_runner(js, jact, cmd);
+        activity_free(js->atable, jact);
+        return rargs;
+    } 
+    else
+        return NULL;
 }
 
 
@@ -147,7 +150,7 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     // Send the request to get the results... 
     // TODO: Fix this to get an extension.. now we expect the results to be available 
     // after the lease time..
-    command_t *lcmd = command_new("REXEC-RES", "GET", jact->name, jact->actid, js->cstate->device_id, "");
+    command_t *lcmd = command_new("REXEC-RES", "GET", cmd->actname, jact->actid, js->cstate->device_id, "");
     queue_enq(jact->outq, lcmd, sizeof(command_t));
 
     // Now we retrive the replies from the remote side..

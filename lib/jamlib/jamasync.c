@@ -69,13 +69,18 @@ jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, char *fmask, ...)
     va_end(args);
 
     // Need to add start to activity_new()
-    jactivity_t *jact = activity_new(js->atable, aname);
+    jactivity_t *jact = activity_new(js->atable, activity_gettime());
 
-    command_t *cmd = command_new_using_cbor("REXEC-ASY", "-", aname, jact->actid, js->cstate->device_id, arr, qargs, i);
-    cmd->cbor_item_list = list;
+    if (jact != NULL)
+    {
+        command_t *cmd = command_new_using_cbor("REXEC-ASY", "-", aname, jact->actid, js->cstate->device_id, arr, qargs, i);
+        cmd->cbor_item_list = list;
 
-    jam_async_runner(js, jact, cmd);
-    return jact;
+        jam_async_runner(js, jact, cmd);
+        return jact;
+    } 
+    else
+        return NULL;
 }
 
 

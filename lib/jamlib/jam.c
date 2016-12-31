@@ -98,7 +98,6 @@ void jam_event_loop(void *arg)
 {
     jamstate_t *js = (jamstate_t *)arg;
     command_t *cmd;
-    activity_callback_reg_t *areg;
 
     while (1)
     {
@@ -113,36 +112,18 @@ void jam_event_loop(void *arg)
 
         if (cmd != NULL)
         {
-            if (strcmp(cmd->cmd, "REXEC-ASY") == 0) 
+            // Put all conditions under which we could ask a new activity to continue
+            if ((strcmp(cmd->cmd, "REXEC-ASY") == 0) ||
+                (strcmp(cmd->cmd, "REXEC-SYN") == 0)) 
             {
-                printf("Finding.. fname: %s, opt: %s\n", cmd->actname, cmd->opt);
-                
-                // We have an asynchronous execution request.. lets do it in the event loop itself
-                // However, a new activity is created. The request could go to wait and and switch over to another request 
-                areg = activity_findcallback(js->atable, cmd->actname, cmd->opt);
-                if (areg == NULL)
-                    printf("Function not found.. %s\n", cmd->actname);
-                else 
-                {
-                    #ifdef DEBUG_LVL1
-                    printf("Command actname = %s %s %s\n", cmd->actname, cmd->cmd, cmd->opt);
-                    #endif
-
-                    jrun_arun_callback(js, cmd, areg);
-                    #ifdef DEBUG_LVL1
-                    printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
-                    #endif
-                }
+                jactivity_t *jact = activity_new(js->atable, cmd->actid);
+                if (jact != NULL)
+                    pqueue_enq(jact->inq, cmd, sizeof(command_t));
+                else
+                    printf("ERROR! Unable to find a free Activity handler to start %s", cmd->actname);
             }
-            else 
-            if (strcmp(cmd->cmd, "REXEC-SYN") == 0)
-            {
-                // We have a synchronous execution request..
-            }
-            // Check for other cmd options should go in here...
         }
         taskyield();
     }
-
 }
 

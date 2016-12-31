@@ -28,14 +28,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <mach/mach.h>
 #include <mach/mach_time.h>
 #endif
-
-#include "activity.h"
-#include "nvoid.h"
 #ifdef linux
 #include <time.h>
 #endif
-
 #include <task.h>
+
+#include "activity.h"
+#include "nvoid.h"
+#include "comboptr.h"
 
 char *activity_gettime()
 {
@@ -62,6 +62,7 @@ activitytable_t *activity_table_new()
     activitytable_t *atbl = (activitytable_t *)calloc(1, sizeof(activitytable_t));
     assert(atbl != NULL);
 
+    atbl->runcounter = 0;
     atbl->numactivities = 0;
     atbl->numcbackregs = 0;
 
@@ -69,7 +70,7 @@ activitytable_t *activity_table_new()
         atbl->callbackregs[i] = NULL;
 
     for (i = 0; i < MAX_ACTIVITIES; i++)
-        atbl->activities[i] = activity_init();
+        atbl->activities[i] = activity_init(atbl);
 
     // globalinq is used by the main thread for input purposes
     // globaloutq is used by the main thread for output purposes
@@ -116,7 +117,6 @@ void activity_print(jactivity_t *ja)
     printf("Activity ID: %s\n", ja->actid);
     printf("Activity arg: %s\n", ja->actarg);
     printf("Activity state: %d\n", ja->state);
-    printf("Activity name: %s\n", ja->name);
 
     printf("\n");
 }
@@ -153,25 +153,85 @@ activity_callback_reg_t *activity_findcallback(activitytable_t *at, char *name, 
 {
     int i;
 
-    for (i = 0; i < at->numcbackregs; i++)
+    printf("Callback # %d\n", at->numcbackregs);
+
+    for (i = 0; i < at->numcbackregs; i++) 
+    {
+        printf("i = %d, name = %s\n", i, at->callbackregs[i]->name);
         if (strcmp(at->callbackregs[i]->name, name) == 0)
             return at->callbackregs[i];
+    }
 
     return NULL;
 }
 
+
+// This is the runner for the activity. Each activity is running this 
+// on its task. It loads the newly arriving request and starts the corresponding 
+// function
+//
+void run_activity(void *arg)
+{
+    activitytable_t *at = ((comboptr_t *)arg)->arg1;
+    jactivity_t *jact = ((comboptr_t *)arg)->arg2;
+    free(arg);
+
+    activity_callback_reg_t *areg;
+
+    jact->taskid = taskid();
+    while (1) 
+    {
+        command_t *cmd;
+        nvoid_t *nv = pqueue_deq(jact->inq);
+        jact->state = STARTED;
+
+        printf("========= Got a message in run activity..........Run # %d  \n", at->runcounter++);
+        if (nv != NULL)
+        {
+            cmd = (command_t *)nv->data;
+            free(nv);
+        } else
+            cmd = NULL;
+
+        if (cmd != NULL)
+        {
+            if (strcmp(cmd->cmd, "REXEC-ASY") == 0) 
+            {
+                areg = activity_findcallback(at, cmd->actname, cmd->opt);
+                if (areg == NULL)
+                    printf("Function not found.. %s\n", cmd->actname);
+                else 
+                {
+                    #ifdef DEBUG_LVL1
+                    printf("Command actname = %s %s %s\n", cmd->actname, cmd->cmd, cmd->opt);
+                    #endif
+
+                    jrun_arun_callback(at, cmd, areg);
+                    #ifdef DEBUG_LVL1
+                    printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
+                    #endif
+                }
+            }
+            else 
+            if (strcmp(cmd->cmd, "REXEC-SYN") == 0)
+            {
+                // TODO: Implement this one..
+            }
+            command_free(cmd);
+        }
+        jact->state = EMPTY;
+    }
+}
+
 // Only the memory is initialized..
-jactivity_t *activity_init()
+jactivity_t *activity_init(activitytable_t *at)
 {
     jactivity_t *jact = (jactivity_t *)calloc(1, sizeof(jactivity_t));
 
     // Setup the dummy activity
     jact->state = EMPTY;
-    jact->name[0] = 0;
     jact->actid = NULL;
     jact->actarg = strdup("__");
-
-    jact->taskid = 0;
 
     // Setup the I/O queues
     jact->inq = pqueue_new(true);
@@ -181,12 +241,16 @@ jactivity_t *activity_init()
     for (int i = 0; i < MAX_REPLIES; i++)
         jact->replies[i] = NULL;
 
+    comboptr_t *ct = create_combo3_ptr(at, jact, NULL);
+    // TODO: What is the correct stack size? Remember this runs all user functions
+    taskcreate(run_activity, ct, 20000);
+
     // return the pointer
     return jact;
 }
 
 
-jactivity_t *activity_new(activitytable_t *at, char *name)
+jactivity_t *activity_new(activitytable_t *at, char *actid)
 {
     jactivity_t *jact = NULL;
     // Cannot create another activity..
@@ -205,12 +269,8 @@ jactivity_t *activity_new(activitytable_t *at, char *name)
     {
         // Setup the new activity
         jact->state = NEW;
-        strcpy(jact->name, name);
-        jact->actid = activity_gettime();
+        jact->actid = strdup(actid);
         jact->actarg = strdup("__");
-
-        // Save the task ID.. this is specific to libtask..
-        jact->taskid = taskid();
 
         // Set the replies' pointer to NULL for good measure
         for (int i = 0; i < MAX_REPLIES; i++)
@@ -266,10 +326,10 @@ jactivity_t *activity_getmyactivity(activitytable_t *at)
 }
 
 
-void activity_del(activitytable_t *at, jactivity_t *jact)
+void activity_free(activitytable_t *at, jactivity_t *jact)
 {
     int i;
-    printf("Deleting activity ... %s\n", jact->actid);
+    printf("Freeing  activity ... %s\n", jact->actid);
     int j = activity_id2indx(at, jact->actid);
 
     // If the activity is pointing to one not in the table 
@@ -279,76 +339,13 @@ void activity_del(activitytable_t *at, jactivity_t *jact)
 
     jact->state = EMPTY;
     // Free memory that is not reuseable
-    free(jact->actid);
-    free(jact->actarg);
+    if (jact->actid != NULL) free(jact->actid);
+    if (jact->actarg != NULL) free(jact->actarg);
 
     for (i = 0; i < MAX_REPLIES; i++)
         if (jact->replies[i] != NULL)
             command_free(jact->replies[i]);
 
-    // Set to save value
-    jact->taskid = 0;
-    jact->name[0] = 0;  
-
     at->numactivities--;
 }
 
-
-void activity_start(jactivity_t *jact)
-{
-    jact->state = STARTED;
-}
-
-void activity_timeout(jactivity_t *jact)
-{
-    jact->state = TIMEDOUT;
-}
-
-
-void activity_complete(activitytable_t *at, char *fmt, ...)
-{
-    va_list args;
-
-    // Find the activity
-    jactivity_t *jact = activity_getmyactivity(at);
-    command_t *scmd;
-
-    if (strlen(fmt) == 0)
-        scmd = command_new("COMPL-ACT", "LOCAL", jact->name, jact->actid, jact->actarg, "");
-    else
-    {
-        va_start(args, fmt);
-        switch(*fmt)
-        {
-            case 'n':
-                printf("Format for byte array... \n");
-                scmd = command_new("COMPL-ACT", "LOCAL", jact->name, jact->actid, jact->actarg, "b", va_arg(args, nvoid_t*));
-                break;
-
-            case 's':
-                printf("Format for string..... \n");
-
-                scmd = command_new("COMPL-ACT", "LOCAL", jact->name, jact->actid, jact->actarg, "s", va_arg(args, char *));
-                break;
-
-            case 'i':
-                printf("Format for integer..... \n");
-
-                scmd = command_new("COMPL-ACT", "LOCAL", jact->name, jact->actid, jact->actarg, "i", va_arg(args, int));
-                break;
-            case 'd':
-            case 'f':
-                printf("Format for real..... \n");
-
-                scmd = command_new("COMPL-ACT", "LOCAL", jact->name, jact->actid, jact->actarg, "d", va_arg(args, double));
-        }
-        va_end(args);
-    }
-
-    queue_enq(at->globaloutq, scmd, sizeof(command_t));
-    // TODO: do we have to use another semaphore?
-    // TODO: check??
-
-    // Now.. delete the activity.
-    //activity_del(at, jact);
-}

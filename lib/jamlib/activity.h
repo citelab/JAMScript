@@ -64,8 +64,6 @@ enum activity_type_t
 
 typedef struct _jactivity_t
 {
-    char name[MAX_NAME_LEN];
-
     enum activity_state_t state;
     enum activity_type_t type;
 
@@ -96,6 +94,7 @@ typedef struct _activity_callback_reg_t
 
 typedef struct _activitytable_t
 {
+    int runcounter; 
     int numactivities;
     int numcbackregs;
     // Callbacks are NOT pre-initialized..
@@ -122,17 +121,13 @@ void activity_print(jactivity_t *ja);
 bool activity_regcallback(activitytable_t *at, char *name, int type, char *sig, activitycallback_f cback);
 activity_callback_reg_t *activity_findcallback(activitytable_t *at, char *name, char *opt);
 
-jactivity_t *activity_init();
-jactivity_t *activity_new(activitytable_t *at, char *name);
+jactivity_t *activity_init(activitytable_t *at);
+jactivity_t *activity_new(activitytable_t *at, char *actid);
 
 jactivity_t *activity_getbyid(activitytable_t *at, char *actid);
 int activity_id2indx(activitytable_t *at, char *actid);
 jactivity_t *activity_getmyactivity(activitytable_t *at);
-void activity_del(activitytable_t *at, jactivity_t *jact);
+void activity_free(activitytable_t *at, jactivity_t *jact);
 
-void activity_start(jactivity_t *act);
-void activity_timeout(jactivity_t *act);
-
-void activity_complete(activitytable_t *at, char *fmt, ...);
 
 #endif

@@ -30,13 +30,13 @@ bool jrun_check_signature(activity_callback_reg_t *creg, command_t *cmd)
 }
 
 
-void jrun_arun_callback(jamstate_t *js, command_t *cmd, activity_callback_reg_t *creg)
+void jrun_arun_callback(activitytable_t *at, command_t *cmd, activity_callback_reg_t *creg)
 {
     command_t *rcmd;
 
     // Create an activity to run the callback function. 
     // 
-    jactivity_t *jact = activity_new(js->atable, cmd->actname);
+    jactivity_t *jact = activity_new(at, cmd->actname);
     jact->actarg = strdup(cmd->actid);
     jact->taskid = taskid();
 
@@ -46,8 +46,8 @@ void jrun_arun_callback(jamstate_t *js, command_t *cmd, activity_callback_reg_t 
 
     creg->cback(jact, cmd);
 
-    command_free(cmd);
-    activity_del(js->atable ,jact);
+    // Don't free cmd here.. it should be freed in the calling function..
+    activity_free(at ,jact);
 }
 
 
@@ -111,5 +111,5 @@ void jrun_run_callback(jamstate_t *js, command_t *cmd, activity_callback_reg_t *
         creg->cback(jact, cmd);    
     }
     command_free(cmd);
-    activity_del(js->atable ,jact);
+    activity_free(js->atable ,jact);
 }
