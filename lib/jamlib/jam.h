@@ -98,7 +98,7 @@ typedef struct _jamstate_t
 } jamstate_t;
 
 
-jamstate_t *jam_init();
+jamstate_t *jam_init(int port);
 
 void jam_run_app(void *arg);
 void jam_event_loop(void *js);

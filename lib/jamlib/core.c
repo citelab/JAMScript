@@ -38,9 +38,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
 
-corestate_t *core_init(int timeout)
+corestate_t *core_init(int port, int timeout)
 {
     command_t *scmd, *rcmd,  *rcmd2;
+    char serverhost[64];
+    int count;
 
     #ifdef DEBUG_MSGS
         printf("Core initialization...");
@@ -50,47 +52,61 @@ corestate_t *core_init(int timeout)
     corestate_t *cs = (corestate_t *)calloc(1, sizeof(corestate_t));
     core_setup(cs, timeout);
 
+    sprintf(serverhost, "tcp://localhost:%d", port);
     // open an mqtt connection to localhost
-    cs->mqttserv[0] = mqtt_open("tcp://localhost:1883");
+    cs->mqttserv[0] = mqtt_open(serverhost);
     if (cs->mqttserv[0] == NULL)
     {
-        printf("ERROR! Unable to connect to the MQTT server at localhost..\n");
+        printf("\nERROR! Unable to connect to the MQTT server at [%d].\n\n", port);
         exit(1);
     }
 
     // send register message
-    scmd = command_new("REGISTER", "DEVICE", cs->app_name, "-", cs->device_id, "");
-    mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd); 
+    scmd = command_new("REGISTER", "DEVICE", "-", "-", cs->device_id, "");
+
+    count = 0;
+    do {
+        mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd);         
+        rcmd = mqtt_receive(cs->mqttserv[0], "REGISTER-ACK", "/admin/announce/all", cs->timeout);
+    } while ((rcmd == NULL) && (count++ < 1000));
     command_free(scmd);
+
     // get the register acknowledge message 
-    if ((rcmd = mqtt_receive(cs->mqttserv[0], "REGISTER-ACK", "/admin/announce/all", cs->timeout)) == NULL) 
+    if (rcmd == NULL) 
     {
         // if the acknowledege timed out or registration failed.. report it.
-        printf("ERROR! No acknowledgement from the broker for registration..");
+        printf("\nQUITING. REGISTER failed. Service component (J) not running?? \n\n");
         exit(1);
     }
     command_free(rcmd);
     cs->mqttenabled[0] = true;
 
     // get information about the machine state: fog address, cloud address
-    scmd = command_new("GET-CF-INFO", "DEVICE", cs->app_name, "-", cs->device_id, "");
-    mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd); 
-    if ((rcmd = mqtt_receive(cs->mqttserv[0], "PUT-CF-INFO", "/admin/announce/all", cs->timeout)) == NULL) 
+    scmd = command_new("GET-CF-INFO", "DEVICE", "-", "-", cs->device_id, "");
+
+
+    count = 0;
+    do {
+        mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd);
+        rcmd = mqtt_receive(cs->mqttserv[0], "PUT-CF-INFO", "/admin/announce/all", cs->timeout);
+    } while ((rcmd == NULL) && (count++ < 1000));
+    command_free(scmd);
+
+    if (rcmd == NULL) 
     {
         // Unable to get fog/cloud status from the broker..
-        printf("ERROR! Unable to get cloud/fog status information.. ");
+        printf("\nERROR! Unable to get cloud/fog status information.. \n");
         exit(1);
     } else
     {
         printf("We received %d servers\n", rcmd->nargs);
-        
         // process the information that we just received..
         for (int i = 0; i < rcmd->nargs; i++) 
         {
             cs->mqttserv[i+1] = mqtt_open(rcmd->args[i].val.sval);
             if (cs->mqttserv[i+1] != NULL) 
             {
-                scmd = command_new("REGISTER", "DEVICE", cs->app_name, "-", cs->device_id, "");
+                scmd = command_new("REGISTER", "DEVICE", "-", "-", cs->device_id, "");
                 mqtt_publish(cs->mqttserv[i+1], "/admin/request/all", scmd); 
                 command_free(scmd);
     
@@ -98,7 +114,10 @@ corestate_t *core_init(int timeout)
                 if ((rcmd2 = mqtt_receive(cs->mqttserv[i+1], "REGISTER-ACK", "/admin/announce/all", cs->timeout)) == NULL)
                     cs->mqttenabled[i+1] = false;
                 else
+                {
                     cs->mqttenabled[i+1] = true;
+                    command_free(rcmd2);
+                }
             }
         }
     }
@@ -111,8 +130,6 @@ corestate_t *core_init(int timeout)
 
 void core_setup(corestate_t *cs, int timeout)
 {
-    // TODO: set the app_name properly
-    cs->app_name = strdup("APP_NAME");
     cs->timeout = timeout;
 
     char buf[UUID4_LEN];
@@ -160,13 +177,6 @@ void core_reinit(corestate_t *cs)
     for (i = 0; i < 3; i++)
         MQTTClient_setCallbacks(cs->mqttserv[i], ctx, core_connlost, core_msgarr, core_delcomp);
 
-    for (i = 0; i < 3; i++) 
-    {
-        // send a ping message
-        scmd = command_new("PING", "DEVICE", cs->app_name, "-", cs->device_id, "");
-        mqtt_publish(cs->mqttserv[i], "/admin/request/all", scmd);
-
-    }
     // TODO: This is totally incomplete.
 }
 

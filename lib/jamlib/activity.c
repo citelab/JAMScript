@@ -215,7 +215,21 @@ void run_activity(void *arg)
             else 
             if (strcmp(cmd->cmd, "REXEC-SYN") == 0)
             {
-                // TODO: Implement this one..
+                // TODO: There is no difference at this point.. what will be the difference?
+                areg = activity_findcallback(at, cmd->actname, cmd->opt);
+                if (areg == NULL)
+                    printf("Function not found.. %s\n", cmd->actname);
+                else 
+                {
+                    #ifdef DEBUG_LVL1
+                    printf("Command actname = %s %s %s\n", cmd->actname, cmd->cmd, cmd->opt);
+                    #endif
+
+                    jrun_arun_callback(at, cmd, areg);
+                    #ifdef DEBUG_LVL1
+                    printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
+                    #endif
+                }
             }
             command_free(cmd);
         }

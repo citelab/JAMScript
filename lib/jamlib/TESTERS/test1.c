@@ -4,12 +4,7 @@
 
 void hello(char* msg) {
 
-    while(1) 
-    {
         printf("\n\n ===============>>> FROM HELLO ==========: %s\n", msg);
-        usleep(10);
-        taskyield();
-    }
 }
 
 void hello3(char* msg) {
@@ -46,7 +41,12 @@ void user_setup() {
 
 void taskmain(int argc, char *arg[])
 {
-    js = jam_init();
+    int port = 1883;
+    if (argc == 2)
+        port = atoi(arg[1]);
+
+    js = jam_init(port);
+    
     user_setup();
 
   //  arg_t *res = jam_rexec_sync(js, "resultfunc", "s", "hello");

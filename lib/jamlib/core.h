@@ -31,7 +31,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 typedef struct _corestate_t
 {
-    char *app_name;
     char *device_id;
 
     // TODO: May be unused? Can we remove this one??
@@ -53,7 +52,7 @@ typedef struct  _corecontext_t
 // ------------------------------
 
 // Initialize the core.. the first thing we need to call
-corestate_t *core_init(int timeout);
+corestate_t *core_init(int port, int timeout);
 void core_setup(corestate_t *cs, int timeout);
 void core_reinit(corestate_t *cs);
 

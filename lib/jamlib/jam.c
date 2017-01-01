@@ -39,7 +39,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // Initialize the JAM library.. nothing much done here.
 // We just initialize the Core ..
 //
-jamstate_t *jam_init()
+jamstate_t *jam_init(int port)
 {
     #ifdef DEBUG_LVL1
         printf("JAM Library initialization... ");
@@ -47,9 +47,9 @@ jamstate_t *jam_init()
 
     jamstate_t *js = (jamstate_t *)calloc(1, sizeof(jamstate_t));
 
-    // TODO: Remove the hardcoded timeout values
-    // 10 second timeout now set
-    js->cstate = core_init(10000);
+    // TODO: Should we remove the hardcoded timeout values? To which value?
+    js->cstate = core_init(port, 100);
+
     if (js->cstate == NULL)
     {
         printf("ERROR!! Core Init Failed. Exiting.\n");
