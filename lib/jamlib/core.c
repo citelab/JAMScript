@@ -57,39 +57,54 @@ corestate_t *core_init(int port, int timeout)
     cs->mqttserv[0] = mqtt_open(serverhost);
     if (cs->mqttserv[0] == NULL)
     {
-        printf("\nERROR! Unable to connect to the MQTT server at [%d].\n\n", port);
+        printf("\nERROR! Unable to connect to the MQTT server at [%d].\n", port);
+        printf("** Check whether an MQTT server is running at [%d] **\n\n", port);
         exit(1);
     }
 
     // send register message
     scmd = command_new("REGISTER", "DEVICE", "-", "-", cs->device_id, "");
-
-    count = 0;
-    do {
-        mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd);         
-        rcmd = mqtt_receive(cs->mqttserv[0], "REGISTER-ACK", "/admin/announce/all", cs->timeout);
-    } while ((rcmd == NULL) && (count++ < 1000));
-    command_free(scmd);
-
-    // get the register acknowledge message 
+    mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd);
+    rcmd = mqtt_receive(cs->mqttserv[0], "REGISTER-ACK", "/admin/announce/all", cs->timeout);
+    // if we did not get the reply.. wait for the PING from an active server node
     if (rcmd == NULL) 
     {
-        // if the acknowledege timed out or registration failed.. report it.
-        printf("\nQUITING. REGISTER failed. Service component (J) not running?? \n\n");
-        exit(1);
+        // wait with a large timeout.. about 1 hr.
+        rcmd = mqtt_receive(cs->mqttserv[0], "PING", "/admin/announce/all", 1000 * 60 * 60);
+        if (rcmd == NULL)
+        {
+            printf("ERROR! Connection cannot be established to the server (J). \nQuiting.\n\n");
+            exit(1);
+        }
+        command_free(rcmd);
+        // send register message
+        scmd = command_new("REGISTER", "DEVICE", "-", "-", cs->device_id, "");
+        mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd);
+        rcmd = mqtt_receive(cs->mqttserv[0], "REGISTER-ACK", "/admin/announce/all", cs->timeout);
+        
+        // get the register acknowledge message 
+        if (rcmd == NULL) 
+        {
+            // if the acknowledege timed out or registration failed.. report it.
+            printf("\nQUITING. REGISTER failed. Service component (J) not running?? \n\n");
+            exit(1);
+        }
+        command_free(rcmd);
     }
-    command_free(rcmd);
+    else 
+        command_free(rcmd);
+
     cs->mqttenabled[0] = true;
 
     // get information about the machine state: fog address, cloud address
     scmd = command_new("GET-CF-INFO", "DEVICE", "-", "-", cs->device_id, "");
 
-
+    // No need to retry many times.. the server is already there..
     count = 0;
     do {
         mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd);
         rcmd = mqtt_receive(cs->mqttserv[0], "PUT-CF-INFO", "/admin/announce/all", cs->timeout);
-    } while ((rcmd == NULL) && (count++ < 1000));
+    } while ((rcmd == NULL) && (count++ < 5));
     command_free(scmd);
 
     if (rcmd == NULL) 
@@ -99,10 +114,12 @@ corestate_t *core_init(int port, int timeout)
         exit(1);
     } else
     {
-        printf("We received %d servers\n", rcmd->nargs);
+        printf("\nWe received %d servers\n", rcmd->nargs);
         // process the information that we just received..
         for (int i = 0; i < rcmd->nargs; i++) 
         {
+            printf("Server %s\n", rcmd->args[i].val.sval);
+
             cs->mqttserv[i+1] = mqtt_open(rcmd->args[i].val.sval);
             if (cs->mqttserv[i+1] != NULL) 
             {
