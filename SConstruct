@@ -35,8 +35,9 @@ if npm_loc==None:
 subprocess.check_output(["npm", "install"])
 #Now we test for C library dependencies
 
-env = Environment(CC = 'clang', CCFLAGS='-g -DDEBUG_LVL1')
+env = Environment(CC = 'clang', CCFLAGS='-g -DDEBUG_LVL1', LIBPATH=['/usr/local/lib'])
 env.Append(CPPPATH='/usr/local/share/paho/include')
+
 conf = Configure(env)
 
 req_c_lib = None;
@@ -45,11 +46,13 @@ if env['PLATFORM']=='posix':
     req_c_lib = ['m', 'bsd', 'pthread', 'cbor', 'nanomsg', 'task', 'event', 'hiredis']
 elif env['PLATFORM']=='darwin':
     print 'Platform is darwin'
-    req_c_lib = ['cbor', 'nanomsg', 'task', 'event', 'hiredis']
+    req_c_lib = ['task', 'event', 'hiredis']
 else:
     print 'Windows not supported ...'
 #required_libraries = ['m']
+#req_c_lib = ['m']
 
+print conf
 for iterating_var in req_c_lib:
     if not conf.CheckLib(iterating_var):
         print iterating_var + " library is missing .. "
