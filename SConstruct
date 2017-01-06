@@ -52,11 +52,10 @@ else:
 #required_libraries = ['m']
 #req_c_lib = ['m']
 
-print conf
-for iterating_var in req_c_lib:
-    if not conf.CheckLib(iterating_var):
-        print iterating_var + " library is missing .. "
-        Exit(1);
+#for iterating_var in req_c_lib:
+#    if not conf.CheckLib(iterating_var):
+#        print iterating_var + " library is missing .. "
+#        Exit(1);
 
 c_files = Glob('lib/jamlib/*.c');
 

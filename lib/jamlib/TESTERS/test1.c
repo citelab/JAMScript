@@ -42,6 +42,7 @@ void user_setup() {
 void taskmain(int argc, char *arg[])
 {
     int port = 1883;
+    int xx;
     if (argc == 2)
         port = atoi(arg[1]);
 
@@ -51,7 +52,6 @@ void taskmain(int argc, char *arg[])
 
   //  arg_t *res = jam_rexec_sync(js, "resultfunc", "s", "hello");
 
-   // jactivity_t *res = jam_rexec_async(js, "testfunc", "s", "hello");
 
     //printf("Result %d \n", res->state);
 
@@ -64,6 +64,8 @@ void taskmain(int argc, char *arg[])
      printf("Waiting...\n");
     while(1) 
     {
+        jactivity_t *res = jam_rexec_async(js, "testfunc", "s", "hello");
+        printf("Enter a key: "); scanf("%d", &xx);
         usleep(100);
         taskyield();
     }
