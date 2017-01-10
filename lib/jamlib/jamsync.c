@@ -77,7 +77,7 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
         cmd->cbor_item_list = list;
     
         rargs = jam_sync_runner(js, jact, cmd);
-        activity_free(js->atable, jact);
+        activity_freethread(js->atable, jact->actid);
         return rargs;
     } 
     else
@@ -106,7 +106,7 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
 
     // Send the command to the remote side  
     // The send is executed via the worker thread..
-    queue_enq(jact->outq, cmd, sizeof(command_t));
+    queue_enq(jact->thread->outq, cmd, sizeof(command_t));
 
     // We expect act_entry->num_replies from the remote side 
     // The replies are just confirmations on REXEC-SYN execution
@@ -114,7 +114,7 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     for (int i = 0; i < act_entry->num_replies; i++)
     {
         // TODO: Fix the constant 300 milliseconds here..
-        nvoid_t *nv = pqueue_deq_timeout(jact->inq, 300);
+        nvoid_t *nv = pqueue_deq_timeout(jact->thread->inq, 300);
 
         rcmd = NULL;
         if (nv != NULL)
@@ -151,7 +151,7 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     // TODO: Fix this to get an extension.. now we expect the results to be available 
     // after the lease time..
     command_t *lcmd = command_new("REXEC-RES", "GET", cmd->actname, jact->actid, js->cstate->device_id, "");
-    queue_enq(jact->outq, lcmd, sizeof(command_t));
+    queue_enq(jact->thread->outq, lcmd, sizeof(command_t));
 
     // Now we retrive the replies from the remote side..
     // 
@@ -159,7 +159,7 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     {
         // TODO: fix the 300 milliseconds timeout.. 
         // 
-        nvoid_t *nv = pqueue_deq_timeout(jact->inq, 300);
+        nvoid_t *nv = pqueue_deq_timeout(jact->thread->inq, 300);
         rcmd = (command_t *)nv->data;
         free(nv);
 

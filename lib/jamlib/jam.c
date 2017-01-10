@@ -117,8 +117,11 @@ void jam_event_loop(void *arg)
                 (strcmp(cmd->cmd, "REXEC-SYN") == 0)) 
             {
                 jactivity_t *jact = activity_new(js->atable, cmd->actid);
-                if (jact != NULL)
-                    pqueue_enq(jact->inq, cmd, sizeof(command_t));
+                if (jact != NULL) 
+                {
+                    activity_setthread(jact->thread, jact, cmd->actid);
+                    pqueue_enq(jact->thread->inq, cmd, sizeof(command_t));
+                }
                 else
                     printf("ERROR! Unable to find a free Activity handler to start %s", cmd->actname);
             }

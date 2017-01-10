@@ -107,13 +107,13 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
 
     // Send the command to the remote side  
     // The send is executed via the worker thread..
-    queue_enq(jact->outq, cmd, sizeof(command_t));
+    queue_enq(jact->thread->outq, cmd, sizeof(command_t));
 
     // We expect act_entry->num_replies from the remote side 
     for (int i = 0; i < act_entry->num_replies; i++)
     {
         // TODO: Fix the constant 300 milliseconds here..        
-        nvoid_t *nv = pqueue_deq_timeout(jact->inq, 300);
+        nvoid_t *nv = pqueue_deq_timeout(jact->thread->inq, 300);
 
         rcmd = NULL;
         if (nv != NULL) 
@@ -155,6 +155,9 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         }
     }
 
-    // rcmd should not be freed.. it will be freed when activity is released
+    // Set the access time
+    jact->accesstime = activity_getseconds();
 
+    // Delete the runtable entry.
+    free_rtable_entry(js->rtable, act_entry);
 }

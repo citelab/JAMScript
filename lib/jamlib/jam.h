@@ -73,7 +73,7 @@ typedef struct _runtable_t
 typedef struct _jamstate_t
 {
     corestate_t *cstate;
-    activitytable_t *atable;
+    activity_table_t *atable;
     runtable_t *rtable;
 
     // No need to use the pushqueue_t here.
@@ -171,8 +171,7 @@ command_t *return_err_arg(command_t *rcmd, char *err_msg);
 // TODO: Fix these tasks...
 
 bool jrun_check_signature(activity_callback_reg_t *creg, command_t *cmd);
-void jrun_arun_callback(activitytable_t *at, command_t *cmd, activity_callback_reg_t *creg);
-void jrun_run_callback(jamstate_t *js, command_t *cmd, activity_callback_reg_t *arg);
+void jrun_arun_callback(activity_table_t *at, command_t *cmd, activity_callback_reg_t *creg);
 
 
 #endif  /* __JAMLIB_H__ */

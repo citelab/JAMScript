@@ -32,6 +32,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <time.h>
 #endif
 #include <task.h>
+#include <sys/time.h>
 
 #include "activity.h"
 #include "nvoid.h"
@@ -55,22 +56,36 @@ char *activity_gettime()
 }
 
 
-activitytable_t *activity_table_new()
+double activity_getseconds()
+{
+    struct timeval tp;
+
+    if (gettimeofday(&tp, NULL) < 0)
+    {
+        printf("ERROR!! Getting system time..");
+        return 0;
+    }
+
+    return tp.tv_sec + tp.tv_usec * 1E-6;
+}
+
+
+
+activity_table_t *activity_table_new()
 {
     int i;
 
-    activitytable_t *atbl = (activitytable_t *)calloc(1, sizeof(activitytable_t));
+    activity_table_t *atbl = (activity_table_t *)calloc(1, sizeof(activity_table_t));
     assert(atbl != NULL);
 
     atbl->runcounter = 0;
-    atbl->numactivities = 0;
     atbl->numcbackregs = 0;
 
     for (i = 0; i < MAX_CALLBACKS; i++)
         atbl->callbackregs[i] = NULL;
 
-    for (i = 0; i < MAX_ACTIVITIES; i++)
-        atbl->activities[i] = activity_init(atbl);
+    for (i = 0; i < MAX_ACT_THREADS; i++)
+        atbl->athreads[i] = activity_initthread(atbl);
 
     // globalinq is used by the main thread for input purposes
     // globaloutq is used by the main thread for output purposes
@@ -80,21 +95,20 @@ activitytable_t *activity_table_new()
     return atbl;
 }
 
-void activity_table_print(activitytable_t *at)
+void activity_table_print(activity_table_t *at)
 {
     int i;
 
     printf("\n");
     printf("Activity callback regs.: [%d] \n", at->numcbackregs);
-    printf("Activity instances: [%d]\n", at->numactivities);
     printf("Registrations::\n");
 
     for (i = 0; i < at->numcbackregs; i++)
         activity_callbackreg_print(at->callbackregs[i]);
 
     printf("Activity instances::\n");
-    for (i = 0; i < MAX_ACTIVITIES; i++)
-        activity_print(at->activities[i]);
+    for (i = 0; i < MAX_ACT_THREADS; i++)
+        activity_printthread(at->athreads[i]);
 
     printf("\n");
 }
@@ -108,20 +122,20 @@ void activity_callbackreg_print(activity_callback_reg_t *areg)
     printf("\n");
 }
 
-void activity_print(jactivity_t *ja)
+
+void activity_printthread(activity_thread_t *ja)
 {
     if (ja->state == EMPTY)
         return;
 
     printf("\n");
     printf("Activity ID: %s\n", ja->actid);
-    printf("Activity arg: %s\n", ja->actarg);
     printf("Activity state: %d\n", ja->state);
 
     printf("\n");
 }
 
-bool activity_regcallback(activitytable_t *at, char *name, int type, char *sig, activitycallback_f cback)
+bool activity_regcallback(activity_table_t *at, char *name, int type, char *sig, activitycallback_f cback)
 {
     int i;
 
@@ -149,7 +163,7 @@ bool activity_regcallback(activitytable_t *at, char *name, int type, char *sig, 
 
 // TODO: What is the use of opt??
 //
-activity_callback_reg_t *activity_findcallback(activitytable_t *at, char *name, char *opt)
+activity_callback_reg_t *activity_findcallback(activity_table_t *at, char *name, char *opt)
 {
     int i;
 
@@ -172,18 +186,18 @@ activity_callback_reg_t *activity_findcallback(activitytable_t *at, char *name, 
 //
 void run_activity(void *arg)
 {
-    activitytable_t *at = ((comboptr_t *)arg)->arg1;
-    jactivity_t *jact = ((comboptr_t *)arg)->arg2;
+    activity_table_t *at = ((comboptr_t *)arg)->arg1;
+    activity_thread_t *athread = ((comboptr_t *)arg)->arg2;
     free(arg);
 
     activity_callback_reg_t *areg;
 
-    jact->taskid = taskid();
+    athread->taskid = taskid();
     while (1) 
     {
         command_t *cmd;
-        nvoid_t *nv = pqueue_deq(jact->inq);
-        jact->state = STARTED;
+        nvoid_t *nv = pqueue_deq(athread->inq);
+        athread->state = STARTED;
 
         printf("========= Got a message in run activity..........Run # %d  \n", at->runcounter++);
         if (nv != NULL)
@@ -233,58 +247,100 @@ void run_activity(void *arg)
             }
             command_free(cmd);
         }
-        jact->state = EMPTY;
+        athread->state = EMPTY;
     }
 }
 
-// Only the memory is initialized..
-jactivity_t *activity_init(activitytable_t *at)
+
+// Create a new activity thread. This is reused by the system. That is,
+// it is never released.
+// 
+activity_thread_t *activity_initthread(activity_table_t *atbl)
 {
-    jactivity_t *jact = (jactivity_t *)calloc(1, sizeof(jactivity_t));
+    activity_thread_t *at = (activity_thread_t *)calloc(1, sizeof(activity_thread_t));
 
     // Setup the dummy activity
-    jact->state = EMPTY;
-    jact->actid = NULL;
-    jact->actarg = strdup("__");
+    at->state = EMPTY;
+    at->actid = NULL;
 
     // Setup the I/O queues
-    jact->inq = pqueue_new(true);
-    jact->outq = queue_new(true);
+    at->inq = pqueue_new(true);
+    at->outq = queue_new(true);
 
-    // initialize the reply placeholders
-    for (int i = 0; i < MAX_REPLIES; i++)
-        jact->replies[i] = NULL;
-
-    comboptr_t *ct = create_combo3_ptr(at, jact, NULL);
+    comboptr_t *ct = create_combo3_ptr(atbl, at, NULL);
     // TODO: What is the correct stack size? Remember this runs all user functions
     taskcreate(run_activity, ct, 20000);
 
     // return the pointer
-    return jact;
+    return at;
+}
+
+activity_thread_t *activity_getthread(activity_table_t *at, char *actid)
+{
+    int i, j = -1;
+
+    // Get an EMPTY thread if available
+    for (i = 0; i < MAX_ACT_THREADS; i++)
+        if (at->athreads[i]->state == EMPTY)
+            return at->athreads[i];
+
+    double ctime = activity_getseconds();
+    double cdiff = 0.0;
+
+    // If not, replace a least recently used thread..
+    for (i = 0; i < MAX_ACT_THREADS; i++)
+    {
+        if (at->athreads[i]->jact == NULL)
+        {
+            j = i;
+            break;
+        }
+        else 
+        {
+            if (ctime - at->athreads[i]->jact->accesstime > cdiff) 
+            {
+                cdiff = ctime - at->athreads[i]->jact->accesstime;
+                j = i;
+            }
+        }
+    }
+
+    if (j < 0)
+        return NULL;
+    else 
+        return at->athreads[j];
+}
+
+void activity_setthread(activity_thread_t *at, jactivity_t *jact, char *actid)
+{
+    at->state = NEW;
+    // TODO: There could be memory leak here.. did we release the previous one?
+    at->actid = strdup(actid);
+    at->jact = jact;
 }
 
 
-jactivity_t *activity_new(activitytable_t *at, char *actid)
-{
-    jactivity_t *jact = NULL;
-    // Cannot create another activity..
-    if (at->numactivities >= MAX_ACTIVITIES)
-        return NULL;
 
-    // Find an empty activity entry. 
-    for (int i = 0; i < MAX_ACTIVITIES; i++)
-        if (at->activities[i]->state == EMPTY)
-        {
-            jact = at->activities[i];
-            break;
-        }
+jactivity_t *activity_new(activity_table_t *at, char *actid)
+{
+    int i;
+    jactivity_t *jact = (jactivity_t *)calloc(1, sizeof(jactivity_t));
 
     if (jact != NULL) 
     {
+        jact->thread = activity_getthread(at, actid);
+        if (jact->thread == NULL)
+        {
+            printf("ERROR! Unable to get the activity thread..\n");
+            return NULL;
+        }
+
+        // Setup the thread.
+        activity_setthread(jact->thread, jact, actid);
+
         // Setup the new activity
         jact->state = NEW;
         jact->actid = strdup(actid);
-        jact->actarg = strdup("__");
 
         // Set the replies' pointer to NULL for good measure
         for (int i = 0; i < MAX_REPLIES; i++)
@@ -296,70 +352,47 @@ jactivity_t *activity_new(activitytable_t *at, char *actid)
 }
 
 
-jactivity_t *activity_getbyid(activitytable_t *at, char *actid)
+activity_thread_t *activity_getbyid(activity_table_t *at, char *actid)
 {
     int i;
 
-    for (i = 0; i < MAX_ACTIVITIES; i++)
+    for (i = 0; i < MAX_ACT_THREADS; i++)
     {
-        if ((at->activities[i]->state != EMPTY) &&
-            (strcmp(at->activities[i]->actid, actid) == 0))
-            return at->activities[i];
+        if ((at->athreads[i]->state != EMPTY) &&
+            (strcmp(at->athreads[i]->actid, actid) == 0))
+            return at->athreads[i];
     }
     return NULL;
 }
 
 
 // returns -1 if the activity with given actid is not there
-int activity_id2indx(activitytable_t *at, char *actid)
+int activity_id2indx(activity_table_t *at, char *actid)
 {
     int i;
 
-    for (i = 0; i < MAX_ACTIVITIES; i++)
+    for (i = 0; i < MAX_ACT_THREADS; i++)
     {
-        if ((at->activities[i]->state != EMPTY) &&
-            (strcmp(at->activities[i]->actid, actid) == 0))
+        if ((at->athreads[i]->state != EMPTY) &&
+            (strcmp(at->athreads[i]->actid, actid) == 0))
             return i;
     }
     return -1;
 } 
 
 
-jactivity_t *activity_getmyactivity(activitytable_t *at)
+void activity_freethread(activity_table_t *at, char *actid)
 {
     int i;
-    int tid = taskid();
-
-    for (i = 0; i < MAX_ACTIVITIES; i++)
-    {
-        if ((at->activities[i]->state != EMPTY) &&
-            (at->activities[i]->taskid == tid))
-            return at->activities[i];
-    }
-    return NULL;
-}
-
-
-void activity_free(activitytable_t *at, jactivity_t *jact)
-{
-    int i;
-    printf("Freeing  activity ... %s\n", jact->actid);
-    int j = activity_id2indx(at, jact->actid);
+    int j = activity_id2indx(at, actid);
 
     // If the activity is pointing to one not in the table 
     // don't do anything. Something is Wrong!
     if (j < 0)
         return;
 
-    jact->state = EMPTY;
+    at->athreads[j]->state = EMPTY;
     // Free memory that is not reuseable
-    if (jact->actid != NULL) free(jact->actid);
-    if (jact->actarg != NULL) free(jact->actarg);
-
-    for (i = 0; i < MAX_REPLIES; i++)
-        if (jact->replies[i] != NULL)
-            command_free(jact->replies[i]);
-
-    at->numactivities--;
+    if (at->athreads[j]->actid != NULL) free(at->athreads[j]->actid);
 }
 

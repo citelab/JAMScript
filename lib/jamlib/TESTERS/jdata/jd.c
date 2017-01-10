@@ -6,7 +6,7 @@ int js_read();
 
 int main() {
 
-    x = 4;
+    xx = 4;
     //    yyyy = 0;
 
     js_read();

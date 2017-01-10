@@ -155,12 +155,9 @@ int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTClient_messa
     // the ctx pointer is actually pointing towards the queue - cast it
     simplequeue_t *queue = (simplequeue_t *)ctx;
 
-    printf("Message arrived....\n");
-
     // We need handle the message based on the topic.. 
     if (strcmp(topicname, "/admin/announce/all") == 0) 
     {
-        printf("/admin/announce messages.. ignoring them \n");
         // TODO: Ignore these messages??
         //
     } else 
@@ -206,7 +203,7 @@ void jwork_assemble_fds(jamstate_t *js)
 {
     int i;
     
-    js->numpollfds = 1 + 3 + MAX_ACTIVITIES;
+    js->numpollfds = 1 + 3 + MAX_ACT_THREADS;
     js->pollfds = (struct nn_pollfd *)calloc((js->numpollfds), sizeof(struct nn_pollfd));
 
     for (i = 0; i < js->numpollfds; i++)
@@ -218,8 +215,8 @@ void jwork_assemble_fds(jamstate_t *js)
     js->pollfds[2].fd = js->foginq->pullsock;
     js->pollfds[3].fd = js->cloudinq->pullsock;
 
-    for (i = 0; i < MAX_ACTIVITIES; i++)
-        js->pollfds[4 + i].fd = js->atable->activities[i]->outq->pullsock;
+    for (i = 0; i < MAX_ACT_THREADS; i++)
+        js->pollfds[4 + i].fd = js->atable->athreads[i]->outq->pullsock;
 
 }
 
@@ -268,7 +265,7 @@ void jwork_processor(jamstate_t *js)
         jwork_process_cloud(js);
     }
 
-    for (int i = 0; i < MAX_ACTIVITIES; i++)
+    for (int i = 0; i < MAX_ACT_THREADS; i++)
     {
         if (js->pollfds[i + 4].revents & NN_POLLIN)
             jwork_process_actoutq(js, i);
@@ -330,7 +327,7 @@ void jwork_process_globaloutq(jamstate_t *js)
 
 void jwork_process_actoutq(jamstate_t *js, int indx)
 {
-    nvoid_t *nv = queue_deq(js->atable->activities[indx]->outq);
+    nvoid_t *nv = queue_deq(js->atable->athreads[indx]->outq);
     if (nv == NULL) return;
 
     command_t *rcmd = (command_t *)nv->data;
@@ -418,15 +415,15 @@ void jwork_process_device(jamstate_t *js)
             (strcmp(rcmd->cmd, "REXEC-NAK") == 0) ||
             (strcmp(rcmd->cmd, "REXEC-RES") == 0))
         {
-            printf("Helllo\n");
+            printf("Helllo %s\n", rcmd->actid);
             // resolve the activity id to index
             int aindx = activity_id2indx(js->atable, rcmd->actid);
             if (aindx >= 0)
             {
                 printf("~~~~~~~~~~~~~~~~ pushing to queue %d\n", aindx);
-                jactivity_t *jact = js->atable->activities[aindx];
+                activity_thread_t *athr = js->atable->athreads[aindx];
                 // send the rcmd to that queue.. this is a pushqueue
-                pqueue_enq(jact->inq, rcmd, sizeof(command_t));    
+                pqueue_enq(athr->inq, rcmd, sizeof(command_t));    
             }
         }
         else
@@ -503,9 +500,9 @@ void jwork_process_fog(jamstate_t *js)
             if (aindx >= 0)
             {
                 printf("~~~~~~~~~~~~~~~~ pushing to queue %d\n", aindx);
-                jactivity_t *jact = js->atable->activities[aindx];
+                activity_thread_t *athr = js->atable->athreads[aindx];
                 // send the rcmd to that queue.. this is a pushqueue
-                pqueue_enq(jact->inq, rcmd, sizeof(command_t));    
+                pqueue_enq(athr->inq, rcmd, sizeof(command_t));    
             }
         }
         else
@@ -550,9 +547,9 @@ void jwork_process_cloud(jamstate_t *js)
             if (aindx >= 0)
             {
                 printf("~~~~~~~~~~~~~~~~ pushing to queue %d\n", aindx);
-                jactivity_t *jact = js->atable->activities[aindx];
+                activity_thread_t *athr = js->atable->athreads[aindx];
                 // send the rcmd to that queue.. this is a pushqueue
-                pqueue_enq(jact->inq, rcmd, sizeof(command_t));    
+                pqueue_enq(athr->inq, rcmd, sizeof(command_t));    
             }
         }
         else
@@ -878,14 +875,14 @@ void free_rtable_entry(runtable_t *table, runtableentry_t *entry)
 
 void tcallback(void *arg)
 {
-    jactivity_t *jact = (jactivity_t *)arg;
+    activity_thread_t *athr = (activity_thread_t *)arg;
 
     #ifdef DEBUG_LVL1
     printf("Callback.... \n");
     #endif
     // stick the "TIMEOUT" message into the queue for the activity
-    command_t *tmsg = command_new("TIMEOUT", "__", "ACTIVITY", jact->actid, "__", "");
-    pqueue_enq(jact->inq, tmsg, sizeof(command_t));
+    command_t *tmsg = command_new("TIMEOUT", "__", "ACTIVITY", athr->actid, "__", "");
+    pqueue_enq(athr->inq, tmsg, sizeof(command_t));
     // do a signal on the thread semaphore for the activity
     #ifdef DEBUG_LVL1
     printf("Callback Occuring... \n");
@@ -895,9 +892,9 @@ void tcallback(void *arg)
 
 void jam_set_timer(jamstate_t *js, char *actid, int tval)
 {
-    jactivity_t *jact = activity_getbyid(js->atable, actid);
-    if (jact != NULL)
-        timer_add_event(js->maintimer, tval, 0, actid, tcallback, jact);
+    activity_thread_t *athr = activity_getbyid(js->atable, actid);
+    if (athr != NULL)
+        timer_add_event(js->maintimer, tval, 0, actid, tcallback, athr);
 }
 
 
