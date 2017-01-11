@@ -80,16 +80,18 @@ try {
     console.log(preprocessed);
   }
 
+  console.log("Parsing C Files...");
   var jsTree = jam.jamJSGrammar.match(fs.readFileSync(jsPath).toString(), 'Program');
-  var cTree = jam.jamCGrammar.match(preprocessed, 'Source');
-
-
-  if(cTree.failed()) {
-    throw cTree.message;
-  }
   if(jsTree.failed()) {
     throw jsTree.message;
   }
+
+  console.log("Parsing JavaScript Files...");
+  var cTree = jam.jamCGrammar.match(preprocessed, 'Source');
+  if(cTree.failed()) {
+    throw cTree.message;
+  }
+
   if(parseOnly) {
     printAndExit(cTree + jsTree);
   }
@@ -98,7 +100,9 @@ try {
     console.log(jsTree);
   }
 
+  console.log("Generating JavaScript Code...");
 	var jsOutput = jam.jsSemantics(jsTree).jamJSTranslator;
+  console.log("Generating C code...");
 	var cOutput = jam.cSemantics(cTree).jamCTranslator;
 
 
@@ -116,6 +120,7 @@ try {
   // fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/jamconf.dat').pipe(fs.createWriteStream('jamconf.dat'));
   var requires = '';
   requires += "var jlib = require('/usr/local/share/jam/lib/jserver/jamlib');\n";
+  requires += "var jnode = require('/usr/local/share/jam/lib/jserver/jnode');\n";
   requires += "var async = require('asyncawait/async');\n";
   requires += "var await = require('asyncawait/await');\n";
 
@@ -125,13 +130,11 @@ try {
   requires += "var path = require('path');\n";
   requires += "var mime = require('mime');\n";
   requires += "var fs = require('fs');\n";
-  
-  requires += "var JManager = require('/usr/local/share/jam/lib/jserver/jmanager');\n";
-  requires += "var JLogger = require('/usr/local/share/jam/lib/jserver/jlogger');\n";  
 
   fs.writeFileSync("jamout.js", requires + jsOutput.JS + cOutput.JS);
 
   if(!noCompile) {
+    console.log("Compiling C code...");
     // Set platform options
     var options = "";
     if(process.platform != "darwin") {
@@ -140,12 +143,14 @@ try {
 
     // flowCheck(output.annotated_JS)
     var includes = '#include "jam.h"\n'
-    includes = '#include "jdata.h"\n' + includes;
-    includes = '#include "command.h"\n' + includes;
+    includes = '#include <unistd.h>\n' + includes;
 
     fs.writeFileSync("jamout.c", includes + preprocessDecls.join("\n") + "\n" + cOutput.C + jsOutput.C);
     fs.writeFileSync(`${tmpDir}/jamout.c`, includes + preprocessDecls.join("\n") + "\n" + cOutput.C + jsOutput.C);
-    child_process.execSync(`clang -g ${tmpDir}/jamout.c -I/usr/local/share/jam/lib/c_core ${options} -pthread -lcbor -lnanomsg /usr/local/lib/libjam.a -ltask -levent -lhiredis`) ;
+    try {
+      child_process.execSync(`clang -g ${tmpDir}/jamout.c -I/usr/local/share/jam/lib/ ${options} -pthread -lcbor -lnanomsg /usr/local/lib/libjam.a -ltask -levent -lhiredis -L/usr/local/lib -lpaho-mqtt3c`, {stdio: [0,1,2]}) ;
+    } catch(e) {
+    }
     // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
     // createZip(createTOML(), output.JS, tmpDir, outputName);
     
@@ -164,19 +169,20 @@ function printAndExit(output) {
 }
 
 function preprocess(file) {
+  console.log("Preprocessing...");
+
   var contents = fs.readFileSync(file).toString();
   preprocessDecls = contents.match(/^[#;].*/gm);
   if(preprocessDecls == null) {
     preprocessDecls = [];
   }
   var includes = '#include "jam.h"\n'
-  includes = '#include "jdata.h"\n' + includes;
-  includes = '#include "command.h"\n' + includes;
+  includes = '#include "jam.h"\n' + includes;
 
   contents = includes + "int main();\n" + contents;
   
   fs.writeFileSync(`${tmpDir}/pre.c`, contents);
-  return child_process.execSync(`clang -E -P -I/usr/local/share/jam/deps/fake_libc_include -I/usr/local/share/jam/lib/c_core ${tmpDir}/pre.c`).toString();
+  return child_process.execSync(`clang -E -P -I/usr/local/share/jam/deps/fake_libc_include -I/usr/local/share/jam/lib ${tmpDir}/pre.c`).toString();
   // return child_process.execSync(`${cc} -E -P -std=iso9899:199409 ${file}`).toString();
 
 }
