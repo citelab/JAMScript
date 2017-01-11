@@ -163,7 +163,7 @@ int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTClient_messa
     } else 
     if (strncmp(topicname, "/level/func/reply", strlen("/level/func/reply") -1) == 0) 
     {
-        printf("/level messages.. queueing them \n");
+        printf("===============/level messages.. queueing them \n");
         
         nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
         command_t *cmd = command_from_data(NULL, nv);
@@ -173,6 +173,8 @@ int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTClient_messa
     } else
     if (strncmp(topicname, "/mach/func/request", strlen("/mach/func/request") -1) == 0)
     {
+        printf("===============/mach messages.. queueing them \n");
+        
         nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
         command_t *cmd = command_from_data(NULL, nv);
         nvoid_free(nv);
@@ -399,7 +401,6 @@ void jwork_process_device(jamstate_t *js)
         if (strcmp(rcmd->cmd, "REXEC-ASY") == 0)
         {
             printf("================== Received.... REXEC-ASY    \n");
-
             if (jwork_check_args(js, rcmd))
             {
                 if (jwork_check_condition(js, rcmd))
@@ -420,7 +421,7 @@ void jwork_process_device(jamstate_t *js)
             int aindx = activity_id2indx(js->atable, rcmd->actid);
             if (aindx >= 0)
             {
-                printf("~~~~~~~~~~~~~~~~ pushing to queue %d\n", aindx);
+                printf("Device~~~~~~~~~~~~~~~~ pushing to queue %d\n", aindx);
                 activity_thread_t *athr = js->atable->athreads[aindx];
                 // send the rcmd to that queue.. this is a pushqueue
                 pqueue_enq(athr->inq, rcmd, sizeof(command_t));    
@@ -499,7 +500,7 @@ void jwork_process_fog(jamstate_t *js)
             int aindx = activity_id2indx(js->atable, rcmd->actid);
             if (aindx >= 0)
             {
-                printf("~~~~~~~~~~~~~~~~ pushing to queue %d\n", aindx);
+                printf("Fog~~~~~~~~~~~~~~~~ pushing to queue %d\n", aindx);
                 activity_thread_t *athr = js->atable->athreads[aindx];
                 // send the rcmd to that queue.. this is a pushqueue
                 pqueue_enq(athr->inq, rcmd, sizeof(command_t));    
@@ -546,7 +547,7 @@ void jwork_process_cloud(jamstate_t *js)
             int aindx = activity_id2indx(js->atable, rcmd->actid);
             if (aindx >= 0)
             {
-                printf("~~~~~~~~~~~~~~~~ pushing to queue %d\n", aindx);
+                printf("Cloud~~~~~~~~~~~~~~~~ pushing to queue %d\n", aindx);
                 activity_thread_t *athr = js->atable->athreads[aindx];
                 // send the rcmd to that queue.. this is a pushqueue
                 pqueue_enq(athr->inq, rcmd, sizeof(command_t));    
@@ -823,6 +824,8 @@ bool insert_runtable_entry(jamstate_t * js, command_t *rcmd)
     act_entry->actid = strdup(rcmd->actid);
     act_entry->cmd = rcmd;
     act_entry->num_replies = js->cstate->mqttenabled[0] + js->cstate->mqttenabled[1] + js->cstate->mqttenabled[2];
+    
+    printf("=============== Number of entries: %d\n", act_entry->num_replies);
 
     //To insert the entry into the table
     #ifdef DEBUG_LVL1

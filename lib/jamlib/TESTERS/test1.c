@@ -9,12 +9,8 @@ void hello(char* msg) {
 
 void hello3(char* msg) {
 
-    while(1)
-    {
         printf("\n\n ===============>>> FROM HELLO33333 ==========: %s\n", msg);
         usleep(1000);
-        taskyield();
-    }
 }
 
 
@@ -51,7 +47,6 @@ void taskmain(int argc, char *arg[])
     user_setup();
 
   //  arg_t *res = jam_rexec_sync(js, "resultfunc", "s", "hello");
-
 
     //printf("Result %d \n", res->state);
 

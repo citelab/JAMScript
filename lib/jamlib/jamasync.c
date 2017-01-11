@@ -105,6 +105,8 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         return;
     }
 
+    printf("Runner %d..\n", act_entry->num_replies);
+
     // Send the command to the remote side  
     // The send is executed via the worker thread..
     queue_enq(jact->thread->outq, cmd, sizeof(command_t));
@@ -112,47 +114,36 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     // We expect act_entry->num_replies from the remote side 
     for (int i = 0; i < act_entry->num_replies; i++)
     {
-        // TODO: Fix the constant 300 milliseconds here..        
-        nvoid_t *nv = pqueue_deq_timeout(jact->thread->inq, 300);
+        // TODO: Fix the constant 300 milliseconds here..   
+        jam_set_timer(js, jact->actid, 300);
+        nvoid_t *nv = pqueue_deq(jact->thread->inq);
 
         rcmd = NULL;
         if (nv != NULL) 
         {
             rcmd = (command_t *)nv->data;
             free(nv);
-        } 
-        else 
-            error_count++;
 
-        if (rcmd == NULL)
-            error_count++;
-        else
-            jact->replies[i - error_count] = rcmd;
+            if (strcmp(rcmd->cmd, "TIMEOUT") == 0)
+                error_count++;
+            else
+                jact->replies[i - error_count] = rcmd;
+        } 
     }
 
-    if (error_count > 0) 
+    if (error_count > 0) {
+        printf("Missing responses.......................\n");
         jact->state = PARTIAL;
+        // We have some missing replies.. see what we are missing
+        process_missing_replies(jact, act_entry->num_replies, error_count);
+    }
     else
     {
-        // Examine the replies to form the status code
-        for (int i = 0; i < act_entry->num_replies; i++)
-        {
-            printf("Waiting for reply...................... %d\n", i);
-            if (strcmp(jact->replies[i]->cmd, "REXEC-ACK") == 0)
-                jact->state = MAX(jact->state, STARTED);
-            else
-            if ((strcmp(jact->replies[i]->cmd, "REXEC-NAK") == 0) &&
-                (strcmp(jact->replies[i]->args[0].val.sval, "ILLEGAL-PARAMS") == 0))
-                jact->state = MAX(jact->state, PARAMETER_ERROR);
-            else
-            if ((strcmp(jact->replies[i]->cmd, "REXEC-NAK") == 0) &&
-                (strcmp(jact->replies[i]->args[0].val.sval, "NOT-FOUND") == 0))
-                jact->state = MAX(jact->state, FATAL_ERROR);
-            else
-            if ((strcmp(jact->replies[i]->cmd, "REXEC-NAK") == 0) &&
-                (strcmp(jact->replies[i]->args[0].val.sval, "CONDITION-FALSE") == 0))
-                jact->state = MAX(jact->state, NEGATIVE_COND);
-        }
+        printf("Got all responses.......................\n");        
+        // Examine the replies to form the status code 
+        // We have all the replies.. so no missing nodes
+        //
+        set_jactivity_state(jact, act_entry->num_replies);
     }
 
     // Set the access time
@@ -160,4 +151,41 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
 
     // Delete the runtable entry.
     free_rtable_entry(js->rtable, act_entry);
+}
+
+
+void set_jactivity_state(jactivity_t *jact, int nreplies)
+{
+    for (int i = 0; i < nreplies; i++)
+    {
+        if (strcmp(jact->replies[i]->cmd, "REXEC-ACK") == 0)
+            jact->state = MAX(jact->state, STARTED);
+        else
+        if ((strcmp(jact->replies[i]->cmd, "REXEC-NAK") == 0) &&
+            (strcmp(jact->replies[i]->args[0].val.sval, "ILLEGAL-PARAMS") == 0))
+            jact->state = MAX(jact->state, PARAMETER_ERROR);
+        else
+        if ((strcmp(jact->replies[i]->cmd, "REXEC-NAK") == 0) &&
+            (strcmp(jact->replies[i]->args[0].val.sval, "NOT-FOUND") == 0))
+            jact->state = MAX(jact->state, FATAL_ERROR);
+        else
+        if ((strcmp(jact->replies[i]->cmd, "REXEC-NAK") == 0) &&
+            (strcmp(jact->replies[i]->args[0].val.sval, "CONDITION-FALSE") == 0))
+            jact->state = MAX(jact->state, NEGATIVE_COND);
+    }
+}
+
+void process_missing_replies(jactivity_t *jact, int nreplies, int ecount)
+{
+    bool devicefound = false;
+
+    for (int i = 0; i < (nreplies - ecount); i++)
+        if (strcmp(jact->replies[i]->opt, "DEVICE") == 0)
+            devicefound = true;
+    if (devicefound)
+    {
+        // Send missing recomputing tasks to DEVICE. 
+
+        
+    }
 }

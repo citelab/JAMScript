@@ -120,6 +120,10 @@ jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, char *fmask, ...);
 void jam_rexec_run_wrapper(void *arg);
 void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd);
 
+void set_jactivity_state(jactivity_t *jact, int nreplies);
+void process_missing_replies(jactivity_t *jact, int nreplies, int ecount);
+
+
 /*
  * Functions defined in jamworker.c
  */

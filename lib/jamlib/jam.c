@@ -65,6 +65,7 @@ jamstate_t *jam_init(int port)
     js->foginq = queue_new(true);
     js->cloudinq = queue_new(true);
 
+    js->maintimer = timer_init("maintimer");
 
     js->bgsem = threadsem_new();
     js->jdata_sem = threadsem_new();
@@ -101,6 +102,7 @@ void jam_event_loop(void *arg)
 
     while (1)
     {
+        printf(">>>>>>>>>>>>>>>>>>>> WAITING >>>>>>>>>\n");
         nvoid_t *nv = pqueue_deq(js->atable->globalinq);
         printf("Got a message for the event loop...  \n");
         if (nv != NULL)
