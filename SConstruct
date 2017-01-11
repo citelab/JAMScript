@@ -6,7 +6,7 @@ import re
 # Check program versions
 ########################
 
-node_v = subprocess.check_output(["node", "-v"])
+node_v = subprocess.check_output("node -v", shell=True)
 node_loc = re.search('v[0-9]+.[0-9]+.[0-9]+', node_v)
 if node_loc==None:
     print "No Nodejs found ... Please Install it"
@@ -26,13 +26,13 @@ else:
 		        print "Please reinstall node. Current version is " + ".".join(version) + "\n This application requires 6.3.1"
 		        Exit(1);
 
-npm_v = subprocess.check_output(["npm", "-v"])
+npm_v = subprocess.check_output("npm -v", shell=True)
 npm_loc = re.search("[0-9]+.[0-9]+.[0-9]+", npm_v)
 if npm_loc==None:
     print "No NPM found ... Please Install it"
     Exit(1);
 
-subprocess.check_output(["npm", "install"])
+subprocess.check_call("npm install", shell=True)
 #Now we test for C library dependencies
 
 env = Environment(CC = 'clang', CCFLAGS='-g -DDEBUG_LVL1', LIBPATH=['/usr/local/lib'])

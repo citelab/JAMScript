@@ -116,6 +116,7 @@ try {
   // fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/jamconf.dat').pipe(fs.createWriteStream('jamconf.dat'));
   var requires = '';
   requires += "var jlib = require('/usr/local/share/jam/lib/jserver/jamlib');\n";
+  requires += "var jnode = require('/usr/local/share/jam/lib/jserver/jnode');\n";
   requires += "var async = require('asyncawait/async');\n";
   requires += "var await = require('asyncawait/await');\n";
 
@@ -125,9 +126,6 @@ try {
   requires += "var path = require('path');\n";
   requires += "var mime = require('mime');\n";
   requires += "var fs = require('fs');\n";
-  
-  requires += "var JManager = require('/usr/local/share/jam/lib/jserver/jmanager');\n";
-  requires += "var JLogger = require('/usr/local/share/jam/lib/jserver/jlogger');\n";  
 
   fs.writeFileSync("jamout.js", requires + jsOutput.JS + cOutput.JS);
 
@@ -140,12 +138,11 @@ try {
 
     // flowCheck(output.annotated_JS)
     var includes = '#include "jam.h"\n'
-    includes = '#include "jdata.h"\n' + includes;
-    includes = '#include "command.h"\n' + includes;
+    includes = '#include <unistd.h>\n' + includes;
 
     fs.writeFileSync("jamout.c", includes + preprocessDecls.join("\n") + "\n" + cOutput.C + jsOutput.C);
     fs.writeFileSync(`${tmpDir}/jamout.c`, includes + preprocessDecls.join("\n") + "\n" + cOutput.C + jsOutput.C);
-    child_process.execSync(`clang -g ${tmpDir}/jamout.c -I/usr/local/share/jam/lib/c_core ${options} -pthread -lcbor -lnanomsg /usr/local/lib/libjam.a -ltask -levent -lhiredis`) ;
+    child_process.execSync(`clang -g ${tmpDir}/jamout.c -I/usr/local/share/jam/lib/ ${options} -pthread -lcbor -lnanomsg /usr/local/lib/libjam.a -ltask -levent -lhiredis -L/usr/local/lib -lpaho-mqtt3c`) ;
     // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
     // createZip(createTOML(), output.JS, tmpDir, outputName);
     
@@ -170,13 +167,12 @@ function preprocess(file) {
     preprocessDecls = [];
   }
   var includes = '#include "jam.h"\n'
-  includes = '#include "jdata.h"\n' + includes;
-  includes = '#include "command.h"\n' + includes;
+  includes = '#include "jam.h"\n' + includes;
 
   contents = includes + "int main();\n" + contents;
   
   fs.writeFileSync(`${tmpDir}/pre.c`, contents);
-  return child_process.execSync(`clang -E -P -I/usr/local/share/jam/deps/fake_libc_include -I/usr/local/share/jam/lib/c_core ${tmpDir}/pre.c`).toString();
+  return child_process.execSync(`clang -E -P -I/usr/local/share/jam/deps/fake_libc_include -I/usr/local/share/jam/lib ${tmpDir}/pre.c`).toString();
   // return child_process.execSync(`${cc} -E -P -std=iso9899:199409 ${file}`).toString();
 
 }
