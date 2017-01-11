@@ -80,16 +80,18 @@ try {
     console.log(preprocessed);
   }
 
+  console.log("Parsing C Files...");
   var jsTree = jam.jamJSGrammar.match(fs.readFileSync(jsPath).toString(), 'Program');
-  var cTree = jam.jamCGrammar.match(preprocessed, 'Source');
-
-
-  if(cTree.failed()) {
-    throw cTree.message;
-  }
   if(jsTree.failed()) {
     throw jsTree.message;
   }
+
+  console.log("Parsing JavaScript Files...");
+  var cTree = jam.jamCGrammar.match(preprocessed, 'Source');
+  if(cTree.failed()) {
+    throw cTree.message;
+  }
+
   if(parseOnly) {
     printAndExit(cTree + jsTree);
   }
@@ -98,7 +100,9 @@ try {
     console.log(jsTree);
   }
 
+  console.log("Generating JavaScript Code...");
 	var jsOutput = jam.jsSemantics(jsTree).jamJSTranslator;
+  console.log("Generating C code...");
 	var cOutput = jam.cSemantics(cTree).jamCTranslator;
 
 
@@ -130,6 +134,7 @@ try {
   fs.writeFileSync("jamout.js", requires + jsOutput.JS + cOutput.JS);
 
   if(!noCompile) {
+    console.log("Compiling C code...");
     // Set platform options
     var options = "";
     if(process.platform != "darwin") {
@@ -164,6 +169,8 @@ function printAndExit(output) {
 }
 
 function preprocess(file) {
+  console.log("Preprocessing...");
+
   var contents = fs.readFileSync(file).toString();
   preprocessDecls = contents.match(/^[#;].*/gm);
   if(preprocessDecls == null) {
