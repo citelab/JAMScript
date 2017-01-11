@@ -185,7 +185,11 @@ void process_missing_replies(jactivity_t *jact, int nreplies, int ecount)
     if (devicefound)
     {
         // Send missing recomputing tasks to DEVICE. 
-
-        
+        if (strcmp(jac->replies[0]->cmd, "REXEC-ACK") == 0)
+        {
+            
+        }
     }
+    else
+        jact->state = FATAL_ERROR;
 }
