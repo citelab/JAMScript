@@ -114,33 +114,42 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     for (int i = 0; i < act_entry->num_replies; i++)
     {
         // TODO: Fix the constant 300 milliseconds here..
-        nvoid_t *nv = pqueue_deq_timeout(jact->thread->inq, 300);
+        jam_set_timer(js, jact->actid, 300);
+        nvoid_t *nv = pqueue_deq(jact->thread->inq);
 
         rcmd = NULL;
         if (nv != NULL)
         {
             rcmd = (command_t *)nv->data;
             free(nv);
-        }
-        else 
-            error_count++;
 
-        if (rcmd == NULL)
-            error_count++;
-        else 
-            jact->replies[i - error_count] = rcmd;
-    }
+            if (strcmp(rcmd->cmd, "TIMEOUT") == 0)
+                error_count++;
+            else 
+                jact->replies[i - error_count] = rcmd;
+        }
+    }        
 
     // return.. all invocation requests have failed..
     if (error_count == act_entry->num_replies)
         return NULL;
     
     // We sleep for the lease time.. this is expected.. we are in "sync" call
-    // TODO: Change from sleep to taskwait().. which would allow another idle thread to 
-    // do some work.. however that thread needs to yield() for us to come back here.
-    //
     int stime = get_sleep_time(jact);
-    sleep(stime);
+    jam_set_timer(js, jact->actid, stime);
+    nvoid_t *nv = pqueue_deq(jact->thread->inq);
+    
+    if (nv != NULL && ((rcmd = (command_t *)nv->data) != NULL))
+    {
+        free(nv);
+        if (strcmp(rcmd->cmd, "TIMEOUT") != 0)
+        {
+            command_free(rcmd);
+            return NULL;
+        }
+        else
+            command_free(rcmd);
+    }
 
     // We have started the remote execution.. at least some have started
     repcode = (arg_t *)calloc(3, sizeof(arg_t));
