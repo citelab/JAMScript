@@ -126,7 +126,7 @@ void jwork_set_callbacks(jamstate_t *js)
 
 void jwork_msg_delivered(void *ctx, MQTTClient_deliveryToken dt)
 {
-    printf("Message with token value %d delivery confirmed\n", dt);
+    // TODO: What to do here?
 }
 
 /*
@@ -331,7 +331,6 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
         for (int i = 0; i < 3; i++)
             if (js->cstate->mqttenabled[i] == true) 
             {
-                printf("Published to /level  \n");
                 mqtt_publish(js->cstate->mqttserv[i], "/level/func/request", rcmd);
             }
 
