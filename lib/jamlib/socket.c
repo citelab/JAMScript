@@ -102,7 +102,6 @@ bool socket_create(socket_t *socket, char *host, int port)
     }
 
     char *url = socket_new_url(host, port); 
-    printf("%s\n", url);
     int val = nn_bind(socket->sock_fd, url);
     if(val < 0)
         printf("Failure %s\n", nn_strerror(errno));
@@ -116,7 +115,6 @@ bool socket_create(socket_t *socket, char *host, int port)
 bool socket_connect(socket_t *socket, char *addr, int port)
 {
     char *url = socket_new_url(addr, port);
-    printf("Connecting to URL: %s\n", url);
 
     #ifdef DEBUG_LVL1
         printf("Connecting to URL: %s\n", url);
@@ -141,7 +139,7 @@ int socket_send(socket_t *sock, command_t *cmd)
         printf("\n-----------Error code: %s, %d------------\n",nn_strerror(errno), bytes);
     assert(bytes == cmd->length);
     #ifdef DEBUG_LVL1
-        //printf("Sent %d bytes on sock \n", bytes);
+        printf("Sent %d bytes on sock \n", bytes);
     #endif   
     // return the number of bytes sent out..
     return bytes;

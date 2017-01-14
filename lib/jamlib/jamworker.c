@@ -59,9 +59,7 @@ void *jwork_bgthread(void *arg)
     // Hookup the callback handlers for the different packet sources
     core_disconnect(js->cstate);
     jwork_set_callbacks(js);
-    printf("Calling reconnect... \n");
     core_reconnect(js->cstate);
-    printf("After reconnect.. \n");
 
     // Setup the subscriptions
     jwork_set_subscriptions(js);
@@ -75,6 +73,7 @@ void *jwork_bgthread(void *arg)
     #ifdef DEBUG_LVL1
         printf("Setup done. Waiting for the messages...\n");
     #endif
+
     while (1)
     {
         int nfds = jwork_wait_fds(js);
@@ -101,10 +100,7 @@ void jwork_set_subscriptions(jamstate_t *js)
     {
         if (js->cstate->mqttenabled[i]) 
         {
-            printf("-------------Subscribing.... \n");
             mqtt_subscribe(js->cstate->mqttserv[i], "/level/func/reply/#");
-
-            printf("-------------Subscribing.... %s\n", "/mach/func/request/");
             mqtt_subscribe(js->cstate->mqttserv[i], "/mach/func/request");
         }
     }
@@ -118,22 +114,13 @@ void jwork_set_subscriptions(jamstate_t *js)
 void jwork_set_callbacks(jamstate_t *js)
 {
     if (js->cstate->mqttenabled[0] == true)
-    {
         MQTTClient_setCallbacks(js->cstate->mqttserv[0], js->deviceinq, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
-        printf("Hello 0\n");
-    }
     
     if (js->cstate->mqttenabled[1] == true)
-    {
         MQTTClient_setCallbacks(js->cstate->mqttserv[1], js->foginq, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
-        printf("Hello 1\n");
-    }        
 
     if (js->cstate->mqttenabled[2] == true)
-    {
         MQTTClient_setCallbacks(js->cstate->mqttserv[2], js->cloudinq, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
-        printf("Hello 2\n");        
-    }
 }
 
 
@@ -163,8 +150,6 @@ int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTClient_messa
     } else 
     if (strncmp(topicname, "/level/func/reply", strlen("/level/func/reply") -1) == 0) 
     {
-        printf("===============/level messages.. queueing them \n");
-        
         nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
         command_t *cmd = command_from_data(NULL, nv);
         nvoid_free(nv);
@@ -173,8 +158,6 @@ int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTClient_messa
     } else
     if (strncmp(topicname, "/mach/func/request", strlen("/mach/func/request") -1) == 0)
     {
-        printf("===============/mach messages.. queueing them \n");
-        
         nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
         command_t *cmd = command_from_data(NULL, nv);
         nvoid_free(nv);
@@ -376,7 +359,6 @@ void jwork_process_device(jamstate_t *js)
     
     if (rcmd != NULL)
     {
-        printf("Hello2 %s\n", rcmd->cmd);
         // TODO: Implement a synchronization sub protocol.. 
         //
         if (strcmp(rcmd->cmd, "REXEC-SYN") == 0) 
@@ -400,11 +382,12 @@ void jwork_process_device(jamstate_t *js)
         else 
         if (strcmp(rcmd->cmd, "REXEC-ASY") == 0)
         {
-            printf("================== Received.... REXEC-ASY    \n");
             if (jwork_check_args(js, rcmd))
             {
                 if (jwork_check_condition(js, rcmd))
+                {
                     pqueue_enq(js->atable->globalinq, rcmd, sizeof(command_t));
+                }
                 else 
                     jwork_send_nak(js->cstate->mqttserv[0], rcmd, "CONDITION FALSE");
             }
@@ -416,12 +399,10 @@ void jwork_process_device(jamstate_t *js)
             (strcmp(rcmd->cmd, "REXEC-NAK") == 0) ||
             (strcmp(rcmd->cmd, "REXEC-RES") == 0))
         {
-            printf("Helllo %s\n", rcmd->actid);
             // resolve the activity id to index
             int aindx = activity_id2indx(js->atable, rcmd->actid);
             if (aindx >= 0)
             {
-                printf("Device~~~~~~~~~~~~~~~~ pushing to queue %d\n", aindx);
                 activity_thread_t *athr = js->atable->athreads[aindx];
                 // send the rcmd to that queue.. this is a pushqueue
                 pqueue_enq(athr->inq, rcmd, sizeof(command_t));    
@@ -429,7 +410,6 @@ void jwork_process_device(jamstate_t *js)
         }
         else
         {
-            printf("Freeingn,....\n");
             command_free(rcmd);
         }
     }
@@ -495,12 +475,10 @@ void jwork_process_fog(jamstate_t *js)
             (strcmp(rcmd->cmd, "REXEC-NAK") == 0) ||
             (strcmp(rcmd->cmd, "REXEC-RES") == 0))
         {
-            printf("Helllo\n");
             // resolve the activity id to index
             int aindx = activity_id2indx(js->atable, rcmd->actid);
             if (aindx >= 0)
             {
-                printf("Fog~~~~~~~~~~~~~~~~ pushing to queue %d\n", aindx);
                 activity_thread_t *athr = js->atable->athreads[aindx];
                 // send the rcmd to that queue.. this is a pushqueue
                 pqueue_enq(athr->inq, rcmd, sizeof(command_t));    
@@ -508,7 +486,6 @@ void jwork_process_fog(jamstate_t *js)
         }
         else
         {
-            printf("Freeingn,....\n");
             command_free(rcmd);
         }
     }
@@ -542,12 +519,10 @@ void jwork_process_cloud(jamstate_t *js)
             (strcmp(rcmd->cmd, "REXEC-NAK") == 0) ||
             (strcmp(rcmd->cmd, "REXEC-RES") == 0))
         {
-            printf("Helllo\n");
             // resolve the activity id to index
             int aindx = activity_id2indx(js->atable, rcmd->actid);
             if (aindx >= 0)
             {
-                printf("Cloud~~~~~~~~~~~~~~~~ pushing to queue %d\n", aindx);
                 activity_thread_t *athr = js->atable->athreads[aindx];
                 // send the rcmd to that queue.. this is a pushqueue
                 pqueue_enq(athr->inq, rcmd, sizeof(command_t));    
@@ -555,7 +530,6 @@ void jwork_process_cloud(jamstate_t *js)
         }
         else
         {
-            printf("Freeingn,....\n");
             command_free(rcmd);
         }
         // Send the command (rcmd) to the activity given the above pointer is non NULL
@@ -652,7 +626,6 @@ command_t *jwork_runid_status(jamstate_t *js, char *runid)
 
 
     runtableentry_t *ren = js->rtable->entries[i];
-    printf("I = %d.. Numruns %d........ %s\n", i, js->rtable->numruns, ren->result_list[0]->val.sval);
 
     // create the command to reply with the status update..
     // send [[ REPORT-REP FIN actname deviceid runid res (arg0)] (res is a single object) or
@@ -662,8 +635,6 @@ command_t *jwork_runid_status(jamstate_t *js, char *runid)
         if (ren->result_list[0] == NULL)
         {
             scmd = command_new("REPORT-REP", "FIN", ren->actname, deviceid, runid, "");
-            printf("Scmd.. ....................\n");
-
             return scmd;
         }
 
@@ -687,7 +658,6 @@ command_t *jwork_runid_status(jamstate_t *js, char *runid)
             case NULL_TYPE:
             break;
         }
-        printf("Returning....\n");
         return scmd;
     }
 
@@ -738,11 +708,12 @@ command_t *jwork_runid_kill(jamstate_t *js, char *runid)
 }
 
 
-runtableentry_t *find_table_entry(runtable_t *table, command_t *cmd){
-    printf("Attempting to find %s\n", cmd->actid);
-    for(int i = 0; i < MAX_RUN_ENTRIES; i++){
-        if(table->entries[i] != NULL){
-            //printf("%p %s %s\n", table->entries[i], cmd->actid, table->entries[i]->actid);
+runtableentry_t *find_table_entry(runtable_t *table, command_t *cmd)
+{
+    for(int i = 0; i < MAX_RUN_ENTRIES; i++)
+    {
+        if(table->entries[i] != NULL)
+        {
             if(strcmp(cmd->actid, table->entries[i]->actid) == 0)
                 return table->entries[i];
         }
@@ -753,8 +724,6 @@ runtableentry_t *find_table_entry(runtable_t *table, command_t *cmd){
 
 command_t *prepare_sync_return_result(runtableentry_t *act_entry, command_t *rcmd)
 {
-
-    printf("\n\n-------Command %s, %s %s %s %s %d---\n\n", rcmd->cmd, rcmd->actname, rcmd->actid, rcmd->actarg, rcmd->opt, rcmd->nargs);
     //Now we need to compare the values ... 
     //Here we assume that we can only return a single value and hence rcmd->nargs = 1
     if(rcmd->nargs != 1)
@@ -762,26 +731,33 @@ command_t *prepare_sync_return_result(runtableentry_t *act_entry, command_t *rcm
         printf("Invalid return arguments ... \nError ...\n");
         return return_err_arg(rcmd, "RET-FAILURE");
     }
-    for(int i = 1; i < 1; i++){ // TODO check ; num_rcv_something.. was here.
-        if(act_entry->result_list[0]->type != act_entry->result_list[i]->type){
+    for(int i = 1; i < 1; i++)
+    { 
+        // TODO check ; num_rcv_something.. was here.
+        if (act_entry->result_list[0]->type != act_entry->result_list[i]->type)
+        {
             printf("Inconsistent Results ... \n");
             return return_err_arg(rcmd, "RET-FAILURE");
         }
-        switch(act_entry->result_list[0]->type){
+        switch(act_entry->result_list[0]->type)
+        {
             case INT_TYPE:
-                if(act_entry->result_list[0]->val.ival != act_entry->result_list[i]->val.ival){
+                if (act_entry->result_list[0]->val.ival != act_entry->result_list[i]->val.ival)
+                {
                     printf("Inconsistent Results ... int ... \n");
                     return return_err_arg(rcmd, "RET-FAILURE");
                 }
                 break;
             case STRING_TYPE:
-                if(strcmp(act_entry->result_list[0]->val.sval, act_entry->result_list[i]->val.sval) != 0){
+                if (strcmp(act_entry->result_list[0]->val.sval, act_entry->result_list[i]->val.sval) != 0)
+                {
                     printf("Inconsistent Results ... string ... %s %s\n", act_entry->result_list[0]->val.sval, act_entry->result_list[i]->val.sval);
                     return return_err_arg(rcmd, "RET-FAILURE");
                 }
                 break;
             case DOUBLE_TYPE:
-                if(act_entry->result_list[0]->val.dval != act_entry->result_list[i]->val.dval){
+                if (act_entry->result_list[0]->val.dval != act_entry->result_list[i]->val.dval)
+                {
                     printf("Inconsistent Results ... double ... \n");
                     return return_err_arg(rcmd, "RET-FAILURE");
                 }
@@ -825,8 +801,6 @@ bool insert_runtable_entry(jamstate_t * js, command_t *rcmd)
     act_entry->cmd = rcmd;
     act_entry->num_replies = js->cstate->mqttenabled[0] + js->cstate->mqttenabled[1] + js->cstate->mqttenabled[2];
     
-    printf("=============== Number of entries: %d\n", act_entry->num_replies);
-
     //To insert the entry into the table
     #ifdef DEBUG_LVL1
         printf("Added Value: %p %s\n", act_entry, act_entry->actid);
@@ -881,14 +855,14 @@ void tcallback(void *arg)
     activity_thread_t *athr = (activity_thread_t *)arg;
 
     #ifdef DEBUG_LVL1
-    printf("Callback.... \n");
+        printf("Callback.... \n");
     #endif
     // stick the "TIMEOUT" message into the queue for the activity
     command_t *tmsg = command_new("TIMEOUT", "__", "ACTIVITY", athr->actid, "__", "");
     pqueue_enq(athr->inq, tmsg, sizeof(command_t));
     // do a signal on the thread semaphore for the activity
     #ifdef DEBUG_LVL1
-    printf("Callback Occuring... \n");
+        printf("Callback Occuring... \n");
     #endif
 }
 

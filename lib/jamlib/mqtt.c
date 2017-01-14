@@ -81,8 +81,6 @@ command_t *mqtt_receive(MQTTClient mcl, char *cmdstr, char *topic, int timeout)
         if (strcmp(topic, topicname) != 0)
             return NULL;
 
-        printf("Got a message for topic %s", topicname);
-
         nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
         command_t *cmd = command_from_data(NULL, nv);
         nvoid_free(nv);

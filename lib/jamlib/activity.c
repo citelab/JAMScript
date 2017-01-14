@@ -167,11 +167,8 @@ activity_callback_reg_t *activity_findcallback(activity_table_t *at, char *name,
 {
     int i;
 
-    printf("Callback # %d\n", at->numcbackregs);
-
     for (i = 0; i < at->numcbackregs; i++) 
     {
-        printf("i = %d, name = %s\n", i, at->callbackregs[i]->name);
         if (strcmp(at->callbackregs[i]->name, name) == 0)
             return at->callbackregs[i];
     }
@@ -199,7 +196,6 @@ void run_activity(void *arg)
         nvoid_t *nv = pqueue_deq(athread->inq);
         athread->state = STARTED;
 
-        printf("========= Got a message in run activity..........Run # %d  \n", at->runcounter++);
         if (nv != NULL)
         {
             cmd = (command_t *)nv->data;

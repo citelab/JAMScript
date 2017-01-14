@@ -90,7 +90,8 @@ arg_t *command_arg_clone(arg_t *arg)
 {
     arg_t *val = (arg_t *)calloc(1, sizeof(arg_t));
     assert(val != NULL);
-    if(arg == NULL){
+    if (arg == NULL)
+    {
         printf("Error... Sync call requires a return statement ...\n");
         assert(arg != NULL);
     }

@@ -1,5 +1,4 @@
-#include "command.h"
-#include "jdata.h"
+#include <unistd.h>
 #include "jam.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,7 +48,7 @@ user_main();
 
 void taskmain(int argc, char **argv) {
 
-    js = jam_init();
+    js = jam_init(1883);
     user_setup();
      
     taskcreate(jam_event_loop, js, 50000);

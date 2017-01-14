@@ -1,4 +1,5 @@
-var jlib = require('/usr/local/share/jam/lib/jserver/jamlib');
+var jamlib = require('/usr/local/share/jam/lib/jserver/jamlib');
+var jnode = require('/usr/local/share/jam/lib/jserver/jnode');
 var async = require('asyncawait/async');
 var await = require('asyncawait/await');
 var http = require('http');
@@ -7,20 +8,28 @@ var qs = require('querystring');
 var path = require('path');
 var mime = require('mime');
 var fs = require('fs');
-var JManager = require('/usr/local/share/jam/lib/jserver/jmanager');
-var JLogger = require('/usr/local/share/jam/lib/jserver/jlogger');
 var jcondition = new Map();
 var num_calls = 0;
-function ping_asyn(msg) {
+var ping_asyn = function(msg) {
 if (msg != "PING") {
 console.log("DAMMIT ROBERT ON JAVSCRIPT");
 }
 num_calls++;
 
-}
-function get_num_ping() {
+};
+var get_num_ping = function() {
 return num_calls;
 
+};
+var mbox = {
+"functions": {
+"get_num_ping": get_num_ping,
+"ping_asyn": ping_asyn,
+},
+"signatures": {
+"get_num_ping": "callback[1].join('')",
+"ping_asyn": "callback[1].join('')",
 }
-jlib.JServer.registerCallback(get_num_ping, "");
-jlib.JServer.registerCallback(ping_asyn, "s");
+}
+jamlib.registerFuncs(mbox);
+jamlib.run(function() { console.log("Running..."); } );

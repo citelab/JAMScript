@@ -32,6 +32,8 @@ void user_setup() {
     printf("Registering.. callbacks for hello and hello3.. \n");
     activity_regcallback(js->atable, "hello", ASYNC, "s", callhello);
     activity_regcallback(js->atable, "hello3", ASYNC, "s", callhello3);
+    activity_regcallback(js->atable, "testfunc", ASYNC, "s", callhello3);
+    
 }
 
 

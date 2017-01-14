@@ -99,7 +99,6 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
 
     if (act_entry == NULL)
     {
-        printf("Cannot find activity ... \n");
         jact->state = FATAL_ERROR;
         return NULL;
     }

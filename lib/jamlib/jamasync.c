@@ -105,8 +105,6 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         return;
     }
 
-    printf("Runner %d..\n", act_entry->num_replies);
-
     // Send the command to the remote side  
     // The send is executed via the worker thread..
     queue_enq(jact->thread->outq, cmd, sizeof(command_t));
@@ -132,14 +130,12 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     }
 
     if (error_count > 0) {
-        printf("Missing responses.......................\n");
         jact->state = PARTIAL;
         // We have some missing replies.. see what we are missing
         process_missing_replies(jact, act_entry->num_replies, error_count);
     }
     else
     {
-        printf("Got all responses.......................\n");        
         // Examine the replies to form the status code 
         // We have all the replies.. so no missing nodes
         //
@@ -187,7 +183,10 @@ void process_missing_replies(jactivity_t *jact, int nreplies, int ecount)
         // Send missing recomputing tasks to DEVICE. 
         if (strcmp(jact->replies[0]->cmd, "REXEC-ACK") == 0)
         {
-            
+            command_t *scmd = jact->replies[0];
+            free(scmd->cmd);
+            scmd->cmd = strdup("REXEC-ASY2");
+            queue_enq(jact->thread->outq, scmd, sizeof(command_t));
         }
     }
     else

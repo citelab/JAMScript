@@ -42,7 +42,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 jamstate_t *jam_init(int port)
 {
     #ifdef DEBUG_LVL1
-        printf("JAM Library initialization... ");
+        printf("JAM Library initialization... \t\t[started]\n");
     #endif
 
     jamstate_t *js = (jamstate_t *)calloc(1, sizeof(jamstate_t));
@@ -75,7 +75,6 @@ jamstate_t *jam_init(int port)
         perror("ERROR! Unable to start the jamworker thread");
         exit(1);
     }
-    printf("\n\n--------------PLEASE WORK---------------\n\n");
     task_wait(js->bgsem);
 
     // rval = pthread_create(&(js->jdata_event_thread), NULL, jdata_event_loop, (void *)js);
@@ -85,9 +84,9 @@ jamstate_t *jam_init(int port)
     // }
     // task_wait(js->jdata_sem);
 
-    //#ifdef DEBUG_LVL1
-        printf("\n ------------------------Done-------------------------\n");
-    //#endif
+    #ifdef DEBUG_LVL1
+        printf("JAM Library initialization... \t\t[completed]\n");
+    #endif
     return js;
 }
 
@@ -102,9 +101,12 @@ void jam_event_loop(void *arg)
 
     while (1)
     {
-        printf(">>>>>>>>>>>>>>>>>>>> WAITING >>>>>>>>>\n");
         nvoid_t *nv = pqueue_deq(js->atable->globalinq);
-        printf("Got a message for the event loop...  \n");
+
+        #ifdef DEBUG_LVL1
+            printf("Got a message for the event loop...  \n");
+        #endif
+        
         if (nv != NULL)
         {
             cmd = (command_t *)nv->data;

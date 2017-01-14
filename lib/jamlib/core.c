@@ -44,7 +44,7 @@ corestate_t *core_init(int port, int timeout)
     char serverhost[64];
     int count;
 
-    #ifdef DEBUG_MSGS
+    #ifdef DEBUG_LVL1
         printf("Core initialization...");
     #endif
 
@@ -114,12 +114,9 @@ corestate_t *core_init(int port, int timeout)
         exit(1);
     } else
     {
-        printf("\nWe received %d servers\n", rcmd->nargs);
         // process the information that we just received..
         for (int i = 0; i < rcmd->nargs; i++) 
         {
-            printf("Server %s\n", rcmd->args[i].val.sval);
-
             cs->mqttserv[i+1] = mqtt_open(rcmd->args[i].val.sval);
             if (cs->mqttserv[i+1] != NULL) 
             {
@@ -162,8 +159,6 @@ void core_connlost(void *ctx, char *cause)
 
 int core_msgarr(void *ctx, char *topicname, int tlen, MQTTClient_message *msg)
 {
-    printf("Message arrived for %s\n", topicname);
-
     return 0;
 }
 
