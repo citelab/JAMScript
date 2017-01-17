@@ -72,7 +72,12 @@ if(cPath === undefined || jsPath === undefined) {
 
 try {
   fs.mkdirSync(tmpDir);
-  var preprocessed = preprocess(cPath);
+  try {
+    var preprocessed = preprocess(cPath);
+  } catch(e) {
+    console.log("Exiting with preprocessor error");
+    process.exit();
+  }
   if(preprocessOnly) {
     printAndExit(preprocessed);
   }
@@ -143,6 +148,7 @@ try {
 
     // flowCheck(output.annotated_JS)
     var includes = '#include "jam.h"\n'
+    includes = '#include "jdata.h"\n' + includes;
     includes = '#include <unistd.h>\n' + includes;
 
     fs.writeFileSync("jamout.c", includes + preprocessDecls.join("\n") + "\n" + cOutput.C + jsOutput.C);
@@ -182,7 +188,8 @@ function preprocess(file) {
   contents = includes + "int main();\n" + contents;
   
   fs.writeFileSync(`${tmpDir}/pre.c`, contents);
-  return child_process.execSync(`clang -E -P -I/usr/local/share/jam/deps/fake_libc_include -I/usr/local/share/jam/lib ${tmpDir}/pre.c`).toString();
+  return result = child_process.execSync(`clang -E -P -I/usr/local/share/jam/deps/fake_libc_include -I/usr/local/share/jam/lib ${tmpDir}/pre.c`).toString();
+
   // return child_process.execSync(`${cc} -E -P -std=iso9899:199409 ${file}`).toString();
 
 }
