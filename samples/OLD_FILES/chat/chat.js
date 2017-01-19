@@ -32,3 +32,4 @@ jasync function j_node_get_msg(usr_name, msg, user_id) {
   msg_list.push(usr_name + ":" + msg);
   c_node_get_msg(usr_name, msg, user_id, msg_id++);
 }
+

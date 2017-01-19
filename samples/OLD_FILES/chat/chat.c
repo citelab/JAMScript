@@ -13,11 +13,10 @@ struct pollfd qpollfds[2];
 int ID = 0;
 int current_msg_id = -1;
 
+
 jasync c_node_get_msg(char * usr_name, char * msg, int usr_id, int msg_id){
     if(usr_id != ID){
-      printf("hey\n");
       if(current_msg_id != msg_id){
-        printf("me\n");
         printf("%s:%s", usr_name, msg);
         current_msg_id = msg_id;
       }
