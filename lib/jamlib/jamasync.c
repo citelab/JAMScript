@@ -8,7 +8,7 @@
 #include "free_list.h"
 
 
-jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, char *fmask, ...)
+jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *aname, char *fmask, ...)
 {
     va_list args;
     nvoid_t *nv;
@@ -69,7 +69,7 @@ jactivity_t *jam_rexec_async(jamstate_t *js, char *aname, char *fmask, ...)
     va_end(args);
 
     // Need to add start to activity_new()
-    jactivity_t *jact = activity_new(js->atable, activity_gettime());
+    // jactivity_t *jact = activity_new(js->atable, activity_gettime());
 
     if (jact != NULL)
     {
@@ -115,6 +115,7 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         // TODO: Fix the constant 300 milliseconds here..   
         jam_set_timer(js, jact->actid, 300);
         nvoid_t *nv = pqueue_deq(jact->thread->inq);
+        jam_clear_timer(js, jact->actid);
 
         rcmd = NULL;
         if (nv != NULL) 

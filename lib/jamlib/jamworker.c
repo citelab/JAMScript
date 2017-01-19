@@ -854,7 +854,7 @@ void tcallback(void *arg)
     activity_thread_t *athr = (activity_thread_t *)arg;
 
     #ifdef DEBUG_LVL1
-        printf("Callback.... \n");
+        printf("Callback.... Queue %d\n", athr->inq->queue->pushsock);
     #endif
     // stick the "TIMEOUT" message into the queue for the activity
     command_t *tmsg = command_new("TIMEOUT", "__", "ACTIVITY", athr->actid, "__", "");
@@ -869,8 +869,10 @@ void tcallback(void *arg)
 void jam_set_timer(jamstate_t *js, char *actid, int tval)
 {
     activity_thread_t *athr = activity_getbyid(js->atable, actid);
-    if (athr != NULL)
+    if (athr != NULL) 
         timer_add_event(js->maintimer, tval, 0, actid, tcallback, athr);
+    else
+        printf("ERROR! Unable to find the activity to trigger at timer event.\n");
 }
 
 

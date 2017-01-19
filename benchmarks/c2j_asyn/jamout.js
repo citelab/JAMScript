@@ -1,4 +1,4 @@
-var jamlib = require('/usr/local/share/jam/lib/jserver/jamlib');
+var jlib = require('/usr/local/share/jam/lib/jserver/jamlib');
 var jnode = require('/usr/local/share/jam/lib/jserver/jnode');
 var async = require('asyncawait/async');
 var await = require('asyncawait/await');

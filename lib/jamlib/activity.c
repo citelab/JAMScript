@@ -195,7 +195,7 @@ void run_activity(void *arg)
         command_t *cmd;
         nvoid_t *nv = pqueue_deq(athread->inq);
         athread->state = STARTED;
-
+        printf("HEREREREEE>...\n");
         if (nv != NULL)
         {
             cmd = (command_t *)nv->data;
@@ -244,6 +244,7 @@ void run_activity(void *arg)
             command_free(cmd);
         }
         athread->state = EMPTY;
+        printf("After setting to EMPTY  %s\n", athread->actid);
     }
 }
 
@@ -347,6 +348,23 @@ jactivity_t *activity_new(activity_table_t *at, char *actid)
     return jact;
 }
 
+void activity_free(jactivity_t *jact)
+{
+    int i; 
+
+    activity_freethread(jact);
+
+    if (jact->actid) free(jact->actid);
+
+    for (i = 0; i < MAX_REPLIES; i++)
+    {
+        if (jact->replies[i] != NULL)
+            command_free(jact->replies[i]);
+    }
+
+    free(jact);
+}
+
 
 activity_thread_t *activity_getbyid(activity_table_t *at, char *actid)
 {
@@ -377,18 +395,13 @@ int activity_id2indx(activity_table_t *at, char *actid)
 } 
 
 
-void activity_freethread(activity_table_t *at, char *actid)
+void activity_freethread(jactivity_t *jact)
 {
-    int i;
-    int j = activity_id2indx(at, actid);
-
-    // If the activity is pointing to one not in the table 
-    // don't do anything. Something is Wrong!
-    if (j < 0)
+    if ((jact == NULL) || (jact->thread == NULL))
         return;
 
-    at->athreads[j]->state = EMPTY;
+    jact->thread->state = EMPTY;
     // Free memory that is not reuseable
-    if (at->athreads[j]->actid != NULL) free(at->athreads[j]->actid);
+ //   if (jact->thread->actid != NULL) free(jact->thread->actid);
 }
 

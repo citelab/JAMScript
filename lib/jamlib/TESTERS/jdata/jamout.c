@@ -1,4 +1,4 @@
-#include "command.h"
+#include <unistd.h>
 #include "jdata.h"
 #include "jam.h"
 #include <stdio.h>
@@ -6,12 +6,9 @@
 #include <string.h>
 typedef char* jcallback;
 jamstate_t *js;
-jactivity_t *js_read() {
-jactivity_t *res = jam_rexec_async(js, "js_read", "");
-return res;}
-
 int user_main() {
-jdata_log_to_server("xx", "4", ((void*)0));
+jdata_log_to_server("x", "4", ((void*)0));
+jdata_log_to_server("y", "0", ((void*)0));
 js_read();
 return 0;
 }
@@ -25,7 +22,7 @@ user_main();
 
 void taskmain(int argc, char **argv) {
 
-    js = jam_init();
+    js = jam_init(1883);
     user_setup();
      
     taskcreate(jam_event_loop, js, 50000);

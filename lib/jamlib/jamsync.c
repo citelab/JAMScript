@@ -77,7 +77,7 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
         cmd->cbor_item_list = list;
     
         rargs = jam_sync_runner(js, jact, cmd);
-        activity_freethread(js->atable, jact->actid);
+        activity_freethread(jact);
         return rargs;
     } 
     else

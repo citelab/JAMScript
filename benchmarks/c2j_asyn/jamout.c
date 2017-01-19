@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include "jdata.h"
 #include "jam.h"
 #include <stdio.h>
 #include <stdlib.h>

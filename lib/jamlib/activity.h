@@ -139,8 +139,9 @@ activity_thread_t *activity_getthread(activity_table_t *at, char *actid);
 void activity_setthread(activity_thread_t *at, jactivity_t *jact, char *actid);
 jactivity_t *activity_new(activity_table_t *at, char *actid);
 
+void activity_free(jactivity_t *jact);
 activity_thread_t *activity_getbyid(activity_table_t *at, char *actid);
 int activity_id2indx(activity_table_t *at, char *actid);
-void activity_freethread(activity_table_t *at, char *actid);
+void activity_freethread(jactivity_t *jact);
 
 #endif

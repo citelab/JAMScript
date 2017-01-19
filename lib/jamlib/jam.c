@@ -106,7 +106,7 @@ void jam_event_loop(void *arg)
         #ifdef DEBUG_LVL1
             printf("Got a message for the event loop...  \n");
         #endif
-        
+
         if (nv != NULL)
         {
             cmd = (command_t *)nv->data;
@@ -134,3 +134,7 @@ void jam_event_loop(void *arg)
     }
 }
 
+jactivity_t *jam_create_activity(jamstate_t *js)
+{
+    return activity_new(js->atable, activity_gettime());
+}
