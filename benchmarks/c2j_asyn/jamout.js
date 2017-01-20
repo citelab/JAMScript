@@ -27,8 +27,8 @@ var mbox = {
 "ping_asyn": ping_asyn,
 },
 "signatures": {
-"get_num_ping": "callback[1].join('')",
-"ping_asyn": "callback[1].join('')",
+"get_num_ping": "",
+"ping_asyn": "s",
 }
 }
 jamlib.registerFuncs(mbox);
