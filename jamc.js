@@ -124,7 +124,7 @@ try {
   // fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/testjam').pipe(fs.createWriteStream('jamout'));
   // fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/jamconf.dat').pipe(fs.createWriteStream('jamconf.dat'));
   var requires = '';
-  requires += "var jlib = require('/usr/local/share/jam/lib/jserver/jamlib');\n";
+  requires += "var jamlib = require('/usr/local/share/jam/lib/jserver/jamlib');\n";
   requires += "var jnode = require('/usr/local/share/jam/lib/jserver/jnode');\n";
   requires += "var async = require('asyncawait/async');\n";
   requires += "var await = require('asyncawait/await');\n";
