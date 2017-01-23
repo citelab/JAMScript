@@ -146,7 +146,7 @@ try {
       options = "-lm -lbsd";
     }
 
-    // flowCheck(output.annotated_JS)
+    flowCheck(requires + jsOutput.JS + cOutput.JS);
     var includes = '#include "jam.h"\n'
     includes = '#include "jdata.h"\n' + includes;
     includes = '#include <unistd.h>\n' + includes;
@@ -199,14 +199,26 @@ function flowCheck(input) {
   var hasFlow = child_process.execSync("flow version >/dev/null 2>&1 || { echo 'not installed';}");
   
   if(hasFlow.length == 0) {
-    const child = child_process.exec('flow check-contents --color always', (error, stdout, stderr) => {
+    fs.writeFileSync(`${tmpDir}/.flowconfig`, "");
+    fs.writeFileSync(`${tmpDir}/annotated.js`, input);
+    const child = child_process.exec(`flow ${tmpDir}/annotated.js --color always`, (error, stdout, stderr) => {
         if (error !== null) {
           console.log("JavaScript Type Checking Error:");
           console.log(stdout.substring(stdout.indexOf("\n") + 1));
+        } else {
+          console.log("No Flow JavaScript errors found");
         }
     });
-    child.stdin.write(input);
-    child.stdin.end();
+    // const child = child_process.exec('flow check-contents --color always', (error, stdout, stderr) => {
+    //     if (error !== null) {
+    //       console.log("JavaScript Type Checking Error:");
+    //       console.log(stdout.substring(stdout.indexOf("\n") + 1));
+    //     }
+    // });
+    // child.stdin.write(input);
+    // child.stdin.end();
+  } else {
+    console.log("Flow not installed, skipping JavaScript typechecking");
   }
 }
 
