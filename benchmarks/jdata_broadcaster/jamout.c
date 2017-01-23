@@ -4,14 +4,17 @@
 #include <limits.h>
 typedef char* jcallback;
 jamstate_t *js;
+jbroadcaster *stuff;
 int user_main() {
 printf("We are here ... \n");
-jdata_log_to_server("num_bugs", "1222", ((void*)0));
-printf("I seee \n");
+sleep(30);
+int result = (int)get_jbroadcaster_value(stuff);
+printf("Result: %d\n", result);
 return 0;
 }
 
 void user_setup() {
+stuff = jbroadcaster_init(JBROADCAST_STRING, "stuff", NULL);
 }
 
 void jam_run_app(void *arg) {

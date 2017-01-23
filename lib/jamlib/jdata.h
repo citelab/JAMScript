@@ -12,6 +12,9 @@
 
 #define DELIM "$$$"
 #define CMD_LOGGER "COMMAND_LOGGER"
+#define DEFAULT_APP_NAME "DEFAULT_APP"
+#define DEFAULT_SERV_IP "127.0.0.1"
+#define DEFAULT_SERV_PORT 6379
 
 typedef void (*connection_callback)(const redisAsyncContext *c, int status);
 typedef void (*msg_rcv_callback)(redisAsyncContext *c, void *reply, void *privdata);
@@ -47,10 +50,8 @@ typedef struct jdata_list_node{
   struct jdata_list_node *next;
 }jdata_list_node;
 
-char *jdata_strip_reply(redisReply *r);
-void jdata_get_server_ip(jamstate_t *js);
-void jdata_init(jamstate_t *js);
-void *jdata_event_loop(void *js);
+void jdata_attach(jamstate_t *js, char *application_id, char *serv_ip, int serv_port);
+void *jdata_init(void *js);
 void jdata_default_connection(const redisAsyncContext *c, int status);
 void jdata_default_disconnection(const redisAsyncContext *c, int status);
 void jdata_default_msg_received(redisAsyncContext *c, void *reply, void *privdata);
@@ -59,7 +60,6 @@ void jdata_remove_element(char *key, char *value, msg_rcv_callback callback);
 redisAsyncContext *jdata_subscribe_to_server(char *key, msg_rcv_callback on_msg, connection_callback connect, connection_callback disconnect);
 void jdata_run_async_cmd(char *cmd, msg_rcv_callback callback);
 redisReply *jdata_run_sync_cmd(char *cmd);
-void jdata_free();
 jbroadcaster *jbroadcaster_init(int type, char *var_name, activitycallback_f usr_callback);
 void *get_jbroadcaster_value(jbroadcaster *j);
 void free_jbroadcaster_list();
@@ -74,7 +74,5 @@ void jcmd_log_pending_activity(char *app_id, char *actid, int index);
 void jcmd_remove_acknowledged_activity(char *app_id, char *actid, int index);
 void jcmd_delete_pending_activity_log(char *key, msg_rcv_callback callback);
 char **jcmd_get_pending_activity_log(char *key, msg_rcv_callback callback);
-
-
 
 #endif

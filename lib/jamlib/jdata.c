@@ -1,78 +1,68 @@
 /*
  * Author: Xiru Zhu
  * Date: July 4 2016
+ * Updated: Jan 6 2017
+ * 
+ * Notes:
+ *  To initialize this system,
+ *  create a separate pthread and then run jdata_event_loop
+ *  This should initialize jdata system. 
  */
 #include "jdata.h"
-
 char app_id[256];
-char dev_id[256];
-int jdata_seq_num = 0;
 
 //redis server connection parameters
 char *redis_serv_IP;
 int redis_serv_port;
 
+//jamstate variable to be kept in reference
 jamstate_t *j_s;
 
-//redisAsyncContext *jdata_async_subscriber_context;//for asynchronous calls to logger
-redisAsyncContext *jdata_async_non_sub_context;//for asynchronous calls to logger
+//For Async calls to logger. 
+redisAsyncContext *jdata_async_context;
 
+//For sync calls to logger. 
 redisContext *jdata_sync_context;
 
+//Event Loop. This responds to messages
 struct event_base *base;
 
+//Linked List System for current jdata elements. 
+//This is because we need to look up which jdata is updated
 jdata_list_node *jdata_list_head = NULL;
 jdata_list_node *jdata_list_tail = NULL;
 
-char *jdata_strip_reply(redisReply *r){
-  if (r == NULL) return NULL;
-  if (r->type == REDIS_REPLY_ARRAY) {
+/*
+Function to initialize values and attach them to the event loop
+Inputs
+    jamstate
+    application unique id
+    redis server ip
+    redis server port
+*/
+void jdata_attach(jamstate_t *js, char *application_id, char *serv_ip, int serv_port){
+  sprintf(app_id, "%s", application_id);
+  //These are the initial redis server numbers. 
+  redis_serv_IP = strdup(serv_ip);
+  redis_serv_port = serv_port; //Default Port Number
 
-  }
-  return NULL;
-}
-
-void jdata_get_server_ip(jamstate_t *js){
-  arg_t *res = jam_rexec_sync(js, "jdata_registration", "ss", app_id, dev_id);
-  if(res == NULL){
-    printf("Error... Server Connection Issues... \n");
-    exit(1);
-  }
-  redis_serv_IP = strdup(res->val.sval);
-  command_arg_free(res);
-}
-
-void jdata_init(jamstate_t *js){
- // sprintf(app_id, "%s", js->cstate->app_name);
-  sprintf(dev_id, "%s", js->cstate->device_id);
-  j_s = js;
-  jdata_seq_num = 0;
-  redis_serv_IP = NULL;
-  //redis_serv_IP = strdup("127.0.0.1");
-  redis_serv_port = 6379; //Default Port Number
-
+  //Initialize event base
   base = event_base_new();
-  /*
-  jdata_async_subscriber_context = redisAsyncConnect(redis_serv_IP, redis_serv_port);
-  if (jdata_async_subscriber_context->err) {
-      printf("Error: %s\n", jdata_async_subscriber_context->errstr);
-      // handle error
-  }*/
-  jdata_async_non_sub_context = redisAsyncConnect(redis_serv_IP, redis_serv_port);
-  if (jdata_async_non_sub_context->err) {
-      printf("Error: %s\n", jdata_async_non_sub_context->errstr);
-      // handle error
+ 
+  //Initialize an async context
+  jdata_async_context = redisAsyncConnect(redis_serv_IP, redis_serv_port);
+  if (jdata_async_context->err) {
+      printf("Error: %s\n", jdata_async_context->errstr);
   }
-  /*
-  redisLibeventAttach(jdata_async_subscriber_context, base);
-  redisAsyncSetConnectCallback(jdata_async_subscriber_context, jdata_default_connection);
-  redisAsyncSetDisconnectCallback(jdata_async_subscriber_context, jdata_default_disconnection);
-  */
-  redisLibeventAttach(jdata_async_non_sub_context, base);
-  redisAsyncSetConnectCallback(jdata_async_non_sub_context, jdata_default_connection);
-  redisAsyncSetDisconnectCallback(jdata_async_non_sub_context, jdata_default_disconnection);
 
-  struct timeval timeout = { 1, 500000 }; // 1.5 seconds
+  //Attach async context to base
+  redisLibeventAttach(jdata_async_context, base);
+  redisAsyncSetConnectCallback(jdata_async_context, jdata_default_connection);
+  redisAsyncSetDisconnectCallback(jdata_async_context, jdata_default_disconnection);
+  
+  //Initialize sync context
+  struct timeval timeout = { 1, 500000 }; // Sync timeout time
+  //Initialize sync context
   jdata_sync_context = redisConnectWithTimeout(redis_serv_IP, redis_serv_port, timeout);
   if (jdata_sync_context == NULL || jdata_sync_context->err) {
       if (jdata_sync_context) {
@@ -84,18 +74,29 @@ void jdata_init(jamstate_t *js){
   }
 }
 
-void *jdata_event_loop(void *args){
-  jamstate_t *js = (jamstate_t *)args;
-  jdata_init(js);
-  thread_signal(js->jdata_sem);
+/*
+Initializes jdata system 
+This has to be run in a separate thread otherwise will block the current thread. 
+This thread created as to be pthread, otherwise will block all other process. 
+Input:
+    jamstate
+*/
+void *jdata_init(void *js){
+  j_s = (jamstate_t *)js;
+  jdata_attach((jamstate_t *)js, DEFAULT_APP_NAME, DEFAULT_SERV_IP, DEFAULT_SERV_PORT);
   #ifdef DEBUG_LVL1
     printf("JData initialized...\n");
   #endif
+  thread_signal(j_s->jdata_sem);
   event_base_dispatch(base);
-  jdata_free();
   return NULL;
 }
 
+/*
+ * This is the default connection callback. 
+ * This is utilized when the connection callback for jdata is not defined
+ * You do not need to use this anywhere, this is only utilized in the library a default callback. 
+ */
 void jdata_default_connection(const redisAsyncContext *c, int status) {
   if (status != REDIS_OK) {
       printf("Connection Error: %s\n", c->errstr);
@@ -106,6 +107,11 @@ void jdata_default_connection(const redisAsyncContext *c, int status) {
   #endif
 }
 
+/*
+ * This is the default disconnection callback. 
+ * This is utilized when the disconnection callback for jdata is not defined
+ * You do not need to use this anywhere, this is only utilized in the library a default callback. 
+ */
 void jdata_default_disconnection(const redisAsyncContext *c, int status) {
   if (status != REDIS_OK) {
       printf("Disconnection Error: %s\n", c->errstr);
@@ -116,6 +122,11 @@ void jdata_default_disconnection(const redisAsyncContext *c, int status) {
   #endif
 }
 
+/*
+ * This is the default jdata received callback. 
+ * This is utilized when a jdata is called but no callback was assigned. It will simply print the value. 
+ * You do not need to use this anywhere, this is only utilized in the library as a default callback. 
+ */
 void jdata_default_msg_received(redisAsyncContext *c, void *reply, void *privdata) {
   redisReply *r = reply;
   if (reply == NULL) return;
@@ -133,20 +144,26 @@ void jdata_default_msg_received(redisAsyncContext *c, void *reply, void *privdat
   #endif
 }
 
+/*
+ * jdata function to log to server.
+ * requires jdata to have been initialized first. Otherwise will segfault. 
+ * 
+ * Inputs 
+ *  key -> The jdata variable name 
+ *  value -> the value to be logged
+ *  callback -> the callback function if you want a custom callback to signal when a log succeeds. 
+                        Can be null
+ * jdata grade = 'A'
+ * -> jdata_log_to_server("grade", 'A', null);
+ */
 void jdata_log_to_server(char *key, char *value, msg_rcv_callback callback){
-  jdata_seq_num++;
-  //the loggerResponse is the onMessage handler (when something is received from the redis server),
-  //the third parameter is anything to pass to the handler. In this case i think we need to pass a
-  //reference to the key being saved so that we can cache the data on the client and/or report to the client
-  //if anything failed during saving. Another option would be to return the saved key from the redis server
-  //after execution. The limitation to this is that the key would only be returned on successful execution
   if(callback == NULL)
     callback = jdata_default_msg_received;
 
-  int length = strlen(value) + strlen(DELIM) + strlen(app_id) + strlen(DELIM) + strlen(dev_id) + strlen(DELIM) + 10;
+  int length = strlen(value) + strlen(DELIM) + strlen(app_id) + strlen(DELIM) + 10;
   char newValue[length];
-  sprintf(newValue , "%s%s%s%s%s", value, DELIM, app_id, DELIM, dev_id);
-  redisAsyncCommand(jdata_async_non_sub_context, callback, NULL, "EVAL %s 1 %s %s", "redis.replicate_commands(); \
+  sprintf(newValue , "%s%s%s", value, DELIM, app_id);
+  redisAsyncCommand(jdata_async_context, callback, NULL, "EVAL %s 1 %s %s", "redis.replicate_commands(); \
                                                           local t = (redis.call('TIME'))[1]; \
                                                           local insert_order =  redis.call('ZCARD', KEYS[1]) + 1; \
                                                           redis.call('ZADD', KEYS[1], t, ARGV[1] .. \"$$$\" .. insert_order .. \"$$$\" .. t); \
@@ -155,18 +172,50 @@ void jdata_log_to_server(char *key, char *value, msg_rcv_callback callback){
     printf("Logging executed...\n");
   #endif
 }
-
+/*
+ * jdata function to remove a logged value in redis.
+ * requires jdata to have been initialized first. Otherwise will segfault. 
+ * 
+ * Inputs command_new
+ *  key -> The jdata variable name 
+ *  value -> the value to be removed
+ *  callback -> the callback function if you want a custom callback to signal when a delete succeeds. 
+                        Can be null
+ * jdata grade = 'A'
+ * jdata grade = 'B'
+ *
+ * This is something you can do if you don't want people seeing the 'A' value in the logs
+ * -> jdata_log_to_server("grade", 'A', null)
+ * -> jdata_remove_element("grade", 'A', null);
+ * -> jdata_log_to_server("grade", 'B', null)
+ */
 void jdata_remove_element(char *key, char *value, msg_rcv_callback callback){
   if(callback == NULL)
     callback = jdata_default_msg_received;  
-  redisAsyncCommand(jdata_async_non_sub_context, callback, NULL, "ZREM %s %s", key, value);
+  redisAsyncCommand(jdata_async_context, callback, NULL, "ZREM %s %s", key, value);
   #ifdef DEBUG_LVL1
     printf("Element Removed...\n");
   #endif
 }
 
+/*
+ * jdata function to subscribe to a value
+ * This function should be called when we want to subscribe a value. That way, when the value is updated from somewhere else, 
+ * the jdata gets notified about it. 
+ * This function is utilized by jbroadcaster which receives the data on the c side while the logger logs on the c side.  
+ *
+ * Inputs 
+ *  key -> The jdata variable name 
+ *  value -> the value to be removed
+ *  on_msg -> the callback function if you want a custom callback to do something when someone logs into that jdata
+ *  connect -> the callback function if you want a custom callback for checking the connection. Can inform when connect attempt fails. 
+ *  disconnect -> the callback function if you want a custom callback to notify for disconnections. 
+ * 
+ * Returns the context c, which should be saved when we free the jdata value. 
+ */
 redisAsyncContext *jdata_subscribe_to_server(char *key, msg_rcv_callback on_msg, connection_callback connect, connection_callback disconnect){
   char cmd[512];
+  //Create new context for the jdata. One unique connection for each variable. 
   redisAsyncContext *c = redisAsyncConnect(redis_serv_IP, redis_serv_port);
   if (c->err) {
       printf("error: %s\n", c->errstr);
@@ -193,15 +242,21 @@ redisAsyncContext *jdata_subscribe_to_server(char *key, msg_rcv_callback on_msg,
   return c;
 }
 
+/*
+Helper function for running custom async commands on redis. 
+*/
 void jdata_run_async_cmd(char *cmd, msg_rcv_callback callback){
   if(callback == NULL)
     callback = jdata_default_msg_received;
-  redisAsyncCommand(jdata_async_non_sub_context, callback, NULL, cmd);
+  redisAsyncCommand(jdata_async_context, callback, NULL, cmd);
   #ifdef DEBUG_LVL1
     printf("Async Command Run...\n");
   #endif
 }
 
+/*
+Helper function for running custom async commands on redis. 
+*/
 redisReply *jdata_run_sync_cmd(char *cmd){
   redisReply * ret = redisCommand(jdata_sync_context, cmd);
   if(ret == NULL){
@@ -213,10 +268,11 @@ redisReply *jdata_run_sync_cmd(char *cmd){
   return ret;
 }
 
-void jdata_free(){
-  // To do
-}
-
+/*
+ * Function to free jbroadcaster variable. 
+ * Removes it also from the jdata linked list kept in memory
+ * 
+ */
 void free_jbroadcaster(jbroadcaster *j){
   //To do
   jdata_list_node *k;
@@ -235,6 +291,19 @@ void free_jbroadcaster(jbroadcaster *j){
   free(j);
 }
 
+/*
+Initializes a jbroadcaster. This specific variable is what receives values on the c side.
+Should be utilized when declaring a jbroadcaster
+
+Input:
+    type => type of the jbroadcaster. Currently supports int, string, float
+            Though the data will always be in string format and must be converted at a later time.  
+            This is due to redis limitation being only able to store strings. 
+    variable_name => name of the jbroadcaster, must be unique unfortunately. 
+            With jbroadcaster, you cannot shadow a jdata variable name. 
+    activitycallback_f => callback for when a broadcast is received. 
+            What you would like the program to do in such case. 
+*/
 jbroadcaster *jbroadcaster_init(int type, char *variable_name, activitycallback_f usr_callback){
   jbroadcaster *ret;
   char buf[256];
@@ -266,10 +335,22 @@ jbroadcaster *jbroadcaster_init(int type, char *variable_name, activitycallback_
   }
   ret->context = jdata_subscribe_to_server( variable_name, jbroadcaster_msg_rcv_callback, NULL, NULL);
   sprintf(buf, "jbroadcast_func_%s", variable_name);
+  
+  //IMPORTANT
+  //REGISTERS the usercallback as a jasync callback to be called. 
+  //This allows us to call the user defined callbacks for jbroadcaster
   activity_regcallback(j_s->atable, buf, ASYNC, "v", usr_callback);
   return ret;
 }
 
+/*
+ * The jbroadcaster callback that we utilize to process broadcasts. 
+ * This should not be called outside of this library. 
+ * Now, the problem is that this function is run in a separate thread from the main activity thread. 
+ * Thus we have to insert such callback activity in the main activity thread rather than simply running it here. 
+ * In this function, we simply return the most up to date jbroadcast value. 
+ * We do not save older values. 
+*/
 void jbroadcaster_msg_rcv_callback(redisAsyncContext *c, void *reply, void *privdata){
   redisReply *r = reply;
   char *result;
@@ -290,9 +371,9 @@ void jbroadcaster_msg_rcv_callback(redisAsyncContext *c, void *reply, void *priv
           if(i->data.jbroadcaster_data->usr_callback != NULL){
             //So here instead of executing this function here, we need to insert this into the work queue
             sprintf(buf, "jbroadcast_func_%s", i->data.jbroadcaster_data->key);
-            command_t *rcmd = command_new("REXEC-JDATA", "ASY", buf, "__", "0", "p", i->data.jbroadcaster_data);
+            //Here, we defined a unique REXEC-JDATA to signal a jdata callback that needs to be executed. 
+            command_t *rcmd = command_new("REXEC-ASY", "ASY", buf, "__", "0", "p", i->data.jbroadcaster_data);
             pqueue_enq(j_s->atable->globalinq, rcmd, sizeof(command_t));
-            //i->data.jbroadcaster_data->usr_callback(NULL, i->data.jbroadcaster_data);
           }
           return;
         }
@@ -302,6 +383,7 @@ void jbroadcaster_msg_rcv_callback(redisAsyncContext *c, void *reply, void *priv
   }
 }
 
+//Returns the last updated jbroadcast value given a jbroadcaster. 
 void *get_jbroadcaster_value(jbroadcaster *j){
   if(j->data == NULL)
     printf("Invalid get attempt ...\n");
@@ -309,137 +391,25 @@ void *get_jbroadcaster_value(jbroadcaster *j){
   return j->data;
 }
 
-jshuffler *jshuffler_init(int type, char *var_name, activitycallback_f usr_callback){
-  jshuffler *ret = calloc(1, sizeof(jshuffler));
-  char buf[256];
-  ret->key = strdup(var_name);
-  sprintf(ret->rr_queue, "JSHUFFLER_rr_queue|%s", app_id);
-  sprintf(ret->data_queue, "JSHUFFLER_data_queue|%s", app_id);
-  sprintf(ret->subscribe_key, "JSHUFFLER|%s", app_id);
-  ret->data = NULL;
-  ret->usr_callback = usr_callback;
-  sem_init(&ret->lock, 0, 0);
-  redisAsyncContext *subscriber_context = redisAsyncConnect(redis_serv_IP, redis_serv_port);
-  if (subscriber_context->err) {
-      printf("error: %s\n", subscriber_context->errstr);
-      return NULL;
-  }
-  if(jdata_list_head == NULL){
-    jdata_list_head = (jdata_list_node *)calloc(1, sizeof(jdata_list_node));
-    jdata_list_head->data.jshuffler_data = ret;
-    jdata_list_tail = jdata_list_head;
-    jdata_list_tail->next = NULL;
-  }else{
-    jdata_list_tail->next = (jdata_list_node *)calloc(1, sizeof(jdata_list_node));
-    jdata_list_tail = jdata_list_tail->next;
-    jdata_list_tail->data.jshuffler_data = ret;
-    jdata_list_tail->next = NULL;
-  }
-
-  redisAsyncSetConnectCallback(subscriber_context, jdata_default_connection);
-  redisAsyncSetConnectCallback(subscriber_context, jdata_default_disconnection);
-  redisLibeventAttach(subscriber_context, base);
-  redisAsyncCommand(subscriber_context, jshuffler_callback, NULL, "SUBSCRIBE %s", ret->subscribe_key);
-  sprintf(buf, "jshuffler_func_%s", var_name);
-  activity_regcallback(j_s->atable, var_name, ASYNC, "v", usr_callback);
-  return ret;
-}
-
-void jshuffler_callback(redisAsyncContext *c, void *reply, void *privdata){
-  redisReply *r = (redisReply *)reply;
-  char var_name[256];
-  char buf[256];
-  char *result;
-  char *result_ptr;
-  if(r == NULL) return;
-  if (r->type == REDIS_REPLY_ARRAY) {
-    if(strcmp(r->element[0]->str, "message") == 0){
-      result_ptr = strstr(r->element[2]->str, "$$$");
-      memcpy(var_name, r->element[2]->str, result_ptr - r->element[2]->str);
-      var_name[result_ptr - r->element[2]->str] = '\0';
-      result = calloc(strlen(r->element[2]->str) - strlen(var_name), sizeof(char));
-      sprintf(result, "%s", result_ptr + 3);
-
-      for(jdata_list_node *i = jdata_list_head; i != NULL; i = i->next){
-        if(strcmp(i->data.jshuffler_data->key, var_name) == 0){
-          //At this point, we may need to add a lock to prevent race condition
-          void *to_free = i->data.jshuffler_data->data;
-          i->data.jshuffler_data->data = result;
-          free(to_free);
-          if(i->data.jshuffler_data->usr_callback != NULL){
-            sprintf(buf, "jshuffler_func_%s", i->data.jbroadcaster_data->key);
-            command_t *rcmd = command_new("REXEC-JDATA", "ASY", buf, "__", "0", "p", i->data.jshuffler_data);
-            pqueue_enq(j_s->atable->globalinq, rcmd, sizeof(command_t));
-          }
-          #ifdef DEBUG_LVL1
-            printf("Result Received:%s\n", result);
-          #endif
-          //sem_post(&i->data.jshuffler_data->lock);
-          return;
-        }
-      }
-      printf("Variable name not found ...\n");
-    }
-  }
-}
-
-void jshuffler_push(jshuffler *j, char *data){
-  #ifdef DEBUG_LVL1
-    printf("%s %s %s\n", j->subscribe_key, j->rr_queue,  j->data_queue);
-  #endif
-  redisAsyncCommand(jdata_async_non_sub_context, jdata_default_msg_received, NULL,
-                    "EVAL %s 3 %s %s %s %s",
-                    "redis.replicate_commands(); \
-                    local send_to = redis.call('LLEN', KEYS[1]); \
-                    if (send_to == 0) or (send_to == nil) then \
-                      redis.call('RPUSH', KEYS[3], ARGV[1]); \
-                      return {0}; \
-                    else \
-                      local var_name = redis.call('RPOP', KEYS[1]); \
-                      redis.call('PUBLISH', KEYS[2] , var_name .. '$$$' .. ARGV[1]); \
-                      return {send_to}; \
-                    end", j->rr_queue, j->subscribe_key, j->data_queue, data);
-}
-
-void *jshuffler_poll(jshuffler *j){
-  //#ifdef DEBUG_LVL1
-    printf("%s %s %s\n", j->subscribe_key, j->rr_queue,  j->data_queue);
-  //#endif
-    redisReply *ret  = redisCommand(jdata_sync_context,
-                      "EVAL %s 2 %s %s %s",
-                      "redis.replicate_commands(); \
-                      local rr_queue_size = redis.call('LLEN', KEYS[1]); \
-                      local data_queue_size = redis.call('LLEN', KEYS[2]); \
-                      if (rr_queue_size == 0 or rr_queue_size == nil) and (data_queue_size > 0) then \
-                        local ret = redis.call('RPOP', KEYS[2]); \
-                        return {ret}; \
-                      else \
-                        redis.call('RPUSH', KEYS[1], ARGV[1]); \
-                        return {'JSHUFFLER_WAIT'}; \
-                      end", j->rr_queue, j->data_queue, j->key);
-  if (ret->type == REDIS_REPLY_ARRAY) {
-  if(strcmp(ret->element[0]->str, "JSHUFFLER_WAIT") == 0){
-    printf("Polling ... \n");
-    sleep(1);
-    return jshuffler_poll(j);
-    //sem_wait(&j->lock);
-  }
-    j->data = ret;
-  }
-  return j->data;
-}
-
+/*
+ * Logs an jdata activity 
+ * This is for some logging service that was supposed to be called whenever an activity gets called. 
+ * 
+ */
 void jcmd_log_pending_activity(char *app_id, char *actid, int index){
     char key[256];
     char actid_expanded[128];
     sprintf(key, "%s%s%s", CMD_LOGGER, DELIM, app_id);
     sprintf(actid_expanded, "%s|%d", actid, index);
-    redisAsyncCommand(jdata_async_non_sub_context, jdata_default_msg_received, NULL, "EVAL %s 1 %s %s", "redis.replicate_commands(); \
+    redisAsyncCommand(jdata_async_context, jdata_default_msg_received, NULL, "EVAL %s 1 %s %s", "redis.replicate_commands(); \
                                                             local t = (redis.call('TIME'))[1]; \
                                                             redis.call('ZADD', KEYS[1], t, ARGV[1]); \
                                                             return {t}", key, actid);
 }
-
+/*
+ * The log inserted can beg removed when the activity is acknowledged. 
+ *
+ */
 void jcmd_remove_acknowledged_activity(char *app_id, char *actid, int index){
     char key[256];
     char actid_expanded[128];
@@ -448,12 +418,18 @@ void jcmd_remove_acknowledged_activity(char *app_id, char *actid, int index){
     jdata_remove_element(key, actid, NULL);
 }
 
+/*
+ * Removes completely the activity from redis include all logs of it. 
+ */
 void jcmd_delete_pending_activity_log(char *key, msg_rcv_callback callback){
   if(callback == NULL)
     callback = jdata_default_msg_received;
-  redisAsyncCommand(jdata_async_non_sub_context, callback, NULL, "DEL %s", key);
+  redisAsyncCommand(jdata_async_context, callback, NULL, "DEL %s", key);
 }
 
+/*
+ * Returns a list of array of all logs for a particular key. 
+ */
 char **jcmd_get_pending_activity_log(char *key, msg_rcv_callback callback){
   if(callback == NULL)
     callback = jdata_default_msg_received;

@@ -38,7 +38,6 @@ extern "C" {
 #include "command.h"
 #include <pthread.h>
 #include "jcondition.h"
-
 #include "task.h"
 #include "threadsem.h"
 

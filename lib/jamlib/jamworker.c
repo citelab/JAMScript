@@ -137,8 +137,6 @@ void jwork_msg_delivered(void *ctx, MQTTClient_deliveryToken dt)
 
 int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTClient_message *msg)
 {
-    int i;
-
     // the ctx pointer is actually pointing towards the queue - cast it
     simplequeue_t *queue = (simplequeue_t *)ctx;
 
@@ -603,7 +601,7 @@ bool jwork_runtable_check(runtable_t *rtable,  command_t *cmd)
 
 command_t *jwork_runid_status(jamstate_t *js, char *runid)
 {
-    command_t *scmd;
+    command_t *scmd = NULL;
     int i;
 
     char *deviceid = js->cstate->device_id;

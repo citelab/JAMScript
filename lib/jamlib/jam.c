@@ -46,7 +46,6 @@ jamstate_t *jam_init(int port)
     #endif
 
     jamstate_t *js = (jamstate_t *)calloc(1, sizeof(jamstate_t));
-
     // TODO: Should we remove the hardcoded timeout values? To which value?
     js->cstate = core_init(port, 100);
 
@@ -69,20 +68,28 @@ jamstate_t *jam_init(int port)
 
     js->bgsem = threadsem_new();
     js->jdata_sem = threadsem_new();
+    
+    int rval;
+    #ifdef DEBUG_LVL1
+        printf("Jdata initialization... \t\t[started]\n");
+    #endif
 
-    int rval = pthread_create(&(js->bgthread), NULL, jwork_bgthread, (void *)js);
+    rval = pthread_create(&(js->jdata_event_thread), NULL, jdata_init, (void *)js);
+    if (rval != 0) {
+        perror("ERROR! Unable to start the jamworker thread");
+        exit(1);
+    }
+    task_wait(js->jdata_sem);
+
+    #ifdef DEBUG_LVL1
+        printf("Worker bgthread initialization... \t\t[started]\n");
+    #endif
+    rval = pthread_create(&(js->bgthread), NULL, jwork_bgthread, (void *)js);
     if (rval != 0) {
         perror("ERROR! Unable to start the jamworker thread");
         exit(1);
     }
     task_wait(js->bgsem);
-
-    // rval = pthread_create(&(js->jdata_event_thread), NULL, jdata_event_loop, (void *)js);
-    // if (rval != 0) {
-    //     perror("ERROR! Unable to start the jdata event thread");
-    //     exit(1);
-    // }
-    // task_wait(js->jdata_sem);
 
     #ifdef DEBUG_LVL1
         printf("JAM Library initialization... \t\t[completed]\n");

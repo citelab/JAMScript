@@ -40,10 +40,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 corestate_t *core_init(int port, int timeout)
 {
-    command_t *scmd, *rcmd,  *rcmd2;
+    command_t *scmd, *rcmd, *rcmd2;
     char serverhost[64];
     int count;
-
     #ifdef DEBUG_LVL1
         printf("Core initialization...");
     #endif
@@ -51,7 +50,6 @@ corestate_t *core_init(int port, int timeout)
     // create the core state structure..
     corestate_t *cs = (corestate_t *)calloc(1, sizeof(corestate_t));
     core_setup(cs, timeout);
-
     sprintf(serverhost, "tcp://localhost:%d", port);
     // open an mqtt connection to localhost
     cs->mqttserv[0] = mqtt_open(serverhost);

@@ -1,7 +1,8 @@
 #include <limits.h>
 int main(){
     printf("We are here ... \n");
-    num_bugs = 1222;
-    printf("I seee \n");
+    sleep(30);
+    int result = stuff;
+    printf("Result: %d\n", result);
     return 0;   
 }
