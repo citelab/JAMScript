@@ -320,7 +320,11 @@ jbroadcaster *jbroadcaster_init(int type, char *variable_name, activitycallback_
   ret->write_sem = threadsem_new();
   ret->data = NULL;
   ret->key = strdup(variable_name);
-  ret->usr_callback = usr_callback;
+  if(usr_callback == NULL){
+    ret->usr_callback = msg_rcv_usr_callback;
+  }else{
+    ret->usr_callback = usr_callback;
+  }
   //Now we need to add it to the list
   if(jdata_list_head == NULL){
     jdata_list_head = (jdata_list_node *)calloc(1, sizeof(jdata_list_node));
@@ -339,10 +343,20 @@ jbroadcaster *jbroadcaster_init(int type, char *variable_name, activitycallback_
   //IMPORTANT
   //REGISTERS the usercallback as a jasync callback to be called. 
   //This allows us to call the user defined callbacks for jbroadcaster
-  activity_regcallback(j_s->atable, buf, ASYNC, "v", usr_callback);
+  activity_regcallback(j_s->atable, buf, ASYNC, "v", ret->usr_callback);
   return ret;
 }
 
+void msg_rcv_usr_callback(void *ten, void *arg){
+    printf("This was activated ... \n");
+    command_t *cmd = (command_t *)arg;
+    jbroadcaster *x = (jbroadcaster *)cmd->args[0].val.nval;
+    printf("\n-------------------\nReceived: %s\n-------------------\n", (char *)x->data);
+}
+
+void jbroadcast_set_callback(jbroadcaster *jb, activitycallback_f usr_callback){
+  jb->usr_callback = usr_callback;
+}
 /*
  * The jbroadcaster callback that we utilize to process broadcasts. 
  * This should not be called outside of this library. 
@@ -356,6 +370,9 @@ void jbroadcaster_msg_rcv_callback(redisAsyncContext *c, void *reply, void *priv
   char *result;
   char *var_name;
   char buf[256];
+  #ifdef DEBUG_LVL1
+    printf("Jbroadcast received ...\n");
+  #endif
   if (reply == NULL) return;
   if (r->type == REDIS_REPLY_ARRAY) {
     var_name = r->element[1]->str;

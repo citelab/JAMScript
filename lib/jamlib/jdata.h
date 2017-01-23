@@ -64,12 +64,12 @@ jbroadcaster *jbroadcaster_init(int type, char *var_name, activitycallback_f usr
 void *get_jbroadcaster_value(jbroadcaster *j);
 void free_jbroadcaster_list();
 void jbroadcaster_msg_rcv_callback(redisAsyncContext *c, void *reply, void *privdata);
-
+void jbroadcast_set_callback(jbroadcaster *jb, activitycallback_f usr_callback);
 void jshuffler_callback(redisAsyncContext *c, void *reply, void *privdata);
 jshuffler *jshuffler_init(int type, char *var_name, activitycallback_f usr_callback);
 void *jshuffler_poll(jshuffler *j);
 void jshuffler_push(jshuffler *j, char *data);
-
+void msg_rcv_usr_callback(void *ten, void *arg);
 void jcmd_log_pending_activity(char *app_id, char *actid, int index);
 void jcmd_remove_acknowledged_activity(char *app_id, char *actid, int index);
 void jcmd_delete_pending_activity_log(char *key, msg_rcv_callback callback);

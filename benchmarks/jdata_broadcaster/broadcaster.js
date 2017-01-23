@@ -8,5 +8,5 @@ jdata{
 setTimeout(
     function(){
         console.log("Sending Stuff");
-        JManager.broadcastMessage('DEFAULT_APP' , 5);
+        JManager.broadcastMessage('stuff' , "jbroadcaster works");
     }, 15000);

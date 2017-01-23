@@ -7,9 +7,6 @@ jamstate_t *js;
 jbroadcaster *stuff;
 int user_main() {
 printf("We are here ... \n");
-sleep(30);
-int result = (int)get_jbroadcaster_value(stuff);
-printf("Result: %d\n", result);
 return 0;
 }
 

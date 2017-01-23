@@ -13,7 +13,7 @@ var JLogger = require('/usr/local/share/jam/lib/jserver/jlogger');
 var JManager = require('/usr/local/share/jam/lib/jserver/jmanager');
 setTimeout(function () {
 console.log("Sending Stuff");
-JManager.broadcastMessage('DEFAULT_APP', 5);
+JManager.broadcastMessage('stuff', "jbroadcaster works");
 }, 15000);
 var mbox = {
 "functions": {

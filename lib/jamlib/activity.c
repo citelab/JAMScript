@@ -215,7 +215,6 @@ void run_activity(void *arg)
                     #ifdef DEBUG_LVL1
                     printf("Command actname = %s %s %s\n", cmd->actname, cmd->cmd, cmd->opt);
                     #endif
-
                     jrun_arun_callback(at, cmd, areg);
                     #ifdef DEBUG_LVL1
                     printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
