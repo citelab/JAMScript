@@ -126,6 +126,8 @@ try {
   var requires = '';
   requires += "var jamlib = require('/usr/local/share/jam/lib/jserver/jamlib');\n";
   requires += "var jnode = require('/usr/local/share/jam/lib/jserver/jnode');\n";
+  requires += "var JLogger = require('/usr/local/share/jam/lib/jserver/jlogger');\n";
+  requires += "var JManager = require('/usr/local/share/jam/lib/jserver/jmanager');\n";
   requires += "var async = require('asyncawait/async');\n";
   requires += "var await = require('asyncawait/await');\n";
 
@@ -146,7 +148,7 @@ try {
       options = "-lm -lbsd";
     }
 
-    flowCheck(requires + jsOutput.JS + cOutput.JS);
+    flowCheck(requires + jsOutput.annotated_JS + cOutput.annotated_JS);
     var includes = '#include "jam.h"\n'
     includes = '#include "jdata.h"\n' + includes;
     includes = '#include <unistd.h>\n' + includes;
@@ -182,8 +184,7 @@ function preprocess(file) {
   if(preprocessDecls == null) {
     preprocessDecls = [];
   }
-  var includes = '#include "jam.h"\n'
-  includes = '#include "jam.h"\n' + includes;
+  var includes = '#include "jam.h"\n';
 
   contents = includes + "int main();\n" + contents;
   
