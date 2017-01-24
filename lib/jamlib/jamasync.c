@@ -188,6 +188,7 @@ void process_missing_replies(jactivity_t *jact, int nreplies, int ecount)
             command_t *scmd = jact->replies[0];
             free(scmd->cmd);
             scmd->cmd = strdup("REXEC-ASY2");
+            scmd = command_rebuild(scmd);
             queue_enq(jact->thread->outq, scmd, sizeof(command_t));
         }
     }

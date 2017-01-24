@@ -155,6 +155,90 @@ void command_arg_print(arg_t *arg)
 }
 
 
+// TODO: Check why we have two NVOID_TYPE in command_new.
+// This is in the while loop that converts the var args to cbor type 
+//
+command_t *command_rebuild(command_t *cmd)
+{
+    nvoid_t *nv;
+    char *s;
+
+    cbor_item_t *arr = cbor_new_indefinite_array();
+    cbor_item_t *elem;
+
+    for (int i = 0; i < cmd->nargs; i++)
+    {
+        switch (cmd->args[i].type)
+        {
+            case NVOID_TYPE:
+                nv = cmd->args[i].val.nval;
+                elem = cbor_build_bytestring(nv->data, nv->len);
+            break;
+            
+            case STRING_TYPE:
+                s = cmd->args[i].val.sval;
+                elem = cbor_build_string(s);
+            break;
+
+            case INT_TYPE:
+                elem = cbor_build_uint32(abs(cmd->args[i].val.ival));
+                if (cmd->args[i].val.ival < 0)
+                    cbor_mark_negint(elem);
+            break;
+
+            case DOUBLE_TYPE:
+                elem = cbor_build_float8(cmd->args[i].val.dval);
+            break;
+            default:
+            break;
+        }
+        if (elem)
+            cbor_array_push(arr, elem);
+    }
+
+    cbor_item_t *rmap = cbor_new_definite_map(6);
+
+    // Add the cmd field to the map
+    cbor_map_add(rmap, (struct cbor_pair) {
+        .key = cbor_move(cbor_build_string("cmd")),
+        .value = cbor_move(cbor_build_string(cmd->cmd))
+    });
+
+    // Add the opt field to the map
+    cbor_map_add(rmap, (struct cbor_pair) {
+        .key = cbor_move(cbor_build_string("opt")),
+        .value = cbor_move(cbor_build_string(cmd->opt))
+    });
+
+    // Add the actname field to the map
+    cbor_map_add(rmap, (struct cbor_pair) {
+        .key = cbor_move(cbor_build_string("actname")),
+        .value = cbor_move(cbor_build_string(cmd->actname))
+    });
+
+    // Add the actid field to the map
+    cbor_map_add(rmap, (struct cbor_pair) {
+        .key = cbor_move(cbor_build_string("actid")),
+        .value = cbor_move(cbor_build_string(cmd->actid))
+    });
+
+    // Add the actarg field to the map
+    cbor_map_add(rmap, (struct cbor_pair) {
+        .key = cbor_move(cbor_build_string("actarg")),
+        .value = cbor_move(cbor_build_string(cmd->actarg))
+    });
+
+    // Add the args field to the map
+    cbor_map_add(rmap, (struct cbor_pair) {
+        .key = cbor_move(cbor_build_string("args")),
+        .value = cbor_move(arr)
+    });
+
+    cmd->cdata = rmap;
+    cbor_serialize_alloc(rmap, &(cmd->buffer), (size_t *)&(cmd->length));
+    return cmd;
+}
+
 
 /*
  * Return a command in CBOR format (as an unsigned char array) that can be sent out..
