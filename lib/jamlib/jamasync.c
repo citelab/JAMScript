@@ -8,6 +8,10 @@
 #include "free_list.h"
 
 
+// The jactivity structure needs to be defined outside the function. 
+// The memory is held until freed by an explicit activity_free()
+//
+//
 jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *aname, char *fmask, ...)
 {
     va_list args;
@@ -67,9 +71,6 @@ jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *aname, cha
           }
     }
     va_end(args);
-
-    // Need to add start to activity_new()
-    // jactivity_t *jact = activity_new(js->atable, activity_gettime());
 
     if (jact != NULL)
     {
