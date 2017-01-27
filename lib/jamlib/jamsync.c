@@ -9,7 +9,10 @@
 
 //
 // This is running remote function synchronously.. so we wait here
-// for the reply value..
+// for the reply value. We use the reply value from the root of the sub tree.
+// All other return values are ignored. The root of the subtree should respond. 
+// If it fails to respond, we quit with an error. 
+//
 //
 arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
 {
@@ -73,11 +76,15 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
 
     if (jact != NULL)
     {
-        command_t *cmd = command_new_using_cbor("REXEC-SYN", "-", aname, jact->actid, js->cstate->device_id, arr, qargs, i);
+        // Get the root condition string. This string forces the command to execute at the root only 
+        char *rootcond = get_root_condition(js);
+        command_t *cmd = command_new_using_cbor("REXEC-SYN", rootcond, aname, jact->actid, js->cstate->device_id, arr, qargs, i);
         cmd->cbor_item_list = list;
     
-        rargs = jam_sync_runner(js, jact, cmd);
-        activity_freethread(jact);
+        command_t *bcmd = command_new_using_cbor("REXEC-SYN", "true", aname, jact->actid, js->cstate->device_id, arr, qargs, i);
+        bcmd->cbor_item_list = list;
+        rargs = jam_sync_runner(js, jact, rootcond, cmd, bcmd);
+        activity_free(jact);
         return rargs;
     } 
     else
@@ -85,11 +92,18 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
 }
 
 
-arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
+// The Sync Runner does the following:
+// Launch the command with the condition that it should only run in the root. 
+// Wait for the reply. Fail if no reply.
+// If successful reply, then we run the command everywhere else. 
+// 
+//
+arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, char *rcond, command_t *cmd, command_t *bcmd)
 {
     command_t *rcmd;
     arg_t *repcode;
     int error_count = 0;
+    char *actname = strdup(cmd->actname);
 
     insert_runtable_entry(js, cmd);
     runtableentry_t *act_entry = find_table_entry(js->rtable, cmd);
@@ -115,6 +129,7 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         // TODO: Fix the constant 300 milliseconds here..
         jam_set_timer(js, jact->actid, 300);
         nvoid_t *nv = pqueue_deq(jact->thread->inq);
+        jam_clear_timer(js, jact->actid);
 
         rcmd = NULL;
         if (nv != NULL)
@@ -122,7 +137,7 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
             rcmd = (command_t *)nv->data;
             free(nv);
 
-            if (strcmp(rcmd->cmd, "TIMEOUT") == 0)
+            if ((strcmp(rcmd->cmd, "TIMEOUT") == 0) || (strcmp(rcmd->cmd, "REXEC-NAK") == 0))
                 error_count++;
             else 
                 jact->replies[i - error_count] = rcmd;
@@ -133,49 +148,37 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     if (error_count == act_entry->num_replies)
         return NULL;
     
+    // Start the invocation for the second time.. the root has already started the execution 
+    // this is for the other nodes.. the root should ignore this because it is a duplicate
+    queue_enq(jact->thread->outq, bcmd, sizeof(command_t));
+
+    // We create a structure to hold the result returned by the root
+    repcode = (arg_t *)calloc(1, sizeof(arg_t));
+
     // We sleep for the lease time.. this is expected.. we are in "sync" call
     int stime = get_sleep_time(jact);
-    jam_set_timer(js, jact->actid, stime);
-    nvoid_t *nv = pqueue_deq(jact->thread->inq);
-    
-    if (nv != NULL && ((rcmd = (command_t *)nv->data) != NULL))
-    {
-        free(nv);
-        if (strcmp(rcmd->cmd, "TIMEOUT") != 0)
-        {
-            command_free(rcmd);
-            return NULL;
-        }
-        else
-            command_free(rcmd);
-    }
-
-    // We have started the remote execution.. at least some have started
-    repcode = (arg_t *)calloc(3, sizeof(arg_t));
-    for (int i = 0; i < 3; i++)
-        repcode[i].type = NULL_TYPE;
 
     // Send the request to get the results... 
     // TODO: Fix this to get an extension.. now we expect the results to be available 
     // after the lease time..
-    command_t *lcmd = command_new("REXEC-RES", "GET", cmd->actname, jact->actid, js->cstate->device_id, "");
+    command_t *lcmd = command_new("REXEC-RES-GET", rcond, actname, jact->actid, js->cstate->device_id, "");
     queue_enq(jact->thread->outq, lcmd, sizeof(command_t));
 
     // Now we retrive the replies from the remote side..
     // 
     for (int i = 0; i < act_entry->num_replies; i++)
     {
-        // TODO: fix the 300 milliseconds timeout.. 
-        // 
-        nvoid_t *nv = pqueue_deq_timeout(jact->thread->inq, 300);
+        jam_set_timer(js, jact->actid, stime);
+        nvoid_t *nv = pqueue_deq(jact->thread->inq);
+        jam_clear_timer(js, jact->actid);   
+
+        // Next iteration we are not going to wait stime.. just a token amount of time timeout FASTER
+        stime = 5;     
         rcmd = (command_t *)nv->data;
         free(nv);
 
-        if (strcmp(rcmd->cmd, "REXEC-RES") == 0 && strcmp(rcmd->opt, "PUT") == 0)
-        {
-            if (strcmp(rcmd->actarg, "RESULTS") == 0) 
-                command_arg_copy(&repcode[i], &(rcmd->args[0]));
-        }
+        if (strcmp(rcmd->cmd, "REXEC-RES-PUT") == 0 && strcmp(rcmd->actarg, "RESULTS") == 0)
+            command_arg_copy(repcode, &(rcmd->args[0]));
 
         command_free(rcmd);
     }
@@ -198,4 +201,19 @@ int get_sleep_time(jactivity_t *jact)
     }
 
     return timeout;
+}
+
+char *get_root_condition(jamstate_t *js)
+{
+    char buf[256];
+
+    if (js->cstate->mqttenabled[2])
+        sprintf(buf, "machtype === \"CLOUD\"");
+    else
+    if (js->cstate->mqttenabled[1]) 
+        sprintf(buf, "machtype === \"FOG\"");
+    else 
+        sprintf(buf, "machtype === \"DEVICE\"");
+
+    return strdup(buf);
 }

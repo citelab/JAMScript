@@ -49,6 +49,7 @@ corestate_t *core_init(int port, int timeout)
 
     // create the core state structure..
     corestate_t *cs = (corestate_t *)calloc(1, sizeof(corestate_t));
+    // device_id set inside the following function
     core_setup(cs, timeout);
     sprintf(serverhost, "tcp://localhost:%d", port);
     // open an mqtt connection to localhost

@@ -109,8 +109,9 @@ jactivity_t *jam_create_activity(jamstate_t *js);
  */
 
 arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...);
-arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd);
+arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, char *rcond, command_t *cmd, command_t *bcmd);
 int get_sleep_time(jactivity_t *jact);
+char *get_root_condition(jamstate_t *js);
 
 /*
  * Functions defined in jamasync.c
