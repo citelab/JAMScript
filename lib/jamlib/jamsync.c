@@ -203,6 +203,8 @@ int get_sleep_time(jactivity_t *jact)
     return timeout;
 }
 
+
+
 char *get_root_condition(jamstate_t *js)
 {
     char buf[256];
