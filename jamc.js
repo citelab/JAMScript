@@ -223,6 +223,55 @@ function flowCheck(input) {
   }
 }
 
+function printCallGraph(callGraph) {
+    var graph = 'digraph jamgraph{\n';
+    var callList = '';
+    if(callGraph.c.size > 0) {
+        var usedFunctions = new Set();
+        graph += 'subgraph cluster_0 {\n';
+        graph += 'label = "C Functions";\n'
+        callGraph.c.forEach(function(calls, func) {
+            // graph += func + ';\n';
+            if(calls.size > 0) {
+                usedFunctions.add(func);
+            }
+            calls.forEach(function(call) {
+                callList += func + ' -> ' + call + ';\n';
+                if(callGraph.c.has(call)) {
+                    usedFunctions.add(call);
+                }
+            });
+        });
+        usedFunctions.forEach(function(func) {
+            graph += func + ';\n';
+        });
+        graph += '}\n'
+    }
+    if(callGraph.js.size > 0) {
+        var usedFunctions = new Set();
+        graph += 'subgraph cluster_1 {\n';
+        graph += 'label = "J Functions";\n'
+        callGraph.js.forEach(function(calls, func) {
+            // graph += func + ';\n';
+            usedFunctions.add(func);
+            calls.forEach(function(call) {
+                callList += func + ' -> ' + call + ';\n';
+                if(callGraph.js.has(call)) {
+                    usedFunctions.add(call);
+                }
+            });
+        });
+        usedFunctions.forEach(function(func) {
+            graph += func + ';\n';
+        });
+        graph += '}\n'
+    }
+    
+    graph += callList;
+    graph += '}';
+    return graph;
+};
+
 function createZip(toml, jsout, tmpDir, outputName) {
   var zip = new JSZip();
   zip.file("MANIFEST.tml", toml);
