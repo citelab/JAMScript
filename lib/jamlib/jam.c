@@ -65,6 +65,7 @@ jamstate_t *jam_init(int port)
     js->cloudinq = queue_new(true);
 
     js->maintimer = timer_init("maintimer");
+    js->synctimer = timer_init("synctimer");
 
     js->bgsem = threadsem_new();
     js->jdata_sem = threadsem_new();
@@ -91,6 +92,9 @@ jamstate_t *jam_init(int port)
     }
     task_wait(js->bgsem);
 
+    // Turn on the sync timer 
+    jam_set_sync_timer(js, 200);
+
     #ifdef DEBUG_LVL1
         printf("JAM Library initialization... \t\t[completed]\n");
     #endif
@@ -108,7 +112,9 @@ void jam_event_loop(void *arg)
 
     while (1)
     {
-        nvoid_t *nv = pqueue_deq(js->atable->globalinq);
+        printf("\n=================================================-----------------------\n");
+        nvoid_t *nv = p2queue_deq(js->atable->globalinq);
+        printf("Got message...\n");
 
         #ifdef DEBUG_LVL1
             printf("Got a message for the event loop...  \n");
@@ -135,7 +141,9 @@ void jam_event_loop(void *arg)
                 }
                 else
                     printf("ERROR! Unable to find a free Activity handler to start %s", cmd->actname);
-            }
+            } 
+            else 
+                printf("===========================SYNC.. TIMEOUT????\n");
         }
         taskyield();
     }

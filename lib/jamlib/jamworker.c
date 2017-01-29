@@ -366,7 +366,7 @@ void jwork_process_device(jamstate_t *js)
                 if (jwork_check_args(js, rcmd))
                 {
                     if (jwork_check_condition(js, rcmd))
-                        pqueue_enq(js->atable->globalinq, rcmd, sizeof(command_t));
+                        p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
                     else 
                         jwork_send_nak(js->cstate->mqttserv[0], rcmd, "CONDITION FALSE");
                 }
@@ -383,7 +383,8 @@ void jwork_process_device(jamstate_t *js)
             {
                 if (jwork_check_condition(js, rcmd))
                 {
-                    pqueue_enq(js->atable->globalinq, rcmd, sizeof(command_t));
+                    printf("HOLLLLLLLAAAAAAAA \n");
+                    p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
                 }
                 else 
                     jwork_send_nak(js->cstate->mqttserv[0], rcmd, "CONDITION FALSE");
@@ -864,6 +865,17 @@ void tcallback(void *arg)
 }
 
 
+void stcallback(void *arg)
+{
+
+    printf("Triggering the sync timer callback...\n");
+    jamstate_t *js = (jamstate_t *)arg;
+    // stick the "TIMEOUT" message into the queue for the activity
+    command_t *tmsg = command_new("SYNC_TIMEOUT", "__", "GLOBAL_INQUEUE", "__", "__", "");
+    p2queue_enq_high(js->atable->globalinq, tmsg, sizeof(command_t));
+}
+
+
 void jam_set_timer(jamstate_t *js, char *actid, int tval)
 {
     activity_thread_t *athr = activity_getbyid(js->atable, actid);
@@ -877,4 +889,14 @@ void jam_set_timer(jamstate_t *js, char *actid, int tval)
 void jam_clear_timer(jamstate_t *js, char *actid)
 {
     timer_del_event(js->maintimer, actid);
+}
+
+
+void jam_set_sync_timer(jamstate_t *js, int tval)
+{
+    if (js->synctimer != NULL)
+    {
+        printf("Setting sync timer %d\n", tval);
+        timer_add_event(js->synctimer, tval, 1, "synctimer-------", stcallback, js);        
+    }
 }

@@ -10,7 +10,7 @@ struct alloc_memory_list{
 }alloc_list;
 
 struct alloc_memory_list *init_list_();
-void add_to_list_(void * ptr, struct alloc_memory_list * list);
+void add_to_list(void * ptr, struct alloc_memory_list * list);
 void list_free(struct alloc_memory_list * list);
 
 #endif

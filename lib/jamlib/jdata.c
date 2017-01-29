@@ -390,7 +390,7 @@ void jbroadcaster_msg_rcv_callback(redisAsyncContext *c, void *reply, void *priv
             sprintf(buf, "jbroadcast_func_%s", i->data.jbroadcaster_data->key);
             //Here, we defined a unique REXEC-JDATA to signal a jdata callback that needs to be executed. 
             command_t *rcmd = command_new("REXEC-ASY", "ASY", buf, "__", "0", "p", i->data.jbroadcaster_data);
-            pqueue_enq(j_s->atable->globalinq, rcmd, sizeof(command_t));
+            p2queue_enq_low(j_s->atable->globalinq, rcmd, sizeof(command_t));
           }
           return;
         }

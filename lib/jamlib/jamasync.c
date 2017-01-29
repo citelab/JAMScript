@@ -67,7 +67,7 @@ jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *aname, cha
         i++;
         if (elem != NULL){
             assert(cbor_array_push(arr, elem) == true);
-            add_to_list_(elem, list);
+            add_to_list(elem, list);
           }
     }
     va_end(args);

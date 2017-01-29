@@ -8,7 +8,7 @@ struct alloc_memory_list *init_list_(){
   return ret;
 }
 
-void add_to_list_(void * ptr, struct alloc_memory_list * list){
+void add_to_list(void * ptr, struct alloc_memory_list * list){
   if(list->size == list->max){
     list->max *= 2;
     list->ptr = realloc(list->ptr, sizeof(char) * list->max);

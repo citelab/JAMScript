@@ -21,6 +21,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "pushqueue.h"
 #include "threadsem.h"
@@ -66,4 +67,67 @@ nvoid_t *pqueue_deq_timeout(pushqueue_t *queue, int timeout)
 {
     task_wait(queue->sem);
     return queue_deq_timeout(queue->queue, timeout);
+}
+
+
+push2queue_t *p2queue_new(bool ownedbyq)
+{
+	push2queue_t *pq = (push2queue_t *)calloc(1, sizeof(push2queue_t));
+    pq->hqueue = queue_new(ownedbyq);
+    pq->lqueue = queue_new(ownedbyq);
+    pq->sem = threadsem_new();
+
+    pq->fds[0].fd = pq->hqueue->pullsock;
+    pq->fds[0].events = NN_POLLIN;
+    pq->fds[1].fd = pq->lqueue->pullsock;
+    pq->fds[1].events = NN_POLLIN;
+
+    return pq;
+}
+
+bool p2queue_delete(push2queue_t *pq)
+{
+    if ((queue_delete(pq->hqueue) == true) &&
+        (queue_delete(pq->lqueue) == true))
+    {
+        threadsem_free(pq->sem);
+        return true;
+    }
+
+    return false;    
+}
+
+
+bool p2queue_enq_low(push2queue_t *queue, void *data, int len)
+{
+    queue_enq(queue->lqueue, data, len);
+    thread_signal(queue->sem);
+
+    // TODO: Fix the return value..
+    return true;
+}
+
+
+bool p2queue_enq_high(push2queue_t *queue, void *data, int len)
+{
+    queue_enq(queue->hqueue, data, len);
+    thread_signal(queue->sem);
+
+    // TODO: Fix the return value..
+    return true;
+}
+
+
+nvoid_t *p2queue_deq(push2queue_t *queue)
+{
+    task_wait(queue->sem);
+
+    int rc = nn_poll(queue->fds, 2, 20000);
+
+    if (rc == 0)
+        return NULL;
+    if (queue->fds[0].revents & NN_POLLIN)
+        return queue_deq(queue->hqueue);
+    else 
+        return queue_deq(queue->lqueue);
 }

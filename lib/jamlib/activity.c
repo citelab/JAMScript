@@ -89,7 +89,7 @@ activity_table_t *activity_table_new()
 
     // globalinq is used by the main thread for input purposes
     // globaloutq is used by the main thread for output purposes
-    atbl->globalinq = pqueue_new(true);
+    atbl->globalinq = p2queue_new(true);
     atbl->globaloutq = queue_new(true);
 
     return atbl;

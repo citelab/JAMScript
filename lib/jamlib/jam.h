@@ -72,6 +72,8 @@ typedef struct _runtable_t
 typedef struct _jamstate_t
 {
     timertype_t *maintimer;    
+    timertype_t *synctimer;
+    
     corestate_t *cstate;
     activity_table_t *atable;
     runtable_t *rtable;

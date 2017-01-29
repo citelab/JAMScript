@@ -167,6 +167,8 @@ void *timer_loop(void *arg)
 
     while (1) {
         nv = queue_deq_timeout(tmr->timerqueue, 100);
+        printf("%f\n", getcurtime());
+
         if (nv == NULL)
         {
             // Timeout happened.. walk through the events and fire the expired ones
@@ -304,4 +306,12 @@ void timer_cancel_next_match_event(timertype_t *tmr, char *tag)
         if (strcmp(tmr->events[i]->tag, tag) == 0)
             tmr->events[i]->timeleft = tmr->events[i]->timeoutval;
     }
+}
+
+double getcurtime()
+{
+    struct timeval tp;
+
+    gettimeofday(&tp, NULL);
+    return tp.tv_sec * 1.0 + 10E-6 * tp.tv_usec;    
 }

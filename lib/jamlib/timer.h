@@ -61,6 +61,8 @@ bool timer_add_event(timertype_t *tmr, int timerval, bool repeat, char *tag, tim
 bool timer_del_event(timertype_t *tmr, char *tag);
 bool timer_cancel_next(timertype_t *tmr, char *tag);
 
+double getcurtime();
+
 // Private functions...
 
 void *timer_loop(void *arg);

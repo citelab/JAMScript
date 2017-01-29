@@ -19,18 +19,25 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
     va_list args;
     nvoid_t *nv;
     int i = 0;
-    arg_t *qargs;
+    arg_t *qargs, *qargs2;
     arg_t *rargs;
 
     assert(fmask != NULL);
-    if (strlen(fmask) > 0)
+    if (strlen(fmask) > 0) {
         qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
+        qargs2 = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
+    }
     else
+    {
         qargs = NULL;
+        qargs2 = NULL;
+    }
 
     cbor_item_t *arr = cbor_new_indefinite_array();
-    cbor_item_t *elem;
+    cbor_item_t *arr2 = cbor_new_indefinite_array();
+    cbor_item_t *elem, *elem2;
     struct alloc_memory_list *list = init_list_();
+    struct alloc_memory_list *list2 = init_list_();
 
     va_start(args, fmask);
 
@@ -41,6 +48,7 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
             case 'n':
                 nv = va_arg(args, nvoid_t*);
                 elem = cbor_build_bytestring(nv->data, nv->len);
+                elem2 = cbor_build_bytestring(nv->data, nv->len);
                 qargs[i].val.nval = nv;
                 qargs[i].type = NVOID_TYPE;
                 break;
@@ -48,27 +56,37 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
                 qargs[i].val.sval = strdup(va_arg(args, char *));
                 qargs[i].type = STRING_TYPE;
                 elem = cbor_build_string(qargs[i].val.sval);
+                elem2 = cbor_build_string(qargs[i].val.sval);
                 break;
             case 'i':
                 qargs[i].val.ival = va_arg(args, int);
                 qargs[i].type = INT_TYPE;
                 elem = cbor_build_uint32(abs(qargs[i].val.ival));
+                elem2 = cbor_build_uint32(abs(qargs[i].val.ival));                
                 if (qargs[i].val.ival < 0)
+                {
                     cbor_mark_negint(elem);
+                    cbor_mark_negint(elem2);
+                }
                 break;
             case 'd':
             case 'f':
                 qargs[i].val.dval = va_arg(args, double);
                 qargs[i].type = DOUBLE_TYPE;
                 elem = cbor_build_float8(qargs[i].val.dval);
+                elem2 = cbor_build_float8(qargs[i].val.dval);
                 break;
             default:
                 break;
+            qargs2[i] = qargs[i];
         }
+
         i++;
         if (elem){
             assert(cbor_array_push(arr, elem) == true);
-            add_to_list_(elem, list);
+            assert(cbor_array_push(arr2, elem2) == true);
+            add_to_list(elem, list);
+            add_to_list(elem2, list2);
           }
     }
     va_end(args);
@@ -80,11 +98,13 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
         char *rootcond = get_root_condition(js);
         command_t *cmd = command_new_using_cbor("REXEC-SYN", rootcond, aname, jact->actid, js->cstate->device_id, arr, qargs, i);
         cmd->cbor_item_list = list;
-    
-        command_t *bcmd = command_new_using_cbor("REXEC-SYN", "true", aname, jact->actid, js->cstate->device_id, arr, qargs, i);
-        bcmd->cbor_item_list = list;
+
+        command_t *bcmd = command_new_using_cbor("REXEC-SYN", "true", aname, jact->actid, js->cstate->device_id, arr2, qargs2, i);
+        bcmd->cbor_item_list = list2;
         rargs = jam_sync_runner(js, jact, rootcond, cmd, bcmd);
+
         activity_free(jact);
+        free(rootcond);
         return rargs;
     } 
     else
@@ -143,6 +163,7 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, char *rcond, command_t
                 jact->replies[i - error_count] = rcmd;
         }
     }        
+
 
     // return.. all invocation requests have failed..
     if (error_count == act_entry->num_replies)

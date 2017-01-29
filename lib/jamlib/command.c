@@ -42,27 +42,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "cborutils.h"
 #include "free_list.h"
 
-struct alloc_memory_list *init_list_(){
-  struct alloc_memory_list *ret = calloc(1, sizeof(alloc_list));
-  ret->ptr = calloc(2, sizeof(void *));
-  ret->max = _DEFAULT_SIZE_;
-  ret->size = 0;
-  return ret;
-}
-
-void add_to_list_(void * ptr, struct alloc_memory_list * list){
-  if(list->size == list->max){
-    list->max *= 2;
-    list->ptr = realloc(list->ptr, sizeof(void *) * list->max);
-  }
-  list->ptr[list->size++] = ptr;
-}
-
-void list_free(struct alloc_memory_list * list){
-  free(list->ptr);
-  free(list);
-}
-
 
 void command_arg_copy(arg_t *darg, arg_t *sarg)
 {
@@ -385,7 +364,7 @@ command_t *command_new(const char *cmd, char *opt, char *actname, char *actid, c
         i++;
         if (elem){
             assert(cbor_array_push(arr, elem) == true);
-            add_to_list_(elem, list);
+            add_to_list(elem, list);
           }
     }
 

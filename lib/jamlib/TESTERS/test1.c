@@ -50,17 +50,7 @@ void taskmain(int argc, char *arg[])
 
     printf("Device ID %s\n", js->cstate->device_id);
 
-    for (int i = 1; i < 10000; i++) 
-      {
-	printf("i = %d\n", i);
-	arg_t *res = jam_rexec_sync(js, "resultfunc", "s", "hello");
-	usleep(100);
-      }
 
-    //    printf("State of the sync call %d \n", res->state);
-
-    //   for (int i = 0; i < 3; i++) 
-    //  command_arg_print(&res[i]);
 
      printf("Starting the event loop...");
      taskcreate(jam_event_loop, (void *)js, 10000);
@@ -70,17 +60,16 @@ void taskmain(int argc, char *arg[])
 
 
      int i = 0;
-     jactivity_t *jact = jam_create_activity(js);
+
+
     while(1) 
     {
-
+      jactivity_t *jact = jam_create_activity(js);
       jactivity_t *res = jam_rexec_async(js, jact, "testfunc", "s", "hello");
-        printf("Enter a key: "); scanf("%d", &xx);
-	//        usleep(100);
-	printf("i = %d \n", i++);
-	//	activity_free(jact);
-        taskyield();
-	printf("Hello\n");
+      usleep(1000);
+      activity_free(jact);
+      taskyield();
+      printf("Hello\n");
     }
 }
 

@@ -39,6 +39,17 @@ typedef struct _pushqueue_t
 } pushqueue_t;
 
 
+typedef struct _push2queue_t
+{
+	struct nn_pollfd fds[2];
+
+	simplequeue_t *hqueue;
+	simplequeue_t *lqueue;
+    threadsem_t *sem;
+
+} push2queue_t;
+
+
 /*
  * function prototypes
  */
@@ -48,6 +59,13 @@ bool pqueue_delete(pushqueue_t *queue);
 
 bool pqueue_enq(pushqueue_t *queue, void *data, int len);
 nvoid_t *pqueue_deq(pushqueue_t *queue);
-nvoid_t *pqueue_deq_timeout(pushqueue_t *sq, int timeout);
+
+push2queue_t *p2queue_new(bool ownedbyq);
+bool p2queue_delete(push2queue_t *queue);
+
+bool p2queue_enq_low(push2queue_t *queue, void *data, int len);
+bool p2queue_enq_high(push2queue_t *queue, void *data, int len);
+nvoid_t *p2queue_deq(push2queue_t *queue);
+
 
 #endif

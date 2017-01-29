@@ -114,7 +114,7 @@ typedef struct _activity_table_t
     activity_thread_t *athreads[MAX_ACT_THREADS];
 
     simplequeue_t *globaloutq;
-    pushqueue_t *globalinq;
+    push2queue_t *globalinq;
 
 } activity_table_t;
 
