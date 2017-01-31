@@ -66,9 +66,9 @@ void taskmain(int argc, char *arg[])
     {
       jactivity_t *jact = jam_create_activity(js);
       jactivity_t *res = jam_rexec_async(js, jact, "testfunc", "s", "hello");
-      usleep(1000);
+            taskdelay(500);
       activity_free(jact);
-      taskyield();
+           taskyield();
       printf("Hello\n");
     }
 }

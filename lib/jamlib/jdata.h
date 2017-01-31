@@ -1,6 +1,7 @@
 #ifndef __JDATA__
 #define __JDATA__
 
+#include <stdlib.h>
 #include <hiredis/hiredis.h>
 #include <hiredis/async.h>
 #include <hiredis/adapters/libevent.h>
