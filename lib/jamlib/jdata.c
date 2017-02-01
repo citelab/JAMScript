@@ -403,8 +403,8 @@ void jbroadcaster_msg_rcv_callback(redisAsyncContext *c, void *reply, void *priv
 //Returns the last updated jbroadcast value given a jbroadcaster. 
 void *get_jbroadcaster_value(jbroadcaster *j){
   if(j->data == NULL)
-    printf("Invalid get attempt ...\n");
-  assert(j->data != NULL);
+    printf("Null get attempt ...\n");
+  //assert(j->data != NULL);
   return j->data;
 }
 
