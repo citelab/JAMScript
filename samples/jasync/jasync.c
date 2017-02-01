@@ -8,5 +8,6 @@ jasync ping() {
 }
 
 int main() {
+  ping();
     return 0;
 }

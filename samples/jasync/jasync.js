@@ -1,4 +1,4 @@
-jasync pong() {
-    console.log(pong());
+jasync function pong() {
+    console.log("pong..");
     ping();
 }
