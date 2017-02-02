@@ -122,7 +122,7 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, char *rcond, command_t
 {
     command_t *rcmd;
     arg_t *repcode;
-    int error_count = 0;
+    int error_count = 0, timeout = 300;
     char *actname = strdup(cmd->actname);
 
     insert_runtable_entry(js, cmd);
@@ -141,22 +141,24 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, char *rcond, command_t
     // The send is executed via the worker thread..
     queue_enq(jact->thread->outq, cmd, sizeof(command_t));
 
+
+    timeout = 300;
     // We expect act_entry->num_replies from the remote side 
     // The replies are just confirmations on REXEC-SYN execution
     //
     for (int i = 0; i < act_entry->num_replies; i++)
     {
         // TODO: Fix the constant 300 milliseconds here..
-        jam_set_timer(js, jact->actid, 300);
+        jam_set_timer(js, jact->actid, timeout);
         nvoid_t *nv = pqueue_deq(jact->thread->inq);
         jam_clear_timer(js, jact->actid);
-
+        timeout = 5;
         rcmd = NULL;
         if (nv != NULL)
         {
             rcmd = (command_t *)nv->data;
             free(nv);
-
+            
             if ((strcmp(rcmd->cmd, "TIMEOUT") == 0) || (strcmp(rcmd->cmd, "REXEC-NAK") == 0))
                 error_count++;
             else 
@@ -164,6 +166,8 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, char *rcond, command_t
         }
     }        
 
+    // We sleep for the lease time.. this is expected.. we are in "sync" call
+    int stime = get_sleep_time(jact);
 
     // return.. all invocation requests have failed..
     if (error_count == act_entry->num_replies)
@@ -173,17 +177,39 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, char *rcond, command_t
     // this is for the other nodes.. the root should ignore this because it is a duplicate
     queue_enq(jact->thread->outq, bcmd, sizeof(command_t));
 
+    timeout = 300;
+    // We expect act_entry->num_replies from the remote side 
+    // The replies are just confirmations on REXEC-SYN execution
+    //
+    for (int i = 0; i < act_entry->num_replies; i++)
+    {
+        // TODO: Fix the constant 300 milliseconds here..
+        jam_set_timer(js, jact->actid, timeout);
+        nvoid_t *nv = pqueue_deq(jact->thread->inq);
+        jam_clear_timer(js, jact->actid);
+        timeout = 5;
+        rcmd = NULL;
+        if (nv != NULL)
+        {
+            rcmd = (command_t *)nv->data;
+            free(nv);
+
+            // throw away the responses.. we already got the needed ones 
+            command_free(rcmd);
+        }
+    }        
+
     // We create a structure to hold the result returned by the root
     repcode = (arg_t *)calloc(1, sizeof(arg_t));
 
-    // We sleep for the lease time.. this is expected.. we are in "sync" call
-    int stime = get_sleep_time(jact);
 
     // Send the request to get the results... 
     // TODO: Fix this to get an extension.. now we expect the results to be available 
     // after the lease time..
     command_t *lcmd = command_new("REXEC-RES-GET", rcond, actname, jact->actid, js->cstate->device_id, "");
     queue_enq(jact->thread->outq, lcmd, sizeof(command_t));
+
+    printf("Stime %d\n", stime);
 
     // Now we retrive the replies from the remote side..
     // 
@@ -221,7 +247,10 @@ int get_sleep_time(jactivity_t *jact)
             timeout = MAX(timeout, cmd->args[0].val.ival);
     }
 
-    return timeout;
+    if (timeout < 100)
+        return 100;
+    else
+        return timeout;
 }
 
 
@@ -240,3 +269,12 @@ char *get_root_condition(jamstate_t *js)
 
     return strdup(buf);
 }
+
+
+
+// TODO: ====================
+// TODO: FIX URGENTLY
+// 
+// Why replies is not holding the proper command structures?
+// More precisely, why the time length (sleep time) is 0?
+//

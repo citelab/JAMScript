@@ -167,8 +167,6 @@ void *timer_loop(void *arg)
 
     while (1) {
         nv = queue_deq_timeout(tmr->timerqueue, 100);
-        printf("%f\n", getcurtime());
-
         if (nv == NULL)
         {
             // Timeout happened.. walk through the events and fire the expired ones

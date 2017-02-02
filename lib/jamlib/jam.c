@@ -93,7 +93,7 @@ jamstate_t *jam_init(int port)
     task_wait(js->bgsem);
 
     // Turn on the sync timer 
-    jam_set_sync_timer(js, 200);
+//    jam_set_sync_timer(js, 200);
 
     #ifdef DEBUG_LVL1
         printf("JAM Library initialization... \t\t[completed]\n");
