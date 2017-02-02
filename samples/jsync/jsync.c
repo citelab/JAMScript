@@ -15,7 +15,7 @@ int main() {
 		printf("Enter an operator (+, -, *, /) or q to quit:");
 		scanf("%c", &operator);
 		if(operator == 'q' ){ 
-			break;
+			exit(0);
 		}
 		printf("Enter the first integer operand: ");
 		scanf("%i", &num1);

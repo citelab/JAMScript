@@ -195,7 +195,6 @@ void run_activity(void *arg)
         command_t *cmd;
         nvoid_t *nv = pqueue_deq(athread->inq);
         athread->state = STARTED;
-        printf("HEREREREEE>...\n");
         if (nv != NULL)
         {
             cmd = (command_t *)nv->data;
@@ -243,7 +242,6 @@ void run_activity(void *arg)
             command_free(cmd);
         }
         athread->state = EMPTY;
-        printf("After setting to EMPTY  %s\n", athread->actid);
     }
 }
 
