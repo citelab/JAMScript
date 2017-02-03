@@ -2,11 +2,11 @@
 
 jactivity_t *print_msg(char*, jcallback);
 
-void cb() {
+void cbf(char* abc) {
 	printf("Message received\n");
 }
 
 int main() {
-	print_msg("test", cb);
+	print_msg("test", cbf);
     return 0;
 }
