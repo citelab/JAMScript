@@ -1,29 +1,23 @@
 #include <unistd.h>
 #include "jdata.h"
 #include "jam.h"
-#include <stdio.h>
+
 typedef char* jcallback;
 jamstate_t *js;
-jactivity_t *print_msg(char* msg, jcallback cb) {
+jactivity_t *pong() {
 jactivity_t *jact = jam_create_activity(js);
-jactivity_t *res = jam_rexec_async(js, jact, "print_msg", "ss",msg, cb);
+jactivity_t *res = jam_rexec_async(js, jact, "pong", "");
 activity_free(jact);
 return res;}
 
-void cbf(char *abc) {
-printf("Message received\n");
+int ping() {
+pong();
 }
 int user_main() {
-print_msg("test", "cbf");
-return 0;
-}
-void callcbf(void *act, void *arg) {
-command_t *cmd = (command_t *)arg;
-cbf(cmd->args[0].val.sval);
+ping();
 }
 
 void user_setup() {
-activity_regcallback(js->atable, "cbf", ASYNC, "s", callcbf);
 }
 
 void jam_run_app(void *arg) {

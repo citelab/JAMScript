@@ -11,18 +11,22 @@ var path = require('path');
 var mime = require('mime');
 var fs = require('fs');
 var jcondition = new Map();
-function print_msg(msg,_1) {
-cb = function(x) { jnode.remoteAsyncExec(_1, [x], "true"); }
-console.log(msg);
-cb("abc");
+jcondition.set('fogonly', 'jcondition_context["version"] > 1.0');function pong() {
+var jcondition_context = jnode.get_jcond();
+if(!(eval(jcondition.get(fogonly)))){
+console.log(jnode.jcond_failure);
+jnode.jcond_failure;
+}
+console.log("pong..");
+ping();
 
 }
 var mbox = {
 "functions": {
-"print_msg": print_msg,
+"pong": pong,
 },
 "signatures": {
-"print_msg": "ss",
+"pong": "",
 }
 }
 jamlib.registerFuncs(mbox);

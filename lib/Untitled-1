@@ -1,0 +1,9 @@
+README.md
+
+To compile the example files run the following command.
+
+jamc test.c test.js
+
+You can multiple C and JS files in a project. 
+The above command assumes that the project has two files:
+one C and another of JavaScript in type.

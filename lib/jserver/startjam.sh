@@ -1,7 +1,6 @@
 #!/bin/bash
 
 
-
 function startmosquitto () {
     local port=$1;
     $(/usr/local/sbin/mosquitto -p $port -d ) &
