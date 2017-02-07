@@ -123,7 +123,7 @@ typedef struct _activity_table_t
 // Function prototypes..
 //
 
-char *activity_gettime();
+char *activity_gettime(char *prefix);
 double activity_getseconds();
 
 activity_table_t *activity_table_new();

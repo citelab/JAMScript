@@ -38,18 +38,24 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "nvoid.h"
 #include "comboptr.h"
 
-char *activity_gettime()
+char *activity_gettime(char *prefix)
 {
     char buf[64];
     #ifdef __APPLE__
-        sprintf(buf, "%llu", mach_absolute_time());
+        if (prefix == NULL)
+            sprintf(buf, "%llu", mach_absolute_time());
+        else 
+            sprintf(buf, "%s%llu", prefix, mach_absolute_time());
         return strdup(buf);
     #endif
 
     #ifdef linux
         struct timespec tp;
         clock_gettime(CLOCK_MONOTONIC, &tp);
-        sprintf(buf, "%li", tp.tv_nsec);
+        if (prefix == NULL)
+            sprintf(buf, "%li%li", tp.tv_sec, tp.tv_nsec);
+        else 
+            sprintf(buf, "%s%li%li", prefix, tp.tv_sec, tp.tv_nsec);
         return strdup(buf);
     #endif
     return 0;

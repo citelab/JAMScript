@@ -37,7 +37,7 @@ subprocess.check_call("npm install", shell=True)
 
 # env = Environment(CC = 'clang', CCFLAGS='-g -DDEBUG_LVL1', LIBPATH=['/usr/local/lib'])
 env = Environment(CC = 'clang', CCFLAGS='-g', LIBPATH=['/usr/local/lib'])
-env.Append(CPPPATH='/usr/local/share/paho/include')
+env.Append(CPPPATH='/usr/local/include')
 
 conf = Configure(env)
 

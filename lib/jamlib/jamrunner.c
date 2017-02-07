@@ -36,8 +36,7 @@ void jrun_arun_callback(activity_table_t *at, command_t *cmd, activity_callback_
 
     // Create an activity to run the callback function. 
     // 
-    jactivity_t *jact = activity_new(at, cmd->actname);
-    jact->actid = strdup(cmd->actid);
+    jactivity_t *jact = activity_new(at, cmd->actid);
     jact->thread->actid = strdup(cmd->actid);
 
     #ifdef DEBUG_LVL1
