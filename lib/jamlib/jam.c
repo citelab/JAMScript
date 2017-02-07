@@ -151,5 +151,5 @@ void jam_event_loop(void *arg)
 
 jactivity_t *jam_create_activity(jamstate_t *js)
 {
-    return activity_new(js->atable, activity_gettime());
+    return activity_new(js->atable, activity_gettime(js->cstate->device_id));
 }
