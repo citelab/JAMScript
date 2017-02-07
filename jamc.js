@@ -53,13 +53,22 @@ for (var i = 1; i < args.length; i++) {
   }
 }
 
+var inputError = false;
 if(cPath === undefined) {
   console.error("Error: C input file not specified");
+  inputError = true;
+} else if(!fs.existsSync(cPath)) {
+  console.error("File not found: " + cPath);
+  inputError = true;
 }
 if(jsPath === undefined) {
   console.error("Error: JavaScript input file not specified");
+  inputError = true;
+} else if(!fs.existsSync(jsPath)) {
+  console.error("File not found: " + jsPath);
+  inputError = true;
 }
-if(cPath === undefined || jsPath === undefined) {
+if(inputError) {
   // inputArgsError();
   process.exit(1);
 }
