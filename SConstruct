@@ -69,7 +69,6 @@ ohm_jamscript_files = Glob('./lib/ohm/jamscript/*.js') + Glob('./lib/ohm/jamscri
 c_core_files.append("./lib/jamlib/duktape");
 
 env.Install("/usr/local/bin", "jamc" );
-env.Install("/usr/local/include/jam", c_core_files);
 env.Install("/usr/local/share/jam", "jamc.js");
 env.Install("/usr/local/share/jam", "LICENSE");
 env.Install("/usr/local/share/jam", "node_modules");
