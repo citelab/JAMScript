@@ -14,12 +14,23 @@ var jcondition = new Map();
 function callb(abc) {
 console.log(abc);
 }
+function firstcall(str) {
+console.log(str);
 testy(callb);
-function testy(cb) {jnode.remoteAsyncExec("testy", [cb], "true");}
+
+}
+function testy(cb) {
+if(typeof cb === "function") { cb = cb.name; }
+jnode.remoteAsyncExec("testy", [cb], "true");
+}
 var mbox = {
 "functions": {
+"callb": callb,
+"firstcall": firstcall,
 },
 "signatures": {
+"callb": "s",
+"firstcall": "s",
 }
 }
 jamlib.registerFuncs(mbox);

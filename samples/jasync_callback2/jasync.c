@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-
+jactivity_t *firstcall(char*);
 
 jasync testy(jcallback cb) {
 	printf("testy called\n");
@@ -9,5 +9,6 @@ jasync testy(jcallback cb) {
 
 
 int main() {
+	firstcall("Hello");
     return 0;
 }

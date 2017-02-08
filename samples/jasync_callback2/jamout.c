@@ -4,9 +4,18 @@
 #include <stdio.h>
 typedef char* jcallback;
 jamstate_t *js;
+jactivity_t *firstcall(char* str) {
+jactivity_t *jact = jam_create_activity(js);
+jactivity_t *res = jam_rexec_async(js, jact, "firstcall", "s",str);
+activity_free(jact);
+return res;}
+
 void testy(jcallback cb){
 printf("testy called\n");
-cb("ah");
+jactivity_t *jact = jam_create_activity(js);
+jactivity_t *res = jam_rexec_async(js, jact, cb, "%s", "ah");
+activity_free(jact);
+;
 }
 void calltesty(void *act, void *arg) {
 command_t *cmd = (command_t *)arg;
@@ -14,6 +23,7 @@ testy(cmd->args[0].val.sval);
 }
 
 int user_main() {
+firstcall("Hello");
 return 0;
 }
 

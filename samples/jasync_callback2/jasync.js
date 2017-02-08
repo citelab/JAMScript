@@ -2,4 +2,7 @@ function callb(abc) {
    console.log(abc); 
 }
 
-testy(callb);
+jasync function firstcall(str) {
+    console.log(str);
+    testy(callb);
+}

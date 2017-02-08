@@ -165,7 +165,7 @@ try {
     fs.writeFileSync("jamout.c", includes + preprocessDecls.join("\n") + "\n" + cOutput.C + jsOutput.C);
     fs.writeFileSync(`${tmpDir}/jamout.c`, includes + preprocessDecls.join("\n") + "\n" + cOutput.C + jsOutput.C);
     try {
-      child_process.execSync(`clang -g ${tmpDir}/jamout.c -I/usr/local/share/jam/lib/ ${options} -pthread -lcbor -lnanomsg /usr/local/lib/libjam.a -ltask -levent -lhiredis -L/usr/local/lib -lpaho-mqtt3c`, {stdio: [0,1,2]}) ;
+      child_process.execSync(`clang -g ${tmpDir}/jamout.c -I/usr/local/include -I/usr/local/share/jam/lib/ ${options} -pthread -lcbor -lnanomsg /usr/local/lib/libjam.a -ltask -levent -lhiredis -L/usr/local/lib -lpaho-mqtt3c`, {stdio: [0,1,2]}) ;
     } catch(e) {
     }
     // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
@@ -198,7 +198,7 @@ function preprocess(file) {
   contents = includes + "int main();\n" + contents;
   
   fs.writeFileSync(`${tmpDir}/pre.c`, contents);
-  return result = child_process.execSync(`clang -E -P -I/usr/local/share/jam/deps/fake_libc_include -I/usr/local/share/jam/lib ${tmpDir}/pre.c`).toString();
+  return result = child_process.execSync(`clang -E -P -I/usr/local/include -I/usr/local/share/jam/deps/fake_libc_include -I/usr/local/share/jam/lib ${tmpDir}/pre.c`).toString();
 
   // return child_process.execSync(`${cc} -E -P -std=iso9899:199409 ${file}`).toString();
 
