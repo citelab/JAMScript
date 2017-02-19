@@ -16,7 +16,9 @@ console.log("pong..");
 ping();
 
 }
-function ping() {jnode.remoteAsyncExec("ping", [], "true");}
+function ping() {
+jnode.remoteAsyncExec("ping", [], "true");
+}
 var mbox = {
 "functions": {
 "pong": pong,

@@ -177,7 +177,7 @@ command_t *command_rebuild(command_t *cmd)
             cbor_array_push(arr, elem);
     }
 
-    cbor_item_t *rmap = cbor_new_definite_map(6);
+    cbor_item_t *rmap = cbor_new_definite_map(7);
 
     // Add the cmd field to the map
     cbor_map_add(rmap, (struct cbor_pair) {
@@ -268,7 +268,7 @@ command_t *command_new_using_cbor(const char *cmd, char *opt, char *cond, char *
      * {cmd: Command_String, actarg: Activity ID, args: [Array of args]}
      */
 
-    cbor_item_t *rmap = cbor_new_definite_map(6);
+    cbor_item_t *rmap = cbor_new_definite_map(7);
 
     // Add the cmd field to the map
     cbor_map_add(rmap, (struct cbor_pair) {
@@ -415,7 +415,7 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
 
     // check the size of the CBOR map
     int items = cbor_map_size(cmd->cdata);
-    assert(items == 6);
+    assert(items == 7);
 
     struct cbor_pair *mitems = cbor_map_handle(cmd->cdata);
 
