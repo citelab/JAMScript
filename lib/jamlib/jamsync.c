@@ -96,10 +96,12 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
     {
         // Get the root condition string. This string forces the command to execute at the root only 
         char *rootcond = get_root_condition(js);
-        command_t *cmd = command_new_using_cbor("REXEC-SYN", rootcond, aname, jact->actid, js->cstate->device_id, arr, qargs, i);
+        // FIXME: CONDITIONAL should be fixed here??
+        command_t *cmd = command_new_using_cbor("REXEC-SYN", rootcond, "-", aname, jact->actid, js->cstate->device_id, arr, qargs, i);
         cmd->cbor_item_list = list;
 
-        command_t *bcmd = command_new_using_cbor("REXEC-SYN", "true", aname, jact->actid, js->cstate->device_id, arr2, qargs2, i);
+        // FIXME: CONDITIONAL should be fixed here??
+        command_t *bcmd = command_new_using_cbor("REXEC-SYN", "true", "-", aname, jact->actid, js->cstate->device_id, arr2, qargs2, i);
         bcmd->cbor_item_list = list2;
         rargs = jam_sync_runner(js, jact, rootcond, cmd, bcmd);
 
@@ -206,7 +208,8 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, char *rcond, command_t
     // Send the request to get the results... 
     // TODO: Fix this to get an extension.. now we expect the results to be available 
     // after the lease time..
-    command_t *lcmd = command_new("REXEC-RES-GET", rcond, actname, jact->actid, js->cstate->device_id, "");
+    // FIXME: CONDITIONAL shoud be fixed here??
+    command_t *lcmd = command_new("REXEC-RES-GET", rcond, "-", actname, jact->actid, js->cstate->device_id, "");
     queue_enq(jact->thread->outq, lcmd, sizeof(command_t));
 
     printf("Stime %d\n", stime);

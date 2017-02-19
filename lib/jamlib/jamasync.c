@@ -74,7 +74,8 @@ jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *aname, cha
 
     if (jact != NULL)
     {
-        command_t *cmd = command_new_using_cbor("REXEC-ASY", "-", aname, jact->actid, js->cstate->device_id, arr, qargs, i);
+        // FIXME: CONDITIONAL should go in here??
+        command_t *cmd = command_new_using_cbor("REXEC-ASY", "-", "-", aname, jact->actid, js->cstate->device_id, arr, qargs, i);
         cmd->cbor_item_list = list;
 
         jam_async_runner(js, jact, cmd);

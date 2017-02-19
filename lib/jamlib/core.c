@@ -62,7 +62,7 @@ corestate_t *core_init(int port, int timeout)
     }
 
     // send register message
-    scmd = command_new("REGISTER", "DEVICE", "-", "-", cs->device_id, "");
+    scmd = command_new("REGISTER", "DEVICE", "-", "-", "-", cs->device_id, "");
     mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd);
     rcmd = mqtt_receive(cs->mqttserv[0], "REGISTER-ACK", "/admin/announce/all", cs->timeout);
     // if we did not get the reply.. wait for the PING from an active server node
@@ -77,7 +77,7 @@ corestate_t *core_init(int port, int timeout)
         }
         command_free(rcmd);
         // send register message
-        scmd = command_new("REGISTER", "DEVICE", "-", "-", cs->device_id, "");
+        scmd = command_new("REGISTER", "DEVICE", "-", "-", "-", cs->device_id, "");
         mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd);
         rcmd = mqtt_receive(cs->mqttserv[0], "REGISTER-ACK", "/admin/announce/all", cs->timeout);
         
@@ -96,7 +96,7 @@ corestate_t *core_init(int port, int timeout)
     cs->mqttenabled[0] = true;
 
     // get information about the machine state: fog address, cloud address
-    scmd = command_new("GET-CF-INFO", "DEVICE", "-", "-", cs->device_id, "");
+    scmd = command_new("GET-CF-INFO", "DEVICE", "-", "-", "-", cs->device_id, "");
 
     // No need to retry many times.. the server is already there..
     count = 0;
@@ -119,7 +119,7 @@ corestate_t *core_init(int port, int timeout)
             cs->mqttserv[i+1] = mqtt_open(rcmd->args[i].val.sval);
             if (cs->mqttserv[i+1] != NULL) 
             {
-                scmd = command_new("REGISTER", "DEVICE", "-", "-", cs->device_id, "");
+                scmd = command_new("REGISTER", "DEVICE", "-", "-", "-", cs->device_id, "");
                 mqtt_publish(cs->mqttserv[i+1], "/admin/request/all", scmd); 
                 command_free(scmd);
     

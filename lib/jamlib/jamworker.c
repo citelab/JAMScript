@@ -633,26 +633,26 @@ command_t *jwork_runid_status(jamstate_t *js, char *runid)
     {
         if (ren->result_list[0] == NULL)
         {
-            scmd = command_new("REPORT-REP", "FIN", ren->actname, deviceid, runid, "");
+            scmd = command_new("REPORT-REP", "FIN", "-", ren->actname, deviceid, runid, "");
             return scmd;
         }
 
         switch (ren->result_list[0]->type)
         {
             case STRING_TYPE:
-                scmd = command_new("REPORT-REP", "FIN", ren->actname, deviceid, runid, "s", ren->result_list[0]->val.sval);
+                scmd = command_new("REPORT-REP", "FIN", "-", ren->actname, deviceid, runid, "s", ren->result_list[0]->val.sval);
             break;
 
             case INT_TYPE:
-                scmd = command_new("REPORT-REP", "FIN", ren->actname, deviceid, runid, "i", ren->result_list[0]->val.ival);
+                scmd = command_new("REPORT-REP", "FIN", "-", ren->actname, deviceid, runid, "i", ren->result_list[0]->val.ival);
             break;
 
             case DOUBLE_TYPE:
-                scmd = command_new("REPORT-REP", "FIN", ren->actname, deviceid, runid, "d", ren->result_list[0]->val.dval);
+                scmd = command_new("REPORT-REP", "FIN", "-", ren->actname, deviceid, runid, "d", ren->result_list[0]->val.dval);
             break;
 
             case NVOID_TYPE:
-                scmd = command_new("REPORT-REP", "FIN", ren->actname, deviceid, runid, "b", ren->result_list[0]->val.nval);
+                scmd = command_new("REPORT-REP", "FIN", "-", ren->actname, deviceid, runid, "b", ren->result_list[0]->val.nval);
             break;
             case NULL_TYPE:
             break;
@@ -857,7 +857,7 @@ void tcallback(void *arg)
         printf("Callback.... Queue %d\n", athr->inq->queue->pushsock);
     #endif
     // stick the "TIMEOUT" message into the queue for the activity
-    command_t *tmsg = command_new("TIMEOUT", "__", "ACTIVITY", athr->actid, "__", "");
+    command_t *tmsg = command_new("TIMEOUT", "-", "-", "ACTIVITY", athr->actid, "__", "");
     pqueue_enq(athr->inq, tmsg, sizeof(command_t));
     // do a signal on the thread semaphore for the activity
     #ifdef DEBUG_LVL1
@@ -872,7 +872,7 @@ void stcallback(void *arg)
     printf("Triggering the sync timer callback...\n");
     jamstate_t *js = (jamstate_t *)arg;
     // stick the "TIMEOUT" message into the queue for the activity
-    command_t *tmsg = command_new("SYNC_TIMEOUT", "__", "GLOBAL_INQUEUE", "__", "__", "");
+    command_t *tmsg = command_new("SYNC_TIMEOUT", "-", "-", "GLOBAL_INQUEUE", "__", "__", "");
     p2queue_enq_high(js->atable->globalinq, tmsg, sizeof(command_t));
 }
 

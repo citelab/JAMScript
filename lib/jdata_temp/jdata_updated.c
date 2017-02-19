@@ -373,7 +373,7 @@ void jbroadcaster_msg_rcv_callback(redisAsyncContext *c, void *reply, void *priv
             //So here instead of executing this function here, we need to insert this into the work queue
             sprintf(buf, "jbroadcast_func_%s", i->data.jbroadcaster_data->key);
             //Here, we defined a unique REXEC-JDATA to signal a jdata callback that needs to be executed. 
-            command_t *rcmd = command_new("REXEC-JDATA", "ASY", buf, "__", "0", "p", i->data.jbroadcaster_data);
+            command_t *rcmd = command_new("REXEC-JDATA", "ASY", "-", buf, "__", "0", "p", i->data.jbroadcaster_data);
             queue_enq(j_s->atable->globalinq, rcmd, sizeof(command_t));
             thread_signal(j_s->atable->globalsem);
           }
@@ -464,7 +464,7 @@ void jshuffler_callback(redisAsyncContext *c, void *reply, void *privdata){
           free(to_free);
           if(i->data.jshuffler_data->usr_callback != NULL){
             sprintf(buf, "jshuffler_func_%s", i->data.jbroadcaster_data->key);
-            command_t *rcmd = command_new("REXEC-JDATA", "ASY", buf, "__", "0", "p", i->data.jshuffler_data);
+            command_t *rcmd = command_new("REXEC-JDATA", "ASY", "-", buf, "__", "0", "p", i->data.jshuffler_data);
             queue_enq(j_s->atable->globalinq, rcmd, sizeof(command_t));
             thread_signal(j_s->atable->globalsem);
           }

@@ -1,0 +1,45 @@
+
+
+======================== DONE UP TO HERE =============================
+
+Embed the conditional into the command structure
+    = Encoding
+    = Decoding
+
+Revise the JavaScript side 
+Test the embedding and get old programs working
+
+We need an API or structure for JCond execution. This needs to be 
+formulated so that JData works with it.
+
+Inform Ross about the API. His API needs to be compatible (similar) with
+this one.
+
+C to J Asynchronous
+
+    = Pass the execution from bottom up
+    = No need to send all the levels a simultaneous execution request. 
+      This should simplify the execution flow for the program.
+
+C to J Synchronous
+
+    = Contact the root of the sub machine. If the root is unable to execute we fail.
+    = Once the root executes, we ask the rest of the machine to execute.
+
+Test disconnection tolerance
+Test performance and scaling
+
+
+Conditional execution of the two C to J variations
+    = We need to cover the conditional execution of the two variations.
+
+J to C Asynchronous
+
+
+J to C Synchronous
+
+Conditional execution of the two J to C variations
+
+
+Test scaling
+Test synchronization

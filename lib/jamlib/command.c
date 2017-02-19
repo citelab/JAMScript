@@ -46,7 +46,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 void command_arg_copy(arg_t *darg, arg_t *sarg)
 {
     darg->type = sarg->type;
-    switch (sarg->type) 
+    switch (sarg->type)
     {
         case INT_TYPE:
             darg->val.ival = sarg->val.ival;
@@ -71,8 +71,9 @@ arg_t *command_arg_clone(arg_t *arg)
     assert(val != NULL);
     if (arg == NULL)
     {
-        printf("Error... Sync call requires a return statement ...\n");
-        assert(arg != NULL);
+        printf("ERROR! Argument is NULL. Sender is putting argument values?\n");
+        printf("Quitting\n");
+        exit(1);
     }
     val->type = arg->type;
     switch (arg->type)
@@ -118,7 +119,8 @@ void command_arg_free(arg_t *arg)
 void command_arg_print(arg_t *arg)
 {
     printf("\t\t");
-    switch(arg->type) {
+    switch(arg->type) 
+    {
         case INT_TYPE:
             printf("Int: %d ", arg->val.ival);
             break;
@@ -135,7 +137,7 @@ void command_arg_print(arg_t *arg)
 
 
 // TODO: Check why we have two NVOID_TYPE in command_new.
-// This is in the while loop that converts the var args to cbor type 
+// This is in the while loop that converts the var args to cbor type
 //
 command_t *command_rebuild(command_t *cmd)
 {
@@ -153,7 +155,7 @@ command_t *command_rebuild(command_t *cmd)
                 nv = cmd->args[i].val.nval;
                 elem = cbor_build_bytestring(nv->data, nv->len);
             break;
-            
+
             case STRING_TYPE:
                 s = cmd->args[i].val.sval;
                 elem = cbor_build_string(s);
@@ -189,6 +191,12 @@ command_t *command_rebuild(command_t *cmd)
         .value = cbor_move(cbor_build_string(cmd->opt))
     });
 
+    // Add the cond field to the map
+    cbor_map_add(rmap, (struct cbor_pair) {
+        .key = cbor_move(cbor_build_string("cond")),
+        .value = cbor_move(cbor_build_string(cmd->cond))
+    });
+
     // Add the actname field to the map
     cbor_map_add(rmap, (struct cbor_pair) {
         .key = cbor_move(cbor_build_string("actname")),
@@ -222,11 +230,14 @@ command_t *command_rebuild(command_t *cmd)
 /*
  * Return a command in CBOR format (as an unsigned char array) that can be sent out..
  *
- * The format is a 5-member object:
- *         cmd: command name: RPC, PING, REGISTER, etc (see command.txt for a
- *              full list of commands)
- *         actarg: 64 bit integer ID of the activity - 0 if not activity
-  *         args: array of arguments to the command
+ * The format is an object with the following fields:
+ *      cmd: command string
+ *      opt: option to the command
+ *      cond: condition string
+ *      actid: activity ID - this is a unique value
+ *      actname: function called by the activity
+ *      actargs: descriptor or indicator of the argument array
+ *      args: array of arguments for the function
  *
  * Limitations: We have limitations in the types of arguments that can be encoded.
  * At this time, they should all be primary types.
@@ -234,7 +245,7 @@ command_t *command_rebuild(command_t *cmd)
  * format - s (string), i (integer) f,d for float/double - no % (e.g., "si")
  *
  */
-command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, char *actid, char *actarg,
+command_t *command_new_using_cbor(const char *cmd, char *opt, char *cond, char *actname, char *actid, char *actarg,
                                 cbor_item_t *arr, arg_t *args, int nargs)
 {
 
@@ -245,10 +256,10 @@ command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, cha
     // hookup parameter such as cmd, opt, actname, etc
     cmdo->cmd = strdup(cmd);
     cmdo->opt = strdup(opt);
+    cmdo->cond = strdup(cond);
     cmdo->actname = strdup(actname);
     cmdo->actid = strdup(actid);
     cmdo->actarg = strdup(actarg);
-    cmdo->easy_arr = NULL;
     cmdo->args = args;
     cmdo->nargs = nargs;
 
@@ -256,7 +267,6 @@ command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, cha
      * Format of the CBOR map is as follows in equivalent JSON syntax
      * {cmd: Command_String, actarg: Activity ID, args: [Array of args]}
      */
-
 
     cbor_item_t *rmap = cbor_new_definite_map(6);
 
@@ -270,6 +280,12 @@ command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, cha
     cbor_map_add(rmap, (struct cbor_pair) {
         .key = cbor_move(cbor_build_string("opt")),
         .value = cbor_move(cbor_build_string(opt))
+    });
+
+    // Add the cond field to the map
+    cbor_map_add(rmap, (struct cbor_pair) {
+        .key = cbor_move(cbor_build_string("cond")),
+        .value = cbor_move(cbor_build_string(cond))
     });
 
     // Add the actname field to the map
@@ -308,7 +324,7 @@ command_t *command_new_using_cbor(const char *cmd, char *opt, char *actname, cha
  * Reusing the previous command encoder..
  *
  */
-command_t *command_new(const char *cmd, char *opt, char *actname, char *actid, char *actarg, const char *fmt, ...)
+command_t *command_new(const char *cmd, char *opt, char *cond, char *actname, char *actid, char *actarg, const char *fmt, ...)
 {
     va_list args;
     nvoid_t *nv;
@@ -348,7 +364,7 @@ command_t *command_new(const char *cmd, char *opt, char *actname, char *actid, c
                     cbor_mark_negint(elem);
                 break;
             case 'd':
-            case 'p':                 
+            case 'p':
                 qargs[i].val.nval = va_arg(args, void *);
                 qargs[i].type = NVOID_TYPE;
                 elem = cbor_build_uint64(qargs[i].val.nval);
@@ -370,7 +386,7 @@ command_t *command_new(const char *cmd, char *opt, char *actname, char *actid, c
 
     va_end(args);
 
-    command_t *c = command_new_using_cbor(cmd, opt, actname, actid, actarg, arr, qargs, i);
+    command_t *c = command_new_using_cbor(cmd, opt, cond, actname, actid, actarg, arr, qargs, i);
     c->cbor_item_list = list;
     return c;
 }
@@ -409,18 +425,21 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
     cbor_assert_field_string(mitems[1].key, "opt");
     cmd->opt = cbor_get_string(mitems[1].value);
 
-    cbor_assert_field_string(mitems[2].key, "actname");
-    cmd->actname = cbor_get_string(mitems[2].value);
+    cbor_assert_field_string(mitems[2].key, "cond");
+    cmd->opt = cbor_get_string(mitems[2].value);
 
-    cbor_assert_field_string(mitems[3].key, "actid");
-    cmd->actid = cbor_get_string(mitems[3].value);
+    cbor_assert_field_string(mitems[3].key, "actname");
+    cmd->actname = cbor_get_string(mitems[3].value);
 
-    cbor_assert_field_string(mitems[4].key, "actarg");
-    cmd->actarg = cbor_get_string(mitems[4].value);
+    cbor_assert_field_string(mitems[4].key, "actid");
+    cmd->actid = cbor_get_string(mitems[4].value);
 
-    cbor_assert_field_string(mitems[5].key, "args");
+    cbor_assert_field_string(mitems[5].key, "actarg");
+    cmd->actarg = cbor_get_string(mitems[5].value);
 
-    cbor_item_t *arr = mitems[5].value;
+    cbor_assert_field_string(mitems[6].key, "args");
+
+    cbor_item_t *arr = mitems[6].value;
     cmd->nargs = cbor_array_size(arr);
     if (cmd->nargs > 0)
         cmd->args = (arg_t *)calloc(cmd->nargs, sizeof(arg_t));
@@ -489,7 +508,8 @@ void command_free(command_t *cmd)
 
   // decrement the reference to the CBOR object..
 
-  if (cmd->cdata){
+  if (cmd->cdata)
+  {
       cbor_decref(&cmd->cdata);
   }
 
@@ -506,6 +526,7 @@ void command_free(command_t *cmd)
   }
   free(cmd->cmd);
   free(cmd->opt);
+  free(cmd->cond);
   free(cmd->actname);
   free(cmd->actid);
   free(cmd->actarg);
@@ -534,6 +555,7 @@ void command_print(command_t *cmd)
     printf("\n===================================\n");
     printf("\nCommand cmd: %s\n", cmd->cmd);
     printf("\nCommand opt: %s\n", cmd->opt);
+    printf("\nCommand opt: %s\n", cmd->cond);
     printf("\nCommand activity name: %s\n", cmd->actname);
     printf("\nCommand activity id: %s\n", cmd->actid);
     printf("\nCommand activity arg: %s\n", cmd->actarg);
