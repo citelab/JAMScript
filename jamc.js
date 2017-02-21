@@ -94,13 +94,13 @@ try {
     console.log(preprocessed);
   }
 
-  console.log("Parsing C Files...");
+  console.log("Parsing JS Files...");
   var jsTree = jam.jamJSGrammar.match(fs.readFileSync(jsPath).toString(), 'Program');
   if(jsTree.failed()) {
     throw jsTree.message;
   }
 
-  console.log("Parsing JavaScript Files...");
+  console.log("Parsing C Files...");
   var cTree = jam.jamCGrammar.match(preprocessed, 'Source');
   if(cTree.failed()) {
     throw cTree.message;
@@ -118,7 +118,8 @@ try {
 	var jsOutput = jam.jsSemantics(jsTree).jamJSTranslator;
   console.log("Generating C code...");
 	var cOutput = jam.cSemantics(cTree).jamCTranslator;
-
+  
+  // console.log(printCallGraph(jam.callGraph));
 
   // if(translateOnly) {
   //   printAndExit(output);
@@ -159,6 +160,7 @@ try {
 
     flowCheck(requires + jsOutput.annotated_JS + cOutput.annotated_JS);
     var includes = '#include "jam.h"\n'
+    includes = '#include "command.h"\n' + includes;
     includes = '#include "jdata.h"\n' + includes;
     includes = '#include <unistd.h>\n' + includes;
 
@@ -233,6 +235,8 @@ function flowCheck(input) {
 }
 
 function printCallGraph(callGraph) {
+    console.log(callGraph.c);
+    console.log(callGraph.js);
     var graph = 'digraph jamgraph{\n';
     var callList = '';
     if(callGraph.c.size > 0) {
@@ -241,9 +245,9 @@ function printCallGraph(callGraph) {
         graph += 'label = "C Functions";\n'
         callGraph.c.forEach(function(calls, func) {
             // graph += func + ';\n';
-            if(calls.size > 0) {
-                usedFunctions.add(func);
-            }
+            // if(calls.size > 0) {
+              usedFunctions.add(func);
+            // }
             calls.forEach(function(call) {
                 callList += func + ' -> ' + call + ';\n';
                 if(callGraph.c.has(call)) {
