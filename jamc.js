@@ -133,22 +133,8 @@ try {
   // child_process.execSync("make -C /usr/local/share/jam/lib/jamlib/c_core");
   // fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/testjam').pipe(fs.createWriteStream('jamout'));
   // fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/jamconf.dat').pipe(fs.createWriteStream('jamconf.dat'));
-  var requires = '';
-  requires += "var jamlib = require('/usr/local/share/jam/lib/jserver/jamlib');\n";
-  requires += "var jnode = require('/usr/local/share/jam/lib/jserver/jnode');\n";
-  requires += "var JLogger = require('/usr/local/share/jam/lib/jserver/jlogger');\n";
-  requires += "var JManager = require('/usr/local/share/jam/lib/jserver/jmanager');\n";
-  requires += "var async = require('asyncawait/async');\n";
-  requires += "var await = require('asyncawait/await');\n";
 
-  requires += "var http = require('http');\n";
-  requires += "var cbor = require('cbor');\n";
-  requires += "var qs = require('querystring');\n";
-  requires += "var path = require('path');\n";
-  requires += "var mime = require('mime');\n";
-  requires += "var fs = require('fs');\n";
-
-  fs.writeFileSync("jamout.js", requires + jsOutput.JS + cOutput.JS);
+  fs.writeFileSync("jamout.js", jsOutput.JS + cOutput.JS);
 
   if(!noCompile) {
     console.log("Compiling C code...");
@@ -158,7 +144,7 @@ try {
       options = "-lm -lbsd";
     }
 
-    flowCheck(requires + jsOutput.annotated_JS + cOutput.annotated_JS);
+    flowCheck(jsOutput.annotated_JS + cOutput.annotated_JS);
     var includes = '#include "jam.h"\n'
     includes = '#include "command.h"\n' + includes;
     includes = '#include "jdata.h"\n' + includes;

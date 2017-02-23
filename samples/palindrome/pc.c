@@ -1,4 +1,4 @@
-jasync isPalindromeC(char * text) {
+jsync int isPalindromeC(char * text) {
    size_t length = strlen(text);
    size_t half = length / 2;
    size_t start = 0;
@@ -18,13 +18,13 @@ jasync isPalindromeC(char * text) {
       start++;
       end--;
     } else {
-      return;
+      return 1;
     }
 
     half--;
    }
 
-   return;
+   return 0;
 }
 
 int main () {
