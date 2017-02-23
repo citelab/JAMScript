@@ -9,7 +9,8 @@ JAMJS <: ES5 {
     
     Jdata_spec      = "int" identifier as jdata_type ";"
 
-    Jdata_decl      = jdata "{" Jdata_spec* "}"
+    Jdata_decl      = jdata identifier "{" Jdata_spec* "}"          -- named
+                    | jdata "{" Jdata_spec* "}"                     -- anonymous
 
     Jconditional    = jconditional identifier "{" Jcond_entry* "}"
 
