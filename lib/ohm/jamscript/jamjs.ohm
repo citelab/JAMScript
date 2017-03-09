@@ -7,16 +7,17 @@ JAMJS <: ES5 {
                     | logger 
                     | shuffler
     
-    Jdata_spec      = "int" identifier as jdata_type ";"
+    Jdata_spec      = "int" identifier as jdata_type "(" ("fog"|"cloud") ")" ";"    -- specified
+                    | "int" identifier as jdata_type ";"            -- default
 
     Jdata_decl      = jdata identifier "{" Jdata_spec* "}"          -- named
                     | jdata "{" Jdata_spec* "}"                     -- anonymous
 
     Jconditional    = jconditional identifier "{" Jcond_entry* "}"
 
-	Jcond_entry     = jcond_type "{" Jcond_rule* "}"
+	Jcond_entry     = level "{" Jcond_rule* "}"
 
-	jcond_type      = "device" | "fog" | "cloud"
+	level           = "device" | "fog" | "cloud"
 
 	Jcond_rule      = identifier jcond_op numericLiteral ";"
     
