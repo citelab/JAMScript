@@ -39,6 +39,9 @@ This may seem like json format but we will not tolerate nested objects. Only a k
 
 // In any case, we will read it into memory lazily when first needed ...
 
+
+
+
 void refresh_jcondition();
 void jcond_read_context(); //Reads our context file in memory
 void jcond_init_duktape();

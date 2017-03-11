@@ -38,6 +38,34 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "nvoid.h"
 #include "comboptr.h"
 
+
+//
+// jactivity is created as follows:
+//     = created for the main thread - main program - this 
+//         used to run the program and all the synchronous functions
+//     = created for each asynchronous functions
+
+//     = created for each remote function call 
+
+// jactivity is deleted as follows:
+//     = main thread is only deleted when the program is terminated 
+//     = asynchronous functions - deleted by the user program 
+
+//     = deleted by the remote function call 
+
+// What happens at creation?
+//     = Allocate memory for the activity structure
+//     = Get a free thread from the pool 
+//     = Set the thread to the activity 
+//     = Activity ID should be set in both thread and activity structures
+//     = State is set to NEW in the activity 
+
+// What happens at deletion?
+//     = Disassociate the thread from the activity: needs to be done in the thread and activity 
+//     = Release activity ID by releasing the memory and setting the pointer to NULL
+//
+
+
 char *activity_gettime(char *prefix)
 {
     char buf[64];
@@ -62,7 +90,7 @@ char *activity_gettime(char *prefix)
 }
 
 
-double activity_getseconds()
+long long activity_getseconds()
 {
     struct timeval tp;
 
@@ -72,12 +100,12 @@ double activity_getseconds()
         return 0;
     }
 
-    return tp.tv_sec + tp.tv_usec * 1E-6;
+    return tp.tv_sec * 1000000LL + tp.tv_usec;
 }
 
 
 
-activity_table_t *activity_table_new()
+activity_table_t *activity_table_new(void *jarg)
 {
     int i;
 
@@ -167,9 +195,7 @@ bool activity_regcallback(activity_table_t *at, char *name, int type, char *sig,
 }
 
 
-// TODO: What is the use of opt??
-//
-activity_callback_reg_t *activity_findcallback(activity_table_t *at, char *name, char *opt)
+activity_callback_reg_t *activity_findcallback(activity_table_t *at, char *name)
 {
     int i;
 
@@ -200,6 +226,13 @@ void run_activity(void *arg)
     {
         command_t *cmd;
         nvoid_t *nv = pqueue_deq(athread->inq);
+        if (athread->jact == NULL)
+        {
+            // Something is wrong.. we just got a thread woken without any activity..
+            athread->state = EMPTY;
+            continue;
+        }
+
         athread->state = STARTED;
         if (nv != NULL)
         {
@@ -212,15 +245,16 @@ void run_activity(void *arg)
         {
             if (strcmp(cmd->cmd, "REXEC-ASY") == 0) 
             {
-                areg = activity_findcallback(at, cmd->actname, cmd->opt);
+                areg = activity_findcallback(at, cmd->actname);
                 if (areg == NULL)
                     printf("Function not found.. %s\n", cmd->actname);
                 else 
                 {
+                    jactivity_t *jact = athread->jact;
                     #ifdef DEBUG_LVL1
                     printf("Command actname = %s %s %s\n", cmd->actname, cmd->cmd, cmd->opt);
                     #endif
-                    jrun_arun_callback(at, cmd, areg);
+                    jrun_arun_callback(jact, cmd, areg, at->jarg);
                     #ifdef DEBUG_LVL1
                     printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
                     #endif
@@ -230,7 +264,7 @@ void run_activity(void *arg)
             if (strcmp(cmd->cmd, "REXEC-SYN") == 0)
             {
                 // TODO: There is no difference at this point.. what will be the difference?
-                areg = activity_findcallback(at, cmd->actname, cmd->opt);
+                areg = activity_findcallback(at, cmd->actname);
                 if (areg == NULL)
                     printf("Function not found.. %s\n", cmd->actname);
                 else 
@@ -239,7 +273,7 @@ void run_activity(void *arg)
                     printf("Command actname = %s %s %s\n", cmd->actname, cmd->cmd, cmd->opt);
                     #endif
 
-                    jrun_arun_callback(at, cmd, areg);
+                    jrun_arun_callback(athread->jact, cmd, areg, at->jarg);
                     #ifdef DEBUG_LVL1
                     printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
                     #endif
@@ -284,8 +318,8 @@ activity_thread_t *activity_getthread(activity_table_t *at, char *actid)
         if (at->athreads[i]->state == EMPTY)
             return at->athreads[i];
 
-    double ctime = activity_getseconds();
-    double cdiff = 0.0;
+    long long ctime = activity_getseconds();
+    long cdiff = 0;
 
     // If not, replace a least recently used thread..
     for (i = 0; i < MAX_ACT_THREADS; i++)
@@ -321,13 +355,14 @@ void activity_setthread(activity_thread_t *at, jactivity_t *jact, char *actid)
 
 
 
-jactivity_t *activity_new(activity_table_t *at, char *actid)
+jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
 {
     int i;
     jactivity_t *jact = (jactivity_t *)calloc(1, sizeof(jactivity_t));
 
     if (jact != NULL) 
     {
+        jact->remote = remote;
         jact->thread = activity_getthread(at, actid);
         if (jact->thread == NULL)
         {
@@ -339,6 +374,9 @@ jactivity_t *activity_new(activity_table_t *at, char *actid)
         activity_setthread(jact->thread, jact, actid);
 
         // Setup the new activity
+        // NOTE:: We are not setting the thread state as above
+        // So this is not repeating what was inside setthread()..
+        // 
         jact->state = NEW;
         jact->actid = strdup(actid);
 
@@ -404,7 +442,12 @@ void activity_freethread(jactivity_t *jact)
         return;
 
     jact->thread->state = EMPTY;
+    
     // Free memory that is not reuseable
- //   if (jact->thread->actid != NULL) free(jact->thread->actid);
+    if (jact->thread->actid != NULL) free(jact->thread->actid);
+
+    // disassociate the thread and activity
+    jact->thread->jact = NULL;
+    jact->thread = NULL;
 }
 

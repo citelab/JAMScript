@@ -1,1 +1,1 @@
-gcc -DDEBUG_LVL1 test1.c -I../. -I/usr/local/share/paho/include ../../../libjam.a  -lhiredis -lnanomsg -lcbor -levent -ltask -L/usr/local/share/paho/lib -lpaho-mqtt3c
+gcc -DDEBUG_LVL1 test1.c -I../. -I/usr/local/share/paho/include ../../../libjam.a  -lhiredis -lnanomsg -lcbor -levent -ltask -L/usr/local/share/paho/lib -lpaho-mqtt3c -I/usr/local/include -L/usr/local/lib

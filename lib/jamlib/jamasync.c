@@ -12,7 +12,7 @@
 // The memory is held until freed by an explicit activity_free()
 //
 //
-jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *aname, char *fmask, ...)
+jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, int condvec, char *aname, char *fmask, ...)
 {
     va_list args;
     nvoid_t *nv;
@@ -74,8 +74,7 @@ jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *aname, cha
 
     if (jact != NULL)
     {
-        // FIXME: CONDITIONAL should go in here??
-        command_t *cmd = command_new_using_cbor("REXEC-ASY", "-", "-", aname, jact->actid, js->cstate->device_id, arr, qargs, i);
+        command_t *cmd = command_new_using_cbor("REXEC-ASY", "-", condstr, condvec, aname, jact->actid, js->cstate->device_id, arr, qargs, i);
         cmd->cbor_item_list = list;
 
         jam_async_runner(js, jact, cmd);
@@ -97,8 +96,8 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     // May be we can't because the activity table is tied to the 
     // socket (queue) and we need to reuse them sooner?
     //
-    insert_runtable_entry(js, cmd);
-    runtableentry_t *act_entry = find_table_entry(js->rtable, cmd);
+    runtable_insert(js, cmd->actid, cmd);
+    runtableentry_t *act_entry = runtable_find(js->rtable, cmd->actid);
 
     if (act_entry == NULL)
     {
@@ -112,7 +111,7 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     queue_enq(jact->thread->outq, cmd, sizeof(command_t));
 
     // We expect act_entry->num_replies from the remote side 
-    for (int i = 0; i < act_entry->num_replies; i++)
+    for (int i = 0; i < act_entry->exp_replies; i++)
     {
         // TODO: Fix the constant 300 milliseconds here..   
         jam_set_timer(js, jact->actid, 300);
@@ -135,21 +134,21 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     if (error_count > 0) {
         jact->state = PARTIAL;
         // We have some missing replies.. see what we are missing
-        process_missing_replies(jact, act_entry->num_replies, error_count);
+        process_missing_replies(jact, act_entry->exp_replies, error_count);
     }
     else
     {
         // Examine the replies to form the status code 
         // We have all the replies.. so no missing nodes
         //
-        set_jactivity_state(jact, act_entry->num_replies);
+        set_jactivity_state(jact, act_entry->exp_replies);
     }
 
     // Set the access time
     jact->accesstime = activity_getseconds();
 
     // Delete the runtable entry.
-    free_rtable_entry(js->rtable, act_entry);
+    runtable_del(js->rtable, act_entry->actid);
 }
 
 

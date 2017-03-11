@@ -37,7 +37,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define MAX_CALLBACKS           32
 #define MAX_REPLIES             5
 
-typedef void (*activitycallback_f)(void *ten, void *arg);
+typedef void* (*activitycallback_f)(void *ten, void *arg);
 
 enum activity_state_t
 {
@@ -56,7 +56,8 @@ enum activity_state_t
 enum activity_type_t
 {
     SYNC,
-    ASYNC
+    ASYNC,
+    SYNC_WAIT
 };
 
 typedef struct _activity_thread_t
@@ -87,7 +88,8 @@ typedef struct _jactivity_t
     // TODO: Wasting memory.. but we know what happened at different levels    
     command_t *replies[MAX_REPLIES];
 
-    double accesstime;
+    long long accesstime;
+    bool remote;
 
 } jactivity_t;
 
@@ -105,6 +107,10 @@ typedef struct _activity_callback_reg_t
 
 typedef struct _activity_table_t
 {
+    // This is a parent pointer to the jamstate_t
+    // We are holding the void pointer to avoid type issues..
+    void *jarg;
+
     int runcounter; 
     int numcbackregs;
     // Callbacks are NOT pre-initialized..
@@ -124,24 +130,27 @@ typedef struct _activity_table_t
 //
 
 char *activity_gettime(char *prefix);
-double activity_getseconds();
+long long activity_getseconds();
 
-activity_table_t *activity_table_new();
+activity_table_t *activity_table_new(void *arg);
 void activity_table_print(activity_table_t *at);
 void activity_callbackreg_print(activity_callback_reg_t *areg);
 void activity_printthread(activity_thread_t *ja);
 
 bool activity_regcallback(activity_table_t *at, char *name, int type, char *sig, activitycallback_f cback);
-activity_callback_reg_t *activity_findcallback(activity_table_t *at, char *name, char *opt);
+activity_callback_reg_t *activity_findcallback(activity_table_t *at, char *name);
 
 activity_thread_t *activity_initthread(activity_table_t *atbl);
 activity_thread_t *activity_getthread(activity_table_t *at, char *actid);
 void activity_setthread(activity_thread_t *at, jactivity_t *jact, char *actid);
-jactivity_t *activity_new(activity_table_t *at, char *actid);
+jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote);
 
 void activity_free(jactivity_t *jact);
 activity_thread_t *activity_getbyid(activity_table_t *at, char *actid);
 int activity_id2indx(activity_table_t *at, char *actid);
 void activity_freethread(jactivity_t *jact);
+
+void jrun_arun_callback(jactivity_t *jact, command_t *cmd, activity_callback_reg_t *creg, void *jarg);
+
 
 #endif

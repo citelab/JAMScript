@@ -42,30 +42,39 @@ extern "C" {
 #include "threadsem.h"
 
 
-#define STACKSIZE                   50000
-#define MAX_RUN_ENTRIES             32
+#define STACKSIZE                   20000
+
+// TODO: Max entries.. sufficient?
+#define MAX_RUN_ENTRIES             64
 
 
 typedef struct _runtableentry_t
 {
-    char *runid;
-    char *actname;
     char *actid;
+    char *actname;
     int status;
-    int index;
+    long long accesstime;
+    enum activity_type_t type;
 
     command_t *cmd;
 
-    int num_replies;
-    arg_t *result_list[MAX_SERVERS]; //The results
+    int exp_replies, rcd_replies;
+    // results hold remote results in the case of C->J or
+    // local results in the case of J->C sync calls - only [0] used
+    arg_t *results[MAX_SERVERS]; //The results
+
+    
 } runtableentry_t;
 
 
 typedef struct _runtable_t
 {
-    int numruns;
-    runtableentry_t *entries[MAX_RUN_ENTRIES];
+    void *jarg;
 
+    runtableentry_t *entries;
+    int waiting;
+    pthread_mutex_t lock;
+    
 } runtable_t;
 
 
@@ -95,7 +104,6 @@ typedef struct _jamstate_t
 
     int maxleases;
 
-
 } jamstate_t;
 
 
@@ -110,8 +118,8 @@ jactivity_t *jam_create_activity(jamstate_t *js);
  * Functions defined in jamsync.c
  */
 
-arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...);
-arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, char *rcond, command_t *cmd, command_t *bcmd);
+arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, char *fmask, ...);
+arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, int rcondvec, command_t *cmd, command_t *bcmd);
 int get_sleep_time(jactivity_t *jact);
 char *get_root_condition(jamstate_t *js);
 
@@ -119,10 +127,9 @@ char *get_root_condition(jamstate_t *js);
  * Functions defined in jamasync.c
  */
 
-jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *aname, char *fmask, ...);
+jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, int condvec, char *aname, char *fmask, ...);
 void jam_rexec_run_wrapper(void *arg);
 void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd);
-
 void set_jactivity_state(jactivity_t *jact, int nreplies);
 void process_missing_replies(jactivity_t *jact, int nreplies, int ecount);
 
@@ -148,11 +155,12 @@ void jwork_process_device(jamstate_t *js);
 void jwork_process_fog(jamstate_t *js);
 void jwork_process_cloud(jamstate_t *js);
 
-void jwork_send_error(MQTTClient mcl, command_t *cmd, char *estr);
-void jwork_send_nak(MQTTClient mcl, command_t *cmd, char *estr);
+void jwork_send_error(jamstate_t *js, command_t *cmd, char *estr);
+void jwork_send_results(jamstate_t *js, command_t *cmd, arg_t *args);
+void jwork_send_nak(jamstate_t *js, command_t *cmd, char *estr);
 bool jwork_check_condition(jamstate_t *js, command_t *cmd);
 bool jwork_check_args(jamstate_t *js, command_t *cmd);
-bool jwork_synchronize(jamstate_t *js);
+int jwork_getquorum(jamstate_t *js, command_t *cmd);
 
 command_t *jwork_runid_status(jamstate_t *js, char *runid);
 command_t *jwork_device_status(jamstate_t *js);
@@ -162,23 +170,37 @@ command_t *jwork_runid_kill(jamstate_t *js, char *runid);
 void jam_set_timer(jamstate_t *js, char *actarg, int tval);
 void jam_clear_timer(jamstate_t *js, char *actid);
 
-bool jam_eval_condition(char *expr);
-runtable_t *jwork_runtable_new();
-void jwork_runid_complete(jamstate_t *js, runtable_t *rtab, char *runid, arg_t *arg);
-bool jwork_runtable_check(runtable_t *rtable,  command_t *cmd);
-bool insert_runtable_entry(jamstate_t *js, command_t *rcmd);
-runtableentry_t *find_table_entry(runtable_t *rtable, command_t *cmd);
-command_t *prepare_sync_return_result(runtableentry_t *r, command_t *cmd);
-void free_rtable_entry(runtable_t *table, runtableentry_t *entry);
-command_t *return_err_arg(command_t *rcmd, char *err_msg);
-/*
- * Functions defined in jamrunner.c
- */
 
-// TODO: Fix these tasks...
+bool jcond_synchronized(command_t *cmd);
+
+
+
+// Prototypes for functions in 
+// jamrunner.c
+//
+
+runtable_t *runtable_new(void *arg);
+runtableentry_t *runtable_find(runtable_t *table, char *actid);
+runtableentry_t *runtable_getfree(runtable_t *table);
+bool runtable_insert(jamstate_t * js, char *actid, command_t *cmd);
+bool runtable_del(runtable_t *tbl, char *actid);
+bool runtable_store_results(runtable_t *tbl, char *actid, arg_t *results);
+void runtable_insert_synctask(jamstate_t *js, command_t *rcmd, int quorum);
+int runtable_synctask_count(runtable_t *rtbl);
+
+command_t *get_actid_results(jamstate_t *js, char *actid);
 
 bool jrun_check_signature(activity_callback_reg_t *creg, command_t *cmd);
-void jrun_arun_callback(activity_table_t *at, command_t *cmd, activity_callback_reg_t *creg);
+void jrun_arun_callback(jactivity_t *jact, command_t *cmd, activity_callback_reg_t *creg, void *jarg);
+
+
+// jcond.h
+
+bool jcond_evaluate_cond(jamstate_t *js, command_t *cmd);
+bool jcond_synchronized(command_t *cmd);
+int jcond_getquorum(command_t *cmd);
+
+
 
 
 #endif  /* __JAMLIB_H__ */

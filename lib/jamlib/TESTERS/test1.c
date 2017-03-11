@@ -14,16 +14,18 @@ void hello3(char* msg) {
 }
 
 
-void callhello(void *act, void *arg) 
+void *callhello(void *act, void *arg) 
 {
     command_t *cmd = (command_t *)arg;
     hello(cmd->args[0].val.sval);
+    return NULL;
 }
 
-void callhello3(void *act, void *arg) 
+void *callhello3(void *act, void *arg) 
 {
     command_t *cmd = (command_t *)arg;
     hello3(cmd->args[0].val.sval);
+    return NULL;
 }
 
 jamstate_t *js;
@@ -32,7 +34,7 @@ void user_setup() {
     printf("Registering.. callbacks for hello and hello3.. \n");
     activity_regcallback(js->atable, "hello", ASYNC, "s", callhello);
     activity_regcallback(js->atable, "hello3", ASYNC, "s", callhello3);
-    activity_regcallback(js->atable, "testfunc", ASYNC, "s", callhello3);
+    activity_regcallback(js->atable, "testfunc", SYNC, "s", callhello3);
     
 }
 
@@ -65,11 +67,11 @@ void taskmain(int argc, char *arg[])
     while(1) 
     {
       jactivity_t *jact = jam_create_activity(js);
-      jactivity_t *res = jam_rexec_async(js, jact, "testfunc", "s", "hello");
-            taskdelay(500);
-      activity_free(jact);
-           taskyield();
-      printf("Hello\n");
+     jactivity_t *res = jam_rexec_async(js, jact, "testfunc", "s", "hello");
+            taskdelay(5);
+//	          activity_free(jact);
+ //          taskyield();
+//	         printf("Hello\n");
     }
 }
 

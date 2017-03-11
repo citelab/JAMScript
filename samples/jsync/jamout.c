@@ -1,32 +1,33 @@
 #include <unistd.h>
 #include "jdata.h"
+#include "command.h"
 #include "jam.h"
 #include <stdio.h>
 typedef char* jcallback;
 jamstate_t *js;
 int add(int num1, int num2) {
-arg_t *res = jam_rexec_sync(js, "add", "ii",num1, num2);
+arg_t *res = jam_rexec_sync(js, "true", 0, "add", "ii",num1, num2);
 int ret = res->val.ival;
 command_arg_free(res);
 return ret;
 }
 
 int subtract(int num1, int num2) {
-arg_t *res = jam_rexec_sync(js, "subtract", "ii",num1, num2);
+arg_t *res = jam_rexec_sync(js, "true", 0, "subtract", "ii",num1, num2);
 int ret = res->val.ival;
 command_arg_free(res);
 return ret;
 }
 
 int multiply(int num1, int num2) {
-arg_t *res = jam_rexec_sync(js, "multiply", "ii",num1, num2);
+arg_t *res = jam_rexec_sync(js, "true", 0, "multiply", "ii",num1, num2);
 int ret = res->val.ival;
 command_arg_free(res);
 return ret;
 }
 
 int divide(int num1, int num2) {
-arg_t *res = jam_rexec_sync(js, "divide", "ii",num1, num2);
+arg_t *res = jam_rexec_sync(js, "true", 0, "divide", "ii",num1, num2);
 int ret = res->val.ival;
 command_arg_free(res);
 return ret;

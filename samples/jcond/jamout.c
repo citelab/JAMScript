@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include "jdata.h"
+#include "command.h"
 #include "jam.h"
 
 typedef char* jcallback;

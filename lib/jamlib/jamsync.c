@@ -14,7 +14,7 @@
 // If it fails to respond, we quit with an error. 
 //
 //
-arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
+arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, char *fmask, ...)
 {
     va_list args;
     nvoid_t *nv;
@@ -90,23 +90,19 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
           }
     }
     va_end(args);
-    jactivity_t *jact = activity_new(js->atable, activity_gettime(js->cstate->device_id));
+    jactivity_t *jact = activity_new(js->atable, activity_gettime(js->cstate->device_id), false);
 
     if (jact != NULL)
     {
         // Get the root condition string. This string forces the command to execute at the root only 
-        char *rootcond = get_root_condition(js);
-        // FIXME: CONDITIONAL should be fixed here??
-        command_t *cmd = command_new_using_cbor("REXEC-SYN", rootcond, "-", aname, jact->actid, js->cstate->device_id, arr, qargs, i);
+        command_t *cmd = command_new_using_cbor("REXEC-SYN", "-", "-", condvec & JCOND_LEVEL_MASK, aname, jact->actid, js->cstate->device_id, arr, qargs, i);
         cmd->cbor_item_list = list;
 
-        // FIXME: CONDITIONAL should be fixed here??
-        command_t *bcmd = command_new_using_cbor("REXEC-SYN", "true", "-", aname, jact->actid, js->cstate->device_id, arr2, qargs2, i);
+        command_t *bcmd = command_new_using_cbor("REXEC-SYN", "-", condstr, condvec, aname, jact->actid, js->cstate->device_id, arr2, qargs2, i);
         bcmd->cbor_item_list = list2;
-        rargs = jam_sync_runner(js, jact, rootcond, cmd, bcmd);
+        rargs = jam_sync_runner(js, jact, condvec & JCOND_LEVEL_MASK, cmd, bcmd);
 
         activity_free(jact);
-        free(rootcond);
         return rargs;
     } 
     else
@@ -120,15 +116,15 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *aname, char *fmask, ...)
 // If successful reply, then we run the command everywhere else. 
 // 
 //
-arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, char *rcond, command_t *cmd, command_t *bcmd)
+arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, int rcondvec, command_t *cmd, command_t *bcmd)
 {
     command_t *rcmd;
     arg_t *repcode;
     int error_count = 0, timeout = 300;
     char *actname = strdup(cmd->actname);
 
-    insert_runtable_entry(js, cmd);
-    runtableentry_t *act_entry = find_table_entry(js->rtable, cmd);
+    runtable_insert(js, cmd->actid, cmd);
+    runtableentry_t *act_entry = runtable_find(js->rtable, cmd->actid);
     #ifdef DEBUG_LVL1
         printf("Starting JAM exec runner... \n");
     #endif
@@ -145,10 +141,10 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, char *rcond, command_t
 
 
     timeout = 300;
-    // We expect act_entry->num_replies from the remote side 
+    // We expect act_entry->exp_replies from the remote side 
     // The replies are just confirmations on REXEC-SYN execution
     //
-    for (int i = 0; i < act_entry->num_replies; i++)
+    for (int i = 0; i < act_entry->exp_replies; i++)
     {
         // TODO: Fix the constant 300 milliseconds here..
         jam_set_timer(js, jact->actid, timeout);
@@ -172,7 +168,7 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, char *rcond, command_t
     int stime = get_sleep_time(jact);
 
     // return.. all invocation requests have failed..
-    if (error_count == act_entry->num_replies)
+    if (error_count == act_entry->exp_replies)
         return NULL;
     
     // Start the invocation for the second time.. the root has already started the execution 
@@ -180,10 +176,10 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, char *rcond, command_t
     queue_enq(jact->thread->outq, bcmd, sizeof(command_t));
 
     timeout = 300;
-    // We expect act_entry->num_replies from the remote side 
+    // We expect act_entry->exp_replies from the remote side 
     // The replies are just confirmations on REXEC-SYN execution
     //
-    for (int i = 0; i < act_entry->num_replies; i++)
+    for (int i = 0; i < act_entry->exp_replies; i++)
     {
         // TODO: Fix the constant 300 milliseconds here..
         jam_set_timer(js, jact->actid, timeout);
@@ -204,19 +200,15 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, char *rcond, command_t
     // We create a structure to hold the result returned by the root
     repcode = (arg_t *)calloc(1, sizeof(arg_t));
 
-
     // Send the request to get the results... 
     // TODO: Fix this to get an extension.. now we expect the results to be available 
     // after the lease time..
-    // FIXME: CONDITIONAL shoud be fixed here??
-    command_t *lcmd = command_new("REXEC-RES-GET", rcond, "-", actname, jact->actid, js->cstate->device_id, "");
+    command_t *lcmd = command_new("REXEC-RES-GET", "-", "-", rcondvec, actname, jact->actid, js->cstate->device_id, "");
     queue_enq(jact->thread->outq, lcmd, sizeof(command_t));
-
-    printf("Stime %d\n", stime);
 
     // Now we retrive the replies from the remote side..
     // 
-    for (int i = 0; i < act_entry->num_replies; i++)
+    for (int i = 0; i < act_entry->exp_replies; i++)
     {
         jam_set_timer(js, jact->actid, stime);
         nvoid_t *nv = pqueue_deq(jact->thread->inq);
@@ -227,13 +219,16 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, char *rcond, command_t
         rcmd = (command_t *)nv->data;
         free(nv);
 
+        // FIXME: No point in copying all the results into repcode. One is overwriting the other
+        // We need to select one results..
+        //
         if (strcmp(rcmd->cmd, "REXEC-RES-PUT") == 0 && strcmp(rcmd->actarg, "RESULTS") == 0)
             command_arg_copy(repcode, &(rcmd->args[0]));
 
         command_free(rcmd);
     }
 
-    free_rtable_entry(js->rtable, act_entry);
+    runtable_del(js->rtable, act_entry->actid);
     return repcode;
 }
 
@@ -274,10 +269,3 @@ char *get_root_condition(jamstate_t *js)
 }
 
 
-
-// TODO: ====================
-// TODO: FIX URGENTLY
-// 
-// Why replies is not holding the proper command structures?
-// More precisely, why the time length (sleep time) is 0?
-//

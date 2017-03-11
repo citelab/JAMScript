@@ -56,8 +56,11 @@ jamstate_t *jam_init(int port)
     }
 
     // Initialization of the activity and task tables
-    js->atable = activity_table_new();
-    js->rtable = jwork_runtable_new();
+    // This is kind of an hack. There should be a better way structuring the code
+    // so that we don't need 
+
+    js->atable = activity_table_new(js);
+    js->rtable = runtable_new(js);
 
     // Queue initialization
     js->deviceinq = queue_new(true);
@@ -133,12 +136,14 @@ void jam_event_loop(void *arg)
             if ((strcmp(cmd->cmd, "REXEC-ASY") == 0) ||
                 (strcmp(cmd->cmd, "REXEC-SYN") == 0)) 
             {
-                jactivity_t *jact = activity_new(js->atable, cmd->actid);
+                printf("HELLLOOOO... \n");
+                
+                jactivity_t *jact = activity_new(js->atable, cmd->actid, true);
+                // The activity creation should have setup the thread 
+                // So we should have a thread to run... 
+                // 
                 if (jact != NULL) 
-                {
-                    activity_setthread(jact->thread, jact, cmd->actid);
                     pqueue_enq(jact->thread->inq, cmd, sizeof(command_t));
-                }
                 else
                     printf("ERROR! Unable to find a free Activity handler to start %s", cmd->actname);
             } 
@@ -151,5 +156,5 @@ void jam_event_loop(void *arg)
 
 jactivity_t *jam_create_activity(jamstate_t *js)
 {
-    return activity_new(js->atable, activity_gettime(js->cstate->device_id));
+    return activity_new(js->atable, activity_gettime(js->cstate->device_id), false);
 }

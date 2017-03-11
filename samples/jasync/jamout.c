@@ -1,12 +1,13 @@
 #include <unistd.h>
 #include "jdata.h"
+#include "command.h"
 #include "jam.h"
 #include <stdio.h>
 typedef char* jcallback;
 jamstate_t *js;
 jactivity_t *pong() {
 jactivity_t *jact = jam_create_activity(js);
-jactivity_t *res = jam_rexec_async(js, jact, "pong", "");
+jactivity_t *res = jam_rexec_async(js, jact, "true", 0, "pong", "");
 activity_free(jact);
 return res;}
 
@@ -14,7 +15,7 @@ void ping(){
 printf("ping\n");
 pong();
 }
-void callping(void *act, void *arg) {
+void *callping(void *act, void *arg) {
 command_t *cmd = (command_t *)arg;
 ping();
 }
