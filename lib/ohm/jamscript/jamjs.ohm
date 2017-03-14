@@ -7,23 +7,70 @@ JAMJS <: ES5 {
                     | logger 
                     | shuffler
     
-    Jdata_spec      = "int" identifier as jdata_type "(" ("fog"|"cloud") ")" ";"    -- specified
-                    | "int" identifier as jdata_type ";"            -- default
+    c_type       = "int"
+                 | "double"
+                 | "float"
+                 | "char"
+
+    Jdata_spec      = c_type identifier as jdata_type "(" ("fog"|"cloud") ")" ";"   -- specified
+                    | c_type identifier as jdata_type ";"                           -- default
+                    | identifier as ( Window | Transform | Iopadref | Iopad ) ";"              -- other
+    
+    Window          = window "[" decimalIntegerLiteral "]" Layer_specifier? of jdata_id     -- points
+                    | window Time_filter of jdata_id                                        -- time
+
+    Transform       = transform Layer_specifier? identifier of NonemptyListOf<jdata_id, ",">
+
+    Iopadref        = iopadref of iopadref_id
+
+    iopadref_id     = identifier "." jdata_id
+
+    Iopad           = iopad of NonemptyListOf<jdata_id, ",">
+
+    jdata_id        = identifier "." identifier                                     -- namespace
+                    | identifier
+    
+    Time_filter     = Absolute_time
+                    | Relative_time
+
+    Absolute_time   = "from" utc_string ("to" utc_string)?                            -- utc
+                    | "from" decimalIntegerLiteral ("to" decimalIntegerLiteral)?      -- unix
+
+    Relative_time   = "last" decimalIntegerLiteral ( "s" | "m" | "h" | "d" )
+
+    Layer_specifier = "(" layer "," layer ")"
+    layer           = "device" | "fog" | "cloud"
+
+    utc_string      = utc_date "T" utc_time
+
+    utc_date        = utc_four "-" utc_two "-" utc_two
+
+    utc_time        = utc_two ":" utc_two ":" utc_two "." decimalIntegerLiteral utc_timezone   -- millisecond
+                    | utc_two ":" utc_two ":" utc_two utc_timezone              -- default
+
+    utc_timezone    = ( "+" | "-" ) utc_two ":" utc_two         -- timezone
+                    | "Z"
+
+    utc_four        = decimalDigit decimalDigit decimalDigit decimalDigit
+    utc_two         = decimalDigit decimalDigit
+
 
     Jdata_decl      = jdata identifier "{" Jdata_spec* "}"          -- named
                     | jdata "{" Jdata_spec* "}"                     -- anonymous
 
-    Jconditional    = jconditional identifier "{" Jcond_entry* "}"
+    Jconditional    = jcond identifier? "{" Jcond_entry* "}"
 
-	Jcond_entry     = level "{" Jcond_rule* "}"
+    Jcond_entry     = identifier ":" NonemptyListOf<Jcond_rule, jcond_joiner> ";"
 
-	level           = "device" | "fog" | "cloud"
-
-	Jcond_rule      = identifier jcond_op numericLiteral ";"
+	Jcond_rule      = MemberExpr jcond_op MemberExpr
     
+    MemberExpr      = MemberExpr "." identifierName                 -- propRefExp
+                    | identifier
+                    | literal
+
     jcond_op        = "==" | ">=" | ">" | "<=" | "<" | "!="
     
-    // EqualityExpression<withIn> ";"
+    jcond_joiner    = "&&" | "||"
 
     Async_activity  = jasync Jcond_specifier? FunctionDeclaration
 
@@ -41,14 +88,19 @@ JAMJS <: ES5 {
     Activity_def    = Sync_activity
                     | Async_activity
 
-    jasync = "jasync" ~identifierPart
-    jsync = "jsync" ~identifierPart
-    in := "in" ~identifierPart
-    jdata = "jdata" ~identifierPart
     as = "as" ~identifierPart
     broadcaster = "broadcaster" ~identifierPart
-    logger = "logger" ~identifierPart
-    shuffler = "shuffler" ~identifierPart
+    in := "in" ~identifierPart
+    iopad = "iopad" ~identifierPart
+    iopadref = "iopadref" ~identifierPart
+    jasync = "jasync" ~identifierPart
     jcallback = "jcallback" ~identifierPart
-    jconditional = "jconditional" ~identifierPart
+    jcond = "jcond" ~identifierPart
+    jdata = "jdata" ~identifierPart
+    jsync = "jsync" ~identifierPart
+    logger = "logger" ~identifierPart
+    of = "of" ~identifierPart
+    shuffler = "shuffler" ~identifierPart
+    transform = "transform" ~identifierPart
+    window = "window" ~identifierPart
 }
