@@ -10,6 +10,7 @@
  */
 #include "jdata.h"
 char app_id[256];
+char dev_id[256] = { 0 };
 
 //redis server connection parameters
 char *redis_serv_IP;
@@ -42,6 +43,7 @@ Inputs
 */
 void jdata_attach(jamstate_t *js, char *application_id, char *serv_ip, int serv_port){
   sprintf(app_id, "%s", application_id);
+  strncpy(dev_id, js->cstate->device_id, sizeof dev_id - 1);
   //These are the initial redis server numbers. 
   redis_serv_IP = strdup(serv_ip);
   redis_serv_port = serv_port; //Default Port Number
@@ -142,6 +144,14 @@ void jdata_default_msg_received(redisAsyncContext *c, void *reply, void *privdat
     #ifdef DEBUG_LVL1
     printf("Broadcast received...\n");
   #endif
+}
+
+void jamdata_log_to_server(char *namespace, char *logger_name, char *value, msg_rcv_callback callback)
+{
+  char format[] = "apps[%s].namespaces[%s].datasources[%s].datastreams[%s]";
+  char key[strlen(app_id) + strlen(namespace) + strlen(logger_name) + strlen(dev_id) + sizeof format - 8];
+  sprintf(key, format, app_id, namespace, logger_name, dev_id);
+  jdata_log_to_server(key, value, callback);
 }
 
 /*
@@ -291,6 +301,14 @@ void free_jbroadcaster(jbroadcaster *j){
   free(j);
 }
 
+jbroadcaster *jambroadcaster_init(int type, char *namespace, char *broadcaster_name, activitycallback_f usr_callback)
+{
+  char format[] = "apps[%s].namespaces[%s].broadcasters[%s]";
+  char key[strlen(app_id) + strlen(namespace) + strlen(broadcaster_name) + sizeof format - 6];
+  sprintf(key, format, app_id, namespace, broadcaster_name, dev_id);
+  return jbroadcaster_init(type, key, usr_callback);
+}
+
 /*
 Initializes a jbroadcaster. This specific variable is what receives values on the c side.
 Should be utilized when declaring a jbroadcaster
@@ -325,6 +343,7 @@ jbroadcaster *jbroadcaster_init(int type, char *variable_name, activitycallback_
   }else{
     ret->usr_callback = usr_callback;
   }
+  sem_init(&ret->lock, 0, 1);
   //Now we need to add it to the list
   if(jdata_list_head == NULL){
     jdata_list_head = (jdata_list_node *)calloc(1, sizeof(jdata_list_node));
@@ -381,9 +400,10 @@ void jbroadcaster_msg_rcv_callback(redisAsyncContext *c, void *reply, void *priv
       for(jdata_list_node *i = jdata_list_head; i != NULL; i = i->next){
         if(strcmp(i->data.jbroadcaster_data->key, var_name) == 0){
           result = strdup(result);
-          //At this point, we may need to add a lock to prevent race condition
+          sem_wait(&i->data.jbroadcaster_data->lock);
           void *to_free = i->data.jbroadcaster_data->data;
           i->data.jbroadcaster_data->data = result;
+          sem_post(&i->data.jbroadcaster_data->lock);
           free(to_free);
           if(i->data.jbroadcaster_data->usr_callback != NULL){
             //So here instead of executing this function here, we need to insert this into the work queue
