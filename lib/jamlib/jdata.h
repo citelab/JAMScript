@@ -23,6 +23,7 @@ typedef void (*msg_rcv_callback)(redisAsyncContext *c, void *reply, void *privda
 typedef struct jbroadcaster{
   char *key;
   void *data;
+  sem_t lock;
   activitycallback_f usr_callback;
   enum{
     JBROADCAST_INT,
@@ -56,11 +57,13 @@ void *jdata_init(void *js);
 void jdata_default_connection(const redisAsyncContext *c, int status);
 void jdata_default_disconnection(const redisAsyncContext *c, int status);
 void jdata_default_msg_received(redisAsyncContext *c, void *reply, void *privdata);
+void jamdata_log_to_server(char *namespace, char *logger_name, char *value, msg_rcv_callback callback);
 void jdata_log_to_server(char *key, char *value, msg_rcv_callback callback);
 void jdata_remove_element(char *key, char *value, msg_rcv_callback callback);
 redisAsyncContext *jdata_subscribe_to_server(char *key, msg_rcv_callback on_msg, connection_callback connect, connection_callback disconnect);
 void jdata_run_async_cmd(char *cmd, msg_rcv_callback callback);
 redisReply *jdata_run_sync_cmd(char *cmd);
+jbroadcaster *jambroadcaster_init(int type, char *namespace, char *broadcaster_name, activitycallback_f usr_callback);
 jbroadcaster *jbroadcaster_init(int type, char *var_name, activitycallback_f usr_callback);
 void *get_jbroadcaster_value(jbroadcaster *j);
 void free_jbroadcaster_list();
