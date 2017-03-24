@@ -64,7 +64,7 @@ JAMJS <: ES5 {
 
 	Jcond_rule      = MemberExpr jcond_op MemberExpr
     
-    MemberExpr      = MemberExpr "." identifierName                 -- propRefExp
+    MemberExpr      = MemberExpr "." identifier                     -- propRefExp
                     | identifier
                     | literal
 

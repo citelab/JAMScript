@@ -5,9 +5,18 @@ JAMC <: C {
 
     Type_spec       += jcallback
 
-    Async_activity  = jasync Declarator Namespace_spec? Compound_stmt
+    Jcond_specifier = "{" Jcond_expr "}"
 
-    Sync_activity   = jsync Decl_specs Declarator Namespace_spec? Compound_stmt
+    Jcond_expr      = "(" Jcond_expr ")"                            -- paran
+                    | "!" Jcond_expr                                -- not
+                    | Jcond_expr jcond_expr_op Jcond_expr           -- bin_op
+                    | id                                            -- id
+
+    jcond_expr_op   = "&&" | "||"
+
+    Async_activity  = jasync Jcond_specifier? Declarator Namespace_spec? Compound_stmt
+
+    Sync_activity   = jsync Decl_specs Jcond_specifier? Declarator Namespace_spec? Compound_stmt
 
     Activity_def    = Sync_activity
                     | Async_activity
