@@ -5,28 +5,26 @@
 #include <stdio.h>
 typedef char* jcallback;
 jamstate_t *js;
-jactivity_t *pong() {
+jactivity_t *print_msg(char* msg, jcallback cb) {
 jactivity_t *jact = jam_create_activity(js);
-jactivity_t *res = jam_rexec_async(js, jact, "true", 0, "pong", "");
+jactivity_t *res = jam_rexec_async(js, jact, "true", 0,  "print_msg", "ss",msg, cb);
 activity_free(jact);
 return res;}
 
-void ping(){
-printf("ping\n");
-pong();
+void cbf(char *abc) {
+printf("I should be in C... Message received\n");
 }
-void *callping(void *act, void *arg) {
-command_t *cmd = (command_t *)arg;
-ping();
-}
-
 int user_main() {
-ping();
+print_msg("I should print in J node.......", "cbf");
 return 0;
+}
+void callcbf(void *act, void *arg) {
+command_t *cmd = (command_t *)arg;
+cbf(cmd->args[0].val.sval);
 }
 
 void user_setup() {
-activity_regcallback(js->atable, "ping", ASYNC, "", callping);
+activity_regcallback(js->atable, "cbf", ASYNC, "s", callcbf);
 }
 
 void jam_run_app(void *arg) {

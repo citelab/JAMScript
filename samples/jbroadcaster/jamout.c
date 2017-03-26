@@ -2,23 +2,19 @@
 #include "jdata.h"
 #include "command.h"
 #include "jam.h"
-
+#include <stdlib.h>
+#include <stdio.h>
 typedef char* jcallback;
 jamstate_t *js;
-jactivity_t *pong() {
-jactivity_t *jact = jam_create_activity(js);
-jactivity_t *res = jam_rexec_async(js, jact, "true", 0, "pong", "");
-activity_free(jact);
-return res;}
-
-int ping() {
-pong();
-}
+jbroadcaster *y;
 int user_main() {
-ping();
+taskdelay(1000);
+printf("%i\n", (int)get_jbroadcaster_value(y));
+return 0;
 }
 
 void user_setup() {
+y = jbroadcaster_init(JBROADCAST_STRING, "y", NULL);
 }
 
 void jam_run_app(void *arg) {

@@ -21,20 +21,29 @@ var path = require('path');
 var mime = require('mime');
 var fs = require('fs');
 var jcondition = new Map();
-function pong() {
-console.log("pong..");
-ping();
+function trigger() {
 
+    hello('hello').then(q => {
+	    console.log("QQQQQTrigger hello");
+	    console.log(q);
+	});
 }
-function ping() {
-jnode.remoteAsyncExec("ping", [], "true", 0);
-}
+hello = async(function(s) {
+        return 	await (jnode.remoteSyncExec("hello", [s], "true", 0));
+});
+
+
+
+
+
+
+
 var mbox = {
 "functions": {
-"pong": pong,
+"trigger": trigger,
 },
 "signatures": {
-"pong": "",
+"trigger": "",
 }
 }
 jamlib.registerFuncs(mbox);

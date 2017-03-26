@@ -3,10 +3,10 @@
 jactivity_t *print_msg(char*, jcallback);
 
 void cbf(char* abc) {
-	printf("Message received\n");
+	printf("I should be in C... Message received\n");
 }
 
 int main() {
-	print_msg("test", cbf);
+print_msg("I should print in J node.......", cbf);
     return 0;
 }
