@@ -38,6 +38,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "nvoid.h"
 #include "comboptr.h"
 
+#include "jam.h"
 
 //
 // jactivity is created as follows:
@@ -111,6 +112,7 @@ activity_table_t *activity_table_new(void *jarg)
 
     activity_table_t *atbl = (activity_table_t *)calloc(1, sizeof(activity_table_t));
     assert(atbl != NULL);
+    atbl->jarg = jarg;
 
     atbl->runcounter = 0;
     atbl->numcbackregs = 0;
@@ -254,7 +256,7 @@ void run_activity(void *arg)
                     #ifdef DEBUG_LVL1
                     printf("Command actname = %s %s %s\n", cmd->actname, cmd->cmd, cmd->opt);
                     #endif
-                    jrun_arun_callback(jact, cmd, areg, at->jarg);
+                    jrun_arun_callback(jact, cmd, areg);
                     #ifdef DEBUG_LVL1
                     printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
                     #endif
@@ -273,7 +275,7 @@ void run_activity(void *arg)
                     printf("Command actname = %s %s %s\n", cmd->actname, cmd->cmd, cmd->opt);
                     #endif
 
-                    jrun_arun_callback(athread->jact, cmd, areg, at->jarg);
+                    jrun_arun_callback(athread->jact, cmd, areg);
                     #ifdef DEBUG_LVL1
                     printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
                     #endif
@@ -451,3 +453,49 @@ void activity_freethread(jactivity_t *jact)
     jact->thread = NULL;
 }
 
+void activity_complete(activity_table_t *at, char *actid, char *fmt, ...)
+{
+    va_list args;
+    arg_t *qarg;
+    nvoid_t *nv;
+
+    printf("Helloo....0\n");
+
+
+    qarg = (arg_t *)calloc(1, sizeof(arg_t));
+
+    va_start(args, fmt);
+    // switch on fmt[0]. It should not be more than one character
+    switch (fmt[0])
+    {
+        case 's':
+            qarg->val.sval = strdup(va_arg(args, char *));
+            qarg->type = STRING_TYPE;
+            break;
+
+        case 'i':
+            qarg->val.ival = va_arg(args, int);
+            qarg->type = INT_TYPE;
+            break;
+
+        case 'd':
+            qarg->val.dval = va_arg(args, double);
+            qarg->type = DOUBLE_TYPE;
+            break;
+    }
+    va_end(args);
+
+    jamstate_t *js = (jamstate_t *)at->jarg;
+    runtableentry_t *re = runtable_find(js->rtable, actid);
+
+    printf("Helloo....1\n");
+    if (re != NULL)
+    {
+        printf("Helloo....2\n");
+        
+        jwork_send_results(js, re->cmd, qarg);
+        runtable_store_results(js->rtable, actid, qarg);
+    }
+
+}
+    

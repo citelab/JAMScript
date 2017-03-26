@@ -191,7 +191,7 @@ int runtable_synctask_count(runtable_t *rtbl);
 command_t *get_actid_results(jamstate_t *js, char *actid);
 
 bool jrun_check_signature(activity_callback_reg_t *creg, command_t *cmd);
-void jrun_arun_callback(jactivity_t *jact, command_t *cmd, activity_callback_reg_t *creg, void *jarg);
+void jrun_arun_callback(jactivity_t *jact, command_t *cmd, activity_callback_reg_t *creg);
 
 
 // jcond.h

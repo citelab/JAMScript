@@ -127,7 +127,6 @@ runtableentry_t *runtable_getfree(runtable_t *table)
 }
 
 
-
 //
 // FIXME: There is something wrong here... why freeing the memory is 
 // giving segmentation fault??
@@ -307,65 +306,21 @@ bool jrun_check_signature(activity_callback_reg_t *creg, command_t *cmd)
 }
 
 
-void jrun_arun_callback(jactivity_t *jact, command_t *cmd, activity_callback_reg_t *creg, void *jarg)
+void jrun_arun_callback(jactivity_t *jact, command_t *cmd, activity_callback_reg_t *creg)
 {
     // Activity to run the callback is already created..
     // No need to create it again...
     //
-    arg_t *arg = (arg_t *)calloc(1, sizeof(arg_t));
 
     #ifdef DEBUG_LVL1
         printf("Starting the function....................\n");
     #endif
 
-
+    creg->cback(jact, cmd);    
     // if the execution was done due to a remote request...
     if (jact->remote)
-    {
-        // if it is synchronous we have to send the results and store it in the runtable 
-        if (strcmp(cmd->opt, "SYN") == 0)
-        {
-            if (strcmp(cmd->actarg, "int") == 0)
-            {
-                arg->val.ival = (*(int *) creg->cback(jact, cmd));
-                arg->type = INT_TYPE;
-            }
-            else 
-            if (strcmp(cmd->actarg, "double") == 0)
-            {
-                arg->val.dval = (*(double *)creg->cback(jact, cmd));
-                arg->type = DOUBLE_TYPE;
-            }
-            else 
-            if (strcmp(cmd->actarg, "string") == 0)
-            {
-                arg->val.sval = strdup((char *)creg->cback(jact, cmd));
-                arg->type = STRING_TYPE;
-            }
-
-            jamstate_t *js = (jamstate_t *)jarg;
-            // Send the results back..
-            jwork_send_results(js, cmd, arg);
-
-            // Store the results in the runtable
-            runtable_store_results(js->rtable, cmd->actid, arg);
-
-        }
-        else
-        if (strcmp(cmd->opt, "ASY") == 0)
-        {
-            // Execute the callback.. for asynchronous execution..
-            creg->cback(jact, cmd);            
-        }
-
         // Delete the activity.. because we are doing a remote processing..
         activity_free(jact);
-    }
-    else
-    {
-        // Run the callback.. this is local invocation...
-        creg->cback(jact, cmd);    
-    }
 
     // Don't free cmd here.. it should be freed in the calling function..
 }

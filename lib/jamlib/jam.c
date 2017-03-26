@@ -138,10 +138,14 @@ void jam_event_loop(void *arg)
             {
                 printf("HELLLOOOO... \n");
                 
+                // Remote requests go through here.. local requests don't go through here
                 jactivity_t *jact = activity_new(js->atable, cmd->actid, true);
                 // The activity creation should have setup the thread 
                 // So we should have a thread to run... 
                 // 
+                runtable_insert(js, cmd->actid, cmd);
+                //
+
                 if (jact != NULL) 
                     pqueue_enq(jact->thread->inq, cmd, sizeof(command_t));
                 else

@@ -37,7 +37,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define MAX_CALLBACKS           32
 #define MAX_REPLIES             5
 
-typedef void* (*activitycallback_f)(void *ten, void *arg);
+typedef void (*activitycallback_f)(void *ten, void *arg);
 
 enum activity_state_t
 {
@@ -150,7 +150,8 @@ activity_thread_t *activity_getbyid(activity_table_t *at, char *actid);
 int activity_id2indx(activity_table_t *at, char *actid);
 void activity_freethread(jactivity_t *jact);
 
-void jrun_arun_callback(jactivity_t *jact, command_t *cmd, activity_callback_reg_t *creg, void *jarg);
+void jrun_arun_callback(jactivity_t *jact, command_t *cmd, activity_callback_reg_t *creg);
 
+void activity_complete(activity_table_t *at, char *actid, char *fmt, ...);
 
 #endif
