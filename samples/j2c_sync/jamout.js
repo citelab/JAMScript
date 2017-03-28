@@ -21,7 +21,7 @@ runsynctest();
 }, 1000);
 
 function hello(s) {
-wait.for(jnode.remoteSyncExec("hello", [ s ], "true", 0));
+yield wait.for(jnode.remoteSyncExec("hello", [ s ], "true", 0));
 }
 
 var mbox = {
