@@ -8,7 +8,10 @@ var qs = require('querystring');
 var path = require('path');
 var mime = require('mime');
 var fs = require('fs');
+var wait = require('wait.for-es6');
+function* main() {
 var jcondition = new Map();
+
 function pong() {
 console.log("pong..");
 ping();
@@ -27,3 +30,5 @@ var mbox = {
 }
 jamlib.registerFuncs(mbox);
 jamlib.run(function() { console.log("Running..."); } );
+}
+wait.launchFiber(main);

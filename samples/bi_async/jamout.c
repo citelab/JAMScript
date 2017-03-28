@@ -7,7 +7,7 @@ typedef char* jcallback;
 jamstate_t *js;
 jactivity_t *pong() {
 jactivity_t *jact = jam_create_activity(js);
-jactivity_t *res = jam_rexec_async(js, jact, "true", 0,  "pong", "");
+jactivity_t *res = jam_rexec_async(js, jact, "true", 0, "pong", "");
 activity_free(jact);
 return res;}
 

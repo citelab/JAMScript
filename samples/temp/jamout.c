@@ -5,17 +5,8 @@
 
 typedef char* jcallback;
 jamstate_t *js;
-jactivity_t *pong() {
-jactivity_t *jact = jam_create_activity(js);
-jactivity_t *res = jam_rexec_async(js, jact, "jcondition_context['sys.sync'] >= 10", 8,  "pong", "");
-activity_free(jact);
-return res;}
-
-int ping() {
-pong();
-}
 int user_main() {
-ping();
+printf("Hello\n");
 }
 
 void user_setup() {

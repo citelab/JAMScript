@@ -5,21 +5,22 @@
 #include <stdio.h>
 typedef char* jcallback;
 jamstate_t *js;
-int hello(char* s){
-printf("Printing from hello function..%s returning the length of string..\n", s);
-return strlen(s) * strlen(s);
-}
-void callhello(void *act, void *arg) {
-command_t *cmd = (command_t *)arg;
-activity_complete(js->atable, cmd->actid, "i", hello(cmd->args[0].val.sval));
-}
+jactivity_t *pong() {
+jactivity_t *jact = jam_create_activity(js);
+jactivity_t *res = jam_rexec_async(js, jact, "true", 0,  "pong", "");
+activity_free(jact);
+return res;}
 
 int user_main() {
-printf("In the main...\n");
+long long btime;
+int i;
+{
+pong();
+pong();
+}
 }
 
 void user_setup() {
-activity_regcallback(js->atable, "hello", SYNC, "s", callhello);
 }
 
 void jam_run_app(void *arg) {

@@ -105,6 +105,19 @@ long long activity_getseconds()
 }
 
 
+long activity_getuseconds()
+{
+    struct timeval tp;
+
+    if (gettimeofday(&tp, NULL) < 0)
+    {
+        printf("ERROR!! Getting system time..");
+        return 0;
+    }
+
+    return tp.tv_usec;
+}
+
 
 activity_table_t *activity_table_new(void *jarg)
 {
@@ -446,7 +459,8 @@ void activity_freethread(jactivity_t *jact)
     jact->thread->state = EMPTY;
     
     // Free memory that is not reuseable
-    if (jact->thread->actid != NULL) free(jact->thread->actid);
+    // FIXME: What is the trouble with deallocating here??
+    // if (jact->thread->actid != NULL) free(jact->thread->actid);
 
     // disassociate the thread and activity
     jact->thread->jact = NULL;

@@ -1,7 +1,5 @@
-jconditional fogonly {
-    fog {
-        version > 1.0;
-    }
+jcond {
+    fogonly: sys.sync >= 10;
 }
 
 jasync {fogonly} function pong() {

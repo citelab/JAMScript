@@ -8,20 +8,30 @@ var qs = require('querystring');
 var path = require('path');
 var mime = require('mime');
 var fs = require('fs');
+var wait = require('wait.for-es6');
+function* main() {
 var jcondition = new Map();
-jcondition.set('fogonly', { source: 'jcondition_context['sys.sync'] >= 10', code: 8 });
-function pong() {
-console.log("pong..");
+function testping() {
+console.log("Pinging..");
 ping();
+}
+setTimeout(function () {
+console.log("Pinging...");
+for (i = 0; i < 100000; i++) {
+testping();
+}
+}, 5000);
 
+function ping() {
+jnode.remoteAsyncExec("ping", [  ], "true", 0);
 }
 var mbox = {
 "functions": {
-"pong": pong,
 },
 "signatures": {
-"pong": "",
 }
 }
 jamlib.registerFuncs(mbox);
 jamlib.run(function() { console.log("Running..."); } );
+}
+wait.launchFiber(main);

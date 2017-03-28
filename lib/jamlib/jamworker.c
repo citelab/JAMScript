@@ -137,6 +137,8 @@ void jwork_msg_delivered(void *ctx, MQTTClient_deliveryToken dt)
 
 int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTClient_message *msg)
 {
+//    printf("Time .1: %ld\n", activity_getuseconds());
+
     // the ctx pointer is actually pointing towards the queue - cast it
     simplequeue_t *queue = (simplequeue_t *)ctx;
 
@@ -316,9 +318,9 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
 
     command_t *rcmd = (command_t *)nv->data;
     free(nv);
- //   #ifdef DEBUG_LVL1
+    #ifdef DEBUG_LVL1
         printf("\n\nACTOUTQ[%d]::  %s, opt: %s actarg: %s actid: %s\n\n\n", indx, rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
- //   #endif
+    #endif
     // Don't use nvoid_free() .. it is not deep enough
     
     if (rcmd != NULL)
@@ -344,6 +346,8 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
 void jwork_process_device(jamstate_t *js)
 {
     int quorum;
+
+//    printf("Time .2: %ld\n", activity_getuseconds());
 
     // Get the message from the device to process
     // 
@@ -405,7 +409,6 @@ void jwork_process_device(jamstate_t *js)
             {
                 if (jcond_evaluate_cond(js, rcmd))
                 {
-                    printf("HOLLLLLLLAAAAAAAA \n");
                     p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
                 }
                 else 
@@ -488,7 +491,6 @@ bool jwork_check_args(jamstate_t *js, command_t *cmd)
     activity_callback_reg_t *areg = activity_findcallback(js->atable, cmd->actname);
     if (areg != NULL)
     {
-        printf("Checking args \n");
         return jrun_check_signature(areg, cmd);
     }
     else 

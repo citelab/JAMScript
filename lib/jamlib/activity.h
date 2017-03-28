@@ -131,6 +131,7 @@ typedef struct _activity_table_t
 
 char *activity_gettime(char *prefix);
 long long activity_getseconds();
+long activity_getuseconds();
 
 activity_table_t *activity_table_new(void *arg);
 void activity_table_print(activity_table_t *at);

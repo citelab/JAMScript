@@ -21,6 +21,9 @@ jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, i
 
     assert(fmask != NULL);
 
+    // printf("Time 1: %ld\n", activity_getuseconds());
+
+
     if (strlen(fmask) > 0)
         qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
     else
@@ -72,12 +75,19 @@ jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, i
     }
     va_end(args);
 
+  //  printf("Time 2: %ld\n", activity_getuseconds());
+
     if (jact != NULL)
     {
         command_t *cmd = command_new_using_cbor("REXEC-ASY", "-", condstr, condvec, aname, jact->actid, js->cstate->device_id, arr, qargs, i);
         cmd->cbor_item_list = list;
 
+  //      printf("Time 3: %ld\n", activity_getuseconds());
+
         jam_async_runner(js, jact, cmd);
+
+  //      printf("Time 4: %ld\n", activity_getuseconds());
+        
         return jact;
     } 
     else
@@ -96,6 +106,9 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     // May be we can't because the activity table is tied to the 
     // socket (queue) and we need to reuse them sooner?
     //
+
+//    printf("Time 3.1: %ld\n", activity_getuseconds());
+    
     runtable_insert(js, cmd->actid, cmd);
     runtableentry_t *act_entry = runtable_find(js->rtable, cmd->actid);
 
@@ -106,6 +119,8 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         return;
     }
 
+  //  printf("Time 3.2: %ld\n", activity_getuseconds());
+
     // Send the command to the remote side  
     // The send is executed via the worker thread..
     queue_enq(jact->thread->outq, cmd, sizeof(command_t));
@@ -113,10 +128,15 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     // We expect act_entry->num_replies from the remote side 
     for (int i = 0; i < act_entry->exp_replies; i++)
     {
+    
+   //     printf("Time 3.3: %ld\n", activity_getuseconds());
+        
         // TODO: Fix the constant 300 milliseconds here..   
-        jam_set_timer(js, jact->actid, 300);
+        jam_set_timer(js, jact->actid, 10);
         nvoid_t *nv = pqueue_deq(jact->thread->inq);
         jam_clear_timer(js, jact->actid);
+    
+   //     printf("Time 3.4: %ld\n", activity_getuseconds());
 
         rcmd = NULL;
         if (nv != NULL) 
@@ -131,6 +151,8 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         } 
     }
 
+  //  printf("Time 3.5: %ld\n", activity_getuseconds());
+
     if (error_count > 0) {
         jact->state = PARTIAL;
         // We have some missing replies.. see what we are missing
@@ -143,6 +165,8 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         //
         set_jactivity_state(jact, act_entry->exp_replies);
     }
+
+  //  printf("Time 3.6: %ld\n", activity_getuseconds());
 
     // Set the access time
     jact->accesstime = activity_getseconds();

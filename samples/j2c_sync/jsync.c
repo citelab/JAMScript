@@ -1,6 +1,5 @@
 #include <stdio.h>
 
-void trigger();
 
 jsync int hello(char *s)
 {
@@ -13,6 +12,5 @@ jsync int hello(char *s)
 int main()
 {
     printf("In the main...\n");
-    trigger("trying to trigger..");
 
 }

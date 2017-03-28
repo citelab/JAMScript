@@ -9,10 +9,8 @@ var path = require('path');
 var mime = require('mime');
 var fs = require('fs');
 var jcondition = new Map();
-jcondition.set('fogonly', { source: 'jcondition_context['sys.sync'] >= 10', code: 8 });
 function pong() {
-console.log("pong..");
-ping();
+console.log("pong........");
 
 }
 var mbox = {

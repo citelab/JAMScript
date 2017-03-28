@@ -115,9 +115,7 @@ void jam_event_loop(void *arg)
 
     while (1)
     {
-        printf("\n=================================================-----------------------\n");
         nvoid_t *nv = p2queue_deq(js->atable->globalinq);
-        printf("Got message...\n");
 
         #ifdef DEBUG_LVL1
             printf("Got a message for the event loop...  \n");
@@ -136,8 +134,6 @@ void jam_event_loop(void *arg)
             if ((strcmp(cmd->cmd, "REXEC-ASY") == 0) ||
                 (strcmp(cmd->cmd, "REXEC-SYN") == 0)) 
             {
-                printf("HELLLOOOO... \n");
-                
                 // Remote requests go through here.. local requests don't go through here
                 jactivity_t *jact = activity_new(js->atable, cmd->actid, true);
                 // The activity creation should have setup the thread 
