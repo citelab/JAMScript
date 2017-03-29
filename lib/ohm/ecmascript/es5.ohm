@@ -417,7 +417,7 @@ ES5 {
 
   Initialiser<guardIn> = "=" AssignmentExpression<guardIn>
 
-  AssignmentStatement = identifier "=" AssignmentExpression<withIn>
+  AssignmentStatement = (identifier ".")? identifier "=" AssignmentExpression<withIn>
 
   EmptyStatement = ";" // note: this semicolon eats newlines
 
