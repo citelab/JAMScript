@@ -119,7 +119,7 @@ try {
   console.log("Generating C code...");
 	var cOutput = jam.cSemantics(cTree).jamCTranslator;
   
-  // console.log(printCallGraph(jam.callGraph));
+  fs.writeFileSync("callgraph.html", createCallGraphWebpage(jam.callGraph));
 
   // if(translateOnly) {
   //   printAndExit(output);
@@ -220,55 +220,77 @@ function flowCheck(input) {
   }
 }
 
+function createCallGraphWebpage(callGraph) {
+  var output = "";
+  output += '<html>\n';
+  output += '<head>\n';
+  output += '<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.js"></script>\n';
+  output += '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.css" />\n';
+  output += '<style type="text/css"> #mynetwork { width: 600px; height: 400px; border: 1px solid lightgray; } </style>\n';
+  output += '<title>Callgraph</title>\n';
+  output += '</head>\n';
+  output += '<body>\n';
+  output += '<div id="mynetwork"></div>\n';
+  output += '<script>\n';
+  output += printCallGraph(callGraph);
+  output += 'var container = document.getElementById("mynetwork");\n';
+  output += 'var data = {\n';
+  output += '  nodes: nodes,\n';
+  output += '  edges: edges\n';
+  output += '}\n';
+  output += 'var options = {};\n';
+  output += 'var network = new vis.Network(container, data, options);\n';
+  output += '</script>\n';
+  output += '</body>\n';
+  output += '</html>\n';
+  return output;
+}
 function printCallGraph(callGraph) {
-    console.log(callGraph.c);
-    console.log(callGraph.js);
-    var graph = 'digraph jamgraph{\n';
+    var output = 'var nodes = new vis.DataSet([\n';
+    var nodeId = 0;
+    var nodeMap = new Map();
+
     var callList = '';
     if(callGraph.c.size > 0) {
         var usedFunctions = new Set();
-        graph += 'subgraph cluster_0 {\n';
-        graph += 'label = "C Functions";\n'
         callGraph.c.forEach(function(calls, func) {
-            // graph += func + ';\n';
-            // if(calls.size > 0) {
-              usedFunctions.add(func);
-            // }
-            calls.forEach(function(call) {
-                callList += func + ' -> ' + call + ';\n';
-                if(callGraph.c.has(call)) {
-                    usedFunctions.add(call);
-                }
-            });
+            usedFunctions.add(func);
         });
         usedFunctions.forEach(function(func) {
-            graph += func + ';\n';
+            nodeMap.set(func, nodeId);
+            output += '{id: ' + nodeId + ', label: "' + func + '", group: 0},\n';
+            nodeId++;
         });
-        graph += '}\n'
     }
     if(callGraph.js.size > 0) {
         var usedFunctions = new Set();
-        graph += 'subgraph cluster_1 {\n';
-        graph += 'label = "J Functions";\n'
         callGraph.js.forEach(function(calls, func) {
-            // graph += func + ';\n';
             usedFunctions.add(func);
-            calls.forEach(function(call) {
-                callList += func + ' -> ' + call + ';\n';
-                if(callGraph.js.has(call)) {
-                    usedFunctions.add(call);
-                }
-            });
         });
         usedFunctions.forEach(function(func) {
-            graph += func + ';\n';
+            nodeMap.set(func, nodeId);
+            output += '{id: ' + nodeId + ', label: "' + func + '", group: 1},\n';
+            nodeId++;
         });
-        graph += '}\n'
     }
-    
-    graph += callList;
-    graph += '}';
-    return graph;
+    output += ']);\n';
+    output += 'var edges = new vis.DataSet([\n';
+    if(callGraph.c.size > 0) {
+      callGraph.c.forEach(function(calls, func) {
+        calls.forEach(function(call) {
+          output += '{from: ' + nodeMap.get(func) + ', to: ' + nodeMap.get(call) + ', arrows:"to"},\n';
+        });
+      });
+    }
+    if(callGraph.js.size > 0) {
+      callGraph.js.forEach(function(calls, func) {
+        calls.forEach(function(call) {
+          output += '{from: ' + nodeMap.get(func) + ', to: ' + nodeMap.get(call) + ', arrows:"to"},\n';
+        });
+      });
+    }
+    output += ']);\n';
+    return output;
 };
 
 function createZip(toml, jsout, tmpDir, outputName) {
