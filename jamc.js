@@ -119,7 +119,8 @@ try {
   console.log("Generating C code...");
 	var cOutput = jam.cSemantics(cTree).jamCTranslator;
   
-  fs.writeFileSync("callgraph.html", createCallGraphWebpage(jam.callGraph));
+  fs.writeFileSync("callgraph.html", createCallGraphWebpage(jam.callGraph.getCallGraph()));
+  fs.writeFileSync("callgraph.dot", createDOTCallgraph(jam.callGraph.getCallGraph()));
 
   // if(translateOnly) {
   //   printAndExit(output);
@@ -277,20 +278,77 @@ function printCallGraph(callGraph) {
     output += 'var edges = new vis.DataSet([\n';
     if(callGraph.c.size > 0) {
       callGraph.c.forEach(function(calls, func) {
-        calls.forEach(function(call) {
-          output += '{from: ' + nodeMap.get(func) + ', to: ' + nodeMap.get(call) + ', arrows:"to"},\n';
+        calls.forEach(function(arguments, call) {
+          arguments.forEach(function(args) {
+            output += '{from: ' + nodeMap.get(func) + ', to: ' + nodeMap.get(call) + ', label: "' + args + '", arrows:"to"},\n';
+          });
         });
       });
     }
     if(callGraph.js.size > 0) {
       callGraph.js.forEach(function(calls, func) {
-        calls.forEach(function(call) {
-          output += '{from: ' + nodeMap.get(func) + ', to: ' + nodeMap.get(call) + ', arrows:"to"},\n';
+        calls.forEach(function(arguments, call) {
+          arguments.forEach(function(args) {
+            output += '{from: ' + nodeMap.get(func) + ', to: ' + nodeMap.get(call) + ', label: "' + args + '", arrows:"to"},\n';
+          });
         });
       });
     }
     output += ']);\n';
     return output;
+};
+
+function createDOTCallgraph(callGraph) {
+    var graph = 'digraph jamgraph{\n';
+    var callList = '';
+    if(callGraph.c.size > 0) {
+        var usedFunctions = new Set();
+        graph += 'subgraph cluster_0 {\n';
+        graph += 'label = "C Functions";\n'
+        callGraph.c.forEach(function(calls, func) {
+            // graph += func + ';\n';
+            // if(calls.size > 0) {
+              usedFunctions.add(func);
+            // }
+            calls.forEach(function(arguments, call) {
+              arguments.forEach(function(args) {
+                callList += func + ' -> ' + call + ' [ label="' + args + '" ];\n';
+                if(callGraph.c.has(call)) {
+                    usedFunctions.add(call);
+                }
+              });
+            });
+        });
+        usedFunctions.forEach(function(func) {
+            graph += func + ';\n';
+        });
+        graph += '}\n'
+    }
+    if(callGraph.js.size > 0) {
+        var usedFunctions = new Set();
+        graph += 'subgraph cluster_1 {\n';
+        graph += 'label = "J Functions";\n'
+        callGraph.js.forEach(function(calls, func) {
+            // graph += func + ';\n';
+            usedFunctions.add(func);
+            calls.forEach(function(arguments, call) {
+              arguments.forEach(function(args) {
+                callList += func + ' -> ' + call + ' [ label="' + args + '" ];\n';
+                if(callGraph.js.has(call)) {
+                    usedFunctions.add(call);
+                }
+              });
+            });
+        });
+        usedFunctions.forEach(function(func) {
+            graph += func + ';\n';
+        });
+        graph += '}\n'
+    }
+    
+    graph += callList;
+    graph += '}';
+    return graph;
 };
 
 function createZip(toml, jsout, tmpDir, outputName) {

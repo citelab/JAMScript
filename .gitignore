@@ -8,3 +8,10 @@ node_modules/*
 *.db
 
 *.out
+**/jamout.js
+**/jamout.c
+**/callgraph.html
+**/callgraph.dot
+
+.sconsign.dblite
+.sconf_temp
