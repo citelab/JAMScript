@@ -1,0 +1,31 @@
+<html>
+<head>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.css" />
+<style type="text/css"> #mynetwork { width: 600px; height: 400px; border: 1px solid lightgray; } </style>
+<title>Callgraph</title>
+</head>
+<body>
+<div id="mynetwork"></div>
+<script>
+var nodes = new vis.DataSet([
+{id: 0, label: "ping", group: 0},
+{id: 1, label: "user_main", group: 0},
+{id: 2, label: "root", group: 1},
+{id: 3, label: "pong", group: 1},
+]);
+var edges = new vis.DataSet([
+{from: 0, to: 3, arrows:"to"},
+{from: 1, to: 0, arrows:"to"},
+{from: 3, to: 0, arrows:"to"},
+]);
+var container = document.getElementById("mynetwork");
+var data = {
+  nodes: nodes,
+  edges: edges
+}
+var options = {};
+var network = new vis.Network(container, data, options);
+</script>
+</body>
+</html>

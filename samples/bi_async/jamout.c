@@ -3,6 +3,8 @@
 #include "command.h"
 #include "jam.h"
 #include <stdio.h>
+char app_id[256] = { 0 };
+char jdata_buffer[20];
 typedef char* jcallback;
 jamstate_t *js;
 jactivity_t *pong() {
@@ -35,6 +37,9 @@ user_main();
 
 void taskmain(int argc, char **argv) {
 
+    if (argc > 1) {
+      strncpy(app_id, argv[1], sizeof app_id - 1);
+    }
     js = jam_init(1883);
     user_setup();
      
