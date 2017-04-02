@@ -9,7 +9,7 @@
  *  This should initialize jdata system. 
  */
 #include "jdata.h"
-char app_id[256];
+extern char app_id[256];
 char dev_id[256] = { 0 };
 
 //redis server connection parameters
@@ -37,12 +37,13 @@ jdata_list_node *jdata_list_tail = NULL;
 Function to initialize values and attach them to the event loop
 Inputs
     jamstate
-    application unique id
     redis server ip
     redis server port
 */
-void jdata_attach(jamstate_t *js, char *application_id, char *serv_ip, int serv_port){
-  sprintf(app_id, "%s", application_id);
+void jdata_attach(jamstate_t *js, char *serv_ip, int serv_port){
+  if (app_id[0] == '\0') {
+      strncpy(app_id, DEFAULT_APP_NAME, sizeof app_id - 1);
+  }
   strncpy(dev_id, js->cstate->device_id, sizeof dev_id - 1);
   //These are the initial redis server numbers. 
   redis_serv_IP = strdup(serv_ip);
@@ -85,7 +86,7 @@ Input:
 */
 void *jdata_init(void *js){
   j_s = (jamstate_t *)js;
-  jdata_attach((jamstate_t *)js, DEFAULT_APP_NAME, DEFAULT_SERV_IP, DEFAULT_SERV_PORT);
+  jdata_attach((jamstate_t *)js, DEFAULT_SERV_IP, DEFAULT_SERV_PORT);
   #ifdef DEBUG_LVL1
     printf("JData initialized...\n");
   #endif

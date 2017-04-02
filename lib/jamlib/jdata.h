@@ -52,7 +52,7 @@ typedef struct jdata_list_node{
   struct jdata_list_node *next;
 }jdata_list_node;
 
-void jdata_attach(jamstate_t *js, char *application_id, char *serv_ip, int serv_port);
+void jdata_attach(jamstate_t *js, char *serv_ip, int serv_port);
 void *jdata_init(void *js);
 void jdata_default_connection(const redisAsyncContext *c, int status);
 void jdata_default_disconnection(const redisAsyncContext *c, int status);
