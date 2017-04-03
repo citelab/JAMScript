@@ -119,7 +119,9 @@ try {
   console.log("Generating C code...");
 	var cOutput = jam.cSemantics(cTree).jamCTranslator;
   
-  fs.writeFileSync("callgraph.html", createCallGraphWebpage(jam.callGraph.getCallGraph()));
+  // fs.writeFileSync("callgraph.html", createCallGraphWebpage(jam.callGraph.getCallGraph()));
+  fs.writeFileSync("callgraph.html", createCallGraphWebpageCytoscape(jam.callGraph.getCallGraph()));
+
   fs.writeFileSync("callgraph.dot", createDOTCallgraph(jam.callGraph.getCallGraph()));
 
   // if(translateOnly) {
@@ -295,6 +297,120 @@ function printCallGraph(callGraph) {
       });
     }
     output += ']);\n';
+    return output;
+};
+
+
+function createCallGraphWebpageCytoscape(callGraph) {
+  var output = "";
+  output += '<html>\n';
+  output += '<head>\n';
+  output += '<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>\n';
+  output += '<script type="text/javascript" src="http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js"></script>\n';
+  output += '<script src="http://marvl.infotech.monash.edu/webcola/cola.v3.min.js"></script>\n';
+  output += '<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-qtip/2.2.5/cytoscape-qtip.js"></script>\n';
+  output += '<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-cola/1.1.1/cytoscape-cola.js"></script>\n';
+  output += '<script src="http://cpettitt.github.io/project/dagre/latest/dagre.min.js"></script>\n';
+  output += '<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.4.0/cytoscape-dagre.js"></script>\n';
+  output += '<style type="text/css"> #cy { height: 100%; width: 100%; position: absolute; left: 0; top: 0; } </style>\n';
+  output += '<title>Callgraph</title>\n';
+  output += '<script>\n';
+  output += printCallGraphCytoscape(callGraph);
+  output += `$(function(){
+  var cy = cytoscape({
+  container: document.getElementById('cy'),
+  
+  boxSelectionEnabled: false,
+  autounselectify: true,
+  
+  style: [
+    {
+      selector: 'node',
+      css: {
+        'content': 'data(id)',
+        'text-valign': 'center',
+        'text-halign': 'center',
+        'width': '100'
+      }
+    },
+    {
+      selector: '$node > node',
+      css: {
+        'text-valign': 'top',
+        'text-halign': 'center'
+      }
+    },
+    {
+      selector: 'edge',
+      css: {
+        'target-arrow-shape': 'triangle',
+        'curve-style': 'bezier',
+        'content': 'data(label)'
+      }
+    }
+  ],
+  elements: {
+    nodes: nodes,
+    edges: edges
+  },
+  layout: {
+    name: 'dagre'
+  }
+  });
+  });\n`;
+  output += '</script>\n';
+  output += '</head>\n';
+  output += '<body>\n';
+  output += '<div id="cy"></div>\n';
+  output += '</body>\n';
+  output += '</html>\n';
+  return output;
+}
+function printCallGraphCytoscape(callGraph) {
+    var output = 'var nodes = [ \n';
+    output += `{data: {id: "c"}},\n`;
+    output += `{data: {id: "js"}},\n`;
+
+    if(callGraph.c.size > 0) {
+        var usedFunctions = new Set();
+        callGraph.c.forEach(function(calls, func) {
+            usedFunctions.add(func);
+        });
+        usedFunctions.forEach(function(func) {
+            output += `{data: {id: "${func}", parent: 'c'}},\n`;
+        });
+    }
+    if(callGraph.js.size > 0) {
+        var usedFunctions = new Set();
+        callGraph.js.forEach(function(calls, func) {
+            usedFunctions.add(func);
+        });
+        usedFunctions.forEach(function(func) {
+            output += `{data: {id: "${func}", parent: 'js'}},\n`;
+        });
+    }
+    
+    output += '];\n';
+    output += 'var edges = [\n'; 
+    if(callGraph.c.size > 0) {
+      callGraph.c.forEach(function(calls, func) {
+        calls.forEach(function(arguments, call) {
+          arguments.forEach(function(args) {
+            output += `{data: {id: "${func+call}", source: "${func}", target: "${call}", label: "${args.slice(1,-1)}"}},\n`;
+          });
+        });
+      });
+    }
+    if(callGraph.js.size > 0) {
+      callGraph.js.forEach(function(calls, func) {
+        calls.forEach(function(arguments, call) {
+          arguments.forEach(function(args) {
+            output += `{data: {id: "${func+call}", source: "${func}", target: "${call}", label: "${args.slice(1,-1)}"}},\n`;
+          });
+        });
+      });
+    }
+    output += '];\n';
     return output;
 };
 
