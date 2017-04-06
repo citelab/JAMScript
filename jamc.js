@@ -312,6 +312,8 @@ function createCallGraphWebpageCytoscape(callGraph) {
   output += '<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-cola/1.1.1/cytoscape-cola.js"></script>\n';
   output += '<script src="http://cpettitt.github.io/project/dagre/latest/dagre.min.js"></script>\n';
   output += '<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.4.0/cytoscape-dagre.js"></script>\n';
+  output += '<script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.js"></script>\n';
+  output += '<link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.css" />\n';
   output += '<style type="text/css"> #cy { height: 100%; width: 100%; position: absolute; left: 0; top: 0; } </style>\n';
   output += '<title>Callgraph</title>\n';
   output += '<script>\n';
@@ -330,7 +332,8 @@ function createCallGraphWebpageCytoscape(callGraph) {
         'content': 'data(id)',
         'text-valign': 'center',
         'text-halign': 'center',
-        'width': '100'
+        'width': '100',
+        'background-color': 'data(color)'
       }
     },
     {
@@ -356,6 +359,22 @@ function createCallGraphWebpageCytoscape(callGraph) {
   layout: {
     name: 'dagre'
   }
+});
+  cy.edges().qtip({
+    content: function() {
+      return '<table><th>Calls</th>' + this.data('calls') + '</table>';
+    },
+    position: {
+      my: 'top center',
+      at: 'bottom center'
+    },
+    style: {
+      classes: 'qtip-bootstrap',
+      tip: {
+        width: 16,
+        height: 8
+      }
+    }
   });
   });\n`;
   output += '</script>\n';
@@ -368,8 +387,8 @@ function createCallGraphWebpageCytoscape(callGraph) {
 }
 function printCallGraphCytoscape(callGraph) {
     var output = 'var nodes = [ \n';
-    output += `{data: {id: "c"}},\n`;
-    output += `{data: {id: "js"}},\n`;
+    output += `{data: {id: "c", color: "#6FB1FC"}},\n`;
+    output += `{data: {id: "js", color: "#9fd849"}},\n`;
 
     if(callGraph.c.size > 0) {
         var usedFunctions = new Set();
@@ -377,7 +396,7 @@ function printCallGraphCytoscape(callGraph) {
             usedFunctions.add(func);
         });
         usedFunctions.forEach(function(func) {
-            output += `{data: {id: "${func}", parent: 'c'}},\n`;
+            output += `{data: {id: "${func}", parent: 'c', color: '#FFFFFF'}},\n`;
         });
     }
     if(callGraph.js.size > 0) {
@@ -386,7 +405,7 @@ function printCallGraphCytoscape(callGraph) {
             usedFunctions.add(func);
         });
         usedFunctions.forEach(function(func) {
-            output += `{data: {id: "${func}", parent: 'js'}},\n`;
+            output += `{data: {id: "${func}", parent: 'js', color: '#FFFFFF'}},\n`;
         });
     }
     
@@ -395,18 +414,22 @@ function printCallGraphCytoscape(callGraph) {
     if(callGraph.c.size > 0) {
       callGraph.c.forEach(function(calls, func) {
         calls.forEach(function(arguments, call) {
+          var tooltipTable = "";
           arguments.forEach(function(args) {
-            output += `{data: {id: "${func+call}", source: "${func}", target: "${call}", label: "${args.slice(1,-1)}"}},\n`;
+            tooltipTable += `<tr><td>${args}</td></tr>`;
           });
+          output += `{data: {id: "${func+call}", source: "${func}", target: "${call}", calls: "${tooltipTable}"}},\n`;
         });
       });
     }
     if(callGraph.js.size > 0) {
       callGraph.js.forEach(function(calls, func) {
         calls.forEach(function(arguments, call) {
+          var tooltipTable = "";
           arguments.forEach(function(args) {
-            output += `{data: {id: "${func+call}", source: "${func}", target: "${call}", label: "${args.slice(1,-1)}"}},\n`;
+            tooltipTable += `<tr><td>${args}</td></tr>`;
           });
+          output += `{data: {id: "${func+call}", source: "${func}", target: "${call}", calls: "${tooltipTable}"}},\n`;
         });
       });
     }
