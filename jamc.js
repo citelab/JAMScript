@@ -82,7 +82,7 @@ if(inputError) {
 try {
   fs.mkdirSync(tmpDir);
   try {
-    var preprocessed = preprocess(cPath);
+    var preprocessed = preprocess(cPath, verbose);
   } catch(e) {
     console.log("Exiting with preprocessor error");
     process.exit();
@@ -90,9 +90,9 @@ try {
   if(preprocessOnly) {
     printAndExit(preprocessed);
   }
-  if(verbose) {
-    console.log(preprocessed);
-  }
+  // if(verbose) {
+  //   console.log(preprocessed);
+  // }
 
   console.log("Parsing JS Files...");
   var jsTree = jam.jamJSGrammar.match(fs.readFileSync(jsPath).toString(), 'Program');
@@ -109,10 +109,10 @@ try {
   if(parseOnly) {
     printAndExit(cTree + jsTree);
   }
-  if(verbose) {
-    console.log(cTree);
-    console.log(jsTree);
-  }
+  // if(verbose) {
+  //   console.log(cTree);
+  //   console.log(jsTree);
+  // }
 
   console.log("Generating JavaScript Code...");
 	var jsOutput = jam.jsSemantics(jsTree).jamJSTranslator;
@@ -147,7 +147,7 @@ try {
       options = "-lm -lbsd";
     }
 
-    flowCheck(jsOutput.annotated_JS + cOutput.annotated_JS);
+    flowCheck(jsOutput.annotated_JS + cOutput.annotated_JS, verbose);
     var includes = '#include "jam.h"\n'
     includes = '#include "command.h"\n' + includes;
     includes = '#include "jdata.h"\n' + includes;
@@ -156,7 +156,11 @@ try {
     fs.writeFileSync("jamout.c", includes + preprocessDecls.join("\n") + "\n" + cOutput.C + jsOutput.C);
     fs.writeFileSync(`${tmpDir}/jamout.c`, includes + preprocessDecls.join("\n") + "\n" + cOutput.C + jsOutput.C);
     try {
-      child_process.execSync(`clang -g ${tmpDir}/jamout.c -I/usr/local/include -I/usr/local/share/jam/lib/ ${options} -pthread -lcbor -lnanomsg /usr/local/lib/libjam.a -ltask -levent -lhiredis -L/usr/local/lib -lpaho-mqtt3c`, {stdio: [0,1,2]}) ;
+      var command = `clang -g ${tmpDir}/jamout.c -I/usr/local/include -I/usr/local/share/jam/lib/ ${options} -pthread -lcbor -lnanomsg /usr/local/lib/libjam.a -ltask -levent -lhiredis -L/usr/local/lib -lpaho-mqtt3c`;
+      if(verbose) {
+        console.log(command);
+      }
+      child_process.execSync(commmand, {stdio: [0,1,2]}) ;
     } catch(e) {
     }
     // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
@@ -176,7 +180,7 @@ function printAndExit(output) {
   process.exit();
 }
 
-function preprocess(file) {
+function preprocess(file, verbose) {
   console.log("Preprocessing...");
 
   var contents = fs.readFileSync(file).toString();
@@ -189,20 +193,29 @@ function preprocess(file) {
   contents = includes + "int main();\n" + contents;
   
   fs.writeFileSync(`${tmpDir}/pre.c`, contents);
-  return result = child_process.execSync(`clang -E -P -I/usr/local/include -I/usr/local/share/jam/deps/fake_libc_include -I/usr/local/share/jam/lib ${tmpDir}/pre.c`).toString();
+  var command = `clang -E -P -I/usr/local/include -I/usr/local/share/jam/deps/fake_libc_include -I/usr/local/share/jam/lib ${tmpDir}/pre.c`;
+  if(verbose) {
+    console.log(command); 
+  }
+  return result = child_process.execSync(command).toString();
 
   // return child_process.execSync(`${cc} -E -P -std=iso9899:199409 ${file}`).toString();
 
 }
 
-function flowCheck(input) {
+function flowCheck(input, verbose) {
   // Returns empty buffer if flow installed
   var hasFlow = child_process.execSync("flow version >/dev/null 2>&1 || { echo 'not installed';}");
   
   if(hasFlow.length == 0) {
     fs.writeFileSync(`${tmpDir}/.flowconfig`, "");
     fs.writeFileSync(`${tmpDir}/annotated.js`, input);
-    const child = child_process.exec(`flow ${tmpDir}/annotated.js --color always`, (error, stdout, stderr) => {
+    var command = `flow ${tmpDir}/annotated.js --color always`;
+    
+    const child = child_process.exec(command, (error, stdout, stderr) => {
+      if(verbose) {
+        console.log(command);
+      }
         if (error !== null) {
           console.log("JavaScript Type Checking Error:");
           console.log(stdout.substring(stdout.indexOf("\n") + 1));
