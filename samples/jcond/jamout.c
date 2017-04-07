@@ -3,11 +3,13 @@
 #include "command.h"
 #include "jam.h"
 
+char app_id[256] = { 0 };
+char jdata_buffer[20];
 typedef char* jcallback;
 jamstate_t *js;
 jactivity_t *pong() {
 jactivity_t *jact = jam_create_activity(js);
-jactivity_t *res = jam_rexec_async(js, jact, "jcondition_context['sys.sync'] >= 10", 8,  "pong", "");
+jactivity_t *res = jam_rexec_async(js, jact, "jcondition.get('fogonly')", undefined, "pong", "");
 activity_free(jact);
 return res;}
 
@@ -27,6 +29,9 @@ user_main();
 
 void taskmain(int argc, char **argv) {
 
+    if (argc > 1) {
+      strncpy(app_id, argv[1], sizeof app_id - 1);
+    }
     js = jam_init(1883);
     user_setup();
      

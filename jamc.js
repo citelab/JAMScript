@@ -156,7 +156,7 @@ try {
     fs.writeFileSync("jamout.c", includes + preprocessDecls.join("\n") + "\n" + cOutput.C + jsOutput.C);
     fs.writeFileSync(`${tmpDir}/jamout.c`, includes + preprocessDecls.join("\n") + "\n" + cOutput.C + jsOutput.C);
     try {
-      child_process.execSync(`clang -g ${tmpDir}/jamout.c -I/usr/local/include -I/usr/local/share/jam/lib/ ${options} -pthread -lcbor -lnanomsg /usr/local/lib/libjam.a -ltask -levent -lhiredis -L/usr/local/lib -lpaho-mqtt3c`, {stdio: [0,1,2]}) ;
+      child_process.execSync(`clang -g ${tmpDir}/jamout.c -I/usr/local/include -I/usr/local/share/jam/lib/ ${options} -pthread -lcbor -lnanomsg /usr/local/lib/libjam.a -ltask -levent -lhiredis -L/usr/local/lib -lpaho-mqtt3c -framework CoreFoundation`, {stdio: [0,1,2]}) ;
     } catch(e) {
     }
     // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);

@@ -16,8 +16,7 @@ return res;}
 int user_main() {
 long long btime;
 int i;
-{
-pong();
+while(1) {
 pong();
 }
 }

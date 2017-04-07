@@ -7,6 +7,7 @@ char app_id[256] = { 0 };
 char jdata_buffer[20];
 typedef char* jcallback;
 jamstate_t *js;
+int counter = 0;
 jactivity_t *pong() {
 jactivity_t *jact = jam_create_activity(js);
 jactivity_t *res = jam_rexec_async(js, jact, "true", 0, "pong", "");
@@ -14,7 +15,7 @@ activity_free(jact);
 return res;}
 
 void ping(){
-printf("ping\n");
+printf("ping.. %d\n", counter++);
 pong();
 }
 void callping(void *act, void *arg) {

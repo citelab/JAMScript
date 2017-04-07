@@ -1,7 +1,5 @@
 var jamlib = require('/usr/local/share/jam/lib/jserver/jamlib');
 var jnode = require('/usr/local/share/jam/lib/jserver/jnode');
-var async = require('asyncawait/async');
-var await = require('asyncawait/await');
 var http = require('http');
 var cbor = require('cbor');
 var qs = require('querystring');
@@ -11,9 +9,12 @@ var fs = require('fs');
 var wait = require('wait.for-es6');
 function* main() {
 var jcondition = new Map();
+var counter = 0;
 
 function pong() {
-console.log("pong..");
+counter = counter + 1;
+;
+console.log("pong..", counter);
 ping();
 
 }

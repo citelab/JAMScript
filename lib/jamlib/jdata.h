@@ -5,10 +5,12 @@
 #include <hiredis/hiredis.h>
 #include <hiredis/async.h>
 #include <hiredis/adapters/libevent.h>
+#include <hiredis/adapters/macosx.h>
+#include <semaphore.h>
+
 #include "jam.h"
 #include "activity.h"
 #include <string.h>
-#include <semaphore.h>
 #include <unistd.h>
 
 #define DELIM "$$$"

@@ -8,12 +8,12 @@ int main() {
 
   long long btime;
   int i;
+
   // this is actually bad.. just for testing..
-  //  while (1)
+  while (1)
     {
       //  btime = activity_getseconds();
       //      for (i = 0; i < 10000; i++)
-	pong();
 	pong();
 	//      int elapsed = activity_getseconds() - btime;
 
