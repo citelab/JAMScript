@@ -399,7 +399,8 @@ jbroadcaster *jbroadcaster_init(int type, char *variable_name, activitycallback_
 #ifdef linux
   sem_init(&ret->lock, 0, 1);
 #elif __APPLE__
-  ret->lock = sem_open("/jbroadcaster-sem-xxx", O_CREAT, 0644, 1);
+  sem_unlink("/jbroadcaster-sem");
+  ret->lock = sem_open("/jbroadcaster-sem", O_CREAT, 0644, 1);
 #endif
 
   //Now we need to add it to the list
