@@ -2,21 +2,22 @@
 #include "jdata.h"
 #include "command.h"
 #include "jam.h"
-#include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 char app_id[256] = { 0 };
 char jdata_buffer[20];
 typedef char* jcallback;
 jamstate_t *js;
 jbroadcaster *y;
 int user_main() {
-taskdelay(1000);
-printf("%i\n", atoi(get_jbroadcaster_value(y)));
-return 0;
+while(1) {
+sleep(1);
+printf("%s\n", null(get_jbroadcaster_value(y)));
+}
 }
 
 void user_setup() {
-y = jambroadcaster_init(JBROADCAST_INT, "global", "y", NULL);
+y = jambroadcaster_init(JBROADCAST_STRING, "global", "y", NULL);
 }
 
 void jam_run_app(void *arg) {

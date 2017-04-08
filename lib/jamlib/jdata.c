@@ -416,12 +416,13 @@ jbroadcaster *jbroadcaster_init(int type, char *variable_name, activitycallback_
     jdata_list_tail->next = NULL;
   }
   ret->context = jdata_subscribe_to_server( variable_name, jbroadcaster_msg_rcv_callback, NULL, NULL);
-  sprintf(buf, "jbroadcast_func_%s", variable_name);
+
+  // sprintf(buf, "jbroadcast_func_%s", variable_name);
   
   //IMPORTANT
   //REGISTERS the usercallback as a jasync callback to be called. 
   //This allows us to call the user defined callbacks for jbroadcaster
-  activity_regcallback(j_s->atable, buf, ASYNC, "v", ret->usr_callback);
+ // activity_regcallback(j_s->atable, buf, ASYNC, "v", ret->usr_callback);
   return ret;
 }
 
@@ -485,8 +486,10 @@ void jbroadcaster_msg_rcv_callback(redisAsyncContext *c, void *reply, void *priv
                     {
                         //So here instead of executing this function here, we need to insert this into the work queue
                         sprintf(buf, "jbroadcast_func_%s", i->data.jbroadcaster_data->key);
-                        //Here, we defined a unique REXEC-JDATA to signal a jdata callback that needs to be executed. 
-                    //    command_t *rcmd = command_new("REXEC-ASY", "ASY", "-", 0, buf, "__", "0", "p", i->data.jbroadcaster_data);
+                        //Here, we defined a unique REXEC-JDATA to signal a jdata callback that needs to be executed.
+                      //   sem_wait(i->data.jbroadcaster_data->lock);
+                        //command_t *rcmd = command_new("REXEC-ASY", "ASY", "-", 0, buf, "__", "0", "p", i->data.jbroadcaster_data);
+                       // sem_post(i->data.jbroadcaster_data->lock);
                       //  p2queue_enq_low(j_s->atable->globalinq, rcmd, sizeof(command_t));
                     }
                     return;
