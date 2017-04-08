@@ -25,7 +25,11 @@ typedef void (*msg_rcv_callback)(redisAsyncContext *c, void *reply, void *privda
 typedef struct jbroadcaster{
   char *key;
   void *data;
+#ifdef linux
   sem_t lock;
+#elif __APPLE__
+  sem_t *lock;
+#endif
   activitycallback_f usr_callback;
   enum{
     JBROADCAST_INT,
