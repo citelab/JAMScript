@@ -1,31 +1,73 @@
 <html>
 <head>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.19.1/vis.min.css" />
-<style type="text/css"> #mynetwork { width: 600px; height: 400px; border: 1px solid lightgray; } </style>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script type="text/javascript" src="http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js"></script>
+<script src="http://marvl.infotech.monash.edu/webcola/cola.v3.min.js"></script>
+<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-qtip/2.2.5/cytoscape-qtip.js"></script>
+<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-cola/1.1.1/cytoscape-cola.js"></script>
+<script src="http://cpettitt.github.io/project/dagre/latest/dagre.min.js"></script>
+<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.4.0/cytoscape-dagre.js"></script>
+<style type="text/css"> #cy { height: 100%; width: 100%; position: absolute; left: 0; top: 0; } </style>
 <title>Callgraph</title>
+<script>
+var nodes = [ 
+{data: {id: "c"}},
+{data: {id: "js"}},
+{data: {id: "ping", parent: 'c'}},
+{data: {id: "user_main", parent: 'c'}},
+{data: {id: "root", parent: 'js'}},
+{data: {id: "pong", parent: 'js'}},
+];
+var edges = [
+{data: {id: "pingpong", source: "ping", target: "pong", label: ""}},
+{data: {id: "user_mainping", source: "user_main", target: "ping", label: ""}},
+{data: {id: "pongping", source: "pong", target: "ping", label: ""}},
+];
+$(function(){
+  var cy = cytoscape({
+  container: document.getElementById('cy'),
+  
+  boxSelectionEnabled: false,
+  autounselectify: true,
+  
+  style: [
+    {
+      selector: 'node',
+      css: {
+        'content': 'data(id)',
+        'text-valign': 'center',
+        'text-halign': 'center',
+        'width': '100'
+      }
+    },
+    {
+      selector: '$node > node',
+      css: {
+        'text-valign': 'top',
+        'text-halign': 'center'
+      }
+    },
+    {
+      selector: 'edge',
+      css: {
+        'target-arrow-shape': 'triangle',
+        'curve-style': 'bezier',
+        'content': 'data(label)'
+      }
+    }
+  ],
+  elements: {
+    nodes: nodes,
+    edges: edges
+  },
+  layout: {
+    name: 'dagre'
+  }
+  });
+  });
+</script>
 </head>
 <body>
-<div id="mynetwork"></div>
-<script>
-var nodes = new vis.DataSet([
-{id: 0, label: "ping", group: 0},
-{id: 1, label: "user_main", group: 0},
-{id: 2, label: "root", group: 1},
-{id: 3, label: "pong", group: 1},
-]);
-var edges = new vis.DataSet([
-{from: 0, to: 3, arrows:"to"},
-{from: 1, to: 0, arrows:"to"},
-{from: 3, to: 0, arrows:"to"},
-]);
-var container = document.getElementById("mynetwork");
-var data = {
-  nodes: nodes,
-  edges: edges
-}
-var options = {};
-var network = new vis.Network(container, data, options);
-</script>
+<div id="cy"></div>
 </body>
 </html>

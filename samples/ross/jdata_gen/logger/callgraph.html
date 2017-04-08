@@ -1,0 +1,69 @@
+<html>
+<head>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<script type="text/javascript" src="http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js"></script>
+<script src="http://marvl.infotech.monash.edu/webcola/cola.v3.min.js"></script>
+<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-qtip/2.2.5/cytoscape-qtip.js"></script>
+<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-cola/1.1.1/cytoscape-cola.js"></script>
+<script src="http://cpettitt.github.io/project/dagre/latest/dagre.min.js"></script>
+<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.4.0/cytoscape-dagre.js"></script>
+<style type="text/css"> #cy { height: 100%; width: 100%; position: absolute; left: 0; top: 0; } </style>
+<title>Callgraph</title>
+<script>
+var nodes = [ 
+{data: {id: "c"}},
+{data: {id: "js"}},
+{data: {id: "user_main", parent: 'c'}},
+{data: {id: "root", parent: 'js'}},
+{data: {id: "anonymous", parent: 'js'}},
+];
+var edges = [
+];
+$(function(){
+  var cy = cytoscape({
+  container: document.getElementById('cy'),
+  
+  boxSelectionEnabled: false,
+  autounselectify: true,
+  
+  style: [
+    {
+      selector: 'node',
+      css: {
+        'content': 'data(id)',
+        'text-valign': 'center',
+        'text-halign': 'center',
+        'width': '100'
+      }
+    },
+    {
+      selector: '$node > node',
+      css: {
+        'text-valign': 'top',
+        'text-halign': 'center'
+      }
+    },
+    {
+      selector: 'edge',
+      css: {
+        'target-arrow-shape': 'triangle',
+        'curve-style': 'bezier',
+        'content': 'data(label)'
+      }
+    }
+  ],
+  elements: {
+    nodes: nodes,
+    edges: edges
+  },
+  layout: {
+    name: 'dagre'
+  }
+  });
+  });
+</script>
+</head>
+<body>
+<div id="cy"></div>
+</body>
+</html>

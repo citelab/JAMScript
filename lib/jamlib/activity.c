@@ -296,6 +296,7 @@ void run_activity(void *arg)
             }
             command_free(cmd);
         }
+        printf("Threadid = %d\n", athread->threadid);
         athread->state = EMPTY;
     }
 }
@@ -306,11 +307,13 @@ void run_activity(void *arg)
 // 
 activity_thread_t *activity_initthread(activity_table_t *atbl)
 {
+    static int counter = 0;
     activity_thread_t *at = (activity_thread_t *)calloc(1, sizeof(activity_thread_t));
 
     // Setup the dummy activity
     at->state = EMPTY;
     at->actid = NULL;
+    at->threadid = counter++;
 
     // Setup the I/O queues
     at->inq = pqueue_new(true);
@@ -332,7 +335,7 @@ activity_thread_t *activity_getthread(activity_table_t *at, char *actid)
     for (i = 0; i < MAX_ACT_THREADS; i++)
         if (at->athreads[i]->state == EMPTY)
             return at->athreads[i];
-
+            
     long long ctime = activity_getseconds();
     long cdiff = 0;
 
@@ -375,6 +378,8 @@ jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
     int i;
     jactivity_t *jact = (jactivity_t *)calloc(1, sizeof(jactivity_t));
 
+    printf("Activity new.... \n");
+
     if (jact != NULL) 
     {
         jact->remote = remote;
@@ -407,6 +412,8 @@ jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
 void activity_free(jactivity_t *jact)
 {
     int i; 
+
+    printf("Activity free.......\n");
 
     activity_freethread(jact);
 

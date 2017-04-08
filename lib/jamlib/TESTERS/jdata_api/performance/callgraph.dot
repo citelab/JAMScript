@@ -1,0 +1,13 @@
+digraph jamgraph{
+subgraph cluster_0 {
+label = "C Functions";
+user_main;
+}
+subgraph cluster_1 {
+label = "J Functions";
+root;
+anonymous;
+avg;
+}
+anonymous -> avg [ label="(latencies)" ];
+}

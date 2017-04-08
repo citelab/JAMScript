@@ -1,0 +1,12 @@
+jdata {
+    int x as logger;
+}
+
+setInterval(function() {
+    console.log("x[0]", x[0]);
+    console.log("x", x);
+
+    if (x[0] !== undefined && !x[0].isEmpty()) {
+        console.log(x[0].lastValue());
+    }
+}, 1000);

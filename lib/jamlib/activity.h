@@ -33,7 +33,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdint.h>
 
 #define MAX_NAME_LEN            64
-#define MAX_ACT_THREADS         16
+#define MAX_ACT_THREADS         4 // 16
 #define MAX_CALLBACKS           32
 #define MAX_REPLIES             5
 
@@ -63,6 +63,7 @@ enum activity_type_t
 typedef struct _activity_thread_t
 {
     enum activity_state_t state;
+    int threadid;
 
     int taskid;
     char *actid;

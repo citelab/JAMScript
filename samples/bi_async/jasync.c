@@ -1,13 +1,15 @@
 #include <stdio.h>
 
+int counter = 0;
+
 jactivity_t* pong();
 
 jasync ping() {
-	printf("ping\n");
-	pong();
+    printf("ping.. %d\n", counter++);
+    pong();
 }
 
 int main() {
-  ping();
+    ping();
     return 0;
 }

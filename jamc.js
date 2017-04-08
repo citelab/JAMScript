@@ -144,7 +144,7 @@ try {
     // Set platform options
     var options = "";
     if(process.platform != "darwin") {
-      options = "-lm -lbsd";
+      options = "-lm -lbsd -framework CoreFoundation";
     }
 
     flowCheck(jsOutput.annotated_JS + cOutput.annotated_JS, verbose);

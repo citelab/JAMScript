@@ -5,10 +5,12 @@
 #include <hiredis/hiredis.h>
 #include <hiredis/async.h>
 #include <hiredis/adapters/libevent.h>
+#include <hiredis/adapters/macosx.h>
+#include <semaphore.h>
+
 #include "jam.h"
 #include "activity.h"
 #include <string.h>
-#include <semaphore.h>
 #include <unistd.h>
 
 #define DELIM "$$$"
@@ -23,7 +25,11 @@ typedef void (*msg_rcv_callback)(redisAsyncContext *c, void *reply, void *privda
 typedef struct jbroadcaster{
   char *key;
   void *data;
+#ifdef linux
   sem_t lock;
+#elif __APPLE__
+  sem_t *lock;
+#endif
   activitycallback_f usr_callback;
   enum{
     JBROADCAST_INT,

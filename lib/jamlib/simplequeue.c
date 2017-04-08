@@ -36,6 +36,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "simplequeue.h"
 
+
+/*
+ * TODO: May be we need to move away from Nanomsg because the project is not 
+ * active anymore. Something like zeromq or even a custom solution with high
+ * performance...
+ */
+ 
+
 /*
  * Helper to create a random name string..
  * we arbitrarily set the length of the name to 16 chars
