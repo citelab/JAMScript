@@ -318,15 +318,15 @@ function createCallGraphWebpageCytoscape(callGraph) {
   var output = "";
   output += '<html>\n';
   output += '<head>\n';
-  output += '<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>\n';
-  output += '<script type="text/javascript" src="http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js"></script>\n';
+  output += '<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>\n';
+  output += '<script src="http://js.cytoscape.org/api/cytoscape.js-2.7.16/cytoscape.min.js"></script>\n';
   output += '<script src="http://marvl.infotech.monash.edu/webcola/cola.v3.min.js"></script>\n';
-  output += '<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-qtip/2.2.5/cytoscape-qtip.js"></script>\n';
-  output += '<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-cola/1.1.1/cytoscape-cola.js"></script>\n';
-  output += '<script src="http://cpettitt.github.io/project/dagre/latest/dagre.min.js"></script>\n';
-  output += '<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.4.0/cytoscape-dagre.js"></script>\n';
-  output += '<script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.js"></script>\n';
-  output += '<link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.css" />\n';
+  output += '<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-qtip/2.7.0/cytoscape-qtip.js"></script>\n';
+  output += '<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-cola/1.6.0/cytoscape-cola.js"></script>\n';
+  output += '<script src="http://cdn.rawgit.com/cpettitt/dagre/v0.7.4/dist/dagre.min.js"></script>\n';
+  output += '<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.5.0/cytoscape-dagre.js"></script>\n';
+  output += '<script src="http://cdn.jsdelivr.net/qtip2/3.0.3/jquery.qtip.min.js"></script>\n';
+  output += '<link rel="stylesheet" type="text/css" href="http://cdn.jsdelivr.net/qtip2/3.0.3/jquery.qtip.min.css" />\n';
   output += '<style type="text/css"> #cy { height: 100%; width: 100%; position: absolute; left: 0; top: 0; } </style>\n';
   output += '<title>Callgraph</title>\n';
   output += '<script>\n';
@@ -342,18 +342,26 @@ function createCallGraphWebpageCytoscape(callGraph) {
     {
       selector: 'node',
       css: {
-        'content': 'data(id)',
-        'text-valign': 'center',
-        'text-halign': 'center',
-        'width': '100',
-        'background-color': 'data(color)'
+        'content': 'data(label)'
       }
     },
     {
-      selector: '$node > node',
+      selector: ':child',
+      css: {
+        'text-valign': 'center',
+        'text-halign': 'center',
+        'shape': 'data(shape)',
+        'width': '100',
+        'background-color': '#FFFFFF',
+        'font-size': '12'
+      }
+    },
+    {
+      selector: ':parent',
       css: {
         'text-valign': 'top',
-        'text-halign': 'center'
+        'text-halign': 'center',
+        'background-color': 'data(color)'
       }
     },
     {
@@ -373,13 +381,29 @@ function createCallGraphWebpageCytoscape(callGraph) {
     name: 'dagre'
   }
 });
+cy.nodes(':child').qtip({
+    content: function() {
+      return this.data('id');
+    },
+    position: {
+      my: 'bottom center',
+      at: 'top center'
+    },
+    style: {
+      classes: 'qtip-bootstrap',
+      tip: {
+        width: 16,
+        height: 8
+      }
+    }
+  });
   cy.edges().qtip({
     content: function() {
       return '<table><th>Calls</th>' + this.data('calls') + '</table>';
     },
     position: {
-      my: 'top center',
-      at: 'bottom center'
+      my: 'bottom center',
+      at: 'top center'
     },
     style: {
       classes: 'qtip-bootstrap',
@@ -400,49 +424,59 @@ function createCallGraphWebpageCytoscape(callGraph) {
 }
 function printCallGraphCytoscape(callGraph) {
     var output = 'var nodes = [ \n';
-    output += `{data: {id: "c", color: "#6FB1FC"}},\n`;
-    output += `{data: {id: "js", color: "#9fd849"}},\n`;
+    output += `{data: {id: "c", label: "C", color: "#6FB1FC"}},\n`;
+    output += `{data: {id: "js", label: "JavaScript", color: "#9fd849"}},\n`;
 
     if(callGraph.c.size > 0) {
-        var usedFunctions = new Set();
-        callGraph.c.forEach(function(calls, func) {
-            usedFunctions.add(func);
-        });
-        usedFunctions.forEach(function(func) {
-            output += `{data: {id: "${func}", parent: 'c', color: '#FFFFFF'}},\n`;
+        callGraph.c.forEach(function(data, func) {
+            var shape = "ellipse";
+            if(data.type != "function") {
+              shape = "roundrectangle";
+            }
+            var label = func;
+            if(label.length > 25) {
+              label = label.substring(0, 22) + "...";
+            }
+            output += `{data: {id: '${func}', label: '${label}', parent: 'c', shape: '${shape}'}},\n`;
         });
     }
     if(callGraph.js.size > 0) {
-        var usedFunctions = new Set();
-        callGraph.js.forEach(function(calls, func) {
-            usedFunctions.add(func);
-        });
-        usedFunctions.forEach(function(func) {
-            output += `{data: {id: "${func}", parent: 'js', color: '#FFFFFF'}},\n`;
+        callGraph.js.forEach(function(data, func) {
+          var shape = "ellipse";
+          if(data.type != "function") {
+            shape = "roundrectangle";
+          }
+          var label = func;
+          if(label.length > 25) {
+            label = label.substring(0, 22) + "...";
+          }
+          output += `{data: {id: '${func}', label: '${label}', parent: 'js', shape: '${shape}'}},\n`;
         });
     }
     
     output += '];\n';
     output += 'var edges = [\n'; 
     if(callGraph.c.size > 0) {
-      callGraph.c.forEach(function(calls, func) {
+      callGraph.c.forEach(function(target, source) {
+        var calls = target.calls;
         calls.forEach(function(arguments, call) {
           var tooltipTable = "";
           arguments.forEach(function(args) {
             tooltipTable += `<tr><td>${args}</td></tr>`;
           });
-          output += `{data: {id: "${func+call}", source: "${func}", target: "${call}", calls: "${tooltipTable}"}},\n`;
+          output += `{data: {id: "${source+call}", source: "${source}", target: "${call}", calls: "${tooltipTable}"}},\n`;
         });
       });
     }
     if(callGraph.js.size > 0) {
-      callGraph.js.forEach(function(calls, func) {
+      callGraph.js.forEach(function(target, source) {
+        var calls = target.calls;
         calls.forEach(function(arguments, call) {
           var tooltipTable = "";
           arguments.forEach(function(args) {
             tooltipTable += `<tr><td>${args}</td></tr>`;
           });
-          output += `{data: {id: "${func+call}", source: "${func}", target: "${call}", calls: "${tooltipTable}"}},\n`;
+          output += `{data: {id: "${source+call}", source: "${source}", target: "${call}", calls: "${tooltipTable}"}},\n`;
         });
       });
     }
@@ -457,14 +491,15 @@ function createDOTCallgraph(callGraph) {
         var usedFunctions = new Set();
         graph += 'subgraph cluster_0 {\n';
         graph += 'label = "C Functions";\n'
-        callGraph.c.forEach(function(calls, func) {
-            // graph += func + ';\n';
+        callGraph.c.forEach(function(target, source) {
+          var calls = target.calls;
+            // graph += source + ';\n';
             // if(calls.size > 0) {
-              usedFunctions.add(func);
+              usedFunctions.add(source);
             // }
             calls.forEach(function(arguments, call) {
               arguments.forEach(function(args) {
-                callList += func + ' -> ' + call + ' [ label="' + args + '" ];\n';
+                callList += source + ' -> ' + call + ' [ label="' + args + '" ];\n';
                 if(callGraph.c.has(call)) {
                     usedFunctions.add(call);
                 }
@@ -480,12 +515,13 @@ function createDOTCallgraph(callGraph) {
         var usedFunctions = new Set();
         graph += 'subgraph cluster_1 {\n';
         graph += 'label = "J Functions";\n'
-        callGraph.js.forEach(function(calls, func) {
-            // graph += func + ';\n';
-            usedFunctions.add(func);
+        callGraph.js.forEach(function(target, source) {
+            var calls = target.calls;
+            // graph += source + ';\n';
+            usedFunctions.add(source);
             calls.forEach(function(arguments, call) {
               arguments.forEach(function(args) {
-                callList += func + ' -> ' + call + ' [ label="' + args + '" ];\n';
+                callList += source + ' -> ' + call + ' [ label="' + args + '" ];\n';
                 if(callGraph.js.has(call)) {
                     usedFunctions.add(call);
                 }

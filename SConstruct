@@ -66,7 +66,7 @@ library = env.Library('jam', Glob('lib/jamlib/*.c'), LIBS=req_c_lib, LIBPATH = [
 c_core_files = Glob('./lib/jamlib/*.h');
 ohm_c_files = Glob('./lib/ohm/c/*.js') + Glob('./lib/ohm/c/*.ohm')
 ohm_ecma_files = Glob('./lib/ohm/ecmascript/*.js') + Glob('./lib/ohm/ecmascript/*.ohm')
-ohm_jamscript_files = Glob('./lib/ohm/jamscript/*.js') + Glob('./lib/ohm/jamscript/*.ohm')
+ohm_jamscript_files = Glob('./lib/ohm/jamscript/*.*')
 c_core_files.append("./lib/jamlib/duktape");
 
 env.Install("/usr/local/bin", "jamc" );
