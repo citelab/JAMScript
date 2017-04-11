@@ -144,7 +144,11 @@ try {
     // Set platform options
     var options = "";
     if(process.platform != "darwin") {
-      options = "-lm -lbsd -framework CoreFoundation";
+      // Linux
+      options = "-lm -lbsd";
+    } else {
+      // Mac
+      options = "-framework CoreFoundation"
     }
 
     flowCheck(jsOutput.annotated_JS + cOutput.annotated_JS, verbose);
@@ -160,7 +164,7 @@ try {
       if(verbose) {
         console.log(command);
       }
-      child_process.execSync(commmand, {stdio: [0,1,2]}) ;
+      child_process.execSync(command, {stdio: [0,1,2]}) ;
     } catch(e) {
     }
     // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
