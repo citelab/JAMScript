@@ -143,12 +143,12 @@ try {
     console.log("Compiling C code...");
     // Set platform options
     var options = "";
-    if(process.platform != "darwin") {
-      // Linux
-      options = "-lm -lbsd";
-    } else {
+    if(process.platform == "darwin") {
       // Mac
       options = "-framework CoreFoundation"
+    } else {
+      // Linux
+      options = "-lm -lbsd";
     }
 
     flowCheck(jsOutput.annotated_JS + cOutput.annotated_JS, verbose);
@@ -164,9 +164,11 @@ try {
       if(verbose) {
         console.log(command);
       }
+      // This prints any errors to stderr automatically, so no need to show the error again
       child_process.execSync(command, {stdio: [0,1,2]}) ;
     } catch(e) {
     }
+    
     // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
     // createZip(createTOML(), output.JS, tmpDir, outputName);
     
@@ -486,7 +488,7 @@ function printCallGraphCytoscape(callGraph) {
     }
     output += '];\n';
     return output;
-};
+}
 
 function createDOTCallgraph(callGraph) {
     var graph = 'digraph jamgraph{\n';
