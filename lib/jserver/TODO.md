@@ -1,5 +1,7 @@
 # TODOS
 
+- test it
+- figure out what the f jcond is reiniting in jamlib: 	jcond.reinit(node);
 - figure out when mqtt calls 'reconnect', 'close', and 'offline'
 - implement circular log files
 
