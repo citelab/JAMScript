@@ -140,7 +140,31 @@ try {
   fs.writeFileSync("jamout.js", jsOutput.JS + cOutput.JS);
 
   if(!noCompile) {
-    console.log("Compiling C code...");
+    var tasks = [
+      flowCheck(jsOutput.annotated_JS + cOutput.annotated_JS, verbose),
+      compile(cOutput.C + jsOutput.C, verbose)
+    ];
+    
+    // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
+    // createZip(createTOML(), output.JS, tmpDir, outputName);
+    Promise.all(tasks).then(function(results) {
+      if(!debug) {
+        for(var i = 0; i < results.length; i++) {
+          console.log(results[i]);
+        }
+        deleteFolderRecursive(tmpDir);
+      }
+    }, function(error) {
+      console.log(error);
+    });
+    
+  }
+} catch(e) {
+    console.log("ERROR:");
+    console.log(e);
+}
+function compile(code, verbose) {
+  return new Promise(function(resolve, reject) {
     // Set platform options
     var options = "";
     if(process.platform == "darwin") {
@@ -150,35 +174,26 @@ try {
       // Linux
       options = "-lm -lbsd";
     }
-
-    flowCheck(jsOutput.annotated_JS + cOutput.annotated_JS, verbose);
     var includes = '#include "jam.h"\n'
     includes = '#include "command.h"\n' + includes;
     includes = '#include "jdata.h"\n' + includes;
     includes = '#include <unistd.h>\n' + includes;
 
-    fs.writeFileSync("jamout.c", includes + preprocessDecls.join("\n") + "\n" + cOutput.C + jsOutput.C);
-    fs.writeFileSync(`${tmpDir}/jamout.c`, includes + preprocessDecls.join("\n") + "\n" + cOutput.C + jsOutput.C);
+    fs.writeFileSync("jamout.c", includes + preprocessDecls.join("\n") + "\n" + code);
+    fs.writeFileSync(`${tmpDir}/jamout.c`, includes + preprocessDecls.join("\n") + "\n" + code);
     try {
       var command = `clang -g ${tmpDir}/jamout.c -I/usr/local/include -I/usr/local/share/jam/lib/ ${options} -pthread -lcbor -lnanomsg /usr/local/lib/libjam.a -ltask -levent -lhiredis -L/usr/local/lib -lpaho-mqtt3c`;
+      console.log("Compiling C code...");
       if(verbose) {
         console.log(command);
       }
       // This prints any errors to stderr automatically, so no need to show the error again
       child_process.execSync(command, {stdio: [0,1,2]}) ;
     } catch(e) {
+      reject("Compilation failed");
     }
-    
-    // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
-    // createZip(createTOML(), output.JS, tmpDir, outputName);
-    
-    // if(!debug) {
-    //   deleteFolderRecursive(tmpDir);
-    // }
-  }
-} catch(e) {
-    console.log("ERROR:");
-    console.log(e);
+    resolve("Compilation finished");
+  });
 }
 
 function printAndExit(output) {
@@ -210,36 +225,37 @@ function preprocess(file, verbose) {
 }
 
 function flowCheck(input, verbose) {
-  // Returns empty buffer if flow installed
-  var hasFlow = child_process.execSync("flow version >/dev/null 2>&1 || { echo 'not installed';}");
-  
-  if(hasFlow.length == 0) {
-    fs.writeFileSync(`${tmpDir}/.flowconfig`, "");
-    fs.writeFileSync(`${tmpDir}/annotated.js`, input);
-    var command = `flow ${tmpDir}/annotated.js --color always`;
+  return new Promise(function(resolve, reject) {
+    // Returns empty buffer if flow installed
+    var hasFlow = child_process.execSync("flow version >/dev/null 2>&1 || { echo 'not installed';}");
     
-    const child = child_process.exec(command, (error, stdout, stderr) => {
+    if(hasFlow.length == 0) {
+      fs.writeFileSync(`${tmpDir}/.flowconfig`, "");
+      fs.writeFileSync(`${tmpDir}/annotated.js`, input);
+      var command = `flow ${tmpDir}/annotated.js --color always`;
+      console.log("Running Flow type check...");
       if(verbose) {
         console.log(command);
       }
+      const child = child_process.exec(command, (error, stdout, stderr) => {
         if (error !== null) {
-          console.log("JavaScript Type Checking Error:");
-          console.log(stdout.substring(stdout.indexOf("\n") + 1));
+          resolve("JavaScript Type Checking Error:\n" + stdout.substring(stdout.indexOf("\n") + 1));
         } else {
-          console.log("No Flow JavaScript errors found");
+          resolve("No Flow JavaScript errors found");
         }
-    });
-    // const child = child_process.exec('flow check-contents --color always', (error, stdout, stderr) => {
-    //     if (error !== null) {
-    //       console.log("JavaScript Type Checking Error:");
-    //       console.log(stdout.substring(stdout.indexOf("\n") + 1));
-    //     }
-    // });
-    // child.stdin.write(input);
-    // child.stdin.end();
-  } else {
-    console.log("Flow not installed, skipping JavaScript typechecking");
-  }
+      });
+      // const child = child_process.exec('flow check-contents --color always', (error, stdout, stderr) => {
+      //     if (error !== null) {
+      //       console.log("JavaScript Type Checking Error:");
+      //       console.log(stdout.substring(stdout.indexOf("\n") + 1));
+      //     }
+      // });
+      // child.stdin.write(input);
+      // child.stdin.end();
+    } else {
+      resolve("Flow not installed, skipping JavaScript typechecking");
+    }
+  });
 }
 
 function createCallGraphWebpage(callGraph) {
