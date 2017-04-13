@@ -1,5 +1,9 @@
 # TODOS
 
+- add mqtt code to repo
+- fix mqtt code to loop over arrays properly
+- get rid of unneeded stuff in mqtt and probably simplify it a lot (just one object like mdns)
+
 ## MDNS
 - probably need an mdns server up and running on each node. If a node is able to use MQTT, then it won't need this server, but it should still have it up to listen for other nodes that weren't able to use MQTT for some reason.
 - so, I think the following is all that needs doing:
@@ -18,4 +22,7 @@
 - implement circular log files
 
 ## Questions for Mahes
-- need to figure out where to listen for events from the registration module. Talk to Mahes. Need to know how an end user can get access to the node object returned from this module.
+- I've added support for listening for custom subscriptions, but where will we add these/listen for them? Is this even my concern?
+    - No it is not your concern!
+- What should the registration module be storing? So far, I've had devices store the fogs that it discovers, etc., but I never actually use this information anywhere, since I just emit events back to the application.
+    - get rid of this
