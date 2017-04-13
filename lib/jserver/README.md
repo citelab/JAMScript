@@ -18,7 +18,7 @@
     - arguments
         - [string] ID of the cloud
 - `reconnect`: emitted when a device reconnects to the broker
-- `registration-error`: emitted when something goes wrong during MQTT registration; if this happens then the node should give up on MQTT and fall back to mDNS or local storage
+- `mqtt-reg-error`: emitted when something goes wrong during MQTT registration; if this happens then the node should give up on MQTT and fall back to mDNS or local storage
     - arguments:
         - [error] the error
 - `address-changed`: emitted when the IP address of the node changes

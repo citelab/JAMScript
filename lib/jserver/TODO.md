@@ -1,8 +1,7 @@
 # TODOS
 
-- add mqtt code to repo
-- fix mqtt code to loop over arrays properly
-- get rid of unneeded stuff in mqtt and probably simplify it a lot (just one object like mdns)
+- test MQTT and mDNS
+- write local storage
 
 ## MDNS
 - probably need an mdns server up and running on each node. If a node is able to use MQTT, then it won't need this server, but it should still have it up to listen for other nodes that weren't able to use MQTT for some reason.
