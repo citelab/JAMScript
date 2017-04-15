@@ -1,12 +1,15 @@
 #include <unistd.h>
 #include "jdata.h"
+#include "command.h"
 #include "jam.h"
 #include <stdio.h>
+char app_id[256] = { 0 };
+char jdata_buffer[20];
 typedef char* jcallback;
 jamstate_t *js;
 jactivity_t *doubler(int b) {
 jactivity_t *jact = jam_create_activity(js);
-jactivity_t *res = jam_rexec_async(js, jact, "doubler", "i",b);
+jactivity_t *res = jam_rexec_async(js, jact, "true", 0, "doubler", "i",b);
 activity_free(jact);
 return res;}
 
@@ -28,6 +31,9 @@ user_main();
 
 void taskmain(int argc, char **argv) {
 
+    if (argc > 1) {
+      strncpy(app_id, argv[1], sizeof app_id - 1);
+    }
     js = jam_init(1883);
     user_setup();
      

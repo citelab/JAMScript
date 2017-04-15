@@ -72,8 +72,7 @@ void jdata_attach(jamstate_t *js, char *serv_ip, int serv_port)
     base = event_base_new();
     //Attach async context to base
     redisLibeventAttach(jdata_async_context, base);   
-#endif
-#ifdef __APPLE__
+#elif __APPLE__
     loop = CFRunLoopGetCurrent();
     if (!loop) 
     {

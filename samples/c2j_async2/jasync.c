@@ -1,9 +1,8 @@
 #include <stdio.h>
 
 
-jasync ping() {
-	printf("Ping receive...\n");
-
+jasync ping(char *name) {
+	printf("Ping receive from: %s\n", name);
 }
 
 int main() {

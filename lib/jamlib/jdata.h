@@ -4,7 +4,9 @@
 #include <stdlib.h>
 #include <hiredis/hiredis.h>
 #include <hiredis/async.h>
+#ifdef linux
 #include <hiredis/adapters/libevent.h>
+#endif
 #include <hiredis/adapters/macosx.h>
 #include <semaphore.h>
 

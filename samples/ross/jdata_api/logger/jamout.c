@@ -8,7 +8,7 @@ char app_id[256] = { 0 };
 jamstate_t *js;
 
 int user_main() {
-    for (int i = 0; ; i++) {
+    for (int i = 0;; i++) {
         char buf[8];
         sprintf(buf, "%d", i);
         jamdata_log_to_server("global", "x", buf, ((void*)0));
@@ -25,7 +25,7 @@ void jam_run_app(void *arg) {
 
 void taskmain(int argc, char **argv) {
     if (argc > 1) {
-      strncpy(app_id, argv[1], sizeof app_id - 1);
+        strncpy(app_id, argv[1], sizeof app_id - 1);
     }
     js = jam_init(1883);
     user_setup();

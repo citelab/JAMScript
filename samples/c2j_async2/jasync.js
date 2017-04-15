@@ -1,5 +1,7 @@
+var Chance = require('chance');
+var chance = new Chance();
 
 setInterval(function() {
-	ping();
-    }, 1);
+	ping(chance.name());
+}, 1000);
 

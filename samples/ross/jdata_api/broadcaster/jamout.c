@@ -26,7 +26,7 @@ void jam_run_app(void *arg) {
 
 void taskmain(int argc, char **argv) {
     if (argc > 1) {
-      strncpy(app_id, argv[1], sizeof app_id - 1);
+        strncpy(app_id, argv[1], sizeof app_id - 1);
     }
     js = jam_init(1883);
     user_setup();

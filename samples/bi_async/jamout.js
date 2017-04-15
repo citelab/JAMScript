@@ -10,8 +10,11 @@ var wait = require('wait.for-es6');
 function* main() {
 var jcondition = new Map();
 var counter = 0;
-
 function pong() {
+jnode.machAsyncExec("callpong", [  ], "true", 0);
+}
+
+function callpong() {
 counter = counter + 1;
 ;
 console.log("pong..", counter);
@@ -21,9 +24,10 @@ ping();
 function ping() {
 jnode.remoteAsyncExec("ping", [  ], "true", 0);
 }
+
 var mbox = {
 "functions": {
-"pong": pong,
+"pong": callpong,
 },
 "signatures": {
 "pong": "",

@@ -296,7 +296,6 @@ void run_activity(void *arg)
             }
             command_free(cmd);
         }
-        printf("Threadid = %d\n", athread->threadid);
         athread->state = EMPTY;
     }
 }
@@ -378,8 +377,6 @@ jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
     int i;
     jactivity_t *jact = (jactivity_t *)calloc(1, sizeof(jactivity_t));
 
-    printf("Activity new.... \n");
-
     if (jact != NULL) 
     {
         jact->remote = remote;
@@ -412,8 +409,6 @@ jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
 void activity_free(jactivity_t *jact)
 {
     int i; 
-
-    printf("Activity free.......\n");
 
     activity_freethread(jact);
 
@@ -480,9 +475,6 @@ void activity_complete(activity_table_t *at, char *actid, char *fmt, ...)
     arg_t *qarg;
     nvoid_t *nv;
 
-    printf("Helloo....0\n");
-
-
     qarg = (arg_t *)calloc(1, sizeof(arg_t));
 
     va_start(args, fmt);
@@ -509,11 +501,8 @@ void activity_complete(activity_table_t *at, char *actid, char *fmt, ...)
     jamstate_t *js = (jamstate_t *)at->jarg;
     runtableentry_t *re = runtable_find(js->rtable, actid);
 
-    printf("Helloo....1\n");
     if (re != NULL)
     {
-        printf("Helloo....2\n");
-        
         jwork_send_results(js, re->cmd, qarg);
         runtable_store_results(js->rtable, actid, qarg);
     }

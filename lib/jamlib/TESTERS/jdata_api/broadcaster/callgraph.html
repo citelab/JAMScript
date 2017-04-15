@@ -7,15 +7,17 @@
 <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-cola/1.1.1/cytoscape-cola.js"></script>
 <script src="http://cpettitt.github.io/project/dagre/latest/dagre.min.js"></script>
 <script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.4.0/cytoscape-dagre.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.js"></script>
+<link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.css" />
 <style type="text/css"> #cy { height: 100%; width: 100%; position: absolute; left: 0; top: 0; } </style>
 <title>Callgraph</title>
 <script>
 var nodes = [ 
-{data: {id: "c"}},
-{data: {id: "js"}},
-{data: {id: "user_main", parent: 'c'}},
-{data: {id: "root", parent: 'js'}},
-{data: {id: "anonymous", parent: 'js'}},
+{data: {id: "c", color: "#6FB1FC"}},
+{data: {id: "js", color: "#9fd849"}},
+{data: {id: "user_main", parent: 'c', color: '#FFFFFF'}},
+{data: {id: "root", parent: 'js', color: '#FFFFFF'}},
+{data: {id: "anonymous", parent: 'js', color: '#FFFFFF'}},
 ];
 var edges = [
 ];
@@ -33,7 +35,8 @@ $(function(){
         'content': 'data(id)',
         'text-valign': 'center',
         'text-halign': 'center',
-        'width': '100'
+        'width': '100',
+        'background-color': 'data(color)'
       }
     },
     {
@@ -59,6 +62,22 @@ $(function(){
   layout: {
     name: 'dagre'
   }
+});
+  cy.edges().qtip({
+    content: function() {
+      return '<table><th>Calls</th>' + this.data('calls') + '</table>';
+    },
+    position: {
+      my: 'top center',
+      at: 'bottom center'
+    },
+    style: {
+      classes: 'qtip-bootstrap',
+      tip: {
+        width: 16,
+        height: 8
+      }
+    }
   });
   });
 </script>

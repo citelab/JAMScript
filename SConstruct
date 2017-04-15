@@ -35,8 +35,8 @@ if npm_loc==None:
 subprocess.check_call("npm install", shell=True)
 #Now we test for C library dependencies
 
-env = Environment(CC = 'clang', CCFLAGS='-g -DDEBUG_LVL1', LIBPATH=['/usr/local/lib'])
-# env = Environment(CC = 'clang', CCFLAGS='-g', LIBPATH=['/usr/local/lib'])
+# env = Environment(CC = 'clang', CCFLAGS='-g -DDEBUG_LVL1', LIBPATH=['/usr/local/lib'])
+env = Environment(CC = 'clang', CCFLAGS='-g', LIBPATH=['/usr/local/lib'])
 env.Append(CPPPATH='/usr/local/include')
 env.Append(FRAMEWORKS='CoreFoundation')
 
@@ -48,7 +48,7 @@ if env['PLATFORM']=='posix':
     req_c_lib = ['m', 'bsd', 'pthread', 'cbor', 'nanomsg', 'task', 'event', 'hiredis']
 elif env['PLATFORM']=='darwin':
     print 'Platform is darwin'
-    req_c_lib = ['task', 'event', 'hiredis']
+    req_c_lib = ['task', 'hiredis']
 else:
     print 'Windows not supported ...'
 #required_libraries = ['m']

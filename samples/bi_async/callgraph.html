@@ -1,27 +1,29 @@
 <html>
 <head>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-<script type="text/javascript" src="http://cytoscape.github.io/cytoscape.js/api/cytoscape.js-latest/cytoscape.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script src="http://js.cytoscape.org/api/cytoscape.js-2.7.16/cytoscape.min.js"></script>
 <script src="http://marvl.infotech.monash.edu/webcola/cola.v3.min.js"></script>
-<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-qtip/2.2.5/cytoscape-qtip.js"></script>
-<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-cola/1.1.1/cytoscape-cola.js"></script>
-<script src="http://cpettitt.github.io/project/dagre/latest/dagre.min.js"></script>
-<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.4.0/cytoscape-dagre.js"></script>
+<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-qtip/2.7.0/cytoscape-qtip.js"></script>
+<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-cola/1.6.0/cytoscape-cola.js"></script>
+<script src="http://cdn.rawgit.com/cpettitt/dagre/v0.7.4/dist/dagre.min.js"></script>
+<script src="https://cdn.rawgit.com/cytoscape/cytoscape.js-dagre/1.5.0/cytoscape-dagre.js"></script>
+<script src="http://cdn.jsdelivr.net/qtip2/3.0.3/jquery.qtip.min.js"></script>
+<link rel="stylesheet" type="text/css" href="http://cdn.jsdelivr.net/qtip2/3.0.3/jquery.qtip.min.css" />
 <style type="text/css"> #cy { height: 100%; width: 100%; position: absolute; left: 0; top: 0; } </style>
 <title>Callgraph</title>
 <script>
 var nodes = [ 
-{data: {id: "c"}},
-{data: {id: "js"}},
-{data: {id: "ping", parent: 'c'}},
-{data: {id: "user_main", parent: 'c'}},
-{data: {id: "root", parent: 'js'}},
-{data: {id: "pong", parent: 'js'}},
+{data: {id: "c", label: "C", color: "#6FB1FC"}},
+{data: {id: "js", label: "JavaScript", color: "#9fd849"}},
+{data: {id: 'ping', label: 'ping', parent: 'c', shape: 'roundrectangle'}},
+{data: {id: 'user_main', label: 'user_main', parent: 'c', shape: 'ellipse'}},
+{data: {id: 'root', label: 'root', parent: 'js', shape: 'ellipse'}},
+{data: {id: 'pong', label: 'pong', parent: 'js', shape: 'roundrectangle'}},
 ];
 var edges = [
-{data: {id: "pingpong", source: "ping", target: "pong", label: ""}},
-{data: {id: "user_mainping", source: "user_main", target: "ping", label: ""}},
-{data: {id: "pongping", source: "pong", target: "ping", label: ""}},
+{data: {id: "pingpong", source: "ping", target: "pong", calls: "<tr><td>()</td></tr>"}},
+{data: {id: "user_mainping", source: "user_main", target: "ping", calls: "<tr><td>()</td></tr>"}},
+{data: {id: "pongping", source: "pong", target: "ping", calls: "<tr><td>()</td></tr>"}},
 ];
 $(function(){
   var cy = cytoscape({
@@ -34,17 +36,26 @@ $(function(){
     {
       selector: 'node',
       css: {
-        'content': 'data(id)',
-        'text-valign': 'center',
-        'text-halign': 'center',
-        'width': '100'
+        'content': 'data(label)'
       }
     },
     {
-      selector: '$node > node',
+      selector: ':child',
+      css: {
+        'text-valign': 'center',
+        'text-halign': 'center',
+        'shape': 'data(shape)',
+        'width': '100',
+        'background-color': '#FFFFFF',
+        'font-size': '12'
+      }
+    },
+    {
+      selector: ':parent',
       css: {
         'text-valign': 'top',
-        'text-halign': 'center'
+        'text-halign': 'center',
+        'background-color': 'data(color)'
       }
     },
     {
@@ -63,6 +74,38 @@ $(function(){
   layout: {
     name: 'dagre'
   }
+});
+cy.nodes(':child').qtip({
+    content: function() {
+      return this.data('id');
+    },
+    position: {
+      my: 'bottom center',
+      at: 'top center'
+    },
+    style: {
+      classes: 'qtip-bootstrap',
+      tip: {
+        width: 16,
+        height: 8
+      }
+    }
+  });
+  cy.edges().qtip({
+    content: function() {
+      return '<table><th>Calls</th>' + this.data('calls') + '</table>';
+    },
+    position: {
+      my: 'bottom center',
+      at: 'top center'
+    },
+    style: {
+      classes: 'qtip-bootstrap',
+      tip: {
+        width: 16,
+        height: 8
+      }
+    }
   });
   });
 </script>
