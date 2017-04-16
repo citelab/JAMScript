@@ -1,9 +1,0 @@
-
-function testping() {
-	ping();
-}
-
-setInterval(function() {
-	console.log("Pinging...");
-	testping();
-    }, 100);

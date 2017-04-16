@@ -1,9 +1,11 @@
 README.md
 
-To compile the example files run the following command.
+In most folders you will see a .c and .js file. There could be
+more than one file of either type as well. 
 
-jamc test.c test.js
+Run the following command to compile the JAMScript program.
 
-You can multiple C and JS files in a project. 
-The above command assumes that the project has two files:
-one C and another of JavaScript in type.
+jamc filename.*
+
+Assuming you have filename.c and filename.js in the folder.
+
