@@ -45,7 +45,7 @@ extern "C" {
 #define STACKSIZE                   20000
 
 // TODO: Max entries.. sufficient?
-#define MAX_RUN_ENTRIES             4 //64
+#define MAX_RUN_ENTRIES             64
 
 
 typedef struct _runtableentry_t
@@ -61,9 +61,7 @@ typedef struct _runtableentry_t
     int exp_replies, rcd_replies;
     // results hold remote results in the case of C->J or
     // local results in the case of J->C sync calls - only [0] used
-    arg_t *results[MAX_SERVERS]; //The results
-
-    
+    arg_t *results[MAX_SERVERS]; //The results 
 } runtableentry_t;
 
 

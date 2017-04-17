@@ -592,7 +592,7 @@ void tcallback(void *arg)
     activity_thread_t *athr = (activity_thread_t *)arg;
 
     #ifdef DEBUG_LVL1
-        printf("Callback.... Queue %d\n", athr->inq->queue->pushsock);
+        printf("Callback.... Queue %d, actid %s\n", athr->inq->queue->pushsock, athr->actid);
     #endif
     // stick the "TIMEOUT" message into the queue for the activity
     command_t *tmsg = command_new("TIMEOUT", "-", "-", 0, "ACTIVITY", athr->actid, "__", "");

@@ -89,11 +89,11 @@ void jdata_attach(jamstate_t *js, char *serv_ip, int serv_port)
     {
         if (jdata_sync_context) 
         {
-            printf("Connection error: %s\n", jdata_sync_context->errstr);
+            printf("JData Sync Connection error: %s\n", jdata_sync_context->errstr);
             redisFree(jdata_sync_context);
         } else 
         {
-            printf("Connection error: can't allocate redis context\n");
+            printf("JData Sync Connection error: can't allocate redis context\n");
         }
     }
 }
@@ -131,7 +131,7 @@ void *jdata_init(void *js)
  */
 void jdata_default_connection(const redisAsyncContext *c, int status) {
   if (status != REDIS_OK) {
-      printf("Connection Error: %s\n", c->errstr);
+      printf("JData Connection Error: %s\n", c->errstr);
       return;
   }
   #ifdef DEBUG_LVL1
@@ -146,7 +146,7 @@ void jdata_default_connection(const redisAsyncContext *c, int status) {
  */
 void jdata_default_disconnection(const redisAsyncContext *c, int status) {
   if (status != REDIS_OK) {
-      printf("Disconnection Error: %s\n", c->errstr);
+      printf("JData Disconnection Error: %s\n", c->errstr);
       return;
   }
   #ifdef DEBUG_LVL1

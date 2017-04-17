@@ -27,29 +27,24 @@ fdtask(void *v)
 	taskname("fdtask");
 	for(;;){
 		/* let everyone else run */
-		//  
-		// 
-		//		while(taskyield() > 0){
-		//		if(fd_enabled)
-		//			break;
-		//	}
-		taskyield();
+		while(taskyield() > 0)
+			;
 		/* we're the only one runnable - poll for i/o */
 		errno = 0;
 		taskstate("poll");
 		ms = 0;
-		//if((t=sleeping.head) == nil)
-		//	ms = -1;
-		//else{
+		if((t=sleeping.head) == nil)
+			ms = -1;
+		else{
 			/* sleep at most 5s */
-		//	now = nsec();
-		//	if(now >= t->alarmtime)
-		//		ms = 0;
-		//	else if(now+5*1000*1000*1000LL >= t->alarmtime)
-		//		ms = (t->alarmtime - now)/1000000;
-		//	else
-		//		ms = 5000;
-		//}
+			now = nsec();
+			if(now >= t->alarmtime)
+				ms = 0;
+			else if(now+5*1000*1000*1000LL >= t->alarmtime)
+				ms = (t->alarmtime - now)/1000000;
+			else
+				ms = 5000;
+		}
 		
 		if(poll(pollfd, npollfd, ms) < 0){
 			if(errno == EINTR)

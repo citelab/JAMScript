@@ -100,7 +100,7 @@ runtableentry_t *runtable_find(runtable_t *table, char *actid)
 runtableentry_t *runtable_getfree(runtable_t *table)
 {
     int i, j = -1;
-    long long minatime = 0;
+    long long minatime = activity_getseconds();
 
     pthread_mutex_lock(&(table->lock));
     for(i = 0; i < MAX_RUN_ENTRIES; i++)
@@ -122,7 +122,6 @@ runtableentry_t *runtable_getfree(runtable_t *table)
         }
     }
     pthread_mutex_unlock(&(table->lock));
-
     return &(table->entries[j]);
 }
 
@@ -318,6 +317,7 @@ void jrun_arun_callback(jactivity_t *jact, command_t *cmd, activity_callback_reg
 
     creg->cback(jact, cmd);    
     // if the execution was done due to a remote request...
+    printf("Execution for remote request...with actid %s done.\n", jact->actid);
     if (jact->remote)
         // Delete the activity.. because we are doing a remote processing..
         activity_free(jact);

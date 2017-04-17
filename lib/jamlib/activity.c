@@ -273,6 +273,8 @@ void run_activity(void *arg)
                     #ifdef DEBUG_LVL1
                     printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
                     #endif
+                    athread->state = EMPTY;
+                    taskyield();  
                 }
             }
             else 
@@ -297,6 +299,7 @@ void run_activity(void *arg)
             command_free(cmd);
         }
         athread->state = EMPTY;
+        taskyield();    
     }
 }
 
@@ -335,6 +338,10 @@ activity_thread_t *activity_getthread(activity_table_t *at, char *actid)
         if (at->athreads[i]->state == EMPTY)
             return at->athreads[i];
             
+    return NULL;
+    
+    // FIXME: Delete the rest..
+
     long long ctime = activity_getseconds();
     long cdiff = 0;
 
@@ -355,6 +362,7 @@ activity_thread_t *activity_getthread(activity_table_t *at, char *actid)
             }
         }
     }
+    printf("J = %d\n", j);
 
     if (j < 0)
         return NULL;
@@ -380,11 +388,10 @@ jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
     if (jact != NULL) 
     {
         jact->remote = remote;
-        jact->thread = activity_getthread(at, actid);
-        if (jact->thread == NULL)
+        while ((jact->thread = activity_getthread(at, actid)) == NULL)
         {
-            printf("ERROR! Unable to get the activity thread..\n");
-            return NULL;
+            printf("Waiting for ...\n");
+            taskdelay(10);
         }
 
         // Setup the thread.
@@ -396,6 +403,8 @@ jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
         // 
         jact->state = NEW;
         jact->actid = strdup(actid);
+
+        printf("Using thread ID %d for activity with ID %s Remote %d\n", jact->thread->threadid, jact->actid, remote);
 
         // Set the replies' pointer to NULL for good measure
         for (int i = 0; i < MAX_REPLIES; i++)
@@ -410,6 +419,7 @@ void activity_free(jactivity_t *jact)
 {
     int i; 
 
+    printf("Activity free... %s\n", jact->actid);
     activity_freethread(jact);
 
     if (jact->actid) free(jact->actid);
@@ -467,6 +477,7 @@ void activity_freethread(jactivity_t *jact)
     // disassociate the thread and activity
     jact->thread->jact = NULL;
     jact->thread = NULL;
+    printf("Freed thread for activity %s\n", jact->actid);
 }
 
 void activity_complete(activity_table_t *at, char *actid, char *fmt, ...)
