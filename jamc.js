@@ -6,7 +6,6 @@ var ohm = require('ohm-js'),
     crypto = require('crypto'),
     path = require('path');
 
-var cc;
 var outputName;
 var preprocessDecls;
 
@@ -220,7 +219,7 @@ function preprocess(file, verbose) {
   }
   return result = child_process.execSync(command).toString();
 
-  // return child_process.execSync(`${cc} -E -P -std=iso9899:199409 ${file}`).toString();
+  // return child_process.execSync(`clang -E -P -std=iso9899:199409 ${file}`).toString();
 
 }
 
