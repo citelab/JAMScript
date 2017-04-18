@@ -10,15 +10,17 @@ var wait = require('wait.for-es6');
 function* main() {
 var jcondition = new Map();
 jcondition.set('fogonly', { source: 'jcondition_context['sys.sync'] >= 10', code: 8 });
-
 function pong() {
+jnode.machAsyncExec("callpong", [  ], "jcondition.get('fogonly').source", 8);
+}
+
+function callpong() {
 console.log("pong..");
 ping();
 
-}
-var mbox = {
+}var mbox = {
 "functions": {
-"pong": pong,
+"pong": callpong,
 },
 "signatures": {
 "pong": "",
