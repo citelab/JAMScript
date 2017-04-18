@@ -1,0 +1,47 @@
+{
+    "int": {
+        "c_pattern": "%i",
+        "jamlib": "ival",
+        "js_type": "number",
+        "c_code": "i",
+        "js_code": "n",
+        "caster": "atoi",
+        "jbroadcast": "JBROADCAST_INT"
+    },
+    "float": {
+        "c_pattern": "%f",
+        "jamlib": "dval",
+        "js_type": "number",
+        "c_code": "f",
+        "js_code": "n",
+        "caster": "atof",
+        "jbroadcast": "JBROADCAST_FLOAT"
+    },
+    "char*": {
+        "c_pattern": "\\\"%s\\\"",
+        "jamlib": "sval",
+        "js_type": "string",
+        "c_code": "s",
+        "js_code": "s",
+        "caster": null,
+        "jbroadcast": "JBROADCAST_STRING"
+    },
+    "char": {
+        "c_pattern": "\\\"%s\\\"",
+        "jamlib": "sval",
+        "js_type": "string",
+        "c_code": "s",
+        "js_code": "s",
+        "caster": null,
+        "jbroadcast": "JBROADCAST_STRING"
+    },
+    "jcallback": {
+        "c_pattern": "\\\"%s\\\"",
+        "jamlib": "sval",
+        "js_type": "string",
+        "c_code": "s",
+        "js_code": "s",
+        "caster": null,
+        "jbroadcast": null
+    }
+}
