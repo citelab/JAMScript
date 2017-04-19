@@ -418,6 +418,19 @@ void jwork_process_device(jamstate_t *js)
                 jwork_send_error(js, rcmd, "ARGUMENT ERROR");
         }
         else
+        if (strcmp(rcmd->cmd, "REXEC-ASY-CBK") == 0)
+        {
+            if (runtable_find(js->rtable, rcmd->actarg) != NULL)
+            {
+                if (jcond_evaluate_cond(js, rcmd))
+                {
+                    p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
+                }
+                else 
+                    jwork_send_nak(js->cstate->mqttserv[0], rcmd, "CONDITION FALSE");
+            }
+        }        
+        else
         if ((strcmp(rcmd->cmd, "REXEC-ACK") == 0) ||
             (strcmp(rcmd->cmd, "REXEC-NAK") == 0) ||
             (strcmp(rcmd->cmd, "REXEC-RES-PUT") == 0))
@@ -592,7 +605,7 @@ void tcallback(void *arg)
     activity_thread_t *athr = (activity_thread_t *)arg;
 
     #ifdef DEBUG_LVL1
-        printf("Callback.... Queue %d, actid %s\n", athr->inq->queue->pushsock, athr->actid);
+        printf("Callback.. Thread ID %d.. Queue %d, actid %s\n", athr->threadid, athr->inq->queue->pushsock, athr->actid);
     #endif
     // stick the "TIMEOUT" message into the queue for the activity
     command_t *tmsg = command_new("TIMEOUT", "-", "-", 0, "ACTIVITY", athr->actid, "__", "");
@@ -617,6 +630,8 @@ void stcallback(void *arg)
 
 void jam_set_timer(jamstate_t *js, char *actid, int tval)
 {
+ //   printf("JAM-set-timer for actid .. %s\n", actid);
+
     activity_thread_t *athr = activity_getbyid(js->atable, actid);
     if (athr != NULL) 
         timer_add_event(js->maintimer, tval, 0, actid, tcallback, athr);
@@ -627,6 +642,8 @@ void jam_set_timer(jamstate_t *js, char *actid, int tval)
 
 void jam_clear_timer(jamstate_t *js, char *actid)
 {
+ //   printf("JAM-clear-timer %s\n", actid);
+
     timer_del_event(js->maintimer, actid);
 }
 

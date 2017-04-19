@@ -6,7 +6,6 @@ jasync function printmsg(msg) {
 }
 
 setInterval(function() {
-	console.log("Calling print message...");
     printmsg(chance.name());
 }, 1000);
 

@@ -9,9 +9,9 @@ var fs = require('fs');
 var wait = require('wait.for-es6');
 function* main() {
 var jcondition = new Map();
-jcondition.set('fogonly', { source: 'jcondition_context['sys.sync'] >= 10', code: 8 });
+jcondition.set('fogonly', { source: 'jcondition_context['sys.type'] == 10', code: 0 });
 function pong() {
-jnode.machAsyncExec("callpong", [  ], "jcondition.get('fogonly').source", 8);
+jnode.machAsyncExec("pong", [  ], "jcondition.get('fogonly').source", 0);
 }
 
 function callpong() {

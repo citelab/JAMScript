@@ -1,5 +1,5 @@
 jcond {
-    fogonly: sys.sync >= 10;
+    fogonly: sys.type == 10;
 }
 
 jasync {fogonly} function pong() {

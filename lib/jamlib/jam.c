@@ -132,6 +132,7 @@ void jam_event_loop(void *arg)
         {
             // Put all conditions under which we could ask a new activity to continue
             if ((strcmp(cmd->cmd, "REXEC-ASY") == 0) ||
+                (strcmp(cmd->cmd, "REXEC-ASY-CBK") == 0) ||
                 (strcmp(cmd->cmd, "REXEC-SYN") == 0)) 
             {
                 // Remote requests go through here.. local requests don't go through here
@@ -141,7 +142,7 @@ void jam_event_loop(void *arg)
                 // 
                 runtable_insert(js, cmd->actid, cmd);
                 //
-
+                printf("Enqueuing.... cmd %s\n", cmd->cmd);
                 if (jact != NULL) 
                     pqueue_enq(jact->thread->inq, cmd, sizeof(command_t));
                 else

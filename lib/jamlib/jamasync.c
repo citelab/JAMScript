@@ -129,14 +129,13 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     for (int i = 0; i < act_entry->exp_replies; i++)
     {
     
-        printf("Time 3.3: %ld\n", activity_getuseconds());
+   //     printf("Time 3.3: %ld\n", activity_getuseconds());
         
         // TODO: Fix the constant 300 milliseconds here..   
         jam_set_timer(js, jact->actid, 10);
         nvoid_t *nv = pqueue_deq(jact->thread->inq);
-        jam_clear_timer(js, jact->actid);
     
-        printf("Time 3.4: %ld\n", activity_getuseconds());
+    //    printf("Time 3.4: %ld\n", activity_getuseconds());
 
         rcmd = NULL;
         if (nv != NULL) 
@@ -145,13 +144,19 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
             free(nv);
 
             if (strcmp(rcmd->cmd, "TIMEOUT") == 0)
+            {
                 error_count++;
+                printf("----- TIMEOUT-----------\n\n");
+            }
             else
+            {
+                jam_clear_timer(js, jact->actid);        
                 jact->replies[i - error_count] = rcmd;
+            }
         } 
     }
 
-    printf("Time 3.5: %ld\n", activity_getuseconds());
+ //   printf("Time 3.5: %ld\n", activity_getuseconds());
 
     if (error_count > 0) {
         jact->state = PARTIAL;
@@ -166,7 +171,7 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         set_jactivity_state(jact, act_entry->exp_replies);
     }
 
-    printf("Time 3.6: %ld\n", activity_getuseconds());
+//    printf("Time 3.6: %ld\n", activity_getuseconds());
 
     // Set the access time
     jact->accesstime = activity_getseconds();
