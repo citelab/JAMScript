@@ -118,7 +118,6 @@ try {
   console.log("Generating C code...");
 	var cOutput = jam.cSemantics(cTree).jamCTranslator;
   
-  // fs.writeFileSync("callgraph.html", createCallGraphWebpage(jam.callGraph.getCallGraph()));
   fs.writeFileSync("callgraph.html", jam.callGraph.createWebpage());
 
   fs.writeFileSync("callgraph.dot", jam.callGraph.createDOT());
