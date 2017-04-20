@@ -25,28 +25,28 @@ var cPath = undefined;
 var jsPath = undefined;
 
 for (var i = 1; i < args.length; i++) {
-  if(args[i].charAt(0) == "-") {
-    if(args[i] == "-A") { // Parser only
+  if(args[i].charAt(0) === "-") {
+    if(args[i] === "-A") { // Parser only
       parseOnly = true;
-    } else if(args[i] == "-D") { // Debug mode
+    } else if(args[i] === "-D") { // Debug mode
       debug = true;
-    } else if(args[i] == "-help") { // help
+    } else if(args[i] === "-help") { // help
       printHelp();
-    } else if(args[i] == "-N") { // Don't compile
+    } else if(args[i] === "-N") { // Don't compile
       noCompile = true;
-    } else if(args[i] == "-P") { // Preprocessor only
+    } else if(args[i] === "-P") { // Preprocessor only
       preprocessOnly = true;
-    } else if(args[i] == "-V") { // Verbose
+    } else if(args[i] === "-V") { // Verbose
       verbose = true;
-    } else if(args[i] == "-T") { // Translator only
+    } else if(args[i] === "-T") { // Translator only
       translateOnly = true;
     }
   } else {
     var inputPath = args[i];
     var extension = path.extname(inputPath);
-    if(extension == '.js') {
+    if(extension === '.js') {
       jsPath = inputPath;
-    } else if(extension == '.c') {
+    } else if(extension === '.c') {
       cPath = inputPath;
     }
   }
@@ -165,7 +165,7 @@ function compile(code, verbose) {
   return new Promise(function(resolve, reject) {
     // Set platform options
     var options = "";
-    if(process.platform == "darwin") {
+    if(process.platform === "darwin") {
       // Mac
       options = "-framework CoreFoundation"
     } else {
@@ -204,7 +204,7 @@ function preprocess(file, verbose) {
 
   var contents = fs.readFileSync(file).toString();
   preprocessDecls = contents.match(/^[#;].*/gm);
-  if(preprocessDecls == null) {
+  if(preprocessDecls === null) {
     preprocessDecls = [];
   }
   var includes = '#include "jam.h"\n';
@@ -227,7 +227,7 @@ function flowCheck(input, verbose) {
     // Returns empty buffer if flow installed
     var hasFlow = child_process.execSync("flow version >/dev/null 2>&1 || { echo 'not installed';}");
     
-    if(hasFlow.length == 0) {
+    if(hasFlow.length === 0) {
       fs.writeFileSync(`${tmpDir}/.flowconfig`, "");
       fs.writeFileSync(`${tmpDir}/annotated.js`, input);
       var command = `flow ${tmpDir}/annotated.js --color always`;
