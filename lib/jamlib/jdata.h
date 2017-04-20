@@ -6,8 +6,9 @@
 #include <hiredis/async.h>
 #ifdef linux
 #include <hiredis/adapters/libevent.h>
-#endif
+#elif __APPLE__
 #include <hiredis/adapters/macosx.h>
+#endif
 #include <semaphore.h>
 
 #include "jam.h"

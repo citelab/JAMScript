@@ -77,6 +77,8 @@ runtableentry_t *runtable_find(runtable_t *table, char *actid)
     pthread_mutex_lock(&(table->lock));
     for(i = 0; i < MAX_RUN_ENTRIES; i++)
     {
+        // Search through PRESENT and DELETED entries in the table
+        // If the table entry matches the actid, then we FOUND
         if(table->entries[i].status != EMPTY)
             if(strcmp(actid, table->entries[i].actid) == 0)
             {
@@ -113,8 +115,9 @@ runtableentry_t *runtable_getfree(runtable_t *table)
         }
         else 
         {
-            // otherwise.. find the oldest entry.. FIFO in action
-            if (minatime > table->entries[i].accesstime)
+            // otherwise.. find the oldest entry among the deleted using FIFO
+            if ((table->entries[i].status == DELETED) && 
+                (minatime > table->entries[i].accesstime))
             {
                 minatime = table->entries[i].accesstime;
                 j = i;
@@ -144,12 +147,15 @@ bool runtable_insert(jamstate_t * js, char *actid, command_t *cmd)
     //
     re = runtable_getfree(js->rtable);
 
- //   if (re->actid != NULL)
-//        free(re->actid);
+    // Free the old entry if it is there
+    if (re->actid != NULL)
+        free(re->actid);
     re->actid = strdup(actid);
-//    if (re->actname != NULL)
-  //      free(re->actname);
+    if (re->actname != NULL)
+        free(re->actname);
     re->actname = strdup(cmd->actname);
+    if (re->cmd != NULL)
+        command_free(re->cmd);
     re->cmd = cmd;
 
     re->accesstime = activity_getseconds();
@@ -172,14 +178,14 @@ bool runtable_del(runtable_t *tbl, char *actid)
     if (re == NULL)
         return false;
 
-    if (re->actid != NULL)
-        free(re->actid);
-    if (re->actname != NULL)
-        free(re->actname);
- //   command_free(re->cmd);
+    // Memory held by the entry is still there.. we need it to check if 
+    // a callback is relevant for the local node. 
+    // We should not use too small a runtable.. otherwise, we could run into
+    // race condition caused by premature eviction
+    // We are just marking it as deleted. 
+    // 
 
-    re->accesstime = 0;
-    re->status = EMPTY;
+    re->status = DELETED;
 
     return true;
 }

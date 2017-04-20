@@ -403,7 +403,7 @@ jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
         jact->state = NEW;
         jact->actid = strdup(actid);
 
-  //      printf("Using thread ID %d for activity with ID %s Remote %d\n", jact->thread->threadid, jact->actid, remote);
+//      printf("Using thread ID %d for activity with ID %s Remote %d\n", jact->thread->threadid, jact->actid, remote);
 
         // Set the replies' pointer to NULL for good measure
         for (int i = 0; i < MAX_REPLIES; i++)

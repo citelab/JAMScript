@@ -91,7 +91,9 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
           }
     }
     va_end(args);
-    jactivity_t *jact = activity_new(js->atable, activity_gettime(js->cstate->device_id), false);
+    char *t = activity_gettime(js->cstate->device_id);
+    jactivity_t *jact = activity_new(js->atable, t, false);
+    free(t);
 
     if (jact != NULL)
     {

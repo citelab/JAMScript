@@ -42,6 +42,7 @@ typedef void (*activitycallback_f)(void *ten, void *arg);
 enum activity_state_t
 {
     EMPTY,
+    DELETED,
     COMPLETED,
     NEW,
     STARTED,
