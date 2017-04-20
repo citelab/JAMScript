@@ -45,7 +45,7 @@ extern "C" {
 #define STACKSIZE                   20000
 
 // TODO: Max entries.. sufficient?
-#define MAX_RUN_ENTRIES             64
+#define MAX_RUN_ENTRIES             32
 
 
 typedef struct _runtableentry_t

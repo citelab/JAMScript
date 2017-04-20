@@ -125,6 +125,9 @@ runtableentry_t *runtable_getfree(runtable_t *table)
         }
     }
     pthread_mutex_unlock(&(table->lock));
+    if (j < 0)
+        return NULL;
+
     return &(table->entries[j]);
 }
 
@@ -146,6 +149,11 @@ bool runtable_insert(jamstate_t * js, char *actid, command_t *cmd)
     // TODO: FIX: We are searching the table twice..
     //
     re = runtable_getfree(js->rtable);
+    if (re == NULL)
+    {
+        printf("Cannot get a free slot in runtable \n");
+        exit(1);
+    }
 
     // Free the old entry if it is there
     if (re->actid != NULL)
@@ -154,8 +162,8 @@ bool runtable_insert(jamstate_t * js, char *actid, command_t *cmd)
     if (re->actname != NULL)
         free(re->actname);
     re->actname = strdup(cmd->actname);
-    if (re->cmd != NULL)
-        command_free(re->cmd);
+  //  if (re->cmd != NULL)
+        //command_free(re->cmd);
     re->cmd = cmd;
 
     re->accesstime = activity_getseconds();
@@ -320,10 +328,9 @@ void jrun_arun_callback(jactivity_t *jact, command_t *cmd, activity_callback_reg
     #ifdef DEBUG_LVL1
         printf("Starting the function....................\n");
     #endif
-
     creg->cback(jact, cmd);    
+
     // if the execution was done due to a remote request...
-    printf("Execution for remote request...with actid %s done.\n", jact->actid);
     if (jact->remote)
         // Delete the activity.. because we are doing a remote processing..
         activity_free(jact);

@@ -142,7 +142,6 @@ void jam_event_loop(void *arg)
                 // 
                 runtable_insert(js, cmd->actid, cmd);
                 //
-                printf("Enqueuing.... cmd %s\n", cmd->cmd);
                 if (jact != NULL) 
                     pqueue_enq(jact->thread->inq, cmd, sizeof(command_t));
                 else

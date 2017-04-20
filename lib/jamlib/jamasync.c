@@ -116,7 +116,7 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     {
         printf("Cannot find activity ... \n");
         jact->state = FATAL_ERROR;
-        return;
+        exit(0);
     }
 
   //  printf("Time 3.2: %ld\n", activity_getuseconds());
