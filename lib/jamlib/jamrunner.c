@@ -162,9 +162,6 @@ bool runtable_insert(jamstate_t * js, char *actid, command_t *cmd)
     if (re->actname != NULL)
         free(re->actname);
     re->actname = strdup(cmd->actname);
-  //  if (re->cmd != NULL)
-        //command_free(re->cmd);
-    re->cmd = cmd;
 
     re->accesstime = activity_getseconds();
     re->status = STARTED;

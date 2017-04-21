@@ -485,13 +485,13 @@ void jwork_send_nak(jamstate_t *js, command_t *cmd, char *estr)
 }
 
 
-void jwork_send_results(jamstate_t *js, command_t *cmd, arg_t *args)
+void jwork_send_results(jamstate_t *js, char *actname, char *actid, arg_t *args)
 {
     MQTTClient mcl = js->cstate->mqttserv[0];
     char *deviceid = js->cstate->device_id;
 
     // Create a new command to send as error..
-    command_t *scmd = command_new_using_arg("REXEC-RES", "SYN", "-", 0, cmd->actname, cmd->actid, deviceid, args, 1);
+    command_t *scmd = command_new_using_arg("REXEC-RES", "SYN", "-", 0, actname, actid, deviceid, args, 1);
 
     // send the command over
     mqtt_publish(mcl, "/mach/func/reply", scmd);

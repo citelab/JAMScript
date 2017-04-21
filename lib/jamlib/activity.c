@@ -514,7 +514,7 @@ void activity_complete(activity_table_t *at, char *actid, char *fmt, ...)
 
     if (re != NULL)
     {
-        jwork_send_results(js, re->cmd, qarg);
+        jwork_send_results(js, re->actname, re->actid, qarg);
         runtable_store_results(js->rtable, actid, qarg);
     }
 
