@@ -1,10 +1,11 @@
 var ohm = require('ohm-js'),
-    jam = require('./lib/ohm/jamscript/jam'),
     fs = require('fs'),
     JSZip = require('jszip'),
     child_process = require('child_process'),
     crypto = require('crypto'),
-    path = require('path');
+    path = require('path'),
+    callGraph = require('./lib/ohm/jamscript/callGraph')
+    jam = require('./lib/ohm/jamscript/jam');
 
 var outputName;
 var preprocessDecls;
@@ -93,34 +94,20 @@ try {
   //   console.log(preprocessed);
   // }
 
-  console.log("Parsing JS Files...");
-  var jsTree = jam.jamJSGrammar.match(fs.readFileSync(jsPath).toString(), 'Program');
-  if(jsTree.failed()) {
-    throw jsTree.message;
-  }
-
-  console.log("Parsing C Files...");
-  var cTree = jam.jamCGrammar.match(preprocessed, 'Source');
-  if(cTree.failed()) {
-    throw cTree.message;
-  }
-
   if(parseOnly) {
     printAndExit(cTree + jsTree);
   }
+
+  var results = jam.compile(preprocessed, fs.readFileSync(jsPath).toString());
+
   // if(verbose) {
   //   console.log(cTree);
   //   console.log(jsTree);
   // }
 
-  console.log("Generating JavaScript Code...");
-	var jsOutput = jam.jsSemantics(jsTree).jamJSTranslator;
-  console.log("Generating C code...");
-	var cOutput = jam.cSemantics(cTree).jamCTranslator;
   
-  fs.writeFileSync("callgraph.html", jam.callGraph.createWebpage());
-
-  fs.writeFileSync("callgraph.dot", jam.callGraph.createDOT());
+  fs.writeFileSync("callgraph.html", callGraph.createWebpage());
+  fs.writeFileSync("callgraph.dot", callGraph.createDOT());
 
   // if(translateOnly) {
   //   printAndExit(output);
@@ -135,12 +122,12 @@ try {
   // fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/testjam').pipe(fs.createWriteStream('jamout'));
   // fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/jamconf.dat').pipe(fs.createWriteStream('jamconf.dat'));
 
-  fs.writeFileSync("jamout.js", jsOutput.JS + cOutput.JS);
+  fs.writeFileSync("jamout.js", results.JS);
 
   if(!noCompile) {
     var tasks = [
-      flowCheck(jsOutput.annotated_JS + cOutput.annotated_JS, verbose),
-      compile(cOutput.C + jsOutput.C, verbose)
+      flowCheck(results.annotated_JS, verbose),
+      compile(results.C, verbose)
     ];
     
     // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
