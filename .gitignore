@@ -15,4 +15,6 @@ node_modules/*
 
 .sconsign.dblite
 .sconf_temp
+config.log
+
 node_modules/
