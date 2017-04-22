@@ -9,15 +9,21 @@
   },
   "dependencies" : {
   	"nedb" : ">=1.7.4",
-  	"jszip" : ">=2.5.0",
     "cbor" : ">=1.0.4",
     "nanomsg" : ">=3.1.2",
-    "asyncawait" : ">=1.0.3",
-    "viz.js" : ">= 1.3.0",
     "ohm-js" : ">= 0.12.0",
     "command-line-args": ">= 3.0.5",
     "node-localstorage": ">= 1.3.0",
     "random-js": ">= 1.0.8",
-    "fibers": ">=1.0.15"
-  }
+    "deasync": ">=0.1.9",
+    "redis-fast-driver": ">=1.0.5"
+  },
+  "bin": "./index.js",
+  "engines": { "node" : ">= 7.0.0" },
+  "os": [ "darwin", "linux" ],
+  "preferGlobal": true,
+  "files" : [
+    "lib/ohm",
+    "index.js"
+  ]
 }

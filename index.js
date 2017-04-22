@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var ohm = require('ohm-js'),
     fs = require('fs'),
     JSZip = require('jszip'),
@@ -19,13 +21,13 @@ var debug = false,
     verbose = false;
 
 // Process arguments
+
 var args = process.argv.slice(2);
-var jamlibPath = args[0];
 var tmpDir = "/tmp/jam-" + randomValueHex(20);
 var cPath = undefined;
 var jsPath = undefined;
 
-for (var i = 1; i < args.length; i++) {
+for (var i = 0; i < args.length; i++) {
   if(args[i].charAt(0) === "-") {
     if(args[i] === "-A") { // Parser only
       parseOnly = true;

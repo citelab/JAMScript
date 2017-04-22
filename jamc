@@ -1,1 +1,0 @@
-node /usr/local/share/jam/jamc.js /usr/local/share/jam/lib/jamlib/jamlib.a "$@"
