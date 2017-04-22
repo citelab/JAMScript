@@ -12,9 +12,13 @@ node_modules/*
 **/jamout.c
 **/callgraph.html
 **/callgraph.dot
+**/a.out.dSYM/*
+**/*.conf/*
+**/dump.rdb
 
 .sconsign.dblite
 .sconf_temp
 config.log
 
 node_modules/
+
