@@ -2,7 +2,7 @@
 
 var ohm = require('ohm-js'),
     fs = require('fs'),
-    JSZip = require('jszip'),
+    // JSZip = require('jszip'),
     child_process = require('child_process'),
     crypto = require('crypto'),
     path = require('path'),
