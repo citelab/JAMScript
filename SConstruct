@@ -26,6 +26,8 @@ if npm_loc==None:
     Exit(1);
 
 subprocess.check_call("npm install -g", shell=True)
+subprocess.check_call("npm install -g lib/jserver", shell=True)
+
 #Now we test for C library dependencies
 
 # env = Environment(CC = 'clang', CCFLAGS='-g -DDEBUG_LVL1', LIBPATH=['/usr/local/lib'])
@@ -62,7 +64,6 @@ c_core_files.append("./lib/jamlib/duktape");
 compiled_library = env.Install("/usr/local/lib", "libjam.a");
 env.Install("/usr/local/share/jam/lib/", c_core_files);
 compiled_libtask = env.Install('/usr/local/share/jam/deps/libtask/', "./deps/libtask/libtask.a");
-env.Install('/usr/local/share/jam/lib/jserver', Glob('./lib/jserver/*.js'));
 env.Install('/usr/local/share/jam/deps/', "./deps/fake_libc_include/");
 
 ib = env.Alias('install-bin', "/usr/local/bin");
@@ -70,11 +71,10 @@ il = env.Alias('install-share', "/usr/local/share/jam");
 ii = env.Alias('install-include', "/usr/local/include/jam");
 ill = env.Alias('install-lib', "/usr/local/lib");
 a1 = env.Alias('a1', "/usr/local/share/jam/lib");
-a2 = env.Alias('a5', '/usr/local/share/jam/deps/libtask');
-a3 = env.Alias('a6', '/usr/local/share/jam/lib/jserver');
-a4 = env.Alias('a5', '/usr/local/share/jam/deps/');
+a2 = env.Alias('a2', '/usr/local/share/jam/deps/libtask');
+a3 = env.Alias('a3', '/usr/local/share/jam/deps/');
 
-env.Alias('install', [ib, ii, il, il, il, ill, a1, a2, a3, a4])
+env.Alias('install', [ib, ii, il, il, il, ill, a1, a2, a3])
 
 Depends(compiled_library, library);
 Depends(compiled_libtask, libtask);

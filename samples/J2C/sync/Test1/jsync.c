@@ -12,5 +12,5 @@ jsync int hello(char *s)
 int main()
 {
     printf("In the main...\n");
-
+    return 0;
 }
