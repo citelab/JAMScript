@@ -25,15 +25,19 @@ if npm_loc==None:
     print "No NPM found ... Please Install it"
     Exit(1);
 
-subprocess.check_call("npm install -g", shell=True)
-subprocess.check_call("npm install -g lib/jserver", shell=True)
-
-#Now we test for C library dependencies
-
 # env = Environment(CC = 'clang', CCFLAGS='-g -DDEBUG_LVL1', LIBPATH=['/usr/local/lib'])
 env = Environment(CC = 'clang', CCFLAGS='-g', LIBPATH=['/usr/local/lib'])
 env.Append(CPPPATH='/usr/local/include')
 env.Append(FRAMEWORKS='CoreFoundation')
+
+if not env.GetOption('clean'):
+    subprocess.check_call("npm install -g", shell=True)
+    subprocess.check_call("npm install -g lib/jserver", shell=True)
+else:
+    subprocess.check_call("npm uninstall -g jamc", shell=True)
+    subprocess.check_call("npm uninstall -g jamserver", shell=True)
+
+#Now we test for C library dependencies
 
 conf = Configure(env)
 
