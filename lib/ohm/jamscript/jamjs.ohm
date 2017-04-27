@@ -7,13 +7,14 @@ JAMJS <: ES5 {
                     | logger 
                     | shuffler
     
-    c_type       = "int"
+    C_type       = "int"
                  | "double"
                  | "float"
                  | "char"
+                 | "char" "*"                                                       -- pointer
 
-    Jdata_spec      = c_type identifier as jdata_type "(" ("fog"|"cloud") ")" ";"   -- specified
-                    | c_type identifier as jdata_type ";"                           -- default
+    Jdata_spec      = C_type identifier as jdata_type "(" ("fog"|"cloud") ")" ";"   -- specified
+                    | C_type identifier as jdata_type ";"                           -- default
                     | identifier as ( Window | Transform | Iopadref | Iopad ) ";"              -- other
     
     Window          = window "[" decimalIntegerLiteral "]" Layer_specifier? of jdata_id     -- points
