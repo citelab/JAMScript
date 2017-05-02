@@ -1,3 +1,5 @@
 language: c
 script: scons
 compiler: clang
+node_js:
+  - "7"
