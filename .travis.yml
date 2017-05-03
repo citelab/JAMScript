@@ -1,5 +1,8 @@
-language: c
-script: scons
-compiler: clang
+sudo: true
+notifications:
+  email: false
+language: node_js
+script: sudo -E scons install
 node_js:
   - "7"
+install: ./install-dependencies.sh

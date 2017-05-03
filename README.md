@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/anrl/JAMScript.svg?branch=master)](https://travis-ci.org/anrl/JAMScript)
+
 # JAMScript: A Language and Middleware for Cloud of Moving Things
 
 ## Overview
