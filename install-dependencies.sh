@@ -18,7 +18,8 @@ sudo dpkg -i libcbor-0.4.0-Linux.deb
 
 # MQTT
 wget "https://www.eclipse.org/downloads/download.php?file=/paho/1.2/eclipse-paho-mqtt-c-unix-1.1.0.tar.gz&r=1" -O mqtt.tar.gz
-tar -zxvf mqtt.tar.gz
+mkdir mqtt
+tar -zxvf mqtt.tar.gz -C mqtt
 sudo mv mqtt/include/*.h /usr/local/include
 
 # BSD
