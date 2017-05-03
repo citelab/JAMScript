@@ -1,8 +1,5 @@
 #!/usr/bin/env sh
 
-export CC=`which clang`
-export CXX=`which clang++`
-
 # NANOMSG
 wget https://github.com/nanomsg/nanomsg/archive/1.0.0.tar.gz
 tar xvzf 1.0.0.tar.gz
