@@ -45,7 +45,7 @@ extern "C" {
 #define STACKSIZE                   20000
 
 // TODO: Max entries.. sufficient?
-#define MAX_RUN_ENTRIES             32
+#define MAX_RUN_ENTRIES             4
 
 
 typedef struct _runtableentry_t
@@ -68,7 +68,7 @@ typedef struct _runtable_t
     void *jarg;
 
     runtableentry_t *entries;
-    int waiting;
+    int rcount;
     pthread_mutex_t lock;
     
 } runtable_t;

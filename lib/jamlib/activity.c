@@ -274,6 +274,10 @@ void run_activity(void *arg)
                     #ifdef DEBUG_LVL1
                     printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
                     #endif
+                    // Delete the runtable entry..
+                    // TODO: Do we ever need a runtable entry (even the deleted one) at a later point in time?
+                    jamstate_t *js = (jamstate_t *)at->jarg;
+                    runtable_del(js->rtable, cmd->actid);
                 }
             }
             else 
@@ -293,6 +297,10 @@ void run_activity(void *arg)
                     #ifdef DEBUG_LVL1
                     printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
                     #endif
+                    // Delete the runtable entry..
+                    // TODO: Do we ever need a runtable entry (even the deleted one) at a later point in time?
+                    jamstate_t *js = (jamstate_t *)at->jarg;
+                    runtable_del(js->rtable, cmd->actid);
                 }
             }
             command_free(cmd);

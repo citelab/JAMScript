@@ -50,7 +50,7 @@ runtable_t *runtable_new(void *jarg)
     int i;
 
     runtable_t *rtab = (runtable_t *)calloc(1, sizeof(runtable_t));
-    
+    rtab->rcount = 0;
     rtab->jarg = jarg;
 
     pthread_mutex_init(&(rtab->lock), NULL);
@@ -172,6 +172,9 @@ bool runtable_insert(jamstate_t * js, char *actid, command_t *cmd)
     for (i = 0; i < MAX_SERVERS; i++)
         re->results[i] = NULL;
     
+    js->rtable->rcount++;
+    printf("Runtable count %d\n", js->rtable->rcount);
+
     return true;
 }
 
@@ -191,6 +194,7 @@ bool runtable_del(runtable_t *tbl, char *actid)
     // 
 
     re->status = DELETED;
+    tbl->rcount--;
 
     return true;
 }
