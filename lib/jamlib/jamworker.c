@@ -432,8 +432,7 @@ void jwork_process_device(jamstate_t *js)
         }        
         else
         if ((strcmp(rcmd->cmd, "REXEC-ACK") == 0) ||
-            (strcmp(rcmd->cmd, "REXEC-NAK") == 0) ||
-            (strcmp(rcmd->cmd, "REXEC-RES-PUT") == 0))
+            (strcmp(rcmd->cmd, "REXEC-NAK") == 0))
         {
             // resolve the activity id to index
             int aindx = activity_id2indx(js->atable, rcmd->actid);
@@ -535,8 +534,7 @@ void jwork_process_fog(jamstate_t *js)
 
         // TODO: Can we detect unsolicited replies and discard them?
         if ((strcmp(rcmd->cmd, "REXEC-ACK") == 0) ||
-            (strcmp(rcmd->cmd, "REXEC-NAK") == 0) ||
-            (strcmp(rcmd->cmd, "REXEC-RES") == 0))
+            (strcmp(rcmd->cmd, "REXEC-NAK") == 0))
         {
             // resolve the activity id to index
             int aindx = activity_id2indx(js->atable, rcmd->actid);
@@ -579,8 +577,7 @@ void jwork_process_cloud(jamstate_t *js)
 
         // TODO: Can we detect unsolicited replies and discard them?
         if ((strcmp(rcmd->cmd, "REXEC-ACK") == 0) ||
-            (strcmp(rcmd->cmd, "REXEC-NAK") == 0) ||
-            (strcmp(rcmd->cmd, "REXEC-RES") == 0))
+            (strcmp(rcmd->cmd, "REXEC-NAK") == 0))
         {
             // resolve the activity id to index
             int aindx = activity_id2indx(js->atable, rcmd->actid);

@@ -235,66 +235,6 @@ int runtable_synctask_count(runtable_t *rtbl)
 
 
 
-command_t *get_actid_results(jamstate_t *js, char *actid)
-{
-    command_t *scmd = NULL;
-    int i;
-
-    char *deviceid = js->cstate->device_id;
-
-    #ifdef DEBUG_LVL1
-        printf("Dev ID id %s\n", deviceid);
-    #endif
-
-    // find the entry.. if not found return a command that indicates not found
-    runtableentry_t *ren = runtable_find(js->rtable, actid);
-    if (ren == NULL)
-    {
-        scmd = command_new("REXEC-RES", "ERR", "-", 0, "-", actid, deviceid, "");
-        return scmd;
-    }
-
-    // create the command to reply with the status update..
-    // send [[ REXEC-RES FIN actname deviceid actid res (arg0)] (res is a single object) or
-    //
-    if (ren->status == COMPLETED)
-    {
-        if (ren->results[0] == NULL)
-        {
-            scmd = command_new("REXEC-RES", "EMP", "-", 0, ren->actname, actid, deviceid, "");
-            return scmd;
-        }
-
-        switch (ren->results[0]->type)
-        {
-            case STRING_TYPE:
-                scmd = command_new("REXEC-RES", "RES", "-", 0, ren->actname, actid, deviceid, "s", ren->results[0]->val.sval);
-            break;
-
-            case INT_TYPE:
-                scmd = command_new("REXEC-RES", "RES", "-", 0, ren->actname, actid, deviceid, "i", ren->results[0]->val.ival);
-            break;
-
-            case DOUBLE_TYPE:
-                scmd = command_new("REXEC-RES", "RES", "-", 0, ren->actname, actid, deviceid, "d", ren->results[0]->val.dval);
-            break;
-
-            case NVOID_TYPE:
-                scmd = command_new("REXEC-RES", "RES", "-", 0, ren->actname, actid, deviceid, "b", ren->results[0]->val.nval);
-            break;
-            case NULL_TYPE:
-            break;
-        }
-        return scmd;
-    }
-    else 
-    {
-        scmd = command_new("REXEC-RES", "CNT", "-", 0, ren->actname, actid, deviceid, "");
-        return scmd;
-    }
-}
-
-
 
 bool jrun_check_signature(activity_callback_reg_t *creg, command_t *cmd)
 {
