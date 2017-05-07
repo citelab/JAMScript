@@ -1,3 +1,5 @@
+#include <unistd.h>
+
 int perank;
 
 jactivity_t *pingserver(int);
@@ -14,7 +16,7 @@ void regcallback(char *msg) {
   printf("Perank %d\n", perank);
 
   while(1) {
-    sleep(1);
+    usleep(1000);
     printf("Pinging %d\n", perank);
     pingserver(perank);
   }

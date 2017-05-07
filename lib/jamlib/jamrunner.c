@@ -172,8 +172,10 @@ bool runtable_insert(jamstate_t * js, char *actid, command_t *cmd)
     for (i = 0; i < MAX_SERVERS; i++)
         re->results[i] = NULL;
     
+
     js->rtable->rcount++;
     printf("Runtable count %d\n", js->rtable->rcount);
+    // if (js->rtable->rcount == 0) exit(1);
 
     return true;
 }
@@ -193,6 +195,7 @@ bool runtable_del(runtable_t *tbl, char *actid)
     // We are just marking it as deleted. 
     // 
 
+    printf("Deleted...\n");
     re->status = DELETED;
     tbl->rcount--;
 

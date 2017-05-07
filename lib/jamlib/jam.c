@@ -150,7 +150,7 @@ void jam_event_loop(void *arg)
             else 
                 printf("===========================SYNC.. TIMEOUT????\n");
         }
-        taskyield();
+        //taskyield();
     }
 }
 

@@ -438,7 +438,7 @@ void activity_free(jactivity_t *jact)
     }
 
     free(jact);
-    taskyield();
+//    taskyield();
 }
 
 
