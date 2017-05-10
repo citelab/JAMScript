@@ -7,11 +7,11 @@ JAMJS <: ES5 {
                     | logger 
                     | shuffler
     
-    C_type       = "int"
-                 | "double"
-                 | "float"
-                 | "char"
-                 | "char" "*"                                                       -- pointer
+    C_type          = "char" "*"                                                       -- pointer
+                    | "char"
+                    | "double"
+                    | "int"
+                    | "float"
 
     Jdata_spec      = C_type identifier as jdata_type "(" ("fog"|"cloud") ")" ";"   -- specified
                     | C_type identifier as jdata_type ";"                           -- default

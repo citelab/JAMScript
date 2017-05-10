@@ -1,13 +1,13 @@
 jdata {
-    int x as logger;
-    int y as broadcaster;
+    float cpuLog as logger;
+    int overloadedBroadcast as broadcaster;
 }
 
-setInterval(function() {
-    console.log(x);
-    if(x.get_newest_value !== undefined) {
-        if(Number(x.get_newest_value.log) > 1.0) {
-            y = 4;
+var interval = setInterval(function() {
+    if (cpuLog[0] !== undefined && !cpuLog[0].isEmpty()) {
+        if(cpuLog[0].lastValue() > 1.0) {
+            overloadedBroadcast = 1;
+            clearInterval(interval);
         }
     }
 }, 1000);
