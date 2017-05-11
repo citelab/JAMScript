@@ -17,7 +17,7 @@
         "caster": "atof",
         "jbroadcast": "JBROADCAST_FLOAT"
     },
-    "char *": {
+    "char*": {
         "c_pattern": "\\\"%s\\\"",
         "jamlib": "sval",
         "js_type": "string",
