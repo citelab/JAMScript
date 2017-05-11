@@ -23,8 +23,6 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
     arg_t *qargs, *qargs2;
     arg_t *rargs;
 
-    printf("Blah 0\n");
-
     assert(fmask != NULL);
     if (strlen(fmask) > 0) {
         qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
@@ -98,7 +96,6 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
     jactivity_t *jact = activity_new(js->atable, t, false);
     free(t);
 
-    printf("Blah \n");
     if (jact != NULL)
     {
         command_t *cmd = command_new_using_cbor("REXEC-SYN", "RTE", condstr, condvec, aname, jact->actid, 

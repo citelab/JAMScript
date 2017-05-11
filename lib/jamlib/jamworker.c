@@ -432,7 +432,8 @@ void jwork_process_device(jamstate_t *js)
         }        
         else
         if ((strcmp(rcmd->cmd, "REXEC-ACK") == 0) ||
-            (strcmp(rcmd->cmd, "REXEC-NAK") == 0))
+            (strcmp(rcmd->cmd, "REXEC-NAK") == 0) ||
+            (strcmp(rcmd->cmd, "REXEC-RES") == 0))
         {
             // resolve the activity id to index
             int aindx = activity_id2indx(js->atable, rcmd->actid);
