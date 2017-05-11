@@ -161,3 +161,22 @@ jactivity_t *jam_create_activity(jamstate_t *js)
     free(t);
     return j;
 }
+
+bool have_fog_or_cloud(jamstate_t *js)
+{
+    corestate_t *cs = js->cstate;
+
+    if (cs->mqttenabled[1] || cs->mqttenabled[2])
+        return true;
+    else 
+        return false;
+}
+
+int cloud_tree_height(jamstate_t *js)
+{
+    corestate_t *cs = js->cstate;
+    
+    return ((cs->mqttenabled[2] == true) +
+            (cs->mqttenabled[1] == true) +
+            (cs->mqttenabled[0] == true));
+}

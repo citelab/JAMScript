@@ -55,8 +55,8 @@ typedef struct _runtableentry_t
     int status;
     long long accesstime;
     enum activity_type_t type;
-
-    int exp_replies, rcd_replies;
+    
+    int rcd_replies;
     // results hold remote results in the case of C->J or
     // local results in the case of J->C sync calls - only [0] used
     arg_t *results[MAX_SERVERS]; //The results 
@@ -108,14 +108,15 @@ jamstate_t *jam_init(int port);
 void jam_run_app(void *arg);
 void jam_event_loop(void *js);
 jactivity_t *jam_create_activity(jamstate_t *js);
-
+bool have_fog_or_cloud(jamstate_t *js);
+int cloud_tree_height(jamstate_t *js);
 
 /*
  * Functions defined in jamsync.c
  */
 
 arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, char *fmask, ...);
-arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, int rcondvec, command_t *cmd, command_t *bcmd);
+arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, int nodes, command_t *cmd);
 int get_sleep_time(jactivity_t *jact);
 char *get_root_condition(jamstate_t *js);
 

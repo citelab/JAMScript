@@ -166,9 +166,6 @@ bool runtable_insert(jamstate_t * js, char *actid, command_t *cmd)
     re->accesstime = activity_getseconds();
     re->status = STARTED;
     
-    re->exp_replies = js->cstate->mqttenabled[0] + js->cstate->mqttenabled[1] + js->cstate->mqttenabled[2];
-    re->rcd_replies = 0;
-
     for (i = 0; i < MAX_SERVERS; i++)
         re->results[i] = NULL;
     

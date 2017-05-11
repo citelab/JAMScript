@@ -109,6 +109,7 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
 
 //    printf("Time 3.1: %ld\n", activity_getuseconds());
     
+    int exp_replies = cloud_tree_height(js);
     runtable_insert(js, cmd->actid, cmd);
     runtableentry_t *act_entry = runtable_find(js->rtable, cmd->actid);
 
@@ -126,7 +127,7 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     queue_enq(jact->thread->outq, cmd, sizeof(command_t));
 
     // We expect act_entry->num_replies from the remote side 
-    for (int i = 0; i < act_entry->exp_replies; i++)
+    for (int i = 0; i < exp_replies; i++)
     {
     
    //     printf("Time 3.3: %ld\n", activity_getuseconds());
@@ -161,14 +162,14 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     if (error_count > 0) {
         jact->state = PARTIAL;
         // We have some missing replies.. see what we are missing
-        process_missing_replies(jact, act_entry->exp_replies, error_count);
+        process_missing_replies(jact, exp_replies, error_count);
     }
     else
     {
         // Examine the replies to form the status code 
         // We have all the replies.. so no missing nodes
         //
-        set_jactivity_state(jact, act_entry->exp_replies);
+        set_jactivity_state(jact, exp_replies);
     }
 
 //    printf("Time 3.6: %ld\n", activity_getuseconds());
