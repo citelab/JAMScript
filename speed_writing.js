@@ -26,16 +26,20 @@ r.on('error', function(e){
 });
 
 var date  = new Date(),
-    count = process.argv[2],
-    value = 1,
-    data;
-console.log('\n#data = ', count);
-while(value <= count){
-    r.rawCall(['zadd', 'storage', date.getTime(), value], function(err, resp){
-        console.log('err: ', err, ' resp: ', resp);
-    });
-    value ++;
+    count = 1,
+    value, data;
+while(count <= 1048576){
+    console.log('\n#data = ', count);
+    value = 1;
+    console.time();
+    while(value <= count){
+        r.rawCall(['zadd', 'storage', date.getTime(), value], function(err, resp){
+            console.log('err: ', err, ' resp: ', resp);
+        });
+        value ++;
+    }
+    console.timeEnd();
+    count *= 2;
 }
 module.exports = r;
-//process.exit(0);
 
