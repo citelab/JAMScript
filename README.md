@@ -135,7 +135,8 @@ scons
 sudo scons install
 ```
 
-(Optional) MQTT Mosquito
+#### (Optional) MQTT Mosquito 
+
 If a problem of `Missing <MQTTClient.h>` exists while running command `scons`, you need to install `pahomqtt` library:
 
 First, make sure you have 1.4.8 version of mosquitto installed:
