@@ -135,6 +135,25 @@ scons
 sudo scons install
 ```
 
+(Optional) MQTT Mosquito
+If a problem of `Missing <MQTTClient.h>` exists while running command `scons`, you need to install `pahomqtt` library:
+
+First, make sure you have 1.4.8 version of mosquitto installed:
+```
+sudo apt-get install mosquitto mosquitto-clients
+```
+
+Then, you need to manully add files from `pahomqtt` library to `/usr/include/` path:
+
+1. Download C client for Unix from https://projects.eclipse.org/projects/technology.paho/downloads
+
+2. Extract the files, and copy the include/ lib/ folders to your system directories (`/usr`)
+```
+sudo mv ./include /usr/include/
+sudo mv ./lib /usr/lib/
+```
+3. Re-try with `scons` in JAMScript source directory and it should build successfully
+
 Now, you should have the JAMScript compiler installed in the system. To verify whether
 `jamc` got installed, run `which jamc`.
 
