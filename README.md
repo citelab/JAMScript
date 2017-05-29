@@ -30,6 +30,15 @@ for more information.
 
 ## Preparing your system (Ubuntu)    
 
+Due to recent maintanence, some module version combinations may not work for jDATA. Here is one that works smoothly:
+```
+Redis:             3.2.6
+Ubuntu (64-bit):   16.04.1
+Node.js:           7.10.0
+libhiredis-dev:    0.13.3-2
+redis-fast-driver: 1.0.5
+```
+
 Using the Ubuntu package manager install the following packages.
 ```
 sudo apt-get install xz-utils
