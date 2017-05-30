@@ -7,14 +7,7 @@ import Echarts from '../tools/Echarts'
 
 
 class DataStore {
-    @observable dataPoints  = [[1,2],[2,3],[4,3]]
-    // @computed get filteredTodos() {
-    //     var matchesFilter = new RegExp(this.filter, "i")
-    //     return this.todos.filter(todo => !this.filter || matchesFilter.test(todo))
-    // }
-    // createTodo(value){
-    //     this.todos.push(new Todo(value))
-    // }
+    @observable dataPoints  = [[1,2],[2,3],[4,3],[3,4],[30,2],[3,4]]
 }
 
 var store = window.store = new DataStore
