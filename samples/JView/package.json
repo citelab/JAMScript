@@ -10,6 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "echarts": "^3.6.1",
+    "element-resize-event": "^2.0.9",
     "mobx": "^2.3.7",
     "mobx-react": "^3.5.1",
     "react": "^15.2.1",
