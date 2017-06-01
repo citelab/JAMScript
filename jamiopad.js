@@ -10,10 +10,48 @@ var pub = new Redis({
     host: '127.0.0.1', //can be IP or hostname
     port: 6379
 });
+var sub = new Redis({
+    host: '127.0.0.1', //can be IP or hostname
+    port: 6379
+});
 
+//happen only once
+pub.on('ready', function(){
+    console.log('pub ready');
+});
+
+//happen each time when reconnected
+pub.on('connected', function(){
+    console.log('pub connected');
+});
+
+pub.on('disconnected', function(){
+    console.log('pub disconnected');
+});
+
+pub.on('error', function(e){
+    console.log('pub error', e);
+});
+
+sub.on('ready', function(){
+    console.log('sub ready');
+});
+
+//happen each time when reconnected
+sub.on('connected', function(){
+    console.log('sub connected');
+});
+
+sub.on('disconnected', function(){
+    console.log('sub disconnected');
+});
+
+sub.on('error', function(e){
+    console.log('sub error', e);
+});
 // an iopad provides a mechanism for sharing data between JAM apps
 // an iopad is a collection of datasources
-module.exports =  class JAMIopad extends JAMDatasource{
+module.exports = class JAMIopad extends JAMDatasource{
 
 	// an iopad is a collection of datasources
 	// an iopad has neither source nor destination
@@ -25,67 +63,41 @@ module.exports =  class JAMIopad extends JAMDatasource{
 	// Public API 
 	// all functions return -1 on fail
 
+	static getIopad(key, f){
+		// subscribe to the iopad with the key specified 
+		sub.rawCall(['subscribe', key], function(e, res){
+			if(e) console.log("Error subscribing to iopad",key);
+			else if(res[0]=='message'){
+				if(f) f(JSON.parse(res[2]));
+			}
+		});
+	}
+
 	// add a datasource to this iopad for sharing
-	subscribe(dSource, f){
+	subscribe(dSource){
 		// arguments type checking
 		var type = dSource.constructor.name; 
 		if(type!="JAMIopad" && type!="JAMLogger" && type!="JAMTransformation" && type!="JAMFilter" && type!="JAMBroadcaster") 
 			throw new TypeError("dSource: expecting a jamdatasource");
-		if(f !=undefined && typeof f!='function')
-			throw new TypeError("f: expecting a function");
 
-		// create a redis client for this datasource, which listens to this iopad
-		var r = new Redis({
-		    host: '127.0.0.1', //can be IP or hostname
-		    port: 6379
-		});
-
-		// a datasource may subscribe to this iopad using different refresh_rate and/or f,
-		// which will overwrite previous values
-		this.datasources[dSource.key] = { ds:dSource, redis:r, f:f }; 
-
-		var obj, stream;
-		
-		for(var key in this.datasources){
-			obj = this.datasources[key]; 
-			// subscribe every datasource on this iopad to every datastream in this datasource
-			for(var i=0;i<dSource.num_datastreams;i++){
-				stream = dSource[i];
-				obj.redis.rawCall(['subscribe', stream.key], function(e, res){
-					if(e) console.log("Error subscribing to datastream", stream.key);
-					else if(res[0]=='message'){
-						if(obj.f) obj.f(JSON.parse(res[2]));
-					}
-				});					
-			}
-			// subscribe this datasource to every datastreams in previous datasources
-			for(var i=0;i<obj.ds.num_datastreams;i++){
-				stream = obj.ds[i];
-				r.rawCall(['subscribe', stream.key], function(e, res){
-					if(e) console.log("Error subscribing to datastream", stream.key);
-					else if(res[0]=='message'){
-						if(f) f(JSON.parse(res[2]));
-					}
-				});
-			}	
-		}
-		
-		// subscribe to the changes of all the datastreams in this datasource
+		// every datastream in this datasource has to publish to its channel on change
+		var stream, that=this;
 		for(var i=0;i<dSource.num_datastreams;i++){
-			stream = dSource[i];		//console.log(stream.key+'\n'+dSource.key);				
+			stream = dSource[i];
+			// subscribe this iopad to the channel of dSource's datastreams
+			sub.rawCall(['subscribe', stream.key], function(e, res){
+				if(e) console.log("Error subscribing to datasource", dSource.key);
+				else if(res[0] == 'message') pub.rawCall(['publish', that.key, res[2]]);
+			});
+			
 			stream.set_new_log_callback(function(res){
 				// res is in the format of 'value$$$index$$$sequenceNum$$$timestamp'
 				var arr = res.split(stream.delimiter),
-					// get the new data pair
-				    new_data = {
-						entry: arr[0],
-						timestamp: arr[arr.length-1]
-					},
 					// format the message to be published
 					response = {
 						changed_datasource: dSource,
 						changed_datastream: stream,
-						new_data: new_data
+						new_data: { entry: arr[0], timestamp: arr[arr.length-1] }
 					};
 				pub.rawCall(["publish", stream.key, JSON.stringify(response)]);
 			});
