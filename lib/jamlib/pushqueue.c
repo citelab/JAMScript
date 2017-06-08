@@ -131,3 +131,19 @@ nvoid_t *p2queue_deq(push2queue_t *queue)
     else 
         return queue_deq(queue->lqueue);
 }
+
+
+nvoid_t *p2queue_deq_high(push2queue_t *queue)
+{
+    while (1) {
+        task_wait(queue->sem);
+
+        int rc = nn_poll(queue->fds, 2, 20000);
+
+        if (rc == 0)
+            return NULL;
+
+        if (queue->fds[0].revents & NN_POLLIN)
+            return queue_deq(queue->hqueue);
+    }
+}
