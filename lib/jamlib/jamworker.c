@@ -102,6 +102,9 @@ void jwork_set_subscriptions(jamstate_t *js)
         {
             mqtt_subscribe(js->cstate->mqttserv[i], "/level/func/reply/#");
             mqtt_subscribe(js->cstate->mqttserv[i], "/mach/func/request");
+            // Changes
+//            mqtt_subscribe(js->cstate->mqttserv[i], "admin/request/syncTimer");
+            mqtt_subscribe(js->cstate->mqttserv[i], "admin/request/Go");
         }
     }
 }
@@ -163,6 +166,13 @@ int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTClient_messa
         nvoid_free(nv);
         queue_enq(queue, cmd, sizeof(command_t));
         // Don't free the command structure.. the queue is still carrying it        
+    }
+    else if (strncmp(topicname, "admin/request/Go", strlen("admin/request/Go") -1) == 0) {
+        char *strSyncTime = msg->payload;
+        command_t *cmd = command_new("GOGOGO", strSyncTime, "-", 0, "GLOBAL_INQUEUE", "__", "__", "");
+        nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
+        nvoid_free(nv);
+        queue_enq(queue, cmd, sizeof(command_t));
     }
 
     MQTTClient_freeMessage(&msg);
@@ -365,8 +375,9 @@ void jwork_process_device(jamstate_t *js)
     {
         // TODO: Implement a synchronization sub protocol.. 
         //
-        if (strcmp(rcmd->cmd, "REXEC-SYN") == 0) 
+        if (strcmp(rcmd->cmd, "REXEC-SYN") == 0)
         {
+//            printf("command TYPE: %s\n", rcmd->cmd);
             printf("Sync....1\n");
             
             if (jwork_check_args(js, rcmd))
@@ -376,10 +387,12 @@ void jwork_process_device(jamstate_t *js)
                 if (jcond_evaluate_cond(js, rcmd))
                 {
                     printf("Sync....3\n");
+                   // rcmd->condvec = 8;
                     // We have a valid request that should be executed by the node
                     if (jcond_synchronized(rcmd))
                     {
                         // A request that needs a quorum: a group for execution
+
                         quorum = jcond_getquorum(rcmd);
                         runtable_insert_synctask(js, rcmd, quorum);
                     }
@@ -391,7 +404,8 @@ void jwork_process_device(jamstate_t *js)
                         // Because it is a blocking call.. we are going to go ahead and schedule it 
                         int count = runtable_synctask_count(js->rtable);
                         if (count == 0)
-                            p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
+                            // Changes
+                            p2queue_enq_high(js->atable->globalinq, rcmd, sizeof(command_t));
                         else 
                             runtable_insert_synctask(js, rcmd, quorum); 
                     }
@@ -443,6 +457,12 @@ void jwork_process_device(jamstate_t *js)
                 // send the rcmd to that queue.. this is a pushqueue
                 pqueue_enq(athr->inq, rcmd, sizeof(command_t));    
             }
+        }
+        
+        // Changes
+        else if (strcmp(rcmd->cmd, "GOGOGO") == 0) {
+
+            p2queue_enq_high(js->atable->globalinq, rcmd, sizeof(command_t));
         }
         else
         {
@@ -645,12 +665,24 @@ void jam_clear_timer(jamstate_t *js, char *actid)
     timer_del_event(js->maintimer, actid);
 }
 
+/*
+void wait(double end) {
+    while(getcurtime() < end) {}
+}
+*/
 
 void jam_set_sync_timer(jamstate_t *js, int tval)
 {
     if (js->synctimer != NULL)
     {
+        double now = getcurtime();
+
+        printf("current time: %f\n", now);
+        double syncStartTime = (double) ((int) (now+1));
+        printf("start time: %f\n", syncStartTime);
         printf("Setting sync timer %d\n", tval);
+        while(getcurtime() < syncStartTime) {}
+        printf("starting.. : %f\n", getcurtime());
         timer_add_event(js->synctimer, tval, 1, "synctimer-------", stcallback, js);        
     }
 }

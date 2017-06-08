@@ -27,6 +27,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "jam.h"
 #include "core.h"
 #include "activity.h"
+#include "mqtt.h"
 
 #ifdef linux
 #include <bsd/stdlib.h>
@@ -96,7 +97,7 @@ jamstate_t *jam_init(int port)
     task_wait(js->bgsem);
 
     // Turn on the sync timer 
-//    jam_set_sync_timer(js, 200);
+//    jam_set_sync_timer(js, 2000);
 
     #ifdef DEBUG_LVL1
         printf("JAM Library initialization... \t\t[completed]\n");
@@ -112,6 +113,12 @@ void jam_event_loop(void *arg)
 {
     jamstate_t *js = (jamstate_t *)arg;
     command_t *cmd;
+    
+    char *deviceid = js->cstate->device_id;
+    printf("devide ID: %s\n", deviceid);
+
+    MQTTClient mcl = js->cstate->mqttserv[0];
+    
 
     while (1)
     {
@@ -127,13 +134,14 @@ void jam_event_loop(void *arg)
             free(nv);
         } else
             cmd = NULL;
+//        printf("device ID: %d\n", js->cstate->device_id);
+        printf("command TYPE: %s\n", cmd->cmd);
 
         if (cmd != NULL)
         {
             // Put all conditions under which we could ask a new activity to continue
             if ((strcmp(cmd->cmd, "REXEC-ASY") == 0) ||
-                (strcmp(cmd->cmd, "REXEC-ASY-CBK") == 0) ||
-                (strcmp(cmd->cmd, "REXEC-SYN") == 0)) 
+                (strcmp(cmd->cmd, "REXEC-ASY-CBK") == 0))
             {
                 // Remote requests go through here.. local requests don't go through here
                 jactivity_t *jact = activity_new(js->atable, cmd->actid, true);
@@ -146,9 +154,61 @@ void jam_event_loop(void *arg)
                     pqueue_enq(jact->thread->inq, cmd, sizeof(command_t));
                 else
                     printf("ERROR! Unable to find a free Activity handler to start %s", cmd->actname);
-            } 
-            else 
+            }
+            else if (strcmp(cmd->cmd, "REXEC-SYN") == 0) {
+
+                command_t *readycmd = command_new("READY", "READY", "-", 0, "GLOBAL_INQUEUE", deviceid, "_", "");
+                mqtt_publish(mcl, "admin/request/syncTimer", readycmd);
+                int sTime;
+                while (1) {
+                    nvoid_t *nv = p2queue_deq_high(js->atable->globalinq);
+                    command_t *cmd_1;
+                    if (nv != NULL) {
+                        cmd_1 = (command_t *)nv->data;
+                        free(nv);
+                    }
+                    else cmd_1 = NULL;
+
+                    printf("Waiting command TYPE: %s\n", cmd_1->cmd);
+                    if (cmd_1 != NULL) {
+                        if (strcmp(cmd_1->cmd, "GOGOGO") == 0) {
+                            printf("We got it!\n");
+                            sTime = atoi(cmd_1->opt);
+                            break;
+                        }
+                    }
+                }
+                // Remote requests go through here.. local requests don't go through here
+                
+                jactivity_t *jact = activity_new(js->atable, cmd->actid, true);
+                // The activity creation should have setup the thread 
+                // So we should have a thread to run... 
+                // 
+                runtable_insert(js, cmd->actid, cmd);
+                //
+
+                while (getcurtime() < (double) sTime) {}
+
+                printf("after a hwile: %f\n", getcurtime());
+                if (jact != NULL) 
+                    pqueue_enq(jact->thread->inq, cmd, sizeof(command_t));
+                else
+                    printf("ERROR! Unable to find a free Activity handler to start %s", cmd->actname);
+
+            }
+            /*
+            else if (strcmp(cmd->cmd, "GOGOGO") == 0) {
+                printf("YEEAAAHH\n");
+            }
+            */
+            else {
                 printf("===========================SYNC.. TIMEOUT????\n");
+                /*
+                command_t *readycmd = command_new("READY", "READY", "-", 0, "GLOBAL_INQUEUE", deviceid, "_", "");
+                mqtt_publish(mcl, "admin/request/syncTimer", readycmd);
+                */
+            }
+            
         }
         //taskyield();
     }
