@@ -144,7 +144,8 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
             rcmd = (command_t *)nv->data;
             free(nv);
 
-            if (strcmp(rcmd->cmd, "TIMEOUT") == 0)
+            if (strcmp(rcmd->cmd, "TIMEOUT") == 0 ||
+                strcmp(rcmd->cmd, "REXEC-ACK") == 0)
             {
                 error_count++;
                 printf("----- TIMEOUT-----------\n\n");
