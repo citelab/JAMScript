@@ -171,13 +171,6 @@ make
 sudo make install
 ```
 ```
-git clone http://github.com/wenger/tcc.git
-cd tcc
-./configure
-make
-sudo make install
-```
-```
 wget https://github.com/nanomsg/nanomsg/archive/1.0.0.tar.gz
 tar zxvf 1.0.0.tar.gz
 cd nanomsg-1.0.0
