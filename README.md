@@ -136,7 +136,6 @@ sudo apt-get install libhiredis-dev
 sudo apt-get install libevent-dev
 sudo apt-get install libbsd-dev
 sudo apt-get install mosquitto
-
 ```
 ```
 cd /tmp or a download directory
@@ -186,10 +185,9 @@ cd nanomsg-1.0.0
 make
 sudo make install
 ```
-```
+
 There's an issue on ARM architecture with the original libtask, so here we use a
 slightly modified version of it.
-```
 ```
 cd deps/libtask
 make
