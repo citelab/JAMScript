@@ -124,10 +124,88 @@ Now, you should have a system that can run the JAMScript compiler.
 JAMScript is already tested in macOS. We need to get the preparation instructions done for
 it!
 
-## Preparing your Raspberry Pi
+## Instructions for Raspberry Pi
+```
+sudo apt-get update
+sudo apt-get install clang
+sudo apt-get install xz-utils
+sudo apt-get install texinfo
+sudo apt-get install libc-dev
+sudo apt-get install cmake
+sudo apt-get install libhiredis-dev
+sudo apt-get install libevent-dev
+sudo apt-get install libbsd-dev
+sudo apt-get install mosquitto
+```
+```
+cd /tmp or a download directory
+wget http://prdownloads.sourceforge.net/scons/scons-2.5.0.tar.gz
+tar zxvf scons-2.5.0.tar.gz
+cd scons-2.5.0
+sudo python setup.py install
+```
+```
+wget https://nodejs.org/dist/v7.0.0/node-v7.0.0-linux-armv6l.tar.xz
+sudo tar -C /usr/local --strip-components 1 -xJf node-v7.0.0-linux-armv6l.tar.xz
 
-Not yet tested. It is best to cross compile JAMScript to Raspberry Pi although
-RPI3 is powerful enough to compile JAMScript.
+```
+```
+wget https://github.com/PJK/libcbor/archive/v0.5.0.zip
+extract then cd into the directory
+cmake CMakeLists.txt
+make
+sudo make install
+```
+```
+sudo apt-get install libssl-dev
+git clone https://github.com/eclipse/paho.mqtt.c.git
+cd paho.mqtt.c
+make
+sudo make install
+```
+```
+wget http://download.redis.io/redis-stable.tar.gz
+tar xvzf redis-stable.tar.gz
+cd redis-stable
+make
+sudo make install
+```
+```
+wget https://github.com/nanomsg/nanomsg/archive/1.0.0.tar.gz
+tar zxvf 1.0.0.tar.gz
+cd nanomsg-1.0.0
+./configure
+make
+sudo make install
+```
+
+There's an issue on ARM architecture with the original libtask, so here we use a
+slightly modified version of it.
+```
+cd deps/libtask
+make
+sudo make install
+```
+```
+cd lib/jserver
+sudo npm install -g
+```
+```
+cd
+Use your favorite editor to edit .bashrc
+add the following line:
+export NODE_PATH=$HOME/node_modules:/usr/local/lib/node_modules:$NODE_PATH
+save file and quit
+source .bashrc
+```
+```
+cd JAMScript
+sudo npm install cbor
+sudo npm install mime
+```
+```
+sudo scons install
+```
 
 ## Preparing your Arduino Yun
 
