@@ -171,6 +171,8 @@ If a function is passed, then the function will be executed to retrieve the valu
     });
 ```
 
+Both the attribute name and the attribute value **should be kept brief**. The Registrar uses MQTT and mDNS under the hood, which are both lightweight messaging protocols. You may run into some trouble if you try to send too much information! **Remember: This module is should be used for basic discovery only. If nodes need to exchange larger chunks of information, then a separate connection should be made**.
+
 #### Reserved attributes
 As a general rule, you can add any attributes that you'd like. However, the following names are reserved by the system, and cannot be reused:
 - `status`
