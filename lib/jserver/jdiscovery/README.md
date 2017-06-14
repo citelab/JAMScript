@@ -3,14 +3,10 @@
 ## To Run
 If on Ubuntu, or other debianesque systems, you'll need to install `libavahi-compat-libdnssd-dev` for the mdns module to work:
 `sudo apt install libavahi-compat-libdnssd-dev`
-You'll need to link the mdns module, regardless of whether you're on a debianesque system:
+You'll also need to link the mdns module, regardless of whether you're on a debianesque system:
 - macOS: `cd mdns && npm link`
 - Ubuntu: `cd mdns && sudo npm link --unsafe-perm` (because Ubuntu sucks)
-Then,
-- optionally, start an MQTT server: `mosquitto`  
-- run a device with `npm start device`
-- run a fog with `npm start fog`
-- run a cloud with `npm start cloud`
+If you want to use MQTT, start an MQTT broker: `mosquitto`  
 
 ## Registrar
 The `Registrar` is the object you'll be interfacing with. It is responsible for finding other nodes running the same application as this one, and making this node visible so that other nodes may find it too. You create a Registrar as follows:
