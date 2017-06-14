@@ -58,3 +58,19 @@
 - `cloud-down`: emitted when a cloud goes down
     - arguments:
         - [string] id of the cloud
+
+### Local storage
+
+#### Built-in Events
+- `fog-update`: emitted if there is an update to the fog nodes, i.e. new fog(s), updated fog(s), or both
+    - arguments:
+        - object: {
+            newFogs: [array of new fogs],
+            updatedFogs: [array of updated fogs]
+        }
+- `cloud-update`: emitted if there is an update to the cloud nodes, i.e. new cloud(s), updated cloud(s), or both
+    - arguments:
+        - object: {
+            newClouds: [array of new clouds],
+            updatedClouds: [array of updated clouds]
+        }

@@ -1,0 +1,14 @@
+digraph jamgraph{
+subgraph cluster_0 {
+label = "C Functions";
+regcallback;
+user_main;
+}
+subgraph cluster_1 {
+label = "J Functions";
+root;
+pingserver;
+regme;
+}
+user_main -> regme [ label="("hello", regcallback)" ];
+}

@@ -1,8 +1,12 @@
 # TODOS
 
+- merge them all into a single interface. The interface should emit a bunch of messages and otherwise just have one function: register
+
+- add ability to add custom subscriptions through Registrar
+
 - test MQTT and mDNS
 - write local storage
-- merge them all into a single interface. The interface should emit a bunch of messages and otherwise just have one function: register
+- deal with IP address updates
 
 ## MDNS
 - probably need an mdns server up and running on each node. If a node is able to use MQTT, then it won't need this server, but it should still have it up to listen for other nodes that weren't able to use MQTT for some reason.
