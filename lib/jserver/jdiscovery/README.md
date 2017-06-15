@@ -6,7 +6,16 @@ If on Ubuntu, or other debianesque systems, you'll need to install `libavahi-com
 You'll also need to link the mdns module, regardless of whether you're on a debianesque system:
 - macOS: `cd mdns && npm link`
 - Ubuntu: `cd mdns && sudo npm link --unsafe-perm` (because Ubuntu sucks)
-If you want to use MQTT, start an MQTT broker: `mosquitto`  
+If you want to use MQTT, start an MQTT broker: `mosquitto`
+
+### To run app.js
+Try the following:
+- `npm start device` - starts a device node
+- `npm start device iPhone 1234567` - starts a device with attribute `iPhone` and phone number `1234567`
+- `npm start device Android 1234567` - starts a device with attribute `Android` and phone number `1234567`
+- `npm start fog` - starts a fog node
+- `npm start cloud` - starts a cloud node
+See `app.js` to figure out who discovers whom :)
 
 ## Registrar
 The `Registrar` is the object you'll be interfacing with. It is responsible for finding other nodes running the same application as this one, and making this node visible so that other nodes may find it too. You create a Registrar as follows:
