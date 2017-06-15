@@ -22,3 +22,14 @@ config.log
 
 node_modules/
 
+lib/jserver/jdiscovery/mdns/out
+lib/jserver/jdiscovery/mdns/build
+lib/jserver/jdiscovery/mdns/dns_sd.node
+lib/jserver/jdiscovery/mdns/demangle.node
+lib/jserver/jdiscovery/mdns/.lock-wscript
+lib/jserver/jdiscovery/mdns/node_modules
+lib/jserver/jdiscovery/mdns/*.sln
+lib/jserver/jdiscovery/mdns/*.vcxproj*
+lib/jserver/jdiscovery/mdns/.pulse2.properties
+lib/jserver/jdiscovery/mdns/Release
+lib/jserver/jdiscovery/mdns/Debug
