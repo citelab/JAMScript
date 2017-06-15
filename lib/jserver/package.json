@@ -3,27 +3,31 @@
   "description": "JServer for JAMScript environment",
   "version": "0.0.1",
   "license": "MIT",
-  "repository" : {
-  	"type" : "git",
-  	"url" : "https://github.com/anrl/JAM.git/lib/jserver"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anrl/JAM.git/lib/jserver"
   },
-  "dependencies" : {
+  "dependencies": {
     "deasync": ">=0.1.9",
     "cbor": ">=3.0.0",
     "mime": ">=1.3.4",
-    "command-line-args": ">=4.0.3",
+    "command-line-args": ">= 3.0.5",
     "random-js": ">=1.0.8",
     "redis-fast-driver": ">=1.0.5",
     "mqtt": ">=2.6.2",
-    "nedb" : ">=1.7.4",
-    "nanomsg" : ">=3.1.2",
-    "command-line-args": ">= 3.0.5",
+    "nedb": ">=1.7.4",
+    "nanomsg": ">=3.1.2",
     "node-localstorage": ">= 1.3.0",
     "bunyan": "^1.8.10",
     "lockfile": "^1.0.3"
   },
-  "engines": { "node" : ">= 7.0.0" },
-  "os": [ "darwin", "linux" ],
+  "engines": {
+    "node": ">= 7.0.0"
+  },
+  "os": [
+    "darwin",
+    "linux"
+  ],
   "preferGlobal": true,
   "files": [
     "*.js"
