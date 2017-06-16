@@ -179,6 +179,10 @@ void jdata_default_msg_received(redisAsyncContext *c, void *reply, void *privdat
   #endif
 }
 
+char *jamdata_string(char *name, ...) {
+  return "";
+}
+
 void jamdata_log_to_server(char *namespace, char *logger_name, char *value, msg_rcv_callback callback)
 {
   printf("Calling... jamdata_log\n");

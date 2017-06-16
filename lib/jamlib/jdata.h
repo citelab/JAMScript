@@ -66,6 +66,7 @@ void *jdata_init(void *js);
 void jdata_default_connection(const redisAsyncContext *c, int status);
 void jdata_default_disconnection(const redisAsyncContext *c, int status);
 void jdata_default_msg_received(redisAsyncContext *c, void *reply, void *privdata);
+char *jamdata_string(char *name, ...);
 void jamdata_log_to_server(char *namespace, char *logger_name, char *value, msg_rcv_callback callback);
 void jdata_log_to_server(char *key, char *value, msg_rcv_callback callback);
 void jdata_remove_element(char *key, char *value, msg_rcv_callback callback);

@@ -7,29 +7,37 @@ JAMJS <: ES5 {
                     | logger 
                     | shuffler
     
-    C_type          = "char" "*"                                                       -- pointer
+    C_type          = "struct" "{" Struct_entry* "}"                -- struct
+                    | "char" "*"                                    -- pointer
                     | "char"
                     | "double"
                     | "int"
                     | "float"
+                    
+    Struct_entry    = C_type identifier ";"
 
     Jdata_spec      = C_type identifier as jdata_type "(" ("fog"|"cloud") ")" ";"   -- specified
                     | C_type identifier as jdata_type ";"                           -- default
+                    | Flow                                                          -- flow
                     | identifier as ( Window | Transform | Iopadref | Iopad ) ";"              -- other
     
-    Window          = window "[" decimalIntegerLiteral "]" Layer_specifier? of jdata_id     -- points
-                    | window Time_filter of jdata_id                                        -- time
+    Flow            = identifier as flow with identifier of identifier              -- flow
+                    | identifier as outflow of identifier                           -- outflow
+                    | identifier as inflow of inflow_type                           -- inflow
+    
+    inflow_type     = "app://" "a"
+                    | "fs://" "a"
 
-    Transform       = transform Layer_specifier? identifier of NonemptyListOf<jdata_id, ",">
+    Window          = window "[" decimalIntegerLiteral "]" Layer_specifier? of identifier     -- points
+                    | window Time_filter of identifier                                        -- time
+
+    Transform       = transform Layer_specifier? identifier of NonemptyListOf<identifier, ",">
 
     Iopadref        = iopadref of iopadref_id
 
-    iopadref_id     = identifier "." jdata_id
+    iopadref_id     = identifier "." identifier
 
-    Iopad           = iopad of NonemptyListOf<jdata_id, ",">
-
-    jdata_id        = identifier "." identifier                                     -- namespace
-                    | identifier
+    Iopad           = iopad of NonemptyListOf<identifier, ",">
     
     Time_filter     = Absolute_time
                     | Relative_time
@@ -56,8 +64,7 @@ JAMJS <: ES5 {
     utc_two         = decimalDigit decimalDigit
 
 
-    Jdata_decl      = jdata identifier "{" Jdata_spec* "}"          -- named
-                    | jdata "{" Jdata_spec* "}"                     -- anonymous
+    Jdata_decl      = jdata "{" Jdata_spec* "}"
 
     Jconditional    = jcond identifier? "{" Jcond_entry* "}"
 
@@ -82,7 +89,7 @@ JAMJS <: ES5 {
     Jcond_expr      = "(" Jcond_expr ")"                            -- paran
                     | "!" Jcond_expr                                -- not
                     | Jcond_expr jcond_expr_op Jcond_expr           -- bin_op
-                    | identifier "." identifier                     -- namespace_id
+                    | identifier listOf<identifier, ".">            -- structure
                     | identifier                                    -- id
 
     jcond_expr_op   = "&&" | "||"
@@ -92,7 +99,9 @@ JAMJS <: ES5 {
 
     as = "as" ~identifierPart
     broadcaster = "broadcaster" ~identifierPart
+    flow = "flow" ~identifierPart
     in := "in" ~identifierPart
+    inflow = "inflow" ~identifierPart
     iopad = "iopad" ~identifierPart
     iopadref = "iopadref" ~identifierPart
     jasync = "jasync" ~identifierPart
@@ -102,6 +111,7 @@ JAMJS <: ES5 {
     jsync = "jsync" ~identifierPart
     logger = "logger" ~identifierPart
     of = "of" ~identifierPart
+    outflow = "outflow" ~identifierPart
     shuffler = "shuffler" ~identifierPart
     transform = "transform" ~identifierPart
     window = "window" ~identifierPart

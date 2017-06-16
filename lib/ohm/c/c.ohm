@@ -309,8 +309,11 @@ C {
     // jcallback_stmt  = "Typename":jc ?(jcallbacks.has(jc.value())) "(" listOf(#assign_expr, ","):as ")" ";"  -> __.JCallbackStmt(jc.value(), as),
 
     //JAM Addition
-    Assign_stmt     = id "." id "=" Expr ";"                        -- named
-                    | id "=" Expr ";"                               -- anonymous
+    struct_id       = ("." id)+
+    Struct_access   = struct_id ":" Expr
+
+    Assign_stmt     = id "=" "{" ListOf<Struct_access, ","> "}" ";"                     -- Struct
+                    | id "=" Expr ";"                                                   -- Expr
 
     Expr_stmt       = Expr? ";"                                                         -- ExprStmt
 
