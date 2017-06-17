@@ -417,7 +417,8 @@ ES5 {
 
   Initialiser<guardIn> = "=" AssignmentExpression<guardIn>
 
-  AssignmentStatement = identifier "=" AssignmentExpression<withIn>
+  AssignmentStatement = identifier "=" ObjectLiteral #sc                    -- object
+                      | identifier "=" AssignmentExpression<withIn> #sc     -- expression
 
   EmptyStatement = ";" // note: this semicolon eats newlines
 
@@ -425,7 +426,7 @@ ES5 {
 
   IfStatement = if "(" Expression<withIn> ")" Statement (else Statement)?
 
-  IterationStatement = do Statement while "(" Expression<withIn> ")" #sc  -- doWhile
+  IterationStatement = do Statement while "(" Expression<withIn> ")" #sc    -- doWhile
                      | while "(" Expression<withIn> ")" Statement           -- whileDo
                      | for "(" Expression<noIn>? ";"
                                  Expression<withIn>? ";"

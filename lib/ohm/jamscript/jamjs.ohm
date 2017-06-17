@@ -5,7 +5,6 @@ JAMJS <: ES5 {
 
     jdata_type      = broadcaster 
                     | logger 
-                    | shuffler
     
     C_type          = "struct" "{" Struct_entry* "}"                -- struct
                     | "char" "*"                                    -- pointer
@@ -18,51 +17,13 @@ JAMJS <: ES5 {
 
     Jdata_spec      = C_type identifier as jdata_type "(" ("fog"|"cloud") ")" ";"   -- specified
                     | C_type identifier as jdata_type ";"                           -- default
-                    | Flow                                                          -- flow
-                    | identifier as ( Window | Transform | Iopadref | Iopad ) ";"              -- other
+                    | Flow ";"                                                      -- flow
     
     Flow            = identifier as flow with identifier of identifier              -- flow
                     | identifier as outflow of identifier                           -- outflow
                     | identifier as inflow of inflow_type                           -- inflow
     
-    inflow_type     = "app://" "a"
-                    | "fs://" "a"
-
-    Window          = window "[" decimalIntegerLiteral "]" Layer_specifier? of identifier     -- points
-                    | window Time_filter of identifier                                        -- time
-
-    Transform       = transform Layer_specifier? identifier of NonemptyListOf<identifier, ",">
-
-    Iopadref        = iopadref of iopadref_id
-
-    iopadref_id     = identifier "." identifier
-
-    Iopad           = iopad of NonemptyListOf<identifier, ",">
-    
-    Time_filter     = Absolute_time
-                    | Relative_time
-
-    Absolute_time   = "from" utc_string ("to" utc_string)?                            -- utc
-                    | "from" decimalIntegerLiteral ("to" decimalIntegerLiteral)?      -- unix
-
-    Relative_time   = "last" decimalIntegerLiteral ( "s" | "m" | "h" | "d" )
-
-    Layer_specifier = "(" layer "," layer ")"
-    layer           = "device" | "fog" | "cloud"
-
-    utc_string      = utc_date "T" utc_time
-
-    utc_date        = utc_four "-" utc_two "-" utc_two
-
-    utc_time        = utc_two ":" utc_two ":" utc_two "." decimalIntegerLiteral utc_timezone   -- millisecond
-                    | utc_two ":" utc_two ":" utc_two utc_timezone              -- default
-
-    utc_timezone    = ( "+" | "-" ) utc_two ":" utc_two         -- timezone
-                    | "Z"
-
-    utc_four        = decimalDigit decimalDigit decimalDigit decimalDigit
-    utc_two         = decimalDigit decimalDigit
-
+    inflow_type     = "app://" identifier "." identifier
 
     Jdata_decl      = jdata "{" Jdata_spec* "}"
 
@@ -102,8 +63,6 @@ JAMJS <: ES5 {
     flow = "flow" ~identifierPart
     in := "in" ~identifierPart
     inflow = "inflow" ~identifierPart
-    iopad = "iopad" ~identifierPart
-    iopadref = "iopadref" ~identifierPart
     jasync = "jasync" ~identifierPart
     jcallback = "jcallback" ~identifierPart
     jcond = "jcond" ~identifierPart
@@ -112,7 +71,4 @@ JAMJS <: ES5 {
     logger = "logger" ~identifierPart
     of = "of" ~identifierPart
     outflow = "outflow" ~identifierPart
-    shuffler = "shuffler" ~identifierPart
-    transform = "transform" ~identifierPart
-    window = "window" ~identifierPart
 }
