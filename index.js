@@ -1,37 +1,33 @@
 #!/usr/bin/env node
 
-var ohm = require('ohm-js'),
-    fs = require('fs'),
+var fs = require('fs'),
     // JSZip = require('jszip'),
     child_process = require('child_process'),
     crypto = require('crypto'),
     path = require('path'),
-    callGraph = require('./lib/ohm/jamscript/callGraph')
+    callGraph = require('./lib/ohm/jamscript/callGraph'),
     jam = require('./lib/ohm/jamscript/jam');
 
-var outputName;
 var preprocessDecls;
 
 // Flags
 var debug = false,
     noCompile = false,
-    parseOnly = false,
+    // parseOnly = false,
     preprocessOnly = false,
-    translateOnly = false,
+    // translateOnly = false,
     verbose = false;
 
 // Process arguments
 
 var args = process.argv.slice(2);
 var tmpDir = "/tmp/jam-" + randomValueHex(20);
-var cPath = undefined;
-var jsPath = undefined;
+var cPath;
+var jsPath;
 
 for (var i = 0; i < args.length; i++) {
   if(args[i].charAt(0) === "-") {
-    if(args[i] === "-A") { // Parser only
-      parseOnly = true;
-    } else if(args[i] === "-D") { // Debug mode
+    if(args[i] === "-D") { // Debug mode
       debug = true;
     } else if(args[i] === "-help") { // help
       printHelp();
@@ -41,8 +37,10 @@ for (var i = 0; i < args.length; i++) {
       preprocessOnly = true;
     } else if(args[i] === "-V") { // Verbose
       verbose = true;
-    } else if(args[i] === "-T") { // Translator only
-      translateOnly = true;
+    // } else if(args[i] === "-T") { // Translator only
+    //   translateOnly = true;
+    // } else if(args[i] === "-A") { // Parser only
+    //   parseOnly = true;
     }
   } else {
     var inputPath = args[i];
@@ -71,15 +69,8 @@ if(jsPath === undefined) {
   inputError = true;
 }
 if(inputError) {
-  // inputArgsError();
   process.exit(1);
 }
-
-// if(inputPath === undefined) {
-//   inputArgsError();
-//   process.exit(1);
-// }
-
 
 try {
   fs.mkdirSync(tmpDir);
@@ -92,30 +83,18 @@ try {
   if(preprocessOnly) {
     printAndExit(preprocessed);
   }
-  // if(verbose) {
-  //   console.log(preprocessed);
-  // }
 
-  if(parseOnly) {
-    printAndExit(cTree + jsTree);
-  }
+  // if(parseOnly) {
+  //   printAndExit(cTree + jsTree);
+  // }
 
   var results = jam.compile(preprocessed, fs.readFileSync(jsPath).toString());
 
-  // if(verbose) {
-  //   console.log(cTree);
-  //   console.log(jsTree);
-  // }
-
-  
   fs.writeFileSync("callgraph.html", callGraph.createWebpage());
   fs.writeFileSync("callgraph.dot", callGraph.createDOT());
 
   // if(translateOnly) {
   //   printAndExit(output);
-  // }
-  // if(verbose) {
-  //   console.log(output);
   // }
 
 
@@ -133,7 +112,6 @@ try {
     ];
     
     // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
-    // createZip(createTOML(), output.JS, tmpDir, outputName);
     Promise.all(tasks).then(function(results) {
       if(!debug) {
         for(var i = 0; i < results.length; i++) {
@@ -156,12 +134,12 @@ function compile(code, verbose) {
     var options = "";
     if(process.platform === "darwin") {
       // Mac
-      options = "-framework CoreFoundation"
+      options = "-framework CoreFoundation";
     } else {
       // Linux
       options = "-lm -lbsd";
     }
-    var includes = '#include "jam.h"\n'
+    var includes = '#include "jam.h"\n';
     includes = '#include "command.h"\n' + includes;
     includes = '#include "jdata.h"\n' + includes;
     includes = '#include <unistd.h>\n' + includes;
@@ -205,7 +183,7 @@ function preprocess(file, verbose) {
   if(verbose) {
     console.log(command); 
   }
-  return result = child_process.execSync(command).toString();
+  return child_process.execSync(command).toString();
 
   // return child_process.execSync(`clang -E -P -std=iso9899:199409 ${file}`).toString();
 
@@ -224,9 +202,9 @@ function flowCheck(input, verbose) {
       if(verbose) {
         console.log(command);
       }
-      const child = child_process.exec(command, (error, stdout, stderr) => {
+      child_process.exec(command, (error, stdout) => {
         if (error !== null) {
-          resolve("JavaScript Type Checking Error:\n" + stdout.substring(stdout.indexOf("\n") + 1));
+          reject("JavaScript Type Checking Error:\n" + stdout.substring(stdout.indexOf("\n") + 1));
         } else {
           resolve("No Flow JavaScript errors found");
         }
@@ -245,53 +223,47 @@ function flowCheck(input, verbose) {
   });
 }
 
-function createZip(toml, jsout, tmpDir, outputName) {
-  var zip = new JSZip();
-  zip.file("MANIFEST.tml", toml);
-  zip.file("jamout.js", fs.readFileSync('/usr/local/share/jam/lib/jserver/jserver-clean.js') + jsout);
-  zip.file("libjamout.so", fs.readFileSync(`${tmpDir}/libjamout.so`));
-  fs.writeFileSync(`${outputName}.jxe`, zip.generate({type:"nodebuffer"}));
-}
+// function createZip(toml, jsout, tmpDir, outputName) {
+//   var zip = new JSZip();
+//   zip.file("MANIFEST.tml", toml);
+//   zip.file("jamout.js", fs.readFileSync('/usr/local/share/jam/lib/jserver/jserver-clean.js') + jsout);
+//   zip.file("libjamout.so", fs.readFileSync(`${tmpDir}/libjamout.so`));
+//   fs.writeFileSync(`${outputName}.jxe`, zip.generate({type:"nodebuffer"}));
+// }
 
-function createTOML() {
-  var toml = "";
-  toml += "# Description of the JXE structure\n";
-  toml += "title = \"JAMScript Executable Description\"\n";
-
-  toml += "# global identification and requirements are specified next\n";
-  toml += "[jxe]\n";
-  toml += "version = 1.0\n";
-  toml += "checksum = \"XXXDFDFDFDFDF\"\n";
-  toml += "requirements = \"none\"\n";
-
-  toml += "# javascript portion is in one file for now\n";
-  toml += "[jsfile]\n";
-  toml += "# any or a particular version can be specified for nodeversion\n";
-  toml += "nodeversion = 0\n";
-  toml += "# list of modules that should be pre-loaded into Node\n";
-  toml += "requires = []\n";
-  toml += "# file name for the javascript code\n";
-  toml += "file = \"jamout.js\"\n";
-
-  toml += "# c portion could be in multiple files (in shared lib format)\n";
-  toml += "[cfile]\n";
-  toml += "portions = 1\n";
-  toml += "# definition of a C portion\n";
-  toml += "[cfile.1]\n";
-  toml += "# architecture for which the shared library is genereated\n";
-  toml += "arch = \"x86\"\n";
-  toml += "# requirements of the shared library; these are tags that indicate the requirements\n";
-  toml += "requires = []\n";
-  toml += "# filename of the shared library\n";
-  toml += "file = \"libjamout.so\"\n";
-  return toml;
-}
-
-function inputArgsError() {
-  console.error("No input file specified");
-  console.error("Input format:");
-  console.error("\tjamc [options] <input file> <output name>");
-}
+// function createTOML() {
+//   var toml = "";
+//   toml += "# Description of the JXE structure\n";
+//   toml += "title = \"JAMScript Executable Description\"\n";
+//
+//   toml += "# global identification and requirements are specified next\n";
+//   toml += "[jxe]\n";
+//   toml += "version = 1.0\n";
+//   toml += "checksum = \"XXXDFDFDFDFDF\"\n";
+//   toml += "requirements = \"none\"\n";
+//
+//   toml += "# javascript portion is in one file for now\n";
+//   toml += "[jsfile]\n";
+//   toml += "# any or a particular version can be specified for nodeversion\n";
+//   toml += "nodeversion = 0\n";
+//   toml += "# list of modules that should be pre-loaded into Node\n";
+//   toml += "requires = []\n";
+//   toml += "# file name for the javascript code\n";
+//   toml += "file = \"jamout.js\"\n";
+//
+//   toml += "# c portion could be in multiple files (in shared lib format)\n";
+//   toml += "[cfile]\n";
+//   toml += "portions = 1\n";
+//   toml += "# definition of a C portion\n";
+//   toml += "[cfile.1]\n";
+//   toml += "# architecture for which the shared library is genereated\n";
+//   toml += "arch = \"x86\"\n";
+//   toml += "# requirements of the shared library; these are tags that indicate the requirements\n";
+//   toml += "requires = []\n";
+//   toml += "# filename of the shared library\n";
+//   toml += "file = \"libjamout.so\"\n";
+//   return toml;
+// }
 
 function randomValueHex(len) {
     return crypto.randomBytes(Math.ceil(len/2))
@@ -301,7 +273,7 @@ function randomValueHex(len) {
 
 function deleteFolderRecursive(path) {
   if( fs.existsSync(path) ) {
-    fs.readdirSync(path).forEach(function(file,index){
+    fs.readdirSync(path).forEach(function(file) {
       var curPath = path + "/" + file;
       if(fs.lstatSync(curPath).isDirectory()) { // recurse
         deleteFolderRecursive(curPath);
