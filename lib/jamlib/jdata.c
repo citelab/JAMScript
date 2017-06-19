@@ -179,7 +179,7 @@ void jdata_default_msg_received(redisAsyncContext *c, void *reply, void *privdat
   #endif
 }
 
-char *jamdata_string(char *name, ...) {
+char *jamdata_encode(char *name, ...) {
   return "";
 }
 
