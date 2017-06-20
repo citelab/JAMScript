@@ -66,6 +66,6 @@ bool p2queue_delete(push2queue_t *queue);
 bool p2queue_enq_low(push2queue_t *queue, void *data, int len);
 bool p2queue_enq_high(push2queue_t *queue, void *data, int len);
 nvoid_t *p2queue_deq(push2queue_t *queue);
-
+nvoid_t *p2queue_deq_high(push2queue_t *queue);
 
 #endif
