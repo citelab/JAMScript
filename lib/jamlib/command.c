@@ -42,7 +42,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "cborutils.h"
 #include "free_list.h"
 
-
+//Copy the arguments pointed to by darg to sarg
+//@param *darg: a pointer to the destination argument
+//@param *sarg: a pointer to the source argument
 void command_arg_copy(arg_t *darg, arg_t *sarg)
 {
     darg->type = sarg->type;
@@ -65,6 +67,7 @@ void command_arg_copy(arg_t *darg, arg_t *sarg)
     }
 }
 
+//@returns a pointer to a copy of the content pointed to by arg 
 arg_t *command_arg_clone(arg_t *arg)
 {
     arg_t *val = (arg_t *)calloc(1, sizeof(arg_t));
@@ -99,6 +102,7 @@ arg_t *command_arg_clone(arg_t *arg)
 }
 
 
+//empty the memory space pointer to by arg
 void command_arg_free(arg_t *arg)
 {
     if (arg == NULL)
