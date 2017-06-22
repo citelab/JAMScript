@@ -116,8 +116,7 @@ void *jdata_init(void *js)
 #ifdef DEBUG_LVL1
     printf("JData initialized...\n");
 #endif
-    thread_signal(j_s->jdata_sem);
-    
+    thread_signal(j_s->jdata_sem); 
 #ifdef linux
     event_base_dispatch(base);
 #endif
@@ -183,8 +182,115 @@ void jdata_default_msg_received(redisAsyncContext *c, void *reply, void *privdat
   #endif
 }
 
-char *jamdata_encode(char *name, ...) {
-  return "";
+//fmt - string: format string such as "%s%d%f"
+//args followed fmt will be paired up. For example, 
+//parseCmd("%s%d", "person", "Lilly", "age", 19) indicates the variable named "person"
+//is expected to have a string type value followed, which is "Lilly" in this case 
+char* jamdata_encode(char *fmt, ...){
+  int i, num = strlen(fmt);
+  if(num==0) return NULL;
+
+  //root   - cbor map: object contains encoded info about input args
+  //content- encoded primitive type: argument's content 
+  //key    - encoded string: argument's name
+  cbor_item_t *root, *content, *key; 
+    //initialize args to be used by va_end and va_arg
+    va_list args;
+    va_start(args, fmt);
+    //buf    - type$$$name
+    //name   - name of each input value
+    char *buf, *name;
+
+  //initialize root
+  if((root = cbor_new_definite_map(num)) == NULL){
+    printf("Failure on malloc for new cbor map\n");
+    return NULL;
+  }
+
+  //fmt_str is in the format such as sdf
+  for(i=0;i<strlen(fmt);i++){
+    //name of the value
+    name = va_arg(args, char *);        
+    if(fmt[i]=='s'){
+      //string
+      buf = (char *)malloc(strlen(name)+5);
+      strcpy(buf, "s$$$");
+      strcat(buf, name);  
+      key = cbor_build_string(buf);
+      content = cbor_build_string(strdup(va_arg(args, char *)));
+    } 
+    else if(fmt[i]=='i' || fmt[i]=='d'){
+      buf = (char *)malloc(strlen(name)+5);
+      strcpy(buf, "d$$$");
+      strcat(buf, name);
+      key = cbor_build_string(buf);
+      content = cbor_build_uint32(abs(va_arg(args, int)));
+    }
+    else if(fmt[i]=='f'){
+      buf = (char *)malloc(strlen(name)+5);
+      strcpy(buf, "f$$$");
+      strcat(buf, name);
+      key = cbor_build_string(buf);
+      content = cbor_build_float8(va_arg(args, double));
+    }
+    else{
+      printf("Invalid format string\n");
+      return NULL;  
+    }
+    cbor_map_add(root, (struct cbor_pair){
+      .key = key,
+      .value = content
+    });       
+  } 
+  // free(buf);
+  // free(name);
+  va_end(args);
+  unsigned char *buffer; 
+  int       buffer_size;
+  cbor_serialize_alloc(root, &buffer, (size_t *)&buffer_size);
+  return buffer;
+}
+
+// data          - encoded cbor data to be decoded
+// num           - # field in data
+// buffer        - a pointer to the c struct stores decoded data
+// args followed - offset of each field in data
+void* jamdata_decode(unsigned char *data, int num, void *buffer, ...){
+  va_list args;
+    va_start(args, buffer);
+  // memcpy each field value in data to the corresponding field in buffer
+  struct cbor_load_result result;
+  cbor_item_t *obj = cbor_load(data, 100, &result);
+  //cbor_describe(obj, stdout);
+  struct cbor_pair *handle = cbor_map_handle(obj);
+  int i, offset;
+  char *key, *token, *s; int n; float f;
+  for(i=0;i<num;i++){
+    key = cbor_get_string(handle[i].key);
+    token = strtok(key, "$$$");
+    //key is the type of this argument        
+    if(strcmp(token, "s")==0){
+      //string  
+      s = cbor_get_string(handle[i].value);
+      memcpy(buffer+(va_arg(args, size_t)), s, strlen(s)+1);
+      printf("%s\n", s);
+    } 
+    else if(strcmp(token, "d")==0){
+      n = cbor_get_integer(handle[i].value);
+      memcpy(buffer+(va_arg(args, size_t)), &n, sizeof(int));
+      printf("%d\n", n);
+    }
+    else if(strcmp(token, "f")==0){
+      f = cbor_float_get_float8(handle[i].value);
+      memcpy(buffer+(va_arg(args, size_t)), &f, sizeof(float));
+      printf("%f\n", f);
+    }
+    else{
+      printf("Invalid format string\n");
+      return NULL;  
+    }       
+  } 
+  return buffer;
 }
 
 void jamdata_log_to_server(char *namespace, char *logger_name, char *value, msg_rcv_callback callback)
