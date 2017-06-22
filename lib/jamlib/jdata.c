@@ -64,15 +64,19 @@ void jdata_attach(jamstate_t *js, char *serv_ip, int serv_port)
         printf("Error: %s\n", jdata_async_context->errstr);
     }
 
-    redisAsyncSetConnectCallback(jdata_async_context, jdata_default_connection);
-    redisAsyncSetDisconnectCallback(jdata_async_context, jdata_default_disconnection);
 
 #ifdef linux
     //Initialize event base
     base = event_base_new();
     //Attach async context to base
     redisLibeventAttach(jdata_async_context, base);   
+
+    redisAsyncSetConnectCallback(jdata_async_context, jdata_default_connection);
+    redisAsyncSetDisconnectCallback(jdata_async_context, jdata_default_disconnection);
 #elif __APPLE__
+
+    redisAsyncSetConnectCallback(jdata_async_context, jdata_default_connection);
+    redisAsyncSetDisconnectCallback(jdata_async_context, jdata_default_disconnection);
     loop = CFRunLoopGetCurrent();
     if (!loop) 
     {
