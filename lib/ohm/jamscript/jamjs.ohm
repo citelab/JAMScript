@@ -1,4 +1,4 @@
-JAMJS <: ES5 {
+JAMJS <: ES6 {
     Declaration     += Jconditional
                     | Jdata_decl
                     | Activity_def
