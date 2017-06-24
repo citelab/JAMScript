@@ -115,7 +115,6 @@ void jam_event_loop(void *arg)
     command_t *cmd;
     
     char *deviceid = js->cstate->device_id;
-    printf("devide ID: %s\n", deviceid);
 
     MQTTClient mcl = js->cstate->mqttserv[0];
     
@@ -134,7 +133,6 @@ void jam_event_loop(void *arg)
             free(nv);
         } else
             cmd = NULL;
-//        printf("device ID: %d\n", js->cstate->device_id);
         printf("command TYPE: %s\n", cmd->cmd);
 
         if (cmd != NULL)
@@ -157,9 +155,12 @@ void jam_event_loop(void *arg)
             }
             else if (strcmp(cmd->cmd, "REXEC-SYN") == 0) {
 
+				// Make a new command which signals to the J node that it's ready
+				// device ID is put in the cmd->actid because I don't know where else to put it.
                 command_t *readycmd = command_new("READY", "READY", "-", 0, "GLOBAL_INQUEUE", deviceid, "_", "");
                 mqtt_publish(mcl, "admin/request/syncTimer", readycmd);
                 int sTime;
+				// Wait for the GO command from the J node.
                 while (1) {
                     nvoid_t *nv = p2queue_deq_high(js->atable->globalinq);
                     command_t *cmd_1;
@@ -168,11 +169,10 @@ void jam_event_loop(void *arg)
                         free(nv);
                     }
                     else cmd_1 = NULL;
-
-                    printf("Waiting command TYPE: %s\n", cmd_1->cmd);
+                    // printf("Waiting command TYPE: %s\n", cmd_1->cmd);
                     if (cmd_1 != NULL) {
                         if (strcmp(cmd_1->cmd, "GOGOGO") == 0) {
-                            printf("We got it!\n");
+							// Get the start time from the Go command.
                             sTime = atoi(cmd_1->opt);
                             break;
                         }
@@ -187,28 +187,19 @@ void jam_event_loop(void *arg)
                 runtable_insert(js, cmd->actid, cmd);
                 //
 
+				// Busy waiting until the start time.
                 while (getcurtime() < (double) sTime) {}
 
-                printf("after a hwile: %f\n", getcurtime());
+                // printf("after a hwile: %f\n", getcurtime());
                 if (jact != NULL) 
                     pqueue_enq(jact->thread->inq, cmd, sizeof(command_t));
                 else
                     printf("ERROR! Unable to find a free Activity handler to start %s", cmd->actname);
 
             }
-            /*
-            else if (strcmp(cmd->cmd, "GOGOGO") == 0) {
-                printf("YEEAAAHH\n");
-            }
-            */
             else {
                 printf("===========================SYNC.. TIMEOUT????\n");
-                /*
-                command_t *readycmd = command_new("READY", "READY", "-", 0, "GLOBAL_INQUEUE", deviceid, "_", "");
-                mqtt_publish(mcl, "admin/request/syncTimer", readycmd);
-                */
             }
-            
         }
         //taskyield();
     }

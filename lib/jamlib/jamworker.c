@@ -102,8 +102,7 @@ void jwork_set_subscriptions(jamstate_t *js)
         {
             mqtt_subscribe(js->cstate->mqttserv[i], "/level/func/reply/#");
             mqtt_subscribe(js->cstate->mqttserv[i], "/mach/func/request");
-            // Changes
-//            mqtt_subscribe(js->cstate->mqttserv[i], "admin/request/syncTimer");
+            // Subscribe to the "go" topic for sync purpose.
             mqtt_subscribe(js->cstate->mqttserv[i], "admin/request/Go");
         }
     }
@@ -377,7 +376,6 @@ void jwork_process_device(jamstate_t *js)
         //
         if (strcmp(rcmd->cmd, "REXEC-SYN") == 0)
         {
-//            printf("command TYPE: %s\n", rcmd->cmd);
             printf("Sync....1\n");
             
             if (jwork_check_args(js, rcmd))
@@ -387,7 +385,6 @@ void jwork_process_device(jamstate_t *js)
                 if (jcond_evaluate_cond(js, rcmd))
                 {
                     printf("Sync....3\n");
-                   // rcmd->condvec = 8;
                     // We have a valid request that should be executed by the node
                     if (jcond_synchronized(rcmd))
                     {
@@ -404,7 +401,7 @@ void jwork_process_device(jamstate_t *js)
                         // Because it is a blocking call.. we are going to go ahead and schedule it 
                         int count = runtable_synctask_count(js->rtable);
                         if (count == 0)
-                            // Changes
+                            // Sync tasks go into the high priority queue
                             p2queue_enq_high(js->atable->globalinq, rcmd, sizeof(command_t));
                         else 
                             runtable_insert_synctask(js, rcmd, quorum); 
@@ -459,9 +456,8 @@ void jwork_process_device(jamstate_t *js)
             }
         }
         
-        // Changes
         else if (strcmp(rcmd->cmd, "GOGOGO") == 0) {
-
+			// Received the "go" from J nodes, we put the go command into the high queue
             p2queue_enq_high(js->atable->globalinq, rcmd, sizeof(command_t));
         }
         else
@@ -665,12 +661,8 @@ void jam_clear_timer(jamstate_t *js, char *actid)
     timer_del_event(js->maintimer, actid);
 }
 
-/*
-void wait(double end) {
-    while(getcurtime() < end) {}
-}
-*/
 
+// Not finalized at all, just testing
 void jam_set_sync_timer(jamstate_t *js, int tval)
 {
     if (js->synctimer != NULL)
