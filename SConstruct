@@ -61,9 +61,10 @@ else:
 #        Exit(1)
 
 c_files = Glob('lib/jamlib/*.c')
+c_files = c_files + Glob('lib/jamlib/duktape/*.c')
 
 libtask = env.Command("./deps/libtask/libtask.a", "", "cd deps/libtask && make && sudo make install")
-library = env.Library('jam', Glob('lib/jamlib/*.c'), LIBS=req_c_lib, LIBPATH = ['/usr/lib', '/usr/local/lib', '/usr/local/share/paho/lib'])
+library = env.Library('jam', c_files, LIBS=req_c_lib, LIBPATH = ['/usr/lib', '/usr/local/lib', '/usr/local/share/paho/lib'])
 c_core_files = Glob('./lib/jamlib/*.h')
 c_core_files.append("./lib/jamlib/duktape")
 
