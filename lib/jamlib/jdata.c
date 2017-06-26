@@ -210,27 +210,16 @@ char* jamdata_encode(char *fmt, ...){
   //fmt_str is in the format such as sdf
   for(i=0;i<strlen(fmt);i++){
     //name of the value
-    name = va_arg(args, char *);        
+    name = va_arg(args, char *);     
+    key = cbor_build_string(name);   
     if(fmt[i]=='s'){
       //string
-      buf = (char *)malloc(strlen(name)+2);
-      strcpy(buf, "s");
-      strcat(buf, name);  
-      key = cbor_build_string(buf);
       content = cbor_build_string(strdup(va_arg(args, char *)));
     } 
     else if(fmt[i]=='i' || fmt[i]=='d'){
-      buf = (char *)malloc(strlen(name)+2);
-      strcpy(buf, "d");
-      strcat(buf, name);
-      key = cbor_build_string(buf);
       content = cbor_build_uint32(abs(va_arg(args, int)));
     }
     else if(fmt[i]=='f'){
-      buf = (char *)malloc(strlen(name)+2);
-      strcpy(buf, "f");
-      strcat(buf, name);
-      key = cbor_build_string(buf);
       content = cbor_build_float8(va_arg(args, double));
     }
     else{
@@ -241,7 +230,6 @@ char* jamdata_encode(char *fmt, ...){
       .key = key,
       .value = content
     });    
-    
   } 
   // free(buf);
   // free(name);
@@ -256,11 +244,11 @@ char* jamdata_encode(char *fmt, ...){
     sprintf(dump+2*i, "%02x", buffer[i]);
   }
   sprintf(dump+2*i, "%c", '\0');
-  printf("%d\n", strlen(dump));
-  struct cbor_load_result result; 
-  cbor_item_t *obj = cbor_load(buffer, buffer_size, &result);
-  printf("%d\n", buffer_size);
-  cbor_describe(obj, stdout);   
+  // printf("%d\n", strlen(dump));
+  // struct cbor_load_result result; 
+  // cbor_item_t *obj = cbor_load(buffer, buffer_size, &result);
+  // printf("%d\n", buffer_size);
+  // cbor_describe(obj, stdout);   
   
   return ptr;
 }
