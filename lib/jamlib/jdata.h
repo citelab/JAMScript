@@ -10,11 +10,19 @@
 #include <hiredis/adapters/macosx.h>
 #endif
 #include <semaphore.h>
-
+#include <cbor.h>
+#include "cborutils.h"
 #include "jam.h"
 #include "activity.h"
 #include <string.h>
 #include <unistd.h>
+
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stddef.h>
+
+#include "cborutils.h"
 
 #define DELIM "$$$"
 #define CMD_LOGGER "COMMAND_LOGGER"

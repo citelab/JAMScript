@@ -194,12 +194,12 @@ char* jamdata_encode(char *fmt, ...){
   //content- encoded primitive type: argument's content 
   //key    - encoded string: argument's name
   cbor_item_t *root, *content, *key; 
-    //initialize args to be used by va_end and va_arg
-    va_list args;
-    va_start(args, fmt);
-    //buf    - type$$$name
-    //name   - name of each input value
-    char *buf, *name;
+  //initialize args to be used by va_end and va_arg
+  va_list args;
+  va_start(args, fmt);
+  //buf    - type+name
+  //name   - name of each input value
+  char *buf, *name;
 
   //initialize root
   if((root = cbor_new_definite_map(num)) == NULL){
@@ -213,22 +213,22 @@ char* jamdata_encode(char *fmt, ...){
     name = va_arg(args, char *);        
     if(fmt[i]=='s'){
       //string
-      buf = (char *)malloc(strlen(name)+5);
-      strcpy(buf, "s$$$");
+      buf = (char *)malloc(strlen(name)+2);
+      strcpy(buf, "s");
       strcat(buf, name);  
       key = cbor_build_string(buf);
       content = cbor_build_string(strdup(va_arg(args, char *)));
     } 
     else if(fmt[i]=='i' || fmt[i]=='d'){
-      buf = (char *)malloc(strlen(name)+5);
-      strcpy(buf, "d$$$");
+      buf = (char *)malloc(strlen(name)+2);
+      strcpy(buf, "d");
       strcat(buf, name);
       key = cbor_build_string(buf);
       content = cbor_build_uint32(abs(va_arg(args, int)));
     }
     else if(fmt[i]=='f'){
-      buf = (char *)malloc(strlen(name)+5);
-      strcpy(buf, "f$$$");
+      buf = (char *)malloc(strlen(name)+2);
+      strcpy(buf, "f");
       strcat(buf, name);
       key = cbor_build_string(buf);
       content = cbor_build_float8(va_arg(args, double));
@@ -240,7 +240,8 @@ char* jamdata_encode(char *fmt, ...){
     cbor_map_add(root, (struct cbor_pair){
       .key = key,
       .value = content
-    });       
+    });    
+    
   } 
   // free(buf);
   // free(name);
@@ -248,39 +249,51 @@ char* jamdata_encode(char *fmt, ...){
   unsigned char *buffer; 
   int       buffer_size;
   cbor_serialize_alloc(root, &buffer, (size_t *)&buffer_size);
-  return buffer;
+
+  char *dump = (char *)malloc(buffer_size*2+1);
+  char *ptr = dump;
+  for(i=0;i<buffer_size;i++){
+    sprintf(dump+2*i, "%02x", buffer[i]);
+  }
+  sprintf(dump+2*i, "%c", '\0');
+  printf("%d\n", strlen(dump));
+  struct cbor_load_result result; 
+  cbor_item_t *obj = cbor_load(buffer, buffer_size, &result);
+  printf("%d\n", buffer_size);
+  cbor_describe(obj, stdout);   
+  
+  return ptr;
 }
 
 // data          - encoded cbor data to be decoded
 // num           - # field in data
 // buffer        - a pointer to the c struct stores decoded data
 // args followed - offset of each field in data
-void* jamdata_decode(unsigned char *data, int num, void *buffer, ...){
+void* jamdata_decode(char *data, int num, void *buffer, ...){
   va_list args;
-    va_start(args, buffer);
+  va_start(args, buffer);
   // memcpy each field value in data to the corresponding field in buffer
   struct cbor_load_result result;
-  cbor_item_t *obj = cbor_load(data, 100, &result);
+  cbor_item_t *obj = cbor_load(data, strlen(data), &result);
   //cbor_describe(obj, stdout);
   struct cbor_pair *handle = cbor_map_handle(obj);
   int i, offset;
-  char *key, *token, *s; int n; float f;
+  char *key, *s; int n; float f;
   for(i=0;i<num;i++){
     key = cbor_get_string(handle[i].key);
-    token = strtok(key, "$$$");
     //key is the type of this argument        
-    if(strcmp(token, "s")==0){
+    if(key[0] == 's'){
       //string  
       s = cbor_get_string(handle[i].value);
       memcpy(buffer+(va_arg(args, size_t)), s, strlen(s)+1);
       printf("%s\n", s);
     } 
-    else if(strcmp(token, "d")==0){
+    else if(key[0] == 'd'){
       n = cbor_get_integer(handle[i].value);
       memcpy(buffer+(va_arg(args, size_t)), &n, sizeof(int));
       printf("%d\n", n);
     }
-    else if(strcmp(token, "f")==0){
+    else if(key[0] == 'f'){
       f = cbor_float_get_float8(handle[i].value);
       memcpy(buffer+(va_arg(args, size_t)), &f, sizeof(float));
       printf("%f\n", f);
@@ -298,10 +311,7 @@ void jamdata_log_to_server(char *namespace, char *logger_name, char *value, msg_
   printf("Calling... jamdata_log\n");
   char format[] = "apps[%s].namespaces[%s].datasources[%s].datastreams[%s]";
   char key[strlen(app_id) + strlen(namespace) + strlen(logger_name) + strlen(dev_id) + sizeof format - 8];
-
   sprintf(key, format, app_id, namespace, logger_name, dev_id);
-
-  printf("Key = %s\n", key);
   jdata_log_to_server(key, value, callback);
   perror("After jdata");
 }
@@ -319,8 +329,8 @@ void jamdata_log_to_server(char *namespace, char *logger_name, char *value, msg_
  * -> jdata_log_to_server("grade", 'A', null);
  */
 void jdata_log_to_server(char *key, char *value, msg_rcv_callback callback){
-  if(callback == NULL)
-    callback = jdata_default_msg_received;
+  
+  if(callback == NULL) callback = jdata_default_msg_received;
 
   int length = strlen(value) + strlen(DELIM) + strlen(app_id) + strlen(DELIM) + 10;
   char newValue[length];
@@ -477,7 +487,6 @@ jbroadcaster *jambroadcaster_init(int type, char *namespace, char *broadcaster_n
 /*
 Initializes a jbroadcaster. This specific variable is what receives values on the c side.
 Should be utilized when declaring a jbroadcaster
-
 Input:
     type => type of the jbroadcaster. Currently supports int, string, float
             Though the data will always be in string format and must be converted at a later time.  
