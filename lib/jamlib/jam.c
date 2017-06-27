@@ -58,7 +58,7 @@ jamstate_t *jam_init(int port)
 
     // Initialization of the activity and task tables
     // This is kind of an hack. There should be a better way structuring the code
-    // so that we don't need 
+    // so that we don't need
 
     js->atable = activity_table_new(js);
     js->rtable = runtable_new(js);
@@ -73,7 +73,7 @@ jamstate_t *jam_init(int port)
 
     js->bgsem = threadsem_new();
     js->jdata_sem = threadsem_new();
-    
+
     int rval;
     #ifdef DEBUG_LVL1
         printf("Jdata initialization... \t\t[started]\n");
@@ -96,9 +96,6 @@ jamstate_t *jam_init(int port)
     }
     task_wait(js->bgsem);
 
-    // Turn on the sync timer 
-//    jam_set_sync_timer(js, 2000);
-
     #ifdef DEBUG_LVL1
         printf("JAM Library initialization... \t\t[completed]\n");
     #endif
@@ -113,11 +110,10 @@ void jam_event_loop(void *arg)
 {
     jamstate_t *js = (jamstate_t *)arg;
     command_t *cmd;
-    
+
     char *deviceid = js->cstate->device_id;
 
     MQTTClient mcl = js->cstate->mqttserv[0];
-    
 
     while (1)
     {
@@ -143,12 +139,12 @@ void jam_event_loop(void *arg)
             {
                 // Remote requests go through here.. local requests don't go through here
                 jactivity_t *jact = activity_new(js->atable, cmd->actid, true);
-                // The activity creation should have setup the thread 
-                // So we should have a thread to run... 
-                // 
+                // The activity creation should have setup the thread
+                // So we should have a thread to run...
+                //
                 runtable_insert(js, cmd->actid, cmd);
                 //
-                if (jact != NULL) 
+                if (jact != NULL)
                     pqueue_enq(jact->thread->inq, cmd, sizeof(command_t));
                 else
                     printf("ERROR! Unable to find a free Activity handler to start %s", cmd->actname);
@@ -179,11 +175,11 @@ void jam_event_loop(void *arg)
                     }
                 }
                 // Remote requests go through here.. local requests don't go through here
-                
+
                 jactivity_t *jact = activity_new(js->atable, cmd->actid, true);
-                // The activity creation should have setup the thread 
-                // So we should have a thread to run... 
-                // 
+                // The activity creation should have setup the thread
+                // So we should have a thread to run...
+                //
                 runtable_insert(js, cmd->actid, cmd);
                 //
 
@@ -191,7 +187,7 @@ void jam_event_loop(void *arg)
                 while (getcurtime() < (double) sTime) {}
 
                 // printf("after a hwile: %f\n", getcurtime());
-                if (jact != NULL) 
+                if (jact != NULL)
                     pqueue_enq(jact->thread->inq, cmd, sizeof(command_t));
                 else
                     printf("ERROR! Unable to find a free Activity handler to start %s", cmd->actname);
@@ -219,14 +215,14 @@ bool have_fog_or_cloud(jamstate_t *js)
 
     if (cs->mqttenabled[1] || cs->mqttenabled[2])
         return true;
-    else 
+    else
         return false;
 }
 
 int cloud_tree_height(jamstate_t *js)
 {
     corestate_t *cs = js->cstate;
-    
+
     return ((cs->mqttenabled[2] == true) +
             (cs->mqttenabled[1] == true) +
             (cs->mqttenabled[0] == true));

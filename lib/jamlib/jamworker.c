@@ -66,7 +66,7 @@ void *jwork_bgthread(void *arg)
 
     // assemble the poller.. insert the FDs that should go into the poller
     jwork_assemble_fds(js);
-    
+
     thread_signal(js->bgsem);
     // process the events..
 
@@ -94,11 +94,11 @@ void *jwork_bgthread(void *arg)
 
 void jwork_set_subscriptions(jamstate_t *js)
 {
-    // the /admin/announce/all subscription is already set.. 
+    // the /admin/announce/all subscription is already set..
 
-    for (int i = 0; i < 3; i++) 
+    for (int i = 0; i < 3; i++)
     {
-        if (js->cstate->mqttenabled[i]) 
+        if (js->cstate->mqttenabled[i])
         {
             mqtt_subscribe(js->cstate->mqttserv[i], "/level/func/reply/#");
             mqtt_subscribe(js->cstate->mqttserv[i], "/mach/func/request");
@@ -109,15 +109,15 @@ void jwork_set_subscriptions(jamstate_t *js)
 }
 
 
-/* 
+/*
  * Set all the callback handlers
- * 
+ *
  */
 void jwork_set_callbacks(jamstate_t *js)
 {
     if (js->cstate->mqttenabled[0] == true)
         MQTTClient_setCallbacks(js->cstate->mqttserv[0], js->deviceinq, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
-    
+
     if (js->cstate->mqttenabled[1] == true)
         MQTTClient_setCallbacks(js->cstate->mqttserv[1], js->foginq, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
 
@@ -133,7 +133,7 @@ void jwork_msg_delivered(void *ctx, MQTTClient_deliveryToken dt)
 
 /*
  * The most important callback handler. This is executed in another anonymous thread
- * by the MQTT (Paho) Client library. We are not explicitly spawning the thread. 
+ * by the MQTT (Paho) Client library. We are not explicitly spawning the thread.
  *
  */
 
@@ -144,13 +144,13 @@ int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTClient_messa
     // the ctx pointer is actually pointing towards the queue - cast it
     simplequeue_t *queue = (simplequeue_t *)ctx;
 
-    // We need handle the message based on the topic.. 
-    if (strcmp(topicname, "/admin/announce/all") == 0) 
+    // We need handle the message based on the topic..
+    if (strcmp(topicname, "/admin/announce/all") == 0)
     {
         // TODO: Ignore these messages??
         //
-    } else 
-    if (strncmp(topicname, "/level/func/reply", strlen("/level/func/reply") -1) == 0) 
+    } else
+    if (strncmp(topicname, "/level/func/reply", strlen("/level/func/reply") -1) == 0)
     {
         nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
         command_t *cmd = command_from_data(NULL, nv);
@@ -164,7 +164,7 @@ int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTClient_messa
         command_t *cmd = command_from_data(NULL, nv);
         nvoid_free(nv);
         queue_enq(queue, cmd, sizeof(command_t));
-        // Don't free the command structure.. the queue is still carrying it        
+        // Don't free the command structure.. the queue is still carrying it
     }
     else if (strncmp(topicname, "admin/request/Go", strlen("admin/request/Go") -1) == 0) {
         char *strSyncTime = msg->payload;
@@ -186,9 +186,9 @@ void jwork_connect_lost(void *context, char *cause)
 }
 
 
-// The FDs are put into a static array. 
+// The FDs are put into a static array.
 // Put the FDs in a particular order: OutQueue, DeviceQueue, FogQueue, CloudQueue,
-// ActivityOutQueue[1..maxActQ]: 
+// ActivityOutQueue[1..maxActQ]:
 // Total slots (fixed): 1 + 3 + maxActQ
 // No reassembling required.. but we are restricted to creating maxActQ activities.
 // The Activity Queues are prespawned
@@ -196,7 +196,7 @@ void jwork_connect_lost(void *context, char *cause)
 void jwork_assemble_fds(jamstate_t *js)
 {
     int i;
-    
+
     js->numpollfds = 1 + 3 + MAX_ACT_THREADS;
     js->pollfds = (struct nn_pollfd *)calloc((js->numpollfds), sizeof(struct nn_pollfd));
 
@@ -228,7 +228,7 @@ void jwork_processor(jamstate_t *js)
     // Need to scan all the decriptors
 
     // Use if constructs for the first 4 descriptors.. note we have a
-    // fixed set of descriptors.. 
+    // fixed set of descriptors..
     //
 
     if (js->pollfds[0].revents & NN_POLLIN)
@@ -264,14 +264,14 @@ void jwork_processor(jamstate_t *js)
     {
         if (js->pollfds[i + 4].revents & NN_POLLIN)
             jwork_process_actoutq(js, i);
-    }    
+    }
 }
 
 
-// The global Output Q has all the commands the main thread wants to 
-// get executed: LOCAL and non LOCAL. If the "opt" field of the message 
-// is "LOCAL" we execute the command locally. Otherwise, it is sent to the 
-// remote node for 
+// The global Output Q has all the commands the main thread wants to
+// get executed: LOCAL and non LOCAL. If the "opt" field of the message
+// is "LOCAL" we execute the command locally. Otherwise, it is sent to the
+// remote node for
 void jwork_process_globaloutq(jamstate_t *js)
 {
     nvoid_t *nv = queue_deq(js->atable->globaloutq);
@@ -302,8 +302,11 @@ void jwork_process_globaloutq(jamstate_t *js)
         {
             for (int i = 0; i < 3; i++)
                 if (js->cstate->mqttenabled[i] == true)
+                {
+                    printf("Global outq %d\n", i);
                     mqtt_publish(js->cstate->mqttserv[i], "/level/func/request", rcmd);
-        } 
+                }
+        }
         command_free(rcmd);
     }
 }
@@ -312,7 +315,7 @@ void jwork_process_globaloutq(jamstate_t *js)
 
 //
 // TODO: Do we have an inefficiency here? I am tracking an old comment that did not
-// make much sense. The old comment follows. 
+// make much sense. The old comment follows.
 //
 // There is huge inefficiency here. We are encoding and decoding the data
 // unnecessarily. We should just do pointer passing through the queue.
@@ -331,7 +334,7 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
         printf("\n\nACTOUTQ[%d]::  %s, opt: %s actarg: %s actid: %s\n\n\n", indx, rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
     #endif
     // Don't use nvoid_free() .. it is not deep enough
-    
+
     if (rcmd != NULL)
     {
         // TODO: What else goes here..???
@@ -339,8 +342,9 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
 
         // relay the command to the remote servers..
         for (int i = 0; i < 3; i++)
-            if (js->cstate->mqttenabled[i] == true) 
+            if (js->cstate->mqttenabled[i] == true)
             {
+                printf("Actoutq .. i = %d\n", i);
                 mqtt_publish(js->cstate->mqttserv[i], "/level/func/request", rcmd);
             }
 
@@ -359,7 +363,7 @@ void jwork_process_device(jamstate_t *js)
 //    printf("Time .2: %ld\n", activity_getuseconds());
 
     // Get the message from the device to process
-    // 
+    //
     nvoid_t *nv = queue_deq(js->deviceinq);
     if (nv == NULL) return;
 
@@ -369,19 +373,19 @@ void jwork_process_device(jamstate_t *js)
         printf("\n\nIMPORTANT %s, opt: %s actarg: %s actid: %s\n\n\n", rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
     #endif
     // Don't use nvoid_free() .. it is not deep enough
-    
+
     if (rcmd != NULL)
     {
-        // TODO: Implement a synchronization sub protocol.. 
+        // TODO: Implement a synchronization sub protocol..
         //
         if (strcmp(rcmd->cmd, "REXEC-SYN") == 0)
         {
             printf("Sync....1\n");
-            
+
             if (jwork_check_args(js, rcmd))
             {
                 printf("Sync....2\n");
-                
+
                 if (jcond_evaluate_cond(js, rcmd))
                 {
                     printf("Sync....3\n");
@@ -393,27 +397,27 @@ void jwork_process_device(jamstate_t *js)
                         quorum = jcond_getquorum(rcmd);
                         runtable_insert_synctask(js, rcmd, quorum);
                     }
-                    else 
+                    else
                     {
                         printf("Adding unsynchronized task... \n");
 
                         // This is a standalone SYN request.. blocking call
-                        // Because it is a blocking call.. we are going to go ahead and schedule it 
+                        // Because it is a blocking call.. we are going to go ahead and schedule it
                         int count = runtable_synctask_count(js->rtable);
                         if (count == 0)
                             // Sync tasks go into the high priority queue
                             p2queue_enq_high(js->atable->globalinq, rcmd, sizeof(command_t));
-                        else 
-                            runtable_insert_synctask(js, rcmd, quorum); 
+                        else
+                            runtable_insert_synctask(js, rcmd, quorum);
                     }
                 }
-                else 
+                else
                     jwork_send_nak(js, rcmd, "CONDITION FALSE");
             }
-            else 
+            else
                 jwork_send_error(js, rcmd, "ARGUMENT ERROR");
         }
-        else 
+        else
         if (strcmp(rcmd->cmd, "REXEC-ASY") == 0)
         {
             if (jwork_check_args(js, rcmd))
@@ -422,7 +426,7 @@ void jwork_process_device(jamstate_t *js)
                 {
                     p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
                 }
-                else 
+                else
                     jwork_send_nak(js->cstate->mqttserv[0], rcmd, "CONDITION FALSE");
             }
             else
@@ -437,10 +441,10 @@ void jwork_process_device(jamstate_t *js)
                 {
                     p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
                 }
-                else 
+                else
                     jwork_send_nak(js->cstate->mqttserv[0], rcmd, "CONDITION FALSE");
             }
-        }        
+        }
         else
         if ((strcmp(rcmd->cmd, "REXEC-ACK") == 0) ||
             (strcmp(rcmd->cmd, "REXEC-NAK") == 0) ||
@@ -452,10 +456,10 @@ void jwork_process_device(jamstate_t *js)
             {
                 activity_thread_t *athr = js->atable->athreads[aindx];
                 // send the rcmd to that queue.. this is a pushqueue
-                pqueue_enq(athr->inq, rcmd, sizeof(command_t));    
+                pqueue_enq(athr->inq, rcmd, sizeof(command_t));
             }
         }
-        
+
         else if (strcmp(rcmd->cmd, "GOGOGO") == 0) {
 			// Received the "go" from J nodes, we put the go command into the high queue
             p2queue_enq_high(js->atable->globalinq, rcmd, sizeof(command_t));
@@ -522,7 +526,7 @@ bool jwork_check_args(jamstate_t *js, command_t *cmd)
     {
         return jrun_check_signature(areg, cmd);
     }
-    else 
+    else
         return false;
 }
 
@@ -533,7 +537,7 @@ bool jwork_check_args(jamstate_t *js, command_t *cmd)
 void jwork_process_fog(jamstate_t *js)
 {
     // Get the message from the fog to process
-    // 
+    //
     nvoid_t *nv = queue_deq(js->foginq);
     if (nv == NULL) return;
 
@@ -543,7 +547,7 @@ void jwork_process_fog(jamstate_t *js)
         printf("\n\nIMPORTANT %s, opt: %s actarg: %s actid: %s\n\n\n", rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
     #endif
     // Don't use nvoid_free() .. it is not deep enough
-    
+
     if (rcmd != NULL)
     {
         // We are getting replies from the fog level for requests that
@@ -559,7 +563,7 @@ void jwork_process_fog(jamstate_t *js)
             {
                 activity_thread_t *athr = js->atable->athreads[aindx];
                 // send the rcmd to that queue.. this is a pushqueue
-                pqueue_enq(athr->inq, rcmd, sizeof(command_t));    
+                pqueue_enq(athr->inq, rcmd, sizeof(command_t));
             }
         }
         else
@@ -576,7 +580,7 @@ void jwork_process_fog(jamstate_t *js)
 void jwork_process_cloud(jamstate_t *js)
 {
     // Get the message from the cloud to process
-    // 
+    //
     nvoid_t *nv = queue_deq(js->cloudinq);
     if (nv == NULL) return;
 
@@ -586,7 +590,7 @@ void jwork_process_cloud(jamstate_t *js)
         printf("\n\nIMPORTANT %s, opt: %s actarg: %s actid: %s\n\n\n", rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
     #endif
     // Don't use nvoid_free() .. it is not deep enough
-    
+
     if (rcmd != NULL)
     {
         // We are getting replies from the fog level for requests that
@@ -602,7 +606,7 @@ void jwork_process_cloud(jamstate_t *js)
             {
                 activity_thread_t *athr = js->atable->athreads[aindx];
                 // send the rcmd to that queue.. this is a pushqueue
-                pqueue_enq(athr->inq, rcmd, sizeof(command_t));    
+                pqueue_enq(athr->inq, rcmd, sizeof(command_t));
             }
         }
         else
@@ -647,7 +651,7 @@ void jam_set_timer(jamstate_t *js, char *actid, int tval)
  //   printf("JAM-set-timer for actid .. %s\n", actid);
 
     activity_thread_t *athr = activity_getbyid(js->atable, actid);
-    if (athr != NULL) 
+    if (athr != NULL)
         timer_add_event(js->maintimer, tval, 0, actid, tcallback, athr);
     else
         printf("ERROR! Unable to find the activity to trigger at timer event.\n");
@@ -675,6 +679,6 @@ void jam_set_sync_timer(jamstate_t *js, int tval)
         printf("Setting sync timer %d\n", tval);
         while(getcurtime() < syncStartTime) {}
         printf("starting.. : %f\n", getcurtime());
-        timer_add_event(js->synctimer, tval, 1, "synctimer-------", stcallback, js);        
+        timer_add_event(js->synctimer, tval, 1, "synctimer-------", stcallback, js);
     }
 }

@@ -34,7 +34,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 // The core_init() is the bootstrapping function for JAMlib. It runs the MQTT client
 // (Paho) library in single thread mode - synchronous send and receive. Later we switch
-// it to multi-threaded mode. 
+// it to multi-threaded mode.
 //
 
 
@@ -42,7 +42,7 @@ corestate_t *core_init(int port, int timeout)
 {
     command_t *scmd, *rcmd, *rcmd2;
     char serverhost[64];
-    int count;
+
     #ifdef DEBUG_LVL1
         printf("Core initialization...");
     #endif
@@ -66,7 +66,7 @@ corestate_t *core_init(int port, int timeout)
     mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd);
     rcmd = mqtt_receive(cs->mqttserv[0], "REGISTER-ACK", "/admin/announce/all", cs->timeout);
     // if we did not get the reply.. wait for the PING from an active server node
-    if (rcmd == NULL) 
+    if (rcmd == NULL)
     {
         // wait with a large timeout.. about 1 hr.
         rcmd = mqtt_receive(cs->mqttserv[0], "PING", "/admin/announce/all", 1000 * 60 * 60);
@@ -80,9 +80,9 @@ corestate_t *core_init(int port, int timeout)
         scmd = command_new("REGISTER", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
         mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd);
         rcmd = mqtt_receive(cs->mqttserv[0], "REGISTER-ACK", "/admin/announce/all", cs->timeout);
-        
-        // get the register acknowledge message 
-        if (rcmd == NULL) 
+
+        // get the register acknowledge message
+        if (rcmd == NULL)
         {
             // if the acknowledege timed out or registration failed.. report it.
             printf("\nQUITING. REGISTER failed. Service component (J) not running?? \n\n");
@@ -90,40 +90,43 @@ corestate_t *core_init(int port, int timeout)
         }
         command_free(rcmd);
     }
-    else 
+    else
         command_free(rcmd);
 
+    // Only the local (device) J node is set here.
+    // The local J-C binding is fairly stable..
     cs->mqttenabled[0] = true;
+
+    // Next we look at other J nodes (fog, and cloud)
+    // These associations are more volatile
+    // We do the initial assocation here and recompute these associations later
+    // in the asynchronous loop.
 
     // get information about the machine state: fog address, cloud address
     scmd = command_new("GET-CF-INFO", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
 
-    // No need to retry many times.. the server is already there..
-    count = 0;
-    do {
-        mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd);
-        rcmd = mqtt_receive(cs->mqttserv[0], "PUT-CF-INFO", "/admin/announce/all", cs->timeout);
-    } while ((rcmd == NULL) && (count++ < 5));
+    mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd);
+    rcmd = mqtt_receive(cs->mqttserv[0], "PUT-CF-INFO", "/admin/announce/all", cs->timeout);
     command_free(scmd);
 
-    if (rcmd == NULL) 
+    if (rcmd == NULL)
     {
         // Unable to get fog/cloud status from the broker..
         printf("\nERROR! Unable to get cloud/fog status information.. \n");
         exit(1);
     } else
-    {        
+    {
         // process the information that we just received..
-        for (int i = 0; i < rcmd->nargs; i++) 
+        for (int i = 0; i < rcmd->nargs; i++)
         {
             cs->mqttserv[i+1] = mqtt_open(rcmd->args[i].val.sval);
-            if (cs->mqttserv[i+1] != NULL) 
+            if (cs->mqttserv[i+1] != NULL)
             {
                 scmd = command_new("REGISTER", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
-                mqtt_publish(cs->mqttserv[i+1], "/admin/request/all", scmd); 
+                mqtt_publish(cs->mqttserv[i+1], "/admin/request/all", scmd);
                 command_free(scmd);
-    
-                // get the register acknowledge message 
+
+                // get the register acknowledge message
                 if ((rcmd2 = mqtt_receive(cs->mqttserv[i+1], "REGISTER-ACK", "/admin/announce/all", cs->timeout)) == NULL)
                     cs->mqttenabled[i+1] = false;
                 else
@@ -135,8 +138,6 @@ corestate_t *core_init(int port, int timeout)
         }
     }
 
-    // We need to turn on the Asynchronous mode in the MQTT client...
-    // This could be done later.. when we know the callbacks
     return cs;
 }
 
@@ -150,7 +151,7 @@ void core_setup(corestate_t *cs, int timeout)
     cs->device_id = strdup(buf);
 }
 
-// Core callback handlers for MQTT in Async mode 
+// Core callback handlers for MQTT in Async mode
 void core_connlost(void *ctx, char *cause)
 {
 
@@ -163,20 +164,20 @@ int core_msgarr(void *ctx, char *topicname, int tlen, MQTTClient_message *msg)
 
 void core_delcomp(void *ctx, MQTTClient_deliveryToken dt)
 {
-    
+
 }
 
 
-// We are trying to do re-initialization because the connection is lost 
+// We are trying to do re-initialization because the connection is lost
 // We could have inferred this through a callback trigger
 //
 // TODO: We need have a core reinitialization routine. The challenge
 // here is to handle the reply in the asynchronous mode. We need to create a
-// local context and let the handlers update that context. We need to have asynchronous 
+// local context and let the handlers update that context. We need to have asynchronous
 // receive routines that would actually receive from the local context. Check the local
-// context for the completion of the reception. Get the message from there. Use a sleep 
-// in the receiver to check. 
-// 
+// context for the completion of the reception. Get the message from there. Use a sleep
+// in the receiver to check.
+//
 void core_reinit(corestate_t *cs)
 {
     int i;

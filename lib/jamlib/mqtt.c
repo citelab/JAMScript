@@ -8,7 +8,7 @@
 
 
 
-MQTTClient mqtt_open(char *mhost) 
+MQTTClient mqtt_open(char *mhost)
 {
     MQTTClient mcl;
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
@@ -51,7 +51,7 @@ MQTTClient mqtt_reopen(MQTTClient mcl)
 
 // Subscribe using QoS level 1
 //
-void mqtt_subscribe(MQTTClient mcl, char *topic) 
+void mqtt_subscribe(MQTTClient mcl, char *topic)
 {
     if (topic != NULL)
         MQTTClient_subscribe(mcl, topic, 1);
@@ -60,7 +60,7 @@ void mqtt_subscribe(MQTTClient mcl, char *topic)
 void mqtt_publish(MQTTClient mcl, char *topic, command_t *cmd)
 {
     if (MQTTClient_publish(mcl, topic, cmd->length, cmd->buffer, 1, 0, NULL) != MQTTCLIENT_SUCCESS)
-        printf("WARNING!! Unable to publish message to MQTT broker - topic: %s", topic);
+        printf("WARNING!! Unable to publish message to MQTT broker - topic: %s, buffer %s", topic, cmd->buffer);
 
 }
 
@@ -74,8 +74,8 @@ command_t *mqtt_receive(MQTTClient mcl, char *cmdstr, char *topic, int timeout)
         // timeout occured..
         if (msg == NULL)
             return NULL;
-        
-        // if wrong topic, ignore the message 
+
+        // if wrong topic, ignore the message
         if (strcmp(topic, topicname) != 0)
             return NULL;
 
