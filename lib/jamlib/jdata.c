@@ -249,7 +249,6 @@ char* jamdata_encode(char *fmt, ...){
   // cbor_item_t *obj = cbor_load(buffer, buffer_size, &result);
   // printf("%d\n", buffer_size);
   // cbor_describe(obj, stdout);   
-  
   return ptr;
 }
 
@@ -262,7 +261,7 @@ void* jamdata_decode(char *data, int num, void *buffer, ...){
   va_start(args, buffer);
   // memcpy each field value in data to the corresponding field in buffer
   struct cbor_load_result result;
-  cbor_item_t *obj = cbor_load(data, strlen(data), &result);
+  cbor_item_t *obj = cbor_load((unsigned char*)data, strlen(data), &result);
   //cbor_describe(obj, stdout);
   struct cbor_pair *handle = cbor_map_handle(obj);
   int i, offset;
