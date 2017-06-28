@@ -106,6 +106,7 @@ corestate_t *core_init(int port, int timeout)
     scmd = command_new("GET-CF-INFO", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
 
     mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd);
+
     rcmd = mqtt_receive(cs->mqttserv[0], "PUT-CF-INFO", "/admin/announce/all", cs->timeout);
     command_free(scmd);
 

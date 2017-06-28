@@ -69,6 +69,7 @@ command_t *mqtt_receive(MQTTClient mcl, char *cmdstr, char *topic, int timeout)
     char *topicname;
     int tlen;
     MQTTClient_message *msg;
+
     if (MQTTClient_receive(mcl, &topicname, &tlen, &msg, timeout) == MQTTCLIENT_SUCCESS)
     {
         // timeout occured..
