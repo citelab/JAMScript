@@ -1,7 +1,7 @@
 {
   "name": "jamserver",
   "description": "JServer for JAMScript environment",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -30,14 +30,5 @@
   "preferGlobal": true,
   "files": [
     "*.js"
-  ],
-  "main": "index.js",
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [
-    "JAMScript"
-  ],
-  "author": "ANRL - McGill University"
+  ]
 }
