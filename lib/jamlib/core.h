@@ -27,25 +27,24 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdbool.h>
 #include <MQTTClient.h>
 
+#include "command.h"
+
 #define MAX_SERVERS             3
 
 typedef struct _corestate_t
 {
     char *device_id;
+    bool cf_pending;
 
     // TODO: May be unused? Can we remove this one??
     int timeout;
 
     MQTTClient mqttserv[3];
     bool mqttenabled[3];
+    char *mqtthost[3];
 
 } corestate_t;
 
-typedef struct  _corecontext_t
-{
-    int xx;
-
-} corecontext_t;
 
 // ------------------------------
 // Function prototypes..
@@ -54,9 +53,11 @@ typedef struct  _corecontext_t
 // Initialize the core.. the first thing we need to call
 corestate_t *core_init(int port, int timeout);
 void core_setup(corestate_t *cs, int timeout);
-void core_reinit(corestate_t *cs);
 
+void core_makeconnection(corestate_t *cs, command_t *cmd);
+void core_check_pending(corestate_t *cs);
 void core_disconnect(corestate_t *cs);
+void core_reconnect_i(corestate_t *cs, int i);
 void core_reconnect(corestate_t *cs);
 
 #endif

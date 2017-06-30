@@ -55,11 +55,11 @@ typedef struct _runtableentry_t
     int status;
     long long accesstime;
     enum activity_type_t type;
-    
+
     int rcd_replies;
     // results hold remote results in the case of C->J or
     // local results in the case of J->C sync calls - only [0] used
-    arg_t *results[MAX_SERVERS]; //The results 
+    arg_t *results[MAX_SERVERS]; //The results
 } runtableentry_t;
 
 
@@ -70,15 +70,16 @@ typedef struct _runtable_t
     runtableentry_t *entries;
     int rcount;
     pthread_mutex_t lock;
-    
+
 } runtable_t;
+
 
 
 typedef struct _jamstate_t
 {
-    timertype_t *maintimer;    
+    timertype_t *maintimer;
     timertype_t *synctimer;
-    
+
     corestate_t *cstate;
     activity_table_t *atable;
     runtable_t *rtable;
@@ -101,6 +102,15 @@ typedef struct _jamstate_t
     int maxleases;
 
 } jamstate_t;
+
+
+typedef struct _callcontext_t
+{
+    simplequeue_t *queue;
+    jamstate_t *context;
+    int indx;
+
+} callcontext_t;
 
 
 jamstate_t *jam_init(int port);
@@ -172,7 +182,7 @@ bool jcond_synchronized(command_t *cmd);
 
 
 
-// Prototypes for functions in 
+// Prototypes for functions in
 // jamrunner.c
 //
 
@@ -190,15 +200,13 @@ command_t *get_actid_results(jamstate_t *js, char *actid);
 bool jrun_check_signature(activity_callback_reg_t *creg, command_t *cmd);
 void jrun_arun_callback(jactivity_t *jact, command_t *cmd, activity_callback_reg_t *creg);
 
-
 // jcond.h
 
 bool jcond_evaluate_cond(jamstate_t *js, command_t *cmd);
 bool jcond_synchronized(command_t *cmd);
 int jcond_getquorum(command_t *cmd);
 
-
-
+char *get_device_id(char *filepath);
 
 #endif  /* __JAMLIB_H__ */
 

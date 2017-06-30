@@ -32,7 +32,7 @@ MQTTClient mqtt_open(char *mhost)
 }
 
 
-MQTTClient mqtt_reopen(MQTTClient mcl)
+MQTTClient mqtt_reconnect(MQTTClient mcl)
 {
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
     conn_opts.keepAliveInterval = 20;
@@ -48,6 +48,9 @@ MQTTClient mqtt_reopen(MQTTClient mcl)
 
     return mcl;
 }
+
+
+
 
 // Subscribe using QoS level 1
 //

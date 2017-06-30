@@ -32,6 +32,34 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "uuid4.h"
 #include "command.h"
 
+
+// Returns the device ID string from the filepath.
+
+char *get_device_id(char *filepath)
+{
+    char *devid = (char *)malloc(64);
+
+    FILE *fp = fopen(filepath, "r");
+    if (fp == NULL)
+    {
+        printf("ERROR! Missing: %s\n", filepath);
+        printf("Start the J node first and then the C node\n");
+        printf("If you are running JAMScript in a single machine, you need\n");
+        printf("run a device in its own directory - i.e., C and J components\n");
+        exit(1);
+    }
+
+    if (fscanf(fp, "%s", devid) != 1)
+    {
+        printf("ERROR! Malformed device ID found in the configuration file\n");
+        printf("Configuration file at %s is corrupted\n", filepath);
+        exit(1);
+    }
+
+    return devid;
+}
+
+
 // The core_init() is the bootstrapping function for JAMlib. It runs the MQTT client
 // (Paho) library in single thread mode - synchronous send and receive. Later we switch
 // it to multi-threaded mode.
@@ -41,7 +69,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 corestate_t *core_init(int port, int timeout)
 {
     command_t *scmd, *rcmd, *rcmd2;
-    char serverhost[64];
 
     #ifdef DEBUG_LVL1
         printf("Core initialization...");
@@ -51,9 +78,11 @@ corestate_t *core_init(int port, int timeout)
     corestate_t *cs = (corestate_t *)calloc(1, sizeof(corestate_t));
     // device_id set inside the following function
     core_setup(cs, timeout);
-    sprintf(serverhost, "tcp://localhost:%d", port);
+    cs->mqtthost[0] = (char *)malloc(64);
+
+    sprintf(cs->mqtthost[0], "tcp://localhost:%d", port);
     // open an mqtt connection to localhost
-    cs->mqttserv[0] = mqtt_open(serverhost);
+    cs->mqttserv[0] = mqtt_open(cs->mqtthost[0]);
     if (cs->mqttserv[0] == NULL)
     {
         printf("\nERROR! Unable to connect to the MQTT server at [%d].\n", port);
@@ -102,44 +131,78 @@ corestate_t *core_init(int port, int timeout)
     // We do the initial assocation here and recompute these associations later
     // in the asynchronous loop.
 
+    cs->cf_pending = true;
+
     // get information about the machine state: fog address, cloud address
     scmd = command_new("GET-CF-INFO", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
 
     mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd);
 
     rcmd = mqtt_receive(cs->mqttserv[0], "PUT-CF-INFO", "/admin/announce/all", cs->timeout);
+    if (rcmd != NULL)
+    {
+        core_makeconnection(cs, rcmd);
+        command_free(rcmd);
+
+        // get the next information..
+        rcmd = mqtt_receive(cs->mqttserv[0], "PUT-CF-INFO", "/admin/announce/all", cs->timeout);
+        if (rcmd != NULL)
+        {
+            core_makeconnection(cs, rcmd);
+            command_free(rcmd);
+            cs->cf_pending = false;
+        }
+        else
+            printf("\nWARNING! Cloud/Fog information pending... \n");
+    }
+    else
+        printf("\nWARNING! Cloud/Fog information pending... \n");
+
     command_free(scmd);
 
-    if (rcmd == NULL)
-    {
-        // Unable to get fog/cloud status from the broker..
-        printf("\nERROR! Unable to get cloud/fog status information.. \n");
-        exit(1);
-    } else
-    {
-        // process the information that we just received..
-        for (int i = 0; i < rcmd->nargs; i++)
-        {
-            cs->mqttserv[i+1] = mqtt_open(rcmd->args[i].val.sval);
-            if (cs->mqttserv[i+1] != NULL)
-            {
-                scmd = command_new("REGISTER", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
-                mqtt_publish(cs->mqttserv[i+1], "/admin/request/all", scmd);
-                command_free(scmd);
+    return cs;
+}
 
-                // get the register acknowledge message
-                if ((rcmd2 = mqtt_receive(cs->mqttserv[i+1], "REGISTER-ACK", "/admin/announce/all", cs->timeout)) == NULL)
-                    cs->mqttenabled[i+1] = false;
-                else
-                {
-                    cs->mqttenabled[i+1] = true;
-                    command_free(rcmd2);
-                }
-            }
+
+void core_makeconnection(corestate_t *cs, command_t *cmd)
+{
+    command_t *scmd, *rcmd;
+    int indx;
+
+    if (strcmp(cmd->actarg, "fog") == 0)
+        indx = 1;
+    else if (strcmp(cmd->actarg, "cloud") ==0)
+        indx = 2;
+    else
+        return;
+
+    cs->mqttserv[indx] = mqtt_open(cmd->args[0].val.sval);
+    if (cs->mqttserv[indx] != NULL)
+    {
+        scmd = command_new("REGISTER", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
+        mqtt_publish(cs->mqttserv[indx], "/admin/request/all", scmd);
+        command_free(scmd);
+
+        // get the register acknowledge message
+        if ((rcmd = mqtt_receive(cs->mqttserv[indx], "REGISTER-ACK", "/admin/announce/all", cs->timeout)) == NULL)
+            cs->mqttenabled[indx] = false;
+        else
+        {
+            cs->mqtthost[indx] = strdup(cmd->args[0].val.sval);
+            cs->mqttenabled[indx] = true;
+            command_free(rcmd);
         }
     }
+}
 
-    return cs;
+
+// Check whether we are still pending fog/cloud information..
+// If not, we need to reset the cf_pending flag
+//
+void core_check_pending(corestate_t *cs)
+{
+    if (cs->mqttenabled[1] && cs->mqttenabled[2])
+        cs->cf_pending = false;
 }
 
 
@@ -147,50 +210,7 @@ void core_setup(corestate_t *cs, int timeout)
 {
     cs->timeout = timeout;
 
-    char buf[UUID4_LEN];
-    uuid4_generate(buf);
-    cs->device_id = strdup(buf);
-}
-
-// Core callback handlers for MQTT in Async mode
-void core_connlost(void *ctx, char *cause)
-{
-
-}
-
-int core_msgarr(void *ctx, char *topicname, int tlen, MQTTClient_message *msg)
-{
-    return 0;
-}
-
-void core_delcomp(void *ctx, MQTTClient_deliveryToken dt)
-{
-
-}
-
-
-// We are trying to do re-initialization because the connection is lost
-// We could have inferred this through a callback trigger
-//
-// TODO: We need have a core reinitialization routine. The challenge
-// here is to handle the reply in the asynchronous mode. We need to create a
-// local context and let the handlers update that context. We need to have asynchronous
-// receive routines that would actually receive from the local context. Check the local
-// context for the completion of the reception. Get the message from there. Use a sleep
-// in the receiver to check.
-//
-void core_reinit(corestate_t *cs)
-{
-    int i;
-    command_t *scmd;
-
-    corecontext_t *ctx = (corecontext_t *)calloc(1, sizeof(corecontext_t));
-
-    // Reset the callback handlers
-    for (i = 0; i < 3; i++)
-        MQTTClient_setCallbacks(cs->mqttserv[i], ctx, core_connlost, core_msgarr, core_delcomp);
-
-    // TODO: This is totally incomplete.
+    cs->device_id = get_device_id("./cdev.conf/deviceId");
 }
 
 
@@ -204,11 +224,30 @@ void core_disconnect(corestate_t *cs)
     usleep(500 * 1000);
 }
 
+
+void core_reconnect_i(corestate_t *cs, int i)
+{
+    if (cs->mqttenabled[i] == true)
+    {
+        cs->mqttserv[i] = mqtt_reconnect(cs->mqttserv[i]);
+        if (cs->mqttserv[i] == NULL)
+        {
+            cs->mqttserv[i] = mqtt_open(cs->mqtthost[i]);
+            if (cs->mqttserv[i] == NULL)
+            {
+                printf("\nWARNING! Unable to reconnect to the MQTT server at [%s].\n", cs->mqtthost[i]);
+                printf("** Check whether an MQTT server is running at [%s] **\n\n", cs->mqtthost[i]);
+                printf("Device could have moved away from the fog connection zone.\n");
+            }
+        }
+    }
+}
+
+
 void core_reconnect(corestate_t *cs)
 {
     int i;
 
     for(i = 0; i < 3; i++)
-        if (cs->mqttenabled[i] == true)
-            cs->mqttserv[i] = mqtt_reopen(cs->mqttserv[i]);
+        core_reconnect_i(cs, i);
 }

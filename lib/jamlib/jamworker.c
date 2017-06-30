@@ -115,14 +115,29 @@ void jwork_set_subscriptions(jamstate_t *js)
  */
 void jwork_set_callbacks(jamstate_t *js)
 {
+    callcontext_t *ctx = (callcontext_t *)calloc(1, sizeof(callcontext_t));
+    ctx->context = js;
+
     if (js->cstate->mqttenabled[0] == true)
-        MQTTClient_setCallbacks(js->cstate->mqttserv[0], js->deviceinq, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
+    {
+        ctx->queue = js->deviceinq;
+        ctx->indx = 0;
+        MQTTClient_setCallbacks(js->cstate->mqttserv[0], ctx, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
+    }
 
     if (js->cstate->mqttenabled[1] == true)
-        MQTTClient_setCallbacks(js->cstate->mqttserv[1], js->foginq, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
+    {
+        ctx->queue = js->foginq;
+        ctx->indx = 1;
+        MQTTClient_setCallbacks(js->cstate->mqttserv[1], ctx, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
+    }
 
     if (js->cstate->mqttenabled[2] == true)
-        MQTTClient_setCallbacks(js->cstate->mqttserv[2], js->cloudinq, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
+    {
+        ctx->queue = js->cloudinq;
+        ctx->indx = 2;
+        MQTTClient_setCallbacks(js->cstate->mqttserv[2], ctx, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
+    }
 }
 
 
@@ -142,12 +157,15 @@ int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTClient_messa
 //    printf("Time .1: %ld\n", activity_getuseconds());
 
     // the ctx pointer is actually pointing towards the queue - cast it
-    simplequeue_t *queue = (simplequeue_t *)ctx;
+    simplequeue_t *queue = ((callcontext_t *)ctx)->queue;
 
     // We need handle the message based on the topic..
     if (strcmp(topicname, "/admin/announce/all") == 0)
     {
-        // TODO: Ignore these messages??
+        nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
+        command_t *cmd = command_from_data(NULL, nv);
+        nvoid_free(nv);
+        queue_enq(queue, cmd, sizeof(command_t));
         //
     } else
     if (strncmp(topicname, "/level/func/reply", strlen("/level/func/reply") -1) == 0)
@@ -179,10 +197,14 @@ int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTClient_messa
     return 1;
 }
 
-void jwork_connect_lost(void *context, char *cause)
+void jwork_connect_lost(void *ctx, char *cause)
 {
-    printf("\nConnection lost\n");
-    printf("     cause: %s\n", cause);
+    callcontext_t *call = (callcontext_t *)ctx;
+    jamstate_t *js = call->context;
+    int indx = call->indx;
+
+    printf("Connection lost.. reconnecting\n");
+    core_reconnect_i(js->cstate, indx);
 }
 
 
@@ -376,19 +398,19 @@ void jwork_process_device(jamstate_t *js)
 
     if (rcmd != NULL)
     {
-        // TODO: Implement a synchronization sub protocol..
-        //
+        if (strcmp(rcmd->cmd, "PUT-CF-INFO") == 0)
+        {
+            core_makeconnection(js->cstate, rcmd);
+            command_free(rcmd);
+        }
+        else
         if (strcmp(rcmd->cmd, "REXEC-SYN") == 0)
         {
-            printf("Sync....1\n");
-
+            // TODO: Check the implementation of synchronization sub protocol..
             if (jwork_check_args(js, rcmd))
             {
-                printf("Sync....2\n");
-
                 if (jcond_evaluate_cond(js, rcmd))
                 {
-                    printf("Sync....3\n");
                     // We have a valid request that should be executed by the node
                     if (jcond_synchronized(rcmd))
                     {
@@ -459,8 +481,8 @@ void jwork_process_device(jamstate_t *js)
                 pqueue_enq(athr->inq, rcmd, sizeof(command_t));
             }
         }
-
-        else if (strcmp(rcmd->cmd, "GOGOGO") == 0) {
+        else
+        if (strcmp(rcmd->cmd, "GOGOGO") == 0) {
 			// Received the "go" from J nodes, we put the go command into the high queue
             p2queue_enq_high(js->atable->globalinq, rcmd, sizeof(command_t));
         }
