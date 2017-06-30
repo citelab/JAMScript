@@ -398,6 +398,13 @@ void jwork_process_device(jamstate_t *js)
 
     if (rcmd != NULL)
     {
+        if (strcmp(rcmd->cmd, "PING") == 0)
+        {
+            if (js->cstate->cf_pending)
+            {
+                printf("To Send........... refresh...\n");
+            }
+        }
         if (strcmp(rcmd->cmd, "PUT-CF-INFO") == 0)
         {
             core_makeconnection(js->cstate, rcmd);
