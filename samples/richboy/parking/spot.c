@@ -23,3 +23,7 @@ int main(int argc, char **argv){
 
     return 0;
 }
+
+//TODO
+//this application should listen for changes to know when a car has parked on it.
+//it should also time the cars to know if a car has exceeded its timing and call for ticketing.
