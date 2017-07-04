@@ -488,13 +488,16 @@ void jwork_process_device(jamstate_t *js)
         if (strcmp(rcmd->cmd, "PUT-CF-INFO") == 0)
         {
             printf("========================Received .. PUT-CF-INFO  for actarg %s\n", rcmd->actarg);
-            if (strcmp(rcmd->actarg, "fog") == 0)
+            printf("-------------------- %s-------------------------\n", rcmd->opt);
+            if ((strcmp(rcmd->actarg, "fog") == 0) && (strcmp(rcmd->opt, "ADD") == 0))
             {
                 core_createserver(js->cstate, 1, rcmd->args[0].val.sval);
                 comboptr_t *ctx = create_combo3i_ptr(js, js->foginq, NULL, 1);
                 core_setcallbacks(js->cstate, ctx, jwork_connect_lost, jwork_msg_arrived, NULL);
                 core_connect(js->cstate, 1, on_fog_connect);
-            } else if (strcmp(rcmd->actarg, "cloud") ==0)
+            }
+            else
+            if ((strcmp(rcmd->actarg, "cloud") == 0) && (strcmp(rcmd->opt, "ADD") == 0))
             {
                 core_createserver(js->cstate, 2, rcmd->args[0].val.sval);
                 comboptr_t *ctx = create_combo3i_ptr(js, js->cloudinq, NULL, 2);
