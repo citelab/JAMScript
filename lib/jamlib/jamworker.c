@@ -412,9 +412,9 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
 
     command_t *rcmd = (command_t *)nv->data;
     free(nv);
-    //#ifdef DEBUG_LVL1
+    #ifdef DEBUG_LVL1
         printf("\n\nACTOUTQ[%d]::  %s, opt: %s actarg: %s actid: %s\n\n\n", indx, rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
-    //#endif
+    #endif
     // Don't use nvoid_free() .. it is not deep enough
 
     if (rcmd != NULL)
