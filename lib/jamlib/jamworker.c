@@ -64,7 +64,7 @@ void on_fog_connect(void* context, MQTTAsync_successData* response)
     core_set_subscription(cs, 0);
 
     scmd = command_new("REGISTER", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
-    mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd);
+    mqtt_publish(cs->mqttserv[1], "/admin/request/all", scmd);
 
     // NOTE: For now, I am putting the mqttenabled flag setting here.
     // This is for the device.
@@ -83,12 +83,12 @@ void on_cloud_connect(void* context, MQTTAsync_successData* response)
     core_set_subscription(cs, 0);
 
     scmd = command_new("REGISTER", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
-    mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd);
+    mqtt_publish(cs->mqttserv[2], "/admin/request/all", scmd);
 
     // NOTE: For now, I am putting the mqttenabled flag setting here.
     // This is for the device.
     // A better alternative is to get the REGISTER-ACK and set the flag
-    cs->mqttenabled[1] = true;
+    cs->mqttenabled[2] = true;
     core_check_pending(cs);
 }
 
@@ -254,7 +254,7 @@ void jwork_connect_lost(void *ctx, char *cause)
     }
     else
     {
-        printf("Connection lost.. reconnecting\n");
+        printf("Connection lost at %d.. reconnecting\n", indx);
     //    core_reconnect_i(js->cstate, indx);
     }
 }
@@ -432,7 +432,7 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
         for (int i = 0; i < 3; i++)
             if (js->cstate->mqttenabled[i] == true)
             {
-                printf("Actoutq .. i = %d\n", i);
+                printf("Actoutq .. i = %d, MQTTHost %s, MQTTServ %p\n", i, js->cstate->mqtthost[i], js->cstate->mqttserv[i]);
                 mqtt_publish(js->cstate->mqttserv[i], "/level/func/request", rcmd);
             }
     }
@@ -487,7 +487,7 @@ void jwork_process_device(jamstate_t *js)
         else
         if (strcmp(rcmd->cmd, "PUT-CF-INFO") == 0)
         {
-            printf("========================Received .. PUT-CF-INFO \n");
+            printf("========================Received .. PUT-CF-INFO  for actarg %s\n", rcmd->actarg);
             if (strcmp(rcmd->actarg, "fog") == 0)
             {
                 core_createserver(js->cstate, 1, rcmd->args[0].val.sval);
@@ -499,7 +499,7 @@ void jwork_process_device(jamstate_t *js)
                 core_createserver(js->cstate, 2, rcmd->args[0].val.sval);
                 comboptr_t *ctx = create_combo3i_ptr(js, js->cloudinq, NULL, 2);
                 core_setcallbacks(js->cstate, ctx, jwork_connect_lost, jwork_msg_arrived, NULL);
-                core_connect(js->cstate, 2, on_fog_connect);
+                core_connect(js->cstate, 2, on_cloud_connect);
             }
             command_free(rcmd);
             core_check_pending(js->cstate);
