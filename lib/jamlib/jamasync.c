@@ -8,7 +8,7 @@
 #include "free_list.h"
 
 
-// The jactivity structure needs to be defined outside the function. 
+// The jactivity structure needs to be defined outside the function.
 // The memory is held until freed by an explicit activity_free()
 //
 //
@@ -87,9 +87,9 @@ jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, i
         jam_async_runner(js, jact, cmd);
 
   //      printf("Time 4: %ld\n", activity_getuseconds());
-                
+
         return jact;
-    } 
+    }
     else
         return NULL;
 }
@@ -100,16 +100,19 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     command_t *rcmd;
     int error_count = 0;
 
-    // TODO: Why should we use a runtable? Long term tracking 
+    // TODO: Why should we use a runtable? Long term tracking
     // of activities we have run? When are the entries deleted?
     // Can we just use the activity table?
-    // May be we can't because the activity table is tied to the 
+    // May be we can't because the activity table is tied to the
     // socket (queue) and we need to reuse them sooner?
     //
 
 //    printf("Time 3.1: %ld\n", activity_getuseconds());
-    
+
     int exp_replies = cloud_tree_height(js);
+
+    printf("=======================================  Expected number of replies %d\n", exp_replies);
+
     runtable_insert(js, cmd->actid, cmd);
     runtableentry_t *act_entry = runtable_find(js->rtable, cmd->actid);
 
@@ -122,24 +125,24 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
 
   //  printf("Time 3.2: %ld\n", activity_getuseconds());
 
-    // Send the command to the remote side  
+    // Send the command to the remote side
     // The send is executed via the worker thread..
     queue_enq(jact->thread->outq, cmd, sizeof(command_t));
 
-    // We expect act_entry->num_replies from the remote side 
+    // We expect act_entry->num_replies from the remote side
     for (int i = 0; i < exp_replies; i++)
     {
-    
+
    //     printf("Time 3.3: %ld\n", activity_getuseconds());
-        
-        // TODO: Fix the constant 300 milliseconds here..   
+
+        // TODO: Fix the constant 300 milliseconds here..
         jam_set_timer(js, jact->actid, 10);
         nvoid_t *nv = pqueue_deq(jact->thread->inq);
-    
+
     //    printf("Time 3.4: %ld\n", activity_getuseconds());
 
         rcmd = NULL;
-        if (nv != NULL) 
+        if (nv != NULL)
         {
             rcmd = (command_t *)nv->data;
             free(nv);
@@ -152,10 +155,10 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
             }
             else
             {
-                jam_clear_timer(js, jact->actid);        
+                jam_clear_timer(js, jact->actid);
                 jact->replies[i - error_count] = rcmd;
             }
-        } 
+        }
     }
 
  //   printf("Time 3.5: %ld\n", activity_getuseconds());
@@ -167,7 +170,7 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     }
     else
     {
-        // Examine the replies to form the status code 
+        // Examine the replies to form the status code
         // We have all the replies.. so no missing nodes
         //
         set_jactivity_state(jact, exp_replies);
@@ -214,7 +217,7 @@ void process_missing_replies(jactivity_t *jact, int nreplies, int ecount)
             devicefound = true;
     if (devicefound)
     {
-        // Send missing recomputing tasks to DEVICE. 
+        // Send missing recomputing tasks to DEVICE.
         if (strcmp(jact->replies[0]->cmd, "REXEC-ACK") == 0)
         {
             command_t *scmd = jact->replies[0];

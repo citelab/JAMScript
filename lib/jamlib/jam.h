@@ -104,15 +104,6 @@ typedef struct _jamstate_t
 } jamstate_t;
 
 
-typedef struct _callcontext_t
-{
-    simplequeue_t *queue;
-    jamstate_t *context;
-    int indx;
-
-} callcontext_t;
-
-
 jamstate_t *jam_init(int port);
 
 void jam_run_app(void *arg);
@@ -147,9 +138,9 @@ void process_missing_replies(jactivity_t *jact, int nreplies, int ecount);
 void *jwork_bgthread(void *arg);
 void jwork_set_subscriptions(jamstate_t *js);
 
-void jwork_set_callbacks(jamstate_t *js);
-void jwork_msg_delivered(void *ctx, MQTTClient_deliveryToken dt);
-int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTClient_message *msg);
+void jwork_set_callbacks(jamstate_t *js, unsigned char mask);
+void jwork_msg_delivered(void *ctx, MQTTAsync_deliveryComplete dt);
+int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTAsync_message *msg);
 void jwork_connect_lost(void *context, char *cause);
 
 void jwork_assemble_fds(jamstate_t *js);

@@ -113,7 +113,7 @@ void jam_event_loop(void *arg)
 
     char *deviceid = js->cstate->device_id;
 
-    MQTTClient mcl = js->cstate->mqttserv[0];
+    MQTTAsync mcl = js->cstate->mqttserv[0];
 
     while (1)
     {

@@ -25,21 +25,24 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <time.h>
 #include <stdbool.h>
-#include <MQTTClient.h>
+#include <MQTTAsync.h>
 
 #include "command.h"
+#include "comboptr.h"
+#include "MQTTAsync.h"
 
 #define MAX_SERVERS             3
 
 typedef struct _corestate_t
 {
     char *device_id;
+    int port;
     bool cf_pending;
 
     // TODO: May be unused? Can we remove this one??
     int timeout;
 
-    MQTTClient mqttserv[3];
+    MQTTAsync mqttserv[3];
     bool mqttenabled[3];
     char *mqtthost[3];
 
@@ -53,11 +56,12 @@ typedef struct _corestate_t
 // Initialize the core.. the first thing we need to call
 corestate_t *core_init(int port, int timeout);
 void core_setup(corestate_t *cs, int timeout);
-
-void core_makeconnection(corestate_t *cs, command_t *cmd);
+void core_createserver(corestate_t *cs, int indx, char *url);
+void core_connect(corestate_t *cs, int indx, void (*onconnect)(void *, MQTTAsync_successData *));
+void core_setcallbacks(corestate_t *cs, comboptr_t *ctx,
+        MQTTAsync_connectionLost *cl,
+        MQTTAsync_messageArrived *ma,
+        MQTTAsync_deliveryComplete *dc);
+void core_set_subscription(corestate_t *cs, int level);        
 void core_check_pending(corestate_t *cs);
-void core_disconnect(corestate_t *cs);
-void core_reconnect_i(corestate_t *cs, int i);
-void core_reconnect(corestate_t *cs);
-
 #endif

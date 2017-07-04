@@ -36,6 +36,64 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "activity.h"
 
 
+void on_dev_connect(void* context, MQTTAsync_successData* response)
+{
+    command_t *scmd;
+
+    corestate_t *cs = (corestate_t *)context;
+
+    // Set the subscriptions
+    core_set_subscription(cs, 0);
+
+    scmd = command_new("REGISTER", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
+    mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd);
+
+    // NOTE: For now, I am putting the mqttenabled flag setting here.
+    // This is for the device.
+    // A better alternative is to get the REGISTER-ACK and set the flag
+    cs->mqttenabled[0] = true;
+    core_check_pending(cs);
+}
+
+void on_fog_connect(void* context, MQTTAsync_successData* response)
+{
+    command_t *scmd;
+    corestate_t *cs = (corestate_t *)context;
+
+    // Set the subscriptions
+    core_set_subscription(cs, 0);
+
+    scmd = command_new("REGISTER", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
+    mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd);
+
+    // NOTE: For now, I am putting the mqttenabled flag setting here.
+    // This is for the device.
+    // A better alternative is to get the REGISTER-ACK and set the flag
+    cs->mqttenabled[1] = true;
+    core_check_pending(cs);
+}
+
+
+void on_cloud_connect(void* context, MQTTAsync_successData* response)
+{
+    command_t *scmd;
+    corestate_t *cs = (corestate_t *)context;
+
+    // Set the subscriptions
+    core_set_subscription(cs, 0);
+
+    scmd = command_new("REGISTER", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
+    mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd);
+
+    // NOTE: For now, I am putting the mqttenabled flag setting here.
+    // This is for the device.
+    // A better alternative is to get the REGISTER-ACK and set the flag
+    cs->mqttenabled[1] = true;
+    core_check_pending(cs);
+}
+
+
+
 // The JAM bgthread is run in another worker (pthread). It shares all
 // the memory with the master that runs the cooperative multi-threaded application
 //
@@ -56,18 +114,23 @@ void *jwork_bgthread(void *arg)
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldstate);
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldtype);
 
-    // Hookup the callback handlers for the different packet sources
-    core_disconnect(js->cstate);
-    jwork_set_callbacks(js);
-    core_reconnect(js->cstate);
+    char localhost[64];
+    sprintf(localhost, "tcp://localhost:%d", js->cstate->port);
+    core_createserver(js->cstate, 0, localhost);
+    comboptr_t *ctx = create_combo3i_ptr(js, js->deviceinq, NULL, 0);
+    // Set the callback handlers .. this is necessary befor the actual connection
+    core_setcallbacks(js->cstate, ctx, jwork_connect_lost, jwork_msg_arrived, NULL);
 
-    // Setup the subscriptions
-    jwork_set_subscriptions(js);
+    // Now do the connection to the local server
+    core_connect(js->cstate, 0, on_dev_connect);
 
     // assemble the poller.. insert the FDs that should go into the poller
     jwork_assemble_fds(js);
 
-    thread_signal(js->bgsem);
+    // NOTE: signalling on bgsem happens in a callback now
+    // We need to signal the main thread to proceed only after the local J
+    // responds to the registration
+
     // process the events..
 
     #ifdef DEBUG_LVL1
@@ -92,59 +155,37 @@ void *jwork_bgthread(void *arg)
 }
 
 
-void jwork_set_subscriptions(jamstate_t *js)
-{
-    // the /admin/announce/all subscription is already set..
-
-    for (int i = 0; i < 3; i++)
-    {
-        if (js->cstate->mqttenabled[i])
-        {
-            mqtt_subscribe(js->cstate->mqttserv[i], "/level/func/reply/#");
-            mqtt_subscribe(js->cstate->mqttserv[i], "/mach/func/request");
-            // Subscribe to the "go" topic for sync purpose.
-            mqtt_subscribe(js->cstate->mqttserv[i], "admin/request/Go");
-        }
-    }
-}
-
-
 /*
  * Set all the callback handlers
  *
  */
-void jwork_set_callbacks(jamstate_t *js)
-{
-    callcontext_t *ctx = (callcontext_t *)calloc(1, sizeof(callcontext_t));
-    ctx->context = js;
+// void jwork_set_callbacks(jamstate_t *js, unsigned char mask)
+// {
+//     callcontext_t *ctx = (callcontext_t *)calloc(1, sizeof(callcontext_t));
+//     ctx->context = js;
+//
+//     if ((js->cstate->mqttenabled[0] == true) && (mask & 0x01))
+//     {
+//         ctx->queue = js->deviceinq;
+//         ctx->indx = 0;
+//         MQTTAsync_setCallbacks(js->cstate->mqttserv[0], ctx, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
+//     }
+//
+//     if ((js->cstate->mqttenabled[1] == true) && (mask & 0x02))
+//     {
+//         ctx->queue = js->foginq;
+//         ctx->indx = 1;
+//         MQTTAsync_setCallbacks(js->cstate->mqttserv[1], ctx, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
+//     }
+//
+//     if ((js->cstate->mqttenabled[2] == true) && (mask & 0x04))
+//     {
+//         ctx->queue = js->cloudinq;
+//         ctx->indx = 2;
+//         MQTTAsync_setCallbacks(js->cstate->mqttserv[2], ctx, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
+//     }
+// }
 
-    if (js->cstate->mqttenabled[0] == true)
-    {
-        ctx->queue = js->deviceinq;
-        ctx->indx = 0;
-        MQTTClient_setCallbacks(js->cstate->mqttserv[0], ctx, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
-    }
-
-    if (js->cstate->mqttenabled[1] == true)
-    {
-        ctx->queue = js->foginq;
-        ctx->indx = 1;
-        MQTTClient_setCallbacks(js->cstate->mqttserv[1], ctx, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
-    }
-
-    if (js->cstate->mqttenabled[2] == true)
-    {
-        ctx->queue = js->cloudinq;
-        ctx->indx = 2;
-        MQTTClient_setCallbacks(js->cstate->mqttserv[2], ctx, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
-    }
-}
-
-
-void jwork_msg_delivered(void *ctx, MQTTClient_deliveryToken dt)
-{
-    // TODO: What to do here?
-}
 
 /*
  * The most important callback handler. This is executed in another anonymous thread
@@ -152,22 +193,22 @@ void jwork_msg_delivered(void *ctx, MQTTClient_deliveryToken dt)
  *
  */
 
-int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTClient_message *msg)
+int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTAsync_message *msg)
 {
-//    printf("Time .1: %ld\n", activity_getuseconds());
-
-    // the ctx pointer is actually pointing towards the queue - cast it
-    simplequeue_t *queue = ((callcontext_t *)ctx)->queue;
+    // the ctx pointer is used to recover original context.
+    comboptr_t *cptr = (comboptr_t *)ctx;
+    simplequeue_t *queue = (simplequeue_t *)(cptr->arg2);
 
     // We need handle the message based on the topic..
     if (strcmp(topicname, "/admin/announce/all") == 0)
     {
         nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
         command_t *cmd = command_from_data(NULL, nv);
+
         nvoid_free(nv);
         queue_enq(queue, cmd, sizeof(command_t));
-        //
-    } else
+    }
+    else
     if (strncmp(topicname, "/level/func/reply", strlen("/level/func/reply") -1) == 0)
     {
         nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
@@ -175,7 +216,8 @@ int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTClient_messa
         nvoid_free(nv);
         queue_enq(queue, cmd, sizeof(command_t));
         // Don't free the command structure.. the queue is still carrying it
-    } else
+    }
+    else
     if (strncmp(topicname, "/mach/func/request", strlen("/mach/func/request") -1) == 0)
     {
         nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
@@ -184,7 +226,8 @@ int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTClient_messa
         queue_enq(queue, cmd, sizeof(command_t));
         // Don't free the command structure.. the queue is still carrying it
     }
-    else if (strncmp(topicname, "admin/request/Go", strlen("admin/request/Go") -1) == 0) {
+    else
+    if (strncmp(topicname, "admin/request/Go", strlen("admin/request/Go") -1) == 0) {
         char *strSyncTime = msg->payload;
         command_t *cmd = command_new("GOGOGO", strSyncTime, "-", 0, "GLOBAL_INQUEUE", "__", "__", "");
         nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
@@ -192,19 +235,28 @@ int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTClient_messa
         queue_enq(queue, cmd, sizeof(command_t));
     }
 
-    MQTTClient_freeMessage(&msg);
-    MQTTClient_free(topicname);
+    MQTTAsync_freeMessage(&msg);
+    MQTTAsync_free(topicname);
     return 1;
 }
 
+
 void jwork_connect_lost(void *ctx, char *cause)
 {
-    callcontext_t *call = (callcontext_t *)ctx;
-    jamstate_t *js = call->context;
-    int indx = call->indx;
+    comboptr_t *call = (comboptr_t *)ctx;
+    jamstate_t *js = (jamstate_t *)(call->arg1);
+    int indx = call->iarg;
 
-    printf("Connection lost.. reconnecting\n");
-    core_reconnect_i(js->cstate, indx);
+    if (indx == 0)
+    {
+        printf("ERROR! MQTT Broker at %s stopped. Exiting.\n", js->cstate->mqtthost[0]);
+        exit(1);
+    }
+    else
+    {
+        printf("Connection lost.. reconnecting\n");
+    //    core_reconnect_i(js->cstate, indx);
+    }
 }
 
 
@@ -352,9 +404,9 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
 
     command_t *rcmd = (command_t *)nv->data;
     free(nv);
-    #ifdef DEBUG_LVL1
+    //#ifdef DEBUG_LVL1
         printf("\n\nACTOUTQ[%d]::  %s, opt: %s actarg: %s actid: %s\n\n\n", indx, rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
-    #endif
+    //#endif
     // Don't use nvoid_free() .. it is not deep enough
 
     if (rcmd != NULL)
@@ -369,8 +421,8 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
                 printf("Actoutq .. i = %d\n", i);
                 mqtt_publish(js->cstate->mqttserv[i], "/level/func/request", rcmd);
             }
-
-        command_free(rcmd);
+        // There is a problem here.
+        // If we have multiple destinations: we want the last publish to deallocate
     }
 }
 
@@ -381,8 +433,7 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
 void jwork_process_device(jamstate_t *js)
 {
     int quorum;
-
-//    printf("Time .2: %ld\n", activity_getuseconds());
+    MQTTAsync mcl = js->cstate->mqttserv[0];
 
     // Get the message from the device to process
     //
@@ -398,17 +449,48 @@ void jwork_process_device(jamstate_t *js)
 
     if (rcmd != NULL)
     {
+        if (strcmp(rcmd->cmd, "REGISTER-ACK") == 0)
+        {
+            command_t *scmd = command_new("GET-CF-INFO", "-", "-", 0, "-", "-", js->cstate->device_id, "");
+            mqtt_publish(js->cstate->mqttserv[0], "/admin/request/all", scmd);
+            // We are done with
+            thread_signal(js->bgsem);
+        }
+        else
         if (strcmp(rcmd->cmd, "PING") == 0)
         {
+            // If registration is still not complete.. send another registration
+            // Although this could be a very rare event.. (missing REGISTER message)
+
+
+            // If CF information is still pending.. send a REFRESH to get the
+            // latest information... the callback is already there..
+
             if (js->cstate->cf_pending)
             {
-                printf("To Send........... refresh...\n");
+                command_t *scmd = command_new("REF-CF-INFO", "-", "-", 0, "-", "-", js->cstate->device_id, "");
+                mqtt_publish(js->cstate->mqttserv[0], "/admin/request/all", scmd);
             }
         }
+        else
         if (strcmp(rcmd->cmd, "PUT-CF-INFO") == 0)
         {
-            core_makeconnection(js->cstate, rcmd);
+            printf("========================Received .. PUT-CF-INFO \n");
+            if (strcmp(rcmd->actarg, "fog") == 0)
+            {
+                core_createserver(js->cstate, 1, rcmd->args[0].val.sval);
+                comboptr_t *ctx = create_combo3i_ptr(js, js->foginq, NULL, 1);
+                core_setcallbacks(js->cstate, ctx, jwork_connect_lost, jwork_msg_arrived, NULL);
+                core_connect(js->cstate, 1, on_fog_connect);
+            } else if (strcmp(rcmd->actarg, "cloud") ==0)
+            {
+                core_createserver(js->cstate, 2, rcmd->args[0].val.sval);
+                comboptr_t *ctx = create_combo3i_ptr(js, js->cloudinq, NULL, 2);
+                core_setcallbacks(js->cstate, ctx, jwork_connect_lost, jwork_msg_arrived, NULL);
+                core_connect(js->cstate, 2, on_fog_connect);
+            }
             command_free(rcmd);
+            core_check_pending(js->cstate);
         }
         else
         if (strcmp(rcmd->cmd, "REXEC-SYN") == 0)
@@ -504,7 +586,7 @@ void jwork_process_device(jamstate_t *js)
 
 void jwork_send_error(jamstate_t *js, command_t *cmd, char *estr)
 {
-    MQTTClient mcl = js->cstate->mqttserv[0];
+    MQTTAsync mcl = js->cstate->mqttserv[0];
     char *deviceid = js->cstate->device_id;
 
     // Create a new command to send as error..
@@ -520,7 +602,7 @@ void jwork_send_error(jamstate_t *js, command_t *cmd, char *estr)
 
 void jwork_send_nak(jamstate_t *js, command_t *cmd, char *estr)
 {
-    MQTTClient mcl = js->cstate->mqttserv[0];
+    MQTTAsync mcl = js->cstate->mqttserv[0];
     char *deviceid = js->cstate->device_id;
 
     // Create a new command to send as error..
@@ -536,7 +618,7 @@ void jwork_send_nak(jamstate_t *js, command_t *cmd, char *estr)
 
 void jwork_send_results(jamstate_t *js, char *actname, char *actid, arg_t *args)
 {
-    MQTTClient mcl = js->cstate->mqttserv[0];
+    MQTTAsync mcl = js->cstate->mqttserv[0];
     char *deviceid = js->cstate->device_id;
 
     // Create a new command to send as error..
