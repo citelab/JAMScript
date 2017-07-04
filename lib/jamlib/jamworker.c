@@ -348,6 +348,8 @@ void jwork_processor(jamstate_t *js)
 // remote node for
 void jwork_process_globaloutq(jamstate_t *js)
 {
+    int i;
+
     nvoid_t *nv = queue_deq(js->atable->globaloutq);
     if (nv == NULL) return;
 
@@ -371,17 +373,22 @@ void jwork_process_globaloutq(jamstate_t *js)
 
             // TODO: Do we have any LOCAL actions to do? With the new protocol design
             // this need may not exist anymore..
+            command_free(rcmd);
         }
         else
         {
-            for (int i = 0; i < 3; i++)
+            // increment the reference count..
+            for (i = 1; i < 3; i++)
+                if (js->cstate->mqttenabled[i] == true)
+                    command_hold(rcmd);
+
+            for (i = 0; i < 3; i++)
                 if (js->cstate->mqttenabled[i] == true)
                 {
                     printf("Global outq %d\n", i);
                     mqtt_publish(js->cstate->mqttserv[i], "/level/func/request", rcmd);
                 }
         }
-        command_free(rcmd);
     }
 }
 
@@ -399,6 +406,7 @@ void jwork_process_globaloutq(jamstate_t *js)
 
 void jwork_process_actoutq(jamstate_t *js, int indx)
 {
+    int i;
     nvoid_t *nv = queue_deq(js->atable->athreads[indx]->outq);
     if (nv == NULL) return;
 
@@ -414,6 +422,12 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
         // TODO: What else goes here..???
         // TODO: Revise this part...
 
+
+        // Increment the hold on rcmd.. so that memory deallocation happens after all use
+        for (i = 1; i < 3; i++)
+            if (js->cstate->mqttenabled[i] == true)
+                command_hold(rcmd);
+
         // relay the command to the remote servers..
         for (int i = 0; i < 3; i++)
             if (js->cstate->mqttenabled[i] == true)
@@ -421,8 +435,6 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
                 printf("Actoutq .. i = %d\n", i);
                 mqtt_publish(js->cstate->mqttserv[i], "/level/func/request", rcmd);
             }
-        // There is a problem here.
-        // If we have multiple destinations: we want the last publish to deallocate
     }
 }
 

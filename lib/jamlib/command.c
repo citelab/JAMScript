@@ -35,7 +35,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
-
+#include <pthread.h>
 #include <cbor.h>
 
 #include "command.h"
@@ -67,7 +67,7 @@ void command_arg_copy(arg_t *darg, arg_t *sarg)
     }
 }
 
-//@returns a pointer to a copy of the content pointed to by arg 
+//@returns a pointer to a copy of the content pointed to by arg
 arg_t *command_arg_clone(arg_t *arg)
 {
     arg_t *val = (arg_t *)calloc(1, sizeof(arg_t));
@@ -126,7 +126,7 @@ void command_arg_free(arg_t *arg)
 void command_arg_print(arg_t *arg)
 {
     printf("\t\t");
-    switch(arg->type) 
+    switch(arg->type)
     {
         case INT_TYPE:
             printf("Int: %d ", arg->val.ival);
@@ -278,6 +278,9 @@ command_t *command_new_using_cbor(const char *cmd, char *opt, char *cond, int co
     cmdo->args = args;
     cmdo->nargs = nargs;
 
+    cmdo->refcount = 1;
+    pthread_mutex_init(&cmdo->lock, NULL);
+
     /*
      * Format of the CBOR map is as follows in equivalent JSON syntax
      * {cmd: Command_String, actarg: Activity ID, args: [Array of args]}
@@ -340,7 +343,7 @@ command_t *command_new_using_cbor(const char *cmd, char *opt, char *cond, int co
 
 
 
-command_t *command_new_using_arg(char *cmd, char *opt, char *cond, int condvec, 
+command_t *command_new_using_arg(char *cmd, char *opt, char *cond, int condvec,
                     char *actname, char *actid, char *actarg, arg_t *args, int nargs)
 {
     nvoid_t *nv;
@@ -383,7 +386,7 @@ command_t *command_new_using_arg(char *cmd, char *opt, char *cond, int condvec,
         }
     }
 
-    command_t *c = command_new_using_cbor(cmd, opt, cond, condvec, 
+    command_t *c = command_new_using_cbor(cmd, opt, cond, condvec,
                         actname, actid, actarg, arr, args, nargs);
     c->cbor_item_list = list;
 
@@ -398,7 +401,7 @@ command_t *command_new_using_arg(char *cmd, char *opt, char *cond, int condvec,
  * Reusing the previous command encoder..
  *
  */
-command_t *command_new(const char *cmd, char *opt, char *cond, int condvec, 
+command_t *command_new(const char *cmd, char *opt, char *cond, int condvec,
     char *actname, char *actid, char *actarg, const char *fmt, ...)
 {
     va_list args;
@@ -484,6 +487,9 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
     memcpy(cmd->buffer, data->data, data->len);
     cmd->cdata = cbor_load(cmd->buffer, data->len, &result);
     cmd->length = data->len;
+
+    cmd->refcount = 1;
+    pthread_mutex_init(&cmd->lock, NULL);
 
     // extract information from the CBOR object and validate or fill the
     // command structure
@@ -578,50 +584,73 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
 }
 
 
-void command_free(command_t *cmd)
+
+void command_hold(command_t *cmd)
 {
-  // free the field allocations
-  // TODO: What else? Something is missing here..
-  // Yeah, we need to free a few more things
-
-  // decrement the reference to the CBOR object..
-
-  if (cmd->cdata)
-  {
-      cbor_decref(&cmd->cdata);
-  }
-
-  for(int i = 0; i < cmd->nargs && cmd->args != NULL; i++){
-    switch(cmd->args[i].type){
-      case STRING_TYPE: free(cmd->args[i].val.sval);
-                        break;
-      case NVOID_TYPE:
-                        if(cmd->args[i].val.nval != NULL && strcmp(cmd->cmd, "REXEC-JDATA") != 0)
-                          nvoid_free(cmd->args[i].val.nval);
-                        break;
-      default: break;
-    }
-  }
-  free(cmd->cmd);
-  free(cmd->opt);
-  free(cmd->cond);
-  free(cmd->actname);
-  free(cmd->actid);
-  free(cmd->actarg);
-  free(cmd->buffer);
-
-  if(cmd->cbor_item_list){
-    for(int i = 0; i < cmd->cbor_item_list->size; i++){
-      if(cbor_typeof(cmd->cbor_item_list->ptr[i]) == CBOR_TYPE_STRING)
-        free(((cbor_item_t *)cmd->cbor_item_list->ptr[i])->data);
-      free(cmd->cbor_item_list->ptr[i]);
-    }
-    list_free(cmd->cbor_item_list);
-  }
-  free(cmd->args);
-  free(cmd);
+    pthread_mutex_lock(&cmd->lock);
+    cmd->refcount++;
+    pthread_mutex_unlock(&cmd->lock);
 }
 
+
+
+void command_free(command_t *cmd)
+{
+    int rc;
+    pthread_mutex_lock(&cmd->lock);
+    rc = --cmd->refcount;
+    pthread_mutex_unlock(&cmd->lock);
+
+    // don't free the structure if some other thread could be referring to it.
+    if (rc > 0)
+        return;
+
+    // free the field allocations
+    // TODO: What else? Something is missing here..
+    // Yeah, we need to free a few more things
+
+    // decrement the reference to the CBOR object..
+
+    if (cmd->cdata)
+    {
+        cbor_decref(&cmd->cdata);
+    }
+
+    for(int i = 0; i < cmd->nargs && cmd->args != NULL; i++)
+    {
+        switch(cmd->args[i].type)
+        {
+            case STRING_TYPE: free(cmd->args[i].val.sval);
+                break;
+            case NVOID_TYPE:
+                if(cmd->args[i].val.nval != NULL && strcmp(cmd->cmd, "REXEC-JDATA") != 0)
+                    nvoid_free(cmd->args[i].val.nval);
+                    break;
+            default: break;
+        }
+    }
+
+    free(cmd->cmd);
+    free(cmd->opt);
+    free(cmd->cond);
+    free(cmd->actname);
+    free(cmd->actid);
+    free(cmd->actarg);
+    free(cmd->buffer);
+
+    if(cmd->cbor_item_list)
+    {
+        for(int i = 0; i < cmd->cbor_item_list->size; i++)
+        {
+            if(cbor_typeof(cmd->cbor_item_list->ptr[i]) == CBOR_TYPE_STRING)
+                free(((cbor_item_t *)cmd->cbor_item_list->ptr[i])->data);
+            free(cmd->cbor_item_list->ptr[i]);
+        }
+        list_free(cmd->cbor_item_list);
+    }
+    free(cmd->args);
+    free(cmd);
+}
 
 
 // Print the command object..
@@ -635,7 +664,7 @@ void command_print(command_t *cmd)
     printf("\nCommand opt: %s\n", cmd->opt);
     printf("\nCommand condstr: %s\n", cmd->cond);
     printf("\nCommand cond vector: %d\n", cmd->condvec);
-    
+
     printf("\nCommand activity name: %s\n", cmd->actname);
     printf("\nCommand activity id: %s\n", cmd->actid);
     printf("\nCommand activity arg: %s\n", cmd->actarg);
