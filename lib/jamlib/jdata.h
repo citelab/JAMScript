@@ -5,7 +5,7 @@
 #include <hiredis/hiredis.h>
 #include <hiredis/async.h>
 #ifdef linux
-#include <hiredis/adapters/libevent.h>
+#include <uv.h>
 #elif __APPLE__
 #include <hiredis/adapters/macosx.h>
 #endif

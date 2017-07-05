@@ -29,7 +29,7 @@ redisAsyncContext *jdata_async_context;
 redisContext *jdata_sync_context;
 
 //Event Loop. This responds to messages
-struct event_base *base;
+uv_loop_t *base;
 #ifdef __APPLE__
 CFRunLoopRef loop;
 #endif
@@ -67,9 +67,10 @@ void jdata_attach(jamstate_t *js, char *serv_ip, int serv_port)
 
 #ifdef linux
     //Initialize event base
-    base = event_base_new();
+    base = malloc(sizeof(uv_loop_t));
+    uv_loop_init(base);
     //Attach async context to base
-    redisLibeventAttach(jdata_async_context, base);   
+    redisLibuvAttach(jdata_async_context, base);   
 
     redisAsyncSetConnectCallback(jdata_async_context, jdata_default_connection);
     redisAsyncSetDisconnectCallback(jdata_async_context, jdata_default_disconnection);
@@ -118,7 +119,7 @@ void *jdata_init(void *js)
 #endif
     thread_signal(j_s->jdata_sem); 
 #ifdef linux
-    event_base_dispatch(base);
+    uv_run(base, UV_RUN_DEFAULT);
 #endif
 #ifdef __APPLE__
     CFRunLoopRun();
@@ -398,7 +399,7 @@ redisAsyncContext *jdata_subscribe_to_server(char *key, msg_rcv_callback on_msg,
         redisAsyncSetConnectCallback(c, jdata_default_disconnection);
 
 #ifdef linux
-    redisLibeventAttach(c, base);
+    redisLibuvAttach(c, base);
 #endif
 #ifdef __APPLE__
     int x = redisMacOSAttach(c, loop);

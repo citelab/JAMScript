@@ -1,6 +1,6 @@
 jdata {
 	int t as logger;
-    struct{
+    struct fruit{
     	int apple;
     	float pear;
     } s as logger;
