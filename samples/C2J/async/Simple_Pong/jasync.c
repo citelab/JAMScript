@@ -12,7 +12,7 @@ int main() {
     {
       printf("Calling pong..\n");
       pong();
-      sleep(1);
+      usleep(10);
     }
 
 }

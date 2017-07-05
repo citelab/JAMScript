@@ -6,7 +6,7 @@ JAMJS <: ES6 {
     jdata_type      = broadcaster 
                     | logger 
     
-    C_type          = "struct" "{" Struct_entry* "}"                -- struct
+    C_type          = "struct" identifier "{" Struct_entry* "}"     -- struct
                     | "char" "*"                                    -- pointer
                     | "char"
                     | "double"

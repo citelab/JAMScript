@@ -422,7 +422,6 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
         // TODO: What else goes here..???
         // TODO: Revise this part...
 
-
         // Increment the hold on rcmd.. so that memory deallocation happens after all use
         for (i = 1; i < 3; i++)
             if (js->cstate->mqttenabled[i] == true)
@@ -487,8 +486,6 @@ void jwork_process_device(jamstate_t *js)
         else
         if (strcmp(rcmd->cmd, "PUT-CF-INFO") == 0)
         {
-            printf("========================Received .. PUT-CF-INFO  for actarg %s\n", rcmd->actarg);
-            printf("-------------------- %s-------------------------\n", rcmd->opt);
             if ((strcmp(rcmd->actarg, "fog") == 0) && (strcmp(rcmd->opt, "ADD") == 0))
             {
                 core_createserver(js->cstate, 1, rcmd->args[0].val.sval);

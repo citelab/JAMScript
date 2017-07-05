@@ -21,9 +21,6 @@ jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, i
 
     assert(fmask != NULL);
 
-    // printf("Time 1: %ld\n", activity_getuseconds());
-
-
     if (strlen(fmask) > 0)
         qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
     else
@@ -75,19 +72,11 @@ jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, i
     }
     va_end(args);
 
-  //  printf("Time 2: %ld\n", activity_getuseconds());
-
     if (jact != NULL)
     {
         command_t *cmd = command_new_using_cbor("REXEC-ASY", "-", condstr, condvec, aname, jact->actid, js->cstate->device_id, arr, qargs, i);
         cmd->cbor_item_list = list;
-
-  //      printf("Time 3: %ld\n", activity_getuseconds());
-
         jam_async_runner(js, jact, cmd);
-
-  //      printf("Time 4: %ld\n", activity_getuseconds());
-
         return jact;
     }
     else
