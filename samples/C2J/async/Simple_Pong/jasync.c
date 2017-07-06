@@ -2,12 +2,14 @@
 
 jactivity_t* pong();
 
-int main() {
+int main(int argc, char **argv) {
 
   long long btime;
   int i;
 
-  // this is actually bad.. just for testing..
+  for (i = 0; i < argc; i++)
+    printf("Argv[%d] = %s\n", i, argv[i]);
+  
   while (1)
     {
       printf("Calling pong..\n");

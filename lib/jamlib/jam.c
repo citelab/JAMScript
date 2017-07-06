@@ -227,3 +227,28 @@ int cloud_tree_height(jamstate_t *js)
             (cs->mqttenabled[1] == true) +
             (cs->mqttenabled[0] == true));
 }
+
+int jamargs(int argc, char **argv, char *appid)
+{
+    char *cvalue = NULL;
+    int c;
+
+    opterr = 0;
+
+    while ((c = getopt (argc, argv, "a:")) != -1)
+        switch (c)
+        {
+            case 'a':
+            cvalue = optarg;
+            break;
+        default:
+            printf("ERROR! Argument input error..\n");
+            printf("Usage: program -a app_id \n");
+            exit(1);
+        }
+
+    if (cvalue != NULL)
+        strcpy(appid, cvalue);
+
+    return optind;
+}

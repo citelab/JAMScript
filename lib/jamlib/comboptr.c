@@ -38,3 +38,15 @@ comboptr_t *create_combo3i_ptr(void *arg1, void *arg2, void *arg3, int iarg)
 
     return NULL;
 }
+
+comboptr_t *create_combo3ip_ptr(void *arg1, void *arg2, void *arg3, int iarg, void **argv)
+{
+    comboptr_t *cptr = create_combo3i_ptr(arg1, arg2, arg3, iarg);
+    if (cptr != NULL)
+    {
+        cptr->argv = argv;
+        return cptr;
+    }
+    else
+        return NULL;
+}
