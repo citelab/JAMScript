@@ -2,7 +2,7 @@
 
 jactivity_t* pong();
 
-int main() {
+int main(int argc, char **argv) {
 
   long long btime;
   int i;
