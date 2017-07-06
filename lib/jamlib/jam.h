@@ -40,7 +40,7 @@ extern "C" {
 #include "jcondition.h"
 #include "task.h"
 #include "threadsem.h"
-
+#include "comboptr.h"
 
 #define STACKSIZE                   20000
 
