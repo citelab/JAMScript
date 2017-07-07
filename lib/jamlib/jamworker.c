@@ -460,6 +460,13 @@ void jwork_process_device(jamstate_t *js)
 
     if (rcmd != NULL)
     {
+        if (strcmp(rcmd->cmd, "KILL") == 0)
+        {
+            printf("ERROR! Kill message received from the J node.\n");
+            printf("Exiting.\n");
+            exit(1);
+        }
+        else
         if (strcmp(rcmd->cmd, "REGISTER-ACK") == 0)
         {
             command_t *scmd = command_new("GET-CF-INFO", "-", "-", 0, "-", "-", js->cstate->device_id, "");
