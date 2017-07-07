@@ -26,45 +26,70 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <dirent.h>
 
 #include "core.h"
 #include "mqtt.h"
 #include "command.h"
 #include "comboptr.h"
+#include "uuid4.h"
 #include "MQTTAsync.h"
 
-// Returns the device ID string from the filepath.
 
-char *get_device_id(char *filepath)
+void core_setup(corestate_t *cs)
 {
-    char *devid = (char *)malloc(64);
 
-    FILE *fp = fopen(filepath, "r");
-    if (fp == NULL)
+    DIR *dir = opendir("./device.conf");
+    if (dir == NULL)
     {
-        printf("ERROR! Missing: %s\n", filepath);
+        printf("ERROR! Missing ./device.conf folder.\n");
         printf("Start the J node first and then the C node\n");
-        printf("If you are running JAMScript in a single machine, you need\n");
-        printf("run a device in its own directory - i.e., C and J components\n");
+        printf("Start the C node from the same directory as the J node.\n");
         exit(1);
     }
-
-    if (fscanf(fp, "%s", devid) != 1)
+    else
     {
-        printf("ERROR! Malformed device ID found in the configuration file\n");
-        printf("Configuration file at %s is corrupted\n", filepath);
-        exit(1);
+        char fname[64];
+        sprintf(fname, "./device.conf/cdeviceId.%d", cs->serial_num);
+        if (access(fname, F_OK) != -1)
+        {
+            char devid[UUID4_LEN+1];
+            // Get the device ID from the file... check for consistency..
+            FILE *fp = fopen(fname, "r");
+            if (fp == NULL)
+            {
+                printf("ERROR! Opening the file %s\n", fname);
+                printf("Start the J node first and then the C node\n");
+                exit(1);
+            }
+            if (fscanf(fp, "%s", devid) != 1)
+            {
+                printf("ERROR! Malformed device ID found in the configuration file\n");
+                printf("Configuration file at %s is corrupted\n", fname);
+                exit(1);
+            }
+
+            cs->device_id = strdup(devid);
+        }
+        else
+        {
+            // Create the deviceId and store it..
+            char buf[UUID4_LEN];
+            uuid4_generate(buf);
+            cs->device_id = strdup(buf);
+
+            // Save it under fname..
+            FILE *fp = fopen(fname, "w");
+            if (fp == NULL)
+            {
+                printf("ERROR! Unknown permission issue in opening the file %s\n", fname);
+                printf("Exiting.\n");
+                exit(1);
+            }
+            fprintf(fp, "%s", cs->device_id);
+            fclose(fp);
+        }
     }
-
-    return devid;
-}
-
-
-void core_setup(corestate_t *cs, int timeout)
-{
-    cs->timeout = timeout;
-
-    cs->device_id = get_device_id("./cdev.conf/deviceId");
 }
 
 
@@ -73,7 +98,7 @@ void core_setup(corestate_t *cs, int timeout)
 // of messages. The restriction is lifted after the core_init() phase is over.
 //
 
-corestate_t *core_init(int port, int timeout)
+corestate_t *core_init(int port, int serialnum)
 {
     #ifdef DEBUG_LVL1
         printf("Core initialization...");
@@ -82,10 +107,11 @@ corestate_t *core_init(int port, int timeout)
     // create the core state structure..
     corestate_t *cs = (corestate_t *)calloc(1, sizeof(corestate_t));
     // device_id set inside the following function
-    core_setup(cs, timeout);
     cs->port = port;
     cs->cf_pending = true;
+    cs->serial_num = serialnum;
 
+    core_setup(cs);
     return cs;
 }
 

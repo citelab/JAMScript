@@ -104,7 +104,7 @@ typedef struct _jamstate_t
 } jamstate_t;
 
 
-jamstate_t *jam_init(int port);
+jamstate_t *jam_init(int port, int serialnum);
 
 void jam_run_app(void *arg);
 void jam_event_loop(void *js);
@@ -198,7 +198,6 @@ bool jcond_evaluate_cond(jamstate_t *js, command_t *cmd);
 bool jcond_synchronized(command_t *cmd);
 int jcond_getquorum(command_t *cmd);
 
-char *get_device_id(char *filepath);
 
 #endif  /* __JAMLIB_H__ */
 

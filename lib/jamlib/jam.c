@@ -40,15 +40,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // Initialize the JAM library.. nothing much done here.
 // We just initialize the Core ..
 //
-jamstate_t *jam_init(int port)
+jamstate_t *jam_init(int port, int serialnum)
 {
     #ifdef DEBUG_LVL1
         printf("JAM Library initialization... \t\t[started]\n");
     #endif
 
     jamstate_t *js = (jamstate_t *)calloc(1, sizeof(jamstate_t));
-    // TODO: Should we remove the hardcoded timeout values? To which value?
-    js->cstate = core_init(port, 100);
+
+    js->cstate = core_init(port, serialnum);
 
     if (js->cstate == NULL)
     {
