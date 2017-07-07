@@ -8,10 +8,9 @@ jdata {
 
 
 setInterval(function() {
-    y = Math.floor((Math.random() * 100) + 1);
-    var tmp = Math.floor((Math.random() * 100) + 1);
-    fruit = {
-    	apple: tmp,
-    	pear : tmp+0.1
-    };
+    y.broadcast(Math.floor((Math.random() * 100) + 1));
+    fruit.broadcast({
+    	apple: 1,
+    	pear : 21.2
+    });
 }, 1000);
