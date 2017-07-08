@@ -1,4 +1,3 @@
 # TODO
 
-- write doc
-- Contact mDNS guy regarding 15 character service type limitation
+- submit issue on node-mdns regarding 15 character service type limitation?
