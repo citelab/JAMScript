@@ -1,4 +1,0 @@
-#!/bin/bash
-
-gcc -Wall -I/usr/local/include -L/usr/local/lib -DHAVE_PTHREAD_RWLOCK=1 -DHAVE_GETOPT_LONG=1 jamrun.c -o jamrun -lslack
-
