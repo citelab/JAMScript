@@ -3,7 +3,7 @@ import re
 
 AddOption('--conly', nargs=0)
 
-# env = Environment(CC = 'clang', CCFLAGS='-g -DDEBUG_LVL1', LIBPATH=['/usr/local/lib'])
+#env = Environment(CC = 'clang', CCFLAGS='-g -DDEBUG_LVL1', LIBPATH=['/usr/local/lib'])
 env = Environment(CC = 'clang', CCFLAGS='-g', LIBPATH=['/usr/local/lib'])
 env.Append(CPPPATH='/usr/local/include')
 env.Append(FRAMEWORKS='CoreFoundation')

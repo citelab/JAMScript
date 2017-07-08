@@ -17,6 +17,15 @@
         "caster": "atof",
         "jbroadcast": "JBROADCAST_FLOAT"
     },
+    "string": {
+        "c_pattern": "\\\"%s\\\"",
+        "jamlib": "sval",
+        "js_type": "string",
+        "c_code": "s",
+        "js_code": "s",
+        "caster": null,
+        "jbroadcast": "JBROADCAST_STRING"
+    },
     "char*": {
         "c_pattern": "\\\"%s\\\"",
         "jamlib": "sval",

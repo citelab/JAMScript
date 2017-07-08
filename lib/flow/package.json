@@ -1,0 +1,37 @@
+{
+  "name": "flows.js",
+  "description": "A framework for distributed javascript data processing and data sharing.",
+  "version": "0.0.3",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anrl/JAM.git/lib/flow"
+  },
+  "dependencies": {
+    "n-readlines": "= 0.2.7"
+  },
+  "engines": {
+    "node": ">= 7.0.0"
+  },
+  "os": [
+    "darwin",
+    "linux"
+  ],
+  "preferGlobal": true,
+  "files": [
+    "*.js"
+  ],
+  "main": "flow.js",
+  "scripts": {
+    "test": "console.log(Flow.from([1,2,3,4,5]).count());"
+  },
+  "keywords": [
+    "data stream processing",
+    "flow",
+    "pipeline computing",
+    "data processing",
+    "parallel data processing",
+    "javascript map reduce data processing framework"
+  ],
+  "author": "Richboy David"
+}

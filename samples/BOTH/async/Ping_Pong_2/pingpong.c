@@ -16,9 +16,9 @@ void regcallback(char *msg) {
   printf("Perank %d\n", perank);
 
   while(1) {
-    usleep(1000);
-    printf("Pinging %d\n", perank);
-    pingserver(perank);
+     usleep(1);
+     printf("Pinging %d\n", perank);
+     pingserver(perank);
   }
 
 }

@@ -40,7 +40,7 @@ extern "C" {
 #include "jcondition.h"
 #include "task.h"
 #include "threadsem.h"
-
+#include "comboptr.h"
 
 #define STACKSIZE                   20000
 
@@ -55,11 +55,11 @@ typedef struct _runtableentry_t
     int status;
     long long accesstime;
     enum activity_type_t type;
-    
+
     int rcd_replies;
     // results hold remote results in the case of C->J or
     // local results in the case of J->C sync calls - only [0] used
-    arg_t *results[MAX_SERVERS]; //The results 
+    arg_t *results[MAX_SERVERS]; //The results
 } runtableentry_t;
 
 
@@ -70,15 +70,16 @@ typedef struct _runtable_t
     runtableentry_t *entries;
     int rcount;
     pthread_mutex_t lock;
-    
+
 } runtable_t;
+
 
 
 typedef struct _jamstate_t
 {
-    timertype_t *maintimer;    
+    timertype_t *maintimer;
     timertype_t *synctimer;
-    
+
     corestate_t *cstate;
     activity_table_t *atable;
     runtable_t *rtable;
@@ -103,13 +104,14 @@ typedef struct _jamstate_t
 } jamstate_t;
 
 
-jamstate_t *jam_init(int port);
+jamstate_t *jam_init(int port, int serialnum);
 
 void jam_run_app(void *arg);
 void jam_event_loop(void *js);
 jactivity_t *jam_create_activity(jamstate_t *js);
 bool have_fog_or_cloud(jamstate_t *js);
 int cloud_tree_height(jamstate_t *js);
+int jamargs(int argc, char **argv, char *appid, int *num);
 
 /*
  * Functions defined in jamsync.c
@@ -137,9 +139,9 @@ void process_missing_replies(jactivity_t *jact, int nreplies, int ecount);
 void *jwork_bgthread(void *arg);
 void jwork_set_subscriptions(jamstate_t *js);
 
-void jwork_set_callbacks(jamstate_t *js);
-void jwork_msg_delivered(void *ctx, MQTTClient_deliveryToken dt);
-int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTClient_message *msg);
+void jwork_set_callbacks(jamstate_t *js, unsigned char mask);
+void jwork_msg_delivered(void *ctx, MQTTAsync_deliveryComplete dt);
+int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTAsync_message *msg);
 void jwork_connect_lost(void *context, char *cause);
 
 void jwork_assemble_fds(jamstate_t *js);
@@ -172,7 +174,7 @@ bool jcond_synchronized(command_t *cmd);
 
 
 
-// Prototypes for functions in 
+// Prototypes for functions in
 // jamrunner.c
 //
 
@@ -190,14 +192,11 @@ command_t *get_actid_results(jamstate_t *js, char *actid);
 bool jrun_check_signature(activity_callback_reg_t *creg, command_t *cmd);
 void jrun_arun_callback(jactivity_t *jact, command_t *cmd, activity_callback_reg_t *creg);
 
-
 // jcond.h
 
 bool jcond_evaluate_cond(jamstate_t *js, command_t *cmd);
 bool jcond_synchronized(command_t *cmd);
 int jcond_getquorum(command_t *cmd);
-
-
 
 
 #endif  /* __JAMLIB_H__ */

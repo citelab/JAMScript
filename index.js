@@ -147,7 +147,7 @@ function compile(code, verbose) {
     fs.writeFileSync("jamout.c", includes + preprocessDecls.join("\n") + "\n" + code);
     fs.writeFileSync(`${tmpDir}/jamout.c`, includes + preprocessDecls.join("\n") + "\n" + code);
     try {
-      var command = `clang -g ${tmpDir}/jamout.c -I/usr/local/include -I/usr/local/share/jam/lib/ ${options} -pthread -lcbor -lnanomsg /usr/local/lib/libjam.a -ltask -levent -lhiredis -L/usr/local/lib -lpaho-mqtt3c`;
+      var command = `clang -g ${tmpDir}/jamout.c -I/usr/local/include -I/usr/local/share/jam/lib/ ${options} -pthread -lcbor -lnanomsg /usr/local/lib/libjam.a -ltask -levent -lhiredis -L/usr/local/lib -lpaho-mqtt3a`;
       console.log("Compiling C code...");
       if(verbose) {
         console.log(command);
