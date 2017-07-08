@@ -20,33 +20,9 @@ See `app.js` to figure out who discovers whom :)
 ## Registrar
 The `Registrar` is the object you'll be interfacing with. It is responsible for finding other nodes running the same application as this one, and making this node visible so that other nodes may find it too. You create a Registrar as follows:
 ```
-    var reggie = new Registrar(app, machType, id, port, config);
+    var reggie = new Registrar(app, machType, id, port);
 ```
-where `app` is the name of the application, `machType` (machine type) is one of 'device', 'fog', or 'cloud', `id` is the id of the node, `port` is the port it is running on, and `config` is an optional parameter in which you specify what protocols you want to use (by default, all are used). To use all protocols, you can leave config undefined, or pass
-```
-    {
-        mqtt: true,
-        mdns: true,
-        localStorage: true
-    }
-```
-As another example, if you just want to use mdns, you can pass
-```
-    {
-        mdns: true
-    }
-```
-or
-```
-    {
-        mqtt: false,
-        mdns: true,
-        localStorage: false
-    }
-```
-etc.
-
-Now, before we get into how to use our new Registrar object, we'll need to understand what **attributes** are.
+where `app` is the name of the application, `machType` (machine type) is one of 'device', 'fog', or 'cloud', `id` is the id of the node, and `port` is the port it is running on. Now, before we get into how to use our new Registrar object, we'll need to understand what attributes are.
 
 ## Attributes
 The system revolves around attributes. An attribute is some aspect of a node with an associated value (or not - an attribute need not have a value). Nodes have attributes that are discoverable by other nodes. If you can follow that, then the rest should be easy - that's really all there is to it. But, to solidify the idea, here are a couple of examples:
