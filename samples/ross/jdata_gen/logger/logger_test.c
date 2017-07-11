@@ -1,8 +1,8 @@
 #include <unistd.h>
 
-int main() {
+int main(int argc, char **argv) {
 	for (int i = 0;; i++) {
 		x = i;
-		sleep(1);
-	}
+		printf("x logged.. %d\n", i);
+		usleep(20000); }
 }
