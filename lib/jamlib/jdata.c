@@ -193,63 +193,60 @@ char* jamdata_encode(char *fmt, ...){
   //root   - cbor map: object contains encoded info about input args
   //content- encoded primitive type: argument's content 
   //key    - encoded string: argument's name
-  cbor_item_t *root, *content, *key; 
+  cbor_item_t *root = cbor_new_indefinite_map();
   //initialize args to be used by va_end and va_arg
   va_list args;
   va_start(args, fmt);
-  //buf    - type+name
-  //name   - name of each input value
-  char *buf, *name;
 
-  //initialize root
-  if((root = cbor_new_definite_map(num)) == NULL){
-    printf("Failure on malloc for new cbor map\n");
-    return NULL;
-  }
+  char *name, *s;
+  int t;
+  double f;
 
   //fmt_str is in the format such as sdf
-  for(i=0;i<strlen(fmt);i++){
+  for(i=0;i<num;i++){
     //name of the value
-    name = va_arg(args, char *);     
-    key = cbor_build_string(name);   
+    name = va_arg(args, char *);
+
     if(fmt[i]=='s'){
-      //string
-      content = cbor_build_string(strdup(va_arg(args, char *)));
+      s = va_arg(args, char *);
+      cbor_map_add(root, (struct cbor_pair){
+        .key = cbor_move(cbor_build_string(name)),
+        .value = cbor_move(cbor_build_string(s))
+      }); 
     } 
     else if(fmt[i]=='i' || fmt[i]=='d'){
-      content = cbor_build_uint32(abs(va_arg(args, int)));
+      t = abs(va_arg(args, int));
+      cbor_map_add(root, (struct cbor_pair){
+        .key = cbor_move(cbor_build_string(name)),
+        .value = cbor_move(cbor_build_uint32(t))
+      }); 
     }
     else if(fmt[i]=='f'){
-      content = cbor_build_float8(va_arg(args, double));
+      f = va_arg(args, double);
+      cbor_map_add(root, (struct cbor_pair){
+        .key = cbor_move(cbor_build_string(name)),
+        .value = cbor_move(cbor_build_float8(f))
+      }); 
     }
     else{
       printf("Invalid format string\n");
       return NULL;  
     }
-    cbor_map_add(root, (struct cbor_pair){
-      .key = key,
-      .value = content
-    });    
-  } 
-  // free(buf);
-  // free(name);
+  }  
   va_end(args);
-  unsigned char *buffer; 
-  int       buffer_size;
-  cbor_serialize_alloc(root, &buffer, (size_t *)&buffer_size);
 
-  char *dump = (char *)malloc(buffer_size*2+1);
-  char *ptr = dump;
-  for(i=0;i<buffer_size;i++){
-    sprintf(dump+2*i, "%02x", buffer[i]);
+  unsigned char *buffer; 
+  size_t buffer_size, len = cbor_serialize_alloc(root, &buffer, &buffer_size);
+
+  char *dump = (char *)malloc(len*2+2);
+  for(i=0;i<len;i++){
+    sprintf(dump+2*i, "%02X", buffer[i]);
   }
-  sprintf(dump+2*i, "%c", '\0');
-  // printf("%d\n", strlen(dump));
-  // struct cbor_load_result result; 
-  // cbor_item_t *obj = cbor_load(buffer, buffer_size, &result);
-  // printf("%d\n", buffer_size);
-  // cbor_describe(obj, stdout);   
-  return ptr;
+  sprintf(dump+2*i, "%02X", '\0');
+
+  cbor_decref(&root);
+  free(buffer);
+  return dump;
 }
 
 void jamcpy(void *destination, char *source) {
