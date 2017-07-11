@@ -2,6 +2,7 @@ jdata {
     int x as logger;
 }
 
+
 setInterval(function() {
 
     for (i = 0; i < x.size(); i++) {

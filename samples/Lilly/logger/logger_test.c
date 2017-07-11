@@ -2,7 +2,8 @@
 
 int main(int argc, char **argv) {
 	for (int i = 0;; i++) {
-		x = i;
-		printf("x logged.. %d\n", i);
-		usleep(50000); }
+		t = i;
+		s = {.apple:i, .pear:i+0.1};
+		sleep(1);
+	}
 }
