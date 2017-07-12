@@ -252,10 +252,6 @@ char* jamdata_encode(char *fmt, ...){
   return ptr;
 }
 
-void jamcpy(void *destination, char *source) {
-  return;
-}
-
 // data          - encoded cbor data to be decoded
 // num           - # field in data
 // buffer        - a pointer to the c struct stores decoded data
