@@ -9,7 +9,8 @@
     "bunyan": "^1.8.10",
     "lockfile": "^1.0.3",
     "mqtt": "^2.4.0",
-    "node-localstorage": "^1.3.0"
+    "node-localstorage": "^1.3.0",
+    "mdns": "^2.3.3"
   },
   "repository": {
     "type": "git",
