@@ -1,9 +1,9 @@
 #include <unistd.h>
 
-int main(int argc, char **argv) {
+int main() {
 	for (int i = 0;; i++) {
 		t = i;
 		s = {.apple:i, .pear:i+0.1};
-		sleep(1);
+		usleep(3000);
 	}
 }

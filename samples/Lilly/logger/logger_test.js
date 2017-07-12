@@ -6,11 +6,11 @@ jdata {
     } s as logger;
 }
 
-setInterval(function() {
-	if (t[0] !== undefined && !t[0].isEmpty()){
-		console.log(t[0].lastValue());
-	}
-    if (s[0] !== undefined && !s[0].isEmpty()) {
-        console.log(s[0].lastValue());
+var listener = {
+    notify: function(key, entry){
+        console.log(key + " - " + JSON.stringify(entry));
     }
-}, 1000);
+}
+
+t.subscribe(listener);
+s.subscribe(listener);
