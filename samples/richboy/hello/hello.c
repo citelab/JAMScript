@@ -1,6 +1,6 @@
 #include <unistd.h>
 
-int main(){
+int main(int argc, char **argv){
     int num = 0;
     while( 1 ){
         x = num;

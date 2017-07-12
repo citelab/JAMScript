@@ -46,10 +46,10 @@ CFLAGS_OBJC_Coverage :=
 CFLAGS_OBJCC_Coverage :=
 
 INCS_Coverage := \
-	-I/Users/maheswar/.node-gyp/7.2.0/include/node \
-	-I/Users/maheswar/.node-gyp/7.2.0/src \
-	-I/Users/maheswar/.node-gyp/7.2.0/deps/uv/include \
-	-I/Users/maheswar/.node-gyp/7.2.0/deps/v8/include \
+	-I/Users/maheswar/.node-gyp/8.1.4/include/node \
+	-I/Users/maheswar/.node-gyp/8.1.4/src \
+	-I/Users/maheswar/.node-gyp/8.1.4/deps/uv/include \
+	-I/Users/maheswar/.node-gyp/8.1.4/deps/v8/include \
 	-I$(srcdir)/node_modules/nan
 
 DEFS_Debug := \
@@ -63,7 +63,8 @@ DEFS_Debug := \
 	'-DHAVE_DNSSERVICEGETADDRINFO' \
 	'-DBUILDING_NODE_EXTENSION' \
 	'-DDEBUG' \
-	'-D_DEBUG'
+	'-D_DEBUG' \
+	'-DV8_ENABLE_CHECKS'
 
 # Flags passed to all source files.
 CFLAGS_Debug := \
@@ -96,10 +97,10 @@ CFLAGS_OBJC_Debug :=
 CFLAGS_OBJCC_Debug :=
 
 INCS_Debug := \
-	-I/Users/maheswar/.node-gyp/7.2.0/include/node \
-	-I/Users/maheswar/.node-gyp/7.2.0/src \
-	-I/Users/maheswar/.node-gyp/7.2.0/deps/uv/include \
-	-I/Users/maheswar/.node-gyp/7.2.0/deps/v8/include \
+	-I/Users/maheswar/.node-gyp/8.1.4/include/node \
+	-I/Users/maheswar/.node-gyp/8.1.4/src \
+	-I/Users/maheswar/.node-gyp/8.1.4/deps/uv/include \
+	-I/Users/maheswar/.node-gyp/8.1.4/deps/v8/include \
 	-I$(srcdir)/node_modules/nan
 
 DEFS_Release := \
@@ -144,10 +145,10 @@ CFLAGS_OBJC_Release :=
 CFLAGS_OBJCC_Release :=
 
 INCS_Release := \
-	-I/Users/maheswar/.node-gyp/7.2.0/include/node \
-	-I/Users/maheswar/.node-gyp/7.2.0/src \
-	-I/Users/maheswar/.node-gyp/7.2.0/deps/uv/include \
-	-I/Users/maheswar/.node-gyp/7.2.0/deps/v8/include \
+	-I/Users/maheswar/.node-gyp/8.1.4/include/node \
+	-I/Users/maheswar/.node-gyp/8.1.4/src \
+	-I/Users/maheswar/.node-gyp/8.1.4/deps/uv/include \
+	-I/Users/maheswar/.node-gyp/8.1.4/deps/v8/include \
 	-I$(srcdir)/node_modules/nan
 
 OBJS := \

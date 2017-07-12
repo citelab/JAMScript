@@ -30,8 +30,8 @@ function toDiscretizer(inputFlow){
 
 //just print some values off the discreteFlow
 f.setTerminalFunction(discreteFlow => {
-    let avg = discreteFlow.average();
-    let sum = discreteFlow.sum();
+    var avg = discreteFlow.average();
+    var sum = discreteFlow.sum();
 
     console.log("Sum: " + sum + ", Average: " + avg);
 });

@@ -3,18 +3,23 @@
   "description": "Compiler for the JAMScript language",
   "version": "0.0.1",
   "license": "MIT",
-  "repository" : {
-  	"type" : "git",
-  	"url" : "https://github.com/anrl/JAM.git"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anrl/JAM.git"
   },
-  "dependencies" : {
+  "dependencies": {
     "ohm-js": ">= 0.12.0"
   },
   "bin": "./index.js",
-  "engines": { "node" : ">= 7.0.0" },
-  "os": [ "darwin", "linux" ],
+  "engines": {
+    "node": ">= 7.0.0"
+  },
+  "os": [
+    "darwin",
+    "linux"
+  ],
   "preferGlobal": true,
-  "files" : [
+  "files": [
     "lib/ohm",
     "index.js"
   ]
