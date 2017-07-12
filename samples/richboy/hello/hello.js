@@ -25,7 +25,7 @@ jdata{
 //waitForData();
 
 function toDiscretizer(inputFlow){
-    return inputFlow.discretize(x.size(), 1);
+    return inputFlow.discretize(3, 1);
 }
 
 //just print some values off the discreteFlow
