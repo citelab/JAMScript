@@ -31,7 +31,6 @@
   ],
   "preferGlobal": true,
   "files": [
-    "*.js",
-    "jdiscovery"
+    "*.js"
   ]
 }
