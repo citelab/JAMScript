@@ -1,0 +1,3 @@
+CHANGES
+
+This is the node mdns module, version 2.3.3, minus service type length restrictions (removed from ./lib/service_type.js).
