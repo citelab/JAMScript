@@ -26,7 +26,7 @@
 
 #define DELIM "$$$"
 #define CMD_LOGGER "COMMAND_LOGGER"
-#define DEFAULT_APP_NAME "DEFAULT_APP"
+#define DEFAULT_APP_NAME "APP"
 #define DEFAULT_SERV_IP "127.0.0.1"
 #define DEFAULT_SERV_PORT 6379
 
@@ -74,8 +74,8 @@ void *jdata_init(void *js);
 void jdata_default_connection(const redisAsyncContext *c, int status);
 void jdata_default_disconnection(const redisAsyncContext *c, int status);
 void jdata_default_msg_received(redisAsyncContext *c, void *reply, void *privdata);
-void jamcpy(void *destination, char *source);
 char *jamdata_encode(char *name, ...);
+void *jamdata_decode(char *data, int num, void *buffer, ...);
 void jamdata_log_to_server(char *namespace, char *logger_name, char *value, msg_rcv_callback callback);
 void jdata_log_to_server(char *key, char *value, msg_rcv_callback callback);
 void jdata_remove_element(char *key, char *value, msg_rcv_callback callback);
