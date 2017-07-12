@@ -1,6 +1,6 @@
 {
   "name": "jdiscovery",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "For testing registration/discovery in JAM",
   "main": "jregistrar.js",
   "author": "Keith Strickling",
@@ -8,7 +8,6 @@
   "dependencies": {
     "bunyan": "^1.8.10",
     "lockfile": "^1.0.3",
-    "mdns": ">=2.3.3",
     "mqtt": "^2.4.0",
     "node-localstorage": "^1.3.0"
   },
