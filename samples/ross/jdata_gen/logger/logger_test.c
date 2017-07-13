@@ -4,5 +4,5 @@ int main(int argc, char **argv) {
 	for (int i = 0;; i++) {
 		x = i;
 		printf("x logged.. %d\n", i);
-		usleep(50000); }
+		sleep(1); }
 }

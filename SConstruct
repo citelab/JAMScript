@@ -33,11 +33,14 @@ if env.GetOption('conly') is None:
 
 	if not env.GetOption('clean'):
 	    subprocess.check_call("npm install -g", shell=True)
-	    subprocess.check_call("npm install -g lib/jserver", shell=True)
+	    subprocess.check_call("npm install -g lib/jamserver", shell=True)
+	    subprocess.check_call("npm install -g lib/flow", shell=True)
+	    subprocess.check_call("npm install -g lib/jdiscovery", shell=True)
 	else:
 	    subprocess.check_call("npm uninstall -g jamc", shell=True)
 	    subprocess.check_call("npm uninstall -g jamserver", shell=True)
-
+	    subprocess.check_call("npm uninstall -g flows.js", shell=True)
+	    subprocess.check_call("npm uninstall -g jdiscovery", shell=True)	    	    
 
 #Now we test for C library dependencies
 
