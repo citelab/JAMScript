@@ -253,31 +253,37 @@ char* jamdata_encode(char *fmt, ...){
 // num           - # field in data
 // buffer        - a pointer to the c struct stores decoded data
 // args followed - offset of each field in data
-void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...){
+void* jamdata_decode(char *fmt, unsigned char *data, int num, void *buffer, ...){
+  // convert data to char array
+  int len=0, i;
+  while(data[len] != '\0'){
+    len++;
+  }
+  
   va_list args;
   va_start(args, buffer);
   // memcpy each field value in data to the corresponding field in buffer
   struct cbor_load_result result;
-  cbor_item_t *obj = cbor_load((unsigned char*)data, strlen(data), &result);
-  //cbor_describe(obj, stdout);
+  cbor_item_t *obj = cbor_load(data, len, &result);
+  printf("obj:\n");
+  cbor_describe(obj, stdout);
+
   struct cbor_pair *handle = cbor_map_handle(obj);
-  int i, offset;
-  char *key, *s; int n; float f;
+  char *s, type; int n; float f;
   for(i=0;i<num;i++){
-    key = cbor_get_string(handle[i].key);
-    //key is the type of this argument        
-    if(key[0] == 's'){
+    type = fmt[i];       
+    if(type == 's'){
       //string  
       s = cbor_get_string(handle[i].value);
       memcpy(buffer+(va_arg(args, size_t)), s, strlen(s)+1);
       printf("%s\n", s);
     } 
-    else if(key[0] == 'd'){
+    else if(type == 'd'){
       n = cbor_get_integer(handle[i].value);
       memcpy(buffer+(va_arg(args, size_t)), &n, sizeof(int));
       printf("%d\n", n);
     }
-    else if(key[0] == 'f'){
+    else if(type == 'f'){
       f = cbor_float_get_float8(handle[i].value);
       memcpy(buffer+(va_arg(args, size_t)), &f, sizeof(float));
       printf("%f\n", f);
@@ -293,11 +299,14 @@ void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...){
 void jamdata_log_to_server(char *namespace, char *logger_name, char *value, msg_rcv_callback callback)
 {
   printf("Calling... jamdata_log\n");
-  char format[] = "apps[%s].namespaces[%s].datasources[%s].datastreams[%s]";
-  char key[strlen(app_id) + strlen(namespace) + strlen(logger_name) + strlen(dev_id) + sizeof format - 8];
-  sprintf(key, format, app_id, namespace, logger_name, dev_id);
-  jdata_log_to_server(key, value, callback);
-  perror("After jdata");
+  if(value != NULL){
+    char format[] = "apps[%s].namespaces[%s].datasources[%s].datastreams[%s]";
+    char key[strlen(app_id) + strlen(namespace) + strlen(logger_name) + strlen(dev_id) + sizeof format - 8];
+    sprintf(key, format, app_id, namespace, logger_name, dev_id);
+    jdata_log_to_server(key, value, callback);
+    perror("After jdata");
+  }
+  else printf("Empty data\n"); 
 }
 
 /*
