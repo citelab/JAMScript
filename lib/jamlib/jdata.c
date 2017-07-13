@@ -253,7 +253,7 @@ char* jamdata_encode(char *fmt, ...){
 // num           - # field in data
 // buffer        - a pointer to the c struct stores decoded data
 // args followed - offset of each field in data
-void* jamdata_decode(char *data, int num, void *buffer, ...){
+void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...){
   va_list args;
   va_start(args, buffer);
   // memcpy each field value in data to the corresponding field in buffer
