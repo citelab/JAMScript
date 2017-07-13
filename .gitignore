@@ -15,7 +15,10 @@ node_modules/*
 **/a.out.dSYM/*
 **/*.conf/*
 **/dump.rdb
+**/errlog
+lib/jdiscovery/mdns/build
 
+.vscode/c_cpp_properties.json
 .sconsign.dblite
 .sconf_temp
 config.log
