@@ -3,6 +3,7 @@
  */
 
 jdata{
+    int x as logger;
     q as flow with flowGen of x;
     p as outflow of q;
 }

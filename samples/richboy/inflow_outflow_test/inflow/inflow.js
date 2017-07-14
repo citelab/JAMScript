@@ -9,6 +9,7 @@ jdata{
 
 r.setTerminalFunction(receive); //we can chain r through other flow methods before setting the terminal function
 
-function receive(data){
-   console.log(data);
+function receive(entry){
+    //we could do a broadcast to all devices if we need to...
+    console.log("Data: " + entry.data + ", Timestamp: " + entry.timestamp);
 }
