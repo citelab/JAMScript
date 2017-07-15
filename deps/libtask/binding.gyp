@@ -1,7 +1,7 @@
 {
   "make_global_settings": [
-    ["CC", "clang"],
-    ["LINK", "clang"]
+    ["CC", "/usr/bin/clang"],
+    ["LINK", "/usr/bin/clang"]
   ],
   "targets": [
     {
