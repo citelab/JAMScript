@@ -128,7 +128,7 @@ npm install mime
 
 cd $scriptdir
 # install the following here..
-
+npm install ohm-js
 
 
 
