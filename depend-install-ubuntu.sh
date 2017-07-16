@@ -40,6 +40,7 @@ fi
 
 
 # NANOMSG
+if !test nanocat > /dev/null; then
 wget https://github.com/nanomsg/nanomsg/archive/1.0.0.tar.gz
 tar xvzf 1.0.0.tar.gz
 cd nanomsg-1.0.0
@@ -50,19 +51,26 @@ cmake --build
 ctest -G Debug
 sudo cmake --build . --target install
 sudo ldconfig
+fi
 
 cd ../..
 
 
 # CBOR
+if (dpkg -s libcbor 1>/dev/null 2>/dev/null); then
 wget https://github.com/PJK/libcbor/releases/download/v0.4.0/libcbor-0.4.0-Linux.deb
 sudo dpkg -i libcbor-0.4.0-Linux.deb
+fi
 
 # MQTT
-wget "https://www.eclipse.org/downloads/download.php?file=/paho/1.2/eclipse-paho-mqtt-c-unix-1.1.0.tar.gz&r=1" -O mqtt.tar.gz
-mkdir mqtt
-tar -zxvf mqtt.tar.gz -C mqtt
-sudo mv mqtt/include/*.h /usr/local/include
+if ldconfig -p | grep mqtt3a >/dev/null; then
+sudo apt-get install -y libssl-dev                                                           
+git clone https://github.com/eclipse/paho.mqtt.c.git                                         
+cd paho.mqtt.c                                                                               
+make                                                                                         
+sudo make install                                                                            
+cd ..
+fi
 
 # Redis
 if !test redis-server > /dev/null; then
