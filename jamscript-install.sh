@@ -2,7 +2,7 @@
 
 # Make /usr/lib/node_modules writeable
 
-udo chmod o+w /usr/lib/node_modules                                                         
+sudo chmod o+w  /usr/lib/node_modules                                                         
 sudo chmod o+w /usr/bin                                                                      
 sudo chmod o+w /usr/local/share                                                              
 sudo chmod o+w /usr/local/lib 
