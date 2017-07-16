@@ -80,15 +80,18 @@ cd ../..
 
 
 # CBOR
-qres=$(dpkg -s libcbor 2>/dev/null | grep "Status")
-if [[ $qres = *[!\ ]* ]]; then
+qres=$(dpkg -s libcbor 2>/dev/null | grep "Status" | tr -d ' ')
+if [ -z $qres ]; then
     wget https://github.com/PJK/libcbor/releases/download/v0.4.0/libcbor-0.4.0-Linux.deb
     sudo dpkg -i libcbor-0.4.0-Linux.deb
+else
+    echo "libcbor already installed..."
 fi
 
+
 # MQTT
-qres=$(ldconfig -p | grep mqtt3a)
-if [[ $qres = *[!\ ]* ]]; then
+qres=$(ldconfig -p | grep mqtt3a | tr -d ' ')
+if [ -z $qres ]; then
     sudo apt-get install -y libssl-dev
     git clone https://github.com/eclipse/paho.mqtt.c.git
     cd paho.mqtt.c
