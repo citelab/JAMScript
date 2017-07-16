@@ -1,5 +1,14 @@
 #!/usr/bin/env sh
 
+# Check for Ubuntu OS..
+if !([ -e /etc/lsb-release ] &&
+	cat /etc/lsb-release | grep "Ubuntu" >/dev/null); then
+	   echo "This script runs only in Ubuntu..."
+	      exit
+      fi
+
+
+
 # Create a temp directory
 mkdir temp_install_src
 cd temp_install_src
@@ -12,6 +21,7 @@ sudo apt-get install -y libc-dev
 sudo apt-get install -y libhiredis-dev
 sudo apt-get install -y libevent-dev
 sudo apt-get install -y libbsd-dev
+sudo apt-get install -y libavahi-compat-libdnssd-dev
 
 # Check and install..
 if !type clang > /dev/null; then
@@ -104,7 +114,11 @@ npm install command-line-args
 npm install random-js
 npm install node-localstorage
 npm install bunyan
-
+npm install lockfile
+npm install cbor
+npm install deasync
+npm install json-fn
+npm install mime
 
 
 
