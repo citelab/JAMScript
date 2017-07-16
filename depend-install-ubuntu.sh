@@ -6,21 +6,37 @@ cd temp_install_src
 
 # Install some packages..
 sudo apt-get update
-sudo apt-get install -y clang
 sudo apt-get install -y xz-utils
 sudo apt-get install -y texinfo
 sudo apt-get install -y libc-dev
-sudo apt-get install -y cmake
 sudo apt-get install -y libhiredis-dev
 sudo apt-get install -y libevent-dev
 sudo apt-get install -y libbsd-dev
+
+# Check and install..
+if !test clang > /dev/null; then
+sudo apt-get install -y clang
+fi
+
+if !test g++ > /dev/null; then
+sudo apt-get install -y g++
+fi
+
+if !test cmake > /dev/null; then
+sudo apt-get install -y cmake
+fi
+
+if !test mosquitto > /dev/null; then
 sudo apt-get install -y mosquitto
+fi
 
 
 # Install latest Node
+if !test node > /dev/null; then
 sudo apt-get install -y python-software-properties
 curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 sudo apt-get install -y nodejs
+fi
 
 
 # NANOMSG
@@ -49,14 +65,20 @@ tar -zxvf mqtt.tar.gz -C mqtt
 sudo mv mqtt/include/*.h /usr/local/include
 
 # Redis
+if !test redis-server > /dev/null; then
 wget http://download.redis.io/redis-stable.tar.gz
 tar xvzf redis-stable.tar.gz
 cd redis-stable
 make
 sudo make install
+fi
 
-cd ..
 
-# Erase all the downloaded files and folders
-rm -rf temp_install_src
+
+echo
+echo
+echo "All done!"
+echo "Remember to erase the temp_install_src folder!"
+echo 
+echo
 
