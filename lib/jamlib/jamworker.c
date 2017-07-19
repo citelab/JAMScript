@@ -30,7 +30,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <task.h>
 #include <string.h>
 #include "threadsem.h"
-#include "jdata.h"
+#include "jamdata.h"
 #include "nvoid.h"
 #include "mqtt.h"
 #include "activity.h"

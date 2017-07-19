@@ -3,10 +3,10 @@
 
 int main() {
 	struct myType localStruct;
-	localStruct = fruit;
 
 	while (1) {
 		sleep(1);
+		localStruct = fruit;
 		printf("%d\n", y);
 		printf("%d %f\n", localStruct.apple, localStruct.pear);
 	}

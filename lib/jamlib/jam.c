@@ -33,7 +33,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <bsd/stdlib.h>
 #endif
 
-#include "jdata.h"
 #include <strings.h>
 #include <pthread.h>
 
@@ -64,27 +63,30 @@ jamstate_t *jam_init(int port, int serialnum)
     js->rtable = runtable_new(js);
 
     // Queue initialization
+    // Input side: one for each source: device, fog, cloud
     js->deviceinq = queue_new(true);
     js->foginq = queue_new(true);
     js->cloudinq = queue_new(true);
+
+    // Output queue.. we write to this queue.
+    // The jamdata event loop serves from there.
+    js->dataoutq = pqueue_new(true);
 
     js->maintimer = timer_init("maintimer");
     js->synctimer = timer_init("synctimer");
 
     js->bgsem = threadsem_new();
-    js->jdata_sem = threadsem_new();
 
     int rval;
     #ifdef DEBUG_LVL1
         printf("Jdata initialization... \t\t[started]\n");
     #endif
 
-    rval = pthread_create(&(js->jdata_event_thread), NULL, jdata_init, (void *)js);
+    rval = pthread_create(&(js->jdthread), NULL, jamdata_init, (void *)js);
     if (rval != 0) {
-        perror("ERROR! Unable to start the jamworker thread");
+        perror("ERROR! Unable to start the jamdata thread");
         exit(1);
     }
-    task_wait(js->jdata_sem);
 
     #ifdef DEBUG_LVL1
         printf("Worker bgthread initialization... \t\t[started]\n");

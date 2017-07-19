@@ -42,27 +42,27 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 //
 // jactivity is created as follows:
-//     = created for the main thread - main program - this 
+//     = created for the main thread - main program - this
 //         used to run the program and all the synchronous functions
 //     = created for each asynchronous functions
 
-//     = created for each remote function call 
+//     = created for each remote function call
 
 // jactivity is deleted as follows:
-//     = main thread is only deleted when the program is terminated 
-//     = asynchronous functions - deleted by the user program 
+//     = main thread is only deleted when the program is terminated
+//     = asynchronous functions - deleted by the user program
 
-//     = deleted by the remote function call 
+//     = deleted by the remote function call
 
 // What happens at creation?
 //     = Allocate memory for the activity structure
-//     = Get a free thread from the pool 
-//     = Set the thread to the activity 
+//     = Get a free thread from the pool
+//     = Set the thread to the activity
 //     = Activity ID should be set in both thread and activity structures
-//     = State is set to NEW in the activity 
+//     = State is set to NEW in the activity
 
 // What happens at deletion?
-//     = Disassociate the thread from the activity: needs to be done in the thread and activity 
+//     = Disassociate the thread from the activity: needs to be done in the thread and activity
 //     = Release activity ID by releasing the memory and setting the pointer to NULL
 //
 
@@ -73,7 +73,7 @@ char *activity_gettime(char *prefix)
     #ifdef __APPLE__
         if (prefix == NULL)
             sprintf(buf, "%llu", mach_absolute_time());
-        else 
+        else
             sprintf(buf, "%s%llu", prefix, mach_absolute_time());
         return strdup(buf);
     #endif
@@ -83,7 +83,7 @@ char *activity_gettime(char *prefix)
         clock_gettime(CLOCK_MONOTONIC, &tp);
         if (prefix == NULL)
             sprintf(buf, "%li%li", tp.tv_sec, tp.tv_nsec);
-        else 
+        else
             sprintf(buf, "%s%li%li", prefix, tp.tv_sec, tp.tv_nsec);
         return strdup(buf);
     #endif
@@ -214,7 +214,7 @@ activity_callback_reg_t *activity_findcallback(activity_table_t *at, char *name)
 {
     int i;
 
-    for (i = 0; i < at->numcbackregs; i++) 
+    for (i = 0; i < at->numcbackregs; i++)
     {
         if (strcmp(at->callbackregs[i]->name, name) == 0)
             return at->callbackregs[i];
@@ -224,8 +224,8 @@ activity_callback_reg_t *activity_findcallback(activity_table_t *at, char *name)
 }
 
 
-// This is the runner for the activity. Each activity is running this 
-// on its task. It loads the newly arriving request and starts the corresponding 
+// This is the runner for the activity. Each activity is running this
+// on its task. It loads the newly arriving request and starts the corresponding
 // function
 //
 void run_activity(void *arg)
@@ -237,7 +237,7 @@ void run_activity(void *arg)
     activity_callback_reg_t *areg;
 
     athread->taskid = taskid();
-    while (1) 
+    while (1)
     {
         command_t *cmd;
         nvoid_t *nv = pqueue_deq(athread->inq);
@@ -264,7 +264,7 @@ void run_activity(void *arg)
                 areg = activity_findcallback(at, cmd->actname);
                 if (areg == NULL)
                     printf("Function not found.. %s\n", cmd->actname);
-                else 
+                else
                 {
                     jactivity_t *jact = athread->jact;
                     #ifdef DEBUG_LVL1
@@ -280,14 +280,14 @@ void run_activity(void *arg)
                     runtable_del(js->rtable, cmd->actid);
                 }
             }
-            else 
+            else
             if (strcmp(cmd->cmd, "REXEC-SYN") == 0)
             {
                 // TODO: There is no difference at this point.. what will be the difference?
                 areg = activity_findcallback(at, cmd->actname);
                 if (areg == NULL)
                     printf("Function not found.. %s\n", cmd->actname);
-                else 
+                else
                 {
                     #ifdef DEBUG_LVL1
                     printf("Command actname = %s %s %s\n", cmd->actname, cmd->cmd, cmd->opt);
@@ -306,14 +306,14 @@ void run_activity(void *arg)
             command_free(cmd);
         }
         athread->state = EMPTY;
-        taskyield();    
+        taskyield();
     }
 }
 
 
 // Create a new activity thread. This is reused by the system. That is,
 // it is never released.
-// 
+//
 activity_thread_t *activity_initthread(activity_table_t *atbl)
 {
     static int counter = 0;
@@ -344,9 +344,9 @@ activity_thread_t *activity_getthread(activity_table_t *at, char *actid)
     for (i = 0; i < MAX_ACT_THREADS; i++)
         if (at->athreads[i]->state == EMPTY)
             return at->athreads[i];
-            
+
     return NULL;
-    
+
     // FIXME: Delete the rest..
 
     long long ctime = activity_getseconds();
@@ -360,9 +360,9 @@ activity_thread_t *activity_getthread(activity_table_t *at, char *actid)
             j = i;
             break;
         }
-        else 
+        else
         {
-            if (ctime - at->athreads[i]->jact->accesstime > cdiff) 
+            if (ctime - at->athreads[i]->jact->accesstime > cdiff)
             {
                 cdiff = ctime - at->athreads[i]->jact->accesstime;
                 j = i;
@@ -373,7 +373,7 @@ activity_thread_t *activity_getthread(activity_table_t *at, char *actid)
 
     if (j < 0)
         return NULL;
-    else 
+    else
         return at->athreads[j];
 }
 
@@ -389,10 +389,9 @@ void activity_setthread(activity_thread_t *at, jactivity_t *jact, char *actid)
 
 jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
 {
-    int i;
     jactivity_t *jact = (jactivity_t *)calloc(1, sizeof(jactivity_t));
 
-    if (jact != NULL) 
+    if (jact != NULL)
     {
         jact->remote = remote;
         while ((jact->thread = activity_getthread(at, actid)) == NULL)
@@ -407,7 +406,7 @@ jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
         // Setup the new activity
         // NOTE:: We are not setting the thread state as above
         // So this is not repeating what was inside setthread()..
-        // 
+        //
         jact->state = NEW;
         jact->actid = strdup(actid);
 
@@ -424,7 +423,7 @@ jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
 
 void activity_free(jactivity_t *jact)
 {
-    int i; 
+    int i;
 
 //    printf("Activity free... %s\n", jact->actid);
     activity_freethread(jact);
@@ -468,7 +467,7 @@ int activity_id2indx(activity_table_t *at, char *actid)
             return i;
     }
     return -1;
-} 
+}
 
 
 void activity_freethread(jactivity_t *jact)
@@ -477,7 +476,7 @@ void activity_freethread(jactivity_t *jact)
         return;
 
     jact->thread->state = EMPTY;
-    
+
     // Free memory that is not reuseable
     // FIXME: What is the trouble with deallocating here??
     // if (jact->thread->actid != NULL) free(jact->thread->actid);
@@ -492,7 +491,6 @@ void activity_complete(activity_table_t *at, char *actid, char *fmt, ...)
 {
     va_list args;
     arg_t *qarg;
-    nvoid_t *nv;
 
     qarg = (arg_t *)calloc(1, sizeof(arg_t));
 
@@ -527,4 +525,3 @@ void activity_complete(activity_table_t *at, char *actid, char *fmt, ...)
     }
 
 }
-    

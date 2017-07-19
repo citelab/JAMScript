@@ -41,6 +41,10 @@ extern "C" {
 #include "task.h"
 #include "threadsem.h"
 #include "comboptr.h"
+#include "jamdata.h"
+
+#include <ev.h>
+#include <hiredis/async.h>
 
 #define STACKSIZE                   20000
 
@@ -77,6 +81,9 @@ typedef struct _runtable_t
 
 typedef struct _jamstate_t
 {
+    struct ev_loop *eloop;
+    redisAsyncContext *redctx;
+
     timertype_t *maintimer;
     timertype_t *synctimer;
 
@@ -86,20 +93,25 @@ typedef struct _jamstate_t
 
     // No need to use the pushqueue_t here.
     // We are watching the file descriptors of these queues
+    //
     simplequeue_t *deviceinq;
     simplequeue_t *foginq;
     simplequeue_t *cloudinq;
+
+    // We can still use the simplequeue_t
+    // We wait on this queue.. and the wait would be blocking..
+    // The pushqueue_t is used to wait without blocking the user-level threads...
+    // With kernel-level threading that concern is not there.
+    //
+    pushqueue_t *dataoutq;
 
     struct nn_pollfd *pollfds;
     int numpollfds;
 
     pthread_t bgthread;
-    pthread_t jdata_event_thread;
+    pthread_t jdthread;
 
     threadsem_t *bgsem;
-    threadsem_t *jdata_sem;
-
-    int maxleases;
 
 } jamstate_t;
 

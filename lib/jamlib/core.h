@@ -44,6 +44,9 @@ typedef struct _corestate_t
     bool mqttenabled[3];
     char *mqtthost[3];
 
+    char *redserver;
+    int redport;
+
 } corestate_t;
 
 

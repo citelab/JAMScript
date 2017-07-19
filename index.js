@@ -110,7 +110,7 @@ try {
       flowCheck(results.annotated_JS, verbose),
       compile(results.C, verbose)
     ];
-    
+
     // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
     Promise.all(tasks).then(function(results) {
       if(!debug) {
@@ -122,7 +122,7 @@ try {
     }, function(error) {
       console.log(error);
     });
-    
+
   }
 } catch(e) {
     console.log("ERROR:");
@@ -141,7 +141,7 @@ function compile(code, verbose) {
     }
     var includes = '#include "jam.h"\n';
     includes = '#include "command.h"\n' + includes;
-    includes = '#include "jdata.h"\n' + includes;
+    includes = '#include "jamdata.h"\n' + includes;
     includes = '#include <unistd.h>\n' + includes;
 
     fs.writeFileSync("jamout.c", includes + preprocessDecls.join("\n") + "\n" + code);
@@ -177,11 +177,11 @@ function preprocess(file, verbose) {
   var includes = '#include "jam.h"\n';
 
   contents = includes + "int main();\n" + contents;
-  
+
   fs.writeFileSync(`${tmpDir}/pre.c`, contents);
   var command = `clang -E -P -I/usr/local/include -I/usr/local/share/jam/deps/fake_libc_include -I/usr/local/share/jam/lib ${tmpDir}/pre.c`;
   if(verbose) {
-    console.log(command); 
+    console.log(command);
   }
   return child_process.execSync(command).toString();
 
@@ -193,7 +193,7 @@ function flowCheck(input, verbose) {
   return new Promise(function(resolve, reject) {
     // Returns empty buffer if flow installed
     var hasFlow = child_process.execSync("flow version >/dev/null 2>&1 || { echo 'not installed';}");
-    
+
     if(hasFlow.length === 0) {
       fs.writeFileSync(`${tmpDir}/.flowconfig`, "");
       fs.writeFileSync(`${tmpDir}/annotated.js`, input);
