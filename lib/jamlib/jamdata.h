@@ -5,7 +5,7 @@
 #include <hiredis/hiredis.h>
 #include <hiredis/async.h>
 
-#include <hiredis/adapters/libev.h>
+#include <hiredis/adapters/libevent.h>
 #include <semaphore.h>
 #include <cbor.h>
 
@@ -18,7 +18,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stddef.h>
-
 
 
 #include "cborutils.h"

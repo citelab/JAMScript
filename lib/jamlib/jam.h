@@ -43,7 +43,7 @@ extern "C" {
 #include "comboptr.h"
 #include "jamdata.h"
 
-#include <ev.h>
+#include <event.h>
 #include <hiredis/async.h>
 
 #define STACKSIZE                   20000

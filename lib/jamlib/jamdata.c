@@ -26,7 +26,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     This module is based on the jdata originally written by Xiru Zhu
     with some help from Richboy Echomgbe.
 
-    This one uses libev and also leverages the event loop in the proper
+    This one uses libevent and also leverages the event loop in the proper
     way. The next data item (if present) is sent into the Redis Async buffer
     only after the callback comes from the previous write.
 
@@ -99,7 +99,7 @@ void *jamdata_init(void *jsp)
     js = (jamstate_t *)jsp;
 
     // Initialize the event loop
-    js->eloop = ev_default_loop(0);
+    js->eloop = event_base_new();
     // Do we have a server location set for Redis?
     if (js->cstate->redserver != NULL && js->cstate->redport != 0)
     {
@@ -123,7 +123,7 @@ void *jamdata_init(void *jsp)
     strncpy(dev_id, js->cstate->device_id, sizeof(dev_id) - 1);
 
 
-    redisLibevAttach(js->eloop, js->redctx);
+    redisLibeventAttach(js->redctx, js->eloop);
     redisAsyncSetConnectCallback(js->redctx, jamdata_def_connect);
     redisAsyncSetDisconnectCallback(js->redctx, jamdata_def_disconnect);
 
@@ -133,7 +133,7 @@ void *jamdata_init(void *jsp)
     nvoid_t *data = jamdata_encode("i", "checkvalue", 0);
     char *key = jamdata_makekey("test", "s");
     __jamdata_logto_server(js->redctx, key, data, jamdata_logger_cb);
-    ev_loop(js->eloop, 0);
+    event_base_dispatch(js->eloop);
 
     // Don't deallocate data.. it still with the event loop..
     // Once the acknowledge is received.. the jamdata_msg_arrived callback will deallocate it
@@ -384,7 +384,7 @@ redisAsyncContext *jamdata_subscribe_to_server(char *key, msg_rcv_callback on_ms
     }
     redisAsyncSetConnectCallback(c, connect);
     redisAsyncSetDisconnectCallback(c, disconnect);
-    redisLibevAttach(js->eloop, c);
+    redisLibeventAttach(c, js->eloop);
 
     redisAsyncCommand(c, on_msg, NULL, "SUBSCRIBE %s", key);
 
