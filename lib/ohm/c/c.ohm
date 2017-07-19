@@ -188,7 +188,7 @@ C {
     Struct_decl     = Preprocess_line? Spec_qual_list ListOf<Sdeclarator, ","> ";"      -- Full
                     | Preprocess_line                                                   -- Preprocess
 
-    Spec_qual_list  = (type_qualifier | Gcc_decl_spec)* Type_spec
+    Spec_qual_list  = (type_qualifier | Gcc_decl_spec)* Type_spec type_qualifier*
 
     Sdeclarator     = Declarator ":" Const_expr Gcc_attribute*                          -- DeclExpr
                     | Declarator                                                        -- Decl
