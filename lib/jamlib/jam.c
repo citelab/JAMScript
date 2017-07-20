@@ -39,7 +39,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // Initialize the JAM library.. nothing much done here.
 // We just initialize the Core ..
 //
-jamstate_t *jam_init(int port, int serialnum, bool waitforj)
+jamstate_t *jam_init(int port, int serialnum)
 {
     #ifdef DEBUG_LVL1
         printf("JAM Library initialization... \t\t[started]\n");
@@ -56,7 +56,6 @@ jamstate_t *jam_init(int port, int serialnum, bool waitforj)
     }
 
     core_set_redis(js->cstate, "127.0.0.1", 6379);
-
 
     // Initialization of the activity and task tables
     // This is kind of an hack. There should be a better way structuring the code
@@ -100,8 +99,7 @@ jamstate_t *jam_init(int port, int serialnum, bool waitforj)
         exit(1);
     }
 
-    if (waitforj)
-        task_wait(js->bgsem);
+    task_wait(js->bgsem);
 
 #ifdef DEBUG_LVL1
         printf("JAM Library initialization... \t\t[completed]\n");
