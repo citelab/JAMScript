@@ -56,7 +56,7 @@ bool semqueue_enq(semqueue_t *queue, void *data, int len)
     return true;
 }
 
-nvoid_t *pqueue_deq(semqueue_t *queue)
+nvoid_t *semqueue_deq(semqueue_t *queue)
 {
 #ifdef linux
     sem_wait(&queue->lock);
