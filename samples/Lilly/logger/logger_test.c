@@ -1,9 +1,9 @@
 #include <unistd.h>
 
 int main() {
-	for (int i = 0;; i++) {
+	for (int i = 1; i < 3; i++) {
 		t = i;
-		s = {.apple:i, .pear:i+0.1};
+		s = {.apple:0, .pear:0.0};
 		usleep(3000);
 	}
 }

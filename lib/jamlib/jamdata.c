@@ -159,11 +159,16 @@ char *jamdata_makekey(char *ns, char *lname)
  */
 void __jamdata_logto_server(redisAsyncContext *c, char *key, nvoid_t *val, msg_rcv_callback callback)
 {
+    unsigned char *p = val->data;
+    for (int i = 0; i < val->len; i++)
+        printf(" %X ", p[i]);
+    printf("\n");
+
     if (val != NULL)
         redisAsyncCommand(c, callback, val, "EVAL %s 1 %s %b", "redis.replicate_commands(); \
                                                                 local t = (redis.call('TIME'))[1]; \
                                                                 local insert_order =  redis.call('ZCARD', KEYS[1]) + 1; \
-                                                                redis.call('ZADD', KEYS[1], t, ARGV[1] .. \"$$$\" .. insert_order .. \"$$$\" .. t); \
+                                                                redis.call('ZADD', KEYS[1], t, ARGV[1]); \
                                                                 return {t}", key, val->data, val->len);
 }
 
