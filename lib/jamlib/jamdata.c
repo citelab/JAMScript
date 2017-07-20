@@ -52,7 +52,6 @@ jdata_list_node *jdata_list_head = NULL;
 jdata_list_node *jdata_list_tail = NULL;
 
 
-
 /*
  * This is the default connection callback.
  * This is utilized when the connection callback for jdata is not defined
@@ -130,7 +129,7 @@ void *jamdata_init(void *jsp)
     // Just send a test value to bootup the event loop..
     // There is no significance to this data.
     // The actual data transfer takes place in the callback entered afterwards
-    nvoid_t *data = jamdata_encode("i", "checkvalue", 0);
+    char *data = jamdata_encode("i", "checkvalue", 0);
     char *key = jamdata_makekey("test", "s");
     __jamdata_logto_server(js->redctx, key, data, jamdata_logger_cb);
     event_base_dispatch(js->eloop);
@@ -157,19 +156,15 @@ char *jamdata_makekey(char *ns, char *lname)
  * This is strictly an internal function. Use this function to
  * send data to the Redis..
  */
-void __jamdata_logto_server(redisAsyncContext *c, char *key, nvoid_t *val, msg_rcv_callback callback)
+void __jamdata_logto_server(redisAsyncContext *c, char *key, char *val, msg_rcv_callback callback)
 {
-    unsigned char *p = val->data;
-    for (int i = 0; i < val->len; i++)
-        printf(" %X ", p[i]);
-    printf("\n");
 
     if (val != NULL)
-        redisAsyncCommand(c, callback, val, "EVAL %s 1 %s %b", "redis.replicate_commands(); \
+        redisAsyncCommand(c, callback, val, "EVAL %s 1 %s %s", "redis.replicate_commands(); \
                                                                 local t = (redis.call('TIME'))[1]; \
                                                                 local insert_order =  redis.call('ZCARD', KEYS[1]) + 1; \
                                                                 redis.call('ZADD', KEYS[1], t, ARGV[1]); \
-                                                                return {t}", key, val->data, val->len);
+                                                                return {t}", key, val);
 }
 
 
@@ -213,7 +208,7 @@ void jamdata_logger_cb(redisAsyncContext *c, void *reply, void *privdata)
         {
             comboptr_t *cptr = (comboptr_t *)nv->data;
             char *key = cptr->arg1;
-            nvoid_t *value = cptr->arg2;
+            char *value = cptr->arg2;
 
             __jamdata_logto_server(js->redctx, key, value, jamdata_logger_cb);
             break;
@@ -226,7 +221,7 @@ void jamdata_logger_cb(redisAsyncContext *c, void *reply, void *privdata)
 //args followed fmt will be paired up. For example,
 //parseCmd("%s%d", "person", "Lilly", "age", 19) indicates the variable named "person"
 //is expected to have a string type value followed, which is "Lilly" in this case
-nvoid_t* jamdata_encode(char *fmt, ...)
+char *jamdata_encode(char *fmt, ...)
 {
     unsigned char *buffer;
     size_t len;
@@ -289,21 +284,22 @@ nvoid_t* jamdata_encode(char *fmt, ...)
     }
     va_end(args);
 
-
-    nvoid_t *cdata = (nvoid_t *)calloc(1, sizeof(nvoid_t));
-
     cbor_serialize_alloc(root, &buffer, &len);
-    cdata->data = buffer;
-    cdata->len = len;
+    char *obuf = calloc(len * 1.5, sizeof(char));
+    if (nn_base64_encode (buffer, len, obuf, len * 1.5) == ENOBUFS)
+    {
+        printf("ERROR! Allocated buffer is too small: %d\n", (int)(len * 1.5));
+        exit(1);
+    }
 
     // The cbor object itself is deallocated.
     cbor_decref(&root);
-    return cdata;
+    return obuf;
 }
 
 
 
-void jamdata_log_to_server(char *ns, char *lname, nvoid_t *value)
+void jamdata_log_to_server(char *ns, char *lname, char *value)
 {
     if(value != NULL)
     {
@@ -323,12 +319,19 @@ void jamdata_log_to_server(char *ns, char *lname, nvoid_t *value)
 // num           - # field in data
 // buffer        - a pointer to the c struct stores decoded data
 // args followed - offset of each field in data
-void* jamdata_decode(char *fmt, nvoid_t *data, int num, void *buffer, ...)
+void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...)
 {
     int i;
 
     struct cbor_load_result result;
-    cbor_item_t *obj = cbor_load(data->data, data->len, &result);
+    char *obuf = calloc(strlen(data) * 1.5, sizeof(char));
+    if (nn_base64_decode (data, strlen(data), obuf, strlen(data) * 1.5) == ENOBUFS)
+    {
+        printf("ERROR! Allocated buffer is too small: %d\n", (int)(strlen(data) * 1.5));
+        exit(1);
+    }
+
+    cbor_item_t *obj = cbor_load(obuf, strlen(data) * 1.5, &result);
 
     va_list args;
     va_start(args, buffer);
