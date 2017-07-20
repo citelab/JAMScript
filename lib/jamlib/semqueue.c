@@ -23,127 +23,46 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "pushqueue.h"
-#include "threadsem.h"
+#include "semqueue.h"
 
-pushqueue_t *pqueue_new(bool ownedbyq)
+
+semqueue_t *semqueue_new(bool ownedbyq)
 {
-	pushqueue_t *pq = (pushqueue_t *)calloc(1, sizeof(pushqueue_t));
-
+    char lockname[64];
+	semqueue_t *pq = (semqueue_t *)calloc(1, sizeof(semqueue_t));
     pq->queue = queue_new(ownedbyq);
-    pq->sem = threadsem_new();
+
+#ifdef linux
+    sem_init(&pq->lock, 0, 0);
+#elif __APPLE__
+    sprintf(lockname, "/logger-sem-%d", getpid());
+    sem_unlink(lockname);
+    pq->lock = sem_open(lockname, O_CREAT, 0644, 0);
+#endif
 
     return pq;
 }
 
-bool pqueue_delete(pushqueue_t *pq)
-{
-    if (queue_delete(pq->queue) == true)
-    {
-        threadsem_free(pq->sem);
-        return true;
-    }
-
-    return false;
-}
-
-
-bool pqueue_enq(pushqueue_t *queue, void *data, int len)
+bool semqueue_enq(semqueue_t *queue, void *data, int len)
 {
     queue_enq(queue->queue, data, len);
-    thread_signal(queue->sem);
 
-    // TODO: Fix the return value..
+#ifdef linux
+    sem_post(&queue->lock);
+#elif __APPLE__
+    sem_post(queue->lock);
+#endif
+
     return true;
 }
 
-nvoid_t *pqueue_deq(pushqueue_t *queue)
+nvoid_t *pqueue_deq(semqueue_t *queue)
 {
-    task_wait(queue->sem);
+#ifdef linux
+    sem_wait(&queue->lock);
+#elif __APPLE__
+    sem_wait(queue->lock);
+#endif
+
     return queue_deq(queue->queue);
-}
-
-nvoid_t *pqueue_deq_timeout(pushqueue_t *queue, int timeout)
-{
-    task_wait(queue->sem);
-    return queue_deq_timeout(queue->queue, timeout);
-}
-
-
-push2queue_t *p2queue_new(bool ownedbyq)
-{
-	push2queue_t *pq = (push2queue_t *)calloc(1, sizeof(push2queue_t));
-    pq->hqueue = queue_new(ownedbyq);
-    pq->lqueue = queue_new(ownedbyq);
-    pq->sem = threadsem_new();
-
-    pq->fds[0].fd = pq->hqueue->pullsock;
-    pq->fds[0].events = NN_POLLIN;
-    pq->fds[1].fd = pq->lqueue->pullsock;
-    pq->fds[1].events = NN_POLLIN;
-
-    return pq;
-}
-
-bool p2queue_delete(push2queue_t *pq)
-{
-    if ((queue_delete(pq->hqueue) == true) &&
-        (queue_delete(pq->lqueue) == true))
-    {
-        threadsem_free(pq->sem);
-        return true;
-    }
-
-    return false;
-}
-
-
-bool p2queue_enq_low(push2queue_t *queue, void *data, int len)
-{
-    queue_enq(queue->lqueue, data, len);
-    thread_signal(queue->sem);
-
-    // TODO: Fix the return value..
-    return true;
-}
-
-
-bool p2queue_enq_high(push2queue_t *queue, void *data, int len)
-{
-    queue_enq(queue->hqueue, data, len);
-    thread_signal(queue->sem);
-
-    // TODO: Fix the return value..
-    return true;
-}
-
-
-nvoid_t *p2queue_deq(push2queue_t *queue)
-{
-    task_wait(queue->sem);
-
-    int rc = nn_poll(queue->fds, 2, 20000);
-
-    if (rc == 0)
-        return NULL;
-    if (queue->fds[0].revents & NN_POLLIN)
-        return queue_deq(queue->hqueue);
-    else
-        return queue_deq(queue->lqueue);
-}
-
-
-nvoid_t *p2queue_deq_high(push2queue_t *queue)
-{
-    while (1) {
-        task_wait(queue->sem);
-
-        int rc = nn_poll(queue->fds, 2, 20000);
-
-        if (rc == 0)
-            return NULL;
-
-        if (queue->fds[0].revents & NN_POLLIN)
-            return queue_deq(queue->hqueue);
-    }
 }
