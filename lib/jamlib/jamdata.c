@@ -186,13 +186,24 @@ void jamdata_logger_cb(redisAsyncContext *c, void *reply, void *privdata)
 
     // If privdata is not NULL, release it.. it was previous data item
     if (privdata != NULL)
+    {
+        printf("Releasing. memory \n");
         free(privdata);
+        printf("Done....\n");
+    }
+
+    if (js != NULL)
+        printf("JAMScript Not NULL.... devid %s\n", js->cstate->device_id);
+
 
     // Wait on the dataoutq, if it has a data item (key, value) to send
     // to the Redis.. we use the same callback..
     while (1)
     {
-        nvoid_t *nv = queue_deq(js->dataoutq);
+        printf("Trying dequeue... %s\n", js->dataoutq->queue->name);
+        nvoid_t *nv = semqueue_deq(js->dataoutq);
+        printf("Dequeued......\n");
+
         if (nv != NULL)
         {
             comboptr_t *cptr = (comboptr_t *)nv->data;
@@ -298,7 +309,7 @@ void jamdata_logto_server(char *ns, char *lname, nvoid_t *value)
         comboptr_t *cptr = create_combo3_ptr(key, value, NULL);
 
         // Stick the value into the queue..
-        queue_enq(js->dataoutq, cptr, sizeof(comboptr_t));
+        semqueue_enq(js->dataoutq, cptr, sizeof(comboptr_t));
     }
 }
 

@@ -33,6 +33,7 @@ extern "C" {
 
 #include "core.h"
 #include "simplequeue.h"
+#include "semqueue.h"
 #include "activity.h"
 #include "timer.h"
 #include "command.h"
@@ -103,7 +104,7 @@ typedef struct _jamstate_t
     // The pushqueue_t is used to wait without blocking the user-level threads...
     // With kernel-level threading that concern is not there.
     //
-    pushqueue_t *dataoutq;
+    semqueue_t *dataoutq;
 
     struct nn_pollfd *pollfds;
     int numpollfds;
@@ -116,7 +117,7 @@ typedef struct _jamstate_t
 } jamstate_t;
 
 
-jamstate_t *jam_init(int port, int serialnum);
+jamstate_t *jam_init(int port, int serialnum, bool waitforj);
 
 void jam_run_app(void *arg);
 void jam_event_loop(void *js);

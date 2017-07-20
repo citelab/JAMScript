@@ -39,7 +39,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // Initialize the JAM library.. nothing much done here.
 // We just initialize the Core ..
 //
-jamstate_t *jam_init(int port, int serialnum)
+jamstate_t *jam_init(int port, int serialnum, bool waitforj)
 {
     #ifdef DEBUG_LVL1
         printf("JAM Library initialization... \t\t[started]\n");
@@ -54,6 +54,9 @@ jamstate_t *jam_init(int port, int serialnum)
         printf("ERROR!! Core Init Failed. Exiting.\n");
         exit(1);
     }
+
+    core_set_redis(js->cstate, "127.0.0.1", 6379);
+
 
     // Initialization of the activity and task tables
     // This is kind of an hack. There should be a better way structuring the code
@@ -70,7 +73,7 @@ jamstate_t *jam_init(int port, int serialnum)
 
     // Output queue.. we write to this queue.
     // The jamdata event loop serves from there.
-    js->dataoutq = pqueue_new(true);
+    js->dataoutq = semqueue_new(true);
 
     js->maintimer = timer_init("maintimer");
     js->synctimer = timer_init("synctimer");
@@ -78,9 +81,9 @@ jamstate_t *jam_init(int port, int serialnum)
     js->bgsem = threadsem_new();
 
     int rval;
-    #ifdef DEBUG_LVL1
+#ifdef DEBUG_LVL1
         printf("Jdata initialization... \t\t[started]\n");
-    #endif
+#endif
 
     rval = pthread_create(&(js->jdthread), NULL, jamdata_init, (void *)js);
     if (rval != 0) {
@@ -88,19 +91,21 @@ jamstate_t *jam_init(int port, int serialnum)
         exit(1);
     }
 
-    #ifdef DEBUG_LVL1
+#ifdef DEBUG_LVL1
         printf("Worker bgthread initialization... \t\t[started]\n");
-    #endif
+#endif
     rval = pthread_create(&(js->bgthread), NULL, jwork_bgthread, (void *)js);
     if (rval != 0) {
         perror("ERROR! Unable to start the jamworker thread");
         exit(1);
     }
-    task_wait(js->bgsem);
 
-    #ifdef DEBUG_LVL1
+    if (waitforj)
+        task_wait(js->bgsem);
+
+#ifdef DEBUG_LVL1
         printf("JAM Library initialization... \t\t[completed]\n");
-    #endif
+#endif
     return js;
 }
 
