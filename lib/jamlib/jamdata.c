@@ -298,7 +298,7 @@ nvoid_t* jamdata_encode(char *fmt, ...)
 
 
 
-void jamdata_logto_server(char *ns, char *lname, nvoid_t *value)
+void jamdata_log_to_server(char *ns, char *lname, nvoid_t *value)
 {
     if(value != NULL)
     {

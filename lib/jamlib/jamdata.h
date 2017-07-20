@@ -72,7 +72,7 @@ void __jamdata_logto_server(redisAsyncContext *c, char *key, nvoid_t *val, msg_r
 void jamdata_logger_cb(redisAsyncContext *c, void *reply, void *privdata);
 nvoid_t* jamdata_encode(char *fmt, ...);
 void* jamdata_decode(char *fmt, nvoid_t *data, int num, void *buffer, ...);
-void jamdata_logto_server(char *ns, char *lname, nvoid_t *value);
+void jamdata_log_to_server(char *ns, char *lname, nvoid_t *value);
 
 redisAsyncContext *jamdata_subscribe_to_server(char *key, msg_rcv_callback on_msg, connection_callback connect, connection_callback disconnect);
 void free_jbroadcaster(jbroadcaster *j);
