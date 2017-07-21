@@ -188,7 +188,8 @@ void jamdata_logger_cb(redisAsyncContext *c, void *reply, void *privdata)
     if (privdata != NULL)
     {
         printf("Releasing. memory \n");
-        free(privdata);
+        // TODO: Fix this memory freeing problem..
+    //    free(privdata);
         printf("Done....\n");
     }
 
@@ -209,6 +210,8 @@ void jamdata_logger_cb(redisAsyncContext *c, void *reply, void *privdata)
             comboptr_t *cptr = (comboptr_t *)nv->data;
             char *key = cptr->arg1;
             char *value = cptr->arg2;
+
+            // TODO: Free nv
 
             __jamdata_logto_server(js->redctx, key, value, jamdata_logger_cb);
             break;
@@ -292,6 +295,8 @@ char *jamdata_encode(char *fmt, ...)
         exit(1);
     }
 
+    printf("========================== Based64 encoded: %s, length %d\n", obuf, strlen(obuf));
+
     // The cbor object itself is deallocated.
     cbor_decref(&root);
     return obuf;
@@ -325,7 +330,7 @@ void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...)
 
     struct cbor_load_result result;
     char *obuf = calloc(strlen(data) * 1.5, sizeof(char));
-    if (nn_base64_decode (data, strlen(data), obuf, strlen(data) * 1.5) == ENOBUFS)
+    if (nn_base64_decode(data, strlen(data), obuf, strlen(data) * 1.5) == ENOBUFS)
     {
         printf("ERROR! Allocated buffer is too small: %d\n", (int)(strlen(data) * 1.5));
         exit(1);
