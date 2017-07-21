@@ -11,4 +11,4 @@ setInterval(function() {
 	}
     }
     process.stdout.write("\n");
-}, 1000);
+}, 10);

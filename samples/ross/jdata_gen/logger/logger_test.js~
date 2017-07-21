@@ -2,11 +2,13 @@ jdata {
     int x as logger;
 }
 
-setInterval(function() {
-    console.log("x[0]", x[0]);
-    console.log("x", x);
 
-    if (x[0] !== undefined && !x[0].isEmpty()) {
-        console.log(x[0].lastValue());
+setInterval(function() {
+
+    for (i = 0; i < x.size(); i++) {
+	if (x[i] !== undefined && !x[i].isEmpty()) {
+            process.stdout.write(x[i].lastValue() + " | ");
+	}
     }
+    process.stdout.write("\n");
 }, 1000);
