@@ -6,81 +6,33 @@ subtitle: Installing JAMScript on Linux
 
 ## Preparing your system (Ubuntu)    
 
-Using the Ubuntu package manager install the following packages.
-
+Please make sure you have the latest Node.js (> 8.0.0) and npm (> 5.0.0) installed on your system.
+If you don't, take the following steps:
 ```shell
-sudo apt-get install xz-utils
-sudo apt-get install texinfo
-sudo apt-get install libc-dev
-sudo apt-get install cmake
-sudo apt-get install libhiredis-dev
-sudo apt-get install libevent-dev
-sudo apt-get install libbsd-dev
-sudo apt-get install g++
+wget https://nodejs.org/dist/v8.1.4/node-v8.1.4-linux-x64.tar.xz
+sudo tar -C /usr/local --strip-components 1 -xJf node-v8.1.4-linux-x64.tar.xz
+``` 
+
+Configure node_modules path:
+```shell
+vi ~/.bashrc
+add the following line:
+export NODE_PATH=$HOME/node_modules:/usr/local/lib/node_modules:$NODE_PATH
+save file and quit
+source .bashrc
 ```
 
-Unfortunately, Ubuntu package distribution does not have the latest version for
-all required software. So we need to install them manually.
-
-scons version 2.5 or later is best. Following commands can be used to install
-scons.
-
+Install dependencies:
 ```shell
-cd /tmp or a download directory
-wget http://prdownloads.sourceforge.net/scons/scons-2.5.0.tar.gz
-tar zxvf scons-2.5.0.tar.gz
-cd scons-2.5.0
-sudo python setup.py install
+./depend-install-ubuntu.sh
 ```
 
-Check your node version. If you have a node that is 6.3.1 or later you can skip this
-step. Here are the instructions for Node 6.5.0.
-
+Install JAMScript:
 ```shell
-wget https://nodejs.org/dist/v6.5.0/node-v6.5.0-linux-x64.tar.xz
-sudo tar -C /usr/local --strip-components 1 -xJf node-v6.5.0-linux-x64.tar.xz
-```
-You should have the NodeJS and NPM installed now.
-
-Check whether your system has clang. If not, you need to install it
-using the following commands.
-
-```shell
-wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
-deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-3.9 main
-sudo apt-get update
-sudo apt-get install clang-3.9 lldb-3.9
+./jamscript-install.sh
 ```
 
-Libcbor needs to be installed; use the following commands.
-
-```shell
-wget https://github.com/PJK/libcbor/releases/download/v0.4.0/libcbor-0.4.0-Linux.deb
-sudo dpkg -i libcbor-0.4.0-Linux.deb
-```
-
-Install nanomsg using the following commands.
-
-```shell
-wget https://github.com/nanomsg/nanomsg/archive/1.0.0.tar.gz
-tar zxvf 1.0.0.tar.gz
-cd nanomsg-1.0.0
-./configure
-make
-sudo make install
-```
-
-The JAMScript source has a slightly modified task library in the deps folder.
-Run the following commands to install it.
-
-```shell
-cd deps/libtask
-make
-sudo make install
-```
-
-Now, you should have a system that can run the JAMScript compiler.
-
+Run `which jamc` to verify that JAMScript compiler installed on your system. It should show the location of jamc.
 
 ## Preparing your Raspberry Pi
 
@@ -91,17 +43,3 @@ RPI3 is powerful enough to compile JAMScript.
 
 Definitely need a JAMScript cross compiler.
 Need testing and documentation.
-
-## Installing JAMScript
-
-If everything is done according the previous instructions to prepare the system,
-installing JAMScript is very simple; run the following commands.
-
-```shell
-cd into the JAMScript source directory
-scons
-sudo scons install
-```
-
-Now, you should have the JAMScript compiler installed in the system. To verify whether
-`jamc` got installed, run `which jamc`.
