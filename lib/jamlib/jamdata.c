@@ -233,7 +233,7 @@ void jamdata_logger_cb(redisAsyncContext *c, void *reply, void *privdata)
 //is expected to have a string type value followed, which is "Lilly" in this case
 char *jamdata_encode(char *fmt, ...)
 {
-    unsigned char *buffer;
+    uint8_t *buffer;
     size_t len;
     int i, num = strlen(fmt);
 
@@ -296,13 +296,7 @@ char *jamdata_encode(char *fmt, ...)
 
     cbor_serialize_alloc(root, &buffer, &len);
     char *obuf = calloc(len * 1.5, sizeof(char));
-    if (nn_base64_encode (buffer, len, obuf, len * 1.5) == ENOBUFS)
-    {
-        printf("ERROR! Allocated buffer is too small: %d\n", (int)(len * 1.5));
-        exit(1);
-    }
-
-    printf("========================== Based64 encoded: %s, length %d\n", obuf, strlen(obuf));
+    int olen = Base64encode(obuf, buffer, len);
 
     // The cbor object itself is deallocated.
     cbor_decref(&root);
