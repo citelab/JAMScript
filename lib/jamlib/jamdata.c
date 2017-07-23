@@ -330,14 +330,9 @@ void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...)
     int i;
 
     struct cbor_load_result result;
-    char *obuf = calloc(strlen(data) * 1.5, sizeof(char));
-    if (nn_base64_decode(data, strlen(data), obuf, strlen(data) * 1.5) == ENOBUFS)
-    {
-        printf("ERROR! Allocated buffer is too small: %d\n", (int)(strlen(data) * 1.5));
-        exit(1);
-    }
-
-    cbor_item_t *obj = cbor_load(obuf, strlen(data) * 1.5, &result);
+    char *obuf = calloc(strlen(data), sizeof(char));
+    int olen = Base64decode(obuf, data);
+    cbor_item_t *obj = cbor_load(obuf, olen, &result);
 
     va_list args;
     va_start(args, buffer);
@@ -448,7 +443,7 @@ void free_jbroadcaster(jbroadcaster *j)
 
 jbroadcaster *jambroadcaster_init(int type, char *namespace, char *broadcaster_name, activitycallback_f usr_callback)
 {
-  char format[] = "apps[%s].namespaces[%s].broadcasters[%s]";
+  char format[] = "aps[%s].ns[%s].bcasts[%s]";
   char key[strlen(app_id) + strlen(namespace) + strlen(broadcaster_name) + sizeof format - 6];
   sprintf(key, format, app_id, namespace, broadcaster_name, dev_id);
   return jbroadcaster_init(type, key, usr_callback);
