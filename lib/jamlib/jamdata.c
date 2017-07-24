@@ -440,7 +440,7 @@ char *get_bcast_next_value(jambroadcaster_t *bcast)
 #endif
 
     // get the value at the head of the linked list (oldest)
-    dval = get_list_first(bcast->data);
+    dval = get_list_head(bcast->data);
 
     // Unlock ..
 #ifdef linux
@@ -587,155 +587,25 @@ void jambcast_recv_callback(redisAsyncContext *c, void *r, void *privdata)
 
         if ((result != NULL) && (strcmp(varname, jval->key) == 0))
         {
-
-        }
-    }
-
-
-
-
-}
-
-/*
-Initializes a jbroadcaster. This specific variable is what receives values on the c side.
-Should be utilized when declaring a jbroadcaster
-Input:
-    type => type of the jbroadcaster. Currently supports int, string, float
-            Though the data will always be in string format and must be converted at a later time.
-            This is due to redis limitation being only able to store strings.
-    variable_name => name of the jbroadcaster, must be unique unfortunately.
-            With jbroadcaster, you cannot shadow a jdata variable name.
-    activitycallback_f => callback for when a broadcast is received.
-            What you would like the program to do in such case.
-*/
-jbroadcaster *jbroadcaster_init(int type, char *variable_name, activitycallback_f usr_callback)
-{
-  jbroadcaster *ret;
-  char buf[256];
-  switch(type){
-    case JBROADCAST_INT: break;
-    case JBROADCAST_STRING: break;
-    case JBROADCAST_FLOAT: break;
-    default:
-      printf("Invalid type...\n");
-      return NULL;
-  }
-  ret = (jbroadcaster *)calloc(1, sizeof(jbroadcaster));
-  ret->type = type;
-  ret->write_sem = threadsem_new();
-  ret->data = NULL;
-  ret->key = strdup(variable_name);
-  if(usr_callback == NULL){
-    ret->usr_callback = msg_rcv_usr_callback;
-  }else{
-    ret->usr_callback = usr_callback;
-  }
+#ifdef linux
+            sem_wait(&jval->lock);
+#elif __APPLE__
+            sem_wait(jval->lock);
+#endif
+            add_list_tail(jval->data, result);
 
 #ifdef linux
-  sem_init(&ret->lock, 0, 1);
+            sem_post(&jval->icount);
 #elif __APPLE__
-  sem_unlink("/jbroadcaster-sem");
-  ret->lock = sem_open("/jbroadcaster-sem", O_CREAT, 0644, 1);
+            sem_post(jval->icount);
 #endif
 
-  //Now we need to add it to the list
-  if(jdata_list_head == NULL){
-    jdata_list_head = (jdata_list_node *)calloc(1, sizeof(jdata_list_node));
-    jdata_list_head->data.jbroadcaster_data = ret;
-    jdata_list_tail = jdata_list_head;
-    jdata_list_tail->next = NULL;
-  }else{
-    jdata_list_tail->next = (jdata_list_node *)calloc(1, sizeof(jdata_list_node));
-    jdata_list_tail = jdata_list_tail->next;
-    jdata_list_tail->data.jbroadcaster_data = ret;
-    jdata_list_tail->next = NULL;
-  }
 
-  printf("JAMData subscribe: %s\n", variable_name);
-
-  ret->context = jamdata_subscribe_to_server( variable_name, jbroadcaster_msg_rcv_callback, jamdata_def_connect, NULL);
-
-  // sprintf(buf, "jbroadcast_func_%s", variable_name);
-
-  //IMPORTANT
-  //REGISTERS the usercallback as a jasync callback to be called.
-  //This allows us to call the user defined callbacks for jbroadcaster
- // activity_regcallback(j_s->atable, buf, ASYNC, "v", ret->usr_callback);
-  return ret;
-}
-
-void msg_rcv_usr_callback(void *ten, void *arg)
-{
-    printf("This was activated ... \n");
-    command_t *cmd = (command_t *)arg;
-    jbroadcaster *x = (jbroadcaster *)cmd->args[0].val.nval;
-    printf("\n-------------------\nReceived: %s\n-------------------\n", (char *)x->data);
-}
-
-void jbroadcast_set_callback(jbroadcaster *jb, activitycallback_f usr_callback)
-{
-  jb->usr_callback = usr_callback;
-}
-/*
- * The jbroadcaster callback that we utilize to process broadcasts.
- * This should not be called outside of this library.
- * Now, the problem is that this function is run in a separate thread from the main activity thread.
- * Thus we have to insert such callback activity in the main activity thread rather than simply running it here.
- * In this function, we simply return the most up to date jbroadcast value.
- * We do not save older values.
-*/
-void jbroadcaster_msg_rcv_callback(redisAsyncContext *c, void *reply, void *privdata)
-{
-    redisReply *r = reply;
-    char *result;
-    char *var_name;
-    char buf[256];
-    //#ifdef DEBUG_LVL1
-        printf("Jbroadcast received ...\n");
-//    #endif
-    if (reply == NULL) return;
-    if (r->type == REDIS_REPLY_ARRAY)
-    {
-        var_name = r->element[1]->str;
-        result = r->element[2]->str;
-        printf("Varname %s, result %s\n", var_name, result);
-
-        if(result != NULL)
-        {
-            for(jdata_list_node *i = jdata_list_head; i != NULL; i = i->next)
-            {
-                if(strcmp(i->data.jbroadcaster_data->key, var_name) == 0)
-                {
-                    result = strdup(result);
-
-    #ifdef linux
-                    sem_wait(&i->data.jbroadcaster_data->lock);
-    #elif __APPLE__
-                    sem_wait(i->data.jbroadcaster_data->lock);
-    #endif
-                    void *to_free = i->data.jbroadcaster_data->data;
-                    i->data.jbroadcaster_data->data = result;
-
-    #ifdef linux
-                    sem_post(&i->data.jbroadcaster_data->lock);
-    #elif __APPLE__
-                    sem_post(i->data.jbroadcaster_data->lock);
-    #endif
-                    free(to_free);
-                    if(i->data.jbroadcaster_data->usr_callback != NULL)
-                    {
-                        //So here instead of executing this function here, we need to insert this into the work queue
-                        sprintf(buf, "jbroadcast_func_%s", i->data.jbroadcaster_data->key);
-                        //Here, we defined a unique REXEC-JDATA to signal a jdata callback that needs to be executed.
-                      //   sem_wait(i->data.jbroadcaster_data->lock);
-                        //command_t *rcmd = command_new("REXEC-ASY", "ASY", "-", 0, buf, "__", "0", "p", i->data.jbroadcaster_data);
-                       // sem_post(i->data.jbroadcaster_data->lock);
-                      //  p2queue_enq_low(j_s->atable->globalinq, rcmd, sizeof(command_t));
-                    }
-                    return;
-                }
-            }
-            printf("Variable not found ... \n");
+#ifdef linux
+            sem_post(&jval->lock);
+#elif __APPLE__
+            sem_post(jval->lock);
+#endif
         }
     }
 }
