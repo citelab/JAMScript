@@ -4,6 +4,6 @@
 int main() {
 	while (1) {
 		sleep(1);
-		printf("%d\n", y);
+		printf("----->> %d\n", y);
 	}
 }

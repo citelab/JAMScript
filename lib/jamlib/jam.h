@@ -46,6 +46,11 @@ extern "C" {
 
 #include <event.h>
 #include <hiredis/async.h>
+//#ifdef linux
+#include <hiredis/adapters/libevent.h>
+//#elif __APPLE__
+//#include <hiredis/adapters/macosx.h>
+//#endif
 
 #define STACKSIZE                   20000
 
@@ -82,7 +87,15 @@ typedef struct _runtable_t
 
 typedef struct _jamstate_t
 {
-    struct ev_loop *eloop;
+    struct event_base *eloop;               // Loop used for logging
+
+//#ifdef linux
+    struct event_base *bloop;               // Loop used by all broadcast callbacks
+//#elif __APPLE__
+//    CFRunLoopRef bloop;
+//#endif
+    // TODO: Each broadcast variable has its own callback.. too many??
+
     redisAsyncContext *redctx;
 
     timertype_t *maintimer;

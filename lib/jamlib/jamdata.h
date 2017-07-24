@@ -19,17 +19,15 @@
 #include <stdint.h>
 #include <stddef.h>
 
-
 #include "cborutils.h"
 
 #define DELIM "$$$"
-#define CMD_LOGGER "COMMAND_LOGGER"
 #define DEFAULT_APP_NAME "APP"
 #define DEFAULT_SERV_IP "127.0.0.1"
 #define DEFAULT_SERV_PORT 6379
 
-typedef void (*connection_callback)(const redisAsyncContext *c, int status);
-typedef void (*msg_rcv_callback)(redisAsyncContext *c, void *reply, void *privdata);
+typedef void (*connection_callback_f)(const redisAsyncContext *c, int status);
+typedef void (*msg_rcv_callback_f)(redisAsyncContext *c, void *reply, void *privdata);
 
 typedef struct jbroadcaster
 {
@@ -74,7 +72,7 @@ char *jamdata_encode(char *fmt, ...);
 void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...);
 void jamdata_log_to_server(char *ns, char *lname, char *value, int iscbor);
 
-redisAsyncContext *jamdata_subscribe_to_server(char *key, msg_rcv_callback on_msg, connection_callback connect, connection_callback disconnect);
+redisAsyncContext *jamdata_subscribe_to_server(char *key, msg_rcv_callback on_msg, connection_callback_f connect, connection_callback_f disconnect);
 void free_jbroadcaster(jbroadcaster *j);
 jbroadcaster *jambroadcaster_init(int type, char *namespace, char *broadcaster_name, activitycallback_f usr_callback);
 jbroadcaster *jbroadcaster_init(int type, char *variable_name, activitycallback_f usr_callback);

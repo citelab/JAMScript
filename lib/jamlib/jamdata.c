@@ -64,9 +64,9 @@ void jamdata_def_connect(const redisAsyncContext *c, int status)
         printf("JData Connection Error: %s\n", c->errstr);
         return;
     }
-#ifdef DEBUG_LVL1
-    printf("Connected...\n");
-#endif
+//#ifdef DEBUG_LVL1
+    printf("Connected... status: %d\n", status);
+//#endif
 }
 
 /*
@@ -86,6 +86,13 @@ void jamdata_def_disconnect(const redisAsyncContext *c, int status)
 #endif
 }
 
+void run_bcastloop(void *arg)
+{
+    printf("Run bcast looop\n");
+    CFRunLoopRun();
+
+    printf("============================== bcast loop run failed...\n");
+}
 
 
 /*
@@ -96,9 +103,20 @@ void jamdata_def_disconnect(const redisAsyncContext *c, int status)
 void *jamdata_init(void *jsp)
 {
     js = (jamstate_t *)jsp;
+    pthread_t brun;
 
     // Initialize the event loop
     js->eloop = event_base_new();
+//#ifdef linux
+    //Initialize event base
+    js->bloop = event_base_new();
+// #elif __APPLE__
+//     js->bloop = CFRunLoopGetCurrent();
+//     if (!js->bloop)
+//         printf("ERROR! Cannot get current run loop\n");
+// #endif
+
+
     // Do we have a server location set for Redis?
     if (js->cstate->redserver != NULL && js->cstate->redport != 0)
     {
@@ -321,6 +339,152 @@ void jamdata_log_to_server(char *ns, char *lname, char *value, int iscbor)
 }
 
 
+//////////////////////////////////////////////////////////////////////////////////////
+//      JAM BROADCASTER routines
+//////////////////////////////////////////////////////////////////////////////////////
+
+/*
+ * The JAM Broadcaster design here is very inefficient. We are creating one thread for
+ * each subscription. This is the quickest refactoring of the current design. The redisAsyncContext
+ * does not allow across thread access (i.e., it is not thread safe!).
+ * We need to develop a daemon based approach where a common daemon is responsible for all
+ * activities. To do this, we need to register user-defined event handlers with the event loop.
+ * One event loop will be responsible for all variables and also subscription additions (there are
+ * deletions to worry about). This event loop will take the values coming from Redis and deposit
+ * them in the local buffers and increment the semaphores associated with the variables.
+ * We do the same thing now in separate threads.. argh!
+ */
+
+
+
+jambroadcaster_t *jambroadcaster_init(char *ns, char *varname, activitycallback_f bcast_cb)
+{
+    // Initialize the broadcaster object.
+    jambroadcaster_t *jobj = create_jambroadcaster(ns, varname, bcast_cb);
+
+    // Add it to the global list of the objects.
+    if (jamdata_objs == NULL)
+        jamdata_objs = create_list();
+
+    insert_list_beg(jamdata_objs, jobj);
+
+    // Return the object..
+    return jobj;
+}
+
+
+jambroadcaster_t *create_jambroadcaster(char *ns, char *varname, activitycallback_f bcast_cb)
+{
+    jambroadcaster_t *jval;
+    char *semname[256];
+
+    // Allocate the object..
+    jval = (jambroadcaster_t *)calloc(1, sizeof(jambroadcaster_t));
+    char format[] = "aps[%s].ns[%s].bcasts[%s]";
+    char key[strlen(app_id) + strlen(ns) + strlen(varname) + sizeof format - 6];
+    sprintf(key, format, app_id, ns, varname);
+
+    jval->key = strdup(key);
+    jval->data = create_list();
+    // Set the callback function
+    jval->bcaster_callback = bcast_cb;
+
+#ifdef linux
+    sem_init(&jval->lock, 0, 1);
+#elif __APPLE__
+    sprintf(semname, "/jambcast-lock-%s", varname);
+    sem_unlink(semname);
+    jval->lock = sem_open(lockname, O_CREAT, 0644, 1);
+#endif
+
+#ifdef linux
+    sem_init(&jval->icount, 0, 0);
+#elif __APPLE__
+    sprintf(icountname, "/jambcast-icount-%s", varname);
+    sem_unlink(lockname);
+    jval->icount = sem_open(lockname, O_CREAT, 0644, 0);
+#endif
+
+    // Start the runner
+    pthread_create(&(jval->thread), NULL, jambcast_runner, jval);
+
+    // Return the object;
+    return jval;
+}
+
+char *get_bcast_value(jambroadcaster_t *bcast)
+{
+    if (bcast->mode == BCAST_RETURNS_NEXT)
+        return get_bcast_next_value(bcast);
+    else
+        return get_bcast_last_value(bcast);
+}
+
+
+char *get_bcast_next_value(jambroadcaster_t *bcast)
+{
+    char *dval;
+
+    // Wait on the icount semaphore.. only happens if there are data objs
+#ifdef linux
+    sem_wait(&bcast->icount);
+#elif __APPLE__
+    sem_wait(bcast->icount);
+#endif
+
+    // Lock
+#ifdef linux
+    sem_wait(&bcast->lock);
+#elif __APPLE__
+    sem_wait(bcast->lock);
+#endif
+
+    // get the value at the head of the linked list (oldest)
+    dval = get_list_first(bcast->data);
+
+    // Unlock ..
+#ifdef linux
+    sem_post(&bcast->lock);
+#elif __APPLE__
+    sem_post(bcast->lock);
+#endif
+
+    return dval;
+}
+
+char *get_bcast_last_value(jambroadcaster_t *bcast)
+{
+    int count = get_bcast_count(bcast) -1;
+    for (int i = 0; i < count; i++)
+        get_bcast_next_value(bcast);
+
+    return get_bcast_next_value(bcast);
+}
+
+int get_bcast_count(jambroadcaster_t *bcast)
+{
+    int count;
+
+    // Lock
+#ifdef linux
+    sem_wait(&bcast->lock);
+#elif __APPLE__
+    sem_wait(bcast->lock);
+#endif
+
+    count = get_list_length(bcast->data);
+
+    // Unlock ..
+#ifdef linux
+    sem_post(&bcast->lock);
+#elif __APPLE__
+    sem_post(bcast->lock);
+#endif
+
+    return count;
+}
+
+
 // data          - encoded cbor data to be decoded
 // num           - # field in data
 // buffer        - a pointer to the c struct stores decoded data
@@ -329,16 +493,19 @@ void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...)
 {
     int i;
 
+    // We should have data when jamdata_decode is called.
+
+    printf("Data: %s, length %d\n", data, strlen(data));
+
     struct cbor_load_result result;
     char *obuf = calloc(strlen(data), sizeof(char));
     int olen = Base64decode(obuf, data);
     cbor_item_t *obj = cbor_load(obuf, olen, &result);
+    cbor_describe(obj, stdout);
 
     va_list args;
     va_start(args, buffer);
     // memcpy each field value in data to the corresponding field in buffer
-
-    cbor_describe(obj, stdout);
 
     struct cbor_pair *handle = cbor_map_handle(obj);
     char *s, type;
@@ -377,76 +544,56 @@ void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...)
 }
 
 
-/*
- * jdata function to subscribe to a value
- * This function should be called when we want to subscribe a value. That way, when the value is updated from somewhere else,
- * the jdata gets notified about it.
- * This function is utilized by jbroadcaster which receives the data on the c side while the logger logs on the c side.
- *
- * Inputs
- *  key -> The jdata variable name
- *  value -> the value to be removed
- *  on_msg -> the callback function if you want a custom callback to do something when someone logs into that jdata
- *  connect -> the callback function if you want a custom callback for checking the connection. Can inform when connect attempt fails.
- *  disconnect -> the callback function if you want a custom callback to notify for disconnections.
- *
- * Returns the context c, which should be saved when we free the jdata value.
- */
-redisAsyncContext *jamdata_subscribe_to_server(char *key, msg_rcv_callback on_msg, connection_callback connect, connection_callback disconnect)
+void *jambcast_runner(void *arg)
 {
-    char cmd[512];
+    jambroadcaster_t *jval = arg;
 
     //Create new context for the jdata. One unique connection for each variable.
-    redisAsyncContext *c = redisAsyncConnect(js->cstate->redserver, js->cstate->redport);
-    if (c->err) {
-        printf("error: %s\n", c->errstr);
+    jval->redctx = redisAsyncConnect(js->cstate->redserver, js->cstate->redport);
+    if (jval->redctx->err) {
+        printf("ERROR: %s\n", jval->redctx->errstr);
         return NULL;
     }
-    redisAsyncSetConnectCallback(c, connect);
-    redisAsyncSetDisconnectCallback(c, disconnect);
-    redisLibeventAttach(c, js->eloop);
 
-    redisAsyncCommand(c, on_msg, NULL, "SUBSCRIBE %s", key);
+    redisAsyncSetConnectCallback(jval->redctx, connect);
+    redisAsyncSetDisconnectCallback(jval->redctx, disconnect);
 
-#ifdef DEBUG_LVL1
-    printf("Subscribe executed...\n");
-#endif
+    redisLibeventAttach(jval->redctx, js->bloop);
 
-    return c;
+    redisAsyncCommand(jval->redctx, jambcast_recv_callback, jval, "SUBSCRIBE %s", jval->key);
+    event_base_dispatch(js->bloop);
+
+    // We should not reach here!
+    return NULL;
 }
 
 
-/*
- * Function to free jbroadcaster variable.
- * Removes it also from the jdata linked list kept in memory
- *
- */
-void free_jbroadcaster(jbroadcaster *j)
+void jambcast_recv_callback(redisAsyncContext *c, void *r, void *privdata)
 {
-  //To do
-  jdata_list_node *k;
-  for(jdata_list_node *i = jdata_list_head; i != NULL;){
-    k = i;
-    i = i->next;
-    if(i->data.jbroadcaster_data == j){
-      k->next = i->next;
-      free(i);
-      break;
+    jambroadcaster_t *jval = privdata;
+    redisReply *reply = r;
+    char *result;
+    char *varname;
+
+    if (reply == NULL)
+    {
+        printf("ERROR! Null reply from Redis...\n");
+        return;
     }
-  }
-  free(j->data);
-  threadsem_free(j->write_sem);
-  free(j->key);
-  free(j);
-}
+    if (reply->type == REDIS_REPLY_ARRAY)
+    {
+        varname = reply->element[1]->str;
+        result = reply->element[2]->str;
+
+        if ((result != NULL) && (strcmp(varname, jval->key) == 0))
+        {
+
+        }
+    }
 
 
-jbroadcaster *jambroadcaster_init(int type, char *namespace, char *broadcaster_name, activitycallback_f usr_callback)
-{
-  char format[] = "aps[%s].ns[%s].bcasts[%s]";
-  char key[strlen(app_id) + strlen(namespace) + strlen(broadcaster_name) + sizeof format - 6];
-  sprintf(key, format, app_id, namespace, broadcaster_name, dev_id);
-  return jbroadcaster_init(type, key, usr_callback);
+
+
 }
 
 /*
@@ -503,7 +650,10 @@ jbroadcaster *jbroadcaster_init(int type, char *variable_name, activitycallback_
     jdata_list_tail->data.jbroadcaster_data = ret;
     jdata_list_tail->next = NULL;
   }
-  ret->context = jamdata_subscribe_to_server( variable_name, jbroadcaster_msg_rcv_callback, NULL, NULL);
+
+  printf("JAMData subscribe: %s\n", variable_name);
+
+  ret->context = jamdata_subscribe_to_server( variable_name, jbroadcaster_msg_rcv_callback, jamdata_def_connect, NULL);
 
   // sprintf(buf, "jbroadcast_func_%s", variable_name);
 
@@ -540,9 +690,9 @@ void jbroadcaster_msg_rcv_callback(redisAsyncContext *c, void *reply, void *priv
     char *result;
     char *var_name;
     char buf[256];
-    #ifdef DEBUG_LVL1
+    //#ifdef DEBUG_LVL1
         printf("Jbroadcast received ...\n");
-    #endif
+//    #endif
     if (reply == NULL) return;
     if (r->type == REDIS_REPLY_ARRAY)
     {
@@ -588,17 +738,4 @@ void jbroadcaster_msg_rcv_callback(redisAsyncContext *c, void *reply, void *priv
             printf("Variable not found ... \n");
         }
     }
-}
-
-
-//Returns the last updated jbroadcast value given a jbroadcaster.
-void *get_jambroadcaster_value(jbroadcaster *j)
-{
-  if(j->data == NULL)
-  {
-    printf("Null get attempt ...\n");
-    return "00";
-  }
-  //assert(j->data != NULL);
-  return j->data;
 }
