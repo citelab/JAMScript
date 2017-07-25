@@ -31,7 +31,7 @@ int list_length(list_elem_t *head)
 }
 
 
-nvoid_t *rem_list_head(list_elem_t *head)
+nvoid_t *get_list_head(list_elem_t *head)
 {
     list_elem_t *p;
     if (head->next != head)
