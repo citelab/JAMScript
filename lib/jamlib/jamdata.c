@@ -417,7 +417,15 @@ char *get_bcast_next_value(jambroadcaster_t *bcast)
 #endif
 
     // get the value at the head of the linked list (oldest)
-    dval = get_list_head(bcast->data);
+    nvoid_t *nv = get_list_head(bcast->data);
+    if (nv == NULL)
+    {
+        printf("ERROR! Null value from the broadcaster..\n");
+        exit(1);
+    }
+    // This was a string before so - no need to put a '0' at the end.
+    dval = (char *)nv->data;
+    free(nv);
 
     // Unlock ..
 #ifdef linux
@@ -449,7 +457,7 @@ int get_bcast_count(jambroadcaster_t *bcast)
     sem_wait(bcast->lock);
 #endif
 
-    count = get_list_length(bcast->data);
+    count = list_length(bcast->data);
 
     // Unlock ..
 #ifdef linux
@@ -472,12 +480,12 @@ void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...)
 
     // We should have data when jamdata_decode is called.
 
-    printf("Data: %s, length %d\n", data, strlen(data));
+    printf("Data: %s, length %lu\n", data, strlen(data));
 
     struct cbor_load_result result;
     char *obuf = calloc(strlen(data), sizeof(char));
     int olen = Base64decode(obuf, data);
-    cbor_item_t *obj = cbor_load(obuf, olen, &result);
+    cbor_item_t *obj = cbor_load((unsigned char *)obuf, olen, &result);
     cbor_describe(obj, stdout);
 
     va_list args;
@@ -569,7 +577,7 @@ void jambcast_recv_callback(redisAsyncContext *c, void *r, void *privdata)
 #elif __APPLE__
             sem_wait(jval->lock);
 #endif
-            add_list_tail(jval->data, result);
+            put_list_tail(jval->data, result, strlen(result));
 
 #ifdef linux
             sem_post(&jval->icount);
