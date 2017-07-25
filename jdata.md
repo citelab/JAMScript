@@ -27,7 +27,7 @@ jdata {
 }
 ```
 
-A structure logger is declared using the syntax of C Prgoramming Language.
+A structure logger is declared using the syntax of C Prgoramming Language.  
 **Example:** declaring another logger to keep track of an user-defined type - struct weather:
 ```shell
 jdata {
