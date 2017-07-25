@@ -39,9 +39,9 @@ jdata {
 		char* UV;
 	} MTLWeather as logger;
 }
-```
-
-
+```  
+  
+  
 ### **Subscribing to a logger**  
 The **subscribe()** method pushes a callback function to the logger that it is called upon, such that all the applications that listens to this logger will call that function when the logger records a new value change.  
 ```shell  
@@ -60,11 +60,9 @@ JAMLogger.subscribe(function callback(key, entry, datastream){
 })  
 
 **Return value**  
-
 None  
 
 **Parameters**  
-
 callback  
 	the function that is called by all listener applications of the logger that **subscribe()** is called upon.  
 
@@ -74,9 +72,9 @@ callback
 		the new data whose arrival triggers this callback function.
 	datastream  
 		the identifier of the listener application of the logger.  
-
-
-
+  
+  
+  
 ### **JAMDatastream**  
 A logger can be listened to by multiple applications. We call each listener application of a logger its datastream.
 

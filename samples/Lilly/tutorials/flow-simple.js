@@ -2,25 +2,32 @@ jdata{
 	struct weather{
 		int highTemperature;
 		int lowTemperature;
-		float humidity;
-		float wind;
-		char* airQuality;
-		char* UV;
+		// float humidity;
+		// float wind;
+		// char* airQuality;
+		// char* UV;
 	} MTLWeather as logger;
 
 	char* sensorStatus as logger;
 
-	stats as flow with statsFunc of MTLWeather; 
+	stats as flow of MTLWeather; 
 }
 
+
+stats.setTerminalFunction(function(){
+	var week1 = weeklyStats(this, 1);
+	prettyPrint(week1);
+});
+
+/************FUNCTIONS FOR STATISTICS*************/
 
 var hotDays = function(inputFLow){
 	return inputFLow.where(weather => weather.maxTemperature>=35);
 };
 
-var windyDays = function(inputFLow){
-	return inputFLow.where()
-};
+// var windyDays = function(inputFLow){
+// 	return inputFLow.where()
+// };
 
 var weeklyStats = function(inputFLow, n){
 	startingDate = (n-1)*7;
@@ -102,7 +109,71 @@ var incOrderByTemp = function(inputFLow){
 	}).orderBy();
 };
 
+var max = function(inputFLow, property){
+	var propertyFlow = inputFLow.select(function(weather){
+		return weather[property];
+	});
 
+	return propertyFlow.max();
+};
+
+var min = function(inputFLow, property){
+	var propertyFlow = inputFLow.select(function(weather){
+		return weather[property];
+	});
+
+	return propertyFlow.min();
+};
+
+var average = function(inputFLow, property){
+	var propertyFlow = inputFLow.select(function(weather){
+		return weather[property];
+	});
+
+	return propertyFlow.average();
+};
+
+var prettyPrint = function(inputFLow){
+
+	var size1 = String("|  highTemperature  ").length,
+		size2 = String("|  lowTemperature  ").length,
+		size3 = String("|  humidity  ").length,
+		size4 = String("|  wind  ").length,
+		size5 = String("|  airQuality  ").length,
+		size6 = String("|  UV  ").length;
+
+	console.log("|  highTemperature  |  lowTemperature  |  humidity  |  wind  |  airQuality  |  UV  |");
+
+	inputFlow.forEach(function(weather){
+
+		var s1 = "|  "+String(weather.lowTemperature);
+		for(int i=0;i<size1-s1.length-1;i++){
+			s1+=" ";
+		}
+
+		var s2 = "|  "+String(weather.highTemperature);
+		for(int i=0;i<size2-s2.length-1;i++){
+			s2+=" ";
+		}
+
+		var s3 = "|  "+String(weather.humidity);
+		for(int i=0;i<size3-s3.length-1;i++){
+			s3+=" ";
+		}
+
+		var s4 = "|  "+String(weather.wind);
+		for(int i=0;i<size4-s4.length-1;i++){
+			s4+=" ";
+		}
+
+		var s5 = "|  "+String(weather.airQuality);
+		for(int i=0;i<size5-s5.length-1;i++){
+			s5+=" ";
+		}
+
+		console.log(s1+s2+s3+s4+s5);
+	});
+};
 
 
 
