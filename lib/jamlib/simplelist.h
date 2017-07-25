@@ -6,6 +6,7 @@ Copyright (c) 2017 Muthucumaru Maheswaran
 #ifndef __SIMPLELIST_H__
 #define __SIMPLELIST_H__
 
+#include "nvoid.h"
 
 typedef struct _list_elem_t
 {

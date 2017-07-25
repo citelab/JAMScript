@@ -55,7 +55,7 @@ int put_list_tail(list_elem_t *head, void *data, int len)
     t->next = head;
     t->prev = head->prev;
     head->prev->next = t;
-    head->prev = t
+    head->prev = t;
 
     t->data = data;
     t->datalen = len;

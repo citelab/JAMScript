@@ -36,6 +36,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "jamdata.h"
+#include "base64.h"
+#include "simplelist.h"
+
 
 extern char app_id[256];
 char dev_id[256] = { 0 };
@@ -43,14 +46,7 @@ char dev_id[256] = { 0 };
 //jamstate variable to be kept in reference
 jamstate_t *js;
 
-//For sync calls to logger.
-redisContext *jdata_sync_context;
-
-//Linked List System for current jdata elements.
-//This is because we need to look up which jdata is updated
-jdata_list_node *jdata_list_head = NULL;
-jdata_list_node *jdata_list_tail = NULL;
-
+list_elem_t *jamdata_objs = NULL;
 
 /*
  * This is the default connection callback.
@@ -86,14 +82,6 @@ void jamdata_def_disconnect(const redisAsyncContext *c, int status)
 #endif
 }
 
-void run_bcastloop(void *arg)
-{
-    printf("Run bcast looop\n");
-    CFRunLoopRun();
-
-    printf("============================== bcast loop run failed...\n");
-}
-
 
 /*
  * This initializes the JAM Data subsystem. It never returns so it should be run
@@ -107,15 +95,7 @@ void *jamdata_init(void *jsp)
 
     // Initialize the event loop
     js->eloop = event_base_new();
-//#ifdef linux
-    //Initialize event base
     js->bloop = event_base_new();
-// #elif __APPLE__
-//     js->bloop = CFRunLoopGetCurrent();
-//     if (!js->bloop)
-//         printf("ERROR! Cannot get current run loop\n");
-// #endif
-
 
     // Do we have a server location set for Redis?
     if (js->cstate->redserver != NULL && js->cstate->redport != 0)
@@ -173,7 +153,7 @@ char *jamdata_makekey(char *ns, char *lname)
  * This is strictly an internal function. Use this function to
  * send data to the Redis..
  */
-void __jamdata_logto_server(redisAsyncContext *c, char *key, char *val, msg_rcv_callback callback, int iscbor)
+void __jamdata_logto_server(redisAsyncContext *c, char *key, char *val, msg_rcv_callback_f callback, int iscbor)
 {
     if (val != NULL)
     {
@@ -196,9 +176,9 @@ void __jamdata_logto_server(redisAsyncContext *c, char *key, char *val, msg_rcv_
 /*
  * This is the logger callback..
  */
-void jamdata_logger_cb(redisAsyncContext *c, void *reply, void *privdata)
+void jamdata_logger_cb(redisAsyncContext *c, void *r, void *privdata)
 {
-    redisReply *r = reply;
+    redisReply *reply = r;
 
     printf("JAMData logger callback..\n");
 
@@ -357,23 +337,23 @@ void jamdata_log_to_server(char *ns, char *lname, char *value, int iscbor)
 
 
 
-jambroadcaster_t *jambroadcaster_init(char *ns, char *varname, activitycallback_f bcast_cb)
+jambroadcaster_t *jambroadcaster_init(char *ns, char *varname)
 {
     // Initialize the broadcaster object.
-    jambroadcaster_t *jobj = create_jambroadcaster(ns, varname, bcast_cb);
+    jambroadcaster_t *jobj = create_jambroadcaster(ns, varname);
 
     // Add it to the global list of the objects.
     if (jamdata_objs == NULL)
         jamdata_objs = create_list();
 
-    insert_list_beg(jamdata_objs, jobj);
+    put_list_tail(jamdata_objs, jobj, sizeof(jambroadcaster_t));
 
     // Return the object..
     return jobj;
 }
 
 
-jambroadcaster_t *create_jambroadcaster(char *ns, char *varname, activitycallback_f bcast_cb)
+jambroadcaster_t *create_jambroadcaster(char *ns, char *varname)
 {
     jambroadcaster_t *jval;
     char *semname[256];
@@ -386,23 +366,21 @@ jambroadcaster_t *create_jambroadcaster(char *ns, char *varname, activitycallbac
 
     jval->key = strdup(key);
     jval->data = create_list();
-    // Set the callback function
-    jval->bcaster_callback = bcast_cb;
 
 #ifdef linux
     sem_init(&jval->lock, 0, 1);
 #elif __APPLE__
     sprintf(semname, "/jambcast-lock-%s", varname);
     sem_unlink(semname);
-    jval->lock = sem_open(lockname, O_CREAT, 0644, 1);
+    jval->lock = sem_open(semname, O_CREAT, 0644, 1);
 #endif
 
 #ifdef linux
     sem_init(&jval->icount, 0, 0);
 #elif __APPLE__
-    sprintf(icountname, "/jambcast-icount-%s", varname);
-    sem_unlink(lockname);
-    jval->icount = sem_open(lockname, O_CREAT, 0644, 0);
+    sprintf(semname, "/jambcast-icount-%s", varname);
+    sem_unlink(semname);
+    jval->icount = sem_open(semname, O_CREAT, 0644, 0);
 #endif
 
     // Start the runner
@@ -555,8 +533,8 @@ void *jambcast_runner(void *arg)
         return NULL;
     }
 
-    redisAsyncSetConnectCallback(jval->redctx, connect);
-    redisAsyncSetDisconnectCallback(jval->redctx, disconnect);
+    redisAsyncSetConnectCallback(jval->redctx, jamdata_def_connect);
+    redisAsyncSetDisconnectCallback(jval->redctx, jamdata_def_disconnect);
 
     redisLibeventAttach(jval->redctx, js->bloop);
 
