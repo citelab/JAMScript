@@ -61,9 +61,9 @@ void jamdata_def_connect(const redisAsyncContext *c, int status)
         printf("JData Connection Error: %s\n", c->errstr);
         return;
     }
-//#ifdef DEBUG_LVL1
+#ifdef DEBUG_LVL1
     printf("Connected... status: %d\n", status);
-//#endif
+#endif
 }
 
 /*
