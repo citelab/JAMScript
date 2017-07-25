@@ -95,11 +95,9 @@ aNumber.subscribe(function(key, entry, datastream){
 ```
 
 **Syntax**  
-JAMDatastream.size();
-
+JAMDatastream.size();  
 **Return value**  
 The number of records the callee logger has tracked.  
-
 **Parameter**  
 None
 
@@ -125,11 +123,9 @@ aNumber.subscribe(function(key, entry, datastream){
 ```
 
 **Syntax**  
-JAMDatastream.lastData()
-
+JAMDatastream.lastData()  
 **Return value**  
-Returns the last data pair (value, timestamp) in the data stream or null if the data stream is empty. Value is of type Number and timestamp is of type Date.
-
+Returns the last data pair (value, timestamp) in the data stream or null if the data stream is empty. Value is of type Number and timestamp is of type Date.  
 **Parameters**  
 None.
 
@@ -153,11 +149,9 @@ aNumber.subscribe(function(key, entry, datastream){
 ```
 
 **Syntax**  
-JAMDatastream.lastValue()
-
+JAMDatastream.lastValue()  
 **Return value**  
-Returns the last value in the data stream or null if the data stream is empty. Value is of type Number.
-
+Returns the last value in the data stream or null if the data stream is empty. Value is of type Number.  
 **Parameters**  
 None.
 
@@ -183,11 +177,9 @@ aNumber.subscribe(function(key, entry, datastream){
 ```
 
 **Syntax**  
-JAMDatastream.data()
-
+JAMDatastream.data()  
 **Return value**  
-Returns all the (value, timestamp) that the callee logger has recorded, or null if the data stream is empty. Value is of type Number and timestamp is of type Date.
-
+Returns all the (value, timestamp) that the callee logger has recorded, or null if the data stream is empty. Value is of type Number and timestamp is of type Date.  
 **Parameters**  
 None.
 
@@ -213,11 +205,9 @@ aNumber.subscribe(function(key, entry, datastream){
 ```
 
 **Syntax**  
-JAMDatastream.data()
-
+JAMDatastream.data()  
 **Return value**  
-Returns all the (value, timestamp) that the callee logger has recorded, or null if the data stream is empty. Value is of type Number and timestamp is of type Date.
-
+Returns all the (value, timestamp) that the callee logger has recorded, or null if the data stream is empty. Value is of type Number and timestamp is of type Date.  
 **Parameters**  
 None.
 
@@ -244,16 +234,14 @@ aNumber.subscribe(function(key, entry, datastream){
 ```
 
 **Syntax**  
-JAMDatastream.n_data(n)
-
+JAMDatastream.n_data(n)  
 **Return value**  
-Returns an array containing the last N data pairs (value, timestamp) in the data stream. The values are of type Number and the timestamps are of type Date. Parameter N is a positive integer. If N is invalid, then an exception is thrown. If there are fewer than N data pairs in the data stream, then the length of the returned array is smaller than N.
-
+Returns an array containing the last N data pairs (value, timestamp) in the data stream. The values are of type Number and the timestamps are of type Date. Parameter N is a positive integer. If N is invalid, then an exception is thrown. If there are fewer than N data pairs in the data stream, then the length of the returned array is smaller than N.  
 **Parameters**  
 n: an integer value
 
 
-### JAMDatastream.n_values(n)
+#### JAMDatastream.n_values(n)
 
 The **n_data()** method returns the last n values in the data stream.
 
@@ -275,11 +263,9 @@ aNumber.subscribe(function(key, entry, datastream){
 ```
 
 **Syntax**  
-JAMDatastream.n_data(n)
-
+JAMDatastream.n_data(n)  
 **Return value**  
-Returns an array containing the last N values (of type Number) in the data stream. Parameter N is a positive integer. If N is invalid, then an exception is thrown. If there are fewer than N values in the data stream, then the length of the returned array is smaller than N.
-
+Returns an array containing the last N values (of type Number) in the data stream. Parameter N is a positive integer. If N is invalid, then an exception is thrown. If there are fewer than N values in the data stream, then the length of the returned array is smaller than N.  
 **Parameters**  
 n: an integer value
 
@@ -305,16 +291,14 @@ aNumber.subscribe(function(key, entry, datastream){
 ```
 
 **Syntax**  
-JAMDatastream.dataAfter(n)
-
+JAMDatastream.dataAfter(n)  
 **Return value**  
-Returns an array containing all data pairs (value, timestamp) in the data stream with a timestamp after timestamp (exclusive). Value is of type Number and timestamp is of type Date. 
-
+Returns an array containing all data pairs (value, timestamp) in the data stream with a timestamp after timestamp (exclusive). Value is of type Number and timestamp is of type Date.   
 **Parameters**  
 timestamp: a Date object
 
 
-### JAMDatastream.valuesAfter()
+#### JAMDatastream.valuesAfter()
 
 The **valuesAfter()** method returns the values recorded after a specific timestamp in the data stream.
 
@@ -335,16 +319,14 @@ aNumber.subscribe(function(key, entry, datastream){
 ```
 
 **Syntax**  
-JAMDatastream.valuesAfter(timestamp)
-
+JAMDatastream.valuesAfter(timestamp)  
 **Return value**  
-Returns an array containing all values of type Number in the data stream recorded after timestamp.
-
+Returns an array containing all values of type Number in the data stream recorded after timestamp.  
 **Parameters**  
 timestamp: a Date object
 
 
-### JAMDatastream.dataBetween()
+#### JAMDatastream.dataBetween()
 
 The **dataBetween()** method returns the values recorded during a specifc time period in the data stream along with their timestamps.
 
@@ -368,17 +350,15 @@ aNumber.subscribe(function(key, entry, datastream){
 ```
 
 **Syntax**  
-JAMDatastream.dataBetween(fromTimestamp, toTimestamp)
-
+JAMDatastream.dataBetween(fromTimestamp, toTimestamp)  
 **Return value**  
-Returns an array containing all data pairs (value, timestamp) in the data stream with a timestamp between fromTimestamp and toTimestamp (both exclusive). For each data pair, the value is of type Number and the timestamp is of type Date.
-
+Returns an array containing all data pairs (value, timestamp) in the data stream with a timestamp between fromTimestamp and toTimestamp (both exclusive). For each data pair, the value is of type Number and the timestamp is of type Date.  
 **Parameters**  
 fromTimestamp: a Date object  
 toTimestamp: a Date object
 
 
-### JAMDatastream.valuesBetween()
+#### JAMDatastream.valuesBetween()
 
 The **valuesBetween()** method returns the values recorded during a specifc time period in the data stream.
 
@@ -402,11 +382,9 @@ aNumber.subscribe(function(key, entry, datastream){
 ```
 
 **Syntax**  
-JAMDatastream.valuesBetween(fromTimestamp, toTimestamp)
-
+JAMDatastream.valuesBetween(fromTimestamp, toTimestamp)  
 **Return value**  
-Returns an array containing all values of type Number in the data stream with a timestamp between fromTimestamp and toTimestamp (both exclusive). 
-
+Returns an array containing all values of type Number in the data stream with a timestamp between fromTimestamp and toTimestamp (both exclusive).   
 **Parameters**  
 fromTimestamp: a Date object
 toTimestamp: a Date object
