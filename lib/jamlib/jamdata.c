@@ -47,6 +47,7 @@ char dev_id[256] = { 0 };
 jamstate_t *js;
 
 list_elem_t *jamdata_objs = NULL;
+bool dispatched = false;
 
 /*
  * This is the default connection callback.
@@ -479,18 +480,14 @@ void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...)
 {
     int i;
 
-    // We should have data when jamdata_decode is called.
-    printf("Data: %s, length %lu\n", data, strlen(data));
-
-    if (strlen(data) < 20)
+    // This is an anomalous situation.. should we flag an error?
+    if (strlen(data) == 0)
         return NULL;
-
 
     struct cbor_load_result result;
     char *obuf = calloc(strlen(data), sizeof(char));
     int olen = Base64decode(obuf, data);
     cbor_item_t *obj = cbor_load((unsigned char *)obuf, olen, &result);
-    cbor_describe(obj, stdout);
 
     va_list args;
     va_start(args, buffer);
@@ -511,7 +508,7 @@ void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...)
             memcpy(buffer+(va_arg(args, size_t)), s, strlen(s)+1);
             printf("%s\n", s);
         }
-        else if(type == 'd')
+        else if ((type == 'd') || (type == 'i'))
         {
             n = cbor_get_integer(handle[i].value);
             memcpy(buffer+(va_arg(args, size_t)), &n, sizeof(int));
@@ -550,7 +547,11 @@ void *jambcast_runner(void *arg)
     redisLibeventAttach(jval->redctx, js->bloop);
 
     redisAsyncCommand(jval->redctx, jambcast_recv_callback, jval, "SUBSCRIBE %s", jval->key);
-    event_base_dispatch(js->bloop);
+    if (!dispatched)
+    {
+        dispatched = true;
+        event_base_dispatch(js->bloop);
+    }
 
     // We should not reach here!
     return NULL;
@@ -574,8 +575,6 @@ void jambcast_recv_callback(redisAsyncContext *c, void *r, void *privdata)
         varname = reply->element[1]->str;
         result = reply->element[2]->str;
 
-        printf("Varname %s, Result %s\n", varname, result);
-
         if ((result != NULL) && (strcmp(varname, jval->key) == 0))
         {
 #ifdef linux
@@ -584,7 +583,6 @@ void jambcast_recv_callback(redisAsyncContext *c, void *r, void *privdata)
             sem_wait(jval->lock);
 #endif
             put_list_tail(jval->data, strdup(result), strlen(result));
-            print_list(jval->data);
 
 #ifdef linux
             sem_post(&jval->icount);
