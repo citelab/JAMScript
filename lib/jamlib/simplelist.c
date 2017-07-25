@@ -62,3 +62,14 @@ int put_list_tail(list_elem_t *head, void *data, int len)
 
     return t->datalen;
 }
+
+void print_list(list_elem_t *head)
+{
+    list_elem_t *p = head->next;
+
+    while (p != head)
+    {
+        printf("Data: %s\n", p->data);
+        p = p->next;
+    }
+}

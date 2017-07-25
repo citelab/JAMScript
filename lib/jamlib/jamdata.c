@@ -480,8 +480,11 @@ void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...)
     int i;
 
     // We should have data when jamdata_decode is called.
-
     printf("Data: %s, length %lu\n", data, strlen(data));
+
+    if (strlen(data) < 20)
+        return NULL;
+
 
     struct cbor_load_result result;
     char *obuf = calloc(strlen(data), sizeof(char));
@@ -571,6 +574,8 @@ void jambcast_recv_callback(redisAsyncContext *c, void *r, void *privdata)
         varname = reply->element[1]->str;
         result = reply->element[2]->str;
 
+        printf("Varname %s, Result %s\n", varname, result);
+
         if ((result != NULL) && (strcmp(varname, jval->key) == 0))
         {
 #ifdef linux
@@ -578,7 +583,8 @@ void jambcast_recv_callback(redisAsyncContext *c, void *r, void *privdata)
 #elif __APPLE__
             sem_wait(jval->lock);
 #endif
-            put_list_tail(jval->data, result, strlen(result));
+            put_list_tail(jval->data, strdup(result), strlen(result));
+            print_list(jval->data);
 
 #ifdef linux
             sem_post(&jval->icount);

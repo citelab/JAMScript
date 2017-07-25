@@ -23,5 +23,6 @@ list_elem_t *create_list();
 int list_length(list_elem_t *lst);
 nvoid_t *get_list_head(list_elem_t *lst);
 int put_list_tail(list_elem_t *lst, void *data, int len);
+void print_list(list_elem_t *head);
 
 #endif
