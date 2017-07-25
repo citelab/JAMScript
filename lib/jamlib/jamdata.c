@@ -336,10 +336,10 @@ void jamdata_log_to_server(char *ns, char *lname, char *value, int iscbor)
 
 
 
-jambroadcaster_t *jambroadcaster_init(char *ns, char *varname)
+jambroadcaster_t *jambroadcaster_init(int mode, char *ns, char *varname)
 {
     // Initialize the broadcaster object.
-    jambroadcaster_t *jobj = create_jambroadcaster(ns, varname);
+    jambroadcaster_t *jobj = create_jambroadcaster(mode, ns, varname);
 
     // Add it to the global list of the objects.
     if (jamdata_objs == NULL)
@@ -352,7 +352,7 @@ jambroadcaster_t *jambroadcaster_init(char *ns, char *varname)
 }
 
 
-jambroadcaster_t *create_jambroadcaster(char *ns, char *varname)
+jambroadcaster_t *create_jambroadcaster(int mode, char *ns, char *varname)
 {
     jambroadcaster_t *jval;
     char semname[256];
@@ -363,6 +363,7 @@ jambroadcaster_t *create_jambroadcaster(char *ns, char *varname)
     char key[strlen(app_id) + strlen(ns) + strlen(varname) + sizeof format - 6];
     sprintf(key, format, app_id, ns, varname);
 
+    jval->mode = mode;
     jval->key = strdup(key);
     jval->data = create_list();
 
