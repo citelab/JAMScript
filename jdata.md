@@ -10,17 +10,17 @@ JData comes in two types: a logger and a broadcaster.
 
 A logger keeps track of the changes of a value. 
 
-* Declaring a logger variable
+### **Declaring a logger variable**
+A logger has to be declared in a jdata{...} section.
 ```shell
 jdata{
 	<type> <name> as logger;
 }
 ```
-A logger has to be declared in a jdata{...} section.
 `<type>`: the type of the value that the logger keeps track of. Possible values: int, double, float, char*, and user-defined structures.
 `<name>`: the name of this logger.
 
-Example: declaring a logger to keep track of an integer value:
+**Example:** declaring a logger to keep track of an integer value:
 ```shell
 jdata {
 	int candidate1 as logger;
@@ -28,7 +28,7 @@ jdata {
 ```
 
 A structure logger is declared using the syntax of C Prgoramming Language.
-Example: declaring another logger to keep track of an user-defined type - struct weather:
+**Example:** declaring another logger to keep track of an user-defined type - struct weather:
 ```shell
 jdata {
 	int candidate1 as logger;
@@ -41,13 +41,13 @@ jdata {
 		char* UV;
 	} MTLWeather as logger;
 }
-
 ```
 
-## Logger class provides a wide range of useful APIs
+
+### **Logger class provides a wide range of useful APIs**
 
 
-### JAMLogger.subscibe()
+#### JAMLogger.subscibe()
 
 The **subscribe()** method pushes a callback function to the logger that it is called upon, such that all the applications that listens to this logger will call that function when the logger records a new value change.  
 
