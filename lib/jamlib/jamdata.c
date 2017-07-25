@@ -371,7 +371,7 @@ jambroadcaster_t *create_jambroadcaster(int mode, char *ns, char *varname)
 #ifdef linux
     sem_init(&jval->lock, 0, 1);
 #elif __APPLE__
-    sprintf(semname, "/jambcast-lock-%s", varname);
+    sprintf(semname, "/jambcast-lock-%s-%d", varname, getpid());
     sem_unlink(semname);
     jval->lock = sem_open(semname, O_CREAT, 0644, 1);
 #endif
@@ -379,7 +379,7 @@ jambroadcaster_t *create_jambroadcaster(int mode, char *ns, char *varname)
 #ifdef linux
     sem_init(&jval->icount, 0, 0);
 #elif __APPLE__
-    sprintf(semname, "/jambcast-icount-%s", varname);
+    sprintf(semname, "/jambcast-icount-%s-%d", varname, getpid());
     sem_unlink(semname);
     jval->icount = sem_open(semname, O_CREAT, 0644, 0);
 #endif
