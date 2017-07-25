@@ -26,6 +26,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <semaphore.h>
+#include <unistd.h>
+
 #include "simplequeue.h"
 
 /*

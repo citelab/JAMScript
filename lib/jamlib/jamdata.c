@@ -91,7 +91,6 @@ void jamdata_def_disconnect(const redisAsyncContext *c, int status)
 void *jamdata_init(void *jsp)
 {
     js = (jamstate_t *)jsp;
-    pthread_t brun;
 
     // Initialize the event loop
     js->eloop = event_base_new();
@@ -294,7 +293,7 @@ char *jamdata_encode(char *fmt, ...)
 
     cbor_serialize_alloc(root, &buffer, &len);
     char *obuf = calloc(len * 1.5, sizeof(char));
-    int olen = Base64encode(obuf, buffer, len);
+    Base64encode(obuf, (const char *)buffer, len);
 
     // The cbor object itself is deallocated.
     cbor_decref(&root);
@@ -356,7 +355,7 @@ jambroadcaster_t *jambroadcaster_init(char *ns, char *varname)
 jambroadcaster_t *create_jambroadcaster(char *ns, char *varname)
 {
     jambroadcaster_t *jval;
-    char *semname[256];
+    char semname[256];
 
     // Allocate the object..
     jval = (jambroadcaster_t *)calloc(1, sizeof(jambroadcaster_t));
