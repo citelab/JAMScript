@@ -78,6 +78,7 @@ jamstate_t *jam_init(int port, int serialnum)
     js->synctimer = timer_init("synctimer");
 
     js->bgsem = threadsem_new();
+    js->jdsem = threadsem_new();
 
     int rval;
 #ifdef DEBUG_LVL1
@@ -89,6 +90,7 @@ jamstate_t *jam_init(int port, int serialnum)
         perror("ERROR! Unable to start the jamdata thread");
         exit(1);
     }
+    task_wait(js->jdsem);
 
 #ifdef DEBUG_LVL1
         printf("Worker bgthread initialization... \t\t[started]\n");

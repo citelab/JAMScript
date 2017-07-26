@@ -51,6 +51,8 @@ typedef struct _jambroadcaster_t
     sem_t *icount;
 #endif
 
+    threadsem_t *readysem;
+
     pthread_t thread;
     redisAsyncContext *redctx;
 

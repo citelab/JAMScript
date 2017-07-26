@@ -13,4 +13,4 @@ setInterval(function() {
     	apple: Math.floor(Math.random() * 100),
     	pear : Math.random() * 1000
     });
-}, 1000);
+}, 10);

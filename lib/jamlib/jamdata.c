@@ -129,6 +129,9 @@ void *jamdata_init(void *jsp)
     // The actual data transfer takes place in the callback entered afterwards
     char *key = jamdata_makekey("test", "s");
     __jamdata_logto_server(js->redctx, key, "dummy_value", jamdata_logger_cb, 0);
+
+    thread_signal(js->jdsem);
+
     event_base_dispatch(js->eloop);
 
     // Don't deallocate data.. it still with the event loop..
@@ -367,25 +370,33 @@ jambroadcaster_t *create_jambroadcaster(int mode, char *ns, char *varname)
     jval->mode = mode;
     jval->key = strdup(key);
     jval->data = create_list();
+    jval->readysem = threadsem_new();
 
 #ifdef linux
     sem_init(&jval->lock, 0, 1);
 #elif __APPLE__
     sprintf(semname, "/jambcast-lock-%s-%d", varname, getpid());
+    printf("Semaphore name: %s\n", semname);
     sem_unlink(semname);
-    jval->lock = sem_open(semname, O_CREAT, 0644, 1);
+    jval->lock = sem_open(semname, O_CREAT|O_EXCL, 0644, 1);
+    if (jval->lock == SEM_FAILED)
+        perror("sem_open_lock");
 #endif
 
 #ifdef linux
     sem_init(&jval->icount, 0, 0);
 #elif __APPLE__
     sprintf(semname, "/jambcast-icount-%s-%d", varname, getpid());
+    printf("Semaphore name: %s\n", semname);
     sem_unlink(semname);
-    jval->icount = sem_open(semname, O_CREAT, 0644, 0);
+    jval->icount = sem_open(semname, O_CREAT|O_EXCL, 0644, 0);
+    if (jval->icount == SEM_FAILED)
+        perror("sem_open_icount");
 #endif
 
     // Start the runner
     pthread_create(&(jval->thread), NULL, jambcast_runner, jval);
+    task_wait(jval->readysem);
 
     // Return the object;
     return jval;
@@ -404,6 +415,7 @@ char *get_bcast_next_value(jambroadcaster_t *bcast)
 {
     char *dval;
 
+    printf("icount-wait\n");
     // Wait on the icount semaphore.. only happens if there are data objs
 #ifdef linux
     sem_wait(&bcast->icount);
@@ -411,6 +423,7 @@ char *get_bcast_next_value(jambroadcaster_t *bcast)
     sem_wait(bcast->icount);
 #endif
 
+    printf("lock-wait\n");
     // Lock
 #ifdef linux
     sem_wait(&bcast->lock);
@@ -549,10 +562,15 @@ void *jambcast_runner(void *arg)
     redisAsyncCommand(jval->redctx, jambcast_recv_callback, jval, "SUBSCRIBE %s", jval->key);
     if (!dispatched)
     {
+        printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> dispatch started...>>>>>>>>>>>>\n");
         dispatched = true;
+        thread_signal(jval->readysem);
         event_base_dispatch(js->bloop);
     }
+    else
+        thread_signal(jval->readysem);
 
+    printf("=======================why???? ====================\n");
     // We should not reach here!
     return NULL;
 }
@@ -575,6 +593,8 @@ void jambcast_recv_callback(redisAsyncContext *c, void *r, void *privdata)
         varname = reply->element[1]->str;
         result = reply->element[2]->str;
 
+        printf("+\n");
+
         if ((result != NULL) && (strcmp(varname, jval->key) == 0))
         {
 #ifdef linux
@@ -584,10 +604,12 @@ void jambcast_recv_callback(redisAsyncContext *c, void *r, void *privdata)
 #endif
             put_list_tail(jval->data, strdup(result), strlen(result));
 
+            printf("-\n");
 #ifdef linux
             sem_post(&jval->icount);
 #elif __APPLE__
-            sem_post(jval->icount);
+            if (sem_post(jval->icount) < 0)
+                perror("sem_post_icount");
 #endif
 
 

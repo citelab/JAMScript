@@ -89,11 +89,8 @@ typedef struct _jamstate_t
 {
     struct event_base *eloop;               // Loop used for logging
 
-//#ifdef linux
     struct event_base *bloop;               // Loop used by all broadcast callbacks
-//#elif __APPLE__
-//    CFRunLoopRef bloop;
-//#endif
+
     // TODO: Each broadcast variable has its own callback.. too many??
 
     redisAsyncContext *redctx;
@@ -126,6 +123,7 @@ typedef struct _jamstate_t
     pthread_t jdthread;
 
     threadsem_t *bgsem;
+    threadsem_t *jdsem;    
 
 } jamstate_t;
 
