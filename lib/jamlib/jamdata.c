@@ -183,8 +183,6 @@ void jamdata_logger_cb(redisAsyncContext *c, void *r, void *privdata)
 {
     redisReply *reply = r;
 
-    printf("JAMData logger callback..\n");
-
     // Do error processing on the redisReply...
     if (reply == NULL)
     {
@@ -195,10 +193,8 @@ void jamdata_logger_cb(redisAsyncContext *c, void *r, void *privdata)
     // If privdata is not NULL, release it.. it was previous data item
     if (privdata != NULL)
     {
-        printf("Releasing. memory \n");
         // TODO: Fix this memory freeing problem..
     //    free(privdata);
-        printf("Done....\n");
     }
 
     if (js != NULL)
@@ -209,9 +205,7 @@ void jamdata_logger_cb(redisAsyncContext *c, void *r, void *privdata)
     // to the Redis.. we use the same callback..
     while (1)
     {
-        printf("Trying dequeue... %s\n", js->dataoutq->queue->name);
         nvoid_t *nv = semqueue_deq(js->dataoutq);
-        printf("Dequeued......\n");
 
         if (nv != NULL)
         {
@@ -376,7 +370,6 @@ jambroadcaster_t *create_jambroadcaster(int mode, char *ns, char *varname)
     sem_init(&jval->lock, 0, 1);
 #elif __APPLE__
     sprintf(semname, "/jambcast-lock-%s-%d", varname, getpid());
-    printf("Semaphore name: %s\n", semname);
     sem_unlink(semname);
     jval->lock = sem_open(semname, O_CREAT|O_EXCL, 0644, 1);
     if (jval->lock == SEM_FAILED)
@@ -387,7 +380,6 @@ jambroadcaster_t *create_jambroadcaster(int mode, char *ns, char *varname)
     sem_init(&jval->icount, 0, 0);
 #elif __APPLE__
     sprintf(semname, "/jambcast-icount-%s-%d", varname, getpid());
-    printf("Semaphore name: %s\n", semname);
     sem_unlink(semname);
     jval->icount = sem_open(semname, O_CREAT|O_EXCL, 0644, 0);
     if (jval->icount == SEM_FAILED)
@@ -535,7 +527,7 @@ void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...)
         }
         else
         {
-            printf("Invalid format string\n");
+            printf("ERROR! Invalid format string\n");
             return NULL;
         }
     }
@@ -562,7 +554,6 @@ void *jambcast_runner(void *arg)
     redisAsyncCommand(jval->redctx, jambcast_recv_callback, jval, "SUBSCRIBE %s", jval->key);
     if (!dispatched)
     {
-        printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> dispatch started...>>>>>>>>>>>>\n");
         dispatched = true;
         thread_signal(jval->readysem);
         event_base_dispatch(js->bloop);
@@ -570,7 +561,6 @@ void *jambcast_runner(void *arg)
     else
         thread_signal(jval->readysem);
 
-    printf("=======================why???? ====================\n");
     // We should not reach here!
     return NULL;
 }
@@ -593,8 +583,6 @@ void jambcast_recv_callback(redisAsyncContext *c, void *r, void *privdata)
         varname = reply->element[1]->str;
         result = reply->element[2]->str;
 
-        printf("+\n");
-
         if ((result != NULL) && (strcmp(varname, jval->key) == 0))
         {
 #ifdef linux
@@ -604,7 +592,6 @@ void jambcast_recv_callback(redisAsyncContext *c, void *r, void *privdata)
 #endif
             put_list_tail(jval->data, strdup(result), strlen(result));
 
-            printf("-\n");
 #ifdef linux
             sem_post(&jval->icount);
 #elif __APPLE__
