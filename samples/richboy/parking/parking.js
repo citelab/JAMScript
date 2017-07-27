@@ -2,14 +2,23 @@
  * Created by Richboy on 29/06/17.
  */
 jdata{
-    struct spot{
-        char* label;
+    struct spot_struct{
+        string label;
         float longitude;
         float latitude;
         int isFree;
         int parkingDuration;
         int accessibility;
     } spot as logger;
+
+    struct bcast_struct{
+        string label;
+        float longitude;
+        float latitude;
+        int isFree;
+        int parkingDuration;
+        int accessibility;
+    } bcast as broadcaster;
 }
 
 
@@ -18,8 +27,8 @@ var listener = {
         console.log(key + " - " + JSON.stringify(entry));
 
         //get all parking spots that are available
-        var freeSpots = Flow.from(spot).select((source) => source.toIterator()).selectFlatten()
-            .select((stream) => stream.lastValue().log).where((json) => json.isFree == 1).collect(Flow.toArray);
+        var freeSpots = Flow.from(spot).select(source => source.toIterator()).selectFlatten()
+            .select(stream => stream.lastValue().log).where(json => json.isFree == 1).collect(Flow.toArray);
 
         //TODO
         // broadcast to all cars listening for a free slot. Alternatively, we could broadcast to the Fogs who will
