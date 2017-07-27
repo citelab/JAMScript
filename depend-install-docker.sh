@@ -59,6 +59,14 @@ else
     sudo tar -C /usr/local --strip-components 1 -xJf node-v8.2.1-linux-x64.tar.xz
 fi
 
+cd
+echo "export NODE_PATH=\$HOME/node_modules:/usr/local/lib/node_modules:\$NOD
+E_PATH" >> .bashrc
+source .bashrc
+cd $scriptdir
+cd temp_install_src
+
+
 
 # NANOMSG
 if (command -v nanocat > /dev/null); then
