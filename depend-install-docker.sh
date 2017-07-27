@@ -60,8 +60,7 @@ else
 fi
 
 cd
-echo "export NODE_PATH=\$HOME/node_modules:/usr/local/lib/node_modules:\$NOD
-E_PATH" >> .bashrc
+echo "export NODE_PATH=\$HOME/node_modules:/usr/local/lib/node_modules:\$NODE_PATH" >> .bashrc
 source .bashrc
 cd $scriptdir
 cd temp_install_src
