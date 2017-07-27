@@ -11,8 +11,8 @@
 //
 // This is running remote function synchronously.. so we wait here
 // for the reply value. We use the reply value from the root of the sub tree.
-// All other return values are ignored. The root of the subtree should respond. 
-// If it fails to respond, we quit with an error. 
+// All other return values are ignored. The root of the subtree should respond.
+// If it fails to respond, we quit with an error.
 //
 //
 arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, char *fmask, ...)
@@ -63,7 +63,7 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
                 qargs[i].val.ival = va_arg(args, int);
                 qargs[i].type = INT_TYPE;
                 elem = cbor_build_uint32(abs(qargs[i].val.ival));
-                elem2 = cbor_build_uint32(abs(qargs[i].val.ival));                
+                elem2 = cbor_build_uint32(abs(qargs[i].val.ival));
                 if (qargs[i].val.ival < 0)
                 {
                     cbor_mark_negint(elem);
@@ -98,7 +98,7 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
 
     if (jact != NULL)
     {
-        command_t *cmd = command_new_using_cbor("REXEC-SYN", "RTE", condstr, condvec, aname, jact->actid, 
+        command_t *cmd = command_new_using_cbor("REXEC-SYN", "RTE", condstr, condvec, aname, jact->actid,
             js->cstate->device_id, arr, qargs, i);
         cmd->cbor_item_list = list;
         if (have_fog_or_cloud(js))
@@ -106,24 +106,24 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
             rargs = jam_sync_runner(js, jact, 1, cmd);
             // quit if we failed to execute at the root.
             if (rargs == NULL)
-                return NULL;   
-            
-            command_t *bcmd = command_new_using_cbor("REXEC-SYN", "NRT", condstr, condvec, aname, jact->actid,     
+                return NULL;
+
+            command_t *bcmd = command_new_using_cbor("REXEC-SYN", "NRT", condstr, condvec, aname, jact->actid,
                 js->cstate->device_id, arr2, qargs2, i);
             bcmd->cbor_item_list = list2;
-        
+
             jam_sync_runner(js, jact, (cloud_tree_height(js) - 1), bcmd);
 
             activity_free(jact);
             return rargs;
         }
-        else 
+        else
         {
             rargs = jam_sync_runner(js, jact, 1, cmd);
             activity_free(jact);
             return rargs;
         }
-    } 
+    }
     else
         return NULL;
 }
@@ -139,7 +139,7 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
 //
 arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, int nodes, command_t *cmd)
 {
-    int timeout = 300, error_count;
+    int timeout = 300;
     command_t *rcmd;
     arg_t *repcode = NULL;
     bool gotresults = false;
@@ -148,7 +148,7 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, int nodes, command_t *
         printf("Starting JAM exec runner... \n");
     #endif
 
-    // Send the command to the remote side  
+    // Send the command to the remote side
     // The send is executed via the worker thread..
     queue_enq(jact->thread->outq, cmd, sizeof(command_t));
 
@@ -165,7 +165,7 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, int nodes, command_t *
         {
             rcmd = (command_t *)nv->data;
             free(nv);
-            
+
             if ((strcmp(rcmd->cmd, "TIMEOUT") != 0) && (strcmp(rcmd->cmd, "REXEC-NAK") != 0))
                 acked = true;
             command_free(rcmd);
@@ -181,7 +181,7 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, int nodes, command_t *
     // We set an arbitrary large timeout..
     // TODO: Adapt this value based on prior history
     //
-    timeout = 900;    
+    timeout = 900;
 
     for (int i = 0; i < nodes; i++)
     {
@@ -195,19 +195,17 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, int nodes, command_t *
             rcmd = (command_t *)nv->data;
             free(nv);
 
-            // get the first value returned by the other nodes..            
+            // get the first value returned by the other nodes..
             if ((strcmp(rcmd->cmd, "REXEC-RES") == 0) && (!gotresults))
             {
                 // We create a structure to hold the result returned by the root
                 repcode = (arg_t *)calloc(1, sizeof(arg_t));
-                command_arg_copy(repcode, &(rcmd->args[0]));   
-                gotresults = true;             
+                command_arg_copy(repcode, &(rcmd->args[0]));
+                gotresults = true;
             }
             command_free(rcmd);
         }
-    }        
+    }
 
     return repcode;
 }
-
-

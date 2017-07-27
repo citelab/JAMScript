@@ -33,7 +33,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <bsd/stdlib.h>
 #endif
 
-#include "jdata.h"
 #include <strings.h>
 #include <pthread.h>
 
@@ -56,6 +55,8 @@ jamstate_t *jam_init(int port, int serialnum)
         exit(1);
     }
 
+    core_set_redis(js->cstate, "127.0.0.1", 6379);
+
     // Initialization of the activity and task tables
     // This is kind of an hack. There should be a better way structuring the code
     // so that we don't need
@@ -64,41 +65,47 @@ jamstate_t *jam_init(int port, int serialnum)
     js->rtable = runtable_new(js);
 
     // Queue initialization
+    // Input side: one for each source: device, fog, cloud
     js->deviceinq = queue_new(true);
     js->foginq = queue_new(true);
     js->cloudinq = queue_new(true);
+
+    // Output queue.. we write to this queue.
+    // The jamdata event loop serves from there.
+    js->dataoutq = semqueue_new(true);
 
     js->maintimer = timer_init("maintimer");
     js->synctimer = timer_init("synctimer");
 
     js->bgsem = threadsem_new();
-    js->jdata_sem = threadsem_new();
+    js->jdsem = threadsem_new();
 
     int rval;
-    #ifdef DEBUG_LVL1
+#ifdef DEBUG_LVL1
         printf("Jdata initialization... \t\t[started]\n");
-    #endif
+#endif
 
-    rval = pthread_create(&(js->jdata_event_thread), NULL, jdata_init, (void *)js);
+    rval = pthread_create(&(js->jdthread), NULL, jamdata_init, (void *)js);
     if (rval != 0) {
-        perror("ERROR! Unable to start the jamworker thread");
+        perror("ERROR! Unable to start the jamdata thread");
         exit(1);
     }
-    task_wait(js->jdata_sem);
+    task_wait(js->jdsem);
 
-    #ifdef DEBUG_LVL1
+#ifdef DEBUG_LVL1
         printf("Worker bgthread initialization... \t\t[started]\n");
-    #endif
+#endif
     rval = pthread_create(&(js->bgthread), NULL, jwork_bgthread, (void *)js);
     if (rval != 0) {
         perror("ERROR! Unable to start the jamworker thread");
         exit(1);
     }
+
     task_wait(js->bgsem);
 
-    #ifdef DEBUG_LVL1
+#ifdef DEBUG_LVL1
         printf("JAM Library initialization... \t\t[completed]\n");
-    #endif
+#endif
     return js;
 }
 

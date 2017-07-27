@@ -26,7 +26,7 @@ bool jcond_synchronized(command_t *cmd)
 
 int jcond_getquorum(command_t *cmd)
 {
-    
+
 
     return 0;
 }
@@ -45,9 +45,9 @@ void jcond_read_context()
     char *original_file;
     long fsize;
     int quote_num = 0;
-    int jcond_error = 0;
+
     FILE *file = fopen(JCOND_FILE_PATH, "r");
-    
+
     if(file == NULL)
     {
         jcond_stmt = malloc(30 * sizeof(char));
@@ -62,7 +62,7 @@ void jcond_read_context()
     fsize = ftell(file);
     fseek(file, 0, SEEK_SET);
     original_file = calloc(fsize, sizeof(char));
-    
+
     if(fread(original_file, sizeof(char), fsize, file) != fsize)
     {
         printf("ERROR READING ...");
@@ -71,7 +71,7 @@ void jcond_read_context()
         return;
     }
     fclose(file);
-    
+
     for(int i = 0; i < fsize; i++)
     {
         if(original_file[i] == '\"' || original_file[i] == '\'')

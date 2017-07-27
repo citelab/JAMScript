@@ -8,7 +8,8 @@
     "url": "https://github.com/anrl/JAM.git"
   },
   "dependencies": {
-    "ohm-js": ">= 0.12.0"
+    "jdiscovery": "file:lib/jdiscovery",
+    "ohm-js": "^0.13.1"
   },
   "bin": "./index.js",
   "engines": {

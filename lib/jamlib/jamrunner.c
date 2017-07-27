@@ -30,7 +30,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <task.h>
 #include <string.h>
 #include "threadsem.h"
-#include "jdata.h"
+#include "jamdata.h"
 #include "nvoid.h"
 #include "mqtt.h"
 #include "activity.h"
@@ -43,7 +43,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // allocation that is actively used by an activity.
 
 // TODO: Ensure we have memory safety. That is memory is not preempted while
-// while being used. It could be a catastropic error to have memory preempted that way. 
+// while being used. It could be a catastropic error to have memory preempted that way.
 //
 runtable_t *runtable_new(void *jarg)
 {
@@ -86,8 +86,8 @@ runtableentry_t *runtable_find(runtable_t *table, char *actid)
                 break;
             }
     }
-    // update the access time of the selected one 
-    if (j >= 0) 
+    // update the access time of the selected one
+    if (j >= 0)
         table->entries[j].accesstime = activity_getseconds();
 
     pthread_mutex_unlock(&(table->lock));
@@ -113,10 +113,10 @@ runtableentry_t *runtable_getfree(runtable_t *table)
             pthread_mutex_unlock(&(table->lock));
             return &(table->entries[i]);
         }
-        else 
+        else
         {
             // otherwise.. find the oldest entry among the deleted using FIFO
-            if ((table->entries[i].status == DELETED) && 
+            if ((table->entries[i].status == DELETED) &&
                 (minatime > table->entries[i].accesstime))
             {
                 minatime = table->entries[i].accesstime;
@@ -133,7 +133,7 @@ runtableentry_t *runtable_getfree(runtable_t *table)
 
 
 //
-// FIXME: There is something wrong here... why freeing the memory is 
+// FIXME: There is something wrong here... why freeing the memory is
 // giving segmentation fault??
 //
 bool runtable_insert(jamstate_t * js, char *actid, command_t *cmd)
@@ -145,7 +145,7 @@ bool runtable_insert(jamstate_t * js, char *actid, command_t *cmd)
     if (re != NULL)
         return false;
 
-    // else get a free slot and insert the entry in that slot 
+    // else get a free slot and insert the entry in that slot
     // TODO: FIX: We are searching the table twice..
     //
     re = runtable_getfree(js->rtable);
@@ -165,10 +165,10 @@ bool runtable_insert(jamstate_t * js, char *actid, command_t *cmd)
 
     re->accesstime = activity_getseconds();
     re->status = STARTED;
-    
+
     for (i = 0; i < MAX_SERVERS; i++)
         re->results[i] = NULL;
-    
+
 
     js->rtable->rcount++;
     printf("Runtable count %d\n", js->rtable->rcount);
@@ -185,12 +185,12 @@ bool runtable_del(runtable_t *tbl, char *actid)
     if (re == NULL)
         return false;
 
-    // Memory held by the entry is still there.. we need it to check if 
-    // a callback is relevant for the local node. 
+    // Memory held by the entry is still there.. we need it to check if
+    // a callback is relevant for the local node.
     // We should not use too small a runtable.. otherwise, we could run into
     // race condition caused by premature eviction
-    // We are just marking it as deleted. 
-    // 
+    // We are just marking it as deleted.
+    //
 
     printf("Deleted...\n");
     re->status = DELETED;
@@ -213,7 +213,7 @@ bool runtable_store_results(runtable_t *tbl, char *actid, arg_t *results)
     // If max replies are already received.. just over write the old ones
     if (re->rcd_replies < MAX_SERVERS)
         re->results[re->rcd_replies++] = results;
-    else 
+    else
     {
         free(re->results[re->rcd_replies]);
         re->results[re->rcd_replies] = results;
@@ -226,7 +226,7 @@ bool runtable_store_results(runtable_t *tbl, char *actid, arg_t *results)
 
 void runtable_insert_synctask(jamstate_t *js, command_t *rcmd, int quorum)
 {
-    
+
 
 }
 
@@ -269,7 +269,7 @@ void jrun_arun_callback(jactivity_t *jact, command_t *cmd, activity_callback_reg
     #ifdef DEBUG_LVL1
         printf("Starting the function....................\n");
     #endif
-    creg->cback(jact, cmd);    
+    creg->cback(jact, cmd);
 
     // if the execution was done due to a remote request...
     if (jact->remote)
@@ -278,4 +278,3 @@ void jrun_arun_callback(jactivity_t *jact, command_t *cmd, activity_callback_reg
 
     // Don't free cmd here.. it should be freed in the calling function..
 }
-

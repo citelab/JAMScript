@@ -22,7 +22,6 @@ MQTTAsync mqtt_create(char *mhost)
 
 int mqtt_connect(MQTTAsync mcl)
 {
-    int rc;
 
     MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
     conn_opts.keepAliveInterval = 20;

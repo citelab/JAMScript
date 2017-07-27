@@ -30,7 +30,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <task.h>
 #include <string.h>
 #include "threadsem.h"
-#include "jdata.h"
+#include "jamdata.h"
 #include "nvoid.h"
 #include "mqtt.h"
 #include "activity.h"
@@ -443,8 +443,7 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
 //
 void jwork_process_device(jamstate_t *js)
 {
-    int quorum;
-    MQTTAsync mcl = js->cstate->mqttserv[0];
+    int quorum = 0;
 
     // Get the message from the device to process
     //

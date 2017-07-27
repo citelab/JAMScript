@@ -3,5 +3,5 @@ jdata {
 }
 
 setInterval(function() {
-    y = Math.floor((Math.random() * 100) + 1);
-}, 1000);
+    y.broadcast(Math.floor((Math.random() * 100) + 1));
+ }, 1000);
