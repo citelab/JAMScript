@@ -1,30 +1,34 @@
 jdata {
     int y as broadcaster;
-    struct myType{
+    
+    struct basket{
     	int apple;
     	float pear;
-    } fruit as broadcaster;
+    } myBasket as broadcaster;
 
-    struct anotherType{
-    	int q;
-    	float  xx;
-	float yy;
-	int zz;
-    } qqq as broadcaster;
+    struct bag{
+    	int pen;
+    	float water;
+    	int book;
+    } myBag as broadcaster;
 }
 
+var i=0;
 
 setInterval(function() {
+    if(i==10) return;
     y.broadcast(Math.floor((Math.random() * 100) + 1));
-    fruit.broadcast({
+    
+    myBasket.broadcast({
     	apple: Math.floor(Math.random() * 100),
     	pear : Math.random() * 1000
     });
     
-    qqq.broadcast({
-        q: Math.floor(Math.random() * 10),
-	xx: Math.random() * 100,
-	yy: Math.random() * 100,
-	zz: 10
+    myBag.broadcast({
+        pen: Math.floor(Math.random() * 10),
+        water: Math.random() * 100,
+    	book: Math.random() * 100
     });
+
+    i++;
 }, 1000);
