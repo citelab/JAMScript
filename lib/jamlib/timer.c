@@ -312,5 +312,5 @@ double getcurtime()
     struct timeval tp;
 
     gettimeofday(&tp, NULL);
-    return tp.tv_sec * 1.0 + 10E-6 * tp.tv_usec;    
+    return tp.tv_sec * 1.0 +  tp.tv_usec / 1.0e6;    
 }

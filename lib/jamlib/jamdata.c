@@ -407,7 +407,6 @@ char *get_bcast_next_value(jambroadcaster_t *bcast)
 {
     char *dval;
 
-    printf("icount-wait\n");
     // Wait on the icount semaphore.. only happens if there are data objs
 #ifdef linux
     sem_wait(&bcast->icount);
@@ -415,7 +414,6 @@ char *get_bcast_next_value(jambroadcaster_t *bcast)
     sem_wait(bcast->icount);
 #endif
 
-    printf("lock-wait\n");
     // Lock
 #ifdef linux
     sem_wait(&bcast->lock);
@@ -511,19 +509,16 @@ void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...)
             //string
             s = cbor_get_string(handle[i].value);
             memcpy(buffer+(va_arg(args, size_t)), s, strlen(s)+1);
-            printf("%s\n", s);
         }
         else if ((type == 'd') || (type == 'i'))
         {
             n = cbor_get_integer(handle[i].value);
             memcpy(buffer+(va_arg(args, size_t)), &n, sizeof(int));
-            printf("%d\n", n);
         }
         else if(type == 'f')
         {
             f = cbor_float_get_float8(handle[i].value);
             memcpy(buffer+(va_arg(args, size_t)), &f, sizeof(float));
-            printf("%f\n", f);
         }
         else
         {
