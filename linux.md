@@ -7,11 +7,12 @@ subtitle: Installing JAMScript on Linux
 ## Preparing your system (Ubuntu)    
 
 Please make sure you have the latest Node.js (> 8.0.0) and npm (> 5.0.0) installed on your system.
-If you don't, take the following steps:
+If you an older version, please manually remove it. 
+Install dependencies:  
 ```shell
-wget https://nodejs.org/dist/v8.1.4/node-v8.1.4-linux-x64.tar.xz
-sudo tar -C /usr/local --strip-components 1 -xJf node-v8.1.4-linux-x64.tar.xz
-``` 
+./depend-install-ubuntu.sh
+```  
+This will install all the dependencies, including the newest Node.js on your system.  
 
 Configure node_modules path:
 ```shell
@@ -20,13 +21,8 @@ add the following line:
 export NODE_PATH=$HOME/node_modules:/usr/local/lib/node_modules:$NODE_PATH
 save file and quit
 source .bashrc
-```
-
-Install dependencies:
-```shell
-./depend-install-ubuntu.sh
-```
-
+```  
+  
 Install JAMScript:
 ```shell
 ./jamscript-install.sh
