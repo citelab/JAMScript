@@ -1,0 +1,23 @@
+.caret(@color:#333, @size: 6px) {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-width: @size @size 0;
+  border-style: solid;
+  border-color: @color transparent transparent transparent;
+}
+.talign (@talign){
+  text-align: @talign;
+}
+.border-radius ( @bradius: 3px ) {
+  border-radius: @bradius;
+  -webkit-border-radius: @bradius;
+  -moz-border-radius: @bradius;
+  -ms-border-radius: @bradius;
+  -o-border-radius: @bradius;
+}
+.box-shadow (@x: 0, @y: 0, @blur: 8px, @color: #ccc){
+  box-shadow: @arguments;
+  -moz-box-shadow: @arguments;
+  -webkit-box-shadow: @arguments;
+}
