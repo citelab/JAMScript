@@ -386,3 +386,45 @@ Returns an array containing all values of type Number in the data stream with a 
 **Parameters**  
 fromTimestamp: a Date object
 toTimestamp: a Date object
+
+
+
+## Flow
+Flow is an abstract data type that enables efficient processing of a large data set. It provides a handful of methods to group, transform and filter the entering data. 
+
+### **Declaring a Flow variable**
+
+A flow can be built upon various data structures, including array, string, map, set, object, iterables, JAMLogger and JAMDatastream.
+
+#### **Flow built on logger**
+A flow built upon a logger can be declared either in a jdata{...} section or in callback functions.
+
+First, let's see how to initialize a flow on logger in jdata{...} section
+```shell
+jdata{
+	<loggerType> <loggerName> as logger;
+	<flowName> as flow with <functionName> of <loggerName>
+}
+```  
+Declare a logger first. Then declare the flow built upon it.  
+`<flowName>`: the name of this flow variable.  
+`<functionName>`: the name of the function to process the raw flow from the intended logger.
+`<loggerName>`: the name of the logger variable on which this logger is initialized.    
+  
+Example:
+```shell
+jdata{
+	struct weather{
+		int date;
+		int highTemperature;
+		int lowTemperature;
+		float humidity;
+		float wind;
+		char* airQuality;
+		char* UV;
+	} MTLWeather as logger;
+
+	stats as flow with statsFunc of MTLWeather; 
+}
+```
+The above code first declares a logger called `MTLWeather` with type `struct weather`, then a flow with name `stats` and a function `statsFunc` (to be explained later) on logger `MTLWeather`. 
