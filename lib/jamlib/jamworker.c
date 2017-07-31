@@ -535,7 +535,7 @@ void jwork_process_device(jamstate_t *js)
                         int count = runtable_synctask_count(js->rtable);
                         if (count == 0)
                             // Sync tasks go into the high priority queue
-                            p2queue_enq_high(js->atable->globalinq, rcmd, sizeof(command_t));
+                            p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
                         else
                             runtable_insert_synctask(js, rcmd, quorum);
                     }
