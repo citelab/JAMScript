@@ -394,22 +394,53 @@ Flow is an abstract data type that enables efficient processing of a large data 
 
 ### **Declaring a Flow variable**
 
-A flow can be built upon various data structures, including array, string, map, set, object, iterables, JAMLogger and JAMDatastream.
+A flow can be built upon various data structures, including Array, Set, Map, Object, FileSystem, Generator, JAMDatasource and JAMDatastream.  
 
-#### **Flow built on logger**
-A flow built upon a logger can be declared either in a jdata{...} section or in callback functions.
-
-First, let's see how to initialize a flow on logger in jdata{...} section
+#### **`Flow.from()` creates a flow on a logger.**
 ```shell
 jdata{
-	<loggerType> <loggerName> as logger;
-	<flowName> as flow with <functionName> of <loggerName>
+	*loggerType* *aLogger* as logger;
+}
+var a = [1,2,3,4,5];
+
+// Creates a flow on a JAMLogger
+var *aFlow* = Flow.from(*aLogger*);
+
+// Creates a flow on an array  
+var f = Flow.from(a);
+```  
+**Syntax**  
+Flow.from(data);    
+**Parameter**  
+A variable of type Array, Set, Map, Object, FileSystem, Generator, JAMDatasource or JAMDatastream
+**Return value**  
+A flow contains all data in the argument data structure.  
+
+
+#### **Creates a flow in jdata{...} section**  
+A flow built upon a JAMLogger can be declared either in a jdata{...} section or outside as above.  
+
+```shell
+jdata{
+	*loggerType* *aLogger* as logger;
+	*flowName* as flow with *flowFunc* of *aLogger*
+}
+
+function *flowFunc* (rawFlow){
+	// ...
 }
 ```  
 Declare a logger first. Then declare the flow built upon it.  
-`<flowName>`: the name of this flow variable.  
-`<functionName>`: the name of the function to process the raw flow from the intended logger.
-`<loggerName>`: the name of the logger variable on which this logger is initialized.    
+`*flowName*`: the name of this flow variable.  
+`*flowFunc*`: the name of the function to process the raw flow from the intended logger.  
+`*aLogger*`: the name of the logger variable on which this logger is initialized.
+  
+`function *flowFunc*(rawFlow)`:   
+Every flow on logger has to be associated with a function to process the raw flow.  
+**Parameter**  
+rawFlow: the raw flow contains all data that the logger on which the flow is built recorded.  
+**Return value**  
+A flow  
   
 Example:
 ```shell
@@ -425,6 +456,14 @@ jdata{
 	} MTLWeather as logger;
 
 	stats as flow with statsFunc of MTLWeather; 
+}  
+
+function statsFunc(rawFlow){
+	return rawFlow.discretize(1,7);
 }
 ```
-The above code first declares a logger called `MTLWeather` with type `struct weather`, then a flow with name `stats` and a function `statsFunc` (to be explained later) on logger `MTLWeather`. 
+The above code first declares a logger called `MTLWeather` with type `struct weather`, then a flow with name `stats` and a function `statsFunc` on logger `MTLWeather`. `statsFunc` takes `stats` flow as its argument, and returns a flow created by a flow method `discretize()`.  
+  
+
+  
+
