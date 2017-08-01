@@ -388,7 +388,7 @@ fromTimestamp: a Date object
 toTimestamp: a Date object
 
 
-
+  
 ## Flow
 Flow is an abstract data type that enables efficient processing of a large data set. It provides a handful of methods to group, transform and filter the entering data. 
 
@@ -399,12 +399,12 @@ A flow can be built upon various data structures, including Array, Set, Map, Obj
 #### **`Flow.from()` creates a flow on a logger.**
 ```shell
 jdata{
-	*loggerType* *aLogger* as logger;
+	_loggerType_ _aLogger_ as logger;
 }
 var a = [1,2,3,4,5];
 
 // Creates a flow on a JAMLogger
-var *aFlow* = Flow.from(*aLogger*);
+var _aFlow_ = Flow.from(_aLogger_);
 
 // Creates a flow on an array  
 var f = Flow.from(a);
@@ -417,25 +417,25 @@ A variable of type Array, Set, Map, Object, FileSystem, Generator, JAMDatasource
 A flow contains all data in the argument data structure.  
 
 
-#### **Creates a flow in jdata{...} section**  
+#### **Creates a flow in jdata{...} section**
 A flow built upon a JAMLogger can be declared either in a jdata{...} section or outside as above.  
 
 ```shell
 jdata{
-	*loggerType* *aLogger* as logger;
-	*flowName* as flow with *flowFunc* of *aLogger*
+	_loggerType_ _aLogger_ as logger;
+	_flowName_ as flow with _flowFunc_ of _aLogger_
 }
 
-function *flowFunc* (rawFlow){
+function _flowFunc_ (rawFlow){
 	// ...
 }
 ```  
 Declare a logger first. Then declare the flow built upon it.  
-`*flowName*`: the name of this flow variable.  
-`*flowFunc*`: the name of the function to process the raw flow from the intended logger.  
-`*aLogger*`: the name of the logger variable on which this logger is initialized.
+`_flowName_`: the name of this flow variable.  
+`_flowFunc_`: the name of the function to process the raw flow from the intended logger.  
+`_aLogger_`: the name of the logger variable on which this logger is initialized.
   
-`function *flowFunc*(rawFlow)`:   
+`function _flowFunc_(rawFlow)`:   
 Every flow on logger has to be associated with a function to process the raw flow.  
 **Parameter**  
 rawFlow: the raw flow contains all data that the logger on which the flow is built recorded.  
@@ -463,6 +463,7 @@ function statsFunc(rawFlow){
 }
 ```
 The above code first declares a logger called `MTLWeather` with type `struct weather`, then a flow with name `stats` and a function `statsFunc` on logger `MTLWeather`. `statsFunc` takes `stats` flow as its argument, and returns a flow created by a flow method `discretize()`.  
+  
   
 
   
