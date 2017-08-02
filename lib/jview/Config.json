@@ -87,6 +87,23 @@
           }
         }
       ]
+    },
+    {
+      "name" : "Dashboard",
+      "route" : "/dashboard",
+      "layout" : "default",
+      "panels" : [
+        {
+          "type": "pie",
+          "store": {
+            "socket":{
+              "id": "0",
+              "x" : "x",
+              "y" : "y"
+            }
+          }
+        }
+      ]
     }
   ]
 }
