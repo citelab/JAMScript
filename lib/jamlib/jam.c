@@ -176,7 +176,6 @@ void jam_event_loop(void *arg)
                     if (strcmp(cmd_1->cmd, "GOGOGO") == 0) {
                         // Get the start time from the Go command.
                         sTime = atof(cmd_1->opt);
-                        break;
                     }
                 }
                 // Remote requests go through here.. local requests don't go through here
