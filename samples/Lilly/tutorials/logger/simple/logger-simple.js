@@ -1,16 +1,14 @@
 jdata{
 	int candidate1 as logger;
-	int candidate2 as logger;
-	int candidate3 as logger;
 }
 
 var notify = function(key, entry, device){
-	// var name = device.
+	console.log("key\n"+key);
 	var size = device.size();
 	console.log("Received "+size+" votes");
 
 	var lastData = device.lastData();
-	var timestamp = JSON.parse(lastData).time_stamp;
+	var timestamp = lastData.timestamp;
 	var lastValue = device.lastValue();
 
 	console.log("Vote from "+lastValue+" at "+timestamp);
@@ -42,13 +40,13 @@ var notify = function(key, entry, device){
 	}
 
 	// year, month-1, date, hour, minute, secod
-	var today = new Date(2017, 6, 19, 0, 0, 0);
+	var today = new Date(2017, 7, 7, 0, 0, 0);
 
 	var dataToday = device.dataAfter(today);
 	var valuesToday = device.valuesAfter(today);
 	console.log("Received "+valuesToday.length+" data today");
 	
-	var timestamp = new Date(2017, 6, 20, 0, 0, 0);
+	var yesterday = new Date(2017, 7, 6, 0, 0, 0);
 
 	var dataYesterday = device.dataBetween(today, yesterday);
 	var valueYesterday = device.valuesBetween(today, yesterday);
@@ -56,5 +54,3 @@ var notify = function(key, entry, device){
 }
 
 candidate1.subscribe(notify);
-candidate2.subscribe(notify);
-candidate3.subscribe(notify);
