@@ -136,7 +136,7 @@ nvoid_t *p2queue_deq(push2queue_t *queue)
 
 nvoid_t *p2queue_deq_high(push2queue_t *queue)
 {
-    task_wait(queue->sem);
+    task_wait(queue->goSem);
 
     int rc = nn_poll(queue->fds, 2, 20000);
 
