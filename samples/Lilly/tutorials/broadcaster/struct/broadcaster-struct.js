@@ -1,5 +1,4 @@
 jdata {
-    int y as broadcaster;
     
     struct basket{
     	int apple;
@@ -16,8 +15,6 @@ jdata {
 var i=0;
 
 setInterval(function() {
-    if(i==10) return;
-    y.broadcast(Math.floor((Math.random() * 100) + 1));
     
     myBasket.broadcast({
     	apple: Math.floor(Math.random() * 100),

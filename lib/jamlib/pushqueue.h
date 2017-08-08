@@ -46,6 +46,7 @@ typedef struct _push2queue_t
 	simplequeue_t *hqueue;
 	simplequeue_t *lqueue;
     threadsem_t *sem;
+    threadsem_t *goSem;
 
 } push2queue_t;
 

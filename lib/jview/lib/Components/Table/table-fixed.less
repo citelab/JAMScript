@@ -1,0 +1,19 @@
+@import './table.less';
+
+  .table-fixed {
+    table {
+      table-layout: fixed;
+    }
+
+    .left-body,
+    .left-head {
+      table tr {
+        > th:first-child,
+        > td:first-child {
+          .form-item-checkbox .checkbox {
+            padding-left: 5px;
+          }
+        }
+      }
+    }
+  }

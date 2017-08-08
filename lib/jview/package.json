@@ -1,0 +1,27 @@
+{
+  "name": "treeflow.js",
+  "version": "1.0.0",
+  "description": "A React+Mobx+Socket single way flow data visualization and analytics generator. ",
+  "main": "ViewCompiler.js",
+  "scripts": {
+    "test": "node Compiler.js Config.json",
+    "sample-1": "node Compiler.js doc/Samples/1.Basic-Formset/Config.json",
+    "sample-2": "node Compiler.js doc/Samples/2.Basic-Table/Config.json",
+    "sample-3": "node Compiler.js doc/Samples/3.Scatter-Over-Socket/Config.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gazcn007/treeflow.git"
+  },
+  "author": "Carl Liu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gazcn007/treeflow/issues"
+  },
+  "dependencies": {
+    "fs-path": "0.0.23",
+    "js-beautify": "^1.6.14",
+    "ncp": "^2.0.0"
+  },
+  "homepage": "https://github.com/gazcn007/treeflow#readme"
+}

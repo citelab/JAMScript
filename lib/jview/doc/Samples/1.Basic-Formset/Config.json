@@ -1,0 +1,92 @@
+{
+  "package" : {
+    "name": "JView",
+    "version": "1.0.0",
+    "description": "A Simple JView system using React+Mobx+Node+MongoDB",
+    "author": "Carl Liu"
+  },
+  "path" : "./app",
+  "port" : "3000",
+  "pages" : [
+    {
+      "name" : "Data Panel",
+      "route" : "/data-panel",
+      "layout" : "default",
+      "panels" : [
+        {
+          "type": "FormSet",
+          "formList": [
+            {
+              "type": "select",
+              "dispLabel": "Device",
+              "param": "device",
+              "list": [
+                {"dispLabel": "Device1",
+                  "id": "M"
+                }, {"dispLabel": "Device2",
+                  "id": "H"
+                }, {"dispLabel": "Device3",
+                  "id": "L"
+                }, {"dispLabel": "Device4",
+                  "id": "Z"
+                }
+              ]
+            },
+            {
+              "type": "date",
+              "dispLabel" : "added Date",
+              "param": "date",
+              "isEn" :"true"
+            },
+            {
+              "type": "text",
+              "dispLabel": "X value",
+              "param": "xValue"
+            },
+            { "type": "text",
+              "dispLabel": "Y value",
+              "param": "yValue"
+            },
+            {
+              "type": "select",
+              "dispLabel": "Status",
+              "param": "status",
+              "list": [
+                {
+                  "dispLabel": "A",
+                  "id": "A"
+                },
+                {
+                  "dispLabel": "NA",
+                  "id": "NA"
+                }
+              ]
+            }
+          ],
+          "actionList": [
+            {
+            "type":"button",
+            "dispLabel": "Add",
+            "value": "",
+            "className": "btn-primary",
+            "trigger": "addData"
+          },
+            {
+              "type":"button",
+              "dispLabel": "Reset",
+              "value": "",
+              "className": "btn-default",
+              "trigger": "reset"
+            }],
+          "store": {
+            "device" : "0",
+            "xValue" : "0",
+            "yValue" : "0",
+            "status" : "0",
+            "date": "2017-6-6"
+          }
+        }
+      ]
+    }
+  ]
+}
