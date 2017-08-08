@@ -15,3 +15,8 @@
 int main(int argc, char **argv){
 
 }
+
+//this car has received a message from the manager to occupy this slot
+jasync occupy(char* slot) {
+	//we need to send a message (jasync) to the sensor that this slot has been occupied by this car
+}
