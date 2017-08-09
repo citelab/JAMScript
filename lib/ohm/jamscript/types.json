@@ -23,7 +23,7 @@
         "js_type": "string",
         "c_code": "s",
         "js_code": "s",
-        "caster": null,
+        "caster": "",
         "jbroadcast": "JBROADCAST_STRING"
     },
     "char*": {
@@ -32,7 +32,7 @@
         "js_type": "string",
         "c_code": "s",
         "js_code": "s",
-        "caster": null,
+        "caster": "",
         "jbroadcast": "JBROADCAST_STRING"
     },
     "char": {
@@ -41,7 +41,7 @@
         "js_type": "string",
         "c_code": "s",
         "js_code": "s",
-        "caster": null,
+        "caster": "",
         "jbroadcast": "JBROADCAST_STRING"
     },
     "jcallback": {
