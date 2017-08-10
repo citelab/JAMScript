@@ -1,5 +1,5 @@
 
-jactivity_t *pong();
+void pong();
 
 int ping() {
     pong();
