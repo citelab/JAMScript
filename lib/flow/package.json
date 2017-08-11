@@ -1,11 +1,11 @@
 {
   "name": "flows.js",
   "description": "A framework for distributed javascript data processing and data sharing.",
-  "version": "0.0.12",
+  "version": "0.1.0",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/anrl/JAM.git/lib/flow"
+    "url": "https://github.com/anrl/JAMScript-beta.git/lib/flow"
   },
   "dependencies": {
     "n-readlines": "~0.2.7",
