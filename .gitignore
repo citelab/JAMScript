@@ -22,6 +22,9 @@ lib/jdiscovery/mdns/build
 .sconsign.dblite
 .sconf_temp
 config.log
+package-lock.json
+**/package-lock.json
+
 
 node_modules/
 
