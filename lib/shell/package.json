@@ -1,6 +1,6 @@
 {
   "name": "jamshell",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A command-line tool for JAMScript",
   "license": "MIT",
   "repository": {
@@ -17,7 +17,8 @@
     "richflow": "latest",
     "terminal-kit": "latest",
     "yargs-parser": "latest",
-    "camelcase": "latest"
+    "camelcase": "latest",
+    "figlet": "latest"
   },
   "bin": {
     "jamshell": "index.js"
