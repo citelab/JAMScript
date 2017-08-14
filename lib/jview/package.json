@@ -7,7 +7,11 @@
     "test": "node Compiler.js Config.json",
     "sample-1": "node Compiler.js doc/Samples/1.Basic-Formset/Config.json",
     "sample-2": "node Compiler.js doc/Samples/2.Basic-Table/Config.json",
-    "sample-3": "node Compiler.js doc/Samples/3.Scatter-Over-Socket/Config.json"
+    "sample-3": "node Compiler.js doc/Samples/3.Scatter-Over-Socket/Config.json; cp doc/Samples/3.Scatter-Over-Socket/Data-mocker.js ./app",
+    "sample-4": "node Compiler.js doc/Samples/4.Multiple-Devices/Config.json; cp doc/Samples/4.Multiple-Devices/Data-mocker.js ./app",
+    "sample-5": "node Compiler.js doc/Samples/5.Multiple-Panels/Config.json; cp doc/Samples/5.Multiple-Panels/Data-mocker.js ./app",
+    "sample-6": "node Compiler.js doc/Samples/6.Multiple-Socket-IDs/Config.json; cp doc/Samples/6.Multiple-Socket-IDs/Data-mocker.js ./app",
+    "beautify": "find ./app -regex '.*\\.js' -exec js-beautify {} -r \\;"
   },
   "repository": {
     "type": "git",
