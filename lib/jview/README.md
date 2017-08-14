@@ -23,6 +23,17 @@ node index.js
 npm run sample-1
 npm run sample-2
 npm run sample-3
+npm run sample-4
+npm run sample-5
 
-then checkout ./app folder
+//then checkout ./app folder
+// or host files
+node app/index.js
+
+// run socket data-mocker, for sample 3, 4, 5
+node app/Data-Mocker.js
+
+------------------
+// to read beautified code, run this after compilation and generation of the app folder
+npm run beautify
 ```
