@@ -25,12 +25,13 @@ npm run sample-2
 npm run sample-3
 npm run sample-4
 npm run sample-5
+npm run sample-6
 
 //then checkout ./app folder
 // or host files
 node app/index.js
 
-// run socket data-mocker, for sample 3, 4, 5
+// run socket data-mocker, for sample 3, 4, 5, 6
 node app/Data-Mocker.js
 
 ------------------
