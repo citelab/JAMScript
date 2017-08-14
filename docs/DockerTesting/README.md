@@ -10,7 +10,7 @@ To run a container using a particular image on a given bridge
 docker run --network=bridgename --name containername -t -d  imagename /bin/bash
 ```
 
-In order to start up a lot of containers, we'll have to use a bash script. For example if we want to run 1000 containers on a given bridge, we can use a script like this
+In order to start up a lot of containers, we'll have to use a bash script. For example if we want to run 1000 containers on a given bridge, we can use a script like this; this will start 1000 containers named test1, ... , test1000
 ```
 #!/bin/bash
 for i in `seq 1 1000`; do
