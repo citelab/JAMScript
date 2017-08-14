@@ -9,8 +9,6 @@ jdata{
 		char* UV;
 	} MTLWeather as logger;
 
-	char* sensorStatus as logger;
-
 	stats as flow with statsFunc of MTLWeather; 
 }
 

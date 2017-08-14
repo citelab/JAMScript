@@ -50,7 +50,7 @@ JAMJS <: ES6 {
     Jcond_expr      = "(" Jcond_expr ")"                            -- paran
                     | "!" Jcond_expr                                -- not
                     | Jcond_expr jcond_expr_op Jcond_expr           -- bin_op
-                    | identifier listOf<identifier, ".">            -- structure
+                    | identifier nonemptyListOf<identifier, ".">    -- structure
                     | identifier                                    -- id
 
     jcond_expr_op   = "&&" | "||"

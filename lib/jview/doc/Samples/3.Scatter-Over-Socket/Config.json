@@ -94,7 +94,7 @@
       "layout" : "default",
       "panels" : [
         {
-          "type": "Scatter",
+          "type": "Graph",
           "store": {
             "socket":{
               "id": "0",
