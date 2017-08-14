@@ -99,7 +99,7 @@ if( parsed.help ){
 
 The required options for the build are:
 
-1. cmd: The command pattern as is `<command>` or `<command> <arg1> <arg2>`.
+1. cmd: The command pattern as is `<command>` or `<command> <arg1> <arg2> ... <argN>`.
 Now bear in mind that the names the command arguments are significant to retrieving the data stored in them. 
 As an example:
    
@@ -125,7 +125,7 @@ As an example:
     
     The command arguments are deemed as required (meaning that they will always be set) and the order is preserved. They will be set to `null` if they are not provided by the user.
     
-    It is to be noted that the options can come either between the command and the command arguments or after the command arguments. As an example, the following will yield the same output:
+    It is to be noted that the options can come either between the command and the command arguments or after the command arguments. As an example with the sample `MyHook` class, the following will yield the same output:
     
     ```
     jdata> ds logger --from 0 -t 5
