@@ -1,31 +1,32 @@
-jdata {
-    
-    struct basket{
-    	int apple;
-    	float pear;
-    } myBasket as broadcaster;
-
-    struct bag{
-    	int pen;
-    	float water;
-    	int book;
-    } myBag as broadcaster;
+jdata {  
+    struct myTime{
+        int year;
+        int month;
+        int date;
+        int hour;
+        int minute;
+        int second;
+        char* display;
+    }MTLTime as broadcaster;
 }
 
-var i=0;
-
-setInterval(function() {
+setInterval(function(){
+    var d       = new Date(),
+        year    = Number(d.getYear()+1900),
+        month   = Number(d.getMonth()+1),
+        date    = d.getDate(),
+        hour    = d.getHours(),
+        minute  = d.getMinutes(),
+        second  = d.getSeconds(),
+        display = String(year+"-"+month+"-"+date+" "+hour+":"+minute+":"+second);
     
-    myBasket.broadcast({
-    	apple: Math.floor(Math.random() * 100),
-    	pear : Math.random() * 1000
+    MTLTime.broadcast({
+        year: year,
+        month: month,
+        date: date,
+        hour: hour,
+        minute: minute,
+        second: second,
+        display: display
     });
-    
-    myBag.broadcast({
-        pen: Math.floor(Math.random() * 10),
-        water: Math.random() * 100,
-    	book: Math.random() * 100
-    });
-
-    i++;
 }, 1000);
