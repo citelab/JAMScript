@@ -6,7 +6,7 @@ jdata{
 		int hour;
 		int minute;
 		int second;
-	} myClock as broadcaster;
+	} timeKeeping as broadcaster;
 
 	inF as inflow of app://time.outF;
 }
@@ -18,7 +18,7 @@ inF.setTerminalFunction(function(entry){
 	console.log("Received data ......");
 	prettyPrint(data);
 
-	myClock.broadcast(data);
+	timeKeeping.broadcast(data);
 });
 
 function prettyPrint(time){
