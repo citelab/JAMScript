@@ -137,11 +137,6 @@ cd $scriptdir
 # install the following here..
 npm install ohm-js
 
-cd /var/run
-mkdir dbus
-cd dbus
-mkdir system_bus_socket
-
 
 
 echo
