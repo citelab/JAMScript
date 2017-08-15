@@ -1,4 +1,4 @@
-
+Note that some system might require you to use sudo before each docker command.
 
 First we need to create a network bridge on which we can run docker containers. A bridge can have up to around 1100 containers.
 ```
@@ -10,7 +10,7 @@ To run a container using a particular image on a given bridge
 docker run --network=bridgename --name containername -t -d  imagename /bin/bash
 ```
 
-In order to start up a lot of containers, we'll have to use a bash script. For example if we want to run 1000 containers on a given bridge, we can use a script like this; this will start 1000 containers named test1, ... , test1000
+In order to start up a lot of containers, we will use a bash script. For example if we want to run 1000 containers on a given bridge, we can use a script like this; this will start 1000 containers named test1, ... , test1000
 ```
 #!/bin/bash
 for i in `seq 1 1000`; do
@@ -62,6 +62,11 @@ for i in `seq 1 400`; do
 done
 ```
 
+Lastly if you would like to stop and remove all containers, just use the following bash script
+```
+docker stop $(docker ps -a -q)
+docker rm $(docker ps -a -q)
+```
 
 
 
