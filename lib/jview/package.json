@@ -11,6 +11,7 @@
     "sample-4": "node Compiler.js doc/Samples/4.Multiple-Devices/Config.json; cp doc/Samples/4.Multiple-Devices/Data-mocker.js ./app",
     "sample-5": "node Compiler.js doc/Samples/5.Multiple-Panels/Config.json; cp doc/Samples/5.Multiple-Panels/Data-mocker.js ./app",
     "sample-6": "node Compiler.js doc/Samples/6.Multiple-Socket-IDs/Config.json; cp doc/Samples/6.Multiple-Socket-IDs/Data-mocker.js ./app",
+    "sample-7": "node Compiler.js doc/Samples/7.Bar-Scroll/Config.json; cp doc/Samples/7.Bar-Scroll/Data-mocker.js ./app",
     "beautify": "find ./app -regex '.*\\.js' -exec js-beautify {} -r \\;"
   },
   "repository": {
