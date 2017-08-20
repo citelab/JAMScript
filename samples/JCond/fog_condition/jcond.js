@@ -5,12 +5,13 @@ jcond {
 }
 
 jasync {fogonly} function pong() {
-    console.log("pong......");
+    console.log("================ Pong!");
 }
 
 
 jasync {cloudonly} function pong2() {
-    console.log("pong......");
+    console.log("In pong2..");
+    pong();
 }
 
 
@@ -20,7 +21,7 @@ jasync {devonly} function pong3() {
 
 setInterval(()=> {
    console.log("Calling pong...");
-    pong();
+   pong2();
 
 }, 2000);
 
