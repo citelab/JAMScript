@@ -6,7 +6,7 @@ subtitle: JData Documentation
 
 # JAMDatasource  
 
-JAMDatasource is the core of data transmission among different machines in a JAM system. Its value can be updated to trigger certain actions on its subscriber applications both locally and on other machines, through another data type called JAMDatastream.  
+JAMDatasource is the core of data transmission among different machines in a JAM system. Its value can be updated to trigger certain actions on its subscriber applications both locally and on other machines, through another data type called JAMDatastream.
 
 JAMDatasource has two subtypes: JAMLogger and JAMBroadcaster, with the former being a bottom-up data media, and the latter a top-down channel.    
 
@@ -31,7 +31,7 @@ jdata {
 }
 ```
 
-A structure logger is declared using the syntax of C Prgoramming Language.  
+A **structural logger** is declared using the syntax of C Prgoramming Language.  
 **Example:** declaring another logger to keep track of an user-defined type - struct weather:
 ```shell
 jdata {
@@ -45,8 +45,9 @@ jdata {
 }
 ```  
   
+
 ### **Subscribing a logger to callbacks**  
-The **subscribe()** method pushes a callback function to the logger that it is called upon, such that all the applications that listens to this logger will call that function when the logger records a new value change.  
+The **subscribe()** method pushes a callback function to the logger that it is called upon, such that all the applications that listens to this logger will call that function when the logger records a new value change.
 ```shell  
 jdata {
 	int aNumber as logger;
@@ -56,15 +57,12 @@ aNumber.subscribe(function(key, entry, datastream){
 	console.log("New data:",entry);
 });
 ```
-
 **Syntax**  
 JAMLogger.subscribe(function callback(key, entry, datastream){
 	// ...
 })  
-
 **Return value**  
 None  
-
 **Parameters**  
 callback  
 	the function that is called by all listener applications of the logger that **subscribe()** is called upon.  
@@ -75,14 +73,14 @@ callback
 		the new data whose arrival triggers this callback function.
 	datastream  
 		the identifier of the listener application of the logger.  
-  
+
 
 
 ## JAMBroadcaster  
 A JAMBroadcaster is responsible for broadcasting data in a top-down fashion, i,e. from cloud to fog or device, or from fog to device. Unlike JAMLogger, a broadcaster actively sends data instead of waiting for other applications to update its value.  
   
 ### **Declaring a broadcaster variable**
-A logger has to be declared in a jdata{...} section.
+A broadcaster has to be declared in a jdata{...} section.
 ```shell
 jdata{
 	<type> <name> as broadcaster;
@@ -98,7 +96,7 @@ jdata {
 }
 ```
 
-A structure broadcaster is declared using the syntax of C Prgoramming Language.  
+A **structural broadcaster** is declared using the syntax of C Prgoramming Language.  
 **Example:** declaring another broadcaster to broadcast time - struct myTime:
 ```shell
 jdata {
@@ -114,9 +112,11 @@ jdata {
 }
 ```  
   
-# JAMDatastream  
 
-To run a J-node, we have to supply an app name with `--app=APP_NAME`. This app name is later used to referred to this application in other programs, such that they can access datasources declared in it. Whenever a program subscribes to a logger in another program, or receives data from a broadcaster on a higher level machine, a datastream is created and bridges data between these two ends.  
+
+# JAMDatastream  
+To run a J-node, we have to supply an app name with `--app=APP_NAME`. This app name is later used to referred to this application in other programs, such that they can access datasources declared in it. Whenever a program subscribes to a logger in another program, or receives data from a broadcaster on a higher level machine, a datastream is created and bridges data between these two ends.    
+
 Users of JAMScript do not initialize datastreams as they are internally created. We provide rich APIs for you to manipulate information about and data stored in datastreams.  
 
 #### JAMDatastream.size()  
@@ -443,7 +443,7 @@ IteratorFlow is usually the first Flow created on raw data structures. Other flo
 An IteratorFlow can be built upon various data structures, including Array, Set, Map, Object, FileSystem, Generator, JAMDatasource and JAMDatastream.  
 Unlike JAMDatasource which can only be declared inside a jdata{...} section, an IteratorFlow can be created both in or outside of it.
 
-##### ** `Flow.from()` creates a IteratorFlow outside of jdata{...} section**    
+#### **`Flow.from()` creates a IteratorFlow outside of jdata{...} section**  
 
 ```shell
 jdata{
@@ -464,11 +464,11 @@ var anotherFlow = firstFlow.where(entry => entry.data%2==0);
 **Syntax**  
 Flow.from(data);    
 **Parameter**  
-A variable of type Array, Set, Map, Object, FileSystem, Generator, JAMDatasource or JAMDatastream
+A variable of type Array, Set, Map, Object, FileSystem, Generator, JAMDatasource or JAMDatastream  
 **Return value**  
 An IteratorFlow contains all data in the argument data structure.  
   
-##### **Creates an IteratorFlow in jdata{...} section**
+#### **Creates an IteratorFlow in jdata{...} section**
 An IteratorFlow built upon a JAMDatasource can be declared either in a jdata{...} section or outside as above.  
 
 ```shell
@@ -492,7 +492,7 @@ Every IteratorFlow on a JAMDatasource has to be associated with a function to pr
 rawFlow: the raw IteratorFlow contains all data that the datasource on which the IteratorFlow is built recorded.  
 **Return value**  
 A flow.  
-  
+
 **Example:**
 ```shell
 jdata{
@@ -534,12 +534,10 @@ function <flowFunc> (rawFlow){
 
 <outflowName>.start();
 ```  
-  
 Declare an Iterator flow first, then create an outflow on it.  
 `outflowName`: the name of the outflow variable.  
 `flowName`: the name of the Iterator flow on which the outflow is created.  
 `<outflowName>.start()`: start piping data from flow to the outflow. Now the outflow contains all the data in the flow.  
-
 **Example**
 ```shell
 jdata{
@@ -561,12 +559,10 @@ jdata{
 	<inflowName> as inflow of app://<outflowAPP>.<outflowName>;
 }
 ```  
-  
 Declare an inflow by specifying the path of the outflow it listens to.    
 `inflowName`: the name of the inflow variable.  
 `outflowAPP`: the name of the application where the outflow listened to resides.  
 `outflowName`: the name of the outflow that the inflow listens to.  
-
 **Example**
 ```shell
 jdata{
@@ -582,7 +578,7 @@ This Flow splits data streams into chunks/windows to allow for Flow methods that
 ### Flow Operations  
 Flow operations can either be methods/transformations (operations that yield other Flows) or actions (operations that yield a result).
   
-* Flow methods  
+#### Flow methods  
 Each flow method is a data transformation that yields another flow. A flow maintains a call tree to the flow operation before it. A flow method is lazily computed as the data is continuously pipelined to the next level of flow and is only computed when a flow action is called upon it.    
 
 #### The `Flow.limit(Number)` method limits the number of results obtained after the previous operation.

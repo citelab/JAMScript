@@ -33,7 +33,7 @@ Run `which jamc` to verify that JAMScript compiler installed on your system. It 
 
 ## Preparing your Raspberry Pi
 
-copy depend-rpi.sh and jamscript-on-ubuntu.sh from scripts/install into the root folder of JAMScript, then run the following commands:  
+Copy depend-rpi.sh and jamscript-on-ubuntu.sh from scripts/install into the root folder of JAMScript, then run the following commands:  
 ```shell
 ./depend-rpi.sh
 ./jamscript-on-ubuntu.sh
