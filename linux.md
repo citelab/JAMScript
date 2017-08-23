@@ -10,6 +10,7 @@ Please make sure you have the latest Node.js (> 8.0.0) and npm (> 5.0.0) install
 If you an older version, please manually remove it. 
 Install dependencies:  
 ```shell
+cd script/install
 ./depend-install-ubuntu.sh
 ```  
 This will install all the dependencies, including the newest Node.js on your system.  
@@ -32,8 +33,11 @@ Run `which jamc` to verify that JAMScript compiler installed on your system. It 
 
 ## Preparing your Raspberry Pi
 
-Not yet tested. It is best to cross compile JAMScript to Raspberry Pi although
-RPI3 is powerful enough to compile JAMScript.
+copy depend-rpi.sh and jamscript-on-ubuntu.sh from scripts/install into the root folder of JAMScript, then run the following commands:  
+```shell
+./depend-rpi.sh
+./jamscript-on-ubuntu.sh
+```
 
 ## Preparing your Arduino Yun
 

@@ -4,11 +4,15 @@ title: JData
 subtitle: JData Documentation
 ---
 
-JData comes in two types: a logger and a broadcaster.
+# JAMDatasource  
 
-## Logger
+JAMDatasource is the core of data transmission among different machines in a JAM system. Its value can be updated to trigger certain actions on its subscriber applications both locally and on other machines, through another data type called JAMDatastream.  
 
-A logger keeps track of the changes of a value. 
+JAMDatasource has two subtypes: JAMLogger and JAMBroadcaster, with the former being a bottom-up data media, and the latter a top-down channel.    
+
+## JAMLogger
+
+A JAMLogger keeps track of the changes of a value. Instances of JAMLogger should be declared in J-node applications, which is then able to subscribe user-defined functions to the logger when its value gets updated. The value tracked can be changed by a C-node, if the J-node is at device level, or by a device-level J-node, if the J-node is at fog or cloud level.   
 
 ### **Declaring a logger variable**
 A logger has to be declared in a jdata{...} section.
@@ -41,8 +45,7 @@ jdata {
 }
 ```  
   
-  
-### **Subscribing to a logger**  
+### **Subscribing a logger to callbacks**  
 The **subscribe()** method pushes a callback function to the logger that it is called upon, such that all the applications that listens to this logger will call that function when the logger records a new value change.  
 ```shell  
 jdata {
@@ -73,10 +76,48 @@ callback
 	datastream  
 		the identifier of the listener application of the logger.  
   
+
+
+## JAMBroadcaster  
+A JAMBroadcaster is responsible for broadcasting data in a top-down fashion, i,e. from cloud to fog or device, or from fog to device. Unlike JAMLogger, a broadcaster actively sends data instead of waiting for other applications to update its value.  
   
+### **Declaring a broadcaster variable**
+A logger has to be declared in a jdata{...} section.
+```shell
+jdata{
+	<type> <name> as broadcaster;
+}
+```
+`<type>`: the type of the value that the logger keeps track of. Possible values: int, double, float, char*, and user-defined structures.
+`<name>`: the name of this broadcaster.
+
+**Example:** declaring a broadcaster to broadcast integer values:
+```shell
+jdata {
+	int num as broadcaster;
+}
+```
+
+A structure broadcaster is declared using the syntax of C Prgoramming Language.  
+**Example:** declaring another broadcaster to broadcast time - struct myTime:
+```shell
+jdata {
+	struct myTime{
+        int year;
+        int month;
+        int date;
+        int hour;
+        int minute;
+        int second;
+        char* display;
+	}MTLTime as broadcaster;
+}
+```  
   
-### **JAMDatastream**  
-A logger can be listened to by multiple applications. We call each listener application of a logger its datastream.
+# JAMDatastream  
+
+To run a J-node, we have to supply an app name with `--app=APP_NAME`. This app name is later used to referred to this application in other programs, such that they can access datasources declared in it. Whenever a program subscribes to a logger in another program, or receives data from a broadcaster on a higher level machine, a datastream is created and bridges data between these two ends.  
+Users of JAMScript do not initialize datastreams as they are internally created. We provide rich APIs for you to manipulate information about and data stored in datastreams.  
 
 #### JAMDatastream.size()  
 The **size()** method returns the number of records the logger has tracked.
@@ -385,62 +426,72 @@ JAMDatastream.valuesBetween(fromTimestamp, toTimestamp)
 Returns an array containing all values of type Number in the data stream with a timestamp between fromTimestamp and toTimestamp (both exclusive).   
 **Parameters**  
 fromTimestamp: a Date object
-toTimestamp: a Date object
+toTimestamp: a Date object 
 
 
+# Flow  
+
+Flow is an abstract data type that enables efficient processing of large data sets. It enables data transmission cross applications. 
   
-## Flow
-Flow is an abstract data type that enables efficient processing of a large data set. It provides a handful of methods to group, transform and filter the entering data. 
+## 5 Types of Flow  
+Flow has 5 subtypes: IteratorFlow, OutFlow, InFlow, DiscretizedFlow and ParallelFlow. They are grouped based on the type of operations that can be performed on them. All of them inherit Flow methods and Flow functions defined in Flow class, and have their own specialized functionalities.  
 
-### **Declaring a Flow variable**
+### IteratorFlow  
+IteratorFlow is usually the first Flow created on raw data structures. Other flows can be created by applying flow methods on an iterator flow, which is the root flow in the flow chain and can be accessed via the property `rootFlow`.  
 
-A flow can be built upon various data structures, including Array, Set, Map, Object, FileSystem, Generator, JAMDatasource and JAMDatastream.  
+#### **Declaring a IteratorFlow variable**  
+An IteratorFlow can be built upon various data structures, including Array, Set, Map, Object, FileSystem, Generator, JAMDatasource and JAMDatastream.  
+Unlike JAMDatasource which can only be declared inside a jdata{...} section, an IteratorFlow can be created both in or outside of it.
 
-#### ** `Flow.from()` creates a flow on a logger.**
+##### ** `Flow.from()` creates a IteratorFlow outside of jdata{...} section**    
+
 ```shell
 jdata{
 	<loggerType> <loggerName> as logger;
 }
-var a = [1,2,3,4,5];
 
-// Creates a flow on a JAMLogger
+// Creates a IteratorFlow on a JAMLogger
 var aFlow = Flow.from(<loggerName>);
 
-// Creates a flow on an array  
+var a = [1,2,3,4,5];
+
+// Creates a IteratorFlow on an array  
 var f = Flow.from(a);
+
+// creates a flow contains only the even number in firstFlow
+var anotherFlow = firstFlow.where(entry => entry.data%2==0);
 ```  
 **Syntax**  
 Flow.from(data);    
 **Parameter**  
 A variable of type Array, Set, Map, Object, FileSystem, Generator, JAMDatasource or JAMDatastream
 **Return value**  
-A flow contains all data in the argument data structure.  
-
-
-#### **Creates a flow in jdata{...} section**
-A flow built upon a JAMLogger can be declared either in a jdata{...} section or outside as above.  
+An IteratorFlow contains all data in the argument data structure.  
+  
+##### **Creates an IteratorFlow in jdata{...} section**
+An IteratorFlow built upon a JAMDatasource can be declared either in a jdata{...} section or outside as above.  
 
 ```shell
 jdata{
-	<loggerType> <aLogger> as logger;
-	<flowName> as flow with <flowFunc> of <aLogger>
+	<dataType> <aDatasource> as <datasourceType>;
+	<flowName> as flow with <flowFunc> of <aDatasource>
 }
 
 function <flowFunc> (rawFlow){
 	// ...
 }
 ```  
-Declare a logger first. Then declare the flow built upon it.  
-`<flowName>`: the name of this flow variable.  
-`<flowFunc>`: the name of the function to process the raw flow from the intended logger.  
-`<aLogger>`: the name of the logger variable on which this logger is initialized.
+Declare a JAMDatasource first. Then declare the IteratorFlow built upon it.  
+`<flowName>`: the name of this IteratorFlow variable.  
+`<flowFunc>`: the name of the function to process the raw IteratorFlow from the intended logger.  
+`<aDatasource>`: the name of the JAMDatasource variable on which this Iterator flow is initialized.
   
 `function <flowFunc> (rawFlow)`:   
-Every flow on logger has to be associated with a function to process the raw flow.  
+Every IteratorFlow on a JAMDatasource has to be associated with a function to process the raw flow.  
 **Parameter**  
-rawFlow: the raw flow contains all data that the logger on which the flow is built recorded.  
+rawFlow: the raw IteratorFlow contains all data that the datasource on which the IteratorFlow is built recorded.  
 **Return value**  
-A flow  
+A flow.  
   
 **Example:**
 ```shell
@@ -459,35 +510,75 @@ jdata{
 }  
 
 function statsFunc(rawFlow){
-	return rawFlow.discretize(1,7);
+	return rawFlow.select(function(entry){
+		return entry.data;
+	});
 }
 ```
-The above code first declares a logger called `MTLWeather` with type `struct weather`, then a flow with name `stats` and a function `statsFunc` on logger `MTLWeather`. `statsFunc` takes `stats` flow as its argument, and returns a flow created by a flow method `discretize()`.  
+The above code first declares a logger called `MTLWeather` with type `struct weather`, then an IteratorFlow with name `stats` and a function `statsFunc` on logger `MTLWeather`. `statsFunc` takes `stats` flow as its argument, and returns a flow created by a flow method `select`.
   
-  
-### 5 Types of Flow  
-IteratorFlow, OutFlow, InFlow, DiscretizedFlow and Flow (the default Flow). They are grouped based on the type of operations that can be performed on them.  
-  
-#### IteratorFlow  
-An IteratorFlow is created when Flow.from() is called. Other flows can be created by applying flow methods on an iterator flow, which is the root flow in the flow chain and can be accessed via the property `rootFlow`.  
-**Example:**  
+### OutFlow & InFlow 
+An OutFlow is responsible for processing and sending data across applications, while an InFlow is receiving data from other applications. In most cases, we let these two types of flow work together to perform communication between two JAM applications.  
+
+#### **Declare an OutFlow variable**  
 ```shell
-var firstFlow = Flow.from([1,2,3,4,5]);
-
-// creates a flow contains only the even number in firstFlow
-var anotherFlow = firstFlow.where(entry => entry.data%2==0);
-```  
-
-#### OutFlow  
-An OutFlow is responsible for processing and sending data across applications.  
+jdata{
+	<dataType> <aDatasource> as <datasourceType>;
+	<flowName> as flow with <flowFunc> of <aDatasource>;
+	<outflowName> as outflow of <flowName>;
+}
   
-#### InFlow
-An InFlow is responsible for receiving data from other applications.  
+function <flowFunc> (rawFlow){
+	// ...
+}
+
+<outflowName>.start();
+```  
+  
+Declare an Iterator flow first, then create an outflow on it.  
+`outflowName`: the name of the outflow variable.  
+`flowName`: the name of the Iterator flow on which the outflow is created.  
+`<outflowName>.start()`: start piping data from flow to the outflow. Now the outflow contains all the data in the flow.  
+
+**Example**
+```shell
+jdata{
+	int sensorStatus as logger;
+	f as flow with flowFunc of sensorStatus;
+	outF as outflow of f; 
+}
+
+outF.start();
+
+function flowFunc(inputFlow){
+	return inputFlow;
+}
+```
+  
+#### **Declare an InFlow variable**  
+```shell
+jdata{
+	<inflowName> as inflow of app://<outflowAPP>.<outflowName>;
+}
+```  
+  
+Declare an inflow by specifying the path of the outflow it listens to.    
+`inflowName`: the name of the inflow variable.  
+`outflowAPP`: the name of the application where the outflow listened to resides.  
+`outflowName`: the name of the outflow that the inflow listens to.  
+
+**Example**
+```shell
+jdata{
+	sensorStatus as inflow of app://t.outF;
+}
+```  
+Here the outflow path is `app://t.outF`. `t` is the APP_NAME that we supplied to the J-node when running the outflow application. `outF` is the name of the outflow that feeds data to the inflow created.   
   
 #### DiscretizedFlow  
 This Flow splits data streams into chunks/windows to allow for Flow methods that require finite data operations.  
-
   
+
 ### Flow Operations  
 Flow operations can either be methods/transformations (operations that yield other Flows) or actions (operations that yield a result).
   
