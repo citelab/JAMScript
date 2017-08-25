@@ -39,7 +39,48 @@ Copy depend-rpi.sh and jamscript-on-ubuntu.sh from scripts/install into the root
 ./jamscript-on-ubuntu.sh
 ```
 
-## Preparing your Arduino Yun
 
-Definitely need a JAMScript cross compiler.
-Need testing and documentation.
+## Build a docker image of JAMScript-beta  
+
+Get the Dockerfile from /scripts/install.
+Then run the following command from where the Dockerfile is located
+
+```shell
+docker build -t imageName .
+```
+  
+**To run a JS node on a container**, enter the following command first, the `--privileged` is needed in order to start avahi-daemon.
+  
+```shell
+docker run -t --privileged --name containerName imageName
+```
+  
+Then to run an actual JS program on this container, get into command line of the container by doing
+
+```shell
+docker exec -it containerName /bin/bash
+```
+  
+Start up MQTT server manually by doing
+```shell
+mosquitto &
+```
+  
+Now you are ready to start up a JS program
+
+
+**To run a C program in a separate container**, start up a container by doing
+```shell
+docker run --name containerName -t -d  imagename /bin/bash
+```
+  
+Get into command line the same way
+```shell
+docker exec -it containerName /bin/bash
+```
+  
+Or you could directly execute a C program by entering
+
+```shell
+docker exec -t containerName /bin/bash -c "./path/to/directory/a.out"
+```

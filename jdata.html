@@ -16,7 +16,7 @@ subtitle: JData Documentation
 		  justify-content: space-between;
 		  align-items: flex-start;
 		  padding: 20px;
-			display: none;
+		  display: none;
 		}
 
 		a{
@@ -55,6 +55,9 @@ subtitle: JData Documentation
 		  margin-bottom: 40px;
 		}
 
+		.sample-description{
+
+		}
 		pre {
 		  background-color: white;
 		  font-family: monospace;
@@ -91,7 +94,9 @@ subtitle: JData Documentation
       <div class="myPanel">
         <a class="intro" href="#datastource">Introduction</a>
         <a class="logger" href="#logger">JAMLogger</a>
+        <a class="logger-samples" href="#logger-samples">&nbsp;&nbsp;&nbsp;&nbsp;- Sample Logger Programs</a>
         <a class="broadcaster" href="#broadcaster">JAMBroadcaster</a>
+        <a class="broadcaster-samples" href="#broadcaster-samples">&nbsp;&nbsp;&nbsp;&nbsp;- Sample Broadcaster Programs</a>
       </div>
       <button class="myAccordion datastream">JAMDatastream</button>
       <div class="myPanel">
@@ -114,7 +119,9 @@ subtitle: JData Documentation
 		<a href="#5flow">5 Types of Flow</a>
 		<a href="#iteratorflow">Iterator Flow</a>
 		<a href="#outflow&inflow">OutFlow & InFlow</a>
+		<a href="#in&out-samples">&nbsp;&nbsp;&nbsp;&nbsp;Sample programs</a>
 		<a href="#discretizedflow">Discretized Flow</a>
+		<a href="#discretized-samples">&nbsp;&nbsp;&nbsp;&nbsp;Sample programs</a>
       </div>
     </div>
     <div class="content">
@@ -197,6 +204,179 @@ subtitle: JData Documentation
 				</div> 
 			</div>
 
+			<div id="logger-samples">
+				<h3>Example programs for your inspiration!</h3>
+				
+				<button class="myAccordion">Add callback functions to a logger by deploying datastream's methods</button>
+				<div class="myPanel">
+					<p>J-node</p> 
+					<pre>
+					<span>jdata{</span>
+					<span>	int candidate1 as logger;</span>
+					<span>}</span>
+					<span></span>
+					<span>var notify = function(key, entry, device){</span>
+					<span>	console.log("key\n"+key);</span>
+					<span>	var size = device.size();</span>
+					<span>	console.log("Received "+size+" votes");</span>
+					<span>	var lastData = device.lastData();</span>
+					<span>	var timestamp = lastData.timestamp;</span>
+					<span>	var lastValue = device.lastValue();</span>
+					<span></span>
+					<span>	console.log("Vote from "+lastValue+" at "+timestamp);</span>
+					<span></span>
+					<span>	var data = device.data();</span>
+					<span>	var values = device.values();</span>
+					<span></span>
+					<span>	if(device.size()>=10){</span>
+					<span>		var last10Data = device.n_data(10);</span>
+					<span>		console.log("Last 10 votes with time_stamp:",last10Data);</span>
+					<span>	}</span>
+					<span></span>
+					<span>	if(device.size()>=10){</span>
+					<span>		var last10Values = device.n_values(10);</span>
+					<span>		console.log("Last 10 votes are from", last10Values);</span>
+					<span>	}</span>
+					<span></span>
+					<span></span>
+					<span>	if(device.size()>20){</span>
+					<span>		// get the 21th value received</span>
+					<span>		var aValue = device.get_value_at(20);</span>
+					<span>		console.log("The 20th vote is from",aValue);</span>
+					<span>	}</span>
+					<span></span>
+					<span>	if(device.size()>20){</span>
+					<span>		// get the 10 values starting from the 6th one received</span>
+					<span>		var someValue = device.get_range_values(5, 10);</span>
+					<span>		console.log("The 5th to the 15th votes are from",someValue)</span>
+					<span>	}</span>
+					<span></span>
+					<span>	// year, month-1, date, hour, minute, secod</span>
+					<span>	var today = new Date(2017, 7, 7, 0, 0, 0);</span>
+					<span></span>
+					<span>	var dataToday = device.dataAfter(today);</span>
+					<span>	var valuesToday = device.valuesAfter(today);</span>
+					<span>	console.log("Received "+valuesToday.length+" data today");</span>
+					<span>	</span>
+					<span>	var yesterday = new Date(2017, 7, 6, 0, 0, 0);</span>
+					<span></span>
+					<span>	var dataYesterday = device.dataBetween(today, yesterday);</span>
+					<span>	var valueYesterday = device.valuesBetween(today, yesterday);</span>
+					<span>	console.log("Received "+valueYesterday.length+" data yesterday");</span>
+					<span>}</span>
+					<span></span>
+					<span>candidate1.subscribe(notify);</span>
+					</pre>
+
+					<p>C-node</p>
+					<pre>
+					<span>#include &lt;unistd.h&gt;</unistd.h>
+					<span></span>
+					<span>int main() {</span>
+					<span>	for (int i = 0;; i++) {</span>
+					<span>		candidate1 = i;</span>
+					<span>		sleep(1);</span>
+					<span>	}</span>
+					<span>}</span>
+					</pre>
+				</div>
+
+				<button class="myAccordion">Work with structural loggers</button>
+				<div class="myPanel">
+					<p>J-node</p>
+					<pre>
+					<span>jdata{</span>
+					<span>	struct weather{</span>
+					<span>		int temperature;</span>
+					<span>		float humidity;</span>
+					<span>		float wind;</span>
+					<span>		char* airQuality;</span>
+					<span>		char* UV;</span>
+					<span>	} MTLWeather as logger;</span>
+					<span>}</span>
+					<span></span>
+					<span>var notify = function(key, entry, device){</span>
+					<span>	var size = device.size();</span>
+					<span>	console.log("Logging the "+size+"-th data "+entry+" into logger "+" key");</span>
+					<span></span>
+					<span>	var lastData = device.lastData();</span>
+					<span>	console.log("Last data received",lastData);</span>
+					<span></span>
+					<span>	var lastValue = device.lastValue();</span>
+					<span>	console.log("Last value received",lastValue);</span>
+					<span></span>
+					<span>	var data = device.data();</span>
+					<span></span>
+					<span>	var values = device.values();</span>
+					<span></span>
+					<span>	if(device.size()>=10){</span>
+					<span>		var last10Data = device.n_data(10);</span>
+					<span>		console.log("Last 10 data received",last10Data);</span>
+					<span>	}</span>
+					<span></span>
+					<span>	if(device.size()>=10){</span>
+					<span>		var last10Values = device.n_values(10);</span>
+					<span>		console.log("Last 10 values received",last10Values);</span>
+					<span>	}</span>
+					<span></span>
+					<span></span>
+					<span>	if(device.size()>20){</span>
+					<span>		// get the 21th value received</span>
+					<span>		var aValue = device.get_value_at(20);</span>
+					<span>	}</span>
+					<span></span>
+					<span>	if(device.size()>20){</span>
+					<span>		// get the 10 values starting from the 6th one received</span>
+					<span>		var someValue = device.get_range_values(5, 10);</span>
+					<span>	}</span>
+					<span></span>
+					<span>	// year, month-1, date, hour, minute, secod</span>
+					<span>	var today = new Date(2017, 7, 14, 0, 0, 0);</span>
+					<span></span>
+					<span>	var dataToday = device.dataAfter(today);</span>
+					<span>	var valuesToday = device.valuesAfter(today);</span>
+					<span>	console.log("Received "+valuesToday.length+" data today");</span>
+					<span>	</span>
+					<span>	var yesterday = new Date(2017, 7, 13, 0, 0, 0);</span>
+					<span></span>
+					<span>	var dataYesterday = device.dataBetween(today, yesterday);</span>
+					<span>	var valueYesterday = device.valuesBetween(today, yesterday);</span>
+					<span>	console.log("Received "+valueYesterday.length+" data yesterday");</span>
+					<span>}</span>
+					<span></span>
+					<span>MTLWeather.subscribe(notify);</span>
+					</pre>
+
+					<p>C-node</p>
+					<pre>
+					<span>#include &lt;unistd.h&gt;</span>
+					<span>#include &lt;stdlib.h&gt;</span>
+					<span></span>
+					<span>int main() {</span>
+					<span>	int temp;</span>
+					<span>	float hum, wind;</span>
+					<span></span>
+					<span>	for (int i = 1;; i++) {</span>
+					<span></span>
+					<span>		temp  = rand()%15+15;</span>
+					<span>		hum  = (rand()%100)/100;</span>
+					<span>		wind = rand()%25+(rand()%10)/10;</span>
+					<span></span>
+					<span>		MTLWeather = {</span>
+					<span>			.temperature: temp, </span>
+					<span>			.humidity: hum,</span>
+					<span>			.wind: wind,</span>
+					<span>			.airQuality: "good",</span>
+					<span>			.UV: "strong"</span>
+					<span>		};</span>
+					<span></span>
+					<span>		sleep(1);</span>
+					<span>	}</span>
+					<span>}</span>
+					</pre>
+				</div>
+			</div>
+
 			<div id="broadcaster">
 				<div>
 					<h3>JAMBroadcaster</h3>
@@ -237,6 +417,97 @@ subtitle: JData Documentation
 					<span>}</span>
 				    </pre>
 				</div>
+		    </div>
+
+		    <div id="broadcaster-samples">
+		    	<h3>Example programs for your inspiration!</h3>
+		    	<button class="myAccordion">Build a broadcaster to send messages to all its listener C-nodes</button>
+		    	<div class="myPanel">
+			    	<p>J-node</p>
+			    	<pre>
+		    		<span>jdata {</span>
+					<span>    char* curTime as broadcaster;</span>
+					<span>}</span>
+					<span></span>
+					<span>setInterval(function(){</span>
+					<span>	var d = new Date();</span>
+					<span>	var now = String(Number(d.getYear()+1900)+"-"+Number(</span>
+					<span>d.getMonth()+1)+"-"+d.getDate()+" "+</span>
+					<span>d.getHours()+":"+d.getMinutes()+":"+d.getSeconds());</span>
+					<span>d.getMonth()+1)+"-"+d.getDate()+"></span>
+					<span>	curTime.broadcast(now);</span>
+					<span>}, 1000);</span>
+			    	</pre>
+
+			    	<p>C-node</p>
+			    	<pre>
+		    		<span>#include &lt;stdio.h&gt;</span>
+					<span>#include &lt;unistd.h&gt;</span>
+					<span></span>
+					<span>int main(int argc, char *argv[]) {</span>
+					<span>	while (1) {</span>
+					<span>		sleep(1);</span>
+					<span>		printf("Current time\n%s\n", curTime);</span>
+					<span>	}</span>
+					<span>}</span>
+			    	</pre>
+			    </div>
+
+			    <button class="myAccordion">Work with structural broadcasters</button>
+			    <div class="myPanel">
+			    	<p>J-node</p>
+			    	<pre>
+			    	<span>jdata {  </span>
+					<span>    struct myTime{</span>
+					<span>        int year;</span>
+					<span>        int month;</span>
+					<span>        int date;</span>
+					<span>        int hour;</span>
+					<span>        int minute;</span>
+					<span>        int second;</span>
+					<span>        char* display;</span>
+					<span>    }MTLTime as broadcaster;</span>
+					<span>}</span>
+
+					<span>setInterval(function(){</span>
+					<span>   var d       = new Date(),</span>
+					<span>       year    = Number(d.getYear()+1900),</span>
+					<span>       month   = Number(d.getMonth()+1),</span>
+					<span>       date    = d.getDate(),</span>
+					<span>       hour    = d.getHours(),</span>
+					<span>       minute  = d.getMinutes(),</span>
+					<span>       second  = d.getSeconds(),</span>
+					<span>       display = String(year+"-"+month+"-"+date+" "+</span>
+					<span>					hour+":"+minute+":"+second);</span>
+					<span></span>
+					<span>   MTLTime.broadcast({</span>
+					<span>       year: year,</span>
+					<span>       month: month,</span>
+					<span>       date: date,</span>
+					<span>       hour: hour,</span>
+					<span>       minute: minute,</span>
+					<span>       second: second,</span>
+					<span>       display: display</span>
+					<span>   });</span>
+					<span>, 1000);</span>
+			    	</pre>
+
+			    	<p>C-node</p>
+			    	<pre>
+			    	<span>#include &lt;stdio.h&gt;</span>
+					<span>#include &lt;unistd.h&gt;</span>
+					<span></span>
+					<span>int main(int argc, char *argv[]) {</span>
+					<span>	struct myTime localstruct;</span>
+					<span></span>
+					<span>	while (1) {</span>
+					<span>		sleep(1);</span>
+					<span>		localstruct = MTLTime;	</span>
+					<span>		printf("Current Time: %s\n", localstruct.display);</span>
+					<span>	}</span>
+					<span>}</span>
+			    	</pre>
+			    </div>
 		    </div>
 		</div>
 
@@ -914,10 +1185,434 @@ subtitle: JData Documentation
 				<p>Here the outflow path is <code>app://t.outF</code>. <code>t</code> is the APP_NAME that we supplied to the J-node when running the outflow application. <code>outF</code> is the name of the outflow that feeds data to the inflow created.</p>
 			</div>
 			
+			<div id="in&out-samples">
+				<h3>Sample programs for your inspirations!</h3>
+	  			<button class="myAccordion">Using outflow and inflow to share data between two applications</button>
+	  			<div class="myPanel">
+	  				<p>Outflow J-node</p>
+	  				<pre>
+					<span>jdata{</span>
+					<span>	int sensorStatus as logger;</span>
+					<span>	f as flow with flowFunc of sensorStatus;</span>
+					<span>	outF as outflow of f; </span>
+					<span>}</span>
+					<span></span>
+					<span>outF.start();</span>
+					<span></span>
+					<span>function flowFunc(inputFlow){</span>
+					<span>	return inputFlow;</span>
+					<span>}</span>
+	  				</pre>
+
+	  				<p>Outflow C-node</p>
+	  				<pre>
+	  				<span>#include &lt;unistd.h&gt;</span>
+					<span>#include &lt;stdlib.h&gt;</span>
+					<span></span>
+					<span>int main() {</span>
+					<span>	int sensorStatus;</span>
+					<span>	for (int i = 1;; i++) {</span>
+					<span>		sensorStatus = rand()%2; </span>
+					<span>		sleep(1);</span>
+					<span>	}</span>
+					<span>}</span>
+	  				</pre>
+
+	  				<p>Inflow J-node</p>
+	  				<pre>
+  					<span>jdata{</span>
+					<span>	sensorStatus as inflow of app://t.outF;</span>
+					<span></span>
+					<span>	struct weather{</span>
+					<span>		int date;</span>
+					<span>		int highTemperature;</span>
+					<span>		int lowTemperature;</span>
+					<span>		float humidity;</span>
+					<span>		float wind;</span>
+					<span>		char* airQuality;</span>
+					<span>		char* UV;</span>
+					<span>	} MTLWeather as logger;</span>
+					<span></span>
+					<span>	stats as flow with statsFunc of MTLWeather; </span>
+					<span>}</span>
+					<span></span>
+					<span>function statsFunc(inputFlow){</span>
+					<span>	return inputFlow;</span>
+					<span>}</span>
+					<span></span>
+					<span>var sensor = -1;</span>
+					<span></span>
+					<span>sensorStatus.setTerminalFunction(function(entry){</span>
+					<span>	if(entry.data == 1 && sensor == -1){</span>
+					<span>		sensor = 1; </span>
+					<span>		console.log("*****SENSOR IS UP*****");</span>
+					<span>		(function poll(){</span>
+					<span>		    if( MTLWeather.size() < 1 ){</span>
+					<span>		        console.log("waiting for a C-node");</span>
+					<span>		        setTimeout(poll, 1000);</span>
+					<span>		    }</span>
+					<span>		    else</span>
+					<span>		        stats.startPush();</span>
+					<span>		})();</span>
+					<span>	}</span>
+					<span>	else if(entry.data == 0){</span>
+					<span>		sensor = -1;</span>
+					<span>		console.log("*****SENSOR IS DOWN*****");</span>
+					<span>		stats.stopPush();</span>
+					<span>	}</span>
+					<span>});</span>
+					<span></span>
+					<span>stats.setTerminalFunction(function(entry){</span>
+					<span>	console.log("Weather:",entry.data);</span>
+					<span>});</span>
+	  				</pre>
+
+	  				<p>Inflow C-node</p>
+	  				<pre>
+	  				<span>#include &lt;unistd.h&gt;</span>
+					<span>#include &lt;stdlib.h&gt;</span>
+					<span></span>
+					<span>int main() {</span>
+					<span>	int low, diff, date;</span>
+					<span>	float hum, wind;</span>
+					<span></span>
+					<span>	for (int i = 1;; i++) {</span>
+					<span>		date = i%31+1,</span>
+					<span>		low  = rand()%15+15;</span>
+					<span>		diff = rand()%10;</span>
+					<span>		hum  = (rand()%100)/100;</span>
+					<span>		wind = rand()%25+(rand()%10)/10;</span>
+					<span>		MTLWeather = {</span>
+					<span>			.date: date,</span>
+					<span>			.lowTemperature: low, </span>
+					<span>			.highTemperature: low+diff,</span>
+					<span>			.humidity: hum,</span>
+					<span>			.wind: wind,</span>
+					<span>			.airQuality: "good",</span>
+					<span>			.UV: "strong"</span>
+					<span>		};</span>
+					<span>		sleep(1);</span>
+					<span>	}</span>
+					<span>}</span>
+	  				</pre>
+	  			</div>
+
+	  		</div>
+
 			<div id="discretizedflow">   
 				<h4>DiscretizedFlow</h4>
 				<p>This Flow splits data streams into chunks/windows to allow for Flow methods that require finite data operations.</p>
 	  		</div>
+
+	  		<div id="discretized-samples">
+	  			<h3>Sample programs for your inspirations!</h3>
+	  			<button class="myAccordion">Manipulate a discretized flow with a wide range of flow operations</button>
+	  			<div class="myPanel">
+	  				<p>J-node</p>
+	  				<pre>
+	  				<span>jdata{</span>
+					<span>	struct weather{</span>
+					<span>		int date;</span>
+					<span>		int highTemperature;</span>
+					<span>		int lowTemperature;</span>
+					<span>		float humidity;</span>
+					<span>		float wind;</span>
+					<span>		char* airQuality;</span>
+					<span>		char* UV;</span>
+					<span>	} MTLWeather as logger;</span>
+					<span></span>
+					<span>	stats as flow with statsFunc of MTLWeather; </span>
+					<span>}</span>
+					<span></span>
+					<span></span>
+					<span>function statsFunc(inputFlow){</span>
+					<span>	return inputFlow.discretize(1, 31);</span>
+					<span>}</span>
+					<span></span>
+					<span>stats.setTerminalFunction(function(f){</span>
+					<span></span>
+					<span>	console.log("*****Monthly Statistics*****");</span>					
+					<span>	var month = f.selectFlatten();</span>
+					<span>	console.log("Monthly hot days:", hotDays(month).count());</span>
+					<span>	month.count();</span>
+					<span>	prettyPrint(month);</span>
+					<span></span>
+					<span>	console.log("*****Weekly Statistics*****");</span>
+					<span>	console.log("*****Week 1*****");</span>
+					<span>	var week1 = weeklyStats(f, 1);</span>
+					<span>	f.count();</span>
+					<span></span>
+					<span>	console.log("week1 hot days:", hotDays(week1).count());</span>
+					<span>	week1.count();</span>
+					<span>	prettyPrint(week1);</span>
+					<span>	</span>
+					<span></span>
+					<span>	console.log("*****Week 2*****");</span>
+					<span>	var week2 = weeklyStats(f, 2);</span>
+					<span>	f.count();</span>
+					<span></span>
+					<span>	console.log("week2 hot days:", hotDays(week2).count());</span>
+					<span>	week2.count();</span>
+					<span>	prettyPrint(week2);</span>
+					<span>	</span>
+					<span></span>
+					<span>	console.log("*****Week 3*****");</span>
+					<span>	var week3 = weeklyStats(f, 3);</span>
+					<span>	f.count();</span>
+					<span></span>
+					<span>	console.log("week3 hot days:", hotDays(week3).count());</span>
+					<span>	week3.count();</span>
+					<span>	prettyPrint(week3);</span>
+					<span>	</span>
+					<span></span>
+					<span>	console.log("*****Week 4*****</span>
+					<span>	var week4 = weeklyStats(f, 4);</span>
+					<span>	f.count();</span>
+					<span></span>
+					<spam>	console.log("week4 hot days:", hotDays(week4).count());</spam>
+					<span>	week4.count();</span>
+					<span>	prettyPrint(week4);</span>
+					<span>	</span>
+					<span></span>
+					<span>	console.log("*****periodStats: Date 20-25*****");</span>
+					<span>	</span>
+					<span>	var period = periodStats(f, 19, 25);</span>
+					<span>	f.count();</span>
+					<span></span>
+					<span>	console.log("Period hot days:", hotDays(period).count());</span>
+					<span>	period.count();</span>
+					<span>	prettyPrint(period);</span>
+					<span></span>
+					<span>	console.log("*****highTemperature: low to high*****");</span>
+					<span></span>
+					<span>	f.count();</span>
+					<span>	var byHighTemp = incOrderBy(f, "highTemperature");</span>
+					<span>	prettyPrint(byHighTemp);</span>
+					<span></span>
+					<span>	console.log("*****humidity: high to low*****");</span>
+					<span></span>
+					<span>	f.count();</span>
+					<span>	var byHumidity = decOrderBy(f, "humidity");</span>
+					<span>	prettyPrint(byHumidity);</span>
+					<span></span>
+					<span>	console.log("*****Collect lowTemperature: low to high*****");</span>
+					<span>	</span>
+					<span>	f.count();</span>
+					<span>	var byLowTemp = incOrderByProp(f, "lowTemperature");</span>
+					<span>	console.log(byLowTemp.collect());</span>
+					<span></span>	
+					<span>	console.log("*****Week 1 temperature in Fahrenheit*****");</span>
+					<span></span>
+					<span>	week1.count();</span>
+					<span>	var week1Fahrenheit = toFahrenheit(week1);</span>
+					<span>	prettyPrint(week1Fahrenheit);</span>
+					<span>});</span>
+					<span></span>
+					<span>(function poll(){</span>
+					<span>   if( MTLWeather.size() < 1 ){</span>
+					<span>        console.log("waiting for a C-node");</span>
+					<span>        setTimeout(poll, 2000);</span>
+					<span>    }</span>
+					<span>    else</span>
+					<span>        stats.startPush();</span>
+					<span>})();</span>
+					<span></span>
+					<span>// @ args: a dicretized flow that has been flattened</span>
+					<span>function prettyPrint(flattenedFlow){</span>
+					<span>	</span>
+					<span>	var size1 = String("|  highTemperature  ").length,</span>
+					<span>		size2 = String("|  lowTemperature  ").length,</span>
+					<span>		size3 = String("|  humidity  ").length,</span>
+					<span>		size4 = String("|  wind  ").length,</span>
+					<span>  	size5 = String("|  airQuality  ").length,</span>
+					<span>		size6 = String("|  UV  ").length,</span>
+					<span>		size7 = String("|  Date  |").length;</span>
+					<span></span>
+					<span>	console.log("|  Date  |  highTemperature  |  lowTemperature  |  humidity</span>
+					<span>|wind  |  airQuality  |  UV  |");</span>
+					<span></span>
+					<span>	flattenedFlow.foreach(function(weather){</span>
+					<span>		if(weather.data != undefined || weather.data != null)</span>
+					<span>			weather = weather.data;</span>
+					<span>		var sizeDiff;</span>
+					<span></span>
+					<span>		var s7 = "|  "+String(weather.date);</span>
+					<span>		sizeDiff = size7-s7.length+1;</span>
+					<span>		for(var i=0;i&lt;sizeDiff;i++){</span>
+					<span>			s7+=" ";</span>
+					<span>		}</span>
+					<span></span>
+							var s1 = "|  "+String(weather.highTemperature);
+					<span>		sizeDiff = size1-s1.length+1;</span>
+					<span>		for(var i=0;i&lt;sizeDiff;i++){</
+					<span>			s1+=" ";</span>
+					<span>		}</span>
+					<span>		</span>
+					<span></span>
+					<span>		var s2 = "|  "+String(weather.lowTemperature);</span>
+					<span>		sizeDiff = size2-s2.length+1;</span>
+					<span>		for(i=0;i&lt;sizeDiff;i++){</
+					<span>			s2+=" ";</span>
+					<span>		}</span>
+					<span></span>
+					<span>		var s3 = "|  "+String(weather.humidity);</span>
+					<span>		sizeDiff = size3-s3.length+1;</span>
+					<span>		for(i=0;i&lt;sizeDiff;i++){</
+					<span>			s3+=" ";</span>
+					<span>		}</span>
+					<span></span>
+					<span>		var s4 = "|  "+String(weather.wind);</span>
+					<span>		sizeDiff = size4-s4.length+1;</span>
+					<span>		for(i=0;i&lt;sizeDiff;i++){</
+					<span>			s4+=" ";</span>
+					<span>		}</span>
+					<span></span>
+					<span>		var s5 = "|  "+String(weather.airQuality);</span>
+					<span>		sizeDiff = size5-s5.length+1;</span>
+					<span>		for(i=0;i&lt;sizeDiff;i++){</span>
+					<span>			s5+=" ";</span>
+					<span>		}</span>
+					<span></span>
+					<span>		var s6 = "|  "+String(weather.UV);</span>
+					<span>		sizeDiff = size6-s6.length+1;</span>
+					<span>		for(i=0;i&lt;sizeDiff;i++){</span>
+					<span>			s6+=" ";</span>
+					<span>		}</span>
+					<span>		s6+="|";</span>
+					<span></span>
+					<span>		console.log(s7+s1+s2+s3+s4+s5+s6);</span>
+					<span>	});</span>
+					<span>};</span>
+					<span></span>
+					<span>/************FUNCTIONS FOR STATISTICS*************/</span>
+					<span></span>
+					<span>// @ args: a discretized flow that has been flattened</span>
+					<span>// @ returns: a finite flattened flow containing data in flattenedFlow whose </span>
+					<span>[hightTemperature] attribute >= 35</span>
+					<span>function hotDays(flattenedFlow){</span>
+					<span>	return flattenedFlow.where((entry) => entry.data.highTemperature>=35); </span>
+					<span>};</span>
+					<span></span>	
+					<span>// @ args: </span>
+					<span>// discretizedFlow: a discretized flow that has NOT been flattened</span>
+					<span>// n: an integer indicates the index of the intended week</span>
+					<span>// @ returns: a finite flattened flow containing data from the n-th week in</span>
+					<span>// discretizedFlow</span>
+					<span>var weeklyStats = function(discretizedFlow, n){</span>
+					<span></span>
+					<span>	var startingDate = (n-1)*7;</span>
+					<span>	var endingDate = startingDate+7;</span>
+					<span></span>
+					<span>	return discretizedFlow.selectFlatten().range(startingDate, endingDate);</span>
+					<span>};</span>
+					<span></span>
+					<span>// @ args: </span>
+					<span>// discretizedFlow: a discretized flow that has NOT been flattened</span>
+					<span>// startingDate: the starting date of the intended period (inclusive)</span>
+					<span>// endingDate: the ending date of the intended period (exclusive)</span>
+					<span>// @ returns: a finite flattened flow containing data from the period</span>
+					<span>[startingDate, endingDate) in discretizedFlow</span>
+					<span>var periodStats = function(discretizedFlow, startingDate, endingDate){</span>
+					<span>	return discretizedFlow.selectFlatten().range(startingDate, endingDate);</span>
+					<span>};</span>
+					<span></span>
+					<span>// @ args:</span>
+					<span>// flattendFlow: a discretized flow that has been flattened</span>
+					<span>// property: a string indicating the property to order by</span>
+					<span>// @ returns: a finite flattened flow containing all data from flattenedFlow </span>
+					<span>// incrementally ordered by property</span>
+					<span>var incOrderBy = function(discretizedFlow, property){</span>
+					<span></span>
+					<span>	return discretizedFlow.selectFlatten().select(entry => entry.data).orderBy(</span>
+					<span>	function(a, b){</span>
+					<span>		if(a[property] &lt; b[property])</span>
+					<span>			return -1;</span>
+					<span>		if(a[property] &gt; b[property])</span>
+					<span>			return 1;</span>
+					<span>		return 0;</span>
+					<span>	});</span>
+					<span>};</span>
+					<span></span>
+					<span>// @ args:</span>
+					<span>// flattendFlow: a discretized flow that has been flattened</span>
+					<span>// property: a string indicating the property to order by</span>
+					<span>// @ returns: a finite flattened flow containing all data from flattenedFlow </span>
+					<span>// decrementally ordered by property</span>
+					<span>var decOrderBy = function(discretizedFlow, property){</span>
+					<span>	return discretizedFlow.selectFlatten().select(entry => entry.data).orderBy(</span>
+					<span>function(a, b){</span>
+					<span>		if(a[property] &lt; b[property])</span>
+					<span>			return 1;</span>
+					<span>		if(a[property] &gt; b[property])</span>
+					<span>			return -1;</span>
+					<span>		return 0;</span>
+					<span>	});</span>
+					<span>};</span>
+					<span></span>
+					<span>// @ args:</span>
+					<span>// flattendFlow: a discretized flow that has been flattened</span>
+					<span>// property: a string indicating the property to order by</span>
+					<span>// @ returns: a finite flattened flow containing all data[property] from </span>
+					<span>// flattenedFlow that is incrementally ordered</span>
+					<span>var incOrderByProp = function(discretizedFlow, property){</span>
+					<span>	var propertyFlow = discretizedFlow.selectFlatten().select(entry => .data).select(function(weather){ </span>
+					<span>		return weather[property];</span>
+					<span>	});</span>
+					<span></span>
+					<span>	return propertyFlow.orderBy();</span>
+					<span>};</span>
+					<span></span>
+					<span>// @ args:</span>
+					<span>// flattendFlow: a discretized flow that has been flattened</span>
+					<span>// property: a string indicating the property to order by</span>
+					<span>// @ returns: a finite flattened flow containing all data[property] from </span>
+					<span>// flattenedFlow that is decrementally ordered</span>
+					<span>var decOrderByProp = function(flattenedFlow, property){</span>
+					<span>	</span>
+					<span>	var propertyFlow = flattenedFlow.select(entry => entry.data).select(function(weather){</span>
+					<span>		return weather[property];</span>
+					<span>	});</span>
+					<span></span>
+					<span>	return propertyFlow.orderBy(function(a,b){</span>
+					<span>		if(a&lt;b) return 1;</span>
+					<span>		if(a&gt;b) return -1;</span>
+					<span>		return 0;</span>
+					<span>	});</span>
+					<span>};</span>
+	  				</pre>
+
+	  				<p>C-node</p>
+	  				<pre>
+	  				<span>#include &lt;unistd.h&gt;</span>
+					<span>#include &lt;stdlib.h&gt;</span>
+					<span></span>
+					<span>int main() {</span>
+					<span>	int low, diff, date;</span>
+					<span>	float hum, wind;</span>
+					<span></span>
+					<span>	for (int i = 1;; i++) {</span>
+					<span>		date = i%31+1,</span>
+					<span>		low  = rand()%15+15;</span>
+					<span>		diff = rand()%10;</span>
+					<span>		hum  = (rand()%100)/100;</span>
+					<span>		wind = rand()%25+(rand()%10)/10;</span>
+					<span>		MTLWeather = {</span>
+					<span>			.date: date,</span>
+					<span>			.lowTemperature: low, </span>
+					<span>			.highTemperature: low+diff,</span>
+					<span>			.humidity: hum,</span>
+					<span>			.wind: wind,</span>
+					<span>			.airQuality: "good",</span>
+					<span>			.UV: "strong"</span>
+					<span>		};</span>
+					<span>		usleep(30000);</span>
+					<span>	}</span>
+					<span>}</span>
+	  				</pre>
+	  			</div>
+	  		</div>
+
+	  		
   </div>
 
 	<script>
