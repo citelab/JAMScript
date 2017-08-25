@@ -14,8 +14,9 @@ subtitle: JData Documentation
 		  display: flex;
 		  flex-direction: column;
 		  justify-content: space-between;
-		  align-items: center;
+		  align-items: flex-start;
 		  padding: 20px;
+			display: none;
 		}
 
 		a{
@@ -41,13 +42,6 @@ subtitle: JData Documentation
 		button.myAccordion.active, button.myAccordion:hover {
 		    background-color: #ddd;
 		}
-
-/* 		.content{
-		  position: absolute;
-		  width: 820px;
-		  height: 100%;
-		  overflow-y: scroll;
-		} */
 
 		.content > div{
 		  background-color: #eee;
@@ -88,27 +82,6 @@ subtitle: JData Documentation
 		  color: #888
 		}
 	</style>
-
-	<script>
-		var acc = document.getElementsByClassName("myAccordion");
-		var i;
-
-		for (i = 0; i < acc.length; i++) {
-		    acc[i].onclick = function(){
-		        /* Toggle between adding and removing the "active" class,
-		        to highlight the button that controls the panel */
-		        this.classList.toggle("active");
-
-		        /* Toggle between hiding and showing the active panel */
-		        var panel = this.nextElementSibling;
-		        if (panel.style.display === "block") {
-		            panel.style.display = "none";
-		        } else {
-		            panel.style.display = "block";
-		        }
-		    }
-		}
-	</script>
 </head>
 
 <body>
@@ -946,4 +919,25 @@ subtitle: JData Documentation
 				<p>This Flow splits data streams into chunks/windows to allow for Flow methods that require finite data operations.</p>
 	  		</div>
   </div>
+
+	<script>
+		var acc = document.getElementsByClassName("myAccordion");
+		var i;
+
+		for (i = 0; i < acc.length; i++) {
+		    acc[i].onclick = function(){
+		        /* Toggle between adding and removing the "active" class,
+		        to highlight the button that controls the panel */
+		        this.classList.toggle("active");
+
+		        /* Toggle between hiding and showing the active panel */
+		        var panel = this.nextElementSibling;
+		        if (panel.style.display === "block") {
+		            panel.style.display = "none";
+		        } else {
+		            panel.style.display = "block";
+		        }
+		    }
+		}
+	</script>
 </body>
