@@ -3,16 +3,124 @@ layout: page
 title: JData
 subtitle: JData Documentation
 ---
+<head>
+	<style>
 
-  <div class="container">
-    <div class="navbar" style="position: absolute;left: 0;top: 0;width: 320px;">
-      <button class="accordion datasource" style="background-color: #eee;color: #444;cursor: pointer;padding: 18px;width: 100%;text-align: left;border:none;border-bottom: 2px #ddd solid;outline: none;transition: 0.4s;">JAMDatasource</button>
-      <div class="panel">
+	body, html{
+	  height: 100%;
+	  width: 100%;
+	}
+
+	.myContainer{
+	  position: relative;
+	  margin: 20px;
+	  height: 100%;
+	}
+
+	.myNavbar{
+	  position: absolute;
+	  left: 0;
+	  top: 0;
+	  width: 320px;
+	  max-height: 100%;
+	  overflow-y: scroll;
+	}
+
+	.myPanel{
+	  display: flex;
+	  flex-direction: column;
+	  justify-content: space-between;
+	  align-items: center;
+	  padding: 20px;
+	  display: none;
+	}
+
+	a{
+	  display: block;
+	  margin-bottom: 10px;
+	  text-decoration: none;
+	  color: #444;
+	}
+
+	button.myAccordion {
+	    background-color: #eee;
+	    color: #444;
+	    cursor: pointer;
+	    padding: 18px;
+	    width: 100%;
+	    text-align: left;
+	    border:none;
+	    border-bottom: 2px #ddd solid;
+	    outline: none;
+	    transition: 0.4s;
+	}
+
+	button.myAccordion.active, button.myAccordion:hover {
+	    background-color: #ddd;
+	}
+
+	.content{
+	  position: absolute;
+	  right: 0;
+	  top: 0;
+	  width: 820px;
+	  height: 100%;
+	  overflow-y: scroll;
+	}
+
+	.content > div{
+	  background-color: #eee;
+	  padding: 20px;
+	  margin-bottom: 20px;
+	  border-radius: 10px;
+	}
+
+	.content>div>div{
+	  border-bottom: 2px #ddd solid;
+	  margin-bottom: 40px;
+	}
+
+	pre {
+	  background-color: white;
+	  font-family: monospace;
+	  font-size: 14px;
+	  color: #444;
+	  padding: 0.5em;
+	  border-radius: .25em;
+	  box-shadow: .1em .1em .5em rgba(0,0,0,.45);
+	  line-height: 0;
+	  counter-reset: line;
+	}
+
+	pre > span {
+	  display: block;
+	  line-height: 1.5rem;
+	}    
+
+	span:before {
+	  counter-increment: line;
+	  content: counter(line);
+	  display: inline-block;
+	  border-right: 1px solid #ddd;
+	  padding: 0 .5em;
+	  margin-right: .5em;
+	  color: #888
+	}
+
+	</style>
+</head>
+
+<body>
+  <body>
+  <div class="myContainer">
+    <div class="myNavbar">
+      <button class="myAccordion datasource">JAMDatasource</button>
+      <div class="myPanel">
         <a class="intro" href="#datastource">Introduction</a>
         <a class="logger" href="#logger">JAMLogger</a>
         <a class="broadcaster" href="#broadcaster">JAMBroadcaster</a>
       </div>
-      <button class="accordion datastream" style="background-color: #eee;color: #444;cursor: pointer;padding: 18px;width: 100%;text-align: left;border:none;border-bottom: 2px #ddd solid;outline: none;transition: 0.4s;">JAMDatastream</button>
+      <button class="accordion datastream">JAMDatastream</button>
       <div class="panel">
 		<a href="#datastream-intro" class="intro">Introduction</a>
 		<a href="#size">JAMDatastream.size()</a>
@@ -27,7 +135,7 @@ subtitle: JData Documentation
 		<a href="#databetween">JAMDatastream.dataBetween()</a>
 		<a href="#valuesbetween">JAMDatastream.valuesBetween()</a>
       </div>
-      <button class="accordion flow" style="background-color: #eee;color: #444;cursor: pointer;padding: 18px;width: 100%;text-align: left;border:none;border-bottom: 2px #ddd solid;outline: none;transition: 0.4s;">Flow</button>
+      <button class="accordion flow">Flow</button>
       <div class="panel">
 		<a href="#flow">Introduction</a>
 		<a href="#5flow">5 Types of Flow</a>
@@ -592,7 +700,7 @@ subtitle: JData Documentation
 				<p>Return value</p>
 				<p>&nbsp;&nbsp;&nbsp;&nbsp;A flow that contains all data whose <code>aFunction(data)</code> is true.</p>
 			</div>
-
+			
 			<div id="orderby">
 				<h3>Flow.orderBy()</h3>
 				<p>The<b>orderBy()</b>method performs a sorting operation on the data based on a given function.</p>
@@ -837,4 +945,5 @@ subtitle: JData Documentation
 				<h4>DiscretizedFlow</h4>
 				<p>This Flow splits data streams into chunks/windows to allow for Flow methods that require finite data operations.</p>
 	  		</div>
-			</div>
+  </div>
+</body>
