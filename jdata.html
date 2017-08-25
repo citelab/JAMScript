@@ -1,0 +1,977 @@
+---
+layout: page
+title: JData
+subtitle: JData Documentation
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>JData</title>
+	<style>
+		* {
+		  box-sizing: border-box;
+		  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+		}
+
+		body, html{
+		  height: 100%;
+		  width: 100%;
+		}
+
+		.container{
+		  position: relative;
+		  margin: 20px;
+		  height: 100%;
+		}
+
+		.navbar{
+		  position: absolute;
+		  left: 0;
+		  top: 0;
+		  width: 320px;
+		}
+
+		.panel{
+		  display: flex;
+		  flex-direction: column;
+		  justify-content: space-between;
+		  align-items: center;
+		  padding: 20px;
+		  display: none;
+		}
+
+		a{
+		  display: block;
+		  margin-bottom: 10px;
+		  text-decoration: none;
+		  color: #444;
+		}
+
+		button.accordion {
+		    background-color: #eee;
+		    color: #444;
+		    cursor: pointer;
+		    padding: 18px;
+		    width: 100%;
+		    text-align: left;
+		    border:none;
+		    border-bottom: 2px #ddd solid;
+		    outline: none;
+		    transition: 0.4s;
+		}
+
+		button.accordion.active, button.accordion:hover {
+		    background-color: #ddd;
+		}
+
+		.content{
+		  position: absolute;
+		  right: 0;
+		  top: 0;
+		  width: 820px;
+		  height: 100%;
+		  overflow-y: scroll;
+		}
+
+		.content > div{
+		  background-color: #eee;
+		  padding: 20px;
+		  margin-bottom: 20px;
+		  border-radius: 10px;
+		}
+
+		.content>div>div{
+		  border-bottom: 2px #ddd solid;
+		  margin-bottom: 40px;
+		}
+
+		pre {
+		  background-color: white;
+		  font-family: monospace;
+		  font-size: 14px;
+		  color: #444;
+		  padding: 0.5em;
+		  border-radius: .25em;
+		  box-shadow: .1em .1em .5em rgba(0,0,0,.45);
+		  line-height: 0;
+		  counter-reset: line;
+		}
+
+		pre > span {
+		  display: block;
+		  line-height: 1.5rem;
+		}    
+
+		span:before {
+		  counter-increment: line;
+		  content: counter(line);
+		  display: inline-block;
+		  border-right: 1px solid #ddd;
+		  padding: 0 .5em;
+		  margin-right: .5em;
+		  color: #888
+		}
+
+	</style>
+
+	<script>
+		ar acc = document.getElementsByClassName("accordion");
+		var i;
+
+		for (i = 0; i < acc.length; i++) {
+		    acc[i].onclick = function(){
+		        /* Toggle between adding and removing the "active" class,
+		        to highlight the button that controls the panel */
+		        this.classList.toggle("active");
+
+		        /* Toggle between hiding and showing the active panel */
+		        var panel = this.nextElementSibling;
+		        if (panel.style.display === "block") {
+		            panel.style.display = "none";
+		        } else {
+		            panel.style.display = "block";
+		        }
+		    }
+		}
+	</script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="navbar">
+      <button class="accordion datasource">JAMDatasource</button>
+      <div class="panel">
+        <a class="intro" href="#datastource">Introduction</a>
+        <a class="logger" href="#logger">JAMLogger</a>
+        <a class="broadcaster" href="#broadcaster">JAMBroadcaster</a>
+      </div>
+      <button class="accordion datastream">JAMDatastream</button>
+      <div class="panel">
+		<a href="#datastream-intro" class="intro">Introduction</a>
+		<a href="#size">JAMDatastream.size()</a>
+		<a href="#lastdata">JAMDatastream.lastData()</a>
+		<a href="#lastvalue">JAMDatastream.lastValue()</a>
+		<a href="#data">JAMDatastream.data()</a>
+		<a href="#values">JAMDatastream.values()</a>
+		<a href="#ndata">JAMDatastream.n_data()</a>
+		<a href="#nvalues">JAMDatastream.n_values()</a>
+		<a href="#dataafter">JAMDatastream.dataAfter()</a>
+		<a href="#valuesafter">JAMDatastream.valuesAfter()</a>
+		<a href="#databetween">JAMDatastream.dataBetween()</a>
+		<a href="#valuesbetween">JAMDatastream.valuesBetween()</a>
+      </div>
+      <button class="accordion flow">Flow</button>
+      <div class="panel">
+		<a href="#flow">Introduction</a>
+		<a href="#5flow">5 Types of Flow</a>
+		<a href="#iteratorflow">Iterator Flow</a>
+		<a href="#outflow&inflow">OutFlow & InFlow</a>
+		<a href="#discretizedflow">Discretized Flow</a>
+      </div>
+    </div>
+    <div class="content">
+    
+	    <div id="datastource">
+	    	<div>
+		        <h2>JAMDatasource</h2>  
+				<p>JAMDatasource is the core of data transmission among different machines in a JAM system. Its value can be updated to trigger certain actions on its subscriber applications both locally and on other machines, through another data type called JAMDatastream.</p>
+		        <p>JAMDatasource has two subtypes: JAMLogger and JAMBroadcaster, with the former being a bottom-up data media, and the latter a top-down channel.</p>
+	    	</div>
+
+			<div id="logger">
+				<div>
+			        <h3>JAMLogger</h3>
+			        <p>A JAMLogger keeps track of the changes of a value. Instances of JAMLogger should be declared in J-node applications, which is then able to subscribe user-defined functions to the logger when its value gets updated. The value tracked can be changed by a C-node, if the J-node is at device level, or by a device-level J-node, if the J-node is at fog or cloud level.</p>
+				</div>
+
+		        <div>
+			        <p><b>How to declare a logger variable?</b></p>
+			        <p>A logger has to be declared in a jdata{...} section.</p>
+			        <pre>
+					<span>jdata{</span>
+					<span>  &lt;type&gt; &lt;name&gt; as logger;</span>
+					<span>}</span>
+			        </pre>
+					<p><code>&lt;type&gt;</code>: the type of the value that the logger keeps track of. Possible values: int, double, float, char*, and user-defined structures.</p>
+					<p><code>&lt;name&gt;</code>: the name of this logger.</p>
+
+			      	<p><b>Example:</b> declaring a logger to keep track of an integer value:</p>
+					<pre>
+					<span>jdata {</span>
+					<span>  int num as logger;</span>
+					<span>}</span>
+					</pre>
+					<p>A <b>structural logger</b> is declared using the syntax of C Prgoramming Language.</p>
+					<p><b>Example:</b> declaring another logger to keep track of an user-defined type - struct weather:</p>
+					<pre>
+					<span>jdata {</span>
+					<span>  struct weather{</span>
+					<span>    float temperature;</span>
+					<span>		float humidity;</span>
+					<span>		float wind;</span>
+					<span>		char* air_quality;</span>
+					<span>		char* UV;</span>
+					<span>	} MTLWeather as logger;</span>
+					<span>}</span>
+					</pre>
+				</div>
+
+				<div>
+			      	<b>How to bind actions to a logger on value changes?</b>
+			      	<p>The <b>subscribe()</b> method pushes a callback function to the logger that it is called upon, such that all the applications that listens to this logger will call that function when the logger records a new value change.</p>
+					<pre>
+					<span>jdata {</span>
+					<span>	int aNumber as logger;</span>
+					<span>}</span>
+					<span></span>
+					<span>aNumber.subscribe(function(key, entry, datastream){</span>
+					<span>	console.log("New data:",entry);</span>
+					<span>});</span>
+					</pre>
+			      	<b>Syntax</b>  
+					<pre>
+					<span>JAMLogger.subscribe(function callback(key, entry, datastream){</span>
+					<span>	// ...</span>
+					<span>})</span>
+					</pre>
+					<b>Return value</b>  
+					<p>None</p> 
+
+					<b>Parameters</b>  
+					<p>callback</p>
+					<p>&nbsp;&nbsp;&nbsp;&nbsp;the function that is called by all listener applications of the logger that <b>subscribe()</b> is called upon.</p>  
+					<p>&nbsp;&nbsp;&nbsp;&nbsp;key</p>  
+						<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the identifier of the logger that <b>subscribe()</b> is called upon.</p>
+					<p>&nbsp;&nbsp;&nbsp;&nbsp;entry</p>  
+						<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the new data whose arrival triggers this callback function.</p>
+					<p>&nbsp;&nbsp;&nbsp;&nbsp;datastream</p>  
+						<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the identifier of the listener application of the logger.</p> 
+				</div> 
+			</div>
+
+			<div id="broadcaster">
+				<div>
+					<h3>JAMBroadcaster</h3>
+					<p>A JAMBroadcaster is responsible for broadcasting data in a top-down fashion, i,e. from cloud to fog or device, or from fog to device. Unlike JAMLogger, a broadcaster actively sends data instead of waiting for other applications to update its value.</p>
+				</div>
+		  
+		  		<div>
+					<p><b>How to declare a broadcaster variable?</b></p>
+					<p>A broadcaster has to be declared in a jdata{...} section.</p>
+					<pre>
+					<span>jdata{</span>
+					<span>	&lt;type&gt; &lt;name&gt; as broadcaster;</span>
+					<span>}</span>
+					</pre>
+					<p><code>&lt;type&gt;</code>: the type of the value that the logger keeps track of. Possible values: int, double, float, char*, and user-defined structures.</p>
+					<p><code>&lt;name&gt;</code>: the name of this broadcaster.</p>
+
+				    <p><b>Example:</b> declaring a broadcaster to broadcast integer values:</p>
+				    <pre>
+					<span>jdata {</span>
+					<span>	int num as broadcaster;</span>
+					<span>}</span>
+				    </pre>
+
+			    	<p>A <b>structural broadcaster</b> is declared using the syntax of C Prgoramming Language.</p>
+			    	<p><b>Example:</b> declaring another broadcaster to broadcast time - struct myTime:</p>
+				    <pre>
+					<span>jdata {</span>
+					<span>  struct myTime{</span>
+					<span>    int year;</span>
+					<span>    int month;</span>
+					<span>    int date;</span>
+					<span>    int hour;</span>
+					<span>    int minute;</span>
+					<span>    int second;</span>
+					<span>    char* display;</span>
+					<span>  }MTLTime as broadcaster;</span>
+					<span>}</span>
+				    </pre>
+				</div>
+		    </div>
+		</div>
+
+	    <div id="datastream">
+	    	<div>
+		    	<h2>JAMDatastream</h2>
+				<p>To run a J-node, we have to supply an app name with <code>--app=APP_NAME</code>. This app name is later used to referred to this application in other programs, such that they can access datasources declared in it. Whenever a program subscribes to a logger in another program, or receives data from a broadcaster on a higher level machine, a datastream is created and bridges data between these two ends.</p>
+
+				<p>Users of JAMScript do not initialize datastreams as they are internally created. We provide rich APIs for you to manipulate information about and data stored in datastreams.</p>  
+			<div>
+
+			<div id="size">
+				<h3>JAMDatastream.size()</h3>
+				<p>The <b>size()</b> method returns the number of records the logger has tracked.</p>
+				<pre>  
+				<span>jdata {</span>
+				<span>	int aNumber as logger;</span>
+				<span>}</span>
+				<span></span>
+				<span>aNumber.subscribe(function(key, entry, datastream){</span>
+				<span>	var size = datastream.size();</span>
+				<span>	console.log("aNumber has recorded "+size+" value changes");</span>
+				<span>	// stdout: aNumber has recorded 10 value changes</span>
+				<span>});</span>
+				</pre>
+
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;JAMDatastream.size();</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;The number of records the callee logger has tracked.</p>
+				<p><b>Parameter</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;None</p>
+			</div>
+
+			<div id="lastdata">
+				<h3>JAMDatastream.lastData()</h3>
+				<p>The <b>lastData()</b> method returns the latest value along with its timestamp.</p>
+				<pre>  
+				<span>jdata {</span>
+				<span>	int aNumber as logger;</span>
+				<span>}</span>
+				<span></span>
+				<span>aNumber.subscribe(function(key, entry, datastream){</span>
+				<span>	var data = datastream.lastData();</span>
+				<span>	console.log("Latest value is",lastData.value);</span>
+				<span>	console.log("Updated at",lastData.timestamp);</span>
+				<span></span>
+				<span>	// stdout:</span>
+				<span>	// Newest value is 32</span>
+				<span>	// Updated at 2017-02-23T23:08:51.141Z4</span>
+				<span>});</span>
+				</pre>
+
+				<p><b>Syntax</b>  </p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;JAMDatastream.lastData()</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Returns the last data pair (value, timestamp) in the data stream or null if the data stream is empty. Value is of type Number and timestamp is of type Date.</p>
+				<p><b>Parameters</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;None.</p>
+			</div>
+
+			<div id="lastvalue">
+				<h3>JAMDatastream.lastValue()</h3>
+				<p>The <b>lastValue()</b> method returns the latest value.</p>
+
+				<pre>  
+				<span>jdata {</span>
+				<span>	int aNumber as logger;</span>
+				<span>}</span>
+				<span></span>
+				<span>aNumber.subscribe(function(key, entry, datastream){</span>
+				<span>	var value = datastream.lastValue();</span>
+				<span>	console.log("Latest value is",value);</span>
+				<span></span>
+				<span>	// stdout:</span>
+				<span>	// Newest value is 32</span>
+				<span>});</span>
+				</pre>
+
+				<p><b>Syntax</b>  </p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;JAMDatastream.lastValue()</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Returns the last value in the data stream or null if the data stream is empty. Value is of type Number.</p>
+				<p><b>Parameters</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;None.</p>
+			</div>
+
+			<div id="data">
+				<h3>JAMDatastream.data()</h3>
+				<p>The <b>data()</b> method returns all the values in the data stream along with their timestamps.</p>
+
+				<pre>  
+				<span>jdata {</span>
+				<span>	int aNumber as logger;</span>
+				<span>}</span>
+				<span></span>
+				<span>aNumber.subscribe(function(key, entry, datastream){</span>
+				<span>	var allData = datastream.data();</span>
+				<span>	console.log("Display the entire record");</span>
+				<span>	console.log(allData);</span>
+				<span></span>
+				<span>	// stdout:</span>
+				<span>	// Display the entire record</span>
+				<span>	// [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]</span>
+				<span>});</span>
+				</pre>
+
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;JAMDatastream.data()</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Returns all the (value, timestamp) that the callee logger has recorded, or null if the data stream is empty. Value is of type Number and timestamp is of type Date.</p>
+				<p><b>Parameters</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;None.</p>
+			</div>
+
+			<div id="values">
+				<h3>JAMDatastream.values()</h3>
+				<p>The <b>values()</b> method returns all the values in the data stream along with their p>timestamps.</p>
+
+				<pre>  
+				<span>jdata {</span>
+				<span>	int aNumber as logger;</span>
+				<span>}</span>
+				<span></span>
+				<span>aNumber.subscribe(function(key, entry, datastream){</span>
+				<span>	var allValues = datastream.values();</span>
+				<span>	console.log("Display the entire record");</span>
+				<span>	console.log(allValues);</span>
+				<span></span>
+				<span>	// stdout:</span>
+				<span>	// Display the entire record</span>
+				<span>	// [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]</span>
+				<span>});</span>
+				</pre>
+
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;JAMDatastream.values()  </p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Returns all the (value, timestamp) that the callee logger has recorded, or null if the data stream is empty. Value is of type Number and timestamp is of type Date.</p>
+				<p>b>Parameters</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;None.</p>
+			</div>
+
+			<div id="ndata">
+				<h3>JAMDatastream.n_data(n)</h3>
+				<p>The <b>n_data()</b> method returns the last n values in the data stream along with their p>timestamps.</p>
+
+				<pre>  
+				<span>jdata {</span>
+				<span>	int aNumber as logger;</span>
+				<span>}</span>
+				<span></span>
+				<span>aNumber.subscribe(function(key, entry, datastream){</span>
+				<span>	if(datastrea.size()>=10)</span>
+				<span>		var data = datastream.n_data(10);</span>
+				<span>	console.log("Display the most recent 10 records");</span>
+				<span>	console.log(data);</span>
+				<span></span>
+				<span>	// stdout:</span>
+				<span>	// Display the most recent 10 records</span>
+				<span>	// [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]</span>
+				<span>});</span>
+				</pre>
+
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;JAMDatastream.n_data(n)</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Returns an array containing the last N data pairs (value, timestamp) in the data stream. The values are of type Number and the timestamps are of type Date.</p>
+				<p><b>Parameter</b></p> 
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;n: a positive integer. If n is invalid, then an exception is thrown. If there are fewer than N data pairs in the data stream, then the length of the returned array is smaller than N.</p>
+			</div>
+
+			<div id="nvalues">
+				<h3>JAMDatastream.n_values(n)</h3>
+				<p>The <b>n_values()</b> method returns the last n values in the data stream.</p>
+
+				<pre>  
+				<span>jdata {</span>
+				<span>	int aNumber as logger;</span>
+				<span>}</span>
+				<span></span>
+				<span>aNumber.subscribe(function(key, entry, datastream){</span>
+				<span>	if(datastrea.size()>=10)</span>
+				<span>		var values = datastream.n_values(10);</span>
+				<span>	console.log("Display the most recent 10 records");</span>
+				<span>	console.log(values);</span>
+				<span></span>
+				<span>	// stdout:</span>
+				<span>	// Display the most recent 10 records</span>
+				<span>	// [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]</span>
+				<span>});</span>
+				</pre>
+
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;JAMDatastream.n_values(n)</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Returns an array containing the last N values (of type Number) in the data stream. Parameter N is a positive integer. If N is invalid, then an exception is thrown. If there are fewer than N values in the data stream, then the length of the returned array is smaller than N.</p>
+				<p><b>Parameters</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;n: an integer value</p>
+			</div>
+
+			<div id="dataafter">
+				<h3>JAMDatastream.dataAfter()</h3>
+				<p>The <b>dataAfter()</b> method returns the values along with their timestamps recorded after a p>specific timestamp in the data stream.</p>
+
+				<pre>  
+				<span>jdata {</span>
+				<span>	int aNumber as logger;</span>
+				<span>}</span>
+				<span></span>
+				<span>aNumber.subscribe(function(key, entry, datastream){</span>
+				<span>	var today = new Date(2017, 6, 19, 0, 0, 0);</span>
+				<span>	var dataToday = device.dataAfter(today);</span>
+				<span></span>
+				<span>	console.log("Received "+dataToday.length+" data today");</span>
+				<span></span>
+				<span>	// stdout:</span>
+				<span>	// Received 3000 data today</span>
+				<span>});</span>
+				</pre>
+
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;JAMDatastream.dataAfter(n)</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Returns an array containing all data pairs (value, timestamp) in the data stream with a timestamp after timestamp (exclusive). Value is of type Number and timestamp is of type Date.</p>  
+				<p><b>Parameters</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;timestamp: a Date object</p>
+			</div>
+
+			<div id="valuesafter">
+				<h3>JAMDatastream.valuesAfter()</h3>
+				<p>The <b>valuesAfter()</b> method returns the values recorded after a specific timestamp in the p>data stream.</p>
+
+				<pre>  
+				<span>jdata {</span>
+				<span>	int aNumber as logger;</span>
+				<span>}</span>
+				<span></span>
+				<span>aNumber.subscribe(function(key, entry, datastream){</span>
+					var today = new Date(2017, 6, 19, 0, 0, 0);
+				<span>	var valuesToday = datastream.valuesAfter(today);</span>
+				<span></span>
+				<span>	console.log("Received "+valuesToday.length+" values today");</span>
+				<span></span>
+				<span>	// stdout:</span>
+				<span>	// Received 3000 values today</span>
+				<span>});</span>
+				</pre>
+
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;JAMDatastream.valuesAfter(timestamp)</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Returns an array containing all values of type Number in the datastream recorded after timestamp.</p>
+				<p><b>Parameters</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;timestamp: a Date object</p>
+			</div>
+
+			<div id="databetween">
+				<h3>AMDatastream.dataBetween()</h3>
+				<p>The <b>dataBetween()</b> method returns the values recorded during a specifc time period in p>the data stream along with their timestamps.</p>
+
+				<pre>  
+				<span>jdata {</span>
+				<span>	int aNumber as logger;</span>
+				<span>}</span>
+				<span></span>
+				<span>aNumber.subscribe(function(key, entry, datastream){</span>
+				<span>	// year, month-1, date, hour, minute, secod</span>
+				<span>	var yesterday = new Date(2017, 6, 19, 0, 0, 0);</span>
+				<span>	var today = new Date(2017, 6, 20, 0, 0, 0);</span>
+				<span></span>
+				<span>	var dataYesterday = datastream.dataBetween(yesterday, today);</span>
+				<span>	console.log("Received "+numData+" data yesterday");</span>
+				<span>	// stdout</span>
+				<span>	// Received 5000 data yesterday</span>
+				<span>});</span>
+				</pre>
+
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;JAMDatastream.dataBetween(fromTimestamp, toTimestamp)</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Returns an array containing all data pairs (value, timestamp) in the data stream with a timestamp between fromTimestamp and toTimestamp (both exclusive). For each data pair, the value is of type Number and the timestamp is of type Date.</p>  
+				<p><b>Parameters</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;fromTimestamp: a Date object</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;toTimestamp: a Date object</p>
+			</div>
+
+			<div id="valuesbetween">
+				<h3>JAMDatastream.valuesBetween()</h3>
+				<p>The <b>valuesBetween()</b> method returns the values recorded during a specifc time period in p>the data stream.</p>
+
+				<pre>  
+				<span>jdata {</span>
+				<span>	int aNumber as logger;</span>
+				<span>}</span>
+				<span></span>
+				<span>aNumber.subscribe(function(key, entry, datastream){</span>
+				<span>	// year, month-1, date, hour, minute, secod</span>
+				<span>	var yesterday = new Date(2017, 6, 19, 0, 0, 0);</span>
+				<span>	var today = new Date(2017, 6, 20, 0, 0, 0);</span>
+				<span></span>
+				<span>	var valuesYesterday = datastream.valuesBetween(yesterday, today);</span>
+				<span>	var numData = valuesYesterday.length;</span>
+				<span>	console.log("Received "+numData+" values yesterday");</span>
+				<span></span>
+				<span>	// stdout</span>
+				<span>	// Received 5000 values yesterday</span>
+				<span>});</span>
+				</pre>
+
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;JAMDatastream.valuesBetween(fromTimestamp, toTimestamp)  </p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Returns an array containing all values of type Number in the datastream with a timestamp between fromTimestamp and toTimestamp (both exclusive).</p>
+				<p><b>Parameters</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;fromTimestamp: a Date object</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;toTimestamp: a Date object</p>
+			</div>
+  		</div>
+
+  		<div id="flow">
+  			<div>	
+	  			<h2>Flow</h2>
+	  			<p>Flow is an abstract data type that enables efficient processing of large data sets. It enables data transmission cross applications.</p>
+  			</div>
+
+	  		<div id="5flow">
+		  		<h3>5 Types of Flow</h3>
+		  		<p>Flow has 5 subtypes: Flow, IteratorFlow, OutFlow, InFlow, DiscretizedFlow and ParallelFlow. They are grouped based on the type of operations that can be performed on them. All of them inherit Flow methods and Flow functions defined in Flow class, and have their own specialized functionalities.</p>  
+	  		</div>
+
+	  		<div id="flow">
+	  			<h3>Flow - the generic type of flow</h3>
+	  			<p>All other four types of flow inherit properties and functionalities from Flow class. It is crucial to the internal implementation of flow. However, users of JAMScript will never implicit create instances of this generic type.</p>
+	  			<p>What's important for users to know about the Flow class is its rich APIs that apply to all other types of flow.</p>
+	  			<p>So here we go. Let's start with <b>flow operations</b></p>
+	  		</div>
+
+	  		<div id="flow-operations">
+	  			<h3>Flow Operations</h3>
+	  			<p>Flow operations can either be methods/transformations (operations that yield other Flows) or actions (operations that yield a result).</p>
+
+				<h3>Flow methods</h3>
+				<p>Each flow method is a data transformation that yields another flow. A flow maintains a call tree to the flow operation before it. A flow method is lazily computed as the data is continuously pipelined to the next level of flow and is only computed when a flow action is called upon it.</p>    
+			</div>
+
+			<div class="limit">
+				<h3>Flow.limit()</h3>
+				<p>The <b>limit(Number)</b> method limits the number of results obtained after the previous operation.</p>
+				<pre>
+				<span>var firstFlow = Flow.from([1,2,3,4,5,6,7]);</span>
+				<span>var anotherFlow = firstFlow.limit(4);	// anotherFlow contains [1,2,3,4]</span>
+				</pre>
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Flow.limit(n)</p>
+				<p>Parameter</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;n: an integer indicating the number of data to pipe.</p>
+				<p>Return value</p>  
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A flow that contains the first n data from the root flow.</p> 
+			</div>
+
+			<div id="skip">
+				<h3>Flow.skip()</h3>
+				<p>The <b>skip()</b> method ignores the first given number of results found after a previousoperation.</p>
+				<pre>
+				<span>var firstFlow = Flow.from([1,2,3,4,5,6,7]);</span>
+				<span>var anotherFlow = firstFlow.skip(4);	// anotherFlow contains [5,6,7]</span>
+				</pre>
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Flow.skip(n)</p>
+				<p>Parameter</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;n: an integer indicating the number of data to skip.</p>
+				<p>Return value</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A flow that contains all data excluding the first n data from the root flow.</p>
+			</div>
+
+			<div id="select">
+				<h3>Flow.select()</h3>
+				<p>The <b>Flow.select()</b> method is similar to map in mad-reduce operations. It applies a provided function on every entry in the calling flow.</p>
+				<pre>
+				<span>var firstFlow = Flow.from([1,2,3,4,5,6,7]);</span>
+				<span>var anotherFlow = firstFlow.select(entry => entry*2);	// anotherFlow contains </span>
+				<span>[2,4,6,8,10,12,14]</span>
+				</pre>
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Flow.select(aFunction)  </p>
+				<p>Parameter</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;aFunction: a function that is going to be applied on every entry in the calling flow.</p>
+				<p>Return value</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A flow that contains all data returned by applying the provided function on every entry in the calling flow.</p>
+			</div>
+			
+			<div id="select">
+				<h3>Flow.select()</h3>
+				<p>The <b>selectFlatten()</b> method flattens a flow of arrays.</p>
+				<pre>
+				<span>var firstFlow = Flow.from([1,2,3],[4,5],[6,7,8,9]);</span>
+				<span>var anotherFlow = firstFlow.selectFlatten();	// anotherFlow contains [1,2,3,4,5,6,7,8,9]</span>
+				</pre>  
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Flow.selectFlatten()  </p>
+				<p>Parameter</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;None</p>
+				<p>Return value</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A flow that contains all data in the calling flow in the flattened form.</p>
+			</div>
+
+			<div id="selectexpand">
+				<h3> Flow.selectExpand()</h3>
+				<p>The <b>selectExpand()</b> method flattens a flow of arrays and applies the provided function to each entry of the flattened flow. The colection generated by function must be supported by Flow.from(...).</p>
+				<pre>
+				<span>var firstFlow = Flow.from([1,2,3],[4,5],[6,7,8,9]);</span>
+				<span>var anotherFlow = firstFlow.selectExpand(data => data*2);	// anotherFlow contains <span></span>[2,4,6,8,10,12,14,16,18]</span>
+				</pre>  
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Flow.selectExpand(aFunction)</p>
+				<p>Parameter</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;aFunction: a function that is going to be applied on each data in the flattened flow.</p>
+				<p>Return value</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A flow that contains all results returned by applying the provided function on every data in the calling flow in the flattened form.</p>
+			</div>
+
+			<div id="where">
+				<h3>Flow.where()</h3> 
+				<p>The <b>where()</b> method performs a filtering operation on the data to match a constraint.</p>  
+				<pre>
+				<span>var firstFlow = Flow.from([1,2,3,4,5,6,7]);</span>
+				<span>var anotherFlow = firstFlow.where(entry => entry%2 == 0);	// anotherFlow contains [1, 4, 6]</span>
+				</pre>  
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Flow.where(aFunction)</p>
+				<p>Parameter  </p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;aFunction: a function that is going to be applied on each data in the flattened flow. It returns a boolean.</p>  
+				<p>Return value</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A flow that contains all data whose <code>aFunction(data)</code> is true.</p>
+			</div>
+
+			<div id="orderby">
+				<h3>Flow.orderBy()</h3>
+				<p>The<b>orderBy()</b>method performs a sorting operation on the data based on a given function.</p>
+				<pre>
+				<span>var firstFlow = Flow.from([9,1,8,3,7,4,2,5,6]);</span>
+				<span></span>
+				<span>// anotherFlow contains [1,2,3,4,5,6,7,8,9]  </span>
+				<span></span>
+				<span>// anotherFlow contains [9,8,7,6,5,4,3,2,1]  </span>
+				<span>var yetAnotherFlow = firstFlow.orederBy((data1, data2) => {</span>
+				<span>	if(data1 < data2) return -1;</span>
+				<span>	if(data1 > data2) return 1;</span>
+				<span>	return 0;</span>
+				<span>});		</span>
+				</pre>  
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Flow.orderBy(compareFunction)  </p>
+				<p>Parameter</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;compareFunction (optional): a function that defines an alternative sort order. The function takes two arguments, say data1 and data2. If a positive value is returned, then data1 is sorted before data2; if a negative value is returned, then data2 is sorted before data1; if 0 is returned, then data1 and data2 preserves their original order.</p>  
+				<p>Return value</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A flow that contains all data in the calling flow in the intended sorted order.</p>
+			</div>
+ 
+			<div id="groupby">
+				<h3>Flow.groupBy()</h3>
+				<p>The <b>groupBy()</b> method returns a new Flow containing several datasets grouped by a specified key.</p> 
+				<pre>
+				<span>var firstFlow = Flow.from([</span>
+				<span>	{	</span>
+				<span>		type: "student",</span>
+				<span>		year: "U2"</span>
+				<span>		name: "Lilly"</span>
+				<span>	},</span>
+				<span>	{</span>
+				<span>		type: "student",</span>
+				<span>		year: "U0"</span>
+				<span>	},</span>
+				<span>	{</span>
+				<span>		type: "professor",</span>
+				<span>		name: "Tom"</span>
+				<span>	},</span>
+				<span>	{</span>
+				<span>		type: "professor",</span>
+				<span>	}</span>
+				<span>]);</span>
+				<span></span>
+				<span>/* anotherFlow contains </span>
+				<span>{</span>
+				<span>	"student": [</span>
+				<span>		{	</span>
+				<span>			type: "student",</span>
+				<span>			year: "U2"</span>
+				<span>			name: "Lilly"</span>
+				<span>		},</span>
+				<span>		{</span>
+				<span>			type: "student",</span>
+				<span>			year: "U0"</span>
+				<span>			name: "Jim"</span>
+				<span>		}</span>
+				<span>	],</span>
+				<span>	"professor":[</span>
+				<span>		{</span>
+				<span>			name: "Tom"</span>
+				<span>		},</span>
+				<span>		{</span>
+				<span>			type: "professor",</span>
+				<span>			name: "Anne"</span>
+				<span>	]</span>
+				<span>}</span>
+				<span>*/</span>
+				<span>var anotherFlow = firstFlow.groupBy("type");</span>
+				</pre>  
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Flow.groupBy(key)</p>
+				<p>Parameter</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;key: a string indicating the key used to group data in the calling flow.</p>
+				<p>Return value</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A flow containing data in the calling flow partitioned into groups of array determined by the values of the intended key.</p>
+			</div>
+			
+			<div id="merge">
+				<h3>iteratorFlow.merge()</h3>
+				<p>The <b>merge()</b> method is only available to an object of IteratorFlow and is used to merge a supported data structure. Merging creates an Iterator and adds it to the current Iterator or Iterators.</p>   
+			</div>
+
+			<div id="range">  
+				<h3>Flow.range()</h3>
+				<p>The <b>range()</b> method creates a bound for the data to be used for further processing.</p>
+				<pre>
+				<span>var firstFlow = Flow.from([1,2,3,4,5,6,7]);</span>
+				<span></span>
+				<span>// anotherFlow contains [1,2,3,4,5,6,7,8,9]  </span>
+				<span>var anotherFlow = firstFlow.range(2, 8);	// another flow contains: [3,4,5,6,7,8]</span>
+				</pre>
+				<p>Syntax</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Flow.range(startIndex, endIndex)</p>
+				<p>Parameter</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;startIndex: an integer indicating the index of the first element (inclusive).</p>  
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;endIndex: an integer indicating the index of the last element (exclusive).</p>
+				<p>Return value</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A flow that contains data with indices between startIndex (inclusive) and endIndex (exclusive) in the calling flow.</p>
+	  		</div>
+
+	  		<div id="iteratorflow"> 
+				<h3>IteratorFlow</h3>
+				<p>IteratorFlow is usually the first Flow created on raw data structures. Other flows can be created by applying flow methods on an iterator flow, which is the root flow in the flow chain and can be accessed via the property <code>rootFlow</code>.</p>
+
+				<p><b>How to declare a IteratorFlow variable?</b></p>
+				<p>An IteratorFlow can be built upon various data structures, including Array, Set, Map, Object, FileSystem, Generator, JAMDatasource and JAMDatastream.</p>
+				<p>Unlike JAMDatasource which can only be declared inside a jdata{...} section, an IteratorFlow can be created both in or outside of it.</p>
+
+				<p><b>Flow.from()</b> creates a IteratorFlow outside of jdata{...} section</p>
+
+				<pre>
+				<span>jdata{</span>
+				<span>	&lt;loggerType&gt; &lt;loggerName&gt; as logger;</span>
+				<span>}</span>
+				<span></span>
+				<span>// Creates a IteratorFlow on a JAMLogger</span>
+				<span>var aFlow = Flow.from(&lt;loggerName&gt;);</span>
+				<span></span>
+				<span>var a = [1,2,3,4,5];</span>
+				<span></span>
+				<span>var f = Flow.from(a);</span>
+				<span></span>
+				<span>// creates a flow contains only the even number in firstFlow</span>
+				<span>var anotherFlow = firstFlow.where(entry => entry.data%2==0);</span>
+				</pre>
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Flow.from(data);</p>
+				<p><b>Parameter</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A variable of type Array, Set, Map, Object, FileSystem, Generator, JAMDatasource or JAMDatastream</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;An IteratorFlow contains all data in the argument data structure.</p>  
+		  
+				<p><b>Create an IteratorFlow in jdata{...} section</b></p>
+				<p>An IteratorFlow built upon a JAMDatasource can be declared either in a jdata{...} section or outside as above.</p>
+
+				<pre>
+				<span>jdata{</span>
+				<span>	&lt;dataType&gt; &lt;aDatasource&gt; as &lt;datasourceType&gt;;</span>
+				<span>	&lt;flowName&gt; as flow with &lt;flowFunc&gt; of &lt;aDatasource&gt;;</span>
+				<span>}</span>
+				<span></span>
+				<span>function &lt;flowFunc&gt; (rawFlow){</span>>
+				<span>	// ...</span>
+				<span>}</span>
+				</pre>
+				<p>Declare a JAMDatasource first. Then declare the IteratorFlow built upon it.</p>
+				<p><code>&lt;flowName&gt;</code>: the name of this IteratorFlow variable.</p>  
+				<p><code>&lt;flowFunc&gt;</code>: the name of the function to process the raw IteratorFlow from the intended logger.</p>  
+				<p><code>&lt;aDatasource&gt;</code>: the name of the JAMDatasource variable on which this Iterator flow is initialized.</p>
+				  
+				<code>function &lt;flowFunc&gt; (rawFlow)</code>  
+				<p>Every IteratorFlow on a JAMDatasource has to be associated with a function to process the raw flow.</p>
+				<p><b>Parameter</b></p>
+				<p>rawFlow: the raw IteratorFlow contains all data that the datasource on which the IteratorFlow is built recorded.</p>  
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A flow.</p> 
+
+				<p><b>Example:</b> create an iterator flow on a logger that keeps track of weather.</p>
+				<pre>
+				<span>jdata{</span>
+				<span>	struct weather{</span>
+				<span>		int date;</span>
+				<span>		int highTemperature;</span>
+				<span>		int lowTemperature;</span>
+				<span>		float humidity;</span>
+				<span>		float wind;</span>
+				<span>		char* airQuality;</span>
+				<span>		char* UV;</span>
+				<span>	} MTLWeather as logger;</span>
+				<span></span>
+				<span>	stats as flow with statsFunc of MTLWeather; </span>
+				<span>}  </span>
+				<span></span>
+				<span>function statsFunc(rawFlow){</span>
+				<span>	return rawFlow.select(function(entry){</span>
+				<span>	});</span>
+				<span>}</span>
+				</pre>
+				<p>The above code first declares a logger called <code>MTLWeather</code> with type <code>struct weather</code>, then an IteratorFlow with name <code>stats</code> and a function <code>statsFunc</code> on logger <code>MTLWeather</code>. <code>statsFunc</code> takes <code>stats</code> flow as its argument, and returns a flow created by a flow method <code>select</code>.</p>
+			</div>
+
+			<div id="outflow&inflow">
+				<h3>OutFlow & InFlow</h3>
+				<p>An OutFlow is responsible for processing and sending data across applications, while an InFlow is receiving data from other applications. In most cases, we let these two types of flow work together to perform communication between two JAM applications.</p>
+
+				<p><b>How to declare an OutFlow variable?</b></p>
+				<pre>
+				<span>jdata{</span>
+				<span>	&lt;dataType&gt; &lt;aDatasource&gt; as &lt;datasourceType&gt;;</span>
+				<span>	&lt;flowName&gt; as flow with &lt;flowFunc&gt; of &lt;aDatasource&gt;;</span>
+				<span>}</span>
+				<span>  </span>
+				<span>function &lt;flowFunc&gt; (rawFlow){</span>
+				<span>	// ...</span>
+				<span>}</span>
+				<span></span>
+				<span>&lt;outflowName&lt;.start();</span>
+				</pre>
+
+				<p>Declare an Iterator flow first, then create an outflow on it.</p>
+				<p><code>outflowName</code>: the name of the outflow variable.</p>
+				<p><code>flowName</code>: the name of the Iterator flow on which the outflow is created.</p>
+				<p><code>&lt;outflowName&gt;.start()</code>: start piping data from flow to the outflow. Now the outflow contains all the data in the flow.</p>  
+				<p><b>Example:</b> create an outflow as the socket that sends out data from a logger.</p>
+				<pre>
+				<span>jdata{</span>
+				<span>	int sensorStatus as logger;</span>
+				<span>	f as flow with flowFunc of sensorStatus;</span>
+				<span>	outF as outflow of f; </span>
+				<span>}</span>
+				<span></span>
+				<span>outF.start();</span>
+				<span></span>
+				<span>function flowFunc(inputFlow){</span>
+				<span>	return inputFlow;</span>
+				<span>}</span>
+				</pre>
+		  
+				<p><b>How to declare an InFlow variable?</b></p>
+				<pre>
+				<span>jdata{</span>
+				<span>	&lt;inflowName&gt; as inflow of app://&lt;outflowAPP&gt;.&lt;outflowName&gt;;</span>
+				<span>}</span>
+				</pre> 
+				<p>Declare an inflow by specifying the path of the outflow it listens to.</p>
+				<p><code>inflowName</code>: the name of the inflow variable.</p>
+				<p><code>outflowAPP</code>: the name of the application where the outflow listened to resides.</p>  
+				<p><code>outflowName</code>: the name of the outflow that the inflow listens to.</p>  
+				<p><b>Example:</b> create an inflow as the listener socket for incoming data from an outflow in another application.</p>
+				<pre>
+				<span>jdata{</span>
+				<span>	sensorStatus as inflow of app://t.outF;</span>
+				<span>}</span>
+				</pre>  
+				<p>Here the outflow path is <code>app://t.outF</code>. <code>t</code> is the APP_NAME that we supplied to the J-node when running the outflow application. <code>outF</code> is the name of the outflow that feeds data to the inflow created.</p>
+			</div>
+			
+			<div id="discretizedflow">   
+				<h4>DiscretizedFlow</h4>
+				<p>This Flow splits data streams into chunks/windows to allow for Flow methods that require finite data operations.</p>
+	  		</div>
+  </div>
+</body>
