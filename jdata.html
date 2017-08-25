@@ -6,115 +6,106 @@ subtitle: JData Documentation
 
 <head>
 	<style>
-	* {
-	  box-sizing: border-box;
-	  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-	}
+		.myContainer{
+		/*   position: relative; */
+		  margin: 0;
+		  height: 100%;
+		  
+		  display:flex;
+		  justify-content:space-between;
+		  flex-direction: row;
+		  align-items: flex-start;
+		}
 
-	body, html{
-	  height: 100%;
-	  width: 100%;
-	}
+		.myNavbar{
+		/*   position: absolute; */
+		  width: 320px;
+		  max-height: 100%;
+		  overflow-y: scroll;
+		}
 
-	.myContainer{
-	  position: relative;
-	  margin: 20px;
-	  height: 100%;
-	}
+		.myPanel{
+		  display: flex;
+		  flex-direction: column;
+		  justify-content: space-between;
+		  align-items: center;
+		  padding: 20px;
+		  display: none;
+		}
 
-	.myNavbar{
-	  position: absolute;
-	  left: 0;
-	  top: 0;
-	  width: 320px;
-	  max-height: 100%;
-	  overflow-y: scroll;
-	}
+		a{
+		  display: block;
+		  margin-bottom: 10px;
+		  text-decoration: none;
+		  color: #444;
+		}
 
-	.myPanel{
-	  display: flex;
-	  flex-direction: column;
-	  justify-content: space-between;
-	  align-items: center;
-	  padding: 20px;
-	  display: none;
-	}
+		button.myAccordion {
+		    background-color: #eee;
+		    color: #444;
+		    cursor: pointer;
+		    padding: 18px;
+		    width: 100%;
+		    text-align: left;
+		    border:none;
+		    border-bottom: 2px #ddd solid;
+		    outline: none;
+		    transition: 0.4s;
+		}
 
-	a{
-	  display: block;
-	  margin-bottom: 10px;
-	  text-decoration: none;
-	  color: #444;
-	}
+		button.myAccordion.active, button.myAccordion:hover {
+		    background-color: #ddd;
+		}
 
-	button.myAccordion {
-	    background-color: #eee;
-	    color: #444;
-	    cursor: pointer;
-	    padding: 18px;
-	    width: 100%;
-	    text-align: left;
-	    border:none;
-	    border-bottom: 2px #ddd solid;
-	    outline: none;
-	    transition: 0.4s;
-	}
+		.content{
+		/*   position: absolute; */
+		  width: 820px;
+		  height: 100%;
+		  overflow-y: scroll;
+		}
 
-	button.myAccordion.active, button.myAccordion:hover {
-	    background-color: #ddd;
-	}
+		.content > div{
+		  background-color: #eee;
+		  padding: 20px;
+		  margin-bottom: 20px;
+		  border-radius: 10px;
+		}
 
-	.content{
-	  position: absolute;
-	  right: 0;
-	  top: 0;
-	  width: 820px;
-	  height: 100%;
-	  overflow-y: scroll;
-	}
+		.content>div>div{
+		  border-bottom: 2px #ddd solid;
+		  margin-bottom: 40px;
+		}
 
-	.content > div{
-	  background-color: #eee;
-	  padding: 20px;
-	  margin-bottom: 20px;
-	  border-radius: 10px;
-	}
+		pre {
+		  background-color: white;
+		  font-family: monospace;
+		  font-size: 14px;
+		  color: #444;
+		  padding: 0.5em;
+		  border-radius: .25em;
+		  box-shadow: .1em .1em .5em rgba(0,0,0,.45);
+		  line-height: 0;
+		  counter-reset: line;
+		}
 
-	.content>div>div{
-	  border-bottom: 2px #ddd solid;
-	  margin-bottom: 40px;
-	}
+		pre > span {
+		  display: block;
+		  line-height: 1.5rem;
+		}    
 
-	pre {
-	  background-color: white;
-	  font-family: monospace;
-	  font-size: 14px;
-	  color: #444;
-	  padding: 0.5em;
-	  border-radius: .25em;
-	  box-shadow: .1em .1em .5em rgba(0,0,0,.45);
-	  line-height: 0;
-	  counter-reset: line;
-	}
-
-	pre > span {
-	  display: block;
-	  line-height: 1.5rem;
-	}    
-
-	span:before {
-	  counter-increment: line;
-	  content: counter(line);
-	  display: inline-block;
-	  border-right: 1px solid #ddd;
-	  padding: 0 .5em;
-	  margin-right: .5em;
-	  color: #888
-	}
+		span:before {
+		  counter-increment: line;
+		  content: counter(line);
+		  display: inline-block;
+		  border-right: 1px solid #ddd;
+		  padding: 0 .5em;
+		  margin-right: .5em;
+		  color: #888
+		}
 	</style>
 
 	<script>
-		ar acc = document.getElementsByClassName("myAccordion");
+		var acc = document.getElementsByClassName("myAccordion");
 		var i;
 
 		for (i = 0; i < acc.length; i++) {
