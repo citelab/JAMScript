@@ -55,6 +55,13 @@ jamstate_t *jam_init(int port, int serialnum)
         exit(1);
     }
 
+    // Initialize the jconditional
+    jcond_init_duktape();
+    jcond_eval_string("var sys = {type: 'device'};");
+    jcond_eval_string("var sync = {};");
+    jcond_eval_string("var exec = {};");
+
+
     core_set_redis(js->cstate, "127.0.0.1", 6379);
 
     // Initialization of the activity and task tables
