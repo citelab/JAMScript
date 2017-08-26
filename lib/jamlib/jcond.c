@@ -39,7 +39,6 @@ double jcond_eval_double(char *stmt)
     return ret;
 }
 
-
 void jcond_free_duktape(duk_context *ctx)
 {
     duk_destroy_heap(ctx);

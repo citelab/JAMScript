@@ -239,15 +239,16 @@ int cloud_tree_height(jamstate_t *js)
             (cs->mqttenabled[0] == true));
 }
 
-int jamargs(int argc, char **argv, char *appid, int *num)
+int jamargs(int argc, char **argv, char *appid, char *tag, int *num)
 {
     char *cvalue = NULL;
+    char *tvalue = NULL;
     char *nvalue = NULL;
     int c;
 
     opterr = 0;
 
-    while ((c = getopt (argc, argv, "a:n:")) != -1)
+    while ((c = getopt (argc, argv, "a:n:t:")) != -1)
         switch (c)
         {
             case 'a':
@@ -256,14 +257,22 @@ int jamargs(int argc, char **argv, char *appid, int *num)
             case 'n':
                 nvalue = optarg;
             break;
+            case 't':
+                tvalue = optarg;
+            break;
         default:
             printf("ERROR! Argument input error..\n");
-            printf("Usage: program -a app_id \n");
+            printf("Usage: program -a app_id [-t tag] [-n num]\n");
             exit(1);
         }
 
     if (cvalue != NULL)
         strcpy(appid, cvalue);
+
+    if (tvalue != NULL)
+        strcpy(tag, tvalue);
+    else
+        tag = NULL;
 
     if (nvalue != NULL)
         *num = atoi(nvalue);

@@ -572,18 +572,6 @@ void jwork_send_results(jamstate_t *js, char *actname, char *actid, arg_t *args)
 }
 
 
-bool jwork_check_args(jamstate_t *js, command_t *cmd)
-{
-    activity_callback_reg_t *areg = activity_findcallback(js->atable, cmd->actname);
-    if (areg != NULL)
-    {
-        return jrun_check_signature(areg, cmd);
-    }
-    else
-        return false;
-}
-
-
 // We have an incoming message from the J at fog
 // We need to process it here..
 //

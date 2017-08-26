@@ -135,7 +135,7 @@ void jam_event_loop(void *js);
 jactivity_t *jam_create_activity(jamstate_t *js);
 bool have_fog_or_cloud(jamstate_t *js);
 int cloud_tree_height(jamstate_t *js);
-int jamargs(int argc, char **argv, char *appid, int *num);
+int jamargs(int argc, char **argv, char *appid, char *tag, int *num);
 
 /*
  * Functions defined in jamsync.c
@@ -180,9 +180,6 @@ void jwork_process_cloud(jamstate_t *js);
 void jwork_send_error(jamstate_t *js, command_t *cmd, char *estr);
 void jwork_send_results(jamstate_t *js, char *actname, char *actid, arg_t *args);
 void jwork_send_nak(jamstate_t *js, command_t *cmd, char *estr);
-bool jwork_check_condition(jamstate_t *js, command_t *cmd);
-bool jwork_check_args(jamstate_t *js, command_t *cmd);
-int jwork_getquorum(jamstate_t *js, command_t *cmd);
 
 command_t *jwork_runid_status(jamstate_t *js, char *runid);
 command_t *jwork_device_status(jamstate_t *js);
@@ -191,11 +188,6 @@ command_t *jwork_runid_kill(jamstate_t *js, char *runid);
 
 void jam_set_timer(jamstate_t *js, char *actarg, int tval);
 void jam_clear_timer(jamstate_t *js, char *actid);
-
-
-bool jcond_synchronized(command_t *cmd);
-
-
 
 // Prototypes for functions in
 // jamrunner.c
