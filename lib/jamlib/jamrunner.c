@@ -224,42 +224,6 @@ bool runtable_store_results(runtable_t *tbl, char *actid, arg_t *results)
 }
 
 
-void runtable_insert_synctask(jamstate_t *js, command_t *rcmd, int quorum)
-{
-
-
-}
-
-
-int runtable_synctask_count(runtable_t *rtbl)
-{
-
-    return 0;
-}
-
-
-
-
-bool jrun_check_signature(activity_callback_reg_t *creg, command_t *cmd)
-{
-    int i;
-    if (strlen(creg->signature) != cmd->nargs)
-        return false;
-    for (i = 0; i < strlen(creg->signature); i++)
-    {
-        if (creg->signature[i] == 'i' && cmd->args[i].type != INT_TYPE)
-            return false;
-        else
-        if (creg->signature[i] == 's' && cmd->args[i].type != STRING_TYPE)
-            return false;
-        else
-        if (creg->signature[i] == 'd' && cmd->args[i].type != DOUBLE_TYPE)
-            return false;
-    }
-    return true;
-}
-
-
 void jrun_arun_callback(jactivity_t *jact, command_t *cmd, activity_callback_reg_t *creg)
 {
     // Activity to run the callback is already created..

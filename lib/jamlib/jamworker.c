@@ -156,38 +156,6 @@ void *jwork_bgthread(void *arg)
 
 
 /*
- * Set all the callback handlers
- *
- */
-// void jwork_set_callbacks(jamstate_t *js, unsigned char mask)
-// {
-//     callcontext_t *ctx = (callcontext_t *)calloc(1, sizeof(callcontext_t));
-//     ctx->context = js;
-//
-//     if ((js->cstate->mqttenabled[0] == true) && (mask & 0x01))
-//     {
-//         ctx->queue = js->deviceinq;
-//         ctx->indx = 0;
-//         MQTTAsync_setCallbacks(js->cstate->mqttserv[0], ctx, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
-//     }
-//
-//     if ((js->cstate->mqttenabled[1] == true) && (mask & 0x02))
-//     {
-//         ctx->queue = js->foginq;
-//         ctx->indx = 1;
-//         MQTTAsync_setCallbacks(js->cstate->mqttserv[1], ctx, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
-//     }
-//
-//     if ((js->cstate->mqttenabled[2] == true) && (mask & 0x04))
-//     {
-//         ctx->queue = js->cloudinq;
-//         ctx->indx = 2;
-//         MQTTAsync_setCallbacks(js->cstate->mqttserv[2], ctx, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
-//     }
-// }
-
-
-/*
  * The most important callback handler. This is executed in another anonymous thread
  * by the MQTT (Paho) Client library. We are not explicitly spawning the thread.
  *
@@ -511,65 +479,21 @@ void jwork_process_device(jamstate_t *js)
             core_check_pending(js->cstate);
         }
         else
-        if (strcmp(rcmd->cmd, "REXEC-SYN") == 0)
+        if ((strcmp(rcmd->cmd, "REXEC-ASY") == 0) ||
+            (strcmp(rcmd->cmd, "REXEC-SYN") == 0))
         {
-            // TODO: Check the implementation of synchronization sub protocol..
-            if (jwork_check_args(js, rcmd))
-            {
-                if (jcond_evaluate_cond(js, rcmd))
-                {
-                    // We have a valid request that should be executed by the node
-                    if (jcond_synchronized(rcmd))
-                    {
-                        // A request that needs a quorum: a group for execution
-
-                        quorum = jcond_getquorum(rcmd);
-                        runtable_insert_synctask(js, rcmd, quorum);
-                    }
-                    else
-                    {
-                        printf("Adding unsynchronized task... \n");
-
-                        // This is a standalone SYN request.. blocking call
-                        // Because it is a blocking call.. we are going to go ahead and schedule it
-                        int count = runtable_synctask_count(js->rtable);
-                        if (count == 0)
-                            // Sync tasks go into the high priority queue
-                            p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
-                        else
-                            runtable_insert_synctask(js, rcmd, quorum);
-                    }
-                }
-                else
-                    jwork_send_nak(js, rcmd, "CONDITION FALSE");
-            }
+            if (jwork_evaluate_cond(rcmd->cond))
+                p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
             else
-                jwork_send_error(js, rcmd, "ARGUMENT ERROR");
-        }
-        else
-        if (strcmp(rcmd->cmd, "REXEC-ASY") == 0)
-        {
-            if (jwork_check_args(js, rcmd))
-            {
-                if (jcond_evaluate_cond(js, rcmd))
-                {
-                    p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
-                }
-                else
-                    jwork_send_nak(js->cstate->mqttserv[0], rcmd, "CONDITION FALSE");
-            }
-            else
-                jwork_send_error(js, rcmd, "ARGUMENT ERROR");
+                jwork_send_nak(js, rcmd, "CONDITION FALSE");
         }
         else
         if (strcmp(rcmd->cmd, "REXEC-ASY-CBK") == 0)
         {
             if (runtable_find(js->rtable, rcmd->actarg) != NULL)
             {
-                if (jcond_evaluate_cond(js, rcmd))
-                {
+                if (jwork_evaluate_cond(rcmd->cond))
                     p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
-                }
                 else
                     jwork_send_nak(js->cstate->mqttserv[0], rcmd, "CONDITION FALSE");
             }
@@ -744,6 +668,13 @@ void jwork_process_cloud(jamstate_t *js)
         }
         // Send the command (rcmd) to the activity given the above pointer is non NULL
     }
+}
+
+bool jwork_evaluate_cond(char *cnd)
+{
+    if (strlen(cnd) == 0)
+        return true;
+    return jcond_eval_bool(cnd);
 }
 
 
