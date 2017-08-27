@@ -508,7 +508,8 @@ void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...)
         {
             //string
             s = cbor_get_string(handle[i].value);
-            memcpy(buffer+(va_arg(args, size_t)), s, strlen(s)+1);
+            s = strdup(s);
+            buffer[va_arg(args, size_t)] = s;
         }
         else if ((type == 'd') || (type == 'i'))
         {
