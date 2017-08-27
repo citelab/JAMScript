@@ -34,6 +34,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "nvoid.h"
 #include "mqtt.h"
 #include "activity.h"
+#include "simplelist.h"
+
+extern list_elem_t *cache;
+extern int cachesize;
 
 
 void on_dev_connect(void* context, MQTTAsync_successData* response)
@@ -482,6 +486,19 @@ void jwork_process_device(jamstate_t *js)
         if ((strcmp(rcmd->cmd, "REXEC-ASY") == 0) ||
             (strcmp(rcmd->cmd, "REXEC-SYN") == 0))
         {
+            // Check for duplicate
+            if (find_list_item(cache, rcmd->actid))
+            {
+                command_free(rcmd);
+                return;
+            }
+            else
+            {
+                put_list_tail(cache, strdup(rcmd->actid), strlen(rcmd->actid));
+                if (list_length(cache) > cachesize)
+                    del_list_tail(cache);
+            }
+
             if (jwork_evaluate_cond(rcmd->cond))
                 p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
             else

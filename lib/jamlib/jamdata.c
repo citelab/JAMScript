@@ -501,7 +501,7 @@ void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...)
     int n;
     float f;
 
-    for(i=0;i<num;i++)
+    for(i = 0; i < num; i++)
     {
         type = fmt[i];
         if(type == 's')

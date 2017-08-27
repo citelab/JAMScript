@@ -36,6 +36,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <strings.h>
 #include <pthread.h>
 
+extern char dev_tag[32];
+list_elem_t *cache;
+int cachesize;
+
 // Initialize the JAM library.. nothing much done here.
 // We just initialize the Core ..
 //
@@ -56,6 +60,10 @@ jamstate_t *jam_init(int port, int serialnum)
         printf("ERROR!! Core Init Failed. Exiting.\n");
         exit(1);
     }
+
+    // Initialize the duplicate testing cache with 32 entries
+    cache = create_list();
+    cachesize = 32;
 
     // Initialize the jconditional
     jcond_init_duktape();
