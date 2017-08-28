@@ -7,7 +7,8 @@ subtitle: JData Documentation
 <head>
 	<style>
 		.myNavbar{
-		  margin-bottom: 20px;	
+		  margin-bottom: 20px;
+		  border-radius: 10px;	
 		}
 		
 		.myPanel{
@@ -19,7 +20,7 @@ subtitle: JData Documentation
 		  display: none;
 		}
 
-		a{
+		.myNavbar a{
 		  display: block;
 		  margin-bottom: 10px;
 		  text-decoration: none;
@@ -55,9 +56,6 @@ subtitle: JData Documentation
 		  margin-bottom: 40px;
 		}
 
-		.sample-description{
-
-		}
 		pre {
 		  background-color: white;
 		  font-family: monospace;
@@ -101,6 +99,7 @@ subtitle: JData Documentation
       <button class="myAccordion datastream">JAMDatastream</button>
       <div class="myPanel">
 		<a href="#datastream-intro" class="intro">Introduction</a>
+		<p>JAMDatastream APIs</p>
 		<a href="#size">JAMDatastream.size()</a>
 		<a href="#lastdata">JAMDatastream.lastData()</a>
 		<a href="#lastvalue">JAMDatastream.lastValue()</a>
@@ -119,9 +118,46 @@ subtitle: JData Documentation
 		<a href="#5flow">5 Types of Flow</a>
 		<a href="#iteratorflow">Iterator Flow</a>
 		<a href="#outflow&inflow">OutFlow & InFlow</a>
-		<a href="#in&out-samples">&nbsp;&nbsp;&nbsp;&nbsp;Sample programs</a>
+		<a href="#in&out-samples">&nbsp;&nbsp;&nbsp;&nbsp;- Sample programs</a>
 		<a href="#discretizedflow">Discretized Flow</a>
-		<a href="#discretized-samples">&nbsp;&nbsp;&nbsp;&nbsp;Sample programs</a>
+		<a href="#discretized-samples">&nbsp;&nbsp;&nbsp;&nbsp;- Sample programs</a>
+
+		<a href="#flow-methods">Flow Methods</a>
+
+		<a href="#limit">- Flow.limit()</a>
+		<a href="#skip">- Flow.skip()</a>
+		<a href="#skipuntil">- Flow.skipUntil()</a>
+		<a href="#skipwhile">- Flow.skipWhile()</a>
+		<a href="#select">- Flow.select()</a>
+		<a href="#selectexpand">- Flow.selectExpand()</a>
+		<a href="#selectflatten">- Flow.selectFlatten()</a>
+		<a href="#takeuntil">- Flow.takeUntil()</a>
+		<a href="#takewhile">- Flow.takeWhile()</a>
+		<a href="#where">- Flow.where()</a>
+		<a href="#orderby">- Flow.orderBy()</a>
+		<a href="#partitionby">- Flow.partitionBy()</a>
+		<a href="#merge">- Flow.merge()</a>
+		<a href="#range">- Flow.range()</a>
+		<a href="#discretize">- Flow.discretize()</a>
+
+		<a href="#flow-actions">Flow Actions</a>
+
+		<a href="#count">- Flow.count()</a>
+		<a href="#sum">- Flow.sum()</a>
+		<a href="#min">- Flow.min()</a>
+		<a href="#max">- Flow.max()</a>
+		<a href="#average">- Flow.average()</a>
+		<a href="#groupby">- Flow.groupBy()</a>
+		<a href="#collect">- Flow.collect()</a>
+		<a href="#join">- Flow.join()</a>
+		<a href="#foreach">- Flow.forEach()</a>
+		<a href="#findfirst">- Flow.findFirst()</a>
+		<a href="#findLast">- Flow.findLast()</a>
+		<a href="#anymatch">- Flow.anyMatch()</a>
+		<a href="#allmatch">- Flow.allMatch()</a>
+		<a href="#nonematch">- Flow.noneMatch()</a>
+		<a href="#reduce">- Flow.reduce()</a>
+
       </div>
     </div>
     <div class="content">
@@ -849,12 +885,16 @@ subtitle: JData Documentation
 	  		<div id="flow-operations">
 	  			<h3>Flow Operations</h3>
 	  			<p>Flow operations can either be methods/transformations (operations that yield other Flows) or actions (operations that yield a result).</p>
+	  		</div>
 
+	  		<div id="flow-operations">
 				<h3>Flow methods</h3>
 				<p>Each flow method is a data transformation that yields another flow. A flow maintains a call tree to the flow operation before it. A flow method is lazily computed as the data is continuously pipelined to the next level of flow and is only computed when a flow action is called upon it.</p>    
 			</div>
 
-			<div class="limit">
+			<!--FLOW METHODS-->
+
+			<div id="limit">
 				<h3>Flow.limit()</h3>
 				<p>The <b>limit(Number)</b> method limits the number of results obtained after the previous operation.</p>
 				<pre>
@@ -871,7 +911,7 @@ subtitle: JData Documentation
 
 			<div id="skip">
 				<h3>Flow.skip()</h3>
-				<p>The <b>skip()</b> method ignores the first given number of results found after a previousoperation.</p>
+				<p>The <b>skip()</b> method ignores the first given number of results found after a previous operation.</p>
 				<pre>
 				<span>var firstFlow = Flow.from([1,2,3,4,5,6,7]);</span>
 				<span>var anotherFlow = firstFlow.skip(4);	// anotherFlow contains [5,6,7]</span>
@@ -882,6 +922,74 @@ subtitle: JData Documentation
 				<p>&nbsp;&nbsp;&nbsp;&nbsp;n: an integer indicating the number of data to skip.</p>
 				<p>Return value</p>
 				<p>&nbsp;&nbsp;&nbsp;&nbsp;A flow that contains all data excluding the first n data from the root flow.</p>
+			</div>
+
+			<div id="skipuntil">
+				<h3>Flow.skipUntil()</h3>
+				<p>The <b>skipUntil()</b> method ignores the results found after a previous operation until the condition in the function argument returns true. The function will receive each piped input and should return a boolean.</p>
+				<pre>
+				<span>var firstFlow = Flow.from([1,2,3,4,5,6,7]);</span>
+				<span>var anotherFlow = firstFlow.skipUntil(function(entry){
+				<span>	entry.data % 3 == 0;</span>
+				<span>});	// anotherFlow contains [3,4,5,6,7]</span>
+				</pre>
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Flow.skipUntil(aFunction)</p>
+				<p>Parameter</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;aFunction: a function that takes as input each value in the flow and returns a boolean value.</p>
+				<p>Return value</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A flow that contains all data starting from the first data on which <code>aFunction</code> evaluates to be true.</p>
+			</div>
+
+			<div id="skipwhile">
+				<h3>Flow.skipWhile()</h3>
+				<p>The <b>skip()</b> method ignores the results found after a previous operation while the input function evaluates to be true.</p>
+				<pre>
+				<span>var firstFlow = Flow.from([1,2,3,4,5,6,7]);</span>
+				<span>var anotherFlow = firstFlow.skipWhile(function(entry){
+				<span>	entry.data&lt;4;</span>
+				<span>});	// anotherFlow contains [4,5,6,7]</span>
+				</pre>
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Flow.skipWhile(aFunction)</p>
+				<p>Parameter</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;aFunction: a function that takes as input each data in the flow and returns a boolean value.</p>
+				<p>Return value</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A flow that contains all data excluding the first data on which <code>aFunction</code> returns true.</p>
+			</div>
+
+			<div id="takeuntil">
+				<h3>Flow.takeUntil()</h3>
+				<p>The <b>takeUntil()</b> method keeps taking results found after a previous operation until the input function evaluates to be true.</p>
+				<pre>
+				<span>var firstFlow = Flow.from([1,2,3,4,5,6,7]);</span>
+				<span>var anotherFlow = firstFlow.takeUntil(function(entry){
+				<span>	entry.data&gt;4;</span>
+				<span>});	// anotherFlow contains [5,6,7]</span>
+				</pre>
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Flow.takeUntil(aFunction)</p>
+				<p>Parameter</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;aFunction: a function that takes as input each data in the flow and returns a boolean value.</p>
+				<p>Return value</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A flow that contains all data excluding those comes after the data on which <code>aFunction</code> returns true.</p>
+			</div>
+
+			<div id="takewhile">
+				<h3>Flow.takeWhile()</h3>
+				<p>The <b>takeWhile()</b> method keeps taking results found after a previous operation while the input function evaluates to be true.</p>
+				<pre>
+				<span>var firstFlow = Flow.from([1,2,3,4,5,6,7]);</span>
+				<span>var anotherFlow = firstFlow.takeWhile(function(entry){
+				<span>	entry.data&lt;4;</span>
+				<span>});	// anotherFlow contains [1,2,3]</span>
+				</pre>
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Flow.takeWhile(aFunction)</p>
+				<p>Parameter</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;aFunction: a function that takes as input each data in the flow and returns a boolean value.</p>
+				<p>Return value</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A flow that contains all data excluding those comes after the data on which <code>aFunction</code> returns false.</p>
 			</div>
 
 			<div id="select">
@@ -900,8 +1008,8 @@ subtitle: JData Documentation
 				<p>&nbsp;&nbsp;&nbsp;&nbsp;A flow that contains all data returned by applying the provided function on every entry in the calling flow.</p>
 			</div>
 			
-			<div id="select">
-				<h3>Flow.select()</h3>
+			<div id="selectflatten">
+				<h3>Flow.selectFlatten()</h3>
 				<p>The <b>selectFlatten()</b> method flattens a flow of arrays.</p>
 				<pre>
 				<span>var firstFlow = Flow.from([1,2,3],[4,5],[6,7,8,9]);</span>
@@ -968,6 +1076,244 @@ subtitle: JData Documentation
 				<p>&nbsp;&nbsp;&nbsp;&nbsp;A flow that contains all data in the calling flow in the intended sorted order.</p>
 			</div>
  
+ 			<div id="partitionby">
+				<h3>Flow.partitionBy()</h3>
+				<p>The <b>partitionBy()</b> method returns a new Flow containing several datasets grouped by a specified key. This is similar to groupBy() in Flow Actions</p> 
+				<pre>
+				<span>var firstFlow = Flow.from([</span>
+				<span>	{	</span>
+				<span>		type: "student",</span>
+				<span>		year: "U2"</span>
+				<span>		name: "Lilly"</span>
+				<span>	},</span>
+				<span>	{</span>
+				<span>		type: "student",</span>
+				<span>		year: "U0"</span>
+				<span>	},</span>
+				<span>	{</span>
+				<span>		type: "professor",</span>
+				<span>		name: "Tom"</span>
+				<span>	},</span>
+				<span>	{</span>
+				<span>		type: "professor",</span>
+				<span>	}</span>
+				<span>]);</span>
+				<span></span>
+				<span>/* anotherFlow contains </span>
+				<span>{</span>
+				<span>	"student": [</span>
+				<span>		{	</span>
+				<span>			type: "student",</span>
+				<span>			year: "U2"</span>
+				<span>			name: "Lilly"</span>
+				<span>		},</span>
+				<span>		{</span>
+				<span>			type: "student",</span>
+				<span>			year: "U0"</span>
+				<span>			name: "Jim"</span>
+				<span>		}</span>
+				<span>	],</span>
+				<span>	"professor":[</span>
+				<span>		{</span>
+				<span>			name: "Tom"</span>
+				<span>		},</span>
+				<span>		{</span>
+				<span>			type: "professor",</span>
+				<span>			name: "Anne"</span>
+				<span>	]</span>
+				<span>}</span>
+				<span>*/</span>
+				<span>var anotherFlow = firstFlow.partitionBy("type");</span>
+				</pre>  
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Flow.partitionBy(key)</p>
+				<p>Parameter</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;key: a string indicating the key used to group data in the calling flow.</p>
+				<p>Return value</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A flow containing data in the calling flow partitioned into groups of array determined by the values of the intended key.</p>
+			</div>
+
+			<div id="merge">
+				<h3>iteratorFlow.merge()</h3>
+				<p>The <b>merge()</b> method is only available to an object of IteratorFlow and is used to merge a supported data structure. Merging creates an Iterator and adds it to the current Iterator or Iterators.</p>   
+			</div>
+
+			<div id="range">  
+				<h3>Flow.range()</h3>
+				<p>The <b>range()</b> method creates a bound for the data to be used for further processing.</p>
+				<pre>
+				<span>var firstFlow = Flow.from([1,2,3,4,5,6,7]);</span>
+				<span></span>
+				<span>// anotherFlow contains [1,2,3,4,5,6,7,8,9]  </span>
+				<span>var anotherFlow = firstFlow.range(2, 8);	// another flow contains: [3,4,5,6,7,8]</span>
+				</pre>
+				<p>Syntax</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;Flow.range(startIndex, endIndex)</p>
+				<p>Parameter</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;startIndex: an integer indicating the index of the first element (inclusive).</p>  
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;endIndex: an integer indicating the index of the last element (exclusive).</p>
+				<p>Return value</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A flow that contains data with indices between startIndex (inclusive) and endIndex (exclusive) in the calling flow.</p>
+	  		</div>
+
+	  		<div id="discretize">
+	  			<h3>Flow.discretize()</h3>
+	  			<p>The <b>discretize()</b> method create a discretized flow on a flow.</p>
+
+				<pre>
+				<span>jdata{</span>
+				<span>	int x as logger;</span>
+				<span>	f as flow with flowFunc of x;</span>
+				<span>}</span>
+				<span></span>
+				<span>function flowFunc(inputFlow){</span>
+				<span>	return inputFlow.discretize(2, 4);</span>
+				<span>}</span>
+				</pre>
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;discretize(numDevice, numData)</p>
+				<p><b>Parameter</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;numDevice: the number of devices from whom to collect data.</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;numData: the number of data to collect.</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A discretized flow.</p>
+			</div>
+
+			<!--END OF FLOW METHODS-->
+
+			<!--FLOW ACTIONS-->
+
+			<div id="flow-actions">
+				<h3>Flow Actions</h3>
+				<p>Flow actions are operations that yield results that are not themselves Flows. When an action is called on a Flow, the Flow engine begins operating on the data and pipes each produces data to the next layer until the condition for the action is met. The currently supported actions are listed below:</p>
+			</div>
+
+			<div id="count">
+				<h3>Flow.count()</h3>
+				<p>The <b>count()</b> function calculates the number of data in a finite data flow</p>
+
+				<pre>
+				<span>//get the count of all the even numbers from the array</span>
+				<span>var count = Flow.from([1,2,3,4,5,6,7,8,9]).where(num => num % 2 == 0).count();</span>
+				<span>//returns 4</span>
+				</pre>
+
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;count()</p>
+				<p><b>Parameter</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;None.</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;The number of data in the flow.</p> 
+			</div>
+			
+			<div id="sum">
+				<h3>Flow.sum()</h3>
+				<p>The <b>sum()</b> method calculates the sum of numbers in a finite data flow</p>
+
+				<pre>
+				<span>jdata{</span>
+				<span>	int x as logger;</span>
+				<span>	f as flow with flowFunc of x;</span>
+				<span>}</span>
+				<span></span>
+				<span>function flowFunc(inputFlow){</span>
+				<span>	return inputFlow.discretize(2, 4);</span>
+				<span>}</span>
+				<span></span>
+				<span>f.setTerminalFunction(function(discretizedFlow){</span>
+				<span>	var sum = (discretizedFlow.selectFlatten().select(entry=>entry.data).sum());</span>
+				<span>});</span>
+				</pre>
+
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;sum()</p>
+				<p><b>Parameter</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;None.</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;The sum of numbers in the flow.</p>  
+			</div>
+
+			<div id="max">
+				<h3>Flow.max()</h3>
+				<p>The <b>max()</b> method calculates the maximum number in a finite data flow</p>
+
+				<pre>
+				<span>jdata{</span>
+				<span>	int x as logger;</span>
+				<span>	f as flow with flowFunc of x;</span>
+				<span>}</span>
+				<span></span>
+				<span>function flowFunc(inputFlow){</span>
+				<span>	return inputFlow.discretize(2, 4);</span>
+				<span>}</span>
+				<span></span>
+				<span>f.setTerminalFunction(function(discretizedFlow){</span>
+				<span>	var max = (discretizedFlow.selectFlatten().select(entry=>entry.data).max());</span>
+				<span>});</span>
+				</pre>
+
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;max()</p>
+				<p><b>Parameter</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;None.</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;The maximum number in the flow.</p>  
+		  	</div>
+
+		  	<div id="min">
+		  		<h3>Flow.min()</h3>	
+				<p>The <b>min()</b> method calculates the minimum number in a finite data flow</p>
+
+				<pre>
+				<span>jdata{</span>
+				<span>	int x as logger;</span>
+				<span>	f as flow with flowFunc of x;</span>
+				<span>}</span>
+				<span></span>
+				<span>function flowFunc(inputFlow){</span>
+				<span>	return inputFlow.discretize(2, 4);</span>
+				<span>}</span>
+				<span></span>
+				<span>f.setTerminalFunction(function(discretizedFlow){</span>
+				<span>	var min = (discretizedFlow.selectFlatten().select(entry=>entry.data).min());</span>
+				<span>});</span>
+				</pre>
+
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;min()</p>
+				<p><b>Parameter</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;None.</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;The minimum number in the flow.</p>  
+			</div>
+
+			<div id="average">
+				<h3>Flow.average()</h3>
+				<p>The <b>average()</b> function calculates the average of numbers in a finite data flow</p>
+
+				<pre>
+				<span>jdata{</span>
+				<span>	int x as logger;</span>
+				<span>	f as flow with flowFunc of x;</span>
+				<span>}</span>
+				<span></span>
+				<span>function flowFunc(inputFlow){</span>
+				<span>	return inputFlow.discretize(2, 4);</span>
+				<span>}</span>
+				<span></span>
+				<span>f.setTerminalFunction(function(discretizedFlow){</span>
+				<span>	var average = (discretizedFlow.selectFlatten().select(entry=>entry.data).average());</span>
+				<span>});</span>
+				</pre>
+
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;average()</p>
+				<p><b>Parameter</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;None.</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;The average value of numbers in the flow.</p> 
+			</div>
+
 			<div id="groupby">
 				<h3>Flow.groupBy()</h3>
 				<p>The <b>groupBy()</b> method returns a new Flow containing several datasets grouped by a specified key.</p> 
@@ -1024,29 +1370,186 @@ subtitle: JData Documentation
 				<p>Return value</p>
 				<p>&nbsp;&nbsp;&nbsp;&nbsp;A flow containing data in the calling flow partitioned into groups of array determined by the values of the intended key.</p>
 			</div>
-			
-			<div id="merge">
-				<h3>iteratorFlow.merge()</h3>
-				<p>The <b>merge()</b> method is only available to an object of IteratorFlow and is used to merge a supported data structure. Merging creates an Iterator and adds it to the current Iterator or Iterators.</p>   
+
+			<div id="findfirst">
+				<h3>Flow.findFirst()</h3>
+				<p>The <b>findFirst()</b> function finds the first data in a finite flow</p>
+
+				<pre>
+				<span>//get the first even number</span>
+				<span>var first = Flow.from([1,2,3,4,5,6,7,8,9]).where(num => num % 2 == 0).findFirst();</span>
+				<span>//returns 2</span>
+				</pre>
+
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;findFirst()</p>
+				<p><b>Parameter</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;None.</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;The first data in the flow.</p> 
 			</div>
 
-			<div id="range">  
-				<h3>Flow.range()</h3>
-				<p>The <b>range()</b> method creates a bound for the data to be used for further processing.</p>
+			<div id="findlast">
+				<h3>Flow.findLast()</h3>
+				<p>The <b>findLast()</b> finds the last data in a finite flow</p>
+
 				<pre>
-				<span>var firstFlow = Flow.from([1,2,3,4,5,6,7]);</span>
-				<span></span>
-				<span>// anotherFlow contains [1,2,3,4,5,6,7,8,9]  </span>
-				<span>var anotherFlow = firstFlow.range(2, 8);	// another flow contains: [3,4,5,6,7,8]</span>
+				<span>//get the first even number</span>
+				<span>var first = Flow.from([1,2,3,4,5,6,7,8,9]).where(num => num % 2 == 0).findLast();</span>
+				<span>//returns 9</span>
 				</pre>
-				<p>Syntax</p>
-				<p>&nbsp;&nbsp;&nbsp;&nbsp;Flow.range(startIndex, endIndex)</p>
-				<p>Parameter</p>
-				<p>&nbsp;&nbsp;&nbsp;&nbsp;startIndex: an integer indicating the index of the first element (inclusive).</p>  
-				<p>&nbsp;&nbsp;&nbsp;&nbsp;endIndex: an integer indicating the index of the last element (exclusive).</p>
-				<p>Return value</p>
-				<p>&nbsp;&nbsp;&nbsp;&nbsp;A flow that contains data with indices between startIndex (inclusive) and endIndex (exclusive) in the calling flow.</p>
-	  		</div>
+
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;findLast()</p>
+				<p><b>Parameter</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;None.</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;The last data in the flow.</p> 
+			</div>
+
+			<div id="collect">
+				<h3>Flow.collect()</h3>
+				<p>The <b>collect()</b> function finds the first data in the flow</p>
+
+				<pre>
+				<span>var firstFlow = Flow.from([</span>
+				<span>	{	</span>
+				<span>		type: "student",</span>
+				<span>		year: "U2"</span>
+				<span>		name: "Lilly"</span>
+				<span>	},</span>
+				<span>	{</span>
+				<span>		type: "student",</span>
+				<span>		year: "U0"</span>
+				<span>	},</span>
+				<span>	{</span>
+				<span>		type: "professor",</span>
+				<span>		name: "Tom"</span>
+				<span>	},</span>
+				<span>	{</span>
+				<span>		type: "professor",</span>
+				<span>	}</span>
+				<span>]);</span>
+				<span></span>
+				<span>var types = firstFlow.select("type").collect();</span>
+				<span>// types is ["student", "professor"]</span>
+				</pre>
+
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;collect([collectMethod])</p>
+				<p><b>Parameter</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;collectMethod (optional): a Flow internal function which can either be <code>Flow.toSet()</code>, <code>Flow.toArray()</code> or <code>Flow.toMap(keyFunc)</code>. It is also possible to ignore the parenthesis for the array and set as <code>Flow.toArray</code> and <code>Flow.toSet</code> respectively. Collecting with <code>Flow.toSet</code> returns a distinct dataset, collecting with <code>Flow.toArray</code> returns all the data left after the last Flow method as an array while collecting with <code>Flow.toMap(keyFunc)</code> returns a JS ES6 Map. The keyFunc in <code>Flow.toMap()</code> is same as the function supplied to groupBy(). The only difference between calling collect with <code>toMap(keyFunc)</code> and calling <code>groupBy(keyFunc)</code> is that <code>toMap</code> returns an ES6 Map object while <code>groupBy</code> returns a plain JS object.<br>Its default value is Flow.toArray.</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A data structure as specified by the argument that contains a collection of values in the flow.</p> 
+			</div>
+
+			<div id="join">
+				<h3>Flow.join()</h3>
+				<p>The <b>join()</b> function joins the outputs by a delimiter</p>
+
+				<pre>
+				<span>var joined = Flow.from([1,2,3,4,5]).map(num => num * 5).limit(3).join(" | ");</span>
+				<span>//returns 5 | 10 | 15</span>
+				</pre>
+
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;join(delimiter)</p>
+				<p><b>Parameter</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;delimiter (optional): the delimiter used to separate data in the output.</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A string containing data from the previous flow separated by the delimiter.</p> 
+			</div>
+
+			<div id="foreach">
+				<h3>Flow.forEach()</h3>
+				<p>The <b>forEach()</b> function applies a custom operation on every data from the previous flow.</p>
+
+				<pre>
+				<span>//print all even numbers to the console</span>
+				<span>Flow.from([1,2,3,4,5,6,7,8,9]).where(num => num % 2 == 0).foreach(console.log);</span>
+				</pre>
+
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;forEach(aFunction)</p>
+				<p><b>Parameter</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;aFunction: the operation to apply to each data in the previous flow.</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;None.</p> 
+			</div>
+
+			<div id="anymatch">
+				<h3>Flow.anyMatch()</h3>
+				<p>The <b>anyMatch()</b> function checks if any of the remaining data matches the definition in the user defined function.</p>
+
+				<pre>
+				<span>//check if there is any number in the array that if we multiply with 5 yields 35</span>
+				<span>var match = Flow.from([1,2,3,4,5,6,7,8,9]).anyMatch(num => num * 5 == 35);</span>
+				<span>//returns true</span>
+				</pre>
+
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;anyMatch(aFunction)</p>
+				<p><b>Parameter</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;aFunction: the function used to evaluate the data in the previous flow.</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A boolean value: true if there is a data in the flow on which the user-defined function returns true; false otherwise.</p> 
+			</div>
+
+			<div id="allmatch">
+				<h3>Flow.allMatch()</h3>
+				<p>The <b>allMatch()</b> function checks if all the remaining data match the definition in the user defined function.</p>
+
+				<pre>
+				<span>//check if all the numbers in the array yields 35 when multiplied by 5.</span>
+				<span>var match = Flow.from([1,2,3,4,5,6,7,8,9]).allMatch(num => num * 5 == 35);</span>
+				<span>//returns false</span>
+				</pre>
+
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;allMatch(aFunction)</p>
+				<p><b>Parameter</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;aFunction: the function used to evaluate the data in the previous flow.</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A boolean value: true if the user-defined function returns true on all the data in the flow; false otherwise.</p> 
+			</div>
+
+			<div id="nonematch">
+				<h3>Flow.noneMatch()</h3>
+				<p>The <b>noneMatch()</b> function checks if none of the remaining data match the definition in the user defined function.</p>
+
+				<pre>
+				<span>//check if no numbers in the array yields 35 when multiplied by 5 </span>
+				<span>var match = Flow.from([1,2,3,4,5,6,7,8,9]).noneMatch(num => num * 5 == 35);</span>
+				<span>//returns false</span>
+				</pre>
+
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;noneMatch(aFunction)</p>
+				<p><b>Parameter</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;aFunction: the function used to evaluate the data in the previous flow.</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A boolean value: true if the user-defined function returns false on all the data in the flow; false otherwise.</p> 
+			</div>
+
+			<div id="reduce">
+				<h3>Flow.reduce()</h3>
+				<p>The <b>reduce()</b> function allows a Flow to be reduced to a single value by applying a custom function on all the data in the previous flow to a user-supplied inital value.</p>
+
+				<pre>
+				<span>//let us implement getting the sum of numbers</span>
+				<span>var sum = Flow.from([1,2,3,4,5]).reduce(0, (cv, nv) => cv + nv);</span>
+				<span>//returns 15</span>
+				</pre>
+
+				<p><b>Syntax</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;reduce(init, aFunction)</p>
+				<p><b>Parameter</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;init: the initial value to apply the cutom function to.</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;aFunction: the function applied to every data in the previous value. The function parameter takes two arguments (in the order: currentValue and newValue) and is expected to return a value which is further fed in as the currentValue for the next iteration.</p>
+				<p><b>Return value</b></p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;A value generated by chaining the custom function on each data in the previous flow.</p> 
+			</div>
+			<!--END OF FLOW ACTIONS-->
 
 	  		<div id="iteratorflow"> 
 				<h3>IteratorFlow</h3>
@@ -1302,6 +1805,12 @@ subtitle: JData Documentation
 			<div id="discretizedflow">   
 				<h4>DiscretizedFlow</h4>
 				<p>This Flow splits data streams into chunks/windows to allow for Flow methods that require finite data operations.</p>
+				<p>It allows us to only retrieve a specific amount of data from a specific number of devices.
+				<p>For instance, we have a flow built on a logger, call it inputflow. Ten devices are pushing data to this logger, but we only want to see 4 data from the first 2 devices. We can then do <code>inputFlow.discretize(2, 4);</code>. We can visualize the discretized flow as following:</p>
+				<p>&nbsp;&nbsp;&nbsp;&nbsp;<code>[[devA_data, devB_data], [devA_data, devB_data], [devA_data, devB_data, ], [devA_data, devB_data]]</code></p>
+				<p>In order to apply flow operations on a discretized flow, we need to flatten it using <code>selectFlatten</code>, so that the above disretized flow will become:</p>
+				<p><code>[[devA_data, devB_data, devA_data, devB_data, devA_data, devB_data, devA_data, devB_data]</code></p>
+				  
 	  		</div>
 
 	  		<div id="discretized-samples">
