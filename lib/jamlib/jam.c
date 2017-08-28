@@ -73,10 +73,9 @@ jamstate_t *jam_init(int port, int serialnum)
 
     if (strlen(dev_tag) > 0)
     {
-        sprintf(tagstr, "sys.tag = '%s'", dev_tag);
+        sprintf(tagstr, "sys.tag = '%s';", dev_tag);
         jcond_eval_string(tagstr);
     }
-
 
     core_set_redis(js->cstate, "127.0.0.1", 6379);
 

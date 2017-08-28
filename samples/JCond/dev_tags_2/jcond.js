@@ -1,6 +1,6 @@
 jcond {
     sensor: sys.tag == "sensor";
-    check_a: a < 1;
+    qq: sys.tag == "qq";    
 }
 
 

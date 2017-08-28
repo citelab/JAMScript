@@ -1,5 +1,5 @@
 
-jasync {sensor && check_a} sensor_trigger()
+jasync {sensor && qq} sensor_trigger()
 {
    printf("Sensor triggered...\n");
 }

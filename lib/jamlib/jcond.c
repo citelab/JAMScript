@@ -15,7 +15,16 @@ void jcond_init_duktape()
 
 void jcond_eval_string(char *s)
 {
+    printf("Evaluating..: %s\n", s);
     duk_eval_string(ctx, s);
+}
+
+
+char *jcond_eval_string_string(char *s)
+{
+    printf("Evaluating..: %s\n", s);
+    duk_eval_string(ctx, s);
+    return duk_get_string(ctx, -3);
 }
 
 int jcond_eval_bool(char *stmt)
