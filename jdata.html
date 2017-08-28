@@ -82,12 +82,20 @@ subtitle: JData Documentation
 		  margin-right: .5em;
 		  color: #888
 		}
+
+		#top-btn{
+			position: fixed;
+			width: 60px;
+			height: 50px;
+			bottom: 50px;
+			right: 60px;
+		}
 	</style>
 </head>
 
 <body>
   <div class="myContainer">
-    <div class="myNavbar">
+    <div class="myNavbar" id="top">
       <button class="myAccordion datasource">JAMDatasource</button>
       <div class="myPanel">
         <a class="intro" href="#datastource">Introduction</a>
@@ -99,7 +107,7 @@ subtitle: JData Documentation
       <button class="myAccordion datastream">JAMDatastream</button>
       <div class="myPanel">
 		<a href="#datastream-intro" class="intro">Introduction</a>
-		<p>JAMDatastream APIs</p>
+		<a href="#datastream-apis">JAMDatastream APIs</a>
 		<a href="#size">&nbsp;&nbsp;&nbsp;&nbsp;- JAMDatastream.size()</a>
 		<a href="#lastdata">&nbsp;&nbsp;&nbsp;&nbsp;- JAMDatastream.lastData()</a>
 		<a href="#lastvalue">&nbsp;&nbsp;&nbsp;&nbsp;- JAMDatastream.lastValue()</a>
@@ -554,6 +562,8 @@ subtitle: JData Documentation
 
 				<p>Users of JAMScript do not initialize datastreams as they are internally created. We provide rich APIs for you to manipulate information about and data stored in datastreams.</p>  
 			<div>
+
+			<div id="datastream-apis"></div>
 
 			<div id="size">
 				<h3>JAMDatastream.size()</h3>
@@ -2122,8 +2132,9 @@ subtitle: JData Documentation
 	  		</div>
 
 	  		
-  </div>
+  	</div>
 
+  	<div id="top-btn">TOP</div>
 	<script>
 		var acc = document.getElementsByClassName("myAccordion");
 		var i;
