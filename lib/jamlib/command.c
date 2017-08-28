@@ -530,7 +530,7 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
     else
         cmd->args = NULL;
 
-    if (fmt != NULL && strlen(fmt) != cmd->nargs) {
+    if (fmt != NULL && (int)strlen(fmt) != cmd->nargs) {
         printf("ERROR! Message does not match the validation specification\n");
         return NULL;
     }
@@ -671,7 +671,7 @@ void command_print(command_t *cmd)
 
 
     printf("\nCommand buffer: ");
-    for (i = 0; i < strlen((char *)cmd->buffer); i++)
+    for (i = 0; i < (int)strlen((char *)cmd->buffer); i++)
         printf("%x", (int)cmd->buffer[i]);
     printf("\nCommand number of args: %d\n", cmd->nargs);
 

@@ -44,7 +44,7 @@ bool pqueue_delete(pushqueue_t *pq)
         return true;
     }
 
-    return false;    
+    return false;
 }
 
 
@@ -95,7 +95,7 @@ bool p2queue_delete(push2queue_t *pq)
         return true;
     }
 
-    return false;    
+    return false;
 }
 
 
@@ -129,7 +129,7 @@ nvoid_t *p2queue_deq(push2queue_t *queue)
         return NULL;
     if (queue->fds[0].revents & NN_POLLIN)
         return queue_deq(queue->hqueue);
-    else 
+    else
         return queue_deq(queue->lqueue);
 }
 
@@ -145,4 +145,6 @@ nvoid_t *p2queue_deq_high(push2queue_t *queue)
 
     if (queue->fds[0].revents & NN_POLLIN)
         return queue_deq(queue->hqueue);
+    else
+        return NULL;
 }

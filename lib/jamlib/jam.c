@@ -66,15 +66,15 @@ jamstate_t *jam_init(int port, int serialnum)
     cachesize = 32;
 
     // Initialize the jconditional
-    jcond_init_duktape();
-    jcond_eval_string("var sys = {type: 'device'};");
-    jcond_eval_string("var sync = {};");
-    jcond_eval_string("var exec = {};");
+    jcond_init();
+    jcond_eval_str("var sys = {type: 'device'};");
+    jcond_eval_str("var sync = {};");
+    jcond_eval_str("var exec = {};");
 
     if (strlen(dev_tag) > 0)
     {
         sprintf(tagstr, "sys.tag = '%s';", dev_tag);
-        jcond_eval_string(tagstr);
+        jcond_eval_str(tagstr);
     }
 
     core_set_redis(js->cstate, "127.0.0.1", 6379);
@@ -195,10 +195,11 @@ void jam_event_loop(void *arg)
                 else cmd_1 = NULL;
                 // printf("Waiting command TYPE: %s\n", cmd_1->cmd);
                 if (cmd_1 != NULL) {
-                    if (strcmp(cmd_1->cmd, "GOGOGO") == 0) {
+                    if (strcmp(cmd_1->cmd, "GOGOGO") == 0)
                         // Get the start time from the Go command.
                         sTime = atof(cmd_1->opt);
-                    }
+                    else
+                        sTime = 0.0;
                 }
                 // Remote requests go through here.. local requests don't go through here
 

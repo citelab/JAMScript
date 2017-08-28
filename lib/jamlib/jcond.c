@@ -1,54 +1,72 @@
 #include "jcond.h"
+#include <mujs.h>
+#include <stdio.h>
+#include <string.h>
 
+js_State *J = NULL;
 
-duk_context *ctx = NULL;
-
-
-void jcond_init_duktape()
+void print(js_State *J)
 {
-    if(ctx != NULL)
-        jcond_free_duktape(ctx);
-
-    ctx = duk_create_heap_default();
+    const char *name = js_tostring(J, 1);
+    printf("%s\n", name);
+    js_pushundefined(J);
 }
 
 
-void jcond_eval_string(char *s)
+void jcond_init()
 {
-    printf("Evaluating..: %s\n", s);
-    duk_eval_string(ctx, s);
+    J = js_newstate(NULL, NULL, JS_STRICT);
+
+    js_newcfunction(J, print, "console_log", 1);
+    js_setglobal(J, "console_log");
+}
+
+void jcond_eval_str(char *s)
+{
+    js_dostring(J, s);
 }
 
 
-char *jcond_eval_string_string(char *s)
+// This is useful for evaluating a string that
+// returns a return value. Like a function
+char *jcond_eval_str_str(char *s)
 {
-    printf("Evaluating..: %s\n", s);
-    duk_eval_string(ctx, s);
-    return duk_get_string(ctx, -3);
+    char buf[strlen(s) + 16];
+    sprintf(buf, "__jamrval = %s", s);
+    js_dostring(J, buf);
+    js_getglobal(J, "__jamrval");
+    return (char *)js_tostring(J, -1);
 }
 
-int jcond_eval_bool(char *stmt)
+int jcond_eval_bool(char *s)
 {
-    duk_eval_string(ctx, stmt);
-    int ret = duk_get_boolean(ctx, -1);
-    return ret;
+    char buf[strlen(s) + 16];
+    sprintf(buf, "__jamrval = %s", s);
+    js_dostring(J, buf);
+    js_getglobal(J, "__jamrval");
+    return js_toboolean(J, -1);
 }
 
-int jcond_eval_int(char *stmt)
+int jcond_eval_int(char *s)
 {
-    duk_eval_string(ctx, stmt);
-    int ret = duk_get_int(ctx, -1);
-    return ret;
+    char buf[strlen(s) + 16];
+    sprintf(buf, "__jamrval = %s", s);
+    js_dostring(J, buf);
+    js_getglobal(J, "__jamrval");
+    return js_toint32(J, -1);
 }
 
-double jcond_eval_double(char *stmt)
+double jcond_eval_double(char *s)
 {
-    duk_eval_string(ctx, stmt);
-    double ret = duk_get_number(ctx, -1);
-    return ret;
+    char buf[strlen(s) + 16];
+    sprintf(buf, "__jamrval = %s", s);
+    js_dostring(J, buf);
+    js_getglobal(J, "__jamrval");
+    return js_tonumber(J, -1);
 }
 
-void jcond_free_duktape(duk_context *ctx)
+
+void jcond_free()
 {
-    duk_destroy_heap(ctx);
+    js_freestate(J);
 }

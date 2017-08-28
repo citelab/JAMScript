@@ -1,9 +1,7 @@
 #ifndef __JCOND_H__
 #define __JCOND_H__
 
-#include "duktape/duktape.h"
-#include <stdlib.h>
-#include "stdio.h"
+#include <mujs.h>
 
 // Here are the bit vector assignments for the conditional bit vector
 
@@ -17,13 +15,14 @@
 
 
 // In any case, we will read it into memory lazily when first needed ...
+void print(js_State *J);
 
-void jcond_init_duktape();
-void jcond_eval_string(char *s);
-int jcond_eval_bool(char *stmt);
-int jcond_eval_int(char *stmt);
-double jcond_eval_double(char *stmt);
-void jcond_free_duktape(duk_context *ctx);
-
+void jcond_init();
+void jcond_eval_str(char *s);
+char *jcond_eval_str_str(char *s);
+int jcond_eval_bool(char *s);
+int jcond_eval_int(char *s);
+double jcond_eval_double(char *s);
+void jcond_free();
 
 #endif

@@ -415,7 +415,6 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
 //
 void jwork_process_device(jamstate_t *js)
 {
-    int quorum = 0;
 
     // Get the message from the device to process
     //
