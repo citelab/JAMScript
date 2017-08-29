@@ -676,7 +676,6 @@ void jwork_process_cloud(jamstate_t *js)
 
 bool jwork_evaluate_cond(char *cnd)
 {
-    printf("Evaluate cond %s\n", cnd);
     if (strlen(cnd) == 0)
         return true;
     return jcond_eval_bool(cnd);

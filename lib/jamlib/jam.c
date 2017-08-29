@@ -73,9 +73,13 @@ jamstate_t *jam_init(int port, int serialnum)
 
     if (strlen(dev_tag) > 0)
     {
+        printf("------------------------------ Setting Tag %s\n", dev_tag);
         sprintf(tagstr, "sys.tag = '%s';", dev_tag);
         jcond_eval_str(tagstr);
     }
+
+    jcond_eval_str("function jcondContext(a) { return eval(a); }");
+
 
     core_set_redis(js->cstate, "127.0.0.1", 6379);
 
@@ -287,8 +291,6 @@ int jamargs(int argc, char **argv, char *appid, char *tag, int *num)
 
     if (tvalue != NULL)
         strcpy(tag, tvalue);
-    else
-        tag = NULL;
 
     if (nvalue != NULL)
         *num = atoi(nvalue);
