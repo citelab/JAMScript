@@ -80,7 +80,7 @@ docker stop $(docker ps -a -q)
 docker rm $(docker ps -a -q)
 ```
 
-
+You could also simply use the provided script and modify the parameters in the first few lines.
 
 
 
