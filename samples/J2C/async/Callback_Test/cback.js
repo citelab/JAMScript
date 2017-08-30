@@ -9,6 +9,8 @@ jsync function getid() {
 
 
 setInterval(()=> {
+
+   console.log("Sending...");
    testcback("Message at JavaScript side", q);
 }, 1000);
 

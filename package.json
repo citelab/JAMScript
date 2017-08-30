@@ -8,8 +8,11 @@
     "url": "https://github.com/anrl/JAM.git"
   },
   "dependencies": {
+    "gaussian": "^1.1.0",
     "jdiscovery": "file:lib/jdiscovery",
-    "ohm-js": "^0.13.1"
+    "mathjs": "^3.16.1",
+    "ohm-js": "^0.13.1",
+    "ps-node": "^0.1.6"
   },
   "bin": "./index.js",
   "engines": {

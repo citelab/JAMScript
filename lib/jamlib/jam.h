@@ -38,7 +38,7 @@ extern "C" {
 #include "timer.h"
 #include "command.h"
 #include <pthread.h>
-#include "jcondition.h"
+#include "jcond.h"
 #include "task.h"
 #include "threadsem.h"
 #include "comboptr.h"
@@ -123,7 +123,7 @@ typedef struct _jamstate_t
     pthread_t jdthread;
 
     threadsem_t *bgsem;
-    threadsem_t *jdsem;    
+    threadsem_t *jdsem;
 
 } jamstate_t;
 
@@ -135,7 +135,7 @@ void jam_event_loop(void *js);
 jactivity_t *jam_create_activity(jamstate_t *js);
 bool have_fog_or_cloud(jamstate_t *js);
 int cloud_tree_height(jamstate_t *js);
-int jamargs(int argc, char **argv, char *appid, int *num);
+int jamargs(int argc, char **argv, char *appid, char *tag, int *num);
 
 /*
  * Functions defined in jamsync.c
@@ -163,7 +163,6 @@ void process_missing_replies(jactivity_t *jact, int nreplies, int ecount);
 void *jwork_bgthread(void *arg);
 void jwork_set_subscriptions(jamstate_t *js);
 
-void jwork_set_callbacks(jamstate_t *js, unsigned char mask);
 void jwork_msg_delivered(void *ctx, MQTTAsync_deliveryComplete dt);
 int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTAsync_message *msg);
 void jwork_connect_lost(void *context, char *cause);
@@ -181,9 +180,6 @@ void jwork_process_cloud(jamstate_t *js);
 void jwork_send_error(jamstate_t *js, command_t *cmd, char *estr);
 void jwork_send_results(jamstate_t *js, char *actname, char *actid, arg_t *args);
 void jwork_send_nak(jamstate_t *js, command_t *cmd, char *estr);
-bool jwork_check_condition(jamstate_t *js, command_t *cmd);
-bool jwork_check_args(jamstate_t *js, command_t *cmd);
-int jwork_getquorum(jamstate_t *js, command_t *cmd);
 
 command_t *jwork_runid_status(jamstate_t *js, char *runid);
 command_t *jwork_device_status(jamstate_t *js);
@@ -192,11 +188,6 @@ command_t *jwork_runid_kill(jamstate_t *js, char *runid);
 
 void jam_set_timer(jamstate_t *js, char *actarg, int tval);
 void jam_clear_timer(jamstate_t *js, char *actid);
-
-
-bool jcond_synchronized(command_t *cmd);
-
-
 
 // Prototypes for functions in
 // jamrunner.c
@@ -216,12 +207,7 @@ command_t *get_actid_results(jamstate_t *js, char *actid);
 bool jrun_check_signature(activity_callback_reg_t *creg, command_t *cmd);
 void jrun_arun_callback(jactivity_t *jact, command_t *cmd, activity_callback_reg_t *creg);
 
-// jcond.h
-
-bool jcond_evaluate_cond(jamstate_t *js, command_t *cmd);
-bool jcond_synchronized(command_t *cmd);
-int jcond_getquorum(command_t *cmd);
-
+bool jwork_evaluate_cond(char *cond);
 
 #endif  /* __JAMLIB_H__ */
 

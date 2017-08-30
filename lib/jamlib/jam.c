@@ -36,11 +36,17 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <strings.h>
 #include <pthread.h>
 
+extern char dev_tag[32];
+list_elem_t *cache;
+int cachesize;
+
 // Initialize the JAM library.. nothing much done here.
 // We just initialize the Core ..
 //
 jamstate_t *jam_init(int port, int serialnum)
 {
+    char tagstr[256];
+
     #ifdef DEBUG_LVL1
         printf("JAM Library initialization... \t\t[started]\n");
     #endif
@@ -54,6 +60,26 @@ jamstate_t *jam_init(int port, int serialnum)
         printf("ERROR!! Core Init Failed. Exiting.\n");
         exit(1);
     }
+
+    // Initialize the duplicate testing cache with 32 entries
+    cache = create_list();
+    cachesize = 32;
+
+    // Initialize the jconditional
+    jcond_init();
+    jcond_eval_str("var sys = {type: 'device'};");
+    jcond_eval_str("var sync = {};");
+    jcond_eval_str("var exec = {};");
+
+    if (strlen(dev_tag) > 0)
+    {
+        printf("------------------------------ Setting Tag %s\n", dev_tag);
+        sprintf(tagstr, "sys.tag = '%s';", dev_tag);
+        jcond_eval_str(tagstr);
+    }
+
+    jcond_eval_str("function jcondContext(a) { return eval(a); }");
+
 
     core_set_redis(js->cstate, "127.0.0.1", 6379);
 
@@ -173,10 +199,11 @@ void jam_event_loop(void *arg)
                 else cmd_1 = NULL;
                 // printf("Waiting command TYPE: %s\n", cmd_1->cmd);
                 if (cmd_1 != NULL) {
-                    if (strcmp(cmd_1->cmd, "GOGOGO") == 0) {
+                    if (strcmp(cmd_1->cmd, "GOGOGO") == 0)
                         // Get the start time from the Go command.
                         sTime = atof(cmd_1->opt);
-                    }
+                    else
+                        sTime = 0.0;
                 }
                 // Remote requests go through here.. local requests don't go through here
 
@@ -232,15 +259,16 @@ int cloud_tree_height(jamstate_t *js)
             (cs->mqttenabled[0] == true));
 }
 
-int jamargs(int argc, char **argv, char *appid, int *num)
+int jamargs(int argc, char **argv, char *appid, char *tag, int *num)
 {
     char *cvalue = NULL;
+    char *tvalue = NULL;
     char *nvalue = NULL;
     int c;
 
     opterr = 0;
 
-    while ((c = getopt (argc, argv, "a:n:")) != -1)
+    while ((c = getopt (argc, argv, "a:n:t:")) != -1)
         switch (c)
         {
             case 'a':
@@ -249,14 +277,20 @@ int jamargs(int argc, char **argv, char *appid, int *num)
             case 'n':
                 nvalue = optarg;
             break;
+            case 't':
+                tvalue = optarg;
+            break;
         default:
             printf("ERROR! Argument input error..\n");
-            printf("Usage: program -a app_id \n");
+            printf("Usage: program -a app_id [-t tag] [-n num]\n");
             exit(1);
         }
 
     if (cvalue != NULL)
         strcpy(appid, cvalue);
+
+    if (tvalue != NULL)
+        strcpy(tag, tvalue);
 
     if (nvalue != NULL)
         *num = atoi(nvalue);

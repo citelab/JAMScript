@@ -34,6 +34,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "nvoid.h"
 #include "mqtt.h"
 #include "activity.h"
+#include "simplelist.h"
+
+extern list_elem_t *cache;
+extern int cachesize;
 
 
 void on_dev_connect(void* context, MQTTAsync_successData* response)
@@ -153,38 +157,6 @@ void *jwork_bgthread(void *arg)
 
     return NULL;
 }
-
-
-/*
- * Set all the callback handlers
- *
- */
-// void jwork_set_callbacks(jamstate_t *js, unsigned char mask)
-// {
-//     callcontext_t *ctx = (callcontext_t *)calloc(1, sizeof(callcontext_t));
-//     ctx->context = js;
-//
-//     if ((js->cstate->mqttenabled[0] == true) && (mask & 0x01))
-//     {
-//         ctx->queue = js->deviceinq;
-//         ctx->indx = 0;
-//         MQTTAsync_setCallbacks(js->cstate->mqttserv[0], ctx, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
-//     }
-//
-//     if ((js->cstate->mqttenabled[1] == true) && (mask & 0x02))
-//     {
-//         ctx->queue = js->foginq;
-//         ctx->indx = 1;
-//         MQTTAsync_setCallbacks(js->cstate->mqttserv[1], ctx, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
-//     }
-//
-//     if ((js->cstate->mqttenabled[2] == true) && (mask & 0x04))
-//     {
-//         ctx->queue = js->cloudinq;
-//         ctx->indx = 2;
-//         MQTTAsync_setCallbacks(js->cstate->mqttserv[2], ctx, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
-//     }
-// }
 
 
 /*
@@ -443,7 +415,6 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
 //
 void jwork_process_device(jamstate_t *js)
 {
-    int quorum = 0;
 
     // Get the message from the device to process
     //
@@ -511,65 +482,34 @@ void jwork_process_device(jamstate_t *js)
             core_check_pending(js->cstate);
         }
         else
-        if (strcmp(rcmd->cmd, "REXEC-SYN") == 0)
+        if ((strcmp(rcmd->cmd, "REXEC-ASY") == 0) ||
+            (strcmp(rcmd->cmd, "REXEC-SYN") == 0))
         {
-            // TODO: Check the implementation of synchronization sub protocol..
-            if (jwork_check_args(js, rcmd))
+            // Check for duplicate
+            if (find_list_item(cache, rcmd->actid))
             {
-                if (jcond_evaluate_cond(js, rcmd))
-                {
-                    // We have a valid request that should be executed by the node
-                    if (jcond_synchronized(rcmd))
-                    {
-                        // A request that needs a quorum: a group for execution
-
-                        quorum = jcond_getquorum(rcmd);
-                        runtable_insert_synctask(js, rcmd, quorum);
-                    }
-                    else
-                    {
-                        printf("Adding unsynchronized task... \n");
-
-                        // This is a standalone SYN request.. blocking call
-                        // Because it is a blocking call.. we are going to go ahead and schedule it
-                        int count = runtable_synctask_count(js->rtable);
-                        if (count == 0)
-                            // Sync tasks go into the high priority queue
-                            p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
-                        else
-                            runtable_insert_synctask(js, rcmd, quorum);
-                    }
-                }
-                else
-                    jwork_send_nak(js, rcmd, "CONDITION FALSE");
+                command_free(rcmd);
+                return;
             }
             else
-                jwork_send_error(js, rcmd, "ARGUMENT ERROR");
-        }
-        else
-        if (strcmp(rcmd->cmd, "REXEC-ASY") == 0)
-        {
-            if (jwork_check_args(js, rcmd))
             {
-                if (jcond_evaluate_cond(js, rcmd))
-                {
-                    p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
-                }
-                else
-                    jwork_send_nak(js->cstate->mqttserv[0], rcmd, "CONDITION FALSE");
+                put_list_tail(cache, strdup(rcmd->actid), strlen(rcmd->actid));
+                if (list_length(cache) > cachesize)
+                    del_list_tail(cache);
             }
+
+            if (jwork_evaluate_cond(rcmd->cond))
+                p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
             else
-                jwork_send_error(js, rcmd, "ARGUMENT ERROR");
+                jwork_send_nak(js, rcmd, "CONDITION FALSE");
         }
         else
         if (strcmp(rcmd->cmd, "REXEC-ASY-CBK") == 0)
         {
             if (runtable_find(js->rtable, rcmd->actarg) != NULL)
             {
-                if (jcond_evaluate_cond(js, rcmd))
-                {
+                if (jwork_evaluate_cond(rcmd->cond))
                     p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
-                }
                 else
                     jwork_send_nak(js->cstate->mqttserv[0], rcmd, "CONDITION FALSE");
             }
@@ -645,18 +585,6 @@ void jwork_send_results(jamstate_t *js, char *actname, char *actid, arg_t *args)
     // send the command over
     mqtt_publish(mcl, "/mach/func/reply", scmd);
 
-}
-
-
-bool jwork_check_args(jamstate_t *js, command_t *cmd)
-{
-    activity_callback_reg_t *areg = activity_findcallback(js->atable, cmd->actname);
-    if (areg != NULL)
-    {
-        return jrun_check_signature(areg, cmd);
-    }
-    else
-        return false;
 }
 
 
@@ -744,6 +672,13 @@ void jwork_process_cloud(jamstate_t *js)
         }
         // Send the command (rcmd) to the activity given the above pointer is non NULL
     }
+}
+
+bool jwork_evaluate_cond(char *cnd)
+{
+    if (strlen(cnd) == 0)
+        return true;
+    return jcond_eval_bool(cnd);
 }
 
 

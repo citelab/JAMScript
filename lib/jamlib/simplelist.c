@@ -5,6 +5,7 @@ Copyright (c) 2016 Muthucumaru Maheswaran
 
 #include "simplelist.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 
 list_elem_t *create_list()
@@ -15,20 +16,17 @@ list_elem_t *create_list()
     t->data = strdup("HEAD");
     t->datalen = strlen(t->data);
 
+    t->count = 0;
+
     return t;
 }
 
 
 int list_length(list_elem_t *head)
 {
-    list_elem_t *p = head;
-    int i = 0;
-
-    while(p->next != p)
-        i++;
-
-    return i;
+    return head->count;
 }
+
 
 
 nvoid_t *get_list_head(list_elem_t *head)
@@ -60,6 +58,8 @@ int put_list_tail(list_elem_t *head, void *data, int len)
     t->data = data;
     t->datalen = len;
 
+    head->count++;
+
     return t->datalen;
 }
 
@@ -72,4 +72,36 @@ void print_list(list_elem_t *head)
         printf("Data: %s\n", p->data);
         p = p->next;
     }
+}
+
+
+void del_list_tail(list_elem_t *head)
+{
+    // Pointer to the deleted item
+    list_elem_t *tail = head->next;
+
+    // Unlink the item
+    head->next->next->prev = head->next->prev;
+    head->next = head->next->next;
+
+    // Release the memory
+    if (strcmp(tail->data, "HEAD") != 0)
+        free(tail);
+
+    if (head->count > 0)
+        head->count--;
+}
+
+
+bool find_list_item(list_elem_t *head, char *str)
+{
+    list_elem_t *p = head->next;
+
+    while (p != head)
+    {
+        if (strcmp(str, p->data) == 0)
+            return true;
+        p = p->next;
+    }
+    return false;
 }

@@ -20,6 +20,7 @@
     #       '-lnanomsg',
     #       '-levent',
     #       '-ltask',
+    #       '-lmujs',
     #       '-lhiredis'
     #     ],
     #     "conditions": [
@@ -56,15 +57,13 @@
     	"type": "static_library",
       "dependencies": [ "deps/libtask/binding.gyp:liblibtask" ],
       "sources": [ 
-      	"<!@(ls -1 lib/jamlib/*.c)",
-      	"lib/jamlib/duktape/duktape.c"
+      	"<!@(ls -1 lib/jamlib/*.c)"
       ],
       "copies": [
         {
           "destination": "/usr/local/share/jam/lib/",
           "files": [
-            "<!@(ls -1 lib/jamlib/*.h)",
-            "lib/jamlib/duktape"
+            "<!@(ls -1 lib/jamlib/*.h)"
           ]
         },
         {

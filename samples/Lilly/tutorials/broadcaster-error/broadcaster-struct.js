@@ -13,7 +13,9 @@ jdata {
     } myBag as broadcaster;
 }
 
-var i=0;
+var i = 0;
+var Chance = require('chance');
+var ch = new Chance();
 
 setInterval(function() {
     
@@ -25,8 +27,8 @@ setInterval(function() {
     myBag.broadcast({
         pen: Math.floor(Math.random() * 10),
         water: Math.random() * 100,
-        book: Math.random() * 100,
-        brand: "abc"
+        book: Math.floor(Math.random() * 100),
+        brand: ch.name()
     });
 
     i++;

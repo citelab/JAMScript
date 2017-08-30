@@ -1,132 +1,74 @@
 #include "jcond.h"
-#include "command.h"
-#include "jam.h"
+#include <mujs.h>
+#include <stdio.h>
+#include <string.h>
 
-int jcond_error;
-char jcond_err_msg[256];
-char *jcond_stmt = NULL;
-duk_context *ctx = NULL;
+js_State *J = NULL;
 
-
-// TODO: Implement this properly.
-bool jcond_evaluate_cond(jamstate_t *js, command_t *cmd)
+void print(js_State *J)
 {
-    return true;
+    const char *name = js_tostring(J, 1);
+    printf("%s\n", name);
+    js_pushundefined(J);
 }
 
 
-bool jcond_synchronized(command_t *cmd)
+void jcond_init()
 {
-    if (cmd->condvec & JCOND_SYNC_REQUESTED)
-        return true;
-    else
-        return false;
+    J = js_newstate(NULL, NULL, JS_STRICT);
+
+    js_newcfunction(J, print, "console_log", 1);
+    js_setglobal(J, "console_log");
+
+
+}
+
+void jcond_eval_str(char *s)
+{
+    js_dostring(J, s);
 }
 
 
-int jcond_getquorum(command_t *cmd)
+// This is useful for evaluating a string that
+// returns a return value. Like a function
+char *jcond_eval_str_str(char *s)
 {
+    char buf[strlen(s) + 16];
+    sprintf(buf, "var __jrval = eval(%s)", s);
+    js_dostring(J, buf);
+    js_getglobal(J, "__jrval");
+    return (char *)js_tostring(J, -1);
+}
 
+int jcond_eval_bool(char *s)
+{
+    char buf[strlen(s) + 16];
+    sprintf(buf, "var __jrval = eval(%s)", s);
+    js_dostring(J, buf);
+    js_getglobal(J, "__jrval");
+    return js_toboolean(J, -1);
+}
 
-    return 0;
+int jcond_eval_int(char *s)
+{
+    char buf[strlen(s) + 16];
+    sprintf(buf, "var __jrval = eval(%s)", s);
+    js_dostring(J, buf);
+    js_getglobal(J, "__jrval");
+    return js_toint32(J, -1);
+}
+
+double jcond_eval_double(char *s)
+{
+    char buf[strlen(s) + 16];
+    sprintf(buf, "var __jrval = eval(%s)", s);
+    js_dostring(J, buf);
+    js_getglobal(J, "__jrval");
+    return js_tonumber(J, -1);
 }
 
 
-void refresh_jcondition()
+void jcond_free()
 {
-    free(jcond_stmt);
-    jcond_read_context();
-    jcond_init_duktape();
-}
-
-
-void jcond_read_context()
-{
-    char *original_file;
-    long fsize;
-    int quote_num = 0;
-
-    FILE *file = fopen(JCOND_FILE_PATH, "r");
-
-    if(file == NULL)
-    {
-        jcond_stmt = malloc(30 * sizeof(char));
-        if(jcond_stmt == NULL)
-        {
-            printf("ERROR!! ...\n");
-        }
-        sprintf(jcond_stmt, "var jcondition_context = {};");
-        return;
-    }
-    fseek(file, 0, SEEK_END);
-    fsize = ftell(file);
-    fseek(file, 0, SEEK_SET);
-    original_file = calloc(fsize, sizeof(char));
-
-    if(fread(original_file, sizeof(char), fsize, file) != fsize)
-    {
-        printf("ERROR READING ...");
-        jcond_stmt = malloc(30 * sizeof(char));
-        sprintf(jcond_stmt, "var jcondition_context = {};");
-        return;
-    }
-    fclose(file);
-
-    for(int i = 0; i < fsize; i++)
-    {
-        if(original_file[i] == '\"' || original_file[i] == '\'')
-        quote_num++;
-    }
-    jcond_stmt = (char *)calloc(fsize + quote_num + 20, sizeof(char));
-    sprintf(jcond_stmt, "var jcondition_context = %s", original_file);
-
-    free(original_file);
-    printf("Executed String .. %s\n", jcond_stmt);
-    return;
-}
-
-void jcond_init_duktape()
-{
-
-    if(jcond_stmt == NULL)
-    {
-        jcond_read_context();
-    }
-    if(ctx != NULL)
-    {
-        jcond_free_duktape(ctx);
-    }
-    //Now we are ready
-    ctx = duk_create_heap_default();
-    duk_eval_string(ctx, jcond_stmt);
-}
-
-int jcond_exec_stmt(char *stmt)
-{
-    jcond_init_duktape(); //Reinitialize the duktape system ...
-    duk_eval_string(ctx, stmt);
-    int ret = duk_get_boolean(ctx, -1);
-    duk_pop(ctx);
-    return ret;
-}
-
-void jcond_free_duktape(duk_context *ctx)
-{
-    duk_destroy_heap(ctx);
-}
-
-void jcond_set_error(char *err_msg)
-{
-    jcond_error = 1;
-    sprintf(jcond_err_msg, "%s", err_msg);
-}
-
-char *jcond_get_error()
-{
-    if(jcond_error)
-    {
-        jcond_error = 0;
-        return jcond_err_msg;
-    }
-    return NULL;
+    js_freestate(J);
 }

@@ -369,7 +369,7 @@ jambroadcaster_t *create_jambroadcaster(int mode, char *ns, char *varname)
 #ifdef linux
     sem_init(&jval->lock, 0, 1);
 #elif __APPLE__
-    sprintf(semname, "/jambcast-lock-%s-%d", varname, getpid());
+    sprintf(semname, "/jlock-%s-%d", varname, getpid());
     sem_unlink(semname);
     jval->lock = sem_open(semname, O_CREAT|O_EXCL, 0644, 1);
     if (jval->lock == SEM_FAILED)
@@ -379,7 +379,7 @@ jambroadcaster_t *create_jambroadcaster(int mode, char *ns, char *varname)
 #ifdef linux
     sem_init(&jval->icount, 0, 0);
 #elif __APPLE__
-    sprintf(semname, "/jambcast-icount-%s-%d", varname, getpid());
+    sprintf(semname, "/jicnt-%s-%d", varname, getpid());
     sem_unlink(semname);
     jval->icount = sem_open(semname, O_CREAT|O_EXCL, 0644, 0);
     if (jval->icount == SEM_FAILED)
@@ -492,6 +492,9 @@ void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...)
     int olen = Base64decode(obuf, data);
     cbor_item_t *obj = cbor_load((unsigned char *)obuf, olen, &result);
 
+    // This is a debug
+    //    cbor_describe(obj, stdout);
+
     va_list args;
     va_start(args, buffer);
     // memcpy each field value in data to the corresponding field in buffer
@@ -500,25 +503,28 @@ void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...)
     char *s, type;
     int n;
     float f;
+    int offset;
 
-    for(i=0;i<num;i++)
+    for(i = 0; i < num; i++)
     {
         type = fmt[i];
+        offset = va_arg(args, size_t);
         if(type == 's')
         {
             //string
             s = cbor_get_string(handle[i].value);
-            memcpy(buffer+(va_arg(args, size_t)), s, strlen(s)+1);
+            s = strdup(s);
+            memcpy(buffer+offset, &s, sizeof(char *));
         }
         else if ((type == 'd') || (type == 'i'))
         {
             n = cbor_get_integer(handle[i].value);
-            memcpy(buffer+(va_arg(args, size_t)), &n, sizeof(int));
+            memcpy(buffer+offset, &n, sizeof(int));
         }
         else if(type == 'f')
         {
             f = cbor_float_get_float8(handle[i].value);
-            memcpy(buffer+(va_arg(args, size_t)), &f, sizeof(float));
+            memcpy(buffer+offset, &f, sizeof(float));
         }
         else
         {

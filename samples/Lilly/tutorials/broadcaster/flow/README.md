@@ -1,4 +1,5 @@
 This sample demonstrates an approach enabling communication between broadcaster and logger, using inflow and outflow.  
+  
 **inflow** folder  
 A broadcaster called timeKeeping is declared.  
 An inflow socket called inF is sitting there capturing data from an outflow called outF in app time.  

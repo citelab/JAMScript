@@ -54,6 +54,18 @@ for i in `seq 1 400`; do
 done
 ```
 
+
+In order to have a realistic benchmarking, there should be some network delays between the containers. To achieve this, we use the open-source software Pumba. Download the binary from https://github.com/gaia-adm/pumba
+To activate it, run ./pumba with the desired parameters found on the github page. For example, to add a network delay of 25 ms to the container named "mydb" for a duration of 5 minutes.
+```
+./pumba netem --duration 5m delay --time 25 mydb
+```
+We can also add a variance to the delay, for example to have a normal distribution with variance of 10 ms
+```
+./pumba netem --duration 5m delay --time 25 containerName --jitter 10 --distribution normal
+```
+In practice for JAMScript, we only need to add the network delay to the container that's running the JS program.
+
 After you are done with the test, or if something wrong happened during the run, we have to stop all the C programs in order to to restart the test; unless you are running JAMScript-beta in which case exiting the JS program should automatically stop all the C programs. To close all C programs on test1, ..., test400
 ```
 #!/bin/bash
