@@ -5,7 +5,7 @@
 sudo chmod o+w  /usr/lib/node_modules                                                         
 sudo chmod o+w /usr/bin                                                                      
 sudo chmod o+w /usr/local/share                                                              
-sudo chmod o+w /usr/local/lib 
+
 
 
 # Install the libtask
@@ -18,6 +18,7 @@ make
 sudo make install
 cd ../..
 
+sudo chmod o+w /usr/local/lib 
 # Install JAMScript compiler
 npm -g install
 
