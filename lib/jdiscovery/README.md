@@ -130,12 +130,19 @@ By this point, you're probably sick of the status attribute. Surely there are ot
 
     reggie.discoverAttributes({
         device: {
-            thermostat: 'i-found-a-thermostat'
+            thermostat: {
+                onAdd: 'i-found-a-thermostat',
+                onRemove: 'this-node-is-no-longer-a-thermostat'
+            }
         }
     });
 
     reggie.on('i-found-a-thermostat', function(id, value) {
         console.log('Node ' + id + ' is apparently a thermostat with temperature ' + value);
+    });
+
+    reggie.on('this-node-is-no-longer-a-thermostat', function(id) {
+        console.log('Node ' + id + ' is apparently no longer a thermostat');
     });
 
     // ...
@@ -267,10 +274,28 @@ Finally, an example, putting everything together, and assuming that the type of 
 
 **app.js**
 ```
-    var machType = process.argv[2];
-    var port = process.argv[3];
-    var app = 'myApp';
-    var id = 'abcd-1234';
+    var Registrar = require('./jregistrar'),
+        errLog = require('../jerrlog'),
+        globals = require('../constants').globals,
+        events = require('events'),
+        Random = require('random-js');
+
+    var random = new Random(Random.engines.mt19937().autoSeed());
+
+    var machType = process.argv[2],
+        phoneType = process.argv[3],
+        phoneNumber = process.argv[4],
+        app = 'keithTest',
+        port = 1337,
+        id = random.uuid4();
+
+    // don't forget to initialize the logger!
+    errLog.init(app, false);
+
+    console.log('_______________________________________________');
+    console.log(machType + ' id: ' + id);
+    console.log('-----------------------------------------------');
+    console.log();
 
     var reggie = new Registrar(app, machType, id, port);
 
@@ -333,12 +358,12 @@ Finally, an example, putting everything together, and assuming that the type of 
                 reggie.addAttributes({
                     iPhone: phoneNumber
                 });
-            }, 1000);
+            }, 5000);
         }
         reggie.addAttributes({
             thermostat: function() {
                 // returns some random number, which we'll treat as the temperature
-                return Math.random() * 100;
+                return 'Temperature: ' + Math.random() * 100;
             }
         });
     } else if (machType === 'fog') {
@@ -349,19 +374,32 @@ Finally, an example, putting everything together, and assuming that the type of 
 
         reggie.discoverAttributes({
             device: {
-                thermostat: 'thermo'
+                thermostat: {
+                    onAdd: 'thermo-added',
+                    onRemove: 'thermo-removed'
+                }
             }
         });
 
-        reggie.on('thermo', function(id, temp) {
+        reggie.on('thermo-added', function(id, temp) {
             console.log('DEVICE ' + id + ' is a thermostat with temperature ' + temp);
+        });
+
+        reggie.on('thermo-removed', function(id, temp) {
+            console.log('DEVICE ' + id + ' is no longer a thermostat');
         });
     } else {
         // maybe clouds want to discover fogs, and iphone devices
         reggie.discoverAttributes({
             device: {
-                iPhone: 'iPhone',
-                android: 'android'
+                iPhone: {
+                    onAdd: 'iPhone-added',
+                    onRemove: 'iPhone-removed'
+                },
+                android: {
+                    onAdd: 'android-added',
+                    onRemove: 'android-removed'
+                }
             },
             fog: {
                 status: {
@@ -379,14 +417,23 @@ Finally, an example, putting everything together, and assuming that the type of 
             console.log('FOG DOWN: id: ' + fogId);
         });
 
-        reggie.on('iPhone', function(deviceId, phoneNumber) {
+        reggie.on('iPhone-added', function(deviceId, phoneNumber) {
             console.log('DEVICE ' + deviceId + ' is an iPhone with number ' + phoneNumber);
         });
 
-        reggie.on('android', function(deviceId, phoneNumber) {
-            console.log('DEVICE ' + deviceId + ' is an Android with number ' + phoneNumber);
-        })
+        reggie.on('iPhone-removed', function(deviceId) {
+            console.log('DEVICE ' + deviceId + ' is no longer an iPhone');
+        });
+
+        reggie.on('android-added', function(deviceId, phoneNumber) {
+            console.log('DEVICE ' + deviceId + ' is an Android with number: ' + phoneNumber);
+        });
+
+        reggie.on('android-removed', function(deviceId) {
+            console.log('DEVICE ' + deviceId + ' is no longer an Android');
+        });
     }
 
     reggie.registerAndDiscover();
+
 ```
