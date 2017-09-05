@@ -33,38 +33,57 @@ void jcond_eval_str(char *s)
 // returns a return value. Like a function
 char *jcond_eval_str_str(char *s)
 {
+    char *res;
+
     char buf[strlen(s) + 16];
     sprintf(buf, "var __jrval = eval(%s)", s);
     js_dostring(J, buf);
     js_getglobal(J, "__jrval");
-    return (char *)js_tostring(J, -1);
+    res = strdup((char *)js_tostring(J, -1));
+    js_pop(J, 1);
+
+    return res;
 }
 
 int jcond_eval_bool(char *s)
 {
+    int res;
     char buf[strlen(s) + 16];
     sprintf(buf, "var __jrval = eval(%s)", s);
     js_dostring(J, buf);
     js_getglobal(J, "__jrval");
-    return js_toboolean(J, -1);
+    res = js_toboolean(J, -1);
+    js_pop(J, 1);
+
+    return res;
 }
 
 int jcond_eval_int(char *s)
 {
+    int res;
+
     char buf[strlen(s) + 16];
     sprintf(buf, "var __jrval = eval(%s)", s);
     js_dostring(J, buf);
     js_getglobal(J, "__jrval");
-    return js_toint32(J, -1);
+    res = js_toint32(J, -1);
+    js_pop(J, 1);
+
+    return res;
 }
 
 double jcond_eval_double(char *s)
 {
+    double res;
+
     char buf[strlen(s) + 16];
     sprintf(buf, "var __jrval = eval(%s)", s);
     js_dostring(J, buf);
     js_getglobal(J, "__jrval");
-    return js_tonumber(J, -1);
+    res = js_tonumber(J, -1);
+    js_pop(J, 1);
+
+    return res;
 }
 
 
