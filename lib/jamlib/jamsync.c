@@ -103,6 +103,7 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
         cmd->cbor_item_list = list;
         if (have_fog_or_cloud(js))
         {
+            printf("---------- executing with Fog...---------\n");
             rargs = jam_sync_runner(js, jact, 1, cmd);
             // quit if we failed to execute at the root.
             if (rargs == NULL)
@@ -119,6 +120,7 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
         }
         else
         {
+            printf("---------- executing WITHOUT Fog---------\n");
             rargs = jam_sync_runner(js, jact, 1, cmd);
             activity_free(jact);
             return rargs;
@@ -156,6 +158,7 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, int nodes, command_t *
     // Get acknowledgements
     for (int i = 0; i < nodes; i++)
     {
+        printf("Actid %s\n", jact->actid);
         jam_set_timer(js, jact->actid, timeout);
         nvoid_t *nv = pqueue_deq(jact->thread->inq);
         jam_clear_timer(js, jact->actid);
@@ -185,6 +188,7 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, int nodes, command_t *
 
     for (int i = 0; i < nodes; i++)
     {
+        printf(".... second time.. Actid %s\n", jact->actid);
         jam_set_timer(js, jact->actid, timeout);
         nvoid_t *nv = pqueue_deq(jact->thread->inq);
         jam_clear_timer(js, jact->actid);
