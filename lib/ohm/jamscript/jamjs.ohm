@@ -25,9 +25,9 @@ JAMJS <: ES6 {
     
     inflow_type     = "app://" identifier "." identifier
 
-    Jdata_decl      = jdata "{" Jdata_spec* "}"
+    Jdata_decl (a jdata declaration) = jdata "{" Jdata_spec* "}"
 
-    Jconditional    = jcond identifier? "{" Jcond_entry* "}"
+    Jconditional (a jconditional declaration) = jcond identifier? "{" Jcond_entry* "}"
 
     Jcond_entry     = identifier ":" NonemptyListOf<Jcond_rule, jcond_joiner> ";"
 
@@ -50,13 +50,13 @@ JAMJS <: ES6 {
     Jcond_expr      = "(" Jcond_expr ")"                            -- paran
                     | "!" Jcond_expr                                -- not
                     | Jcond_expr jcond_expr_op Jcond_expr           -- bin_op
-                    | identifier nonemptyListOf<identifier, ".">    -- structure
+                    | identifier "." identifier                     -- namespace
                     | identifier                                    -- id
 
     jcond_expr_op   = "&&" | "||"
 
-    Activity_def    = Sync_activity
-                    | Async_activity
+    Activity_def (a activity definition)  = Sync_activity
+                                        | Async_activity
 
     as = "as" ~identifierPart
     broadcaster = "broadcaster" ~identifierPart
