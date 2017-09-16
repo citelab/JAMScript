@@ -38,11 +38,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 /*
- * TODO: May be we need to move away from Nanomsg because the project is not 
+ * TODO: May be we need to move away from Nanomsg because the project is not
  * active anymore. Something like zeromq or even a custom solution with high
  * performance...
  */
- 
+
 
 /*
  * Helper to create a random name string..
@@ -69,7 +69,7 @@ simplequeue_t *queue_new(bool ownedbyq)
 	simplequeue_t *sq = (simplequeue_t *)calloc(1, sizeof(simplequeue_t));
 	assert(sq != NULL);
 	sq->pullsock = nn_socket(AF_SP, NN_PULL);
-	if (sq->pullsock < 0) 
+	if (sq->pullsock < 0)
 	{
 		printf("\n\nFATAL ERROR!! Unable to allocate file handles. \nUse 'ulimit' to increase available FDs \n\n");
 		exit(1);
@@ -121,13 +121,20 @@ bool queue_enq(simplequeue_t *sq, void *data, int size)
 	nvoid_t *dw = (nvoid_t *)calloc(1, sizeof(nvoid_t));
 
 	dw->len = size;
-	if (sq->ownedbyq) {
-		void *ndata = calloc(1, size);
-		memcpy(ndata, data, size);
-		dw->data = ndata;
-	}
-	else
-		dw->data = data;
+    if (dw->len > 0)
+    {
+        // The data is not NULL
+    	if (sq->ownedbyq)
+        {
+    		void *ndata = calloc(1, size);
+    		memcpy(ndata, data, size);
+    		dw->data = ndata;
+    	}
+    	else
+    		dw->data = data;
+    }
+    else
+        dw->data = NULL;
 
 	int dwsize = sizeof(nvoid_t);
 	int bytes = nn_send (sq->pushsock, dw, dwsize, 0);

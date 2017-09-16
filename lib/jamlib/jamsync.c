@@ -147,7 +147,7 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
 // We always return the first reply we get as the result
 // of the computation
 //
-arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, int nodes, command_t *cmd)
+arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
 {
     int timeout = 300;
     arg_t *repcode = NULL;

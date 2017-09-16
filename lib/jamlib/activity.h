@@ -90,6 +90,7 @@ typedef struct _jactivity_t
 
     long long accesstime;
     bool remote;
+    pushqueue_t *resultq;
 
 } jactivity_t;
 

@@ -142,7 +142,7 @@ int jamargs(int argc, char **argv, char *appid, char *tag, int *num);
  */
 
 arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, char *fmask, ...);
-arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, int nodes, command_t *cmd);
+arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd);
 int get_sleep_time(jactivity_t *jact);
 char *get_root_condition(jamstate_t *js);
 

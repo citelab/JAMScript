@@ -232,6 +232,7 @@ void run_activity(void *arg)
 {
     activity_table_t *at = ((comboptr_t *)arg)->arg1;
     activity_thread_t *athread = ((comboptr_t *)arg)->arg2;
+    arg_t *repcode = NULL;
 
     free(arg);
 
@@ -281,22 +282,22 @@ void run_activity(void *arg)
                         cmd = (command_t *)nv->data;
                         free(nv);
 
-                        if (strcmp(rcmd->cmd, "REXEC-RES") == 0)
+                        if (strcmp(cmd->cmd, "REXEC-RES") == 0)
                         {
                             // We create a structure to hold the result returned by the root
                             repcode = (arg_t *)calloc(1, sizeof(arg_t));
-                            command_arg_copy(repcode, &(rcmd->args[0]));
+                            command_arg_copy(repcode, &(cmd->args[0]));
                         }
-                        command_free(rcmd);
+                        command_free(cmd);
                     }
-
                     // Push the reply.. into the reply queue..
+                    pqueue_enq(jact->resultq, repcode, sizeof(arg_t));
                 }
                 else
                 {
                     // We did not receive the ack.. so we generate a NULL reply and push it to
                     // the reply queue.
-                    
+                    pqueue_enq(jact->resultq, NULL, 0);
                 }
                 command_free(cmd);
             }
@@ -439,6 +440,7 @@ jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
     if (jact != NULL)
     {
         jact->remote = remote;
+        jact->resultq = pqueue_new(false);
         while ((jact->thread = activity_getthread(at, actid)) == NULL)
         {
             printf("Waiting for ...\n");
