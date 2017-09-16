@@ -133,8 +133,8 @@ jamstate_t *jam_init(int port, int serialnum);
 void jam_run_app(void *arg);
 void jam_event_loop(void *js);
 jactivity_t *jam_create_activity(jamstate_t *js);
-bool have_fog_or_cloud(jamstate_t *js);
 int machine_height(jamstate_t *js);
+int requested_level(int cvec);
 int jamargs(int argc, char **argv, char *appid, char *tag, int *num);
 
 /*

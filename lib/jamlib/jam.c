@@ -259,6 +259,11 @@ int machine_height(jamstate_t *js)
             (cs->mqttenabled[0] == true));
 }
 
+int requested_level(int cvec)
+{
+    return (JCOND_LEVEL_MASK & cvec)/2;
+}
+
 int jamargs(int argc, char **argv, char *appid, char *tag, int *num)
 {
     char *cvalue = NULL;
