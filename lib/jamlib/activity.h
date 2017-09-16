@@ -46,19 +46,17 @@ enum activity_state_t
     COMPLETED,
     NEW,
     STARTED,
-    NEGATIVE_COND,    
+    NEGATIVE_COND,
     PARAMETER_ERROR,
     TIMEDOUT,
     PARTIAL,
     FATAL_ERROR,
-    ABORTED    
+    ABORTED
 };
 
 enum activity_type_t
 {
-    SYNC,
-    ASYNC,
-    SYNC_WAIT
+    LOCAL_SYNC
 };
 
 typedef struct _activity_thread_t
@@ -83,11 +81,11 @@ typedef struct _jactivity_t
     enum activity_type_t type;
 
     char *actid;
-    
+
     activity_thread_t *thread;
 
-    // Store all the replies we get... 
-    // TODO: Wasting memory.. but we know what happened at different levels    
+    // Store all the replies we get...
+    // TODO: Wasting memory.. but we know what happened at different levels
     command_t *replies[MAX_REPLIES];
 
     long long accesstime;
@@ -113,12 +111,12 @@ typedef struct _activity_table_t
     // We are holding the void pointer to avoid type issues..
     void *jarg;
 
-    int runcounter; 
+    int runcounter;
     int numcbackregs;
     // Callbacks are NOT pre-initialized..
     activity_callback_reg_t *callbackregs[MAX_CALLBACKS];
 
-    // Pre-initialize the activity threads.. 
+    // Pre-initialize the activity threads..
     activity_thread_t *athreads[MAX_ACT_THREADS];
 
     simplequeue_t *globaloutq;
@@ -147,6 +145,7 @@ activity_thread_t *activity_initthread(activity_table_t *atbl);
 activity_thread_t *activity_getthread(activity_table_t *at, char *actid);
 void activity_setthread(activity_thread_t *at, jactivity_t *jact, char *actid);
 jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote);
+jactivity_t *activity_renew(activity_table_t *at, jactivity_t *jact);
 
 void activity_free(jactivity_t *jact);
 activity_thread_t *activity_getbyid(activity_table_t *at, char *actid);

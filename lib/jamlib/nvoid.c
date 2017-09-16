@@ -33,7 +33,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // originating routine.
 //
 nvoid_t *nvoid_new(void *data, int len)
-{    
+{
     nvoid_t *nv = (nvoid_t *)calloc(1, sizeof(nvoid_t));
     assert(nv != NULL);
     void *dc = (void *)malloc(len);
@@ -46,6 +46,14 @@ nvoid_t *nvoid_new(void *data, int len)
     return nv;
 }
 
+
+nvoid_t *nvoid_null()
+{
+    nvoid_t *nv = (nvoid_t *)calloc(1, sizeof(nvoid_t));
+    nv->data = NULL;
+    nv->len = 0;
+    return nv;
+}
 
 void nvoid_free(nvoid_t *n)
 {

@@ -232,16 +232,20 @@ void run_activity(void *arg)
 {
     activity_table_t *at = ((comboptr_t *)arg)->arg1;
     activity_thread_t *athread = ((comboptr_t *)arg)->arg2;
+
     free(arg);
 
+    jamstate_t *js = (jamstate_t *)at->jarg;
     activity_callback_reg_t *areg;
+    jactivity_t *jact;
 
     athread->taskid = taskid();
     while (1)
     {
         command_t *cmd;
         nvoid_t *nv = pqueue_deq(athread->inq);
-        if (athread->jact == NULL)
+        jact = athread->jact;
+        if (jact == NULL)
         {
             // Something is wrong.. we just got a thread woken without any activity..
             athread->state = EMPTY;
@@ -258,49 +262,90 @@ void run_activity(void *arg)
 
         if (cmd != NULL)
         {
-            if ((strcmp(cmd->cmd, "REXEC-ASY") == 0) ||
-                (strcmp(cmd->cmd, "REXEC-ASY-CBK") == 0))
+            // If the activity is local.. we check whether this is servicing JSYNC task processing
+            if (!jact->remote)
             {
-                areg = activity_findcallback(at, cmd->actname);
-                if (areg == NULL)
-                    printf("Function not found.. %s\n", cmd->actname);
+                jam_clear_timer(js, jact->actid);
+                // We got the ack for the SYNC request..
+                if ((strcmp(cmd->cmd, "TIMEOUT") != 0) && (strcmp(cmd->cmd, "REXEC-NAK") != 0))
+                {
+                    // We received the acknowledgement for the SYNC.. now proceed to the next stage.
+                    int timeout = 900;
+                    jam_set_timer(js, jact->actid, timeout);
+                    nv = pqueue_deq(athread->inq);
+                    jam_clear_timer(js, jact->actid);
+
+                    cmd = NULL;
+                    if (nv != NULL)
+                    {
+                        cmd = (command_t *)nv->data;
+                        free(nv);
+
+                        if (strcmp(rcmd->cmd, "REXEC-RES") == 0)
+                        {
+                            // We create a structure to hold the result returned by the root
+                            repcode = (arg_t *)calloc(1, sizeof(arg_t));
+                            command_arg_copy(repcode, &(rcmd->args[0]));
+                        }
+                        command_free(rcmd);
+                    }
+
+                    // Push the reply.. into the reply queue..
+                }
                 else
                 {
-                    jactivity_t *jact = athread->jact;
-                    #ifdef DEBUG_LVL1
-                    printf("Command actname = %s %s %s\n", cmd->actname, cmd->cmd, cmd->opt);
-                    #endif
-                    jrun_arun_callback(jact, cmd, areg);
-                    #ifdef DEBUG_LVL1
-                    printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
-                    #endif
-                    // Delete the runtable entry..
-                    // TODO: Do we ever need a runtable entry (even the deleted one) at a later point in time?
-                    jamstate_t *js = (jamstate_t *)at->jarg;
-                    runtable_del(js->rtable, cmd->actid);
+                    // We did not receive the ack.. so we generate a NULL reply and push it to
+                    // the reply queue.
+                    
                 }
+                command_free(cmd);
             }
             else
-            if (strcmp(cmd->cmd, "REXEC-SYN") == 0)
             {
-                // TODO: There is no difference at this point.. what will be the difference?
-                areg = activity_findcallback(at, cmd->actname);
-                if (areg == NULL)
-                    printf("Function not found.. %s\n", cmd->actname);
-                else
+                if ((strcmp(cmd->cmd, "REXEC-ASY") == 0) ||
+                    (strcmp(cmd->cmd, "REXEC-ASY-CBK") == 0))
                 {
-                    #ifdef DEBUG_LVL1
-                    printf("Command actname = %s %s %s\n", cmd->actname, cmd->cmd, cmd->opt);
-                    #endif
+                    areg = activity_findcallback(at, cmd->actname);
+                    if (areg == NULL)
+                        printf("Function not found.. %s\n", cmd->actname);
+                    else
+                    {
+                        jactivity_t *jact = athread->jact;
+                        #ifdef DEBUG_LVL1
+                        printf("Command actname = %s %s %s\n", cmd->actname, cmd->cmd, cmd->opt);
+                        #endif
+                        jrun_arun_callback(jact, cmd, areg);
+                        #ifdef DEBUG_LVL1
+                        printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
+                        #endif
+                        // Delete the runtable entry..
+                        // TODO: Do we ever need a runtable entry (even the deleted one) at a later point in time?
+                        jamstate_t *js = (jamstate_t *)at->jarg;
+                        runtable_del(js->rtable, cmd->actid);
+                    }
+                }
+                else
+                if (strcmp(cmd->cmd, "REXEC-SYN") == 0)
+                {
+                    // TODO: There is no difference at this point.. what will be the difference?
+                    areg = activity_findcallback(at, cmd->actname);
+                    if (areg == NULL)
+                        printf("Function not found.. %s\n", cmd->actname);
+                    else
+                    {
+                        #ifdef DEBUG_LVL1
+                        printf("Command actname = %s %s %s\n", cmd->actname, cmd->cmd, cmd->opt);
+                        #endif
 
-                    jrun_arun_callback(athread->jact, cmd, areg);
-                    #ifdef DEBUG_LVL1
-                    printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
-                    #endif
-                    // Delete the runtable entry..
-                    // TODO: Do we ever need a runtable entry (even the deleted one) at a later point in time?
-                    jamstate_t *js = (jamstate_t *)at->jarg;
-                    runtable_del(js->rtable, cmd->actid);
+                        jrun_arun_callback(athread->jact, cmd, areg);
+                        #ifdef DEBUG_LVL1
+                        printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
+                        #endif
+                        // Delete the runtable entry..
+                        // TODO: Do we ever need a runtable entry (even the deleted one) at a later point in time?
+                        jamstate_t *js = (jamstate_t *)at->jarg;
+                        runtable_del(js->rtable, cmd->actid);
+                    }
                 }
             }
             command_free(cmd);
@@ -409,17 +454,33 @@ jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
         //
         jact->state = NEW;
         jact->actid = strdup(actid);
-
-//      printf("Using thread ID %d for activity with ID %s Remote %d\n", jact->thread->threadid, jact->actid, remote);
-
-        // Set the replies' pointer to NULL for good measure
-        for (int i = 0; i < MAX_REPLIES; i++)
-            jact->replies[i] = NULL;
     }
 
     // return the pointer
     return jact;
 }
+
+
+jactivity_t *activity_renew(activity_table_t *at, jactivity_t *jact)
+{
+    // Wait? for getting the thread..
+    while ((jact->thread = activity_getthread(at, jact->actid)) == NULL)
+    {
+        printf("Waiting for ...\n");
+        taskdelay(10);
+    }
+
+    // Setup the thread.
+    activity_setthread(jact->thread, jact, jact->actid);
+
+    // NOTE:: We are not setting the thread state as above
+    jact->state = NEW;
+
+    // return the pointer
+    return jact;
+}
+
+
 
 void activity_free(jactivity_t *jact)
 {

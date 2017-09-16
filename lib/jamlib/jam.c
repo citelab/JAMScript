@@ -250,7 +250,7 @@ bool have_fog_or_cloud(jamstate_t *js)
         return false;
 }
 
-int cloud_tree_height(jamstate_t *js)
+int machine_height(jamstate_t *js)
 {
     corestate_t *cs = js->cstate;
 

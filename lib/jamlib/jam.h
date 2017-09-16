@@ -134,7 +134,7 @@ void jam_run_app(void *arg);
 void jam_event_loop(void *js);
 jactivity_t *jam_create_activity(jamstate_t *js);
 bool have_fog_or_cloud(jamstate_t *js);
-int cloud_tree_height(jamstate_t *js);
+int machine_height(jamstate_t *js);
 int jamargs(int argc, char **argv, char *appid, char *tag, int *num);
 
 /*

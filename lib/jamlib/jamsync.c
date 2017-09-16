@@ -23,7 +23,13 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
     arg_t *qargs, *qargs2;
     arg_t *rargs;
 
+    // Check whether the mask specified..
     assert(fmask != NULL);
+    // Check the height condition
+    if (machine_height(js) < requested_level(condvec))
+        return NULL;
+
+    // Put the parameters into a command structure
     if (strlen(fmask) > 0) {
         qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
         qargs2 = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
@@ -89,9 +95,12 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
             assert(cbor_array_push(arr2, elem2) == true);
             add_to_list(elem, list);
             add_to_list(elem2, list2);
-          }
+        }
     }
     va_end(args);
+    // Get the activity ID.. based on time and device_id - so this should be unique
+    // because the same device is not generating multiple activities at the same time with
+    // high resolution timer!
     char *t = activity_gettime(js->cstate->device_id);
     jactivity_t *jact = activity_new(js->atable, t, false);
     free(t);
@@ -101,10 +110,9 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
         command_t *cmd = command_new_using_cbor("REXEC-SYN", "RTE", condstr, condvec, aname, jact->actid,
             js->cstate->device_id, arr, qargs, i);
         cmd->cbor_item_list = list;
-        if (have_fog_or_cloud(js))
+        if (machine_height(js) > 1)
         {
-            printf("---------- executing with Fog...---------\n");
-            rargs = jam_sync_runner(js, jact, 1, cmd);
+            rargs = jam_sync_runner(js, jact, cmd);
             // quit if we failed to execute at the root.
             if (rargs == NULL)
                 return NULL;
@@ -113,15 +121,15 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
                 js->cstate->device_id, arr2, qargs2, i);
             bcmd->cbor_item_list = list2;
 
-            jam_sync_runner(js, jact, (cloud_tree_height(js) - 1), bcmd);
+            jact = activity_renew(js->atable, jact);
+            jam_sync_runner(js, jact, bcmd);
 
             activity_free(jact);
             return rargs;
         }
         else
         {
-            printf("---------- executing WITHOUT Fog---------\n");
-            rargs = jam_sync_runner(js, jact, 1, cmd);
+            rargs = jam_sync_runner(js, jact, cmd);
             activity_free(jact);
             return rargs;
         }
@@ -142,9 +150,7 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
 arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, int nodes, command_t *cmd)
 {
     int timeout = 300;
-    command_t *rcmd;
     arg_t *repcode = NULL;
-    bool gotresults = false;
 
     #ifdef DEBUG_LVL1
         printf("Starting JAM exec runner... \n");
@@ -154,61 +160,14 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, int nodes, command_t *
     // The send is executed via the worker thread..
     queue_enq(jact->thread->outq, cmd, sizeof(command_t));
 
-    bool acked = false;
-    // Get acknowledgements
-    for (int i = 0; i < nodes; i++)
+    jam_set_timer(js, jact->actid, timeout);
+    nvoid_t *nv = pqueue_deq(jact->resultq);
+
+    if (nv != NULL)
     {
-        printf("Actid %s\n", jact->actid);
-        jam_set_timer(js, jact->actid, timeout);
-        nvoid_t *nv = pqueue_deq(jact->thread->inq);
-        jam_clear_timer(js, jact->actid);
-        timeout = 5;
-        rcmd = NULL;
-        if (nv != NULL)
-        {
-            rcmd = (command_t *)nv->data;
-            free(nv);
-
-            if ((strcmp(rcmd->cmd, "TIMEOUT") != 0) && (strcmp(rcmd->cmd, "REXEC-NAK") != 0))
-                acked = true;
-            command_free(rcmd);
-        }
-    }
-
-    // We did not receive an ack (REXEC-ACK)
-    if (!acked)
-        return NULL;
-
-    // Wait for the actual results.. no need to send another request.. the remote side should
-    // respond to our previous request...
-    // We set an arbitrary large timeout..
-    // TODO: Adapt this value based on prior history
-    //
-    timeout = 900;
-
-    for (int i = 0; i < nodes; i++)
-    {
-        printf(".... second time.. Actid %s\n", jact->actid);
-        jam_set_timer(js, jact->actid, timeout);
-        nvoid_t *nv = pqueue_deq(jact->thread->inq);
-        jam_clear_timer(js, jact->actid);
-        timeout = 5;
-        rcmd = NULL;
-        if (nv != NULL)
-        {
-            rcmd = (command_t *)nv->data;
-            free(nv);
-
-            // get the first value returned by the other nodes..
-            if ((strcmp(rcmd->cmd, "REXEC-RES") == 0) && (!gotresults))
-            {
-                // We create a structure to hold the result returned by the root
-                repcode = (arg_t *)calloc(1, sizeof(arg_t));
-                command_arg_copy(repcode, &(rcmd->args[0]));
-                gotresults = true;
-            }
-            command_free(rcmd);
-        }
+        if (nv->len != 0)
+            repcode = (arg_t *)nv->data;
+        free(nv);
     }
 
     return repcode;

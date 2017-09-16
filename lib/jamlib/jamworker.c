@@ -335,32 +335,17 @@ void jwork_process_globaloutq(jamstate_t *js)
             printf("Processing cmd: from GlobalOutQ.. ..\n");
             printf("====================================== In global processing.. cmd: %s, opt: %s\n", rcmd->cmd, rcmd->opt);
         #endif
-        // For local commands, we process them in this thread.. right here!
-        // TODO: Figure out what type of commands should go in here
-        if (strcmp(rcmd->opt, "LOCAL") == 0)
-        {
-            #ifdef DEBUG_LVL1
-                printf("Processing the command in LOCAL mode.. \n");
-            #endif
+        // increment the reference count..
+        for (i = 1; i < 3; i++)
+            if (js->cstate->mqttenabled[i] == true)
+                command_hold(rcmd);
 
-            // TODO: Do we have any LOCAL actions to do? With the new protocol design
-            // this need may not exist anymore..
-            command_free(rcmd);
-        }
-        else
-        {
-            // increment the reference count..
-            for (i = 1; i < 3; i++)
-                if (js->cstate->mqttenabled[i] == true)
-                    command_hold(rcmd);
-
-            for (i = 0; i < 3; i++)
-                if (js->cstate->mqttenabled[i] == true)
-                {
-                    printf("Global outq %d\n", i);
-                    mqtt_publish(js->cstate->mqttserv[i], "/level/func/request", rcmd);
-                }
-        }
+        for (i = 0; i < 3; i++)
+            if (js->cstate->mqttenabled[i] == true)
+            {
+                printf("Global outq %d\n", i);
+                mqtt_publish(js->cstate->mqttserv[i], "/level/func/request", rcmd);
+            }
     }
 }
 
