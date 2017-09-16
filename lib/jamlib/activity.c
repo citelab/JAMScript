@@ -288,7 +288,6 @@ void run_activity(void *arg)
                             repcode = (arg_t *)calloc(1, sizeof(arg_t));
                             command_arg_copy(repcode, &(cmd->args[0]));
                         }
-                        command_free(cmd);
                     }
                     // Push the reply.. into the reply queue..
                     pqueue_enq(jact->resultq, repcode, sizeof(arg_t));
@@ -299,7 +298,6 @@ void run_activity(void *arg)
                     // the reply queue.
                     pqueue_enq(jact->resultq, NULL, 0);
                 }
-                command_free(cmd);
             }
             else
             {
