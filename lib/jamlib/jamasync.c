@@ -7,6 +7,10 @@
 #include <pthread.h>
 #include "free_list.h"
 
+jactivity_t *jam_lexec_async(char *aname, ...)
+{
+    return NULL;
+}
 
 // The jactivity structure needs to be defined outside the function.
 // The memory is held until freed by an explicit activity_free()
