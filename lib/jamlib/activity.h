@@ -56,7 +56,10 @@ enum activity_state_t
 
 enum activity_type_t
 {
-    LOCAL_SYNC
+    SYNC,
+    ASYNC,
+    SYNC_RTE,
+    SYNC_NRT
 };
 
 typedef struct _activity_thread_t

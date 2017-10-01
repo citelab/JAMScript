@@ -630,13 +630,13 @@ void command_free(command_t *cmd)
         }
     }
 
-    free(cmd->cmd);
-    free(cmd->opt);
-    free(cmd->cond);
-    free(cmd->actname);
-    free(cmd->actid);
-    free(cmd->actarg);
-    free(cmd->buffer);
+    if (cmd->cmd != NULL) free(cmd->cmd);
+    if (cmd->opt != NULL) free(cmd->opt);
+    if (cmd->cond != NULL) free(cmd->cond);
+    if (cmd->actname != NULL) free(cmd->actname);
+    if (cmd->actid != NULL) free(cmd->actid);
+    if (cmd->actarg != NULL) free(cmd->actarg);
+    if (cmd->buffer != NULL) free(cmd->buffer);
 
     if(cmd->cbor_item_list)
     {

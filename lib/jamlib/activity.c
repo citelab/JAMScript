@@ -232,7 +232,7 @@ void run_activity(void *arg)
 {
     activity_table_t *at = ((comboptr_t *)arg)->arg1;
     activity_thread_t *athread = ((comboptr_t *)arg)->arg2;
-    arg_t *repcode = NULL;
+
 
     free(arg);
 
@@ -243,6 +243,7 @@ void run_activity(void *arg)
     athread->taskid = taskid();
     while (1)
     {
+        arg_t *repcode = NULL;
         command_t *cmd;
         nvoid_t *nv = pqueue_deq(athread->inq);
         jact = athread->jact;
@@ -264,7 +265,7 @@ void run_activity(void *arg)
         if (cmd != NULL)
         {
             // If the activity is local.. we check whether this is servicing JSYNC task processing
-            if (!jact->remote)
+            if ((!jact->remote) && jact->type == SYNC_RTE)
             {
                 jam_clear_timer(js, jact->actid);
                 // We got the ack for the SYNC request..
@@ -298,6 +299,62 @@ void run_activity(void *arg)
                     // the reply queue.
                     pqueue_enq(jact->resultq, NULL, 0);
                 }
+            }
+            else
+            if ((!jact->remote) && jact->type == SYNC_NRT)
+            {
+                bool ack_failed = false;
+                for (int i = 0; i < machine_height(js) -1; i++)
+                {
+                    if ((strcmp(cmd->cmd, "TIMEOUT") == 0) || (strcmp(cmd->cmd, "REXEC-NAK") == 0))
+                        ack_failed = true;
+
+                    if (i < machine_height(js) -2)
+                    {
+                        nv = pqueue_deq(athread->inq);
+
+                        if (nv != NULL)
+                        {
+                            cmd = (command_t *)nv->data;
+                            free(nv);
+                        }
+                    }
+                }
+
+                int results;
+                if (!ack_failed)
+                    results = 1;
+                else
+                    results = 0;
+                pqueue_enq(jact->resultq, &results, sizeof(int));
+            }
+            else
+            if ((!jact->remote) && jact->type == ASYNC)
+            {
+                bool ack_failed = false;
+                for (int i = 0; i < machine_height(js); i++)
+                {
+                    if ((strcmp(cmd->cmd, "TIMEOUT") == 0) || (strcmp(cmd->cmd, "REXEC-NAK") == 0))
+                        ack_failed = true;
+
+                    if (i < machine_height(js) -1)
+                    {
+                        nv = pqueue_deq(athread->inq);
+
+                        if (nv != NULL)
+                        {
+                            cmd = (command_t *)nv->data;
+                            free(nv);
+                        }
+                    }
+                }
+
+                int results;
+                if (!ack_failed)
+                    results = 1;
+                else
+                    results = 0;
+                pqueue_enq(jact->resultq, &results, sizeof(int));
             }
             else
             {
