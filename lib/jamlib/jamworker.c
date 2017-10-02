@@ -400,16 +400,16 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
 //
 void jwork_process_device(jamstate_t *js)
 {
-
     // Get the message from the device to process
     //
+
     nvoid_t *nv = queue_deq(js->deviceinq);
     if (nv == NULL) return;
 
     command_t *rcmd = (command_t *)nv->data;
     free(nv);
     #ifdef DEBUG_LVL1
-        printf("\n\nCommand from Device cmd: %s, opt: %s actarg: %s actid: %s\n\n\n", rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
+        printf("Command from Device cmd: %s, opt: %s actarg: %s actid: %s\n", rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
     #endif
     // Don't use nvoid_free() .. it is not deep enough
 
@@ -491,6 +491,19 @@ void jwork_process_device(jamstate_t *js)
         else
         if (strcmp(rcmd->cmd, "REXEC-ASY-CBK") == 0)
         {
+            // Check for duplicate
+            if (find_list_item(cache, rcmd->actid))
+            {
+                command_free(rcmd);
+                return;
+            }
+            else
+            {
+                put_list_tail(cache, strdup(rcmd->actid), strlen(rcmd->actid));
+                if (list_length(cache) > cachesize)
+                    del_list_tail(cache);
+            }
+
             if (runtable_find(js->rtable, rcmd->actarg) != NULL)
             {
                 if (jwork_evaluate_cond(rcmd->cond))

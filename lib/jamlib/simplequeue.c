@@ -66,7 +66,7 @@ char *random_name()
  */
 simplequeue_t *queue_new(bool ownedbyq)
 {
-    printf("===========================================\n");
+
 	simplequeue_t *sq = (simplequeue_t *)calloc(1, sizeof(simplequeue_t));
 	assert(sq != NULL);
 	sq->pullsock = nn_socket(AF_SP, NN_PULL);

@@ -10,6 +10,6 @@ jasync ping() {
 }
 
 int main() {
-    ping();
+    pong();
     return 0;
 }
