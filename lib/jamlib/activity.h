@@ -33,9 +33,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdint.h>
 
 #define MAX_NAME_LEN            64
-#define MAX_ACT_THREADS         4 // 16
+#define MAX_ACT_THREADS         2 // 16
 #define MAX_CALLBACKS           32
-#define MAX_REPLIES             5
 
 typedef void (*activitycallback_f)(void *ten, void *arg);
 
@@ -74,6 +73,7 @@ typedef struct _activity_thread_t
 
     pushqueue_t *inq;
     simplequeue_t *outq;
+    pushqueue_t *resultq;
 
 } activity_thread_t;
 
@@ -87,13 +87,8 @@ typedef struct _jactivity_t
 
     activity_thread_t *thread;
 
-    // Store all the replies we get...
-    // TODO: Wasting memory.. but we know what happened at different levels
-    command_t *replies[MAX_REPLIES];
-
     long long accesstime;
     bool remote;
-    pushqueue_t *resultq;
 
 } jactivity_t;
 

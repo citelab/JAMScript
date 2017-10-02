@@ -291,13 +291,13 @@ void run_activity(void *arg)
                         }
                     }
                     // Push the reply.. into the reply queue..
-                    pqueue_enq(jact->resultq, repcode, sizeof(arg_t));
+                    pqueue_enq(jact->thread->resultq, repcode, sizeof(arg_t));
                 }
                 else
                 {
                     // We did not receive the ack.. so we generate a NULL reply and push it to
                     // the reply queue.
-                    pqueue_enq(jact->resultq, NULL, 0);
+                    pqueue_enq(jact->thread->resultq, NULL, 0);
                 }
             }
             else
@@ -326,11 +326,12 @@ void run_activity(void *arg)
                     results = 1;
                 else
                     results = 0;
-                pqueue_enq(jact->resultq, &results, sizeof(int));
+                pqueue_enq(jact->thread->resultq, &results, sizeof(int));
             }
             else
             if ((!jact->remote) && jact->type == ASYNC)
             {
+                printf("Command %s\n", cmd->cmd);
                 bool ack_failed = false;
                 for (int i = 0; i < machine_height(js); i++)
                 {
@@ -339,6 +340,8 @@ void run_activity(void *arg)
 
                     if (i < machine_height(js) -1)
                     {
+                        printf("Getting the next level \n");
+
                         nv = pqueue_deq(athread->inq);
 
                         if (nv != NULL)
@@ -354,7 +357,7 @@ void run_activity(void *arg)
                     results = 1;
                 else
                     results = 0;
-                pqueue_enq(jact->resultq, &results, sizeof(int));
+                pqueue_enq(jact->thread->resultq, &results, sizeof(int));
             }
             else
             {
@@ -428,6 +431,7 @@ activity_thread_t *activity_initthread(activity_table_t *atbl)
     // Setup the I/O queues
     at->inq = pqueue_new(true);
     at->outq = queue_new(true);
+    at->resultq = pqueue_new(false);
 
     comboptr_t *ct = create_combo3_ptr(atbl, at, NULL);
     // TODO: What is the correct stack size? Remember this runs all user functions
@@ -495,7 +499,6 @@ jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
     if (jact != NULL)
     {
         jact->remote = remote;
-        jact->resultq = pqueue_new(false);
         while ((jact->thread = activity_getthread(at, actid)) == NULL)
         {
             printf("Waiting for ...\n");
@@ -520,6 +523,10 @@ jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
 
 jactivity_t *activity_renew(activity_table_t *at, jactivity_t *jact)
 {
+    // No need to renew... it already has a thread.
+    if (activity_getbyid(at, jact->actid) != NULL)
+        return jact;
+
     // Wait? for getting the thread..
     while ((jact->thread = activity_getthread(at, jact->actid)) == NULL)
     {
@@ -541,18 +548,12 @@ jactivity_t *activity_renew(activity_table_t *at, jactivity_t *jact)
 
 void activity_free(jactivity_t *jact)
 {
-    int i;
 
 //    printf("Activity free... %s\n", jact->actid);
     activity_freethread(jact);
 
-    if (jact->actid) free(jact->actid);
-
-    for (i = 0; i < MAX_REPLIES; i++)
-    {
-        if (jact->replies[i] != NULL)
-            command_free(jact->replies[i]);
-    }
+    if (jact->actid)
+        free(jact->actid);
 
     free(jact);
 //    taskyield();

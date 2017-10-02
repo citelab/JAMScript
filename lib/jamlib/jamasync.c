@@ -103,15 +103,18 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         printf("Starting JAM ASYNC exec runner... \n");
     #endif
 
+
     // Repeat for three times ... under failure..
     for (int i = 0; i < 3 && !valid_acks; i++)
     {
+        printf("=========== i = %d\n", i);
+        command_hold(cmd);
         // Send the command to the remote side
         // The send is executed via the worker thread..
         queue_enq(jact->thread->outq, cmd, sizeof(command_t));
 
         jam_set_timer(js, jact->actid, timeout);
-        nvoid_t *nv = pqueue_deq(jact->resultq);
+        nvoid_t *nv = pqueue_deq(jact->thread->resultq);
 
         if (nv != NULL)
         {
@@ -127,5 +130,8 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
             }
             free(nv);
         }
+        jact = activity_renew(js->atable, jact);
     }
+    printf("================= FREED ----------\n");
+    command_free(cmd);
 }

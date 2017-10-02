@@ -169,7 +169,7 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         queue_enq(jact->thread->outq, cmd, sizeof(command_t));
 
         jam_set_timer(js, jact->actid, timeout);
-        nvoid_t *nv = pqueue_deq(jact->resultq);
+        nvoid_t *nv = pqueue_deq(jact->thread->resultq);
 
         if (nv != NULL)
         {

@@ -697,7 +697,7 @@ void stcallback(void *arg)
 
 void jam_set_timer(jamstate_t *js, char *actid, int tval)
 {
- //   printf("JAM-set-timer for actid .. %s\n", actid);
+    printf("JAM-set-timer for actid .. %s\n", actid);
 
     activity_thread_t *athr = activity_getbyid(js->atable, actid);
     if (athr != NULL)
