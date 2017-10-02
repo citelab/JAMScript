@@ -409,7 +409,7 @@ void jwork_process_device(jamstate_t *js)
     command_t *rcmd = (command_t *)nv->data;
     free(nv);
     #ifdef DEBUG_LVL1
-        printf("\n\nIMPORTANT %s, opt: %s actarg: %s actid: %s\n\n\n", rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
+        printf("\n\nCommand from Device cmd: %s, opt: %s actarg: %s actid: %s\n\n\n", rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
     #endif
     // Don't use nvoid_free() .. it is not deep enough
 

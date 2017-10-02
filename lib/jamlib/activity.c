@@ -303,6 +303,7 @@ void run_activity(void *arg)
             else
             if ((!jact->remote) && jact->type == SYNC_NRT)
             {
+                jam_clear_timer(js, jact->actid);
                 bool ack_failed = false;
                 for (int i = 0; i < machine_height(js) -1; i++)
                 {
@@ -311,7 +312,10 @@ void run_activity(void *arg)
 
                     if (i < machine_height(js) -2)
                     {
+                        int timeout = 300;
+                        jam_set_timer(js, jact->actid, timeout);
                         nv = pqueue_deq(athread->inq);
+                        jam_clear_timer(js, jact->actid);
 
                         if (nv != NULL)
                         {
@@ -331,6 +335,7 @@ void run_activity(void *arg)
             else
             if ((!jact->remote) && jact->type == ASYNC)
             {
+                jam_clear_timer(js, jact->actid);
                 printf("Command %s\n", cmd->cmd);
                 bool ack_failed = false;
                 for (int i = 0; i < machine_height(js); i++)
@@ -342,7 +347,10 @@ void run_activity(void *arg)
                     {
                         printf("Getting the next level \n");
 
+                        int timeout = 300;
+                        jam_set_timer(js, jact->actid, timeout);
                         nv = pqueue_deq(athread->inq);
+                        jam_clear_timer(js, jact->actid);
 
                         if (nv != NULL)
                         {
