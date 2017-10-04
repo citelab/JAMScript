@@ -175,7 +175,9 @@ void jam_event_loop(void *arg)
                 // The activity creation should have setup the thread
                 // So we should have a thread to run...
                 //
-                runtable_insert(js, cmd->actid, cmd);
+                printf("@@@@@@@@@@@@@@ Inserting into runtable... \n");
+
+            //    runtable_insert(js, cmd->actid, cmd);
                 //
                 if (jact != NULL)
                     pqueue_enq(jact->thread->inq, cmd, sizeof(command_t));
@@ -211,7 +213,7 @@ void jam_event_loop(void *arg)
                 // The activity creation should have setup the thread
                 // So we should have a thread to run...
                 //
-                runtable_insert(js, cmd->actid, cmd);
+            //    runtable_insert(js, cmd->actid, cmd);
                 //
 
 				// Busy waiting until the start time.

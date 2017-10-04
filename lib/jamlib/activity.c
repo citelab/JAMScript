@@ -140,6 +140,7 @@ activity_table_t *activity_table_new(void *jarg)
     // globaloutq is used by the main thread for output purposes
     atbl->globalinq = p2queue_new(true);
     atbl->globaloutq = queue_new(true);
+    pthread_mutex_init(&(atbl->lock), NULL);
 
     return atbl;
 }
@@ -161,6 +162,8 @@ void activity_table_print(activity_table_t *at)
 
     printf("\n");
 }
+
+
 
 void activity_callbackreg_print(activity_callback_reg_t *areg)
 {
@@ -189,9 +192,14 @@ bool activity_regcallback(activity_table_t *at, char *name, int type, char *sig,
     int i;
 
     // if a registration already exists, return false
+    pthread_mutex_lock(&(at->lock));
     for (i = 0; i < at->numcbackregs; i++)
         if (strcmp(at->callbackregs[i]->name, name) == 0)
+        {
+            pthread_mutex_unlock(&(at->lock));
             return false;
+        }
+    pthread_mutex_unlock(&(at->lock));
 
     // otherwise, make a new activity registration.
     activity_callback_reg_t *creg = (activity_callback_reg_t *)calloc(1, sizeof(activity_callback_reg_t));
@@ -200,7 +208,9 @@ bool activity_regcallback(activity_table_t *at, char *name, int type, char *sig,
     creg->type = type;
     creg->cback = cback;
 
+    pthread_mutex_lock(&(at->lock));
     at->callbackregs[at->numcbackregs++] = creg;
+    pthread_mutex_unlock(&(at->lock));
 
     #ifdef DEBUG_LVL1
         printf("Activity make success: %s.. made\n", name);
@@ -214,11 +224,16 @@ activity_callback_reg_t *activity_findcallback(activity_table_t *at, char *name)
 {
     int i;
 
+    pthread_mutex_lock(&(at->lock));
     for (i = 0; i < at->numcbackregs; i++)
     {
         if (strcmp(at->callbackregs[i]->name, name) == 0)
+        {
+            pthread_mutex_unlock(&(at->lock));
             return at->callbackregs[i];
+        }
     }
+    pthread_mutex_unlock(&(at->lock));
 
     return NULL;
 }
@@ -233,7 +248,6 @@ void run_activity(void *arg)
     activity_table_t *at = ((comboptr_t *)arg)->arg1;
     activity_thread_t *athread = ((comboptr_t *)arg)->arg2;
 
-
     free(arg);
 
     jamstate_t *js = (jamstate_t *)at->jarg;
@@ -247,6 +261,7 @@ void run_activity(void *arg)
         command_t *cmd;
         nvoid_t *nv = pqueue_deq(athread->inq);
         jact = athread->jact;
+
         if (jact == NULL)
         {
             // Something is wrong.. we just got a thread woken without any activity..
@@ -388,7 +403,7 @@ void run_activity(void *arg)
                         // Delete the runtable entry..
                         // TODO: Do we ever need a runtable entry (even the deleted one) at a later point in time?
                         jamstate_t *js = (jamstate_t *)at->jarg;
-                        runtable_del(js->rtable, cmd->actid);
+                    //    runtable_del(js->rtable, cmd->actid);
                     }
                 }
                 else
@@ -411,7 +426,7 @@ void run_activity(void *arg)
                         // Delete the runtable entry..
                         // TODO: Do we ever need a runtable entry (even the deleted one) at a later point in time?
                         jamstate_t *js = (jamstate_t *)at->jarg;
-                        runtable_del(js->rtable, cmd->actid);
+                    //    runtable_del(js->rtable, cmd->actid);
                     }
                 }
             }
@@ -433,7 +448,7 @@ activity_thread_t *activity_initthread(activity_table_t *atbl)
 
     // Setup the dummy activity
     at->state = EMPTY;
-    at->actid = NULL;
+    at->actid = strdup("init");
     at->threadid = counter++;
 
     // Setup the I/O queues
@@ -454,55 +469,42 @@ activity_thread_t *activity_getthread(activity_table_t *at, char *actid)
     int i, j = -1;
 
     // Get an EMPTY thread if available
+    pthread_mutex_lock(&(at->lock));
     for (i = 0; i < MAX_ACT_THREADS; i++)
         if (at->athreads[i]->state == EMPTY)
+        {
+            pthread_mutex_unlock(&(at->lock));
             return at->athreads[i];
+        }
 
+    pthread_mutex_unlock(&(at->lock));
     return NULL;
-
-    // FIXME: Delete the rest..
-
-    long long ctime = activity_getseconds();
-    long cdiff = 0;
-
-    // If not, replace a least recently used thread..
-    for (i = 0; i < MAX_ACT_THREADS; i++)
-    {
-        if (at->athreads[i]->jact == NULL)
-        {
-            j = i;
-            break;
-        }
-        else
-        {
-            if (ctime - at->athreads[i]->jact->accesstime > cdiff)
-            {
-                cdiff = ctime - at->athreads[i]->jact->accesstime;
-                j = i;
-            }
-        }
-    }
-    printf("J = %d\n", j);
-
-    if (j < 0)
-        return NULL;
-    else
-        return at->athreads[j];
 }
+// Should we have thread pulled out of the inactive tasks?
+// When there is high pressue for active threads.. should we
+// allow dormant tasks to hang on to their threads?
+// TODO: What will happen if we pull back those dormant threads?
 
-void activity_setthread(activity_thread_t *at, jactivity_t *jact, char *actid)
+
+void activity_setthread(activity_thread_t *athr, jactivity_t *jact, char *actid)
 {
-    at->state = NEW;
-    // TODO: There could be memory leak here.. did we release the previous one?
-    at->actid = strdup(actid);
-    at->jact = jact;
-}
+    activity_table_t *at = jact->atable;
 
+    pthread_mutex_lock(&(at->lock));
+    athr->state = NEW;
+    // TODO: There could be memory leak here.. did we release the previous one?
+    athr->actid = strdup(actid);
+    athr->jact = jact;
+    pthread_mutex_unlock(&(at->lock));
+
+    printf("Grabbing.. thread %d\n", athr->threadid);
+}
 
 
 jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
 {
     jactivity_t *jact = (jactivity_t *)calloc(1, sizeof(jactivity_t));
+    jact->atable = at;
 
     if (jact != NULL)
     {
@@ -538,7 +540,7 @@ jactivity_t *activity_renew(activity_table_t *at, jactivity_t *jact)
     // Wait? for getting the thread..
     while ((jact->thread = activity_getthread(at, jact->actid)) == NULL)
     {
-        printf("Waiting for ...\n");
+        printf("Waiting for 2...\n");
         taskdelay(10);
     }
 
@@ -556,15 +558,16 @@ jactivity_t *activity_renew(activity_table_t *at, jactivity_t *jact)
 
 void activity_free(jactivity_t *jact)
 {
+    activity_table_t *at = jact->atable;
 
-//    printf("Activity free... %s\n", jact->actid);
+    pthread_mutex_lock(&(at->lock));
     activity_freethread(jact);
 
     if (jact->actid)
         free(jact->actid);
 
     free(jact);
-//    taskyield();
+    pthread_mutex_unlock(&(at->lock));
 }
 
 
@@ -572,12 +575,19 @@ activity_thread_t *activity_getbyid(activity_table_t *at, char *actid)
 {
     int i;
 
+    pthread_mutex_lock(&(at->lock));
     for (i = 0; i < MAX_ACT_THREADS; i++)
     {
         if ((at->athreads[i]->state != EMPTY) &&
+            (at->athreads[i]->actid != NULL) &&
             (strcmp(at->athreads[i]->actid, actid) == 0))
+        {
+            pthread_mutex_unlock(&(at->lock));
             return at->athreads[i];
+        }
     }
+
+    pthread_mutex_unlock(&(at->lock));
     return NULL;
 }
 
@@ -587,22 +597,32 @@ int activity_id2indx(activity_table_t *at, char *actid)
 {
     int i;
 
+    pthread_mutex_lock(&(at->lock));
     for (i = 0; i < MAX_ACT_THREADS; i++)
     {
         if ((at->athreads[i]->state != EMPTY) &&
             (strcmp(at->athreads[i]->actid, actid) == 0))
+        {
+            pthread_mutex_unlock(&(at->lock));
             return i;
+        }
     }
+    pthread_mutex_unlock(&(at->lock));
     return -1;
 }
 
 
+// No need to lock inside this function.
+// This is called from activity_free() only.
+//
 void activity_freethread(jactivity_t *jact)
 {
+
     if ((jact == NULL) || (jact->thread == NULL))
         return;
 
     jact->thread->state = EMPTY;
+    printf("Freed thread %d\n", jact->thread->threadid);
 
     // Free memory that is not reuseable
     // FIXME: What is the trouble with deallocating here??
@@ -612,6 +632,7 @@ void activity_freethread(jactivity_t *jact)
     jact->thread->jact = NULL;
     jact->thread = NULL;
  //   printf("Freed thread for activity %s\n", jact->actid);
+
 }
 
 void activity_complete(activity_table_t *at, char *actid, char *fmt, ...)

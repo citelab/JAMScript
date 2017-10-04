@@ -71,7 +71,7 @@ void on_fog_connect(void* context, MQTTAsync_successData* response)
     mqtt_publish(cs->mqttserv[1], "/admin/request/all", scmd);
 
     // NOTE: For now, I am putting the mqttenabled flag setting here.
-    // This is for the device.
+    // This is for the fog.
     // A better alternative is to get the REGISTER-ACK and set the flag
     cs->mqttenabled[1] = true;
     core_check_pending(cs);
@@ -90,7 +90,7 @@ void on_cloud_connect(void* context, MQTTAsync_successData* response)
     mqtt_publish(cs->mqttserv[2], "/admin/request/all", scmd);
 
     // NOTE: For now, I am putting the mqttenabled flag setting here.
-    // This is for the device.
+    // This is for the cloud.
     // A better alternative is to get the REGISTER-ACK and set the flag
     cs->mqttenabled[2] = true;
     core_check_pending(cs);
@@ -257,7 +257,6 @@ void jwork_assemble_fds(jamstate_t *js)
 
     for (i = 0; i < MAX_ACT_THREADS; i++)
         js->pollfds[4 + i].fd = js->atable->athreads[i]->outq->pullsock;
-
 }
 
 
@@ -470,9 +469,11 @@ void jwork_process_device(jamstate_t *js)
         if ((strcmp(rcmd->cmd, "REXEC-ASY") == 0) ||
             (strcmp(rcmd->cmd, "REXEC-SYN") == 0))
         {
+            printf("Duplicate check... %s\n", rcmd->actid);
             // Check for duplicate
             if (find_list_item(cache, rcmd->actid))
             {
+                printf("Duplicate found \n");
                 command_free(rcmd);
                 return;
             }
@@ -485,8 +486,8 @@ void jwork_process_device(jamstate_t *js)
 
             if (jwork_evaluate_cond(rcmd->cond))
                 p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
-            else
-                jwork_send_nak(js, rcmd, "CONDITION FALSE");
+            //else
+            //    jwork_send_nak(js, rcmd, "CONDITION FALSE");
         }
         else
         if (strcmp(rcmd->cmd, "REXEC-ASY-CBK") == 0)
@@ -710,6 +711,8 @@ void stcallback(void *arg)
 
 void jam_set_timer(jamstate_t *js, char *actid, int tval)
 {
+    return;
+
     printf("JAM-set-timer for actid .. %s\n", actid);
 
     activity_thread_t *athr = activity_getbyid(js->atable, actid);
@@ -722,6 +725,8 @@ void jam_set_timer(jamstate_t *js, char *actid, int tval)
 
 void jam_clear_timer(jamstate_t *js, char *actid)
 {
+    return;
+
  //   printf("JAM-clear-timer %s\n", actid);
 
     timer_del_event(js->maintimer, actid);

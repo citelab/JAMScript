@@ -33,7 +33,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdint.h>
 
 #define MAX_NAME_LEN            64
-#define MAX_ACT_THREADS         2 // 16
+#define MAX_ACT_THREADS         16
 #define MAX_CALLBACKS           32
 
 typedef void (*activitycallback_f)(void *ten, void *arg);
@@ -78,21 +78,6 @@ typedef struct _activity_thread_t
 } activity_thread_t;
 
 
-typedef struct _jactivity_t
-{
-    enum activity_state_t state;
-    enum activity_type_t type;
-
-    char *actid;
-
-    activity_thread_t *thread;
-
-    long long accesstime;
-    bool remote;
-
-} jactivity_t;
-
-
 typedef struct _activity_callback_reg_t
 {
     char name[MAX_NAME_LEN];
@@ -121,7 +106,26 @@ typedef struct _activity_table_t
     simplequeue_t *globaloutq;
     push2queue_t *globalinq;
 
+    pthread_mutex_t lock;
+
 } activity_table_t;
+
+
+typedef struct _jactivity_t
+{
+    enum activity_state_t state;
+    enum activity_type_t type;
+
+    char *actid;
+
+    activity_thread_t *thread;
+
+    long long accesstime;
+    bool remote;
+    activity_table_t *atable;
+
+} jactivity_t;
+
 
 
 //

@@ -32,6 +32,9 @@
     #           '-lcbor',
     #           '-lnanomsg',
     #           '-levent'
+    #         ],
+    #	      "cflags!": [
+    #         'g', 'O0'
     #         ]
     #       }]
     #     ],
