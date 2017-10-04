@@ -351,7 +351,6 @@ void run_activity(void *arg)
             if ((!jact->remote) && jact->type == ASYNC)
             {
                 jam_clear_timer(js, jact->actid);
-                printf("Command %s\n", cmd->cmd);
                 bool ack_failed = false;
                 for (int i = 0; i < machine_height(js); i++)
                 {
@@ -360,8 +359,6 @@ void run_activity(void *arg)
 
                     if (i < machine_height(js) -1)
                     {
-                        printf("Getting the next level \n");
-
                         int timeout = 300;
                         jam_set_timer(js, jact->actid, timeout);
                         nv = pqueue_deq(athread->inq);
@@ -497,7 +494,6 @@ void activity_setthread(activity_thread_t *athr, jactivity_t *jact, char *actid)
     athr->jact = jact;
     pthread_mutex_unlock(&(at->lock));
 
-    printf("Grabbing.. thread %d\n", athr->threadid);
 }
 
 
@@ -511,7 +507,6 @@ jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
         jact->remote = remote;
         while ((jact->thread = activity_getthread(at, actid)) == NULL)
         {
-            printf("Waiting for ...\n");
             taskdelay(10);
         }
 
@@ -540,7 +535,6 @@ jactivity_t *activity_renew(activity_table_t *at, jactivity_t *jact)
     // Wait? for getting the thread..
     while ((jact->thread = activity_getthread(at, jact->actid)) == NULL)
     {
-        printf("Waiting for 2...\n");
         taskdelay(10);
     }
 
@@ -622,7 +616,6 @@ void activity_freethread(jactivity_t *jact)
         return;
 
     jact->thread->state = EMPTY;
-    printf("Freed thread %d\n", jact->thread->threadid);
 
     // Free memory that is not reuseable
     // FIXME: What is the trouble with deallocating here??

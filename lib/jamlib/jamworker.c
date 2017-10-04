@@ -387,7 +387,6 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
         for (int i = 0; i < 3; i++)
             if (js->cstate->mqttenabled[i] == true)
             {
-                printf("Actoutq .. i = %d, MQTTHost %s, MQTTServ %p\n", i, js->cstate->mqtthost[i], js->cstate->mqttserv[i]);
                 mqtt_publish(js->cstate->mqttserv[i], "/level/func/request", rcmd);
             }
     }
@@ -469,11 +468,9 @@ void jwork_process_device(jamstate_t *js)
         if ((strcmp(rcmd->cmd, "REXEC-ASY") == 0) ||
             (strcmp(rcmd->cmd, "REXEC-SYN") == 0))
         {
-            printf("Duplicate check... %s\n", rcmd->actid);
             // Check for duplicate
             if (find_list_item(cache, rcmd->actid))
             {
-                printf("Duplicate found \n");
                 command_free(rcmd);
                 return;
             }
@@ -534,7 +531,6 @@ void jwork_process_device(jamstate_t *js)
         }
         else
         {
-            printf("Command %s freed...............\n", rcmd->cmd);
             command_free(rcmd);
         }
     }
@@ -701,7 +697,6 @@ void tcallback(void *arg)
 void stcallback(void *arg)
 {
 
-    printf("Triggering the sync timer callback...\n");
     jamstate_t *js = (jamstate_t *)arg;
     // stick the "TIMEOUT" message into the queue for the activity
     command_t *tmsg = command_new("SYNC_TIMEOUT", "-", "-", 0, "GLOBAL_INQUEUE", "__", "__", "");
@@ -712,8 +707,6 @@ void stcallback(void *arg)
 void jam_set_timer(jamstate_t *js, char *actid, int tval)
 {
     return;
-
-    printf("JAM-set-timer for actid .. %s\n", actid);
 
     activity_thread_t *athr = activity_getbyid(js->atable, actid);
     if (athr != NULL)

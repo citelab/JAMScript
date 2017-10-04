@@ -173,9 +173,6 @@ bool runtable_insert(jamstate_t * js, char *actid, command_t *cmd)
     js->rtable->rcount++;
     pthread_mutex_unlock(&(js->rtable->lock));
 
-    printf("Runtable count %d\n", js->rtable->rcount);
-    // if (js->rtable->rcount == 0) exit(1);
-
     return true;
 }
 
@@ -194,7 +191,6 @@ bool runtable_del(runtable_t *tbl, char *actid)
     // We are just marking it as deleted.
     //
 
-    printf("Deleted...\n");
     pthread_mutex_lock(&(tbl->lock));
     re->status = DELETED;
     tbl->rcount--;
@@ -234,9 +230,9 @@ void jrun_arun_callback(jactivity_t *jact, command_t *cmd, activity_callback_reg
     // No need to create it again...
     //
 
-    //#ifdef DEBUG_LVL1
-        printf("========= >> Starting the function....................\n");
-    //#endif
+    #ifdef DEBUG_LVL1
+    printf("========= >> Starting the function....................\n");
+    #endif
     creg->cback(jact, cmd);
 
     // if the execution was done due to a remote request...
