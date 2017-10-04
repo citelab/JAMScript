@@ -162,7 +162,6 @@ void jam_event_loop(void *arg)
             free(nv);
         } else
             cmd = NULL;
-        printf("command TYPE: %s\n", cmd->cmd);
 
         if (cmd != NULL)
         {
@@ -175,10 +174,8 @@ void jam_event_loop(void *arg)
                 // The activity creation should have setup the thread
                 // So we should have a thread to run...
                 //
-                printf("@@@@@@@@@@@@@@ Inserting into runtable... \n");
+                runtable_insert(js, cmd->actid, cmd);
 
-            //    runtable_insert(js, cmd->actid, cmd);
-                //
                 if (jact != NULL)
                     pqueue_enq(jact->thread->inq, cmd, sizeof(command_t));
                 else
@@ -212,9 +209,7 @@ void jam_event_loop(void *arg)
                 jactivity_t *jact = activity_new(js->atable, cmd->actid, true);
                 // The activity creation should have setup the thread
                 // So we should have a thread to run...
-                //
-            //    runtable_insert(js, cmd->actid, cmd);
-                //
+                runtable_insert(js, cmd->actid, cmd);
 
 				// Busy waiting until the start time.
                 while (getcurtime() < (double) sTime) {}

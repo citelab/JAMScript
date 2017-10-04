@@ -403,7 +403,7 @@ void run_activity(void *arg)
                         // Delete the runtable entry..
                         // TODO: Do we ever need a runtable entry (even the deleted one) at a later point in time?
                         jamstate_t *js = (jamstate_t *)at->jarg;
-                    //    runtable_del(js->rtable, cmd->actid);
+                        runtable_del(js->rtable, cmd->actid);
                     }
                 }
                 else
@@ -426,7 +426,7 @@ void run_activity(void *arg)
                         // Delete the runtable entry..
                         // TODO: Do we ever need a runtable entry (even the deleted one) at a later point in time?
                         jamstate_t *js = (jamstate_t *)at->jarg;
-                    //    runtable_del(js->rtable, cmd->actid);
+                        runtable_del(js->rtable, cmd->actid);
                     }
                 }
             }

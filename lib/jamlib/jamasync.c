@@ -103,20 +103,19 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         printf("Starting JAM ASYNC exec runner... \n");
     #endif
 
-//    runtable_insert(js, cmd->actid, cmd);
-//    runtableentry_t *act_entry = runtable_find(js->rtable, cmd->actid);
+    runtable_insert(js, cmd->actid, cmd);
+    runtableentry_t *act_entry = runtable_find(js->rtable, cmd->actid);
     // No need to release act_entry - it is part of the runtable
 
-//    if (act_entry == NULL)
-//    {
-//        printf("FATAL ERROR!! Cannot find activity ... \n");
-//        exit(0);
-//    }
+    if (act_entry == NULL)
+    {
+        printf("FATAL ERROR!! Cannot find activity ... \n");
+        exit(0);
+    }
 
     // Repeat for three times ... under failure..
     for (int i = 0; i < 3 && !valid_acks; i++)
     {
-        printf("=========== i = %d\n", i);
         command_hold(cmd);
         // Send the command to the remote side
         // The send is executed via the worker thread..
@@ -141,9 +140,7 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         }
         jact = activity_renew(js->atable, jact);
     }
-    printf("================= FREED ----------\n");
     // Delete the runtable entry.
-//    runtable_del(js->rtable, act_entry->actid);
+    runtable_del(js->rtable, act_entry->actid);
     command_free(cmd);
-
 }
