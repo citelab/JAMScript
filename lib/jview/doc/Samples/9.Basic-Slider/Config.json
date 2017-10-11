@@ -14,7 +14,22 @@
       "layout" : "default",
       "panels" : [
         {
-          "type": "Slider"
+          "type": "Controller",
+          "controlList": [
+            {
+              "type": "slider",
+              "dispLabel": "Controller #1",
+              "max": 100,
+              "min": 0,
+              "step": 10,
+              "trigger": "emitValue"
+            }
+          ],
+          "store": {
+            "maxValue": "100",
+            "minValue": "0",
+            "stepValue": "10"
+          }
         } 
       ]
     }
