@@ -11,7 +11,7 @@ jasync ping() {
 
 int main() {
     int i;
-    for(i = 0; i < 100; i++)
+    while(1)
         pong();
     return 0;
 }

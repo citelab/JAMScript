@@ -417,9 +417,9 @@ void run_activity(void *arg)
                         #endif
 
                         jrun_arun_callback(athread->jact, cmd, areg);
-                        #ifdef DEBUG_LVL1
+                        //#ifdef DEBUG_LVL1
                         printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
-                        #endif
+                        //#endif
                         // Delete the runtable entry..
                         // TODO: Do we ever need a runtable entry (even the deleted one) at a later point in time?
                         jamstate_t *js = (jamstate_t *)at->jarg;
@@ -661,6 +661,8 @@ void activity_complete(activity_table_t *at, char *actid, char *fmt, ...)
 
     if (re != NULL)
     {
+        printf("======================== type %d val %d\n", qarg->type, qarg->val.ival);
+
         jwork_send_results(js, re->actname, re->actid, qarg);
         runtable_store_results(js->rtable, actid, qarg);
     }
