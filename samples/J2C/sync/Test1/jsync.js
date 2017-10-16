@@ -8,4 +8,4 @@ function runsynctest()
 
 setInterval(function() {
 	runsynctest();
-    }, 10);
+    }, 1);

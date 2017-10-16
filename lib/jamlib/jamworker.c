@@ -200,10 +200,10 @@ int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTAsync_messag
     }
     else
     if (strncmp(topicname, "admin/request/Go", strlen("admin/request/Go") -1) == 0) {
-        char *strSyncTime = msg->payload;
-        command_t *cmd = command_new("GOGOGO", strSyncTime, "-", 0, "GLOBAL_INQUEUE", "__", "__", "");
-        nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
-        nvoid_free(nv);
+        char *stime = (char *)malloc(msg->payloadlen + 2);
+        strncpy(stime, msg->payload, msg->payloadlen);
+        stime[msg->payloadlen] = 0;
+        command_t *cmd = command_new("GOGOGO", stime, "-", 0, "GLOBAL_INQUEUE", "__", "__", "");
         queue_enq(queue, cmd, sizeof(command_t));
     }
 
@@ -481,10 +481,10 @@ void jwork_process_device(jamstate_t *js)
                     del_list_tail(cache);
             }
 
-            if (jwork_evaluate_cond(rcmd->cond))
+    //        if (jwork_evaluate_cond(rcmd->cond))
                 p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
-            else
-                jwork_send_nak(js, rcmd, "CONDITION FALSE");
+    //        else
+    //            jwork_send_nak(js, rcmd, "CONDITION FALSE");
         }
         else
         if (strcmp(rcmd->cmd, "REXEC-ASY-CBK") == 0)

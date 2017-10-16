@@ -49,6 +49,8 @@ int jcond_eval_bool(char *s)
 {
     int res;
     char buf[strlen(s) + 16];
+    printf("Evaluating cond: %s\n", s);
+    
     sprintf(buf, "var __jrval = eval(%s)", s);
     js_dostring(J, buf);
     js_getglobal(J, "__jrval");
