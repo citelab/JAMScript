@@ -481,10 +481,10 @@ void jwork_process_device(jamstate_t *js)
                     del_list_tail(cache);
             }
 
-    //        if (jwork_evaluate_cond(rcmd->cond))
+            if (jwork_evaluate_cond(rcmd->cond))
                 p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
-    //        else
-    //            jwork_send_nak(js, rcmd, "CONDITION FALSE");
+            else
+                jwork_send_nak(js, rcmd, "CONDITION FALSE");
         }
         else
         if (strcmp(rcmd->cmd, "REXEC-ASY-CBK") == 0)
