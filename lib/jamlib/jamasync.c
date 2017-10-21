@@ -113,22 +113,27 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         exit(0);
     }
 
+    activity_thread_t *athr = athread_getbyindx(js->atable, jact->jindx);
+    printf("=======Jindx %d, jact-jindx %d\n", athr->jindx, jact->jindx);
+    printf("Command actid %s\n", cmd->actid);
+    printf("Jact actid %s\n", jact->actid);
+
     // Repeat for three times ... under failure..
     for (int i = 0; i < 3 && !valid_acks; i++)
     {
         command_hold(cmd);
         // Send the command to the remote side
         // The send is executed via the worker thread..
-        queue_enq(jact->thread->outq, cmd, sizeof(command_t));
+        queue_enq(athr->outq, cmd, sizeof(command_t));
 
         jam_set_timer(js, jact->actid, timeout);
-        nvoid_t *nv = pqueue_deq(jact->thread->resultq);
+        nvoid_t *nv = pqueue_deq(athr->resultq);
 
         if (nv != NULL)
         {
             switch (nv->len) {
                 case sizeof(int):
-                    results = (*(int *)nv->data);
+                    memcpy(&results, nv->data, sizeof(int));
                     if (results)
                         valid_acks = true;
                     break;

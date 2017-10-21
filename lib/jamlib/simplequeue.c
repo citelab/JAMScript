@@ -93,7 +93,7 @@ simplequeue_t *queue_new(bool ownedbyq)
 	sq->pushsock = nn_socket(AF_SP, NN_PUSH);
 	assert(sq->pushsock >= 0);
 	nn_connect(sq->pushsock, sq->name);
-	sq->ownedbyq = false; //ownedbyq;
+	sq->ownedbyq = ownedbyq; //ownedbyq;
 
 	return sq;
 }

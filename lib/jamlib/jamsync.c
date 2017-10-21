@@ -161,15 +161,17 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         printf("Starting JAM exec runner... \n");
     #endif
 
+    activity_thread_t *athr = athread_getbyindx(js->atable, jact->jindx);
+
     // Repeat for three times ... under failure..
     for (int i = 0; i < 3 && !valid_results; i++)
     {
         // Send the command to the remote side
         // The send is executed via the worker thread..
-        queue_enq(jact->thread->outq, cmd, sizeof(command_t));
+        queue_enq(athr->outq, cmd, sizeof(command_t));
 
         jam_set_timer(js, jact->actid, timeout);
-        nvoid_t *nv = pqueue_deq(jact->thread->resultq);
+        nvoid_t *nv = pqueue_deq(athr->resultq);
 
         if (nv != NULL)
         {

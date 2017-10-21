@@ -65,7 +65,7 @@ void on_fog_connect(void* context, MQTTAsync_successData* response)
     corestate_t *cs = (corestate_t *)context;
 
     // Set the subscriptions
-    core_set_subscription(cs, 0);
+    core_set_subscription(cs, 1);
 
     scmd = command_new("REGISTER", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
     mqtt_publish(cs->mqttserv[1], "/admin/request/all", scmd);
@@ -84,7 +84,7 @@ void on_cloud_connect(void* context, MQTTAsync_successData* response)
     corestate_t *cs = (corestate_t *)context;
 
     // Set the subscriptions
-    core_set_subscription(cs, 0);
+    core_set_subscription(cs, 2);
 
     scmd = command_new("REGISTER", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
     mqtt_publish(cs->mqttserv[2], "/admin/request/all", scmd);
@@ -167,6 +167,7 @@ void *jwork_bgthread(void *arg)
 
 int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTAsync_message *msg)
 {
+
     // the ctx pointer is used to recover original context.
     comboptr_t *cptr = (comboptr_t *)ctx;
     simplequeue_t *queue = (simplequeue_t *)(cptr->arg2);
@@ -381,7 +382,9 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
         // Increment the hold on rcmd.. so that memory deallocation happens after all use
         for (i = 1; i < 3; i++)
             if (js->cstate->mqttenabled[i] == true)
+            {
                 command_hold(rcmd);
+            }
 
         // relay the command to the remote servers..
         for (int i = 0; i < 3; i++)
@@ -433,7 +436,6 @@ void jwork_process_device(jamstate_t *js)
             // If registration is still not complete.. send another registration
             // Although this could be a very rare event.. (missing REGISTER message)
 
-
             // If CF information is still pending.. send a REFRESH to get the
             // latest information... the callback is already there..
 
@@ -446,20 +448,40 @@ void jwork_process_device(jamstate_t *js)
         else
         if (strcmp(rcmd->cmd, "PUT-CF-INFO") == 0)
         {
-            if ((strcmp(rcmd->actarg, "fog") == 0) && (strcmp(rcmd->opt, "ADD") == 0))
+            if (strcmp(rcmd->actarg, "fog") == 0)
             {
-                core_createserver(js->cstate, 1, rcmd->args[0].val.sval);
-                comboptr_t *ctx = create_combo3i_ptr(js, js->foginq, NULL, 1);
-                core_setcallbacks(js->cstate, ctx, jwork_connect_lost, jwork_msg_arrived, NULL);
-                core_connect(js->cstate, 1, on_fog_connect);
+                if  (strcmp(rcmd->opt, "ADD") == 0)
+                {
+                    core_createserver(js->cstate, 1, rcmd->args[0].val.sval);
+                    comboptr_t *ctx = create_combo3i_ptr(js, js->foginq, NULL, 1);
+                    core_setcallbacks(js->cstate, ctx, jwork_connect_lost, jwork_msg_arrived, NULL);
+                    core_connect(js->cstate, 1, on_fog_connect);
+                    printf("Machine height %d\n", machine_height(js));
+                }
+                else
+                if (strcmp(rcmd->opt, "DEL") == 0)
+                {
+                    printf("==>>>>>>>>>>=== FOG deletion ----------------->>>>>>>>>\n");
+                    core_disconnect(js->cstate, 1);
+                }
             }
             else
-            if ((strcmp(rcmd->actarg, "cloud") == 0) && (strcmp(rcmd->opt, "ADD") == 0))
+            if (strcmp(rcmd->actarg, "cloud") == 0)
             {
-                core_createserver(js->cstate, 2, rcmd->args[0].val.sval);
-                comboptr_t *ctx = create_combo3i_ptr(js, js->cloudinq, NULL, 2);
-                core_setcallbacks(js->cstate, ctx, jwork_connect_lost, jwork_msg_arrived, NULL);
-                core_connect(js->cstate, 2, on_cloud_connect);
+                if  (strcmp(rcmd->opt, "ADD") == 0)
+                {
+                    printf("================ Cloud connection...... at %s\n", rcmd->args[0].val.sval);
+                    core_createserver(js->cstate, 2, rcmd->args[0].val.sval);
+                    comboptr_t *ctx = create_combo3i_ptr(js, js->cloudinq, NULL, 2);
+                    core_setcallbacks(js->cstate, ctx, jwork_connect_lost, jwork_msg_arrived, NULL);
+                    core_connect(js->cstate, 2, on_cloud_connect);
+                }
+                else
+                if (strcmp(rcmd->opt, "DEL") == 0)
+                {
+                    printf("==>>>>>>>>>>=== CLOUD deletion ----------------->>>>>>>>>\n");
+                    core_disconnect(js->cstate, 2);
+                }
             }
             command_free(rcmd);
             core_check_pending(js->cstate);
@@ -481,8 +503,12 @@ void jwork_process_device(jamstate_t *js)
                     del_list_tail(cache);
             }
 
+            printf("=== Processing.. cmd: %s, actid %s\n", rcmd->cmd, rcmd->actid);
             if (jwork_evaluate_cond(rcmd->cond))
+            {
+                printf("Enqueuing.. \n");
                 p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
+            }
             else
                 jwork_send_nak(js, rcmd, "CONDITION FALSE");
         }
@@ -515,14 +541,12 @@ void jwork_process_device(jamstate_t *js)
             (strcmp(rcmd->cmd, "REXEC-NAK") == 0) ||
             (strcmp(rcmd->cmd, "REXEC-RES") == 0))
         {
+            if (rcmd->nargs > 0 && rcmd->args[0].type == STRING_TYPE)
+                printf("Cmd error code %s\n", rcmd->args[0].val.sval);
             // resolve the activity id to index
-            int aindx = activity_id2indx(js->atable, rcmd->actid);
-            if (aindx >= 0)
-            {
-                activity_thread_t *athr = js->atable->athreads[aindx];
-                // send the rcmd to that queue.. this is a pushqueue
+            activity_thread_t *athr = athread_getbyid(js->atable, rcmd->actid);
+            if (athr != NULL)
                 pqueue_enq(athr->inq, rcmd, sizeof(command_t));
-            }
         }
         else
         if (strcmp(rcmd->cmd, "GOGOGO") == 0) {
@@ -596,7 +620,7 @@ void jwork_process_fog(jamstate_t *js)
     command_t *rcmd = (command_t *)nv->data;
     free(nv);
     #ifdef DEBUG_LVL1
-        printf("\n\nIMPORTANT %s, opt: %s actarg: %s actid: %s\n\n\n", rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
+        printf("\n\nFOG-INQ %s, opt: %s actarg: %s actid: %s\n\n\n", rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
     #endif
     // Don't use nvoid_free() .. it is not deep enough
 
@@ -609,14 +633,9 @@ void jwork_process_fog(jamstate_t *js)
         if ((strcmp(rcmd->cmd, "REXEC-ACK") == 0) ||
             (strcmp(rcmd->cmd, "REXEC-NAK") == 0))
         {
-            // resolve the activity id to index
-            int aindx = activity_id2indx(js->atable, rcmd->actid);
-            if (aindx >= 0)
-            {
-                activity_thread_t *athr = js->atable->athreads[aindx];
-                // send the rcmd to that queue.. this is a pushqueue
+            activity_thread_t *athr = athread_getbyid(js->atable, rcmd->actid);
+            if (athr != NULL)
                 pqueue_enq(athr->inq, rcmd, sizeof(command_t));
-            }
         }
         else
         {
@@ -639,7 +658,7 @@ void jwork_process_cloud(jamstate_t *js)
     command_t *rcmd = (command_t *)nv->data;
     free(nv);
     #ifdef DEBUG_LVL1
-        printf("\n\nIMPORTANT %s, opt: %s actarg: %s actid: %s\n\n\n", rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
+        printf("\n\nCLOUD-INQ %s, opt: %s actarg: %s actid: %s\n\n\n", rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
     #endif
     // Don't use nvoid_free() .. it is not deep enough
 
@@ -652,14 +671,9 @@ void jwork_process_cloud(jamstate_t *js)
         if ((strcmp(rcmd->cmd, "REXEC-ACK") == 0) ||
             (strcmp(rcmd->cmd, "REXEC-NAK") == 0))
         {
-            // resolve the activity id to index
-            int aindx = activity_id2indx(js->atable, rcmd->actid);
-            if (aindx >= 0)
-            {
-                activity_thread_t *athr = js->atable->athreads[aindx];
-                // send the rcmd to that queue.. this is a pushqueue
+            activity_thread_t *athr = athread_getbyid(js->atable, rcmd->actid);
+            if (athr != NULL)
                 pqueue_enq(athr->inq, rcmd, sizeof(command_t));
-            }
         }
         else
         {
@@ -685,7 +699,7 @@ void tcallback(void *arg)
         printf("Callback.. Thread ID %d.. Queue %d, actid %s\n", athr->threadid, athr->inq->queue->pushsock, athr->actid);
     #endif
     // stick the "TIMEOUT" message into the queue for the activity
-    command_t *tmsg = command_new("TIMEOUT", "-", "-", 0, "ACTIVITY", athr->actid, "__", "");
+    command_t *tmsg = command_new("TIMEOUT", "-", "-", 0, "ACTIVITY", "__", "__", "");
     pqueue_enq(athr->inq, tmsg, sizeof(command_t));
     // do a signal on the thread semaphore for the activity
     #ifdef DEBUG_LVL1
@@ -706,9 +720,8 @@ void stcallback(void *arg)
 
 void jam_set_timer(jamstate_t *js, char *actid, int tval)
 {
-    return;
 
-    activity_thread_t *athr = activity_getbyid(js->atable, actid);
+    activity_thread_t *athr = athread_getbyid(js->atable, actid);
     if (athr != NULL)
         timer_add_event(js->maintimer, tval, 0, actid, tcallback, athr);
     else
@@ -718,8 +731,6 @@ void jam_set_timer(jamstate_t *js, char *actid, int tval)
 
 void jam_clear_timer(jamstate_t *js, char *actid)
 {
-    return;
-
  //   printf("JAM-clear-timer %s\n", actid);
 
     timer_del_event(js->maintimer, actid);

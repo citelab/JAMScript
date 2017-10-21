@@ -14,7 +14,8 @@ int main(int argc, char **argv) {
     {
       printf("Calling pong..\n");
       pong();
-      usleep(1);
+	printf("After pong \n");
+      usleep(1000);
     }
 
 }

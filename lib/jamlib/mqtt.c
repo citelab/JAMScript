@@ -20,17 +20,6 @@ MQTTAsync mqtt_create(char *mhost)
 }
 
 
-int mqtt_connect(MQTTAsync mcl)
-{
-
-    MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
-    conn_opts.keepAliveInterval = 20;
-    conn_opts.cleansession = 1;
-
-    return MQTTAsync_connect(mcl, &conn_opts);
-}
-
-
 // Subscribe using QoS level 1
 //
 void mqtt_subscribe(MQTTAsync mcl, char *topic)

@@ -4,7 +4,7 @@ int getid();
 
 jasync testcback(char *m, jcallback cb) 
 {
-   printf("%s\n", m);
+   printf("=========>>>>%s\n", m);
    switch (id) 
      {
       case 1:

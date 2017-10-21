@@ -56,20 +56,16 @@ extern "C" {
 
 // TODO: Max entries.. sufficient?
 #define MAX_RUN_ENTRIES             16
-
+#define MAX_FIELD_LEN               64
 
 typedef struct _runtableentry_t
 {
-    char *actid;
-    char *actname;
+    char actid[MAX_FIELD_LEN];
+    char actname[MAX_FIELD_LEN];
     int status;
     long long accesstime;
     enum activity_type_t type;
-
-    int rcd_replies;
-    // results hold remote results in the case of C->J or
-    // local results in the case of J->C sync calls - only [0] used
-    arg_t *results[MAX_SERVERS]; //The results
+    
 } runtableentry_t;
 
 

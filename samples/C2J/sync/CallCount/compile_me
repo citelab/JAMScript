@@ -1,0 +1,1 @@
+/usr/bin/clang -g -fno-omit-frame-pointer -fsanitize=address jamout.c -I/usr/local/include -I/usr/local/share/jam/lib/ -framework CoreFoundation -pthread -lcbor -lnanomsg /usr/local/lib/libjam.a -ltask -levent -lhiredis -lmujs -L/usr/local/lib -lpaho-mqtt3a

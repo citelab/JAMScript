@@ -1,0 +1,14 @@
+{
+  "name": "jamshell",
+  "version": "1.0.0",
+  "description": "JAMScript shell",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Owen Li",
+  "license": "MIT",
+  "dependencies": {
+    "terminal-kit": "latest"
+  }
+}

@@ -92,13 +92,13 @@ jamstate_t *jam_init(int port, int serialnum)
 
     // Queue initialization
     // Input side: one for each source: device, fog, cloud
-    js->deviceinq = queue_new(true);
-    js->foginq = queue_new(true);
-    js->cloudinq = queue_new(true);
+    js->deviceinq = queue_new(false);
+    js->foginq = queue_new(false);
+    js->cloudinq = queue_new(false);
 
     // Output queue.. we write to this queue.
     // The jamdata event loop serves from there.
-    js->dataoutq = semqueue_new(true);
+    js->dataoutq = semqueue_new(false);
 
     js->maintimer = timer_init("maintimer");
     js->synctimer = timer_init("synctimer");
@@ -152,9 +152,9 @@ void jam_event_loop(void *arg)
     {
         nvoid_t *nv = p2queue_deq(js->atable->globalinq);
 
-        #ifdef DEBUG_LVL1
+        //#ifdef DEBUG_LVL1
             printf("Got a message for the event loop...  \n");
-        #endif
+        //#endif
 
         if (nv != NULL)
         {
@@ -171,13 +171,16 @@ void jam_event_loop(void *arg)
             {
                 // Remote requests go through here.. local requests don't go through here
                 jactivity_t *jact = activity_new(js->atable, cmd->actid, true);
+
                 // The activity creation should have setup the thread
                 // So we should have a thread to run...
+
+                activity_thread_t *athr = athread_getbyindx(js->atable, jact->jindx);
                 //
                 //runtable_insert(js, cmd->actid, cmd);
 
                 if (jact != NULL)
-                    pqueue_enq(jact->thread->inq, cmd, sizeof(command_t));
+                    pqueue_enq(athr->inq, cmd, sizeof(command_t));
                 else
                     printf("ERROR! Unable to find a free Activity handler to start %s", cmd->actname);
             }
@@ -187,7 +190,7 @@ void jam_event_loop(void *arg)
 				// device ID is put in the cmd->actid because I don't know where else to put it.
                 command_t *readycmd = command_new("READY", "READY", "-", 0, "GLOBAL_INQUEUE", deviceid, "_", "");
                 mqtt_publish(mcl, "admin/request/syncTimer", readycmd);
-                double sTime;
+                double sTime = 0.0;
 				// Wait for the GO command from the J node.
                 nvoid_t *nv = p2queue_deq_high(js->atable->globalinq);
                 command_t *cmd_1;
@@ -209,6 +212,7 @@ void jam_event_loop(void *arg)
                 jactivity_t *jact = activity_new(js->atable, cmd->actid, true);
                 // The activity creation should have setup the thread
                 // So we should have a thread to run...
+                activity_thread_t *athr = athread_getbyindx(js->atable, jact->jindx);
                 runtable_insert(js, cmd->actid, cmd);
 
 				// Busy waiting until the start time.
@@ -216,7 +220,7 @@ void jam_event_loop(void *arg)
 
                 // printf("after a hwile: %f\n", getcurtime());
                 if (jact != NULL)
-                    pqueue_enq(jact->thread->inq, cmd, sizeof(command_t));
+                    pqueue_enq(athr->inq, cmd, sizeof(command_t));
                 else
                     printf("ERROR! Unable to find a free Activity handler to start %s", cmd->actname);
 

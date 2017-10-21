@@ -12,7 +12,8 @@
     "jdiscovery": "file:lib/jdiscovery",
     "mathjs": "^3.16.1",
     "ohm-js": "^0.13.1",
-    "ps-node": "^0.1.6"
+    "ps-node": "^0.1.6",
+    "terminal-kit": "^1.13.13"
   },
   "bin": "./index.js",
   "engines": {
