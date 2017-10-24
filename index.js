@@ -27,7 +27,7 @@ var jsPath;
 
 for (var i = 0; i < args.length; i++) {
   if(args[i].charAt(0) === "-") {
-    if(args[i] === "-D") { // Debug mode
+    if(args[i] === "-D" || args[i] === "-d") { // Debug mode
       debug = true;
     } else if(args[i] === "-help") { // help
       printHelp();
@@ -138,6 +138,9 @@ function compile(code, verbose) {
     } else {
       // Linux
       options = "-lm -lbsd";
+    }
+    if(debug) {
+      options += " -fno-omit-frame-pointer -fsanitize=address";
     }
     var includes = '#include "jam.h"\n';
     includes = '#include "command.h"\n' + includes;

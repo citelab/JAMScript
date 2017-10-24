@@ -56,12 +56,38 @@
       ]
     },
     {
-      "target_name": "liblibjam",
-    	"type": "static_library",
+   	  "target_name": "liblibjam",
+	  	"type": "static_library",
       "dependencies": [ "deps/libtask/binding.gyp:liblibtask" ],
       "sources": [ 
       	"<!@(ls -1 lib/jamlib/*.c)"
       ],
+      "configurations": {
+      	"Debug": {
+      		"conditions": [
+      			 ['OS=="mac"', {
+      			 	'xcode_settings': {
+				        'OTHER_CFLAGS': [
+				          '-c',
+				          '-O1',
+				          '-g',
+				          '-fsanitize=address',
+				          '-fno-omit-frame-pointer'
+				        ]
+				      }
+      			 }],
+      			 ['OS=="linux"', {
+      			 	'cflags': [
+      			 		'-c',
+			          '-O1',
+			          '-g',
+			          '-fsanitize=address',
+			          '-fno-omit-frame-pointer'
+      			 	]
+      			 }]
+      		]
+      	}
+      },
       "copies": [
         {
           "destination": "/usr/local/share/jam/lib/",
