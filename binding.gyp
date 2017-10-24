@@ -4,46 +4,44 @@
     ["LINK", "/usr/bin/clang"]
   ],
   "targets": [
-    # {
-    #   "target_name": "test",
-    #   "type": "executable",
-    #   "sources": [
-    #     "lib/jamlib/test.c"
-    #   ],
-    #   'link_settings': {
-    #     "libraries": [
-    #       '-lfdafds',
-    #       '-lm',
-    #       '-lbsd',
-    #       '-lpthread',
-    #       '-lcbor',
-    #       '-lnanomsg',
-    #       '-levent',
-    #       '-ltask',
-    #       '-lmujs',
-    #       '-lhiredis'
-    #     ],
-    #     "conditions": [
-    #       ["OS == 'mac'",  {
-    #         "libraries!": [
-    #           '-lm',
-    #           '-lbsd',
-    #           '-lpthread',
-    #           '-lcbor',
-    #           '-lnanomsg',
-    #           '-levent'
-    #         ],
-    #	      "cflags!": [
-    #         'g', 'O0'
-    #         ]
-    #       }]
-    #     ],
-    #     'library_dirs': [
-    #       '/usr/lib',
-    #       '/usr/local/lib'
-    #     ]
-    #   }
-    # },
+    {
+      "target_name": "test",
+      "type": "executable",
+      "sources": [
+        "lib/jamlib/tests/cachetest.c",
+        "lib/jamlib/simplelist.c",
+        "lib/jamlib/nvoid.c"
+      ],
+      'link_settings': {
+        "libraries": [
+          '-lm',
+          '-lbsd',
+          '-lpthread',
+          '-lcbor',
+          '-lnanomsg',
+          '-levent',
+          '-ltask',
+          '-lmujs',
+          '-lhiredis'
+        ],
+        "conditions": [
+          ["OS == 'mac'",  {
+            "libraries!": [
+              '-lm',
+              '-lbsd',
+              '-lpthread',
+              '-lcbor',
+              '-lnanomsg',
+              '-levent'
+            ]
+          }]
+        ],
+        'library_dirs': [
+          '/usr/lib',
+          '/usr/local/lib'
+        ]
+      }
+    },
     {
       "target_name": "install",
       "dependencies": [ "liblibjam" ],
