@@ -1,0 +1,5 @@
+
+rm *.o 
+/usr/bin/clang -c -O1 -g -fsanitize=address -fno-omit-frame-pointer ../*.c
+ar -cr libjam.a *.o
+cp libjam.a /usr/local/lib/libjam.a
