@@ -40,7 +40,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "simplelist.h"
 
 
-extern char app_id[256];
+extern char app_id[64];
 char dev_id[256] = { 0 };
 
 //jamstate variable to be kept in reference

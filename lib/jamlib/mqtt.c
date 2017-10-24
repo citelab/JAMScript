@@ -6,6 +6,8 @@
 #include "mqtt.h"
 #include "command.h"
 
+extern char app_id[64];
+
 MQTTAsync mqtt_create(char *mhost)
 {
     MQTTAsync mcl;
@@ -24,8 +26,11 @@ MQTTAsync mqtt_create(char *mhost)
 //
 void mqtt_subscribe(MQTTAsync mcl, char *topic)
 {
+    char fulltopic[128];
+    sprintf(fulltopic, "/%s%s", app_id, topic);
+
     if (topic != NULL)
-        MQTTAsync_subscribe(mcl, topic, 1, NULL);
+        MQTTAsync_subscribe(mcl, fulltopic, 1, NULL);
 }
 
 void mqtt_onpublish(void* context, MQTTAsync_successData* response)
@@ -39,10 +44,13 @@ void mqtt_onpublish(void* context, MQTTAsync_successData* response)
 //
 void mqtt_publish(MQTTAsync mcl, char *topic, command_t *cmd)
 {
+    char fulltopic[128];
+    sprintf(fulltopic, "/%s%s", app_id, topic);
+
     MQTTAsync_responseOptions opts = MQTTAsync_responseOptions_initializer;
     opts.onSuccess = mqtt_onpublish;
     opts.context = cmd;
 
-    if (MQTTAsync_send(mcl, topic, cmd->length, cmd->buffer, 1, 0, &opts) != MQTTASYNC_SUCCESS)
+    if (MQTTAsync_send(mcl, fulltopic, cmd->length, cmd->buffer, 1, 0, &opts) != MQTTASYNC_SUCCESS)
         printf("WARNING!! Unable to publish message to MQTT broker - topic: %s, buffer %s", topic, cmd->buffer);
 }

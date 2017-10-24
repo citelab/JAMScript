@@ -189,7 +189,7 @@ void jam_event_loop(void *arg)
 				// Make a new command which signals to the J node that it's ready
 				// device ID is put in the cmd->actid because I don't know where else to put it.
                 command_t *readycmd = command_new("READY", "READY", "-", 0, "GLOBAL_INQUEUE", deviceid, "_", "");
-                mqtt_publish(mcl, "admin/request/syncTimer", readycmd);
+                mqtt_publish(mcl, "/admin/request/synctimer", readycmd);
                 double sTime = 0.0;
 				// Wait for the GO command from the J node.
                 nvoid_t *nv = p2queue_deq_high(js->atable->globalinq);
@@ -267,7 +267,7 @@ int requested_level(int cvec)
 
 int jamargs(int argc, char **argv, char *appid, char *tag, int *num)
 {
-    char *cvalue = NULL;
+    char *avalue = NULL;
     char *tvalue = NULL;
     char *nvalue = NULL;
     int c;
@@ -278,7 +278,7 @@ int jamargs(int argc, char **argv, char *appid, char *tag, int *num)
         switch (c)
         {
             case 'a':
-                cvalue = optarg;
+                avalue = optarg;
             break;
             case 'n':
                 nvalue = optarg;
@@ -292,8 +292,12 @@ int jamargs(int argc, char **argv, char *appid, char *tag, int *num)
             exit(1);
         }
 
-    if (cvalue != NULL)
-        strcpy(appid, cvalue);
+    if (avalue == NULL)
+    {
+        printf("ERROR! No app name specified. Use -a app_name to specify the app_name\n");
+        exit(1);
+    }
+    strcpy(appid, avalue);
 
     if (tvalue != NULL)
         strcpy(tag, tvalue);

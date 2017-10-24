@@ -46,11 +46,7 @@ extern "C" {
 
 #include <event.h>
 #include <hiredis/async.h>
-//#ifdef linux
-#include <hiredis/adapters/libevent.h>
-//#elif __APPLE__
-//#include <hiredis/adapters/macosx.h>
-//#endif
+
 
 #define STACKSIZE                   20000
 
@@ -65,7 +61,7 @@ typedef struct _runtableentry_t
     int status;
     long long accesstime;
     enum activity_type_t type;
-    
+
 } runtableentry_t;
 
 

@@ -178,7 +178,7 @@ void core_connect(corestate_t *cs, int indx, void (*onconnect)(void *, MQTTAsync
 
 
 
-void core_disconnect(corestate_t *cs, int indx, void (*onconnect)(void *, MQTTAsync_successData *))
+void core_disconnect(corestate_t *cs, int indx)
 {
     int rc;
 
@@ -214,7 +214,7 @@ void core_set_subscription(corestate_t *cs, int level)
     mqtt_subscribe(cs->mqttserv[level], "/level/func/reply/#");
     mqtt_subscribe(cs->mqttserv[level], "/mach/func/request");
             // Subscribe to the "go" topic for sync purpose.
-    mqtt_subscribe(cs->mqttserv[level], "admin/request/Go");
+    mqtt_subscribe(cs->mqttserv[level], "/admin/request/go");
 }
 
 

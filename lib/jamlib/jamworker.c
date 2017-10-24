@@ -38,7 +38,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 extern list_elem_t *cache;
 extern int cachesize;
-
+extern char app_id[64];
 
 void on_dev_connect(void* context, MQTTAsync_successData* response)
 {
@@ -167,13 +167,23 @@ void *jwork_bgthread(void *arg)
 
 int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTAsync_message *msg)
 {
+    char adminannouce[64];
+    char levelreply[64];
+    char machrequest[64];
+    char admingo[64];
+
+    sprintf(adminannouce, "/%s/admin/announce/all", app_id);
+    sprintf(levelreply, "/%s/level/func/reply", app_id);
+    sprintf(machrequest, "/%s/mach/func/request", app_id);
+    sprintf(admingo, "/%s/admin/request/go", app_id);
+
 
     // the ctx pointer is used to recover original context.
     comboptr_t *cptr = (comboptr_t *)ctx;
     simplequeue_t *queue = (simplequeue_t *)(cptr->arg2);
 
     // We need handle the message based on the topic..
-    if (strcmp(topicname, "/admin/announce/all") == 0)
+    if (strcmp(topicname, adminannouce) == 0)
     {
         nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
         command_t *cmd = command_from_data(NULL, nv);
@@ -182,7 +192,7 @@ int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTAsync_messag
         queue_enq(queue, cmd, sizeof(command_t));
     }
     else
-    if (strncmp(topicname, "/level/func/reply", strlen("/level/func/reply") -1) == 0)
+    if (strncmp(topicname, levelreply, strlen(levelreply) -1) == 0)
     {
         nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
         command_t *cmd = command_from_data(NULL, nv);
@@ -191,7 +201,7 @@ int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTAsync_messag
         // Don't free the command structure.. the queue is still carrying it
     }
     else
-    if (strncmp(topicname, "/mach/func/request", strlen("/mach/func/request") -1) == 0)
+    if (strncmp(topicname, machrequest, strlen(machrequest) -1) == 0)
     {
         nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
         command_t *cmd = command_from_data(NULL, nv);
@@ -200,7 +210,7 @@ int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTAsync_messag
         // Don't free the command structure.. the queue is still carrying it
     }
     else
-    if (strncmp(topicname, "admin/request/Go", strlen("admin/request/Go") -1) == 0) {
+    if (strncmp(topicname, admingo, strlen(admingo) -1) == 0) {
         char *stime = (char *)malloc(msg->payloadlen + 2);
         strncpy(stime, msg->payload, msg->payloadlen);
         stime[msg->payloadlen] = 0;

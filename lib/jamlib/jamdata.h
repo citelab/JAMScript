@@ -6,6 +6,7 @@
 #include <hiredis/async.h>
 
 #include <hiredis/adapters/libevent.h>
+
 #include <semaphore.h>
 #include <cbor.h>
 

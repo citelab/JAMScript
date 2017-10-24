@@ -60,6 +60,7 @@ void core_setup(corestate_t *cs);
 void core_set_redis(corestate_t *cs, char *server, int port);
 void core_createserver(corestate_t *cs, int indx, char *url);
 void core_connect(corestate_t *cs, int indx, void (*onconnect)(void *, MQTTAsync_successData *));
+void core_disconnect(corestate_t *cs, int indx);
 void core_setcallbacks(corestate_t *cs, comboptr_t *ctx,
         MQTTAsync_connectionLost *cl,
         MQTTAsync_messageArrived *ma,
