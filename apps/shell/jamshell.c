@@ -16,7 +16,7 @@ void* startJ(void *arg) {
 
 void* startC(void *arg) {
 	char command[100];
-	strcpy(command, "./a.out");
+	strcpy(command, "./a.out -a progA");
 	printf("%s\n", command);
 	int x = system(command);
 }
