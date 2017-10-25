@@ -5,6 +5,7 @@
 #include<unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 
 
 void* startJ(void *arg) {
@@ -53,6 +54,18 @@ jasync exec() {
 	} else {
 		printf("Exec C completed succesfully.\n");
 	}
+}
+
+double getElapsed(time_t start, time_t end) {
+    return difftime(end, start);
+}
+
+jasync logInfo() {
+	int test = 1;
+    info = {
+    	.uptime: test,
+    	.nodeType: "NODE_TYPE"
+    };
 }
 
 int main() {
