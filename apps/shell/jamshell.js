@@ -1,7 +1,7 @@
 jdata {
 	char* jobs as logger;
     struct device {
-        float uptime;
+        int uptime;
         char* nodeType;
     } info as logger;
 }

@@ -7,8 +7,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-
-clock_t begin;
+time_t start;
 
 void* startJ(void *arg) {
 	char command[100];
@@ -61,21 +60,16 @@ jasync exec() {
 	jobs = "progA";
 }
 
-jasync logInfo() {
-	clock_t end = clock();
-	// printf("LOGGING TIME: \n");
-	// printf("begin: %lu\n", begin/CLOCKS_PER_SEC);
-	// printf("end: %lu\n", end/CLOCKS_PER_SEC);
-	float time = (float)(end-begin) / CLOCKS_PER_SEC;
-	printf("%f\n", time);
+jsync int logInfo() {
+	int elapsed = (int)(time(NULL) - start);
     info = {
-    	.uptime: time,
+    	.uptime: elapsed,
     	.nodeType: "NODE_TYPE"
     };
+    return 0;
 }
 
 int main() {
-	begin = clock();
+	start = time(NULL);
 	printf("Node online.\n");
-	return 0;
 }
