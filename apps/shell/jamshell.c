@@ -8,6 +8,8 @@
 #include <time.h>
 
 
+clock_t begin;
+
 void* startJ(void *arg) {
 	char command[100];
 	strcpy(command, "node jamout.js --app=progA");
@@ -26,6 +28,12 @@ jsync char* pwd() {
 	char cwd[1024];
 	return getcwd(cwd,sizeof(cwd));
 }
+
+
+// int getElapsed(clock_t begin, clock_t end) {
+// 	int elapsed = (int)(end-begin) / CLOCKS_PER_SEC;
+//     return elapsed;
+// }
 
 jasync exec() {
 
@@ -56,18 +64,21 @@ jasync exec() {
 	}
 }
 
-double getElapsed(time_t start, time_t end) {
-    return difftime(end, start);
-}
-
 jasync logInfo() {
-	int test = 1;
+	clock_t end = clock();
+	// printf("LOGGING TIME: \n");
+	// printf("begin: %lu\n", begin/CLOCKS_PER_SEC);
+	// printf("end: %lu\n", end/CLOCKS_PER_SEC);
+	float time = (float)(end-begin) / CLOCKS_PER_SEC;
+	printf("%f\n", time);
     info = {
-    	.uptime: test,
+    	.uptime: time,
     	.nodeType: "NODE_TYPE"
     };
 }
 
 int main() {
+	begin = clock();
+	printf("Node online.\n");
 	return 0;
 }

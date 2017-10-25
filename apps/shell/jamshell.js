@@ -1,6 +1,6 @@
 jdata {
     struct device {
-        int uptime;
+        float uptime;
         char* nodeType;
     } info as logger;
 }
@@ -9,9 +9,8 @@ var readline = require('readline');
 
 var rl = readline.createInterface(process.stdin, process.stdout);
 
-var getNodeInfo = function(key,entry,device) {
+var getNodeInfo = function(key,entry) {
 	var i = 0;
-	console.log("SIZE: " + info.size());
 	while(info[i] !== undefined && !info[i].isEmpty()) {
 		console.log(info[i].lastValue());
 		i++;
@@ -33,7 +32,7 @@ rl
 		    }
 		    if (line === "nodes") {
 		    	logInfo();
-				info.subscribe(getNodeInfo);
+				getNodeInfo();
 		    }
 		    rl.prompt();
 	})
