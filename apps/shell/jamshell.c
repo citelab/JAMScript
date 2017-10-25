@@ -29,12 +29,6 @@ jsync char* pwd() {
 	return getcwd(cwd,sizeof(cwd));
 }
 
-
-// int getElapsed(clock_t begin, clock_t end) {
-// 	int elapsed = (int)(end-begin) / CLOCKS_PER_SEC;
-//     return elapsed;
-// }
-
 jasync exec() {
 
 	chdir("/Users/oryx/progA");
@@ -54,14 +48,17 @@ jasync exec() {
 	} else {
 		printf("Exec J completed succesfully.\n");
 	}
-
+	sleep(5);
 	int errC;
 	errC = pthread_create(&tidC, NULL, &startC, NULL);
 	if(errC != 0) {
-		printf("Could not create thread for exec J.\n");
+		printf("Could not create thread for exec C.\n");
 	} else {
 		printf("Exec C completed succesfully.\n");
-	}
+	}	
+	pthread_join(tidC, NULL);
+	printf("Never reaches here....\n");
+	jobs = "progA";
 }
 
 jasync logInfo() {

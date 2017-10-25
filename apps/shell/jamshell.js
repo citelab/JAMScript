@@ -1,4 +1,5 @@
 jdata {
+	char* jobs as logger;
     struct device {
         float uptime;
         char* nodeType;
@@ -13,6 +14,16 @@ var getNodeInfo = function(key,entry) {
 	var i = 0;
 	while(info[i] !== undefined && !info[i].isEmpty()) {
 		console.log(info[i].lastValue());
+		i++;
+	}
+}
+
+var getJobs = function(key, entry) {
+	console.log("HERE IN JOBS");
+	var i = 0;
+	while(jobs[i] !== undefined && !jobs[i].isEmpty()) {
+		console.log("IN LOOP");
+		console.log(jobs[i].lastValue());
 		i++;
 	}
 }
@@ -33,6 +44,9 @@ rl
 		    if (line === "nodes") {
 		    	logInfo();
 				getNodeInfo();
+		    }
+		    if (line === "jobs") {
+		    	jobs.subscribe(getJobs);
 		    }
 		    rl.prompt();
 	})

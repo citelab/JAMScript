@@ -551,9 +551,7 @@ void jwork_process_device(jamstate_t *js)
             (strcmp(rcmd->cmd, "REXEC-NAK") == 0) ||
             (strcmp(rcmd->cmd, "REXEC-RES") == 0))
         {
-            if (rcmd->nargs > 0 && rcmd->args[0].type == STRING_TYPE)
-                printf("Cmd error code %s\n", rcmd->args[0].val.sval);
-            // resolve the activity id to index
+           // resolve the activity id to index
             activity_thread_t *athr = athread_getbyid(js->atable, rcmd->actid);
             if (athr != NULL)
                 pqueue_enq(athr->inq, rcmd, sizeof(command_t));
