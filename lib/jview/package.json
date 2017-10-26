@@ -14,6 +14,7 @@
     "sample-7": "node Compiler.js doc/Samples/7.Bar-Scroll/Config.json; cp doc/Samples/7.Bar-Scroll/Data-mocker.js ./app",
     "sample-8": "node Compiler.js doc/Samples/8.Max-Mem-Size/Config.json; cp doc/Samples/8.Max-Mem-Size/Data-mocker.js ./app",
     "sample-9": "node Compiler.js doc/Samples/9.Basic-Slider/Config.json",
+    "sample-10": "node Compiler.js doc/Samples/10.Basic-Terminal/Config.json",
     "beautify": "find ./app -regex '.*\\.js' -exec js-beautify {} -r \\;"
   },
   "repository": {
