@@ -17,10 +17,16 @@ void* startJ(void *arg) {
 }
 
 void* startC(void *arg) {
-	char command[100];
-	strcpy(command, "./a.out -a progA");
-	printf("%s\n", command);
-	int x = system(command);
+        char *args[5];
+
+        args[0] = "a.out";
+        args[1] = "-a";
+        args[2] = "progA";
+        args[3] = NULL;
+
+        if (fork() == 0) {
+          execvp("/Users/oryx/progA/a.out", args);
+        }
 }
 
 jsync char* pwd() {
@@ -47,7 +53,7 @@ jasync exec() {
 	} else {
 		printf("Exec J completed succesfully.\n");
 	}
-	sleep(5);
+	sleep(1);
 	int errC;
 	errC = pthread_create(&tidC, NULL, &startC, NULL);
 	if(errC != 0) {
@@ -55,7 +61,7 @@ jasync exec() {
 	} else {
 		printf("Exec C completed succesfully.\n");
 	}	
-	pthread_join(tidC, NULL);
+	pthread_detach(tidC);
 	printf("Never reaches here....\n");
 	jobs = "progA";
 }
