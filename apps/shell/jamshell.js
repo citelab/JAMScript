@@ -3,11 +3,23 @@ jdata {
     struct device {
         int uptime;
         char* nodeType;
+        char* nodeName;
     } info as logger;
 }
 
-var readline = require('readline');
+var sys = require('sys');
+var exec = require('child_process').exec;
+var spawn = require('child_process').spawn;
+var chance = require('chance').Chance();
 
+var nodeName = chance.first();
+console.log("node name: " + nodeName);
+
+jsync function getNodeName() {
+	return nodeName;
+}
+
+var readline = require('readline');
 var rl = readline.createInterface(process.stdin, process.stdout);
 
 var getNodeInfo = function(key,entry) {
@@ -39,7 +51,13 @@ rl
 		    	console.log(pwd());
 		    }
 		    if (line === "exec") {
-		    	exec();
+		    	process.chdir("/Users/oryx/progA");
+				child = spawn('node', ['jamout.js', '--app=progA']);
+				child.stdout.on('data',
+		        function (data) {
+		            console.log('>'+ data);
+		        });
+		    	execProg();
 		    }
 		    if (line === "nodes") {
 		    	logInfo();

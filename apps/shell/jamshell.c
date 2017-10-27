@@ -8,13 +8,14 @@
 #include <time.h>
 
 time_t start;
+char* getNodeName();
 
-void* startJ(void *arg) {
-	char command[100];
-	strcpy(command, "node jamout.js --app=progA");
-	printf("%s\n", command);
-	int x = system(command);
-}
+// void* startJ(void *arg) {
+// 	char command[100];
+// 	strcpy(command, "node jamout.js --app=progA");
+// 	printf("%s\n", command);
+// 	int x = system(command);
+// }
 
 void* startC(void *arg) {
         char *args[5];
@@ -34,25 +35,9 @@ jsync char* pwd() {
 	return getcwd(cwd,sizeof(cwd));
 }
 
-jasync exec() {
+jasync execProg() {
 
-	chdir("/Users/oryx/progA");
-
-	printf("Finding program...\n");
-
-	char cwd[1024];
-	printf("%s\n",getcwd(cwd,sizeof(cwd)));
-
-	pthread_t tidJ;
 	pthread_t tidC;
-
-	int errJ;
-	errJ = pthread_create(&tidJ, NULL, &startJ, NULL);
-	if(errJ != 0) {
-		printf("Could not create thread for exec J.\n");
-	} else {
-		printf("Exec J completed succesfully.\n");
-	}
 	sleep(1);
 	int errC;
 	errC = pthread_create(&tidC, NULL, &startC, NULL);
@@ -62,7 +47,6 @@ jasync exec() {
 		printf("Exec C completed succesfully.\n");
 	}	
 	pthread_detach(tidC);
-	printf("Never reaches here....\n");
 	jobs = "progA";
 }
 
@@ -70,7 +54,8 @@ jsync int logInfo() {
 	int elapsed = (int)(time(NULL) - start);
     info = {
     	.uptime: elapsed,
-    	.nodeType: "NODE_TYPE"
+    	.nodeType: "NODE_TYPE",
+    	.nodeName: getNodeName()
     };
     return 0;
 }
