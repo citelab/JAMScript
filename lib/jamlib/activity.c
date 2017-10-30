@@ -663,7 +663,7 @@ jactivity_t *activity_getbyindx(activity_table_t *at, int jindx)
     return jact;
 }
 
-void activity_complete(activity_table_t *at, char *actid, char *fmt, ...)
+void activity_complete(activity_table_t *at, char *opt, char *actid, char *fmt, ...)
 {
     va_list args;
     arg_t *qarg;
@@ -695,6 +695,6 @@ void activity_complete(activity_table_t *at, char *actid, char *fmt, ...)
     runtableentry_t *re = runtable_find(js->rtable, actid);
 
     if (re != NULL)
-        jwork_send_results(js, re->actname, re->actid, qarg);
+        jwork_send_results(js, opt, re->actname, re->actid, qarg);
 
 }

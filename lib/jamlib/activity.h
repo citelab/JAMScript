@@ -160,6 +160,6 @@ activity_thread_t *athread_getbyindx(activity_table_t *at, int jindx);
 activity_thread_t *athread_getbyid(activity_table_t *at, char *actid);
 jactivity_t *activity_getbyid(activity_table_t *at, char *actid);
 jactivity_t *activity_getbyindx(activity_table_t *at, int jindx);
-void activity_complete(activity_table_t *at, char *actid, char *fmt, ...);
+void activity_complete(activity_table_t *at, char *opt, char *actid, char *fmt, ...);
 
 #endif

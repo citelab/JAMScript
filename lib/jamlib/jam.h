@@ -170,7 +170,7 @@ void jwork_process_fog(jamstate_t *js);
 void jwork_process_cloud(jamstate_t *js);
 
 void jwork_send_error(jamstate_t *js, command_t *cmd, char *estr);
-void jwork_send_results(jamstate_t *js, char *actname, char *actid, arg_t *args);
+void jwork_send_results(jamstate_t *js, char *opt, char *actname, char *actid, arg_t *args);
 void jwork_send_nak(jamstate_t *js, command_t *cmd, char *estr);
 
 command_t *jwork_runid_status(jamstate_t *js, char *runid);

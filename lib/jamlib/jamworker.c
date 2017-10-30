@@ -601,9 +601,16 @@ void jwork_send_nak(jamstate_t *js, command_t *cmd, char *estr)
 }
 
 
-void jwork_send_results(jamstate_t *js, char *actname, char *actid, arg_t *args)
+void jwork_send_results(jamstate_t *js, char *opt, char *actname, char *actid, arg_t *args)
 {
-    MQTTAsync mcl = js->cstate->mqttserv[0];
+    MQTTAsync mcl;
+    if (strcmp(opt, "CLOUD") == 0)
+        mcl = js->cstate->mqttserv[2];
+    else
+    if (strcmp(opt, "FOG") == 0)
+        mcl = js->cstate->mqttserv[1];
+    else
+        mcl = js->cstate->mqttserv[0];
     char *deviceid = js->cstate->device_id;
 
     // Create a new command to send as error..
@@ -627,23 +634,78 @@ void jwork_process_fog(jamstate_t *js)
 
     command_t *rcmd = (command_t *)nv->data;
     free(nv);
-    #ifdef DEBUG_LVL1
+    //#ifdef DEBUG_LVL1
         printf("\n\nFOG-INQ %s, opt: %s actarg: %s actid: %s\n\n\n", rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
-    #endif
+    //#endif
     // Don't use nvoid_free() .. it is not deep enough
 
     if (rcmd != NULL)
     {
         // We are getting replies from the fog level for requests that
         // were sent from the C. There is no unsolicited replies.
-
-        // TODO: Can we detect unsolicited replies and discard them?
-        if ((strcmp(rcmd->cmd, "REXEC-ACK") == 0) ||
-            (strcmp(rcmd->cmd, "REXEC-NAK") == 0))
+        if ((strcmp(rcmd->cmd, "REXEC-ASY") == 0) ||
+            (strcmp(rcmd->cmd, "REXEC-SYN") == 0))
         {
+            // Check for duplicate
+            if (find_list_item(cache, rcmd->actid))
+            {
+                command_free(rcmd);
+                return;
+            }
+            else
+            {
+                put_list_tail(cache, strdup(rcmd->actid), strlen(rcmd->actid));
+                if (list_length(cache) > cachesize)
+                    del_list_tail(cache);
+            }
+
+            printf("=== Processing.. cmd: %s, actid %s\n", rcmd->cmd, rcmd->actid);
+            if (jwork_evaluate_cond(rcmd->cond))
+            {
+                printf("Enqueuing.. \n");
+                p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
+            }
+            else
+                jwork_send_nak(js, rcmd, "CONDITION FALSE");
+        }
+        else
+        if (strcmp(rcmd->cmd, "REXEC-ASY-CBK") == 0)
+        {
+            // Check for duplicate
+            if (find_list_item(cache, rcmd->actid))
+            {
+                command_free(rcmd);
+                return;
+            }
+            else
+            {
+                put_list_tail(cache, strdup(rcmd->actid), strlen(rcmd->actid));
+                if (list_length(cache) > cachesize)
+                    del_list_tail(cache);
+            }
+
+            if (runtable_find(js->rtable, rcmd->actarg) != NULL)
+            {
+                if (jwork_evaluate_cond(rcmd->cond))
+                    p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
+                else
+                    jwork_send_nak(js->cstate->mqttserv[0], rcmd, "CONDITION FALSE");
+            }
+        }
+        else
+        if ((strcmp(rcmd->cmd, "REXEC-ACK") == 0) ||
+            (strcmp(rcmd->cmd, "REXEC-NAK") == 0) ||
+            (strcmp(rcmd->cmd, "REXEC-RES") == 0))
+        {
+           // resolve the activity id to index
             activity_thread_t *athr = athread_getbyid(js->atable, rcmd->actid);
             if (athr != NULL)
                 pqueue_enq(athr->inq, rcmd, sizeof(command_t));
+        }
+        else
+        if (strcmp(rcmd->cmd, "GOGOGO") == 0) {
+			// Received the "go" from J nodes, we put the go command into the high queue
+            p2queue_enq_high(js->atable->globalinq, rcmd, sizeof(command_t));
         }
         else
         {
@@ -672,16 +734,73 @@ void jwork_process_cloud(jamstate_t *js)
 
     if (rcmd != NULL)
     {
-        // We are getting replies from the fog level for requests that
+        // We are getting replies from the cloud level for requests that
         // were sent from the C. There is no unsolicited replies.
 
         // TODO: Can we detect unsolicited replies and discard them?
-        if ((strcmp(rcmd->cmd, "REXEC-ACK") == 0) ||
-            (strcmp(rcmd->cmd, "REXEC-NAK") == 0))
+        if ((strcmp(rcmd->cmd, "REXEC-ASY") == 0) ||
+            (strcmp(rcmd->cmd, "REXEC-SYN") == 0))
         {
+            // Check for duplicate
+            if (find_list_item(cache, rcmd->actid))
+            {
+                command_free(rcmd);
+                return;
+            }
+            else
+            {
+                put_list_tail(cache, strdup(rcmd->actid), strlen(rcmd->actid));
+                if (list_length(cache) > cachesize)
+                    del_list_tail(cache);
+            }
+
+            printf("=== Processing.. cmd: %s, actid %s\n", rcmd->cmd, rcmd->actid);
+            if (jwork_evaluate_cond(rcmd->cond))
+            {
+                printf("Enqueuing.. \n");
+                p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
+            }
+            else
+                jwork_send_nak(js, rcmd, "CONDITION FALSE");
+        }
+        else
+        if (strcmp(rcmd->cmd, "REXEC-ASY-CBK") == 0)
+        {
+            // Check for duplicate
+            if (find_list_item(cache, rcmd->actid))
+            {
+                command_free(rcmd);
+                return;
+            }
+            else
+            {
+                put_list_tail(cache, strdup(rcmd->actid), strlen(rcmd->actid));
+                if (list_length(cache) > cachesize)
+                    del_list_tail(cache);
+            }
+
+            if (runtable_find(js->rtable, rcmd->actarg) != NULL)
+            {
+                if (jwork_evaluate_cond(rcmd->cond))
+                    p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
+                else
+                    jwork_send_nak(js->cstate->mqttserv[0], rcmd, "CONDITION FALSE");
+            }
+        }
+        else
+        if ((strcmp(rcmd->cmd, "REXEC-ACK") == 0) ||
+            (strcmp(rcmd->cmd, "REXEC-NAK") == 0) ||
+            (strcmp(rcmd->cmd, "REXEC-RES") == 0))
+        {
+           // resolve the activity id to index
             activity_thread_t *athr = athread_getbyid(js->atable, rcmd->actid);
             if (athr != NULL)
                 pqueue_enq(athr->inq, rcmd, sizeof(command_t));
+        }
+        else
+        if (strcmp(rcmd->cmd, "GOGOGO") == 0) {
+            // Received the "go" from J nodes, we put the go command into the high queue
+            p2queue_enq_high(js->atable->globalinq, rcmd, sizeof(command_t));
         }
         else
         {

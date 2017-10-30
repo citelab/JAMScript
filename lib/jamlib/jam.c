@@ -146,7 +146,8 @@ void jam_event_loop(void *arg)
 
     char *deviceid = js->cstate->device_id;
 
-    MQTTAsync mcl = js->cstate->mqttserv[0];
+    MQTTAsync mcl;
+
 
     while (1)
     {
@@ -185,6 +186,14 @@ void jam_event_loop(void *arg)
                     printf("ERROR! Unable to find a free Activity handler to start %s", cmd->actname);
             }
             else if (strcmp(cmd->cmd, "REXEC-SYN") == 0) {
+
+                if (strcmp(cmd->opt, "CLOUD") == 0)
+                    mcl = js->cstate->mqttserv[2];
+                else
+                if (strcmp(cmd->opt, "FOG") == 0)
+                    mcl = js->cstate->mqttserv[1];
+                else
+                    mcl = js->cstate->mqttserv[0];
 
 				// Make a new command which signals to the J node that it's ready
 				// device ID is put in the cmd->actid because I don't know where else to put it.
