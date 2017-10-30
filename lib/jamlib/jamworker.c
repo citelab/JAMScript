@@ -523,10 +523,8 @@ void jwork_process_device(jamstate_t *js)
                     del_list_tail(cache);
             }
 
-            printf("=== Processing.. cmd: %s, actid %s\n", rcmd->cmd, rcmd->actid);
             if (jwork_evaluate_cond(rcmd->cond))
             {
-                printf("Enqueuing.. \n");
                 p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
             }
             else
@@ -626,7 +624,6 @@ void jwork_send_results(jamstate_t *js, char *opt, char *actname, char *actid, a
     // Create a new command to send as error..
     command_t *scmd = command_new_using_arg("REXEC-RES", "SYN", "-", 0, actname, actid, deviceid, args, 1);
 
-    printf("Sending the results....\n");
     // send the command over
     mqtt_publish(mcl, "/mach/func/reply", scmd);
 
@@ -645,9 +642,9 @@ void jwork_process_fog(jamstate_t *js)
 
     command_t *rcmd = (command_t *)nv->data;
     free(nv);
-    //#ifdef DEBUG_LVL1
+    #ifdef DEBUG_LVL1
         printf("\n\nFOG-INQ %s, opt: %s actarg: %s actid: %s\n\n\n", rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
-    //#endif
+    #endif
     // Don't use nvoid_free() .. it is not deep enough
 
     if (rcmd != NULL)
@@ -670,10 +667,8 @@ void jwork_process_fog(jamstate_t *js)
                     del_list_tail(cache);
             }
 
-            printf("=== Processing.. cmd: %s, actid %s\n", rcmd->cmd, rcmd->actid);
             if (jwork_evaluate_cond(rcmd->cond))
             {
-                printf("Enqueuing.. \n");
                 p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
             }
             else
@@ -765,10 +760,8 @@ void jwork_process_cloud(jamstate_t *js)
                     del_list_tail(cache);
             }
 
-            printf("=== Processing.. cmd: %s, actid %s\n", rcmd->cmd, rcmd->actid);
             if (jwork_evaluate_cond(rcmd->cond))
             {
-                printf("Enqueuing.. \n");
                 p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
             }
             else
