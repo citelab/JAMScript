@@ -67,6 +67,8 @@ void on_fog_connect(void* context, MQTTAsync_successData* response)
     // Set the subscriptions
     core_set_subscription(cs, 1);
 
+    printf(">>>>>>>>>>>>>>On Fog connection \n");
+
     scmd = command_new("REGISTER", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
     mqtt_publish(cs->mqttserv[1], "/admin/request/all", scmd);
 
@@ -85,6 +87,8 @@ void on_cloud_connect(void* context, MQTTAsync_successData* response)
 
     // Set the subscriptions
     core_set_subscription(cs, 2);
+
+    printf(">>>>>>>>>>>>>> On Cloud connection \n");
 
     scmd = command_new("REGISTER", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
     mqtt_publish(cs->mqttserv[2], "/admin/request/all", scmd);
@@ -462,11 +466,14 @@ void jwork_process_device(jamstate_t *js)
             {
                 if  (strcmp(rcmd->opt, "ADD") == 0)
                 {
-                    core_createserver(js->cstate, 1, rcmd->args[0].val.sval);
-                    comboptr_t *ctx = create_combo3i_ptr(js, js->foginq, NULL, 1);
-                    core_setcallbacks(js->cstate, ctx, jwork_connect_lost, jwork_msg_arrived, NULL);
-                    core_connect(js->cstate, 1, on_fog_connect);
-                    printf("Machine height %d\n", machine_height(js));
+                    if (!js->cstate->mqttenabled[1])
+                    {
+                        core_createserver(js->cstate, 1, rcmd->args[0].val.sval);
+                        comboptr_t *ctx = create_combo3i_ptr(js, js->foginq, NULL, 1);
+                        core_setcallbacks(js->cstate, ctx, jwork_connect_lost, jwork_msg_arrived, NULL);
+                        core_connect(js->cstate, 1, on_fog_connect);
+                        printf("Machine height %d\n", machine_height(js));
+                    }
                 }
                 else
                 if (strcmp(rcmd->opt, "DEL") == 0)
@@ -480,11 +487,14 @@ void jwork_process_device(jamstate_t *js)
             {
                 if  (strcmp(rcmd->opt, "ADD") == 0)
                 {
-                    printf("================ Cloud connection...... at %s\n", rcmd->args[0].val.sval);
-                    core_createserver(js->cstate, 2, rcmd->args[0].val.sval);
-                    comboptr_t *ctx = create_combo3i_ptr(js, js->cloudinq, NULL, 2);
-                    core_setcallbacks(js->cstate, ctx, jwork_connect_lost, jwork_msg_arrived, NULL);
-                    core_connect(js->cstate, 2, on_cloud_connect);
+                    if (!js->cstate->mqttenabled[2])
+                    {
+                        printf("================ Cloud connection...... at %s\n", rcmd->args[0].val.sval);
+                        core_createserver(js->cstate, 2, rcmd->args[0].val.sval);
+                        comboptr_t *ctx = create_combo3i_ptr(js, js->cloudinq, NULL, 2);
+                        core_setcallbacks(js->cstate, ctx, jwork_connect_lost, jwork_msg_arrived, NULL);
+                        core_connect(js->cstate, 2, on_cloud_connect);
+                    }
                 }
                 else
                 if (strcmp(rcmd->opt, "DEL") == 0)
@@ -616,6 +626,7 @@ void jwork_send_results(jamstate_t *js, char *opt, char *actname, char *actid, a
     // Create a new command to send as error..
     command_t *scmd = command_new_using_arg("REXEC-RES", "SYN", "-", 0, actname, actid, deviceid, args, 1);
 
+    printf("Sending the results....\n");
     // send the command over
     mqtt_publish(mcl, "/mach/func/reply", scmd);
 
