@@ -8,9 +8,9 @@
   "dependencies": {
     "bunyan": "^1.8.10",
     "lockfile": "^1.0.3",
+    "mdns": "file:mdns",
     "mqtt": "^2.4.0",
-    "node-localstorage": "^1.3.0",
-    "mdns": "./mdns"
+    "node-localstorage": "^1.3.0"
   },
   "repository": {
     "type": "git",
