@@ -23,8 +23,6 @@ function statsFunc(inputFlow){
 }
 
 stats.setTerminalFunction(function(f){
-    console.log(f.collect());
-
     console.log("**********************************Monthly Statistics**********************************");
     //f.shouldCache = false; // this line will make week1.count() be 0
 
@@ -320,7 +318,7 @@ function log(index, value){
     }, 30);
 }
 
-function generateLogs() {
+function* generateLogs() {
     //for (let i = 0; i < 100; i++) {
     while(true){
         var low = Math.random() * 32767 % 15 + 15;
@@ -328,15 +326,15 @@ function generateLogs() {
 
         var val = {
             date: (d++) % 31 + 1,
-            lowTemperature: low,
-            highTemperature: low+diff,
-            humidity: Math.random() * 32767 % 100 / 100,
-            wind: Math.random() * 32767 % 25 + (Math.random() * 32767 % 10) / 10,
+            lowTemperature: parseInt(low),
+            highTemperature: parseInt(low+diff),
+            humidity: parseInt(Math.random() * 32767 % 100 / 100),
+            wind: parseInt(Math.random() * 32767 % 25 + (Math.random() * 32767 % 10) / 10),
             airQuality: "good",
             UV: "strong"
         };
 
-        log(1, val);
+        yield log(1, val);
     }
 
     //setTimeout(doFlowOps, 0);
