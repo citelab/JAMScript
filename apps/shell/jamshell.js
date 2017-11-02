@@ -6,11 +6,11 @@ jdata {
 	//Job logger
 	char* jobs as logger; //Job logger
 	//TODO: This can be removed when device status is kept from the J Node instead
-    struct device {
-        int uptime;
+    struct nodeInfo {
+    	char* nodeName;
         char* nodeType;
-        char* nodeName;
-    } info as logger; //Device info logger
+        char* precedingDevice;
+    } nodeInfo as logger; //Device info logger
 }
 
 /**
@@ -65,8 +65,8 @@ jsync function getNodeName() {
 */
 var getNodeInfo = function(key,entry) {
 	var i = 0;
-	while(info[i] !== undefined && !info[i].isEmpty()) {
-		console.log(info[i].lastValue());
+	while(nodeInfo[i] !== undefined && !nodeInfo[i].isEmpty()) {
+		console.log(nodeInfo[i].lastValue());
 		i++;
 	}
 }
@@ -100,11 +100,42 @@ var execJNode = function(name) {
 }
 
 /**
+* Logging utility for self-logging
+*/
+function log(index, value){
+    setTimeout(function() {
+    	console.log(nodeInfo.size());
+        nodeInfo[index].log(value, function (result) {
+            if (!result.status)
+                console.log(result.error);
+        });
+    }, 30);
+}
+
+/**
+* Generate node info and log it
+*/
+function generateNodeInfo() {
+	var val = {
+		nodeName: nodeName,
+		nodeType: "NODE_TYPE",
+		precedingDevice: "TEMP_PARENT"
+	};
+	log(0,val);
+}
+
+/**
  * User input loop
  */
 var readline = require('readline');
 var rl = readline.createInterface(process.stdin, process.stdout);
 var args = null;
+var gen;
+
+//Add a new datastream to the logger when a new node comes online
+nodeInfo.addDatastream(nodeName);
+//Log the node into logger
+gen = generateNodeInfo();
 
 rl.setPrompt('>>');
 rl.prompt();
@@ -162,8 +193,7 @@ rl
 		    * TODO: new method of logging from J node
 		    */
 		    if (line === "nodes") {
-		    	//logInfo();
-				//getNodeInfo();
+		    	getNodeInfo();
 		    }
 		    /**
 		    * Get current running jobs

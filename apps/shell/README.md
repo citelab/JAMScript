@@ -20,6 +20,7 @@ To start the C node:
 - `exec progA` - Executes a compiled JAMScript program from the shell. You will need to change the path progA in the source code...
 - `exec progB >` - Executes program B with output redirection. Currently redirects to screen only, not file. NOT WORKING.
 - `exec progB | progC` - Executes program B, piping the output to program C.
+- `nodes` - Lists names, types, and preceeding devices for each node in the system.
 - Other commands a work in progress.
 
 
