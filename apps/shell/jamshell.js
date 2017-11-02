@@ -61,7 +61,6 @@ jsync function getNodeName() {
 
 /**
 * Get node info from connected devices.
-* TODO: Move node info to the J node and log directly.
 */
 var getNodeInfo = function(key,entry) {
 	var i = 0;
@@ -73,13 +72,10 @@ var getNodeInfo = function(key,entry) {
 
 /**
 * Read and list jobs from the logger.
-* TODO: Move job tracking to the J node and log directly.
 */
 var getJobs = function(key, entry) {
-	console.log("HERE IN JOBS");
 	var i = 0;
 	while(jobs[i] !== undefined && !jobs[i].isEmpty()) {
-		console.log("IN LOOP");
 		console.log(jobs[i].lastValue());
 		i++;
 	}
@@ -112,6 +108,16 @@ function log(index, value){
     }, 30);
 }
 
+function logJobs(index, value){
+    setTimeout(function() {
+    	console.log(nodeInfo.size());
+        jobs[index].log(value, function (result) {
+            if (!result.status)
+                console.log(result.error);
+        });
+    }, 30);
+}
+
 /**
 * Generate node info and log it
 */
@@ -135,9 +141,12 @@ var readline = require('readline');
 var rl = readline.createInterface(process.stdin, process.stdout);
 var args = null;
 var gen;
+var jobList = [];
 
 //Add a new datastream to the logger when a new node comes online
 nodeInfo.addDatastream(nodeName);
+jobs.addDatastream(nodeName);
+
 //Log the node into logger
 gen = generateNodeInfo();
 
@@ -187,6 +196,8 @@ rl
 		    	args = CommandParser.parse(line);
 		    	execJNode(args[1]);
 		    	execProg(args[1]);
+		    	jobList.push(args[1]);
+		    	logJobs(0,jobList);
 		    }
 		    /**
 		    * Print the current working directory
@@ -196,7 +207,6 @@ rl
 		    }
 		    /**
 		    * Get node information about the current JAMSystem
-		    * TODO: new method of logging from J node
 		    */
 		    if (line === "nodes") {
 		    	getNodeInfo();
@@ -206,9 +216,9 @@ rl
 		    * TODO: new method of logging from J node
 		    */
 		    if (line === "jobs") {
-		    	//jobs.subscribe(getJobs);
+		    	getJobs();
 		    }
-		    		    /**
+		    /**
 		    * Exit
 		    */
 		    if (line === "exit"){
