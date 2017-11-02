@@ -18,7 +18,7 @@ To start the C node:
 - `pwd` - prints the current working directory
 - `exit` - exits the shell (DOES NOT TERMINATE SPAWNED PROGRAMS! (YET)). *You'll need to run `killall node` to terminate exec'd children*
 - `exec progA` - Executes a compiled JAMScript program from the shell. You will need to change the path progA in the source code...
-- `exec progB >` - Executes program B with output redirection. Currently redirects to screen only, not file. NOT WORKING.
+- `exec progB >` - Executes program B with output redirection. Currently redirects to screen only, not file.
 - `exec progB | progC` - Executes program B, piping the output to program C.
 - `nodes` - Lists names, types, and preceeding devices for each node in the system.
 - Other commands a work in progress.
@@ -28,5 +28,5 @@ To start the C node:
 
 To do this, you will need to modify:
 
-`execJNode(name)` found in `jamshell.js`
+`execJNode(name)` found in `jamshell.js` and 
 `startC(void *pname)` found in `jamshell.c`

@@ -124,6 +124,10 @@ function generateNodeInfo() {
 	log(0,val);
 }
 
+function listener(raw) {
+	console.log(raw.data);
+}
+
 /**
  * User input loop
  */
@@ -152,9 +156,11 @@ rl
 		    	if (args[0] == "exec") {
 		    		execJNode(args[1]);
 		    		execProg(args[1]);
-		    		cout.setTerminalFunction(function(entry) {
-		    			console.log(entry.data);
-		    		});
+		    		var flow = cout;
+		    		flow.addChannel(listener);
+		    		// cout.setTerminalFunction(function(entry) {
+		    		// 	console.log(entry.data);
+		    		// });
 		    	}
 		    }
 		    /**
