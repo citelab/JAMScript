@@ -21,6 +21,7 @@ To start the C node:
 - `exec progB >` - Executes program B with output redirection. Currently redirects to screen only, not file.
 - `exec progB | progC` - Executes program B, piping the output to program C.
 - `nodes` - Lists names, types, and preceeding devices for each node in the system.
+- `jobs` - Lists jobs started by the shell
 - Other commands a work in progress.
 
 
