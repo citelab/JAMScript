@@ -14,8 +14,7 @@ RUN apt-get update && apt-get install -y wget \
         mosquitto \
         libssl-dev \
         git
-RUN mkdir -p temporary && cd temporary && wget http://prdownloads.sourceforge.net/scons/scons-2.5.0.tar.gz && tar zxvf scons-2.5.0.tar.gz && cd scons-2.5.0 && python setup.py install &
-& cd
+RUN mkdir -p temporary && cd temporary && wget http://prdownloads.sourceforge.net/scons/scons-2.5.0.tar.gz && tar zxvf scons-2.5.0.tar.gz && cd scons-2.5.0 && python setup.py install & cd
 RUN cd temporary && wget https://nodejs.org/dist/v7.0.0/node-v7.0.0-linux-x64.tar.xz && tar -C /usr/local --strip-components 1 -xJf node-v7.0.0-linux-x64.tar.xz
 RUN cd temporary && wget https://github.com/PJK/libcbor/archive/v0.5.0.zip && unzip v0.5.0.zip && cd libcbor-0.5.0 && cmake CMakeLists.txt && make && make install
 RUN cd temporary && git clone https://github.com/eclipse/paho.mqtt.c.git && cd paho.mqtt.c && make && make install

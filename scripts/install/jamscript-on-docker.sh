@@ -2,10 +2,10 @@
 
 # Make /usr/lib/node_modules writeable
 
-sudo chmod o+w  /usr/lib/node_modules                                                         
-sudo chmod o+w /usr/bin                                                                      
-sudo chmod o+w /usr/local/share                                                              
-sudo chmod o+w /usr/local/lib 
+sudo chmod o+w  /usr/lib/node_modules
+sudo chmod o+w /usr/bin
+sudo chmod o+w /usr/local/share
+sudo chmod o+w /usr/local/lib
 
 
 # Install the libtask
@@ -14,7 +14,7 @@ make clean
 make
 sudo make install
 cd ../mujs2
-make 
+make
 sudo make install
 cd ../..
 

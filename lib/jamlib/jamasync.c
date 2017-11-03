@@ -114,9 +114,6 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     }
 
     activity_thread_t *athr = athread_getbyindx(js->atable, jact->jindx);
-    printf("=======Jindx %d, jact-jindx %d\n", athr->jindx, jact->jindx);
-    printf("Command actid %s\n", cmd->actid);
-    printf("Jact actid %s\n", jact->actid);
 
     // Repeat for three times ... under failure..
     for (int i = 0; i < 3 && !valid_acks; i++)
