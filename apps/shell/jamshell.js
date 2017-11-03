@@ -45,6 +45,7 @@ var sys = require('sys');
 var exec = require('child_process').exec;
 var spawn = require('child_process').spawn;
 var chance = require('chance').Chance();
+var jobList = [];
 
 /**
 * Names the node randomly.
@@ -89,6 +90,8 @@ var getJobs = function(key, entry) {
 var execJNode = function(name) {
     process.chdir("/Users/oryx/" + name);
 	var child = spawn('node', ['jamout.js', '--app=' + name]);
+	jobList.push(child.pid);
+	console.log("Pushed child: "+ child.pid + " to joblist");
 	child.stdout.on('data',
     function (data) {
         console.log(''+ data);
@@ -141,7 +144,6 @@ var readline = require('readline');
 var rl = readline.createInterface(process.stdin, process.stdout);
 var args = null;
 var gen;
-var jobList = [];
 
 //Add a new datastream to the logger when a new node comes online
 nodeInfo.addDatastream(nodeName);
@@ -196,7 +198,6 @@ rl
 		    	args = CommandParser.parse(line);
 		    	execJNode(args[1]);
 		    	execProg(args[1]);
-		    	jobList.push(args[1]);
 		    	logJobs(0,jobList);
 		    }
 		    /**
@@ -222,10 +223,18 @@ rl
 		    * Exit
 		    */
 		    if (line === "exit"){
+				console.log('killing', jobList.length, 'child processes');
+				jobList.forEach(function(job) {
+					process.kill(job);
+				});
 				rl.close();
 		    }
 		    rl.prompt();
 	})
 	.on('close',function(){
+			console.log('killing', jobList.length, 'child processes');
+			jobList.forEach(function(job) {
+				process.kill(job);
+			});
 	    process.exit(0);
 	});
