@@ -19,16 +19,19 @@
             {
               "type": "slider",
               "dispLabel": "Controller #1",
-              "max": 100,
-              "min": 0,
-              "step": 10,
-              "trigger": "emitValue"
+              "max": "maxValue",
+              "min": "minValue",
+              "step": "stepValue",
+              "trigger": "emitValue",
+              "value": "currentValue",
+              "valueName": "currentValue"
             }
           ],
           "store": {
-            "maxValue": "100",
-            "minValue": "0",
-            "stepValue": "10"
+            "maxValue": 100,
+            "minValue": 0,
+            "stepValue": 10,
+            "currentValue": 20
           }
         } 
       ]
