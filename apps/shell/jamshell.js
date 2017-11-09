@@ -3,6 +3,7 @@ jdata {
 	cout as inflow of app://progB.outF;
 	//shellOut is the outflow of the shell (from progB)
 	shellOut as outflow of cout;
+
 	//Job logger
 	char* jobs as logger; //Job logger
 	//TODO: This can be removed when device status is kept from the J Node instead
@@ -45,6 +46,7 @@ var sys = require('sys');
 var exec = require('child_process').exec;
 var spawn = require('child_process').spawn;
 var chance = require('chance').Chance();
+var fs = require('fs');
 var jobList = [];
 
 /**
@@ -83,19 +85,24 @@ var getJobs = function(key, entry) {
 }
 
 /**
-* This takes care of execing the J node of the execd program
+* This takes care of execing a program
 * Spawns a child and listens on the stdout to display output
-* @param name of the program being exec'd
+* @param relative path of the program being exec'd
 */
-var execJNode = function(name) {
-    process.chdir("/Users/oryx/" + name);
-	var child = spawn('node', ['jamout.js', '--app=' + name]);
+var executeProgram = function(path) {
+	var currPath = process.cwd();
+	var progPath = process.cwd() + "/" + path;
+	var progName = path.split("/").slice(-1)[0] 
+    process.chdir(progPath);
+	var child = spawn('node', ['jamout.js', '--app=' + progName]);
 	jobList.push(child.pid);
 	console.log("Pushed child: "+ child.pid + " to joblist");
+	process.chdir(currPath);
 	child.stdout.on('data',
     function (data) {
         console.log(''+ data);
     });
+	execProg(progPath, progName);
 }
 
 /**
@@ -159,35 +166,33 @@ rl
 	        /**
 	         * Handle redirection
 	         * Only prints for now, doesn't write to a file
-	         * NOT WORKING!
 	         */
 	        //TEST COMMAND: exec progB >
+	        // fileD.txt > progD
 			if (line.includes(">")) {
 		    	args = CommandParser.parse(line);
 		    	if (args[0] == "exec") {
-		    		execJNode(args[1]);
-		    		execProg(args[1]);
+		    		executeProgram(args[1]);
 		    		var flow = cout;
 		    		flow.addChannel(listener);
-		    		// cout.setTerminalFunction(function(entry) {
-		    		// 	console.log(entry.data);
-		    		// });
+		    	}
+		    	// fileA => shell.inflow ==> shell.outflow ==> progD.inflow
+		    	if (args[1] == ">") {
+		    		var fileInputFlow = Flow.from("fs:///Users/oryx/fileD.txt").foreach((line) => console.log(line));
+		    		executeProgram(args[2]);
 		    	}
 		    }
 		    /**
 	         * Handle piping
-	         * WORKING!
 	         */
 		    //TEST COMMAND: exec progB | progC
 		    if (line.includes("|")) {
 		    	args = CommandParser.parse(line);
 		    	console.log(args)	;
 		    	if (args[0] == "exec") {
-		    		execJNode(args[1]);
-		    		execProg(args[1]);
+		    		executeProgram(args[1]);
 		    		shellOut.start();
-		    		execJNode(args[3]);
-		    		execProg(args[3]);
+		    		executeProgram(args[3]);
 		    	}
 		    }
 		   	/**
@@ -196,15 +201,28 @@ rl
 		    */
 		    if (line.includes("exec")) {
 		    	args = CommandParser.parse(line);
-		    	execJNode(args[1]);
-		    	execProg(args[1]);
+		    	executeProgram(args[1]);
 		    	logJobs(0,jobList);
 		    }
 		    /**
 		    * Print the current working directory
 		    */
 		    if (line === "pwd") {
-		    	console.log(pwd());
+		    	console.log(process.cwd());
+		    }
+		    /**
+		    * Changes directory
+		    */
+		    if (line.includes("cd")) {
+		    	args = CommandParser.parse(line);
+		    	process.chdir(args[1]);
+		    }
+		    if (line === "ls") {
+		    	fs.readdir(process.cwd(), (err, files) => {
+  					files.forEach(file => {
+    					console.log(file);
+  					});
+				})
 		    }
 		    /**
 		    * Get node information about the current JAMSystem

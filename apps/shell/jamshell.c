@@ -11,46 +11,51 @@
 time_t start;
 char* getNodeName();
 
+struct programInfo {
+	char* path;
+	char* name;
+};
+
 /**
 * Starts the C node of an exec'd program
 * @param name of the program to exec
-* You'll need to use your own path of where the a.out of the program to be execd is.
 */
-void* startC(void *pname) {
-		printf("%s\n", pname);
+void* startC(void *pinfo) {
+
+		struct programInfo *info = pinfo;
+
         char *args[5];
         args[0] = "a.out";
         args[1] = "-a";
-        args[2] = (char*)pname;
+        args[2] = (char*)info->name;
         args[3] = NULL;
 
+        char* programPath = info->path;
+
         if (fork() == 0) {
-        	char path[80];
-        	strcpy(path, "/Users/oryx/"); //Change this to the a.out of pname
-        	strcat(path, args[2]);
-        	strcat(path, "/a.out");
-        	printf("%s\n", path);
-			execvp(path, args);
+        	char execDir[1024];
+        	strcpy(execDir, programPath);
+        	strcat(execDir, "/a.out");
+        	printf("%s\n", execDir);
+			execvp(execDir, args);
         }
-}
-/**
-* Returns the current working directory
-*/
-jsync char* pwd() {
-	char cwd[1024];
-	return getcwd(cwd,sizeof(cwd));
+        free(info);
 }
 
 /**
 * Takes care of spawning the pthread to exec the C node of pname
 * @param name of the program to exec
 */
-jasync execProg(char *pname) {
-	printf("%s\n", pname );
+jasync execProg(char *path, char* progName) {
+	struct programInfo *pinfo;
+	pinfo = malloc(sizeof(*pinfo));
+	pinfo->path = path;
+	pinfo->name = progName;
+
 	pthread_t tidC;
 	sleep(1);
 	int errC;
-	errC = pthread_create(&tidC, NULL, &startC, pname);
+	errC = pthread_create(&tidC, NULL, &startC, pinfo);
 	if(errC != 0) {
 		printf("Could not create thread for exec C.\n");
 	} else {
