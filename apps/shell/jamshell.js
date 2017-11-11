@@ -207,17 +207,19 @@ rl
 		    /**
 		    * Print the current working directory
 		    */
-		    if (line === "pwd") {
+		    if (line === "jpwd") {
+		    	console.log("jpwd receieved");
 		    	console.log(process.cwd());
 		    }
 		    /**
 		    * Changes directory
 		    */
-		    if (line.includes("cd")) {
+		    if (line.includes("jcd")) {
+		    	console.log("jcd received");
 		    	args = CommandParser.parse(line);
 		    	process.chdir(args[1]);
 		    }
-		    if (line === "ls") {
+		    if (line === "jls") {
 		    	fs.readdir(process.cwd(), (err, files) => {
   					files.forEach(file => {
     					console.log(file);
