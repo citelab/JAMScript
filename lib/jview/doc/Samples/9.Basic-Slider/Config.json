@@ -17,6 +17,7 @@
           "type": "Controller",
           "controlList": [
             {
+              "id": "1",
               "type": "slider",
               "dispLabel": "Controller #1",
               "max": "maxValue",
