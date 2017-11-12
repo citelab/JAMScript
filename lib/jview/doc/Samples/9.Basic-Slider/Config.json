@@ -20,19 +20,34 @@
               "id": "1",
               "type": "slider",
               "dispLabel": "Controller #1",
-              "max": "maxValue",
-              "min": "minValue",
-              "step": "stepValue",
-              "trigger": "emitValue",
-              "value": "currentValue",
-              "valueName": "currentValue"
+              "max": "maxValue1",
+              "min": "minValue1",
+              "step": "stepValue1",
+              "trigger": "emitValue1",
+              "value": "currentValue1",
+              "valueName": "currentValue1"
+            },
+            {
+              "id": "2",
+              "type": "slider",
+              "dispLabel": "Controller #2",
+              "max": "maxValue2",
+              "min": "minValue2",
+              "step": "stepValue2",
+              "trigger": "emitValue2",
+              "value": "currentValue2",
+              "valueName": "currentValue2"
             }
           ],
           "store": {
-            "maxValue": 100,
-            "minValue": 0,
-            "stepValue": 10,
-            "currentValue": 20
+            "maxValue1": 100,
+            "minValue1": 0,
+            "stepValue1": 10,
+            "currentValue1": 20,
+            "maxValue2": 100,
+            "minValue2": 0,
+            "stepValue2": 10,
+            "currentValue2": 20
           }
         } 
       ]
