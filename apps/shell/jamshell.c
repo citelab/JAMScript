@@ -10,6 +10,7 @@
 
 time_t start;
 char* getNodeName();
+void* execAtCloud();
 
 struct programInfo {
 	char* path;
@@ -40,6 +41,12 @@ void* startC(void *pinfo) {
 			execvp(execDir, args);
         }
         free(info);
+}
+
+jasync execProgGlobal(char* cmd) {
+	printf("Got a global invocation call\n");
+	printf("%s\n", cmd);
+	execAtCloud(cmd);
 }
 
 /**

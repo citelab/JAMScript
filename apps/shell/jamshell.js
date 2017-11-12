@@ -14,6 +14,10 @@ jdata {
     } nodeInfo as logger; //Device info logger
 }
 
+jcond {
+	cloudonly: sys.type == "cloud";
+}
+
 /**
 * Helper function to parse command line arguments
 */
@@ -134,7 +138,7 @@ function logJobs(index, value){
 function generateNodeInfo() {
 	var val = {
 		nodeName: nodeName,
-		nodeType: "NODE_TYPE",
+		nodeType: jsys.type,
 		precedingDevice: "TEMP_PARENT"
 	};
 	log(0,val);
@@ -142,6 +146,11 @@ function generateNodeInfo() {
 
 function listener(raw) {
 	console.log(raw.data);
+}
+
+jasync {cloudonly} function execAtCloud(path) {
+	console.log("execAtCloud received: " + path);
+	executeProgram(path);
 }
 
 /**
@@ -195,15 +204,39 @@ rl
 		    		executeProgram(args[3]);
 		    	}
 		    }
+
+		    /**
+		    * Handle location commands
+		    */
+		    // exec @all progA
+		    if (line.includes("@")) {
+		    	console.log("Received @location commands");
+		    	args = CommandParser.parse(line);
+		    	console.log(args);
+
+		    	console.log(args[1]);
+
+		    	if (args[1] == "@all") {
+		    		console.log("Receieved @all command");
+		    		//Call to C (which can call all Js)
+		    		if (args[0] == 'exec') {
+		    			console.log("Received exec @all command");
+		    			execProgGlobal(args[2]);
+		    			console.log("Exiting");
+		    		}
+		    	}
+		    }
+
 		   	/**
 		    * Exec a program from the shell
 		    * exec progA
 		    */
-		    if (line.includes("exec")) {
-		    	args = CommandParser.parse(line);
-		    	executeProgram(args[1]);
-		    	logJobs(0,jobList);
-		    }
+		    // if (line.includes("exec")) {
+		    // 	console.log("Entered vanilla exec function");
+		    // 	args = CommandParser.parse(line);
+		    // 	executeProgram(args[1]);
+		    // 	logJobs(0,jobList);
+		    // }
 		    /**
 		    * Print the current working directory
 		    */
