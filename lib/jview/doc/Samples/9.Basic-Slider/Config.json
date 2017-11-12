@@ -25,7 +25,8 @@
               "step": "stepValue1",
               "trigger": "emitValue1",
               "value": "currentValue1",
-              "valueName": "currentValue1"
+              "valueName": "currentValue1",
+              "mode": 0
             },
             {
               "id": "2",
@@ -36,7 +37,8 @@
               "step": "stepValue2",
               "trigger": "emitValue2",
               "value": "currentValue2",
-              "valueName": "currentValue2"
+              "valueName": "currentValue2",
+              "mode": 1
             }
           ],
           "store": {
