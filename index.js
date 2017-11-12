@@ -25,6 +25,7 @@ var args = process.argv.slice(2);
 var tmpDir = "/tmp/jam-" + randomValueHex(20);
 var cPath;
 var jsPath;
+var outPath;
 
 for (var i = 0; i < args.length; i++) {
   if(args[i].charAt(0) === "-") {
@@ -51,6 +52,7 @@ for (var i = 0; i < args.length; i++) {
     var extension = path.extname(inputPath);
     if(extension === '.js') {
       jsPath = inputPath;
+      outPath = path.basename(inputPath, '.js');
     } else if(extension === '.c') {
       cPath = inputPath;
     }
@@ -96,7 +98,7 @@ try {
 
   if(callGraphFlag) {
     fs.writeFileSync("callgraph.html", callGraph.createWebpage());
-    fs.writeFileSync("callgraph.dot", callGraph.createDOT());  
+    fs.writeFileSync("callgraph.dot", callGraph.createDOT());
   }
 
   // if(translateOnly) {
@@ -119,7 +121,7 @@ try {
 
     // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
     Promise.all(tasks).then(function(value) {
-      createZip(results.JS, tmpDir, "jamout");
+      createZip(results.JS, tmpDir, outPath);
       if(!debug) {
         for(var i = 0; i < value.length; i++) {
           console.log(value[i]);

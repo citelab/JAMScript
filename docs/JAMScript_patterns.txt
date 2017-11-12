@@ -1,0 +1,55 @@
+Long calls in JAMScript
+
+1. Device to cloud and to device
+s
+The objective here is for one device to engage with another device.
+We know the vicinity of the first device and also other parameters
+such as vicinity, spatial attributes, and trust that determines which device
+should be talking to which other device.
+
+The devices could be pushing or pulling data from one another.
+
+1.a. Pushing data to the infrastructure
+When we push data from the devices to the infrastructure it goes to the
+fogs through which the devices are connected to the infrastructure.
+Sometimes we want place the data at different edge nodes so that reuse of the
+data or the latency of reusing the data in further computations can be minimized.
+
+How do we achieve this objective?
+
+The device that wants the data pushes its location through a logger. The logger
+data streams to the fog and cloud levels. The routines at the fog and cloud levels
+could learn the characteristics about the device or group of devices using the
+logged values.
+
+The cloud and/or fog uses the values from the logged values to determines
+parameters it should use in the call to the devices.
+
+The interesting part is that the call from the device can reach all the way to
+the cloud and come back or it could be turned back at the fog. When we turn back
+at the fog, we could use the fog-level context instead of the cloud-level context used
+with the cloud turn back.
+
+
+
+1.a. Pushing data to the devices
+When we normally push data to the devices, it goes thr
+
+
+
+
+
+
+
+1.b. Pushing data
+
+
+
+
+
+
+
+
+
+
+2.
