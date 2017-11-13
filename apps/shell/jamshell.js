@@ -10,7 +10,8 @@ jdata {
     struct nodeInfo {
     	char* nodeName;
         char* nodeType;
-        char* precedingDevice;
+        char* fog;
+        char* cloud;
     } nodeInfo as logger; //Device info logger
 }
 
@@ -59,6 +60,21 @@ var jobList = [];
 var nodeName = chance.first();
 console.log("node name: " + nodeName);
 
+var cloudName;
+var fogName;
+
+var selfInfo = {"name": nodeName, "type": jsys.type};
+jsys.ad_up('name',selfInfo)
+
+jsys.ad_up_fogcback('name', function(x) {
+	console.log(x.name);
+	fogName = x.name
+});
+jsys.ad_up_cloudcback('name', function(x) {
+	console.log(x.name);
+	cloudName = x.name
+});
+
 /**
 * Get node name.
 */
@@ -87,6 +103,10 @@ var getJobs = function(key, entry) {
 		i++;
 	}
 }
+
+// var advertiseSelf = function() {
+// 	jamsys.ad_up('name',selfInfo)
+// }
 
 /**
 * This takes care of execing a program
@@ -136,10 +156,13 @@ function logJobs(index, value){
 * Generate node info and log it
 */
 function generateNodeInfo() {
+	console.log("fog name is: " + fogName);
+	console.log("cloud name is: " + cloudName);
 	var val = {
 		nodeName: nodeName,
 		nodeType: jsys.type,
-		precedingDevice: "TEMP_PARENT"
+		fog: fogName,
+		cloud: cloudName
 	};
 	log(0,val);
 }
