@@ -116,7 +116,7 @@ var getJobs = function(key, entry) {
 var executeProgram = function(path) {
 	var currPath = process.cwd();
 	var progPath = process.cwd() + "/" + path;
-	var progName = path.split("/").slice(-1)[0] 
+	var progName = path.split("/").slice(-1)[0]
     process.chdir(progPath);
 	var child = spawn('node', ['jamout.js', '--app=' + progName]);
 	jobList.push(child.pid);
@@ -295,6 +295,10 @@ rl
 		    if (line === "jobs") {
 		    	getJobs();
 		    }
+            if (line === "names") {
+                console.log("fogName: ", fogName);
+                console.log("cloudName: ", cloudName);                
+            }
 		    /**
 		    * Exit
 		    */
