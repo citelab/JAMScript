@@ -19,6 +19,9 @@ jcond {
 	cloudonly: sys.type == "cloud";
 }
 
+var argv = require('yargs').argv
+
+
 /**
 * Helper function to parse command line arguments
 */
@@ -118,7 +121,7 @@ var executeProgram = function(path) {
 	var progPath = process.cwd() + "/" + path;
 	var progName = path.split("/").slice(-1)[0]
     process.chdir(progPath);
-	var child = spawn('node', ['jamout.js', '--app=' + progName]);
+	var child = spawn('node', ['jamout.js', '--app=' + progName, '--data=' + argv.data]);
 	jobList.push(child.pid);
 	console.log("Pushed child: "+ child.pid + " to joblist");
 	process.chdir(currPath);
