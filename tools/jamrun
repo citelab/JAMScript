@@ -186,7 +186,7 @@ if [ -e "$file" ]; then
     fi
 
     echo "Starting C...."
-    Next start the C node. We could start a number of them
+    # Next start the C node. We could start a number of them
     if [ "$type" == "device" ]; then
         echo "Checking C..."
         counter=0

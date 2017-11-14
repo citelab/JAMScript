@@ -54,6 +54,20 @@
       ]
     },
     {
+      "target_name": "tools",
+      "type": "none",
+      "copies": [
+        {
+          "destination": "/usr/local/bin/",
+          "files": [ 
+            "tools/jamrun",
+            "tools/runc",
+            "tools/runj"
+           ]
+        }
+      ]
+    },
+    {
    	  "target_name": "liblibjam",
 	  	"type": "static_library",
       "dependencies": [ "deps/libtask/binding.gyp:liblibtask" ],

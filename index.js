@@ -31,7 +31,7 @@ for (var i = 0; i < args.length; i++) {
   if(args[i].charAt(0) === "-") {
     if(args[i] === "-D" || args[i] === "-d") { // Debug mode
       debug = true;
-    } else if(args[i] === "-help") { // help
+    } else if(args[i] === "-h") { // help
       printHelp();
     } else if(args[i] === "-N") { // Don't compile
       noCompile = true;
@@ -306,8 +306,9 @@ function printHelp() {
   console.log("\nOptions:");
   console.log("\t-A \t\t\t Parser only");
   console.log("\t-D \t\t\t Debug mode");
-  console.log("\t-help \t\t\t Display available options");
+  console.log("\t-h \t\t\t Display available options");
   console.log("\t-N \t\t\t Skip compilation");
+  console.log("\t-o \t\t\t Set jxe output name");  
   console.log("\t-P \t\t\t Preprocessor only");
   console.log("\t-V \t\t\t Verbose mode");
   console.log("\t-T \t\t\t Translator only");
