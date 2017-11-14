@@ -27,9 +27,9 @@ EOF
 # Initialize all the option variables.
 app=
 port=
-type=
-data=
-num=
+type=device
+data=127.0.0.1
+num=1
 
 file=$1
 shift
@@ -128,21 +128,17 @@ while :; do
     shift
 done
 
+# Check necessary parameters and set defaults
+
 if [ -z "$app" ]; then
     die "--app option needs to be specified."
 fi
 
-if [ "$type" != "cloud" ] && [ "$type" != "fog" ]; then
-    type=device
-fi
-
-if [ "$type" != "device"] && [ -n "$num" ]; then
+if [ "$type" != "device" ] && [ -n "$num" ]; then
     die "number of devices can't be speciied for fog/cloud"
 fi
 
-if [ -n "$num" ]; then
-    num=1
-fi
+
 
 if [ -e "$file" ]; then
 
@@ -176,26 +172,30 @@ if [ -e "$file" ]; then
         # execute the program.. we are in the folder..
         case $type in
             cloud)
-                node jamout.js --app=$app --cloud --port=$port --data=$data
+                node jamout.js --app=$app --cloud --port=$port --data=$data &
                 ;;
             fog)
-                node jamout.js --app=$app --fog --port=$port --data=$data
+                node jamout.js --app=$app --fog --port=$port --data=$data &
                 ;;
             device)
-                node jamout.js --app=$app --port=$port --data=$data
+                node jamout.js --app=$app --port=$port --data=$data &
                 ;;
         esac
     else
         die "Not a valid .jxe file"
     fi
 
-    # Next start the C node. We could start a number of them
+    echo "Starting C...."
+    Next start the C node. We could start a number of them
     if [ "$type" == "device" ]; then
+        echo "Checking C..."
         counter=0
-        while [ $counter le $num ]; do
+        while [ $counter -le $num ]; do
+            ((counter++))
             if [ -e a.out ]; then
+                chmod +x a.out
                 # execute the program.. we are in the folder..
-                ./a.out -a $app -n $counter
+                ./a.out -a $app -n $counter &
             fi
         done
     fi
