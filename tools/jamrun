@@ -185,18 +185,20 @@ if [ -e "$file" ]; then
         die "Not a valid .jxe file"
     fi
 
-    echo "Starting C...."
+    # Give sufficient time for the node process to start.
+    # Otherwise the C client would not connect..
+    sleep 2
+
     # Next start the C node. We could start a number of them
     if [ "$type" == "device" ]; then
-        echo "Checking C..."
-        counter=0
+        counter=1
         while [ $counter -le $num ]; do
-            ((counter++))
             if [ -e a.out ]; then
                 chmod +x a.out
                 # execute the program.. we are in the folder..
                 ./a.out -a $app -n $counter &
             fi
+            ((counter++))            
         done
     fi
 
