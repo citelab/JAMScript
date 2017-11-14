@@ -1,0 +1,101 @@
+#!/bin/sh
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+show_usage() {
+    cat << EOF
+Usage: runc file.jxe -a appl_name -n number
+
+The runc command runs the C component of the file.jxe (JAM executable).
+EOF
+}
+
+# Initialize all the option variables.
+app=
+num=
+
+file=$1
+shift
+
+if [ $file = "-h" ]; then
+    show_usage
+fi
+
+while :; do
+    case $1 in
+        -h|-\?|--help)
+            show_usage      # Display a usage synopsis.
+            exit
+            ;;
+        -a|--app)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                app=$2
+                shift
+            else
+                die 'ERROR: "--app" requires a non-empty option argument.'
+            fi
+            ;;
+        --app=?*)
+            app=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --app=)            # Handle the case of an empty
+            die 'ERROR: "--app" requires a non-empty option argument.'
+            ;;
+        -n|--num)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                num=$2
+                shift
+            else
+                die 'ERROR: "--num" requires a non-empty option argument.'
+            fi
+            ;;
+        --num=?*)
+            num=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --num=)            # Handle the case of an empty
+            die 'ERROR: "--num" requires a non-empty option argument.'
+            ;;
+        --)              # End of all options.
+            shift
+            break
+        ;;
+        -?*)
+            printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+            ;;
+        *)               # Default case: No more options, so break out of the loop.
+            break
+    esac
+
+    shift
+done
+
+if [ -z "$app" ]; then
+    die "--app option needs to be specified."
+fi
+
+if [ -z "$num" ]; then
+    num=1
+fi
+
+if [ -e "$file" ]; then
+
+    # Get the folder
+    folder=$file"_"$app
+    if [ ! -d "$folder" ]; then
+        die "Folder not found to start the program"
+    fi
+
+    cd $folder
+    if [ -e a.out ]; then
+        # execute the program.. we are in the folder..
+        ./a.out -a $app -n $num
+    else
+        die "Not a valid .jxe folder"
+    fi
+
+else
+    die ".jxe file not found"
+fi
