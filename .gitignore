@@ -31,3 +31,4 @@ node_modules/
 
 build/
 *.jxe
+**/errlog

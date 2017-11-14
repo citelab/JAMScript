@@ -35,6 +35,8 @@ for (var i = 0; i < args.length; i++) {
       printHelp();
     } else if(args[i] === "-N") { // Don't compile
       noCompile = true;
+    } else if(args[i] === "-o") { // Output name
+      outPath = args[i+1];
     } else if(args[i] === "-P") { // Preprocessor only
       preprocessOnly = true;
     } else if(args[i] === "-V") { // Verbose
@@ -52,7 +54,9 @@ for (var i = 0; i < args.length; i++) {
     var extension = path.extname(inputPath);
     if(extension === '.js') {
       jsPath = inputPath;
-      outPath = path.basename(inputPath, '.js');
+      if(outPath === undefined) {
+      	outPath = path.basename(inputPath, '.js');
+      }
     } else if(extension === '.c') {
       cPath = inputPath;
     }
