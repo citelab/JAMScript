@@ -23,7 +23,6 @@
               "max": "maxValue1",
               "min": "minValue1",
               "step": "stepValue1",
-              "trigger": "emitValue1",
               "value": "currentValue1",
               "valueName": "currentValue1",
               "mode": 0
@@ -35,10 +34,17 @@
               "max": "maxValue2",
               "min": "minValue2",
               "step": "stepValue2",
-              "trigger": "emitValue2",
               "value": "currentValue2",
               "valueName": "currentValue2",
-              "mode": 1
+              "mode": 1,
+              "interval": 3000
+            },
+            {
+              "id": "3",
+              "type": "button",
+              "dispLabel": "Button #1",
+              "className": "btn-primary",
+              "trigger": "emitValue"
             }
           ],
           "store": {
