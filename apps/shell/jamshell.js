@@ -71,11 +71,9 @@ jsys.ad_up('name',selfInfo)
 
 jsys.ad_up_fogcback('name', function(x) {
 	console.log(x.name);
-	fogName = x.name
 });
 jsys.ad_up_cloudcback('name', function(x) {
 	console.log(x.name);
-	cloudName = x.name
 });
 
 /**
@@ -159,8 +157,6 @@ function logJobs(index, value){
 * Generate node info and log it
 */
 function generateNodeInfo() {
-	console.log("fog name is: " + fogName);
-	console.log("cloud name is: " + cloudName);
 	var val = {
 		nodeName: nodeName,
 		nodeType: jsys.type,
@@ -177,6 +173,11 @@ function listener(raw) {
 jasync {cloudonly} function execAtCloud(path) {
 	console.log("execAtCloud received: " + path);
 	executeProgram(path);
+}
+
+jasync function changeDirectory(path) {
+	console.log("jcd received");
+	process.chdir(path);
 }
 
 /**
@@ -274,9 +275,8 @@ rl
 		    * Changes directory
 		    */
 		    if (line.includes("jcd")) {
-		    	console.log("jcd received");
-		    	args = CommandParser.parse(line);
-		    	process.chdir(args[1]);
+				args = CommandParser.parse(line);
+				changeDirectory(args[1]);
 		    }
 		    if (line === "jls") {
 		    	fs.readdir(process.cwd(), (err, files) => {
