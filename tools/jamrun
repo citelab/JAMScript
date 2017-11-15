@@ -172,13 +172,25 @@ if [ -e "$file" ]; then
         # execute the program.. we are in the folder..
         case $type in
             cloud)
-                node jamout.js --app=$app --cloud --port=$port --data=$data &
+                node jamout.js --app=$app --cloud --port=$port --data=$data
                 ;;
             fog)
-                node jamout.js --app=$app --fog --port=$port --data=$data &
+                node jamout.js --app=$app --fog --port=$port --data=$data
                 ;;
             device)
-                node jamout.js --app=$app --port=$port --data=$data &
+                # First start the C nodes...
+                counter=1
+                while [ $counter -le $num ]; do
+                    if [ -e a.out ]; then
+                        chmod +x a.out
+                        # execute the program.. we are in the folder..
+                        ./a.out -a $app -n $counter &
+                    fi
+                    ((counter++))
+                done
+
+                # This start the J node
+                node jamout.js --app=$app --port=$port --data=$data
                 ;;
         esac
     else
@@ -192,14 +204,7 @@ if [ -e "$file" ]; then
     # Next start the C node. We could start a number of them
     if [ "$type" == "device" ]; then
         counter=1
-        while [ $counter -le $num ]; do
-            if [ -e a.out ]; then
-                chmod +x a.out
-                # execute the program.. we are in the folder..
-                ./a.out -a $app -n $counter &
-            fi
-            ((counter++))            
-        done
+
     fi
 
 else

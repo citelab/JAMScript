@@ -38,8 +38,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 void core_setup(corestate_t *cs)
 {
+    DIR *dir = NULL;
+    for (int i = 0; (i < 10 && dir == NULL); i++)
+    {
+        dir = opendir("./device.conf");
+        sleep(1);
+    }
 
-    DIR *dir = opendir("./device.conf");
     if (dir == NULL)
     {
         printf("ERROR! Missing ./device.conf folder.\n");
