@@ -70,10 +70,10 @@ var selfInfo = {"name": nodeName, "type": jsys.type};
 jsys.ad_up('name',selfInfo)
 
 jsys.ad_up_fogcback('name', function(x) {
-	console.log(x.name);
+	//console.log(x.name);
 });
 jsys.ad_up_cloudcback('name', function(x) {
-	console.log(x.name);
+	//console.log(x.name);
 });
 
 /**
@@ -114,12 +114,14 @@ var getJobs = function(key, entry) {
 * Spawns a child and listens on the stdout to display output
 * @param relative path of the program being exec'd
 */
+//   jamrun progName.jxe  --app=progName
 var executeProgram = function(path) {
 	var currPath = process.cwd();
 	var progPath = process.cwd() + "/" + path;
 	var progName = path.split("/").slice(-1)[0]
+	console.log('program name: ' + progsName);
     process.chdir(progPath);
-	var child = spawn('node', ['jamout.js', '--app=' + progName, '--data=' + argv.data]);
+	var child = spawn('jamrun', [progName +'.jxe', '--app=' + progName]);
 	jobList.push(child.pid);
 	console.log("Pushed child: "+ child.pid + " to joblist");
 	process.chdir(currPath);
@@ -127,7 +129,7 @@ var executeProgram = function(path) {
     function (data) {
         console.log(''+ data);
     });
-	execProg(progPath, progName);
+	//execProg(progPath, progName);
 }
 
 /**
@@ -176,7 +178,7 @@ jasync {cloudonly} function execAtCloud(path) {
 }
 
 jasync function changeDirectory(path) {
-	console.log("jcd received");
+	console.log("jcd received: Should execute at all subnodes");
 	process.chdir(path);
 }
 
@@ -253,7 +255,6 @@ rl
 		    		}
 		    	}
 		    }
-
 		   	/**
 		    * Exec a program from the shell
 		    * exec progA
