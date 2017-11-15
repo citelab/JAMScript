@@ -9,7 +9,7 @@ show_usage() {
     cat << EOF
 Usage: jamrun file.jxe --app=appl_name [--fog|--cloud] [--num=num_c_devs]
                                     [--port=port_number] [--data=data-url]
-
+                                    [--force]
 The jamrun command runs the given JAM executable (file.jxe).
 You specify the node type to run: cloud, fog, or device (by default).
 With device you start a J instance and one or more C instances.
@@ -21,6 +21,8 @@ running at the time. The MQTT broker will continue to run after the application
 has completed execution. The --data option takes a URL pointing to the data
 depot (Redis instance) to be used by the jdata subsystem.
 
+Use the --force option to use the latest version of the JAM executable.
+
 EOF
 }
 
@@ -30,6 +32,7 @@ port=
 type=device
 data=127.0.0.1
 num=1
+force=
 
 file=$1
 shift
@@ -101,18 +104,23 @@ while :; do
             die 'ERROR: "--data" requires a non-empty option argument.'
             ;;
         -f|--fog)
-            if [ -n "$type" ]; then
+            if [ "$type" != "device" ]; then
                 die 'ERROR: "type" cannot be reassigned.'
             else
                 type="fog"
+                num=
             fi
             ;;
         -c|--cloud)
-            if [ -n "$type" ]; then
+            if [ "$type" != "device" ]; then
                 die 'ERROR: "type" cannot be reassigned.'
             else
                 type="cloud"
+                num=
             fi
+            ;;
+        -r|--force)
+            force=1
             ;;
         --)              # End of all options.
             shift
@@ -139,7 +147,6 @@ if [ "$type" != "device" ] && [ -n "$num" ]; then
 fi
 
 
-
 if [ -e "$file" ]; then
 
     # First start the J node: cloud, fog, or device.
@@ -156,15 +163,25 @@ if [ -e "$file" ]; then
     fi
 
     # Get the folder
-    folder=$file"_"$app
+    filenoext="${file%.*}"
+    folder=$filenoext"_"$app
     if [ ! -d "$folder" ]; then
         mkdir $folder
     fi
 
     # unzip the executable in the folder and run it..
-    unzip $file -d $folder
-    if [ $? -ne 0 ]; then
-        die "Problem reading the .jxe file "
+    if [ -n "$force" ]; then
+        unzip $file -d $folder
+        if [ $? -ne 0 ]; then
+            die "Problem reading the .jxe file "
+        fi
+    else
+        if [ ! -e $folder/jamout.js ] && [ ! -e $folder/a.out ]; then
+            unzip $file -d $folder
+            if [ $? -ne 0 ]; then
+                die "Problem reading the .jxe file "
+            fi
+        fi
     fi
 
     cd $folder
