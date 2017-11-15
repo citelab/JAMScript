@@ -1,5 +1,8 @@
 #!/bin/sh
 
+MOSQUITTO=/usr/local/sbin/mosquitto
+MOSQUITTO_PUB=/usr/local/bin/mosquitto_pub
+
 die() {
     printf '%s\n' "$1" >&2
     exit 1
@@ -27,8 +30,8 @@ EOF
 }
 
 # Initialize all the option variables.
-app=
-port=
+app=testapp
+port=1883
 type=device
 data=127.0.0.1
 num=1
@@ -36,9 +39,22 @@ force=
 
 file=$1
 shift
+fext="${file##*.}"
 
 if [ $file = "-h" ]; then
     show_usage
+fi
+
+if [ "$fext" != "jxe" ]; then
+    die "file extension is not .jxe"
+fi
+
+# Check the required commands..
+if [ ! -e $MOSQUITTO ]; then
+    die "Mosquitto MQTT broker $MOSQUITTO not found"
+fi
+if [ ! -e $MOSQUITTO_PUB ]; then
+    die "Mosquitto tools $MOSQUITTO_PUB not found"
 fi
 
 while :; do
@@ -138,10 +154,6 @@ done
 
 # Check necessary parameters and set defaults
 
-if [ -z "$app" ]; then
-    die "--app option needs to be specified."
-fi
-
 if [ "$type" != "device" ] && [ -n "$num" ]; then
     die "number of devices can't be speciied for fog/cloud"
 fi
@@ -149,17 +161,12 @@ fi
 
 if [ -e "$file" ]; then
 
-    # First start the J node: cloud, fog, or device.
-
     # Check whether the MQTT server is running.. if not start it
-    if [ -z "$port" ]; then
-        port=1883
-    fi
-    mosquitto_pub -p $port -t "test" -m "hello"
+    MOSQUITTO_PUB -p $port -t "test" -m "hello"
     if [ $? -ne 0 ]; then
-        echo "MQTT is not running at " $port
-        echo "Attempting to start MQTT at" $port
-        /usr/local/sbin/mosquitto -p $port &
+        echo "MQTT is not running at $port"
+        echo "Attempting to start MQTT at $port"
+        $MOSQUITTO -p $port &
     fi
 
     # Get the folder
@@ -173,13 +180,13 @@ if [ -e "$file" ]; then
     if [ -n "$force" ]; then
         unzip $file -d $folder
         if [ $? -ne 0 ]; then
-            die "Problem reading the .jxe file "
+            die "Problem reading file: $file"
         fi
     else
         if [ ! -e $folder/jamout.js ] && [ ! -e $folder/a.out ]; then
             unzip $file -d $folder
             if [ $? -ne 0 ]; then
-                die "Problem reading the .jxe file "
+                die "Problem reading the file: $file"
             fi
         fi
     fi
@@ -206,24 +213,15 @@ if [ -e "$file" ]; then
                     ((counter++))
                 done
 
-                # This start the J node
+                # Then start the J node
                 node jamout.js --app=$app --port=$port --data=$data
                 ;;
         esac
     else
-        die "Not a valid .jxe file"
+        die "File: $file is not a valid JAMScript executable"
     fi
 
-    # Give sufficient time for the node process to start.
-    # Otherwise the C client would not connect..
-    sleep 2
-
-    # Next start the C node. We could start a number of them
-    if [ "$type" == "device" ]; then
-        counter=1
-
-    fi
 
 else
-    die ".jxe file not found"
+    die "File: $file not found"
 fi

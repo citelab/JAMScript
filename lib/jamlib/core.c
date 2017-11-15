@@ -39,6 +39,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 void core_setup(corestate_t *cs)
 {
     DIR *dir = NULL;
+    // We wait for the device.conf to show up..
+    // This is a by product of C nodes starting earlier than the J nodes
+    // that create the device.conf file.
+    //
     for (int i = 0; (i < 10 && dir == NULL); i++)
     {
         dir = opendir("./device.conf");
