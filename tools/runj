@@ -138,7 +138,7 @@ if [ -e "$file" ]; then
 
     # Get the folder
     filenoext="${file%.*}"
-    folder=$file"_"$app
+    folder=$filenoext"_"$app
     if [ ! -d "$folder" ]; then
         mkdir $folder
     fi
