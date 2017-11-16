@@ -46,9 +46,7 @@ void* startC(void *pinfo) {
 jasync execProgGlobal(char* cmd) {
 	printf("Got a global invocation call......\n");
 	printf("%s\n", cmd);
-    printf("Hello....................\n");
 	execAtCloud(cmd);
-    printf("Hello....................\n");
 }
 
 /**

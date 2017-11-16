@@ -29,10 +29,8 @@ void jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, int condv
 
     assert(fmask != NULL);
     // Check the height condition
-    printf("Before condition check...\n");
     if (machine_height(js) < requested_level(condvec))
         return;
-    printf("After condition check...\n");
 
     if (strlen(fmask) > 0)
         qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
@@ -101,9 +99,9 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     bool valid_acks = false;
     int results;
 
-    //#ifdef DEBUG_LVL1
+    #ifdef DEBUG_LVL1
         printf("Starting JAM ASYNC exec runner... \n");
-    //#endif
+    #endif
 
     runtable_insert(js, cmd->actid, cmd);
     runtableentry_t *act_entry = runtable_find(js->rtable, cmd->actid);

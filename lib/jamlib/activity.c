@@ -361,8 +361,6 @@ void run_activity(void *arg)
                 jam_clear_timer(js, jact->actid);
                 bool ack_failed = false;
 
-                printf(">>>>>>>>> Machine height %d\n", machine_height(js));
-
                 for (int i = 0; i < machine_height(js); i++)
                 {
                     if ((strcmp(cmd->cmd, "TIMEOUT") == 0) || (strcmp(cmd->cmd, "REXEC-NAK") == 0))

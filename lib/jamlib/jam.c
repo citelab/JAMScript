@@ -153,9 +153,9 @@ void jam_event_loop(void *arg)
     {
         nvoid_t *nv = p2queue_deq(js->atable->globalinq);
 
-        //#ifdef DEBUG_LVL1
+        #ifdef DEBUG_LVL1
             printf("Got a message for the event loop...  \n");
-        //#endif
+        #endif
 
         if (nv != NULL)
         {
