@@ -119,7 +119,7 @@ var executeProgram = function(path) {
 	var currPath = process.cwd();
 	var progPath = process.cwd() + "/" + path;
 	var progName = path.split("/").slice(-1)[0]
-	console.log('program name: ' + progsName);
+	console.log('program name: ' + progName);
     process.chdir(progPath);
 	var child = spawn('jamrun', [progName +'.jxe', '--app=' + progName]);
 	jobList.push(child.pid);
@@ -301,7 +301,7 @@ rl
 		    }
             if (line === "names") {
                 console.log("fogName: ", fogName);
-                console.log("cloudName: ", cloudName);                
+                console.log("cloudName: ", cloudName);
             }
 		    /**
 		    * Exit
