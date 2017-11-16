@@ -10,7 +10,7 @@
 
 time_t start;
 char* getNodeName();
-void* execAtCloud();
+void* execAtCloud(char *);
 
 struct programInfo {
 	char* path;
@@ -67,7 +67,7 @@ jasync execProg(char *path, char* progName) {
 		printf("Could not create thread for exec C.\n");
 	} else {
 		printf("Exec C completed succesfully.\n");
-	}	
+	}
 	pthread_detach(tidC);
 }
 

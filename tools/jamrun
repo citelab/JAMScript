@@ -46,7 +46,7 @@ if [ $file = "-h" ]; then
 fi
 
 if [ "$fext" != "jxe" ]; then
-    die "file extension is not .jxe"
+    die "Extension on $file is not .jxe"
 fi
 
 # Check the required commands..
@@ -162,7 +162,7 @@ fi
 if [ -e "$file" ]; then
 
     # Check whether the MQTT server is running.. if not start it
-    MOSQUITTO_PUB -p $port -t "test" -m "hello"
+    $MOSQUITTO_PUB -p $port -t "test" -m "hello"
     if [ $? -ne 0 ]; then
         echo "MQTT is not running at $port"
         echo "Attempting to start MQTT at $port"
@@ -220,7 +220,6 @@ if [ -e "$file" ]; then
     else
         die "File: $file is not a valid JAMScript executable"
     fi
-
 
 else
     die "File: $file not found"

@@ -23,16 +23,22 @@ EOF
 }
 
 # Initialize all the option variables.
-app=
-port=
-type=
-data=
+app=testapp
+port=1883
+type=device
+data=127.0.0.1
+force=
 
 file=$1
 shift
+fext="${file##*.}"
 
 if [ $file = "-h" ]; then
     show_usage
+fi
+
+if [ "$fext" != "jxe" ]; then
+    die "Extension on $file is not .jxe"
 fi
 
 while :; do
@@ -97,6 +103,9 @@ while :; do
                 type="cloud"
             fi
             ;;
+        -r|--force)
+            force=1
+            ;;
         --)              # End of all options.
             shift
             break
@@ -111,37 +120,42 @@ while :; do
     shift
 done
 
-if [ -z "$app" ]; then
-    die "--app option needs to be specified."
+
+if [ "$type" != "device" ] && [ -n "$num" ]; then
+    die "number of devices can't be speciied for fog/cloud"
 fi
 
-if [ "$type" != "cloud" ] && [ "$type" != "fog" ]; then
-    type=device
-fi
 
 if [ -e "$file" ]; then
 
     # Check whether the MQTT server is running.. if not start it
-    if [ -z "$port" ]; then
-        port=1883
-    fi
-    mosquitto_pub -p $port -t "test" -m "hello"
+    $MOSQUITTO_PUB -p $port -t "test" -m "hello"
     if [ $? -ne 0 ]; then
         echo "MQTT is not running at " $port
         echo "Attempting to start MQTT at" $port
-        /usr/local/sbin/mosquitto -p $port &
+        $MOSQUITTO -p $port &
     fi
 
     # Get the folder
+    filenoext="${file%.*}"
     folder=$file"_"$app
     if [ ! -d "$folder" ]; then
         mkdir $folder
     fi
 
     # unzip the executable in the folder and run it..
-    unzip $file -d $folder
-    if [ $? -ne 0 ]; then
-        die "Problem reading the .jxe file "
+    if [ -n "$force" ]; then
+        unzip $file -d $folder
+        if [ $? -ne 0 ]; then
+            die "Problem reading file: $file"
+        fi
+    else
+        if [ ! -e $folder/jamout.js ] && [ ! -e $folder/a.out ]; then
+            unzip $file -d $folder
+            if [ $? -ne 0 ]; then
+                die "Problem reading the file: $file"
+            fi
+        fi
     fi
 
     cd $folder
@@ -161,7 +175,6 @@ if [ -e "$file" ]; then
     else
         die "Not a valid .jxe file"
     fi
-
 
 else
     die ".jxe file not found"

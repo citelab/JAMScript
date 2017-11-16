@@ -14,15 +14,21 @@ EOF
 }
 
 # Initialize all the option variables.
-app=
-num=
+app=testapp
+num=1
 
 file=$1
 shift
+fext="${file##*.}"
 
 if [ $file = "-h" ]; then
     show_usage
 fi
+
+if [ "$fext" != "jxe" ]; then
+    die "file extension is not .jxe"
+fi
+
 
 while :; do
     case $1 in
@@ -72,20 +78,14 @@ while :; do
     shift
 done
 
-if [ -z "$app" ]; then
-    die "--app option needs to be specified."
-fi
-
-if [ -z "$num" ]; then
-    num=1
-fi
 
 if [ -e "$file" ]; then
 
     # Get the folder
-    folder=$file"_"$app
+    filenoext="${file%.*}"
+    folder=$filenoext"_"$app
     if [ ! -d "$folder" ]; then
-        die "Folder not found to start the program"
+        die "Folder: $folder not found to start the program"
     fi
 
     cd $folder
@@ -93,9 +93,9 @@ if [ -e "$file" ]; then
         # execute the program.. we are in the folder..
         ./a.out -a $app -n $num
     else
-        die "Not a valid .jxe folder"
+        die "$file is not a valid JAMScript executable"
     fi
 
 else
-    die ".jxe file not found"
+    die "JAMScript executable: $file not found"
 fi
