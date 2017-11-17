@@ -1,154 +1,113 @@
 jdata {
-	//cout is the inflow of progB
-	cout as inflow of app://progB.outF;
-	//shellOut is the outflow of the shell (from progB)
-	shellOut as outflow of cout;
+  //cout is the inflow of progB
+  cout as inflow of app://progB.outF;
+  //shellOut is the outflow of the shell (from progB)
+  shellOut as outflow of cout;
 
-	//Job logger
-	char* jobs as logger; //Job logger
-	//TODO: This can be removed when device status is kept from the J Node instead
+  char* selfName as broadcaster;
+
+  //Job logger
+  char* jobs as logger; //Job logger
+  //TODO: This can be removed when device status is kept from the J Node instead
     struct nodeInfo {
-    	char* nodeName;
+      char* nodeName;
         char* nodeType;
         char* fog;
         char* cloud;
     } nodeInfo as logger; //Device info logger
 }
 
+var chance = require('chance').Chance();
+var nodeName = chance.first();
+console.log("Node name: " + nodeName);
+
 jcond {
-	cloudonly: sys.type == "cloud";
+  namechk: selfName == nodeName;
 }
 
-var argv = require('yargs').argv
-
-
-/**
-* Helper function to parse command line arguments
-*/
-var CommandParser = (function() {
-    var parse = function(str, lookForQuotes) {
-        var args = [];
-        var readingPart = false;
-        var part = '';
-        for(var i=0; i<str.length; i++) {
-        	if(str.charAt(i) === ' ' && !readingPart) {
-                args.push(part);
-                part = '';
-            } else {
-                if(str.charAt(i) === '\"' && lookForQuotes) {
-                    readingPart = !readingPart;
-                } else {
-                    part += str.charAt(i);
-                }
-            }
-        }
-        args.push(part);
-        return args;
-    }
-    return {
-        parse: parse
-    }
-})();
-
-var sys = require('sys');
-var exec = require('child_process').exec;
+/**----------------REQUIRE-----------------------------------------**/
+var shell = require('vorpal')();
 var spawn = require('child_process').spawn;
-var chance = require('chance').Chance();
 var fs = require('fs');
-var jobList = [];
 
-/**
-* Names the node randomly.
-*/
-var nodeName = chance.first();
-console.log("node name: " + nodeName);
-
-var cloudName;
+/**----------------NODE INIT-----------------------------------------**/
 var fogName;
+var cloudName;
 
+nodeInfo.addDatastream(nodeName);
 var selfInfo = {"name": nodeName, "type": jsys.type};
+
+/**----------------ADVERTISE SELF----------------------------------**/
 jsys.ad_up('name',selfInfo)
 
 jsys.ad_up_fogcback('name', function(x) {
-	//console.log(x.name);
+  fogName = x;
 });
 jsys.ad_up_cloudcback('name', function(x) {
-	//console.log(x.name);
+  cloudName = x;
 });
 
+/**----------------VARS--------------------------------------------**/
+var jobList = [];
+
+/**----------------JAMSCRIPT FUNCTIONS-----------------------------**/
+jasync function changeDirectory(path) {
+  process.chdir(path);
+}
+
+jasync {namechk} function displayHealth(node) {
+  console.log("JCond broadcast is working!");
+  console.log("If this prints, it means jcond succeeded and namechk = nodename");
+}
+
+jasync function getHealth(node) {
+  selfName.broadcast(nodeName);
+  console.log("Succesful");
+  displayHealth(node);
+}
+
+/**----------------HELPER FUNCTIONS-------------------------------**/
 /**
-* Get node name.
+* Execute a program
 */
-jsync function getNodeName() {
-	return nodeName;
+function executeProgram(progPath) {
+  console.log("Executing external JAMProgram...");
+    var currPath = process.cwd();
+    var progPath = process.cwd() + "/" + progPath;
+    var progName = progPath.split("/").slice(-1)[0];
+    console.log('Program to be executed: ' + progName);
+    console.log('Changing directories to program path...');
+    process.chdir(progPath);
+    console.log('Spawning program...');
+    var child = spawn('jamrun', [progName +'.jxe', '--app=' + progName]);
+    jobList.push(child.pid);
+    console.log("Pushed child: "+ child.pid + " to joblist");
+    console.log('Returning to previous directory...');
+    process.chdir(currPath);
+    child.stdout.on('data',
+      function (data) {
+          console.log(''+ data);
+    });
 }
 
 /**
 * Get node info from connected devices.
 */
 var getNodeInfo = function(key,entry) {
-	var i = 0;
-	while(nodeInfo[i] !== undefined && !nodeInfo[i].isEmpty()) {
-		console.log(nodeInfo[i].lastValue());
-		i++;
-	}
+  var i = 0;
+  while(nodeInfo[i] !== undefined && !nodeInfo[i].isEmpty()) {
+    console.log(nodeInfo[i].lastValue());
+    i++;
+  }
 }
 
 /**
-* Read and list jobs from the logger.
+* Logging utility for self-logging node-info
 */
-var getJobs = function(key, entry) {
-	var i = 0;
-	while(jobs[i] !== undefined && !jobs[i].isEmpty()) {
-		console.log(jobs[i].lastValue());
-		i++;
-	}
-}
-
-// var advertiseSelf = function() {
-// 	jamsys.ad_up('name',selfInfo)
-// }
-
-/**
-* This takes care of execing a program
-* Spawns a child and listens on the stdout to display output
-* @param relative path of the program being exec'd
-*/
-//   jamrun progName.jxe  --app=progName
-var executeProgram = function(path) {
-	var currPath = process.cwd();
-	var progPath = process.cwd() + "/" + path;
-	var progName = path.split("/").slice(-1)[0]
-	console.log('program name: ' + progName);
-    process.chdir(progPath);
-	var child = spawn('jamrun', [progName +'.jxe', '--app=' + progName]);
-	jobList.push(child.pid);
-	console.log("Pushed child: "+ child.pid + " to joblist");
-	process.chdir(currPath);
-	child.stdout.on('data',
-    function (data) {
-        console.log(''+ data);
-    });
-	//execProg(progPath, progName);
-}
-
-/**
-* Logging utility for self-logging
-*/
-function log(index, value){
+function logNodeInfo(index, value){
     setTimeout(function() {
-    	console.log(nodeInfo.size());
+      console.log(nodeInfo.size());
         nodeInfo[index].log(value, function (result) {
-            if (!result.status)
-                console.log(result.error);
-        });
-    }, 30);
-}
-
-function logJobs(index, value){
-    setTimeout(function() {
-    	console.log(nodeInfo.size());
-        jobs[index].log(value, function (result) {
             if (!result.status)
                 console.log(result.error);
         });
@@ -159,166 +118,106 @@ function logJobs(index, value){
 * Generate node info and log it
 */
 function generateNodeInfo() {
-	var val = {
-		nodeName: nodeName,
-		nodeType: jsys.type,
-		fog: fogName,
-		cloud: cloudName
-	};
-	log(0,val);
+  var val = {
+    nodeName: nodeName,
+    nodeType: jsys.type,
+    fog: fogName,
+    cloud: cloudName
+  };
+  logNodeInfo(0,val);
 }
 
-function listener(raw) {
-	console.log(raw.data);
-}
+/**----------------SPECIAL COMMANDS-------------------------------**/
+shell
+  .command('exec <progPath> [location] [locationNames...]', 'Execute a JAMProgram')
+  .action(function(args, callback) {
+    if(args.location == undefined) {
+      executeProgram(args.progPath);
+    }
+    if(args.location !== undefined) {
+      if(args.location == '@all') {
+        console.log("Received @all exec command...Executing at all nodes")
+      }
+      if(args.location == '@fog') {
+        console.log("Received @fog exec command...Executing at fog node")
+      }
+      if(args.location == '@device') {
+        console.log("Received @device exec command...Executing at device node")
+      }
+    }
+    callback();
+  });
 
-jasync {cloudonly} function execAtCloud(path) {
-	console.log("execAtCloud received: " + path);
-	executeProgram(path);
-}
+shell
+  .command('nodes [location]', 'Displays node information')
+  .action(function(args, callback) {
+    console.log("Displaying node info....");
+    getNodeInfo();
+    callback();
+  });
 
-jasync function changeDirectory(path) {
-	console.log("jcd received: Should execute at all subnodes");
-	process.chdir(path);
-}
+shell
+  .command('roots', 'Displays node hierarchy')
+  .action(function(args, callback) {
+    console.log("Displaying node hierarchy....");
+    console.log("Cloud: ",  cloudName);
+    console.log("Fog: ",  fogName);
+    callback();
+  });
 
-/**
- * User input loop
- */
-var readline = require('readline');
-var rl = readline.createInterface(process.stdin, process.stdout);
-var args = null;
-var gen;
+shell
+  .command('health <node>', 'Displays node health')
+  .action(function(args, callback) {
+    forwardHealthCommand(args.node);
+    console.log("Displaying node health....");
+    var nodeHealth = {
+      uptime: Math.floor(process.uptime())
+    };
+    console.log(nodeHealth);
+    callback();
+  });
 
-//Add a new datastream to the logger when a new node comes online
-nodeInfo.addDatastream(nodeName);
-jobs.addDatastream(nodeName);
+/**----------------BUILT-IN COMMANDS-------------------------------**/
+shell
+  .command('jcd <path>', 'Change directories')
+  .action(function(args, callback) {
+    console.log("Received jcd command..Changing directories....");
+    changeDirectory(args.path);
+    callback();
+  });
 
-//Log the node into logger
-gen = generateNodeInfo();
+shell
+  .command('jpwd', 'Print present directory')
+  .action(function(args, callback) {
+    console.log("Received jpwd command..printing directory....");
+    console.log(process.cwd());
+    callback();
+  });
 
-rl.setPrompt('>>');
-rl.prompt();
-rl
-	.on('line', function(line) {
-	        /**
-	         * Handle redirection
-	         * Only prints for now, doesn't write to a file
-	         */
-	        //TEST COMMAND: exec progB >
-	        // fileD.txt > progD
-			if (line.includes(">")) {
-		    	args = CommandParser.parse(line);
-		    	if (args[0] == "exec") {
-		    		executeProgram(args[1]);
-		    		var flow = cout;
-		    		flow.addChannel(listener);
-		    	}
-		    	// fileA => shell.inflow ==> shell.outflow ==> progD.inflow
-		    	if (args[1] == ">") {
-		    		var fileInputFlow = Flow.from("fs:///Users/oryx/fileD.txt").foreach((line) => console.log(line));
-		    		executeProgram(args[2]);
-		    	}
-		    }
-		    /**
-	         * Handle piping
-	         */
-		    //TEST COMMAND: exec progB | progC
-		    if (line.includes("|")) {
-		    	args = CommandParser.parse(line);
-		    	console.log(args)	;
-		    	if (args[0] == "exec") {
-		    		executeProgram(args[1]);
-		    		shellOut.start();
-		    		executeProgram(args[3]);
-		    	}
-		    }
+shell
+  .command('jls', 'List directory')
+  .action(function(args, callback) {
+    console.log("Received jls command..listing directory....");
+    fs.readdir(process.cwd(), (err, files) => {
+        files.forEach(file => {
+        console.log(file);
+      });
+    })
+    callback();
+  });
 
-		    /**
-		    * Handle location commands
-		    */
-		    // exec @all progA
-		    if (line.includes("@")) {
-		    	console.log("Received @location commands");
-		    	args = CommandParser.parse(line);
-		    	console.log(args);
+/**----------------CLEANUP-----------------------------------------**/
+process.on('exit', (code) => {
+    console.log('killing', jobList.length, 'child processes');
+    jobList.forEach(function(job) {
+      process.kill(job);
+    });
+    console.log('Exiting JAMShell...');
+});
 
-		    	console.log(args[1]);
+/**----------------SHELL INIT-------------------------------**/
+generateNodeInfo();
 
-		    	if (args[1] == "@all") {
-		    		console.log("Receieved @all command");
-		    		//Call to C (which can call all Js)
-		    		if (args[0] == 'exec') {
-		    			console.log("Received exec @all command");
-		    			execProgGlobal(args[2]);
-		    			console.log("Exiting");
-		    		}
-		    	}
-		    }
-		   	/**
-		    * Exec a program from the shell
-		    * exec progA
-		    */
-		    // if (line.includes("exec")) {
-		    // 	console.log("Entered vanilla exec function");
-		    // 	args = CommandParser.parse(line);
-		    // 	executeProgram(args[1]);
-		    // 	logJobs(0,jobList);
-		    // }
-		    /**
-		    * Print the current working directory
-		    */
-		    if (line === "jpwd") {
-		    	console.log("jpwd receieved");
-		    	console.log(process.cwd());
-		    }
-		    /**
-		    * Changes directory
-		    */
-		    if (line.includes("jcd")) {
-				args = CommandParser.parse(line);
-				changeDirectory(args[1]);
-		    }
-		    if (line === "jls") {
-		    	fs.readdir(process.cwd(), (err, files) => {
-  					files.forEach(file => {
-    					console.log(file);
-  					});
-				})
-		    }
-		    /**
-		    * Get node information about the current JAMSystem
-		    */
-		    if (line === "nodes") {
-		    	getNodeInfo();
-		    }
-		    /**
-		    * Get current running jobs
-		    * TODO: new method of logging from J node
-		    */
-		    if (line === "jobs") {
-		    	getJobs();
-		    }
-            if (line === "names") {
-                console.log("fogName: ", fogName);
-                console.log("cloudName: ", cloudName);
-            }
-		    /**
-		    * Exit
-		    */
-		    if (line === "exit"){
-				console.log('killing', jobList.length, 'child processes');
-				jobList.forEach(function(job) {
-					process.kill(job);
-				});
-				rl.close();
-		    }
-		    rl.prompt();
-	})
-	.on('close',function(){
-			console.log('killing', jobList.length, 'child processes');
-			jobList.forEach(function(job) {
-				process.kill(job);
-			});
-	    process.exit(0);
-	});
+shell
+  .delimiter('>>')
+  .show();
