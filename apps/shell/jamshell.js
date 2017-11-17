@@ -61,7 +61,7 @@ jasync {namechk} function displayHealth(node) {
 }
 
 jasync function getHealth(node) {
-  selfName.broadcast(nodeName);
+  selfName.broadcast(nodeName + 'bcast');
   console.log("Succesful");
   displayHealth(node);
 }
@@ -70,16 +70,17 @@ jasync function getHealth(node) {
 /**
 * Execute a program
 */
-function executeProgram(progPath) {
+//runj progName.jxe --app=progName
+function executeProgram(path) {
   console.log("Executing external JAMProgram...");
     var currPath = process.cwd();
-    var progPath = process.cwd() + "/" + progPath;
-    var progName = progPath.split("/").slice(-1)[0];
+    var progPath = process.cwd() + "/" + path;
+    var progName = path.split("/").slice(-1)[0];
     console.log('Program to be executed: ' + progName);
     console.log('Changing directories to program path...');
     process.chdir(progPath);
     console.log('Spawning program...');
-    var child = spawn('jamrun', [progName +'.jxe', '--app=' + progName]);
+    var child = spawn('runj', [progName +'.jxe', '--app=' + progName]);
     jobList.push(child.pid);
     console.log("Pushed child: "+ child.pid + " to joblist");
     console.log('Returning to previous directory...');
@@ -88,6 +89,7 @@ function executeProgram(progPath) {
       function (data) {
           console.log(''+ data);
     });
+    execProg(progPath, progName);
 }
 
 /**
