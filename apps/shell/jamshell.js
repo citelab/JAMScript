@@ -128,23 +128,30 @@ function generateNodeInfo() {
   };
   logNodeInfo(0,val);
 }
-
+//exec progB | progC
 /**----------------SPECIAL COMMANDS-------------------------------**/
 shell
   .command('exec <progPath> [location] [locationNames...]', 'Execute a JAMProgram')
   .action(function(args, callback) {
+    console.log(args.location);
     if(args.location == undefined) {
       executeProgram(args.progPath);
     }
     if(args.location !== undefined) {
       if(args.location == '@all') {
-        console.log("Received @all exec command...Executing at all nodes")
+        console.log("Received @all exec command...Executing at all nodes");
       }
       if(args.location == '@fog') {
-        console.log("Received @fog exec command...Executing at fog node")
+        console.log("Received @fog exec command...Executing at fog node");
       }
       if(args.location == '@device') {
-        console.log("Received @device exec command...Executing at device node")
+        console.log("Received @device exec command...Executing at device node");
+      }
+      if(args.location == 'pipe') {
+        console.log("Piping command received...Building pipe..");
+        executeProgram(args.progPath);
+        shellOut.start();
+        executeProgram(args.locationNames[0]);
       }
     }
     callback();
