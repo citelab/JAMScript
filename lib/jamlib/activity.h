@@ -35,8 +35,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdint.h>
 
 #define MAX_NAME_LEN            64
-#define MAX_ACT_THREADS         16
-#define MAX_CALLBACKS           32
+#define MAX_ACT_THREADS         32 //16
+#define MAX_CALLBACKS           8 //32
 #define MAX_FIELD_LEN           64
 
 typedef void (*activitycallback_f)(void *ten, void *arg);

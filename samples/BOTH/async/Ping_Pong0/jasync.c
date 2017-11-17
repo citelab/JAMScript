@@ -6,12 +6,11 @@ jactivity_t* pong();
 
 jasync ping() {
     printf("ping.. %d\n", counter++);
-//    pong();
+    pong();
 }
 
 int main() {
     int i;
-    while(1)
-        pong();
+    pong();
     return 0;
 }

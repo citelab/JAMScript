@@ -199,8 +199,10 @@ void jrun_arun_callback(jactivity_t *jact, command_t *cmd, activity_callback_reg
 
     // if the execution was done due to a remote request...
     if (jact->remote)
+    {
         // Delete the activity.. because we are doing a remote processing..
         activity_free(jact);
+    }
 
     // Don't free cmd here.. it should be freed in the calling function..
 }

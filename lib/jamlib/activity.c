@@ -266,6 +266,7 @@ void run_activity(void *arg)
         arg_t *repcode = NULL;
         command_t *cmd;
         nvoid_t *nv = pqueue_deq(athread->inq);
+
         // The jactivity that is assigned to the the thread is in 'jactid'
         int jindx = athread->jindx;
 
@@ -283,9 +284,11 @@ void run_activity(void *arg)
 
         if (cmd != NULL)
         {
+
             jact = activity_getbyindx(at, jindx);
             if (jact == NULL)
                 continue;
+
 
             // If the activity is local.. we check whether this is servicing JSYNC task processing
             if ((!jact->remote) && jact->type == SYNC_RTE)
@@ -510,7 +513,7 @@ jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
         jact->remote = remote;
         while ((athr = athread_get(at, jact->jindx)) == NULL)
         {
-            printf("Waitng....\n");
+            printf("Waiting in activity_new ....\n");
             taskdelay(10);
         }
 
@@ -535,17 +538,28 @@ jactivity_t *activity_renew(activity_table_t *at, jactivity_t *jact)
 {
     activity_thread_t *athr = athread_get(at, jact->jindx);
 
-    if (athr->jindx == jact->jindx)
-        return jact;
-    else
+    if (athr == NULL)
     {
         // The activity does not have a thread .. we need renewal
         while ((athr = athread_get(at, jact->jindx)) == NULL)
         {
+            printf("Waiting in renew.. \n");
             taskdelay(10);
             // Wait until we get a thread..
         }
 
+        // Setup the thread.
+        pthread_mutex_lock(&(at->lock));
+        athr->jindx = jact->jindx;
+        pthread_mutex_unlock(&(at->lock));
+
+        return jact;
+    }
+    else
+    if (athr->jindx == jact->jindx)
+        return jact;
+    else
+    {
         // Setup the thread.
         pthread_mutex_lock(&(at->lock));
         athr->jindx = jact->jindx;
@@ -565,19 +579,20 @@ void activity_free(jactivity_t *jact)
     del_list_item(at->alist, jact);
     pthread_mutex_unlock(&(at->lock));
 
+    // TODO: Could there be a need for flushing?
+    // Looks like we are having a "race" condition with flushing
+    //
     // Get the thread held by the activity
-    activity_thread_t *athr = athread_get(at, jact->jindx);
-
-    if (athr->jindx > 0)
-    {
-        // We need to flush
-        command_t *tmsg = command_new("FLUSH", "-", "-", 0, "ACTIVITY", jact->actid, "__", "");
-        pqueue_enq(athr->inq, tmsg, sizeof(command_t));
-
-        pthread_mutex_lock(&(at->lock));
-        athr->jindx = 0;
-        pthread_mutex_unlock(&(at->lock));
-    }
+    // activity_thread_t *athr = athread_get(at, jact->jindx);
+    //
+    // if (athr->jindx > 0)
+    // {
+    //     printf("Flusing activity jindx %d.. threadid %d \n", athr->jindx, athr->threadid);
+    //     // We need to flush
+    //     command_t *tmsg = command_new("FLUSH", "-", "-", 0, "ACTIVITY", jact->actid, "__", "");
+    //     pqueue_enq(athr->inq, tmsg, sizeof(command_t));
+    //     printf(".........Flusing activity jindx %d.. threadid %d \n", athr->jindx, athr->threadid);
+    // }
 
     free(jact);
 }

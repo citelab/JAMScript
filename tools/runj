@@ -90,14 +90,14 @@ while :; do
             die 'ERROR: "--data" requires a non-empty option argument.'
             ;;
         -f|--fog)
-            if [ -n "$type" ]; then
+            if [ "$type" != "device" ]; then
                 die 'ERROR: "type" cannot be reassigned.'
             else
                 type="fog"
             fi
             ;;
         -c|--cloud)
-            if [ -n "$type" ]; then
+            if [ "$type" != "device" ]; then
                 die 'ERROR: "type" cannot be reassigned.'
             else
                 type="cloud"

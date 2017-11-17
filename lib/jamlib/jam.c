@@ -73,7 +73,6 @@ jamstate_t *jam_init(int port, int serialnum)
 
     if (strlen(dev_tag) > 0)
     {
-        printf("------------------------------ Setting Tag %s\n", dev_tag);
         sprintf(tagstr, "sys.tag = '%s';", dev_tag);
         jcond_eval_str(tagstr);
     }
@@ -175,7 +174,6 @@ void jam_event_loop(void *arg)
 
                 // The activity creation should have setup the thread
                 // So we should have a thread to run...
-
                 activity_thread_t *athr = athread_getbyindx(js->atable, jact->jindx);
                 //
                 //runtable_insert(js, cmd->actid, cmd);

@@ -116,8 +116,8 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     activity_thread_t *athr = athread_getbyindx(js->atable, jact->jindx);
 
     // Repeat for three times ... under failure..
-    for (int i = 0; i < 3 && !valid_acks; i++)
-    {
+    //for (int i = 0; i < 3 && !valid_acks; i++)
+    //{
         command_hold(cmd);
         // Send the command to the remote side
         // The send is executed via the worker thread..
@@ -125,6 +125,7 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
 
         jam_set_timer(js, jact->actid, timeout);
         nvoid_t *nv = pqueue_deq(athr->resultq);
+        jam_clear_timer(js, jact->actid);
 
         if (nv != NULL)
         {
@@ -140,8 +141,8 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
             }
             free(nv);
         }
-        jact = activity_renew(js->atable, jact);
-    }
+    //    jact = activity_renew(js->atable, jact);
+    //}
     // Delete the runtable entry.
     runtable_del(js->rtable, act_entry->actid);
     command_free(cmd);
