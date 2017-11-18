@@ -21,7 +21,6 @@ void* startC(void *pinfo) {
 		char* appNamePrefix = "--app=";
 		strcpy(appNameArg, appNamePrefix);
 		strcat(appNameArg, progName);
-		printf("appnamearg: %s\n", appNameArg);
 
         char* programPath = (char*)info->path;
 		char pathArg[256];
@@ -29,7 +28,6 @@ void* startC(void *pinfo) {
 		strcat(pathArg, "/");
 		strcat(pathArg, progName);
 		strcat(pathArg, ".jxe");
-		printf("patharg: %s\n", pathArg);
 
         char *args[5];
         args[0] = "runc";
@@ -41,6 +39,7 @@ void* startC(void *pinfo) {
 			execvp(runc, args);
         }
         free(info);
+        return 0;
 }
 /**
 * Takes care of spawning the pthread to exec the C node of pname
@@ -71,4 +70,5 @@ jasync forwardHealthCommand(char* node) {
 
 int main() {
 	printf("C node online...\n");
+	return 0;
 }

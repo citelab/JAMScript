@@ -33,6 +33,7 @@ var fs = require('fs');
 /**----------------NODE INIT-----------------------------------------**/
 var fogName;
 var cloudName;
+var outputFileName;
 
 nodeInfo.addDatastream(nodeName);
 var selfInfo = {"name": nodeName, "type": jsys.type};
@@ -61,9 +62,12 @@ jasync {namechk} function displayHealth(node) {
 }
 
 jasync function getHealth(node) {
-  selfName.broadcast(nodeName + 'bcast');
-  console.log("Succesful");
-  displayHealth(node);
+  selfName.broadcast(nodeName);
+  console.log("Succesful broadcast");
+  selfName.addHook(function(x) {
+    console.log("Message: " + x.message);
+  });
+  //displayHealth(node);
 }
 
 /**----------------HELPER FUNCTIONS-------------------------------**/
@@ -128,7 +132,17 @@ function generateNodeInfo() {
   };
   logNodeInfo(0,val);
 }
-//exec progB | progC
+
+function listener(raw) {
+  if(outputFileName == undefined) {
+    console.log("Output file not specified...");
+    return;
+  }
+  fs.writeFile(outputFileName, raw.data, function(err) {
+    if(err) return console.log(err);
+  });
+}
+
 /**----------------SPECIAL COMMANDS-------------------------------**/
 shell
   .command('exec <progPath> [location] [locationNames...]', 'Execute a JAMProgram')
@@ -152,6 +166,13 @@ shell
         executeProgram(args.progPath);
         shellOut.start();
         executeProgram(args.locationNames[0]);
+      }
+      if(args.location == '>') {
+        console.log("Output Redirection command received...")
+        outputFileName = args. locationNames[0];
+        executeProgram(args.progPath);
+        var outRedirect = new OutFlow("redirectOut", cout);
+        outRedirect.addChannel(listener);
       }
     }
     callback();
