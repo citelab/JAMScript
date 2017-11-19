@@ -33,4 +33,4 @@ var mbox = {
 }
 }
 jamlib.registerFuncs(mbox);
-jamlib.run(function() { console.log("Running..."); } );
+jamlib.run(function() { console.log("JAMLib 1.0beta initialized."); } );
