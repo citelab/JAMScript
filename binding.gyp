@@ -61,6 +61,8 @@
           "destination": "/usr/local/bin/",
           "files": [ 
             "tools/jamrun",
+            "tools/jamkill",
+            "tools/jamterm",
             "tools/runc",
             "tools/runj"
            ]

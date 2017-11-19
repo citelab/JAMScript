@@ -1,7 +1,11 @@
 #!/bin/sh
 
+# Edit the following locations to provide the
 MOSQUITTO=/usr/local/sbin/mosquitto
 MOSQUITTO_PUB=/usr/local/bin/mosquitto_pub
+TMUX=/usr/local/bin/tmux
+
+# No need to edit below this line unless you find a bug!
 
 die() {
     printf '%s\n' "$1" >&2
@@ -10,7 +14,7 @@ die() {
 
 show_usage() {
     cat << EOF
-Usage: jamrun file.jxe --app=appl_name [--fog|--cloud] [--num=num_c_devs]
+Usage: jamrun file.jxe [--app=appl_name] [--fog|--cloud] [--num=num_c_devs]
                                     [--port=port_number] [--data=data-url]
                                     [--force]
 The jamrun command runs the given JAM executable (file.jxe).
@@ -51,11 +55,15 @@ fi
 
 # Check the required commands..
 if [ ! -e $MOSQUITTO ]; then
-    die "Mosquitto MQTT broker $MOSQUITTO not found"
+    die "Mosquitto MQTT broker $MOSQUITTO not found. Set new location."
 fi
 if [ ! -e $MOSQUITTO_PUB ]; then
-    die "Mosquitto tools $MOSQUITTO_PUB not found"
+    die "Mosquitto tools $MOSQUITTO_PUB not found. Set new location."
 fi
+if [ ! -e $TMUX ]; then
+    die "terminal multiplexor $TMUX not found. Set new location."
+fi
+
 
 while :; do
     case $1 in
@@ -158,6 +166,10 @@ if [ "$type" != "device" ] && [ -n "$num" ]; then
     die "number of devices can't be speciied for fog/cloud"
 fi
 
+if $TMUX has-session -t $app; then
+    die "ERROR! Another jamrun session is running for $app. Terminate that session before restarting this one."
+fi
+
 
 if [ -e "$file" ]; then
 
@@ -192,6 +204,16 @@ if [ -e "$file" ]; then
     fi
 
     cd $folder
+    if [ "$type" == "device" ]; then
+        $TMUX new -s $app -d
+        counter=1
+        while [ $counter -le $num ]; do
+            $TMUX split-window -v -t $app
+            $TMUX select-layout -t $app tiled
+            ((counter++))
+        done
+    fi
+
     if [ -e jamout.js ]; then
         # execute the program.. we are in the folder..
         case $type in
@@ -204,13 +226,15 @@ if [ -e "$file" ]; then
             device)
                 # First start the C nodes...
                 counter=1
+                indx=0
                 while [ $counter -le $num ]; do
                     if [ -e a.out ]; then
                         chmod +x a.out
                         # execute the program.. we are in the folder..
-                        ./a.out -a $app -n $counter &
+                        $TMUX send-keys -t $app:0.$indx "./a.out -a $app -n $counter" C-m
                     fi
                     ((counter++))
+                    ((indx++))
                 done
 
                 # Then start the J node
