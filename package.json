@@ -19,7 +19,7 @@
     "ps-node": "^0.1.6",
     "redis-fast-driver": "^1.0.5",
     "terminal-kit": "^1.13.13",
-    "vorpal": "1.12.0",
+    "vorpal": "^1.12.0",
     "yargs": "10.0.3"
   },
   "bin": "./index.js",

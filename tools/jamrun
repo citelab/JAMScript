@@ -166,7 +166,7 @@ if [ "$type" != "device" ] && [ -n "$num" ]; then
     die "number of devices can't be speciied for fog/cloud"
 fi
 
-if $TMUX has-session -t $app; then
+if [ $type == "device" ] && [ $TMUX has-session -t $app ]; then
     die "ERROR! Another jamrun session is running for $app. Terminate that session before restarting this one."
 fi
 
