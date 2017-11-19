@@ -1,5 +1,12 @@
 #!/bin/sh
 
+# Edit the following locations to provide the
+MOSQUITTO=/usr/local/sbin/mosquitto
+MOSQUITTO_PUB=/usr/local/bin/mosquitto_pub
+
+# No need to edit below this line unless you find a bug!
+
+
 die() {
     printf '%s\n' "$1" >&2
     exit 1
@@ -7,8 +14,10 @@ die() {
 
 show_usage() {
     cat << EOF
-Usage: runj file.jxe --app=appl_name [--fog|--cloud]
-                                    [--port=port_number] [--data=data-url]
+Usage: runj file.jxe [--app=appl_name] [--fog|--cloud]
+                            [--port=port_number] [--data=data-url]
+                            [--tags=quoted_list_of_tags]
+                            [--force]
 
 The runj command runs the J component of the file.jxe (JAM executable).
 You can only run one instance of a executable under a given name.
@@ -28,6 +37,7 @@ port=1883
 type=device
 data=127.0.0.1
 force=
+tags=
 
 file=$1
 shift
@@ -40,6 +50,15 @@ fi
 if [ "$fext" != "jxe" ]; then
     die "Extension on $file is not .jxe"
 fi
+
+# Check the required commands..
+if [ ! -e $MOSQUITTO ]; then
+    die "Mosquitto MQTT broker $MOSQUITTO not found. Set new location."
+fi
+if [ ! -e $MOSQUITTO_PUB ]; then
+    die "Mosquitto tools $MOSQUITTO_PUB not found. Set new location."
+fi
+
 
 while :; do
     case $1 in
@@ -60,6 +79,20 @@ while :; do
             ;;
         --app=)            # Handle the case of an empty
             die 'ERROR: "--app" requires a non-empty option argument.'
+            ;;
+        -s|--tags)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                tags=$2
+                shift
+            else
+                die 'ERROR: "--tags" requires a non-empty option argument.'
+            fi
+            ;;
+        --tags=?*)
+            tags=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --tags=)            # Handle the case of an empty
+            die 'ERROR: "--tags" requires a non-empty option argument.'
             ;;
         -p|--port)           # Takes an option argument; ensure it has been specified.
             if [ "$2" ]; then
@@ -163,13 +196,25 @@ if [ -e "$file" ]; then
         # execute the program.. we are in the folder..
         case $type in
             cloud)
-                node jamout.js --app=$app --cloud --port=$port --data=$data
+                if [ -z "$tags" ]; then
+                    node jamout.js --app=$app --cloud --port=$port --data=$data
+                else
+                    node jamout.js --app=$app --cloud --port=$port --data=$data --tags=$tags
+                fi
                 ;;
             fog)
-                node jamout.js --app=$app --fog --port=$port --data=$data
+                if [ -z "$tags" ]; then
+                    node jamout.js --app=$app --fog --port=$port --data=$data
+                else
+                    node jamout.js --app=$app --fog --port=$port --data=$data --tags=$tags
+                fi
                 ;;
             device)
-                node jamout.js --app=$app --port=$port --data=$data
+                if [ -z "$tags" ]; then
+                    node jamout.js --app=$app --port=$port --data=$data
+                else
+                    node jamout.js --app=$app --port=$port --data=$data --tags="$tags"
+                fi
                 ;;
         esac
     else

@@ -33,6 +33,7 @@ Use the --force option to use the latest version of the JAM executable.
 EOF
 }
 
+
 # Initialize all the option variables.
 app=testapp
 port=1883
@@ -40,6 +41,7 @@ type=device
 data=127.0.0.1
 num=1
 force=
+tags=
 
 file=$1
 shift
@@ -83,7 +85,21 @@ while :; do
             app=${1#*=}     # Delete everything up to "=" and assign the remainder.
             ;;
         --app=)            # Handle the case of an empty
-            die 'ERROR: "--app" requires a non-empty option argument.'
+            die 'ERROR: "--args" requires a non-empty option argument.'
+            ;;
+        -s|--tags)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                tags=$2
+                shift
+            else
+                die 'ERROR: "--tags" requires a non-empty option argument.'
+            fi
+            ;;
+        --tags=?*)
+            tags=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --tags=)            # Handle the case of an empty
+            die 'ERROR: "--tags" requires a non-empty option argument.'
             ;;
         -p|--port)           # Takes an option argument; ensure it has been specified.
             if [ "$2" ]; then
@@ -219,10 +235,18 @@ if [ -e "$file" ]; then
         # execute the program.. we are in the folder..
         case $type in
             cloud)
-                node jamout.js --app=$app --cloud --port=$port --data=$data
+                if [ -z "$tags" ]; then
+                    node jamout.js --app=$app --cloud --port=$port --data=$data
+                else
+                    node jamout.js --app=$app --cloud --port=$port --data=$data --tags=$tags
+                fi
                 ;;
             fog)
-                node jamout.js --app=$app --fog --port=$port --data=$data
+                if [ -z "$tags" ]; then
+                    node jamout.js --app=$app --fog --port=$port --data=$data
+                else
+                    node jamout.js --app=$app --fog --port=$port --data=$data --tags=$tags
+                fi
                 ;;
             device)
                 # First start the C nodes...
@@ -239,7 +263,11 @@ if [ -e "$file" ]; then
                 done
 
                 # Then start the J node
-                node jamout.js --app=$app --port=$port --data=$data
+                if [ -z "$tags" ]; then
+                    node jamout.js --app=$app --port=$port --data=$data
+                else
+                    node jamout.js --app=$app --port=$port --data=$data --tags="$tags"
+                fi
                 ;;
         esac
     else
