@@ -46,6 +46,8 @@
               "type": "button",
               "dispLabel": "Button #1",
               "className": "btn-primary",
+              "value": "currentValue3",
+              "valueName": "currentValue3",
               "trigger": "emitValue"
             }
           ],
@@ -57,7 +59,8 @@
             "maxValue2": 100,
             "minValue2": 0,
             "stepValue2": 10,
-            "currentValue2": 20
+            "currentValue2": 20,
+            "currentValue3": false
           }
         } 
       ]
