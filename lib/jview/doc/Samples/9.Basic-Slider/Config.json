@@ -25,6 +25,7 @@
               "step": "stepValue1",
               "value": "currentValue1",
               "valueName": "currentValue1",
+              "trigger": "emitValue",
               "mode": 0
             },
             {
@@ -36,7 +37,8 @@
               "step": "stepValue2",
               "value": "currentValue2",
               "valueName": "currentValue2",
-              "mode": 1,
+              "trigger": "emitValue",
+              "mode": 0,
               "interval": 3000
             },
             {
