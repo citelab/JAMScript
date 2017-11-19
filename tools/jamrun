@@ -167,7 +167,8 @@ if [ "$type" != "device" ] && [ -n "$num" ]; then
 fi
 
 if [ "$type" == "device" ] && $TMUX has-session -t $app ; then
-    die "ERROR! Another jamrun session is running for $app. Terminate that session before restarting this one."
+    echo "ERROR! Another jamrun session is running for $app."
+    die "Run 'jamkill' or 'jamkill --app=app_name'."
 fi
 
 
