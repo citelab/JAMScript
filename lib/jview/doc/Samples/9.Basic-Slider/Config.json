@@ -48,7 +48,8 @@
               "className": "btn-primary",
               "value": "currentValue3",
               "valueName": "currentValue3",
-              "trigger": "emitValue"
+              "trigger": "emitValue",
+              "disabled": false
             }
           ],
           "store": {
