@@ -16,6 +16,7 @@ show_usage() {
     cat << EOF
 Usage: jamrun file.jxe [--app=appl_name] [--fog|--cloud] [--num=num_c_devs]
                                     [--port=port_number] [--data=data-url]
+                                    [--tags=quoted_list_of_tags]
                                     [--force]
 The jamrun command runs the given JAM executable (file.jxe).
 You specify the node type to run: cloud, fog, or device (by default).

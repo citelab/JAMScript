@@ -6,6 +6,7 @@ jactivity_t* pong();
 
 jasync ping() {
     printf("ping.. %d\n", counter++);
+    usleep(5000);
     pong();
 }
 
