@@ -23,6 +23,7 @@ console.log("Node name: " + nodeName);
 
 jcond {
   namechk: selfName == nodeName;
+  cloudonly: sys.type == "cloud";
 }
 
 /**----------------REQUIRE-----------------------------------------**/
@@ -68,6 +69,11 @@ jasync function getHealth(node) {
     console.log("Message: " + x.message);
   });
   //displayHealth(node);
+}
+
+jasync {cloudonly} function getAllNodes() {
+  console.log("Cloud received node info command...");
+  getNodeInfo();
 }
 
 /**----------------HELPER FUNCTIONS-------------------------------**/
@@ -143,6 +149,10 @@ function listener(raw) {
   });
 }
 
+function peek(raw) {
+  console.log(raw.data);
+}
+
 /**----------------SPECIAL COMMANDS-------------------------------**/
 shell
   .command('exec <progPath> [location] [locationNames...]', 'Execute a JAMProgram')
@@ -168,11 +178,22 @@ shell
         executeProgram(args.locationNames[0]);
       }
       if(args.location == '>') {
-        console.log("Output Redirection command received...")
+        console.log("Output Redirection command received...");
         outputFileName = args. locationNames[0];
         executeProgram(args.progPath);
         var outRedirect = new OutFlow("redirectOut", cout);
         outRedirect.addChannel(listener);
+      }
+      // fileA => shell.inflow ==> shell.outflow ==> progD.inflow
+      if(args.location == '<') {
+        console.log("Input redirection command received...");
+        executeProgram(args.progPath);
+        var inputFilename = args.locationNames[0];
+        // var fileInputFlow = Flow.from("fs://" + process.cwd() + "/" + inputFilename)
+        //   .foreach((line) => console.log(line));
+        var fileInputFlow = Flow.from("fs://" + process.cwd() + "/" + inputFilename)
+        var shellFileOutflow = new OutFlow("shellFileOutflow", fileInputFlow);
+        shellFileOutflow.addChannel(peek);
       }
     }
     callback();
@@ -181,8 +202,14 @@ shell
 shell
   .command('nodes [location]', 'Displays node information')
   .action(function(args, callback) {
-    console.log("Displaying node info....");
-    getNodeInfo();
+    if(args.location == undefined) {
+      console.log("Displaying node info....");
+      getNodeInfo();
+    }
+    if(args.location == 'all') {
+      console.log("Displaying global node info....");
+      getGlobalNodeInfo();
+    }
     callback();
   });
 

@@ -1,4 +1,5 @@
 void* getHealth(char *);
+void* getAllNodes();
 
 struct programInfo {
 	char* path;
@@ -66,6 +67,11 @@ jasync execProg(char *path, char* progName) {
 jasync forwardHealthCommand(char* node) {
 	printf("JCond broadcast requested for health...\n");
 	getHealth(node);
+}
+
+jasync getGlobalNodeInfo() {
+	printf("Global node info requested...\n");
+	getAllNodes();
 }
 
 int main() {
