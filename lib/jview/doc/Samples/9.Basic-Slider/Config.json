@@ -49,7 +49,7 @@
               "value": "currentValue3",
               "valueName": "currentValue3",
               "trigger": "emitValue",
-              "disabled": false
+              "disabled": "disabledState3"
             }
           ],
           "store": {
@@ -61,7 +61,8 @@
             "minValue2": 0,
             "stepValue2": 10,
             "currentValue2": 20,
-            "currentValue3": false
+            "currentValue3": false,
+            "disabledState3": false
           }
         } 
       ]
