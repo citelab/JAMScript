@@ -5,6 +5,9 @@ jdata{
         char* name;    //custom find the longest name
         int age;
     } pack as logger;
+
+    tempFlow as flow with tempFlowFunc of temp;
+    packFlow as flow with packFlowFunc of pack;
 }
 
 var tempFlow, packFlow;
@@ -55,8 +58,6 @@ function packFlowFunc(inputFlow){
         setTimeout(poll, 2000);
     }
     else {
-        tempFlow = tempFlowFunc(Flow.from(temp[0]));
-        packFlow = packFlowFunc(Flow.from(pack[0]));
         tempFlow.startPush();
         packFlow.startPush();
         started = true;
