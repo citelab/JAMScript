@@ -50,6 +50,16 @@
               "valueName": "currentValue3",
               "trigger": "emitValue",
               "disabled": "disabledState3"
+            },
+            {
+              "id": "4",
+              "type": "terminal",
+              "dispLabel": "terminal",
+              "commandsList": "commands",
+              "className": "btn-primary",
+              "buttonTrigger": "addCommand",
+              "trigger": "emitValue",
+              "buttonLabel": "Send"
             }
           ],
           "store": {
@@ -62,7 +72,8 @@
             "stepValue2": 10,
             "currentValue2": 20,
             "currentValue3": false,
-            "disabledState3": false
+            "disabledState3": false,
+            "commands": []
           }
         } 
       ]
