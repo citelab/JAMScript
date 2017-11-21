@@ -26,7 +26,8 @@
               "value": "currentValue1",
               "valueName": "currentValue1",
               "trigger": "emitValue",
-              "mode": 0
+              "mode": 0,
+              "interval": 5000
             },
             {
               "id": "2",
@@ -49,7 +50,9 @@
               "value": "currentValue3",
               "valueName": "currentValue3",
               "trigger": "emitValue",
-              "disabled": "disabledState3"
+              "disabled": "disabledState3",
+              "mode": 1,
+              "interval": 3000
             },
             {
               "id": "4",
