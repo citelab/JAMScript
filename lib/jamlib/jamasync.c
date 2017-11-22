@@ -20,7 +20,7 @@ jactivity_t *jam_lexec_async(char *aname, ...)
 // The memory is held until freed by an explicit activity_free()
 //
 //
-void jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, int condvec, char *aname, char *fmask, ...)
+jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, int condvec, char *aname, char *fmask, ...)
 {
     va_list args;
     nvoid_t *nv;
@@ -30,7 +30,7 @@ void jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, int condv
     assert(fmask != NULL);
     // Check the height condition
     if (machine_height(js) < requested_level(condvec))
-        return;
+        return jact;
 
     if (strlen(fmask) > 0)
         qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
@@ -88,12 +88,14 @@ void jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, int condv
     {
         command_t *cmd = command_new_using_cbor("REXEC-ASY", "-", condstr, condvec, aname, jact->actid, js->cstate->device_id, arr, qargs, i);
         cmd->cbor_item_list = list;
-        jam_async_runner(js, jact, cmd);
+        return jam_async_runner(js, jact, cmd);
     }
+    else
+        return NULL;
 }
 
 
-void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
+jactivity_t *jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
 {
     int timeout = 300;
     bool valid_acks = false;
@@ -146,4 +148,6 @@ void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     // Delete the runtable entry.
     runtable_del(js->rtable, act_entry->actid);
     command_free(cmd);
+
+    return jact;
 }

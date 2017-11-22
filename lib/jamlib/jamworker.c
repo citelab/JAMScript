@@ -513,6 +513,7 @@ void jwork_process_device(jamstate_t *js)
         if ((strcmp(rcmd->cmd, "REXEC-ASY") == 0) ||
             (strcmp(rcmd->cmd, "REXEC-SYN") == 0))
         {
+
             // Check for duplicate
             if (find_list_item(cache, rcmd->actid))
             {
