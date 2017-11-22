@@ -38,6 +38,7 @@
     "react-router-dom": "^4.1.1",
     "socket.io": "^1.4.5",
     "style-loader": "^0.13.1",
+    "terminal-in-react": "^3.5.1",
     "webpack": "^1.13.1",
     "webpack-dev-middleware": "^1.11.0",
     "webpack-dev-server": "^1.14.1",

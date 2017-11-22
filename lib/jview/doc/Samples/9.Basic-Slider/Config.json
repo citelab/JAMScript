@@ -51,7 +51,7 @@
               "valueName": "currentValue3",
               "trigger": "emitValue",
               "disabled": "disabledState3",
-              "mode": 1,
+              "mode": 0,
               "interval": 3000
             },
             {
