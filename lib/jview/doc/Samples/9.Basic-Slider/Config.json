@@ -61,16 +61,13 @@
               "className": "btn-primary",
               "states": [
                 {
-                  "state": "state_1",
-                  "value": 1
+                  "state_1": 1
                 },
                 {
-                  "state": "state_2",
-                  "value": 2
+                  "state_2": 2
                 },
                 {
-                  "state": "state_3",
-                  "value": 3
+                  "state_3": 3
                 }
               ],
               "state": "currentState",
@@ -102,7 +99,7 @@
             "currentValue3": false,
             "disabledState3": false,
             "commands": [],
-            "currentState": "state_0"
+            "currentState": "state_1"
           }
         } 
       ]
