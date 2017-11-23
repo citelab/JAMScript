@@ -56,6 +56,28 @@
             },
             {
               "id": "4",
+              "type": "multiStateButton",
+              "dispLabel": "Multi State Button #1",
+              "className": "btn-primary",
+              "states": [
+                {
+                  "state": "state_1",
+                  "value": 1
+                },
+                {
+                  "state": "state_2",
+                  "value": 2
+                },
+                {
+                  "state": "state_3",
+                  "value": 3
+                }
+              ],
+              "state": "currentState",
+              "trigger": "emitValue"
+            },
+            {
+              "id": "5",
               "type": "terminal",
               "dispLabel": "terminal",
               "commandsList": "commands",
@@ -79,7 +101,8 @@
             "currentValue2": 20,
             "currentValue3": false,
             "disabledState3": false,
-            "commands": []
+            "commands": [],
+            "currentState": "state_0"
           }
         } 
       ]
