@@ -66,6 +66,9 @@
             }
           ],
           "store": {
+            "socket": {
+              "id": 0
+            },
             "maxValue1": 100,
             "minValue1": 0,
             "stepValue1": 10,
