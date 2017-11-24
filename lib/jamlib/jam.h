@@ -48,10 +48,10 @@ extern "C" {
 #include <hiredis/async.h>
 
 
-#define STACKSIZE                   20000
+#define STACKSIZE                   10000
 
 // TODO: Max entries.. sufficient?
-#define MAX_RUN_ENTRIES             16
+#define MAX_RUN_ENTRIES             4
 #define MAX_FIELD_LEN               64
 
 typedef struct _runtableentry_t

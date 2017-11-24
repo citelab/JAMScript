@@ -48,8 +48,9 @@ file=$1
 shift
 fext="${file##*.}"
 
-if [ $file = "-h" ]; then
+if [ -z $file ] || [ $file = "-h" ]; then
     show_usage
+    exit 1
 fi
 
 if [ "$fext" != "jxe" ]; then

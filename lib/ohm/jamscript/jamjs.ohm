@@ -3,26 +3,26 @@ JAMJS <: ES6 {
                     | Jdata_decl
                     | Activity_def
 
-    jdata_type      = broadcaster 
-                    | logger 
-    
+    jdata_type      = broadcaster
+                    | logger
+
     C_type          = "struct" identifier "{" Struct_entry* "}"     -- struct
                     | "char" "*"                                    -- pointer
                     | "char"
                     | "double"
                     | "int"
                     | "float"
-                    
+
     Struct_entry    = C_type identifier ";"
 
     Jdata_spec      = C_type identifier as jdata_type "(" ("fog"|"cloud") ")" ";"   -- specified
                     | C_type identifier as jdata_type ";"                           -- default
                     | Flow ";"                                                      -- flow
-    
+
     Flow            = identifier as flow with identifier of identifier              -- flow
                     | identifier as outflow of identifier                           -- outflow
                     | identifier as inflow of inflow_type                           -- inflow
-    
+
     inflow_type     = "app://" identifier "." identifier
 
     Jdata_decl (a jdata declaration) = jdata "{" Jdata_spec* "}"
@@ -31,14 +31,15 @@ JAMJS <: ES6 {
 
     Jcond_entry     = identifier ":" NonemptyListOf<Jcond_rule, jcond_joiner> ";"
 
-	Jcond_rule      = MemberExpr jcond_op MemberExpr
-    
-    MemberExpr      = MemberExpr "." identifier                     -- propRefExp
+	Jcond_rule      = MemberExpr jcond_op MemberExpr ","? identifier?
+
+    MemberExpr      = identifier "(" MemberExpr ")"                 -- funcExpr
+                    | MemberExpr "." identifier                     -- propRefExp
                     | identifier
                     | literal
 
     jcond_op        = "==" | ">=" | ">" | "<=" | "<" | "!="
-    
+
     jcond_joiner    = "&&" | "||"
 
     Async_activity  = jasync Jcond_specifier? FunctionDeclaration
