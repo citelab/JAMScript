@@ -55,6 +55,18 @@
               "interval": 3000
             },
             {
+              "id": "6",
+              "type": "button",
+              "dispLabel": "Button #2",
+              "className": "btn-primary",
+              "value": "currentValue4",
+              "valueName": "currentValue4",
+              "trigger": "/Function(function() {this.changeValue('state_3', 'currentState')})/",
+              "disabled": "disabledState4",
+              "mode": 0,
+              "interval": 3000
+            },
+            {
               "id": "4",
               "type": "multiStateButton",
               "dispLabel": "Multi State Button #1",
@@ -98,6 +110,8 @@
             "currentValue2": 20,
             "currentValue3": false,
             "disabledState3": false,
+            "currentValue4": false,
+            "disabledState4": false,
             "commands": [],
             "currentState": "state_1"
           }
