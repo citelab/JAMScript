@@ -22,7 +22,7 @@ var nodeName = chance.first();
 console.log("Node name: " + nodeName);
 
 jcond {
-  namechk: selfName == nodeName;
+  namechk: selfName == nodeInfo.nodeName;
   cloudonly: sys.type == "cloud";
 }
 
