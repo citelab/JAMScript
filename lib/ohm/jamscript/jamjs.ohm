@@ -2,6 +2,7 @@ JAMJS <: ES6 {
     Declaration     += Jconditional
                     | Jdata_decl
                     | Activity_def
+                    | Jview_decl
 
     jdata_type      = broadcaster
                     | logger
@@ -26,6 +27,38 @@ JAMJS <: ES6 {
     inflow_type     = "app://" identifier "." identifier
 
     Jdata_decl (a jdata declaration) = jdata "{" Jdata_spec* "}"
+
+    Jview_spec      = NonemptyListOf<Jview_page, ";">
+                    | beat ":" identifier ";"                       -- beat
+
+    Jview_page      = identifier as page "{" NonemptyListOf<Page_elem, ";"> "}"
+
+    Page_elem       = Display_elem
+                    | Control_elem
+                    | Page_name
+
+    Display_elem    = identifier is display "{" NonemptyListOf<Disp_spec, ";"> "}"
+
+    Control_elem    = identifier is controller "{" NonemptyListOf<Ctrl_spec, ";"> "}"
+
+    Page_name       = name ":" identifier
+
+    Disp_spec       = type ":" display_type
+                    | title ":" literal
+                    | options ":" literal
+                    | source ":" identifier
+
+    display_type    = linegraph | scatterplot
+
+    Ctrl_spec       = type ":" control_type
+                    | title ":" literal
+                    | options ":" literal
+                    | sink ":" identifier
+
+    control_type    = slider | terminal | button
+
+
+    Jview_decl (a jview declaration) = jview "{" Jview_spec* "}"
 
     Jconditional (a jconditional declaration) = jcond identifier? "{" Jcond_entry* "}"
 
@@ -60,16 +93,33 @@ JAMJS <: ES6 {
                                         | Async_activity
 
     as = "as" ~identifierPart
+    beat = "beat" ~identifierPart
     broadcaster = "broadcaster" ~identifierPart
+    button = "button" ~identifierPart
+    controller = "controller" ~identifierPart
+    display = "display" ~identifierPart
     flow = "flow" ~identifierPart
     in := "in" ~identifierPart
+    is = "is" ~identifierPart
     inflow = "inflow" ~identifierPart
     jasync = "jasync" ~identifierPart
     jcallback = "jcallback" ~identifierPart
     jcond = "jcond" ~identifierPart
     jdata = "jdata" ~identifierPart
+    jview = "jview" ~identifierPart
     jsync = "jsync" ~identifierPart
+    linegraph = "linegraph" ~identifierPart
     logger = "logger" ~identifierPart
+    name = "name" ~identifierPart
     of = "of" ~identifierPart
+    options = "options" ~identifierPart
     outflow = "outflow" ~identifierPart
+    page = "page" ~identifierPart
+    scatterplot = "scatterplot" ~identifierPart
+    sink = "sink" ~identifierPart
+    slider = "slider" ~identifierPart
+    source = "source" ~identifierPart
+    terminal = "terminal" ~identifierPart
+    title = "title" ~identifierPart
+    type = "type" ~identifierPart
 }

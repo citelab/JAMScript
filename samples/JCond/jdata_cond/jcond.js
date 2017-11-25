@@ -1,3 +1,4 @@
+
 jdata {
     int x as logger;
     int y as broadcaster;
@@ -6,13 +7,9 @@ jdata {
 }
 
 jcond {
-    cloudonly: sys.type == "cloud";
-    devonly: sys.type == "device";
-    numchek: x == y;
-    numch: q == 10;
-    numcheck: x == y;
-    numc: max(q2.yy) == y;
-	
+    cloudonly: sys.type == "cloud", nocloud;
+    devonly: sys.type == "device", nodevice;
+    numcheck: x == y, notequal;
 }
 
 jasync {numcheck} function pong() {
@@ -34,3 +31,17 @@ setInterval(()=> {
    pong2();
 
 }, 2000);
+
+
+function notequal() {
+
+}
+
+function nodevice() {
+
+}
+
+function nocloud() {
+
+}
+
