@@ -165,6 +165,7 @@ bool runtable_insert(jamstate_t * js, char *actid, command_t *cmd)
 
 bool runtable_del(runtable_t *tbl, char *actid)
 {
+    printf("Runtable delete... %s\n", actid);
     // find the entry.. if not found return with false
     runtableentry_t *re = runtable_find(tbl, actid);
     if (re == NULL)

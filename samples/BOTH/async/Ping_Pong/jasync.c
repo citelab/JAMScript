@@ -1,15 +1,32 @@
 #include <stdio.h>
+int perank;
+int count = 0;
 
-int counter = 0;
+jactivity_t *ping(int);
 
-jactivity_t* pong();
+jactivity_t *regme(char *, jcallback);
 
-jasync ping() {
-    printf("ping.. %d\n", counter++);
-    pong();
+void regcallback(char *msg) {
+  if (msg != NULL)
+    perank = atoi(msg);
+  else
+    perank = -1;
+
+  printf("Perank %d\n", perank);
+
+  ping(perank);
+}
+
+int counter = 1;
+
+jasync pong() {
+  //  usleep(50000);
+    printf("pong received... %d\n", counter++);
+    ping(perank);
 }
 
 int main() {
-    pong();
-    return 0;
+  printf("Registering...");
+  regme("hello", regcallback);
+  return 0;
 }

@@ -5,9 +5,3 @@ jasync function pingserver(penum) {
 }
 
 
-jasync function regme(msg, cback) {
-    
-    count = count + 1;
-    console.log("registration received from ", msg);
-    cback('' + count);
-}
