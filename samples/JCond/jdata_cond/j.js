@@ -2,7 +2,6 @@
 jdata {
     int x as logger;
     int y as broadcaster;
-    int y2 as broadcaster;
     float q as logger;
     float q2 as logger;
 }
@@ -10,7 +9,7 @@ jdata {
 jcond {
     cloudonly: sys.type == "cloud", nocloud;
     devonly: sys.type == "device", nodevice;
-    numcheck: x == y && x == y2, notequal;
+    numcheck: x == y, notequal;
 }
 
 jasync {numcheck} function pong() {
@@ -36,15 +35,13 @@ setInterval(()=> {
 
 function notequal() {
 
-	return;
 }
 
 function nodevice() {
 
-	return;
 }
 
 function nocloud() {
-	return;
+
 }
 
