@@ -24,6 +24,7 @@ console.log("Node name: " + nodeName);
 jcond {
   namechk: selfName == nodeInfo.nodeName;
   cloudonly: sys.type == "cloud";
+  deviceonly: sys.type =="device";
 }
 
 /**----------------REQUIRE-----------------------------------------**/
@@ -82,7 +83,7 @@ jasync {cloudonly} function getAllNodes() {
 * Execute a program
 */
 //runj progName.jxe --app=progName
-jasync function executeProgram(path) {
+jasync{deviceonly} function executeProgram(path) {
   console.log("Executing external JAMProgram...");
     var currPath = process.cwd();
     var progPath = process.cwd() + "/" + path;
@@ -111,9 +112,9 @@ jasync function executeProgram(path) {
 var getNodeInfo = function(key,entry) {
   var i = 0;
   while(nodeInfo[i] !== undefined && !nodeInfo[i].isEmpty()) {
-    // console.log('key',nodeInfo[i].key);
+    console.log(i,'key: ',nodeInfo[i].key);
     // console.log('data',nodeInfo[i].lastData());
-    console.log('value',nodeInfo[i].lastValue());
+    // console.log('value',nodeInfo[i].lastValue());
     i++;
   }
 }
@@ -245,7 +246,7 @@ shell
 shell
   .command('health <node>', 'Displays node health')
   .action(function(args, callback) {
-    forwardHealthCommand(args.node);
+    //forwardHealthCommand(args.node);
     console.log("Displaying node health....");
     var nodeHealth = {
       uptime: Math.floor(process.uptime())
