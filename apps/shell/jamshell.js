@@ -9,12 +9,12 @@ jdata {
   //Job logger
   char* jobs as logger; //Job logger
   //TODO: This can be removed when device status is kept from the J Node instead
-    struct nodeInfo {
-      char* nodeName;
-        char* nodeType;
-        char* fog;
-        char* cloud;
-    } nodeInfo as logger; //Device info logger
+  struct nodeInfo {
+    char* nodeName;
+      char* nodeType;
+      char* fog;
+      char* cloud;
+  } nodeInfo as logger; //Device info logger
 }
 
 var chance = require('chance').Chance();
@@ -37,6 +37,7 @@ var cloudName;
 var outputFileName;
 
 nodeInfo.addDatastream(nodeName);
+jobs.addDatastream(nodeName);
 var selfInfo = {"name": nodeName, "type": jsys.type};
 
 /**----------------ADVERTISE SELF----------------------------------**/
@@ -91,7 +92,9 @@ function executeProgram(path) {
     process.chdir(progPath);
     console.log('Spawning program...');
     var child = spawn('runj', [progName +'.jxe', '--app=' + progName]);
-    jobList.push(child.pid);
+    var job = {name: progName, pid:child.pid};
+    jobList.push(job);
+    logJob(0,job);
     console.log("Pushed child: "+ child.pid + " to joblist");
     console.log('Returning to previous directory...');
     process.chdir(currPath);
@@ -118,12 +121,28 @@ var getNodeInfo = function(key,entry) {
 */
 function logNodeInfo(index, value){
     setTimeout(function() {
-      console.log(nodeInfo.size());
         nodeInfo[index].log(value, function (result) {
             if (!result.status)
                 console.log(result.error);
         });
     }, 30);
+}
+
+function logJob(index, value) {
+    setTimeout(function() {
+        jobs[index].log(value, function (result) {
+            if (!result.status)
+                console.log('yyyy',result.error);
+        });
+    }, 30);
+}
+
+var getJobs = function(key,entry) {
+  var i = 0;
+  while(jobs[i] !== undefined && !jobs[i].isEmpty()) {
+    console.log(jobs[i].lastValue());
+    i++;
+  }
 }
 
 /**
@@ -157,7 +176,6 @@ function peek(raw) {
 shell
   .command('exec <progPath> [location] [locationNames...]', 'Execute a JAMProgram')
   .action(function(args, callback) {
-    console.log(args.location);
     if(args.location == undefined) {
       executeProgram(args.progPath);
     }
@@ -234,6 +252,14 @@ shell
     callback();
   });
 
+shell
+  .command('jobs [node]', 'Displays jobs started')
+  .action(function(args, callback) {
+    console.log("Displaying jobs started....");
+    getJobs();
+    callback();
+  });
+
 /**----------------BUILT-IN COMMANDS-------------------------------**/
 shell
   .command('jcd <path>', 'Change directories')
@@ -267,7 +293,8 @@ shell
 process.on('exit', (code) => {
     console.log('killing', jobList.length, 'child processes');
     jobList.forEach(function(job) {
-      process.kill(job);
+      console.log('received', job.pid);
+      process.kill(job.pid);
     });
     console.log('Exiting JAMShell...');
 });
