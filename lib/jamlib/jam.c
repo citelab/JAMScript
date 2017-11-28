@@ -36,6 +36,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <strings.h>
 #include <pthread.h>
 
+int jamflag;
 extern char dev_tag[32];
 list_elem_t *cache;
 int cachesize;
@@ -279,13 +280,19 @@ int jamargs(int argc, char **argv, char *appid, char *tag, int *num)
     char *nvalue = NULL;
     int c;
 
+    // This is a global variable that indicates whether we are using jamrun or not
+    jamflag = 0;
+
     opterr = 0;
 
-    while ((c = getopt (argc, argv, "a:n:t:")) != -1)
+    while ((c = getopt (argc, argv, "a:jn:t:")) != -1)
         switch (c)
         {
             case 'a':
                 avalue = optarg;
+            break;
+            case 'j':
+                jamflag = 1;
             break;
             case 'n':
                 nvalue = optarg;

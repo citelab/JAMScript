@@ -258,7 +258,7 @@ if [ -e "$file" ]; then
                     if [ -e a.out ]; then
                         chmod +x a.out
                         # execute the program.. we are in the folder..
-                        $TMUX send-keys -t $app:0.$indx "./a.out -a $app -n $counter" C-m
+                        $TMUX send-keys -t $app:0.$indx "./a.out -j -a $app -n $counter" C-m
                     fi
                     ((counter++))
                     ((indx++))

@@ -20,7 +20,7 @@ void regcallback(char *msg) {
 int counter = 1;
 
 jasync pong() {
-  //  usleep(50000);
+    usleep(50000);
     printf("pong received... %d\n", counter++);
     ping(perank);
 }

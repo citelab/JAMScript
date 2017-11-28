@@ -51,7 +51,7 @@ extern "C" {
 #define STACKSIZE                   10000
 
 // TODO: Max entries.. sufficient?
-#define MAX_RUN_ENTRIES             64
+#define MAX_RUN_ENTRIES             4 // 64
 #define MAX_FIELD_LEN               64
 
 typedef struct _runtableentry_t
@@ -118,6 +118,9 @@ typedef struct _jamstate_t
     threadsem_t *jdsem;
 
 } jamstate_t;
+
+
+extern int jamflag;
 
 
 jamstate_t *jam_init(int port, int serialnum);

@@ -434,8 +434,11 @@ void jwork_process_device(jamstate_t *js)
         {
             char tbuf[64];
             printf("ERROR! Kill message received from the J node.\n");
-            sprintf(tbuf, "tmux kill-session -t %s", app_id);
-            system(tbuf);
+            if (jamflag)
+            {
+                sprintf(tbuf, "tmux kill-session -t %s", app_id);
+                system(tbuf);
+            }
             printf("Exiting.\n");
             exit(1);
         }
