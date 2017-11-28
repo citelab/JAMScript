@@ -10,7 +10,6 @@ jdata{
     packFlow as flow with packFlowFunc of pack;
 }
 
-var tempFlow, packFlow;
 var started = false;
 
 /**
