@@ -308,7 +308,7 @@ function printHelp() {
   console.log("\t-D \t\t\t Debug mode");
   console.log("\t-h \t\t\t Display available options");
   console.log("\t-N \t\t\t Skip compilation");
-  console.log("\t-o \t\t\t Set jxe output name");  
+  console.log("\t-o \t\t\t Set jxe output name");
   console.log("\t-P \t\t\t Preprocessor only");
   console.log("\t-V \t\t\t Verbose mode");
   console.log("\t-T \t\t\t Translator only");

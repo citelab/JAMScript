@@ -513,22 +513,29 @@ void jwork_process_device(jamstate_t *js)
             core_check_pending(js->cstate);
         }
         else
-        if ((strcmp(rcmd->cmd, "REXEC-ASY") == 0) ||
-            (strcmp(rcmd->cmd, "REXEC-SYN") == 0))
+        if (strcmp(rcmd->cmd, "REXEC-ASY") == 0)
         {
-
-            // Check for duplicate
-            if (find_list_item(cache, rcmd->actid))
+            if (overflow_detect())
             {
                 command_free(rcmd);
                 return;
             }
-            else
+
+            if (duplicate_detect(rcmd))
+                return;
+
+            if (jwork_evaluate_cond(rcmd->cond))
             {
-                put_list_tail(cache, strdup(rcmd->actid), strlen(rcmd->actid));
-                if (list_length(cache) > cachesize)
-                    del_list_tail(cache);
+                p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
             }
+            else
+                jwork_send_nak(js, rcmd, "CONDITION FALSE");
+        }
+        else
+        if (strcmp(rcmd->cmd, "REXEC-SYN") == 0)
+        {
+            if (duplicate_detect(rcmd))
+                return;
 
             if (jwork_evaluate_cond(rcmd->cond))
             {
@@ -540,18 +547,8 @@ void jwork_process_device(jamstate_t *js)
         else
         if (strcmp(rcmd->cmd, "REXEC-ASY-CBK") == 0)
         {
-            // Check for duplicate
-            if (find_list_item(cache, rcmd->actid))
-            {
-                command_free(rcmd);
+            if (duplicate_detect(rcmd))
                 return;
-            }
-            else
-            {
-                put_list_tail(cache, strdup(rcmd->actid), strlen(rcmd->actid));
-                if (list_length(cache) > cachesize)
-                    del_list_tail(cache);
-            }
 
             if (runtable_find(js->rtable, rcmd->actarg) != NULL)
             {
@@ -581,6 +578,32 @@ void jwork_process_device(jamstate_t *js)
             command_free(rcmd);
         }
     }
+}
+
+
+bool overflow_detect()
+{
+    if (arc4random_uniform(100) <= odcount)
+        return false;
+    else
+        return true;
+}
+
+bool duplicate_detect(command_t *rcmd)
+{
+    if (find_list_item(cache, rcmd->actid))
+    {
+        command_free(rcmd);
+        return true;
+    }
+    else
+    {
+        put_list_tail(cache, strdup(rcmd->actid), strlen(rcmd->actid));
+        if (list_length(cache) > cachesize)
+            del_list_tail(cache);
+    }
+
+    return false;
 }
 
 
@@ -661,18 +684,8 @@ void jwork_process_fog(jamstate_t *js)
         if ((strcmp(rcmd->cmd, "REXEC-ASY") == 0) ||
             (strcmp(rcmd->cmd, "REXEC-SYN") == 0))
         {
-            // Check for duplicate
-            if (find_list_item(cache, rcmd->actid))
-            {
-                command_free(rcmd);
+            if (duplicate_detect(rcmd))
                 return;
-            }
-            else
-            {
-                put_list_tail(cache, strdup(rcmd->actid), strlen(rcmd->actid));
-                if (list_length(cache) > cachesize)
-                    del_list_tail(cache);
-            }
 
             if (jwork_evaluate_cond(rcmd->cond))
             {
@@ -684,18 +697,8 @@ void jwork_process_fog(jamstate_t *js)
         else
         if (strcmp(rcmd->cmd, "REXEC-ASY-CBK") == 0)
         {
-            // Check for duplicate
-            if (find_list_item(cache, rcmd->actid))
-            {
-                command_free(rcmd);
+            if (duplicate_detect(rcmd))
                 return;
-            }
-            else
-            {
-                put_list_tail(cache, strdup(rcmd->actid), strlen(rcmd->actid));
-                if (list_length(cache) > cachesize)
-                    del_list_tail(cache);
-            }
 
             if (runtable_find(js->rtable, rcmd->actarg) != NULL)
             {
@@ -754,18 +757,8 @@ void jwork_process_cloud(jamstate_t *js)
         if ((strcmp(rcmd->cmd, "REXEC-ASY") == 0) ||
             (strcmp(rcmd->cmd, "REXEC-SYN") == 0))
         {
-            // Check for duplicate
-            if (find_list_item(cache, rcmd->actid))
-            {
-                command_free(rcmd);
+            if (duplicate_detect(rcmd))
                 return;
-            }
-            else
-            {
-                put_list_tail(cache, strdup(rcmd->actid), strlen(rcmd->actid));
-                if (list_length(cache) > cachesize)
-                    del_list_tail(cache);
-            }
 
             if (jwork_evaluate_cond(rcmd->cond))
             {
@@ -777,18 +770,8 @@ void jwork_process_cloud(jamstate_t *js)
         else
         if (strcmp(rcmd->cmd, "REXEC-ASY-CBK") == 0)
         {
-            // Check for duplicate
-            if (find_list_item(cache, rcmd->actid))
-            {
-                command_free(rcmd);
+            if (duplicate_detect(rcmd))
                 return;
-            }
-            else
-            {
-                put_list_tail(cache, strdup(rcmd->actid), strlen(rcmd->actid));
-                if (list_length(cache) > cachesize)
-                    del_list_tail(cache);
-            }
 
             if (runtable_find(js->rtable, rcmd->actarg) != NULL)
             {
@@ -848,7 +831,6 @@ void tcallback(void *arg)
 
 void stcallback(void *arg)
 {
-
     jamstate_t *js = (jamstate_t *)arg;
     // stick the "TIMEOUT" message into the queue for the activity
     command_t *tmsg = command_new("SYNC_TIMEOUT", "-", "-", 0, "GLOBAL_INQUEUE", "__", "__", "");

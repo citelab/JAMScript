@@ -507,6 +507,7 @@ jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
     jact->atable = at;
 
     jact->jindx = at->jcounter++;
+    int count = 3;
 
     if (jact != NULL)
     {
@@ -515,6 +516,14 @@ jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
         {
             printf("Waiting in activity_new ....\n");
             taskdelay(10);
+            count--;
+            if (count <= 0)
+            {
+                if (odcount > ODCOUNT_MIN)
+                    odcount -= ODCOUNT_DOWNVAL;
+                free(jact);
+                return NULL;
+            }
         }
 
         // Setup the thread.
@@ -537,6 +546,7 @@ jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
 jactivity_t *activity_renew(activity_table_t *at, jactivity_t *jact)
 {
     activity_thread_t *athr = athread_get(at, jact->jindx);
+    int count;
 
     if (athr == NULL)
     {
@@ -546,6 +556,13 @@ jactivity_t *activity_renew(activity_table_t *at, jactivity_t *jact)
             printf("Waiting in renew.. \n");
             taskdelay(10);
             // Wait until we get a thread..
+            count--;
+            if (count <= 0)
+            {
+                if (odcount > ODCOUNT_MIN)
+                    odcount -= ODCOUNT_DOWNVAL;
+                return NULL;
+            }
         }
 
         // Setup the thread.
@@ -594,6 +611,8 @@ void activity_free(jactivity_t *jact)
     //     printf(".........Flusing activity jindx %d.. threadid %d \n", athr->jindx, athr->threadid);
     // }
 
+    if (odcount < ODCOUNT_MAX)
+        odcount += ODCOUNT_UPVAL;
     free(jact);
 }
 

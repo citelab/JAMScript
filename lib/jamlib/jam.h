@@ -54,6 +54,12 @@ extern "C" {
 #define MAX_RUN_ENTRIES             4 // 64
 #define MAX_FIELD_LEN               64
 
+#define ODCOUNT_MAX                 100
+#define ODCOUNT_MIN                 15
+#define ODCOUNT_DOWNVAL             20
+#define ODCOUNT_UPVAL               2
+
+
 typedef struct _runtableentry_t
 {
     char actid[MAX_FIELD_LEN];
@@ -120,8 +126,12 @@ typedef struct _jamstate_t
 } jamstate_t;
 
 
+// Globals defined in jam.c
 extern int jamflag;
+extern int odcount;
 
+// Global defined in the jamout.c (compiler generated)
+extern char dev_tag[32];
 
 jamstate_t *jam_init(int port, int serialnum);
 
@@ -171,6 +181,9 @@ void jwork_process_actoutq(jamstate_t *js, int indx);
 void jwork_process_device(jamstate_t *js);
 void jwork_process_fog(jamstate_t *js);
 void jwork_process_cloud(jamstate_t *js);
+
+bool duplicate_detect(command_t *rcmd);
+bool overflow_detect();
 
 void jwork_send_error(jamstate_t *js, command_t *cmd, char *estr);
 void jwork_send_results(jamstate_t *js, char *opt, char *actname, char *actid, arg_t *args);

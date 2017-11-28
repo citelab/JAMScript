@@ -37,7 +37,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <pthread.h>
 
 int jamflag;
-extern char dev_tag[32];
+int odcount;
 list_elem_t *cache;
 int cachesize;
 
@@ -65,6 +65,10 @@ jamstate_t *jam_init(int port, int serialnum)
     // Initialize the duplicate testing cache with 32 entries
     cache = create_list();
     cachesize = 32;
+
+    // Initialize the overflow detector
+    odcount = ODCOUNT_MAX;
+
 
     // Initialize the jconditional
     jcond_init();
