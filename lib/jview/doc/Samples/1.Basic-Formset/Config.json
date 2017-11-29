@@ -17,7 +17,7 @@
           "type": "FormSet",
           "formList": [
             {
-              "type": "select",
+              "type": "select",   
               "dispLabel": "Device",
               "param": "device",
               "list": [
