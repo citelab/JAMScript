@@ -44,7 +44,7 @@ int cachesize;
 // Initialize the JAM library.. nothing much done here.
 // We just initialize the Core ..
 //
-jamstate_t *jam_init(int port, int serialnum)
+jamstate_t *jam_init(int serialnum)
 {
     char tagstr[256];
 
@@ -54,7 +54,7 @@ jamstate_t *jam_init(int port, int serialnum)
 
     jamstate_t *js = (jamstate_t *)calloc(1, sizeof(jamstate_t));
 
-    js->cstate = core_init(port, serialnum);
+    js->cstate = core_init(serialnum);
 
     if (js->cstate == NULL)
     {

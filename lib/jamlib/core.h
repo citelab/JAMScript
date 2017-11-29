@@ -55,7 +55,7 @@ typedef struct _corestate_t
 // ------------------------------
 
 // Initialize the core.. the first thing we need to call
-corestate_t *core_init(int port, int serialnum);
+corestate_t *core_init(int serialnum);
 void core_setup(corestate_t *cs);
 void core_set_redis(corestate_t *cs, char *server, int port);
 void core_createserver(corestate_t *cs, int indx, char *url);

@@ -59,6 +59,18 @@ void core_setup(corestate_t *cs)
     else
     {
         char fname[64];
+        sprintf(fname, "./device.conf/port");
+        FILE *fp = fopen(fname, "r");
+        if (fp == NULL)
+        {
+            printf("ERROR! Opening the port information file \n");
+            exit(1);
+        }
+        int port;
+        fscanf(fp, "%d", &port);
+        cs->port = port;
+        fclose(fp);
+
         sprintf(fname, "./device.conf/cdeviceId.%d", cs->serial_num);
         if (access(fname, F_OK) != -1)
         {
@@ -107,7 +119,7 @@ void core_setup(corestate_t *cs)
 // of messages. The restriction is lifted after the core_init() phase is over.
 //
 
-corestate_t *core_init(int port, int serialnum)
+corestate_t *core_init(int serialnum)
 {
     #ifdef DEBUG_LVL1
         printf("Core initialization...");
@@ -116,7 +128,6 @@ corestate_t *core_init(int port, int serialnum)
     // create the core state structure..
     corestate_t *cs = (corestate_t *)calloc(1, sizeof(corestate_t));
     // device_id set inside the following function
-    cs->port = port;
     cs->cf_pending = true;
     cs->serial_num = serialnum;
 

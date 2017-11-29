@@ -133,7 +133,7 @@ extern int odcount;
 // Global defined in the jamout.c (compiler generated)
 extern char dev_tag[32];
 
-jamstate_t *jam_init(int port, int serialnum);
+jamstate_t *jam_init(int serialnum);
 
 void jam_run_app(void *arg);
 void jam_event_loop(void *js);
