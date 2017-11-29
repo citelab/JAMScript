@@ -179,12 +179,13 @@ void jam_event_loop(void *arg)
 
                 // The activity creation should have setup the thread
                 // So we should have a thread to run...
-                activity_thread_t *athr = athread_getbyindx(js->atable, jact->jindx);
-                //
                 //runtable_insert(js, cmd->actid, cmd);
 
                 if (jact != NULL)
+                {
+                    activity_thread_t *athr = athread_getbyindx(js->atable, jact->jindx);
                     pqueue_enq(athr->inq, cmd, sizeof(command_t));
+                }
                 else
                     printf("ERROR! Unable to find a free Activity handler to start %s", cmd->actname);
             }

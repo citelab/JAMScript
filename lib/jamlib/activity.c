@@ -522,6 +522,7 @@ jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
                 if (odcount > ODCOUNT_MIN)
                     odcount -= ODCOUNT_DOWNVAL;
                 free(jact);
+                printf("Returning........\n");
                 return NULL;
             }
         }
@@ -589,6 +590,9 @@ jactivity_t *activity_renew(activity_table_t *at, jactivity_t *jact)
 
 void activity_free(jactivity_t *jact)
 {
+    if (jact == NULL)
+        return;
+
     // Get a reference to the activity table..
     activity_table_t *at = jact->atable;
 

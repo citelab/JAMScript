@@ -27,6 +27,9 @@ jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, i
     int i = 0;
     arg_t *qargs;
 
+    if (jact == NULL)
+        return NULL;
+
     assert(fmask != NULL);
     // Check the height condition
     if (machine_height(js) < requested_level(condvec))
