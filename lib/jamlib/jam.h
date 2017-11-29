@@ -46,30 +46,28 @@ extern "C" {
 
 #include <event.h>
 #include <hiredis/async.h>
-//#ifdef linux
-#include <hiredis/adapters/libevent.h>
-//#elif __APPLE__
-//#include <hiredis/adapters/macosx.h>
-//#endif
 
-#define STACKSIZE                   20000
+
+#define STACKSIZE                   10000
 
 // TODO: Max entries.. sufficient?
-#define MAX_RUN_ENTRIES             4
+#define MAX_RUN_ENTRIES             4 // 64
+#define MAX_FIELD_LEN               64
+
+#define ODCOUNT_MAX                 100
+#define ODCOUNT_MIN                 15
+#define ODCOUNT_DOWNVAL             20
+#define ODCOUNT_UPVAL               2
 
 
 typedef struct _runtableentry_t
 {
-    char *actid;
-    char *actname;
+    char actid[MAX_FIELD_LEN];
+    char actname[MAX_FIELD_LEN];
     int status;
     long long accesstime;
     enum activity_type_t type;
 
-    int rcd_replies;
-    // results hold remote results in the case of C->J or
-    // local results in the case of J->C sync calls - only [0] used
-    arg_t *results[MAX_SERVERS]; //The results
 } runtableentry_t;
 
 
@@ -128,6 +126,13 @@ typedef struct _jamstate_t
 } jamstate_t;
 
 
+// Globals defined in jam.c
+extern int jamflag;
+extern int odcount;
+
+// Global defined in the jamout.c (compiler generated)
+extern char dev_tag[32];
+
 jamstate_t *jam_init(int port, int serialnum);
 
 void jam_run_app(void *arg);
@@ -149,10 +154,10 @@ char *get_root_condition(jamstate_t *js);
 /*
  * Functions defined in jamasync.c
  */
-
+jactivity_t *jam_lexec_async(char *aname, ...);
 jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, int condvec, char *aname, char *fmask, ...);
 void jam_rexec_run_wrapper(void *arg);
-void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd);
+jactivity_t *jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd);
 void set_jactivity_state(jactivity_t *jact, int nreplies);
 void process_missing_replies(jactivity_t *jact, int nreplies, int ecount);
 
@@ -177,8 +182,11 @@ void jwork_process_device(jamstate_t *js);
 void jwork_process_fog(jamstate_t *js);
 void jwork_process_cloud(jamstate_t *js);
 
+bool duplicate_detect(command_t *rcmd);
+bool overflow_detect();
+
 void jwork_send_error(jamstate_t *js, command_t *cmd, char *estr);
-void jwork_send_results(jamstate_t *js, char *actname, char *actid, arg_t *args);
+void jwork_send_results(jamstate_t *js, char *opt, char *actname, char *actid, arg_t *args);
 void jwork_send_nak(jamstate_t *js, command_t *cmd, char *estr);
 
 command_t *jwork_runid_status(jamstate_t *js, char *runid);

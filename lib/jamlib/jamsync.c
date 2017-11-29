@@ -112,6 +112,7 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
         cmd->cbor_item_list = list;
         if (machine_height(js) > 1)
         {
+            jact->type = SYNC_RTE;
             rargs = jam_sync_runner(js, jact, cmd);
             // quit if we failed to execute at the root.
             if (rargs == NULL)
@@ -122,6 +123,7 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
             bcmd->cbor_item_list = list2;
 
             jact = activity_renew(js->atable, jact);
+            jact->type = SYNC_NRT;
             jam_sync_runner(js, jact, bcmd);
 
             activity_free(jact);
@@ -129,6 +131,7 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
         }
         else
         {
+            jact->type = SYNC_RTE;
             rargs = jam_sync_runner(js, jact, cmd);
             activity_free(jact);
             return rargs;
@@ -149,26 +152,50 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
 //
 arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
 {
+    int results;
     int timeout = 300;
     arg_t *repcode = NULL;
+    bool valid_results = false;
 
     #ifdef DEBUG_LVL1
         printf("Starting JAM exec runner... \n");
     #endif
 
-    // Send the command to the remote side
-    // The send is executed via the worker thread..
-    queue_enq(jact->thread->outq, cmd, sizeof(command_t));
+    activity_thread_t *athr = athread_getbyindx(js->atable, jact->jindx);
 
-    jam_set_timer(js, jact->actid, timeout);
-    nvoid_t *nv = pqueue_deq(jact->resultq);
-
-    if (nv != NULL)
+    // Repeat for three times ... under failure..
+    for (int i = 0; i < 3 && !valid_results; i++)
     {
-        if (nv->len != 0)
-            repcode = (arg_t *)nv->data;
-        free(nv);
+        // Send the command to the remote side
+        // The send is executed via the worker thread..
+        queue_enq(athr->outq, cmd, sizeof(command_t));
+
+        jam_set_timer(js, jact->actid, timeout);
+        nvoid_t *nv = pqueue_deq(athr->resultq);
+
+        if (nv != NULL)
+        {
+            switch (nv->len) {
+                case sizeof(arg_t):
+                    repcode = (arg_t *)nv->data;
+                    valid_results = true;
+                    break;
+
+                case sizeof(int):
+                    results = (*(int *)nv->data);
+                    if (results)
+                        valid_results = true;
+                    break;
+
+                default:
+                    break;
+            }
+            free(nv);
+        }
     }
 
+    // repcode is NULL if there is a failure
+    // repcode is not used when jam_sync_runner is used for
+    // Non Root excecution...
     return repcode;
 }

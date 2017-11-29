@@ -93,6 +93,29 @@ void del_list_tail(list_elem_t *head)
 }
 
 
+void del_list_item(list_elem_t *head, void *e)
+{
+    list_elem_t *p = head->next;
+
+    while ((p != head) && (p->data != e))
+        p = p->next;
+
+
+    if (p->data == e)
+    {
+        p->next->prev = p->prev;
+        p->prev->next = p->next;
+
+        free(p);
+
+        if (head->count > 0)
+            head->count--;
+    }
+}
+
+
+
+
 bool find_list_item(list_elem_t *head, char *str)
 {
     list_elem_t *p = head->next;
@@ -105,3 +128,28 @@ bool find_list_item(list_elem_t *head, char *str)
     }
     return false;
 }
+
+
+void *search_item(list_elem_t *head, char *key, search_method_f sfunc)
+{
+    list_elem_t *p = head->next;
+
+    while (p != head)
+    {
+        if (sfunc(p->data, key) == 0)
+            return p->data;
+        p = p->next;
+    }
+    return NULL;
+}
+
+/*
+void test()
+{
+    list_elem_t *t = NULL;
+    char *p = "ddd";
+    bool q;
+
+    q = search_list(t, p, searchq);// , p); //, searchq);
+}
+*/

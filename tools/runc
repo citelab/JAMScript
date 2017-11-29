@@ -1,0 +1,122 @@
+#!/bin/sh
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+show_usage() {
+    cat << EOF
+Usage: runc file.jxe -a appl_name -n number -g group_name
+
+The runc command runs the C component of the file.jxe (JAM executable).
+EOF
+}
+
+# Initialize all the option variables.
+app=testapp
+num=1
+group="."
+
+file=$1
+shift
+fext="${file##*.}"
+
+if [ -z $file ] || [ $file = "-h" ]; then
+    show_usage
+    exit 1
+fi
+
+if [ "$fext" != "jxe" ]; then
+    die "file extension is not .jxe"
+fi
+
+
+while :; do
+    case $1 in
+        -h|-\?|--help)
+            show_usage      # Display a usage synopsis.
+            exit
+            ;;
+        -a|--app)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                app=$2
+                shift
+            else
+                die 'ERROR: "--app" requires a non-empty option argument.'
+            fi
+            ;;
+        --app=?*)
+            app=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --app=)            # Handle the case of an empty
+            die 'ERROR: "--app" requires a non-empty option argument.'
+            ;;
+        -n|--num)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                num=$2
+                shift
+            else
+                die 'ERROR: "--num" requires a non-empty option argument.'
+            fi
+            ;;
+        --num=?*)
+            num=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --num=)            # Handle the case of an empty
+            die 'ERROR: "--num" requires a non-empty option argument.'
+            ;;
+        -g|--group)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                group=$2
+                shift
+            else
+                die 'ERROR: "--group" requires a non-empty option argument.'
+            fi
+            ;;
+        --group=?*)
+            group=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --group=)            # Handle the case of an empty
+            die 'ERROR: "--group" requires a non-empty option argument.'
+            ;;
+        --)              # End of all options.
+            shift
+            break
+        ;;
+        -?*)
+            printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+            ;;
+        *)               # Default case: No more options, so break out of the loop.
+            break
+    esac
+
+    shift
+done
+
+echo $num
+
+if [ -e "$file" ]; then
+
+    # Get the folder
+    filenoext="${file%.*}"
+    folder=$filenoext"_"$app
+    if [ ! -d "$folder" ]; then
+        die "Folder: $folder not found to start the program"
+    fi
+
+    cd $folder
+    if [ $group != "." ]; then
+        cd $group
+    fi
+    if [ -e a.out ]; then
+        # execute the program.. we are in the folder..
+        chmod +x a.out
+        ./a.out -a $app -n $num
+    else
+        die "$file is not a valid JAMScript executable"
+    fi
+
+else
+    die "JAMScript executable: $file not found"
+fi

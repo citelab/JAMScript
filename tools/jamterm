@@ -1,0 +1,64 @@
+#!/bin/sh
+
+# Edit the following locations to provide the
+TMUX=/usr/local/bin/tmux
+
+# No need to edit below this line unless you find a bug!
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+show_usage() {
+    cat << EOF
+Usage: jamterm [--app=appl_name]
+
+The jamterm command attaches the C nodes created by the jamrun.
+If no application name is given, it connects to the
+instances belonging to the testapp.
+
+EOF
+}
+
+# Initialize all the option variables.
+app=testapp
+
+
+while :; do
+    case $1 in
+        -h|-\?|--help)
+            show_usage      # Display a usage synopsis.
+            exit
+            ;;
+        -a|--app)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                app=$2
+                shift
+            else
+                die 'ERROR: "--app" requires a non-empty option argument.'
+            fi
+            ;;
+        --app=?*)
+            app=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --app=)            # Handle the case of an empty
+            die 'ERROR: "--app" requires a non-empty option argument.'
+            ;;
+        --)              # End of all options.
+            shift
+            break
+        ;;
+        -?*)
+            printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+            ;;
+        *)               # Default case: No more options, so break out of the loop.
+            break
+    esac
+
+    shift
+done
+
+if $TMUX has-session -t $app; then
+    $TMUX attach -t $app
+fi

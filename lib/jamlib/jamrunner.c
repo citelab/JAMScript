@@ -132,14 +132,8 @@ runtableentry_t *runtable_getfree(runtable_t *table)
 }
 
 
-//
-// FIXME: There is something wrong here... why freeing the memory is
-// giving segmentation fault??
-//
 bool runtable_insert(jamstate_t * js, char *actid, command_t *cmd)
 {
-    int i;
-
     // find the entry.. if found no insert
     runtableentry_t *re = runtable_find(js->rtable, actid);
     if (re != NULL)
@@ -155,24 +149,15 @@ bool runtable_insert(jamstate_t * js, char *actid, command_t *cmd)
         exit(1);
     }
 
-    // Free the old entry if it is there
-    if (re->actid != NULL)
-        free(re->actid);
-    re->actid = strdup(actid);
-    if (re->actname != NULL)
-        free(re->actname);
-    re->actname = strdup(cmd->actname);
+    strcpy(re->actid, actid);
+    strcpy(re->actname, cmd->actname);
 
     re->accesstime = activity_getseconds();
     re->status = STARTED;
 
-    for (i = 0; i < MAX_SERVERS; i++)
-        re->results[i] = NULL;
-
-
+    pthread_mutex_lock(&(js->rtable->lock));
     js->rtable->rcount++;
-    printf("Runtable count %d\n", js->rtable->rcount);
-    // if (js->rtable->rcount == 0) exit(1);
+    pthread_mutex_unlock(&(js->rtable->lock));
 
     return true;
 }
@@ -192,32 +177,9 @@ bool runtable_del(runtable_t *tbl, char *actid)
     // We are just marking it as deleted.
     //
 
-    printf("Deleted...\n");
+    pthread_mutex_lock(&(tbl->lock));
     re->status = DELETED;
     tbl->rcount--;
-
-    return true;
-}
-
-
-// Store results.. in an entry that is already there..
-//
-bool runtable_store_results(runtable_t *tbl, char *actid, arg_t *results)
-{
-    // Access the entry.. return false if the entry is not found
-    runtableentry_t *re = runtable_find(tbl, actid);
-    if (re == NULL)
-        return false;
-
-    pthread_mutex_lock(&(tbl->lock));
-    // If max replies are already received.. just over write the old ones
-    if (re->rcd_replies < MAX_SERVERS)
-        re->results[re->rcd_replies++] = results;
-    else
-    {
-        free(re->results[re->rcd_replies]);
-        re->results[re->rcd_replies] = results;
-    }
     pthread_mutex_unlock(&(tbl->lock));
 
     return true;
@@ -231,14 +193,16 @@ void jrun_arun_callback(jactivity_t *jact, command_t *cmd, activity_callback_reg
     //
 
     #ifdef DEBUG_LVL1
-        printf("Starting the function....................\n");
+    printf("========= >> Starting the function....................\n");
     #endif
     creg->cback(jact, cmd);
 
     // if the execution was done due to a remote request...
     if (jact->remote)
+    {
         // Delete the activity.. because we are doing a remote processing..
         activity_free(jact);
+    }
 
     // Don't free cmd here.. it should be freed in the calling function..
 }

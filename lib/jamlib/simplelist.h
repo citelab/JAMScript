@@ -22,6 +22,7 @@ typedef struct _list_elem_t
 
 } list_elem_t;
 
+typedef int (*search_method_f)(void *elem, void *arg);
 
 list_elem_t *create_list();
 
@@ -31,7 +32,8 @@ int put_list_tail(list_elem_t *lst, void *data, int len);
 void print_list(list_elem_t *head);
 
 // To implement a simple (inefficient) cache..
+void del_list_item(list_elem_t *head, void *e);
 void del_list_tail(list_elem_t *lst);
 bool find_list_item(list_elem_t *lst, char *elem);
-
+void *search_item(list_elem_t *lst, char *key, search_method_f sfunc);
 #endif

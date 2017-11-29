@@ -8,11 +8,19 @@
     "url": "https://github.com/anrl/JAM.git"
   },
   "dependencies": {
+    "chance": "^1.0.12",
+    "flows.js": "file:lib/flow",
     "gaussian": "^1.1.0",
+    "jamserver": "file:lib/jamserver",
     "jdiscovery": "file:lib/jdiscovery",
-    "mathjs": "^3.16.1",
+    "jszip": "^3.1.5",
+    "mathjs": "^3.17.0",
     "ohm-js": "^0.13.1",
-    "ps-node": "^0.1.6"
+    "ps-node": "^0.1.6",
+    "redis-fast-driver": "1.0.5",
+    "terminal-kit": "1.13.13",
+    "vorpal": "^1.12.0",
+    "yargs": "^10.0.3"
   },
   "bin": "./index.js",
   "engines": {

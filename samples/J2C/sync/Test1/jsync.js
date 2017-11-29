@@ -1,11 +1,11 @@
 
 function runsynctest()
 {
-    var q = hello('testing string..');
+    var q = hello('test');
     console.log("Received the results..");
     console.log(q);
 }
 
 setInterval(function() {
 	runsynctest();
-    }, 1000);
+    }, 1);

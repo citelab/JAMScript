@@ -4,43 +4,44 @@
     ["LINK", "/usr/bin/clang"]
   ],
   "targets": [
-    # {
-    #   "target_name": "test",
-    #   "type": "executable",
-    #   "sources": [
-    #     "lib/jamlib/test.c"
-    #   ],
-    #   'link_settings': {
-    #     "libraries": [
-    #       '-lfdafds',
-    #       '-lm',
-    #       '-lbsd',
-    #       '-lpthread',
-    #       '-lcbor',
-    #       '-lnanomsg',
-    #       '-levent',
-    #       '-ltask',
-    #       '-lmujs',
-    #       '-lhiredis'
-    #     ],
-    #     "conditions": [
-    #       ["OS == 'mac'",  {
-    #         "libraries!": [
-    #           '-lm',
-    #           '-lbsd',
-    #           '-lpthread',
-    #           '-lcbor',
-    #           '-lnanomsg',
-    #           '-levent'
-    #         ]
-    #       }]
-    #     ],
-    #     'library_dirs': [
-    #       '/usr/lib',
-    #       '/usr/local/lib'
-    #     ]
-    #   }
-    # },
+    {
+      "target_name": "test",
+      "type": "executable",
+      "sources": [
+        "lib/jamlib/tests/cachetest.c",
+        "lib/jamlib/simplelist.c",
+        "lib/jamlib/nvoid.c"
+      ],
+      'link_settings': {
+        "libraries": [
+          '-lm',
+          '-lbsd',
+          '-lpthread',
+          '-lcbor',
+          '-lnanomsg',
+          '-levent',
+          '-ltask',
+          '-lmujs',
+          '-lhiredis'
+        ],
+        "conditions": [
+          ["OS == 'mac'",  {
+            "libraries!": [
+              '-lm',
+              '-lbsd',
+              '-lpthread',
+              '-lcbor',
+              '-lnanomsg',
+              '-levent'
+            ]
+          }]
+        ],
+        'library_dirs': [
+          '/usr/lib',
+          '/usr/local/lib'
+        ]
+      }
+    },
     {
       "target_name": "install",
       "dependencies": [ "liblibjam" ],
@@ -53,12 +54,54 @@
       ]
     },
     {
-      "target_name": "liblibjam",
-    	"type": "static_library",
+      "target_name": "tools",
+      "type": "none",
+      "copies": [
+        {
+          "destination": "/usr/local/bin/",
+          "files": [ 
+            "tools/jamrun",
+            "tools/jamkill",
+            "tools/jamterm",
+            "tools/runc",
+            "tools/runj"
+           ]
+        }
+      ]
+    },
+    {
+   	  "target_name": "liblibjam",
+	  	"type": "static_library",
       "dependencies": [ "deps/libtask/binding.gyp:liblibtask" ],
       "sources": [ 
       	"<!@(ls -1 lib/jamlib/*.c)"
       ],
+      "configurations": {
+      	"Debug": {
+      		"conditions": [
+      			 ['OS=="mac"', {
+      			 	'xcode_settings': {
+				        'OTHER_CFLAGS': [
+				          '-c',
+				          '-O1',
+				          '-g',
+				          '-fsanitize=address',
+				          '-fno-omit-frame-pointer'
+				        ]
+				      }
+      			 }],
+      			 ['OS=="linux"', {
+      			 	'cflags': [
+      			 		'-c',
+			          '-O1',
+			          '-g',
+			          '-fsanitize=address',
+			          '-fno-omit-frame-pointer'
+      			 	]
+      			 }]
+      		]
+      	}
+      },
       "copies": [
         {
           "destination": "/usr/local/share/jam/lib/",

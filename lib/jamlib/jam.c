@@ -36,7 +36,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <strings.h>
 #include <pthread.h>
 
-extern char dev_tag[32];
+int jamflag;
+int odcount;
 list_elem_t *cache;
 int cachesize;
 
@@ -65,6 +66,10 @@ jamstate_t *jam_init(int port, int serialnum)
     cache = create_list();
     cachesize = 32;
 
+    // Initialize the overflow detector
+    odcount = ODCOUNT_MAX;
+
+
     // Initialize the jconditional
     jcond_init();
     jcond_eval_str("var sys = {type: 'device'};");
@@ -73,7 +78,6 @@ jamstate_t *jam_init(int port, int serialnum)
 
     if (strlen(dev_tag) > 0)
     {
-        printf("------------------------------ Setting Tag %s\n", dev_tag);
         sprintf(tagstr, "sys.tag = '%s';", dev_tag);
         jcond_eval_str(tagstr);
     }
@@ -92,13 +96,13 @@ jamstate_t *jam_init(int port, int serialnum)
 
     // Queue initialization
     // Input side: one for each source: device, fog, cloud
-    js->deviceinq = queue_new(true);
-    js->foginq = queue_new(true);
-    js->cloudinq = queue_new(true);
+    js->deviceinq = queue_new(false);
+    js->foginq = queue_new(false);
+    js->cloudinq = queue_new(false);
 
     // Output queue.. we write to this queue.
     // The jamdata event loop serves from there.
-    js->dataoutq = semqueue_new(true);
+    js->dataoutq = semqueue_new(false);
 
     js->maintimer = timer_init("maintimer");
     js->synctimer = timer_init("synctimer");
@@ -146,7 +150,8 @@ void jam_event_loop(void *arg)
 
     char *deviceid = js->cstate->device_id;
 
-    MQTTAsync mcl = js->cstate->mqttserv[0];
+    MQTTAsync mcl;
+
 
     while (1)
     {
@@ -162,7 +167,6 @@ void jam_event_loop(void *arg)
             free(nv);
         } else
             cmd = NULL;
-        printf("command TYPE: %s\n", cmd->cmd);
 
         if (cmd != NULL)
         {
@@ -172,23 +176,32 @@ void jam_event_loop(void *arg)
             {
                 // Remote requests go through here.. local requests don't go through here
                 jactivity_t *jact = activity_new(js->atable, cmd->actid, true);
+
                 // The activity creation should have setup the thread
                 // So we should have a thread to run...
-                //
-                runtable_insert(js, cmd->actid, cmd);
-                //
+                //runtable_insert(js, cmd->actid, cmd);
+
                 if (jact != NULL)
-                    pqueue_enq(jact->thread->inq, cmd, sizeof(command_t));
-                else
-                    printf("ERROR! Unable to find a free Activity handler to start %s", cmd->actname);
+                {
+                    activity_thread_t *athr = athread_getbyindx(js->atable, jact->jindx);
+                    pqueue_enq(athr->inq, cmd, sizeof(command_t));
+                }
             }
             else if (strcmp(cmd->cmd, "REXEC-SYN") == 0) {
+
+                if (strcmp(cmd->opt, "CLOUD") == 0)
+                    mcl = js->cstate->mqttserv[2];
+                else
+                if (strcmp(cmd->opt, "FOG") == 0)
+                    mcl = js->cstate->mqttserv[1];
+                else
+                    mcl = js->cstate->mqttserv[0];
 
 				// Make a new command which signals to the J node that it's ready
 				// device ID is put in the cmd->actid because I don't know where else to put it.
                 command_t *readycmd = command_new("READY", "READY", "-", 0, "GLOBAL_INQUEUE", deviceid, "_", "");
-                mqtt_publish(mcl, "admin/request/syncTimer", readycmd);
-                double sTime;
+                mqtt_publish(mcl, "/admin/request/synctimer", readycmd);
+                double sTime = 0.0;
 				// Wait for the GO command from the J node.
                 nvoid_t *nv = p2queue_deq_high(js->atable->globalinq);
                 command_t *cmd_1;
@@ -210,16 +223,15 @@ void jam_event_loop(void *arg)
                 jactivity_t *jact = activity_new(js->atable, cmd->actid, true);
                 // The activity creation should have setup the thread
                 // So we should have a thread to run...
-                //
+                activity_thread_t *athr = athread_getbyindx(js->atable, jact->jindx);
                 runtable_insert(js, cmd->actid, cmd);
-                //
 
 				// Busy waiting until the start time.
                 while (getcurtime() < (double) sTime) {}
 
                 // printf("after a hwile: %f\n", getcurtime());
                 if (jact != NULL)
-                    pqueue_enq(jact->thread->inq, cmd, sizeof(command_t));
+                    pqueue_enq(athr->inq, cmd, sizeof(command_t));
                 else
                     printf("ERROR! Unable to find a free Activity handler to start %s", cmd->actname);
 
@@ -266,18 +278,24 @@ int requested_level(int cvec)
 
 int jamargs(int argc, char **argv, char *appid, char *tag, int *num)
 {
-    char *cvalue = NULL;
+    char *avalue = NULL;
     char *tvalue = NULL;
     char *nvalue = NULL;
     int c;
 
+    // This is a global variable that indicates whether we are using jamrun or not
+    jamflag = 0;
+
     opterr = 0;
 
-    while ((c = getopt (argc, argv, "a:n:t:")) != -1)
+    while ((c = getopt (argc, argv, "a:jn:t:")) != -1)
         switch (c)
         {
             case 'a':
-                cvalue = optarg;
+                avalue = optarg;
+            break;
+            case 'j':
+                jamflag = 1;
             break;
             case 'n':
                 nvalue = optarg;
@@ -291,8 +309,12 @@ int jamargs(int argc, char **argv, char *appid, char *tag, int *num)
             exit(1);
         }
 
-    if (cvalue != NULL)
-        strcpy(appid, cvalue);
+    if (avalue == NULL)
+    {
+        printf("ERROR! No app name specified. Use -a app_name to specify the app_name\n");
+        exit(1);
+    }
+    strcpy(appid, avalue);
 
     if (tvalue != NULL)
         strcpy(tag, tvalue);

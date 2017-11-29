@@ -1,0 +1,281 @@
+#!/bin/sh
+
+# Edit the following locations to provide the
+MOSQUITTO=/usr/local/sbin/mosquitto
+MOSQUITTO_PUB=/usr/local/bin/mosquitto_pub
+TMUX=/usr/local/bin/tmux
+
+# No need to edit below this line unless you find a bug!
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+show_usage() {
+    cat << EOF
+Usage: jamrun file.jxe [--app=appl_name] [--fog|--cloud] [--num=num_c_devs]
+                                    [--port=port_number] [--data=data-url]
+                                    [--tags=quoted_list_of_tags]
+                                    [--force]
+The jamrun command runs the given JAM executable (file.jxe).
+You specify the node type to run: cloud, fog, or device (by default).
+With device you start a J instance and one or more C instances.
+With cloud or fog, you start on J instances (one for each invocation).
+
+The --port option is useful to start multiple J components in the same machine.
+The jamrun command will start the MQTT broker in the given port if the broker is not
+running at the time. The MQTT broker will continue to run after the application
+has completed execution. The --data option takes a URL pointing to the data
+depot (Redis instance) to be used by the jdata subsystem.
+
+Use the --force option to use the latest version of the JAM executable.
+
+EOF
+}
+
+
+# Initialize all the option variables.
+app=testapp
+port=1883
+type=device
+data=127.0.0.1
+num=1
+force=
+tags=
+
+file=$1
+shift
+fext="${file##*.}"
+
+if [ -z $file ] || [ $file = "-h" ]; then
+    show_usage
+    exit 1
+fi
+
+if [ "$fext" != "jxe" ]; then
+    die "Extension on $file is not .jxe"
+fi
+
+# Check the required commands..
+if [ ! -e $MOSQUITTO ]; then
+    die "Mosquitto MQTT broker $MOSQUITTO not found. Set new location."
+fi
+if [ ! -e $MOSQUITTO_PUB ]; then
+    die "Mosquitto tools $MOSQUITTO_PUB not found. Set new location."
+fi
+if [ ! -e $TMUX ]; then
+    die "terminal multiplexor $TMUX not found. Set new location."
+fi
+
+
+while :; do
+    case $1 in
+        -h|-\?|--help)
+            show_usage      # Display a usage synopsis.
+            exit
+            ;;
+        -a|--app)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                app=$2
+                shift
+            else
+                die 'ERROR: "--app" requires a non-empty option argument.'
+            fi
+            ;;
+        --app=?*)
+            app=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --app=)            # Handle the case of an empty
+            die 'ERROR: "--args" requires a non-empty option argument.'
+            ;;
+        -s|--tags)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                tags=$2
+                shift
+            else
+                die 'ERROR: "--tags" requires a non-empty option argument.'
+            fi
+            ;;
+        --tags=?*)
+            tags=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --tags=)            # Handle the case of an empty
+            die 'ERROR: "--tags" requires a non-empty option argument.'
+            ;;
+        -p|--port)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                port=$2
+                shift
+            else
+                die 'ERROR: "--port" requires a non-empty option argument.'
+            fi
+            ;;
+        --port=?*)
+            port=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --port=)            # Handle the case of an empty
+            die 'ERROR: "--port" requires a non-empty option argument.'
+            ;;
+        -n|--num)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                num=$2
+                shift
+            else
+                die 'ERROR: "--num" requires a non-empty option argument.'
+            fi
+            ;;
+        --num=?*)
+            num=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --num=)            # Handle the case of an empty
+            die 'ERROR: "--num" requires a non-empty option argument.'
+            ;;
+        -d|--data)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                data=$2
+                shift
+            else
+                die 'ERROR: "--data" requires a non-empty option argument.'
+            fi
+            ;;
+        --data=?*)
+            data=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --data=)            # Handle the case of an empty
+            die 'ERROR: "--data" requires a non-empty option argument.'
+            ;;
+        -f|--fog)
+            if [ "$type" != "device" ]; then
+                die 'ERROR: "type" cannot be reassigned.'
+            else
+                type="fog"
+                num=
+            fi
+            ;;
+        -c|--cloud)
+            if [ "$type" != "device" ]; then
+                die 'ERROR: "type" cannot be reassigned.'
+            else
+                type="cloud"
+                num=
+            fi
+            ;;
+        -r|--force)
+            force=1
+            ;;
+        --)              # End of all options.
+            shift
+            break
+        ;;
+        -?*)
+            printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+            ;;
+        *)               # Default case: No more options, so break out of the loop.
+            break
+    esac
+
+    shift
+done
+
+# Check necessary parameters and set defaults
+
+if [ "$type" != "device" ] && [ -n "$num" ]; then
+    die "number of devices can't be speciied for fog/cloud"
+fi
+
+if [ "$type" == "device" ] && $TMUX has-session -t $app ; then
+    echo "ERROR! Another jamrun session is running for $app."
+    die "Run 'jamkill' or 'jamkill --app=app_name'."
+fi
+
+
+if [ -e "$file" ]; then
+
+    # Check whether the MQTT server is running.. if not start it
+    $MOSQUITTO_PUB -p $port -t "test" -m "hello"
+    if [ $? -ne 0 ]; then
+        echo "MQTT is not running at $port"
+        echo "Attempting to start MQTT at $port"
+        $MOSQUITTO -p $port &
+    fi
+
+    # Get the folder
+    filenoext="${file%.*}"
+    folder=$filenoext"_"$app
+    if [ ! -d "$folder" ]; then
+        mkdir $folder
+    fi
+
+    # unzip the executable in the folder and run it..
+    if [ -n "$force" ]; then
+        unzip $file -d $folder
+        if [ $? -ne 0 ]; then
+            die "Problem reading file: $file"
+        fi
+    else
+        if [ ! -e $folder/jamout.js ] && [ ! -e $folder/a.out ]; then
+            unzip $file -d $folder
+            if [ $? -ne 0 ]; then
+                die "Problem reading the file: $file"
+            fi
+        fi
+    fi
+
+    cd $folder
+    if [ "$type" == "device" ]; then
+        $TMUX new -s $app -d
+        counter=1
+        while [ $counter -le $num ]; do
+            $TMUX split-window -v -t $app
+            $TMUX select-layout -t $app tiled
+            ((counter++))
+        done
+    fi
+
+    if [ -e jamout.js ]; then
+        # execute the program.. we are in the folder..
+        case $type in
+            cloud)
+                if [ -z "$tags" ]; then
+                    node jamout.js --app=$app --cloud --port=$port --data=$data
+                else
+                    node jamout.js --app=$app --cloud --port=$port --data=$data --tags=$tags
+                fi
+                ;;
+            fog)
+                if [ -z "$tags" ]; then
+                    node jamout.js --app=$app --fog --port=$port --data=$data
+                else
+                    node jamout.js --app=$app --fog --port=$port --data=$data --tags=$tags
+                fi
+                ;;
+            device)
+                # First start the C nodes...
+                counter=1
+                indx=0
+                while [ $counter -le $num ]; do
+                    if [ -e a.out ]; then
+                        chmod +x a.out
+                        # execute the program.. we are in the folder..
+                        $TMUX send-keys -t $app:0.$indx "./a.out -j -a $app -n $counter" C-m
+                    fi
+                    ((counter++))
+                    ((indx++))
+                done
+
+                # Then start the J node
+                if [ -z "$tags" ]; then
+                    node jamout.js --app=$app --port=$port --data=$data
+                else
+                    node jamout.js --app=$app --port=$port --data=$data --tags="$tags"
+                fi
+                ;;
+        esac
+    else
+        die "File: $file is not a valid JAMScript executable"
+    fi
+
+else
+    die "File: $file not found"
+fi

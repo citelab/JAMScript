@@ -1,5 +1,5 @@
 jcond {
-    fogonly: sys.type == "fog";
+    fogonly: sys.type == "fog", test;
     cloudonly: sys.type == "cloud";
     devonly: sys.tag == "temp_sensor";
 }

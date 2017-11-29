@@ -160,7 +160,7 @@ The following options are supported but are optional:
     
     **NOTE**: 
     
-    i. A property like `--display-as-grid` will be converted to camelCase as be accessed from the parsed object as `parsed.displayAsGrid`
+    i. A property like `--display-as-grid` will be converted to camelCase and be accessed from the parsed object as `parsed.displayAsGrid`
     
     ii. A property starting with `--no` as with `--no-empty` with evaluate to boolean as `{empty: false}` if specified.
 

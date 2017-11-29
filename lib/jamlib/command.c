@@ -554,7 +554,7 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
                     return NULL;
                 }
                 cmd->args[i].type = STRING_TYPE;
-                cmd->args[i].val.sval = cbor_get_string(arrl[i]);
+                cmd->args[i].val.sval = strdup(cbor_get_string(arrl[i]));
                 break;
 
             case CBOR_TYPE_FLOAT_CTRL:
@@ -596,6 +596,7 @@ void command_hold(command_t *cmd)
 
 void command_free(command_t *cmd)
 {
+
     int rc;
     pthread_mutex_lock(&cmd->lock);
     rc = --cmd->refcount;
@@ -630,13 +631,13 @@ void command_free(command_t *cmd)
         }
     }
 
-    free(cmd->cmd);
-    free(cmd->opt);
-    free(cmd->cond);
-    free(cmd->actname);
-    free(cmd->actid);
-    free(cmd->actarg);
-    free(cmd->buffer);
+    if (cmd->cmd != NULL) free(cmd->cmd);
+    if (cmd->opt != NULL) free(cmd->opt);
+    if (cmd->cond != NULL) free(cmd->cond);
+    if (cmd->actname != NULL) free(cmd->actname);
+    if (cmd->actid != NULL) free(cmd->actid);
+    if (cmd->actarg != NULL) free(cmd->actarg);
+    if (cmd->buffer != NULL) free(cmd->buffer);
 
     if(cmd->cbor_item_list)
     {
@@ -648,7 +649,7 @@ void command_free(command_t *cmd)
         }
         list_free(cmd->cbor_item_list);
     }
-    free(cmd->args);
+
     free(cmd);
 }
 

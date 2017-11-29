@@ -38,8 +38,17 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 void core_setup(corestate_t *cs)
 {
+    DIR *dir = NULL;
+    // We wait for the device.conf to show up..
+    // This is a by product of C nodes starting earlier than the J nodes
+    // that create the device.conf file.
+    //
+    for (int i = 0; (i < 10 && dir == NULL); i++)
+    {
+        dir = opendir("./device.conf");
+        sleep(1);
+    }
 
-    DIR *dir = opendir("./device.conf");
     if (dir == NULL)
     {
         printf("ERROR! Missing ./device.conf folder.\n");
@@ -125,6 +134,12 @@ void core_set_redis(corestate_t *cs, char *server, int port)
 
 void core_createserver(corestate_t *cs, int indx, char *url)
 {
+    // If we are trying to create the previous server... just return!
+    // This happens because the server previously connected became available after
+    // a disconnection..
+    if (cs->mqtthost[indx] != NULL && strcmp(cs->mqtthost[indx], url) == 0)
+        return;
+
     cs->mqtthost[indx] = strdup(url);
 
     // open an mqtt connection to localhost
@@ -155,8 +170,8 @@ void core_connect(corestate_t *cs, int indx, void (*onconnect)(void *, MQTTAsync
 
     if ((rc != MQTTASYNC_SUCCESS) && (indx == 0))
     {
-        printf("\nERROR! Unable to connect to the MQTT server at [%s].\n", cs->mqtthost[0]);
-        printf("** Check whether an MQTT server is running at [%s] **\n\n", cs->mqtthost[0]);
+        printf("\nERROR! Unable to connect to the MQTT server at [%s].\n", cs->mqtthost[indx]);
+        printf("** Check whether an MQTT server is running at [%s] **\n\n", cs->mqtthost[indx]);
         exit(1);
     }
     else if ((rc != MQTTASYNC_SUCCESS) && (indx != 0))
@@ -168,6 +183,24 @@ void core_connect(corestate_t *cs, int indx, void (*onconnect)(void *, MQTTAsync
 
     printf("Core.. connected... %s\n", cs->mqtthost[indx]);
     cs->mqttenabled[indx] = true;
+}
+
+
+
+void core_disconnect(corestate_t *cs, int indx)
+{
+    int rc;
+
+    MQTTAsync_disconnectOptions dconn_opts = MQTTAsync_disconnectOptions_initializer;
+    dconn_opts.timeout = 0;
+    dconn_opts.onSuccess = NULL;
+    dconn_opts.context = cs;
+    dconn_opts.onFailure = NULL;
+
+    rc = MQTTAsync_disconnect(cs->mqttserv[indx], &dconn_opts);
+
+    printf("Core.. disconnected... %s\n", cs->mqtthost[indx]);
+    cs->mqttenabled[indx] = false;
 }
 
 
@@ -190,7 +223,7 @@ void core_set_subscription(corestate_t *cs, int level)
     mqtt_subscribe(cs->mqttserv[level], "/level/func/reply/#");
     mqtt_subscribe(cs->mqttserv[level], "/mach/func/request");
             // Subscribe to the "go" topic for sync purpose.
-    mqtt_subscribe(cs->mqttserv[level], "admin/request/Go");
+    mqtt_subscribe(cs->mqttserv[level], "/admin/request/go");
 }
 
 

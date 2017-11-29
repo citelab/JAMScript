@@ -1,0 +1,258 @@
+#!/bin/sh
+
+# Edit the following locations to provide the
+MOSQUITTO=/usr/local/sbin/mosquitto
+MOSQUITTO_PUB=/usr/local/bin/mosquitto_pub
+
+# No need to edit below this line unless you find a bug!
+
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+show_usage() {
+    cat << EOF
+Usage: runj file.jxe [--app=appl_name] [--fog|--cloud]
+                            [--port=port_number] [--data=data-url]
+                            [--tags=quoted_list_of_tags]
+                            [--group=group_name]
+                            [--force]
+
+The runj command instantiates a J node from file.jxe (JAM executable).
+If no type (fog or cloud) specified, a device J node will be started.
+The --port option is useful to start multiple J nodes in the same machine.
+The runj command will start the MQTT broker in that port if the broker is not
+running at the time. The MQTT broker will continue to run after the application
+has completed execution. The --data option takes a URL pointing to the data
+depot (Redis instance) to be used by the jdata subsystem. The url could be
+as simple as an IP address (127.0.0.1) of the Redis instance (assuming default
+port).
+
+Use the --force option to reopen the executable file. This should be used after
+recompiling the JAMScript program. Use the --tags option to pass initial
+tags to the program (equivalent to a command line argument - a single string).
+If you want to start multiple device clusters (a cluster is a J node with its
+own set of C nodes), use the --group option. The J node and C nodes should have
+matching --group specification.
+
+EOF
+}
+
+# Initialize all the option variables.
+app=testapp
+port=1883
+type=device
+data=127.0.0.1
+force=
+tags=
+group="."
+
+file=$1
+shift
+fext="${file##*.}"
+
+if [ -z $file ] || [ $file = "-h" ]; then
+    show_usage
+    exit 1
+fi
+
+if [ "$fext" != "jxe" ]; then
+    die "Extension on $file is not .jxe"
+fi
+
+# Check the required commands..
+if [ ! -e $MOSQUITTO ]; then
+    die "Mosquitto MQTT broker $MOSQUITTO not found. Set new location."
+fi
+if [ ! -e $MOSQUITTO_PUB ]; then
+    die "Mosquitto tools $MOSQUITTO_PUB not found. Set new location."
+fi
+
+
+while :; do
+    case $1 in
+        -h|-\?|--help)
+            show_usage      # Display a usage synopsis.
+            exit
+            ;;
+        -a|--app)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                app=$2
+                shift
+            else
+                die 'ERROR: "--app" requires a non-empty option argument.'
+            fi
+            ;;
+        --app=?*)
+            app=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --app=)            # Handle the case of an empty
+            die 'ERROR: "--app" requires a non-empty option argument.'
+            ;;
+        -s|--tags)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                tags=$2
+                shift
+            else
+                die 'ERROR: "--tags" requires a non-empty option argument.'
+            fi
+            ;;
+        --tags=?*)
+            tags=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --tags=)            # Handle the case of an empty
+            die 'ERROR: "--tags" requires a non-empty option argument.'
+            ;;
+        -p|--port)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                port=$2
+                shift
+            else
+                die 'ERROR: "--port" requires a non-empty option argument.'
+            fi
+            ;;
+        --port=?*)
+            port=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --port=)            # Handle the case of an empty
+            die 'ERROR: "--port" requires a non-empty option argument.'
+            ;;
+        -d|--data)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                data=$2
+                shift
+            else
+                die 'ERROR: "--data" requires a non-empty option argument.'
+            fi
+            ;;
+        --data=?*)
+            data=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --data=)            # Handle the case of an empty
+            die 'ERROR: "--data" requires a non-empty option argument.'
+            ;;
+        -g|--group)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                group=$2
+                shift
+            else
+                die 'ERROR: "--group" requires a non-empty option argument.'
+            fi
+            ;;
+        --group=?*)
+            group=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --group=)            # Handle the case of an empty
+            die 'ERROR: "--group" requires a non-empty option argument.'
+            ;;
+        -f|--fog)
+            if [ "$type" != "device" ]; then
+                die 'ERROR: "type" cannot be reassigned.'
+            else
+                type="fog"
+            fi
+            ;;
+        -c|--cloud)
+            if [ "$type" != "device" ]; then
+                die 'ERROR: "type" cannot be reassigned.'
+            else
+                type="cloud"
+            fi
+            ;;
+        -r|--force)
+            force=1
+            ;;
+        --)              # End of all options.
+            shift
+            break
+        ;;
+        -?*)
+            printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+            ;;
+        *)               # Default case: No more options, so break out of the loop.
+            break
+    esac
+
+    shift
+done
+
+
+if [ "$type" != "device" ] && [ -n "$num" ]; then
+    die "number of devices can't be speciied for fog/cloud"
+fi
+
+
+if [ -e "$file" ]; then
+
+    # Check whether the MQTT server is running.. if not start it
+    $MOSQUITTO_PUB -p $port -t "test" -m "hello"
+    if [ $? -ne 0 ]; then
+        echo "MQTT is not running at " $port
+        echo "Attempting to start MQTT at" $port
+        $MOSQUITTO -p $port &
+    fi
+
+    # Get the folder
+    filenoext="${file%.*}"
+    folder=$filenoext"_"$app
+    if [ ! -d "$folder" ]; then
+        mkdir $folder
+    fi
+
+    # unzip the executable in the folder and run it..
+    if [ -n "$force" ]; then
+        unzip $file -d $folder
+        if [ $? -ne 0 ]; then
+            die "Problem reading file: $file"
+        fi
+    else
+        if [ ! -e $folder/jamout.js ] && [ ! -e $folder/a.out ]; then
+            unzip $file -d $folder
+            if [ $? -ne 0 ]; then
+                die "Problem reading the file: $file"
+            fi
+        fi
+    fi
+
+    cd $folder
+    if [ $group != "." ]; then
+        mkdir $group
+        cd $group
+        ln -s ../jamout.js jamout.js
+        ln -s ../a.out a.out
+    fi
+
+    if [ -e jamout.js ]; then
+        # execute the program.. we are in the folder..
+        case $type in
+            cloud)
+                if [ -z "$tags" ]; then
+                    node jamout.js --app=$app --cloud --port=$port --data=$data
+                else
+                    node jamout.js --app=$app --cloud --port=$port --data=$data --tags=$tags
+                fi
+                ;;
+            fog)
+                if [ -z "$tags" ]; then
+                    node jamout.js --app=$app --fog --port=$port --data=$data
+                else
+                    node jamout.js --app=$app --fog --port=$port --data=$data --tags=$tags
+                fi
+                ;;
+            device)
+                if [ -z "$tags" ]; then
+                    node jamout.js --app=$app --port=$port --data=$data
+                else
+                    node jamout.js --app=$app --port=$port --data=$data --tags="$tags"
+                fi
+                ;;
+        esac
+    else
+        die "Not a valid .jxe file"
+    fi
+
+else
+    die ".jxe file not found"
+fi

@@ -43,7 +43,7 @@ timertype_t *timer_init(char *name)
         tmr->events[i] = NULL;
 
     tmr->numevents = 0;
-    tmr->timerqueue = queue_new(true);
+    tmr->timerqueue = queue_new(false);
     tmr->name = strdup(name);
 
     int rval = pthread_create(&(tmr->tmrthread), NULL, timer_loop, (void *)tmr);
@@ -312,5 +312,5 @@ double getcurtime()
     struct timeval tp;
 
     gettimeofday(&tp, NULL);
-    return tp.tv_sec * 1.0 +  tp.tv_usec / 1.0e6;    
+    return tp.tv_sec * 1.0 +  tp.tv_usec / 1.0e6;
 }

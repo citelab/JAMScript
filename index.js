@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var fs = require('fs'),
-    // JSZip = require('jszip'),
+    JSZip = require('jszip'),
     child_process = require('child_process'),
     crypto = require('crypto'),
     path = require('path'),
@@ -11,7 +11,8 @@ var fs = require('fs'),
 var preprocessDecls;
 
 // Flags
-var debug = false,
+var callGraphFlag = false,
+    debug = false,
     noCompile = false,
     // parseOnly = false,
     preprocessOnly = false,
@@ -24,29 +25,38 @@ var args = process.argv.slice(2);
 var tmpDir = "/tmp/jam-" + randomValueHex(20);
 var cPath;
 var jsPath;
+var outPath;
 
 for (var i = 0; i < args.length; i++) {
   if(args[i].charAt(0) === "-") {
-    if(args[i] === "-D") { // Debug mode
+    if(args[i] === "-D" || args[i] === "-d") { // Debug mode
       debug = true;
-    } else if(args[i] === "-help") { // help
+    } else if(args[i] === "-h") { // help
       printHelp();
     } else if(args[i] === "-N") { // Don't compile
       noCompile = true;
+    } else if(args[i] === "-o") { // Output name
+      outPath = args[i+1];
     } else if(args[i] === "-P") { // Preprocessor only
       preprocessOnly = true;
     } else if(args[i] === "-V") { // Verbose
       verbose = true;
+    } else if(args[i] === "--analyze") { // Generate call graph files
+      callGraphFlag = true;
+    }
     // } else if(args[i] === "-T") { // Translator only
     //   translateOnly = true;
     // } else if(args[i] === "-A") { // Parser only
     //   parseOnly = true;
-    }
+    // }
   } else {
     var inputPath = args[i];
     var extension = path.extname(inputPath);
     if(extension === '.js') {
       jsPath = inputPath;
+      if(outPath === undefined) {
+      	outPath = path.basename(inputPath, '.js');
+      }
     } else if(extension === '.c') {
       cPath = inputPath;
     }
@@ -90,8 +100,10 @@ try {
 
   var results = jam.compile(preprocessed, fs.readFileSync(jsPath).toString());
 
-  fs.writeFileSync("callgraph.html", callGraph.createWebpage());
-  fs.writeFileSync("callgraph.dot", callGraph.createDOT());
+  if(callGraphFlag) {
+    fs.writeFileSync("callgraph.html", callGraph.createWebpage());
+    fs.writeFileSync("callgraph.dot", callGraph.createDOT());
+  }
 
   // if(translateOnly) {
   //   printAndExit(output);
@@ -103,7 +115,7 @@ try {
   // fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/testjam').pipe(fs.createWriteStream('jamout'));
   // fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/jamconf.dat').pipe(fs.createWriteStream('jamconf.dat'));
 
-  fs.writeFileSync("jamout.js", results.JS);
+  // fs.writeFileSync("jamout.js", results.JS);
 
   if(!noCompile) {
     var tasks = [
@@ -112,10 +124,11 @@ try {
     ];
 
     // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
-    Promise.all(tasks).then(function(results) {
+    Promise.all(tasks).then(function(value) {
+      createZip(results.JS, tmpDir, outPath);
       if(!debug) {
-        for(var i = 0; i < results.length; i++) {
-          console.log(results[i]);
+        for(var i = 0; i < value.length; i++) {
+          console.log(value[i]);
         }
         deleteFolderRecursive(tmpDir);
       }
@@ -139,6 +152,9 @@ function compile(code, verbose) {
       // Linux
       options = "-lm -lbsd";
     }
+    if(debug) {
+      options += " -fno-omit-frame-pointer -fsanitize=address";
+    }
     var includes = '#include "jam.h"\n';
     includes = '#include "command.h"\n' + includes;
     includes = '#include "jamdata.h"\n' + includes;
@@ -147,7 +163,7 @@ function compile(code, verbose) {
     fs.writeFileSync("jamout.c", includes + preprocessDecls.join("\n") + "\n" + code);
     fs.writeFileSync(`${tmpDir}/jamout.c`, includes + preprocessDecls.join("\n") + "\n" + code);
     try {
-      var command = `clang -g ${tmpDir}/jamout.c -I/usr/local/include -I/usr/local/share/jam/lib/ ${options} -pthread -lcbor -lnanomsg /usr/local/lib/libjam.a -ltask -levent -lhiredis -lmujs -L/usr/local/lib -lpaho-mqtt3a`;
+      var command = `clang -g ${tmpDir}/jamout.c -o ${tmpDir}/a.out -I/usr/local/include -I/usr/local/share/jam/lib/ ${options} -pthread -lcbor -lnanomsg /usr/local/lib/libjam.a -ltask -levent -lhiredis -lmujs -L/usr/local/lib -lpaho-mqtt3a`;
       console.log("Compiling C code...");
       if(verbose) {
         console.log(command);
@@ -223,13 +239,13 @@ function flowCheck(input, verbose) {
   });
 }
 
-// function createZip(toml, jsout, tmpDir, outputName) {
-//   var zip = new JSZip();
-//   zip.file("MANIFEST.tml", toml);
-//   zip.file("jamout.js", fs.readFileSync('/usr/local/share/jam/lib/jserver/jserver-clean.js') + jsout);
-//   zip.file("libjamout.so", fs.readFileSync(`${tmpDir}/libjamout.so`));
-//   fs.writeFileSync(`${outputName}.jxe`, zip.generate({type:"nodebuffer"}));
-// }
+function createZip(jsout, tmpDir, outputName) {
+  var zip = new JSZip();
+  // zip.file("MANIFEST.tml", toml);
+  zip.file("jamout.js", jsout);
+  zip.file("a.out", fs.readFileSync(`${tmpDir}/a.out`));
+  zip.generateNodeStream({type:'nodebuffer',streamFiles:true}).pipe(fs.createWriteStream(`${outputName}.jxe`));
+}
 
 // function createTOML() {
 //   var toml = "";
@@ -290,8 +306,9 @@ function printHelp() {
   console.log("\nOptions:");
   console.log("\t-A \t\t\t Parser only");
   console.log("\t-D \t\t\t Debug mode");
-  console.log("\t-help \t\t\t Display available options");
+  console.log("\t-h \t\t\t Display available options");
   console.log("\t-N \t\t\t Skip compilation");
+  console.log("\t-o \t\t\t Set jxe output name");
   console.log("\t-P \t\t\t Preprocessor only");
   console.log("\t-V \t\t\t Verbose mode");
   console.log("\t-T \t\t\t Translator only");
