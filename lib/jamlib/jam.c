@@ -186,8 +186,6 @@ void jam_event_loop(void *arg)
                     activity_thread_t *athr = athread_getbyindx(js->atable, jact->jindx);
                     pqueue_enq(athr->inq, cmd, sizeof(command_t));
                 }
-                else
-                    printf("ERROR! Unable to find a free Activity handler to start %s", cmd->actname);
             }
             else if (strcmp(cmd->cmd, "REXEC-SYN") == 0) {
 

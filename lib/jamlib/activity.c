@@ -514,7 +514,7 @@ jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
         jact->remote = remote;
         while ((athr = athread_get(at, jact->jindx)) == NULL)
         {
-            printf("Waiting in activity_new ....\n");
+
             taskdelay(10);
             count--;
             if (count <= 0)
@@ -522,7 +522,6 @@ jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
                 if (odcount > ODCOUNT_MIN)
                     odcount -= ODCOUNT_DOWNVAL;
                 free(jact);
-                printf("Returning........\n");
                 return NULL;
             }
         }
@@ -554,7 +553,6 @@ jactivity_t *activity_renew(activity_table_t *at, jactivity_t *jact)
         // The activity does not have a thread .. we need renewal
         while ((athr = athread_get(at, jact->jindx)) == NULL)
         {
-            printf("Waiting in renew.. \n");
             taskdelay(10);
             // Wait until we get a thread..
             count--;
