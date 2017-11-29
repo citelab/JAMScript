@@ -7,7 +7,7 @@ die() {
 
 show_usage() {
     cat << EOF
-Usage: runc file.jxe -a appl_name -n number
+Usage: runc file.jxe -a appl_name -n number -g group_name
 
 The runc command runs the C component of the file.jxe (JAM executable).
 EOF
@@ -16,6 +16,7 @@ EOF
 # Initialize all the option variables.
 app=testapp
 num=1
+group="."
 
 file=$1
 shift
@@ -65,6 +66,20 @@ while :; do
         --num=)            # Handle the case of an empty
             die 'ERROR: "--num" requires a non-empty option argument.'
             ;;
+        -g|--group)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                group=$2
+                shift
+            else
+                die 'ERROR: "--group" requires a non-empty option argument.'
+            fi
+            ;;
+        --group=?*)
+            group=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --group=)            # Handle the case of an empty
+            die 'ERROR: "--group" requires a non-empty option argument.'
+            ;;
         --)              # End of all options.
             shift
             break
@@ -79,6 +94,7 @@ while :; do
     shift
 done
 
+echo $num
 
 if [ -e "$file" ]; then
 
@@ -90,6 +106,9 @@ if [ -e "$file" ]; then
     fi
 
     cd $folder
+    if [ $group != "." ]; then
+        cd $group
+    fi
     if [ -e a.out ]; then
         # execute the program.. we are in the folder..
         chmod +x a.out

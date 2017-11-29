@@ -17,16 +17,25 @@ show_usage() {
 Usage: runj file.jxe [--app=appl_name] [--fog|--cloud]
                             [--port=port_number] [--data=data-url]
                             [--tags=quoted_list_of_tags]
+                            [--group=group_name]
                             [--force]
 
-The runj command runs the J component of the file.jxe (JAM executable).
-You can only run one instance of a executable under a given name.
-If no type (fog or cloud) specified, a device J component will be started.
-The --port option is useful to start multiple J components in the same machine.
+The runj command instantiates a J node from file.jxe (JAM executable).
+If no type (fog or cloud) specified, a device J node will be started.
+The --port option is useful to start multiple J nodes in the same machine.
 The runj command will start the MQTT broker in that port if the broker is not
 running at the time. The MQTT broker will continue to run after the application
 has completed execution. The --data option takes a URL pointing to the data
-depot (Redis instance) to be used by the jdata subsystem.
+depot (Redis instance) to be used by the jdata subsystem. The url could be
+as simple as an IP address (127.0.0.1) of the Redis instance (assuming default
+port).
+
+Use the --force option to reopen the executable file. This should be used after
+recompiling the JAMScript program. Use the --tags option to pass initial
+tags to the program (equivalent to a command line argument - a single string).
+If you want to start multiple device clusters (a cluster is a J node with its
+own set of C nodes), use the --group option. The J node and C nodes should have
+matching --group specification.
 
 EOF
 }
@@ -38,6 +47,7 @@ type=device
 data=127.0.0.1
 force=
 tags=
+group="."
 
 file=$1
 shift
@@ -123,6 +133,20 @@ while :; do
         --data=)            # Handle the case of an empty
             die 'ERROR: "--data" requires a non-empty option argument.'
             ;;
+        -g|--group)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                group=$2
+                shift
+            else
+                die 'ERROR: "--group" requires a non-empty option argument.'
+            fi
+            ;;
+        --group=?*)
+            group=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --group=)            # Handle the case of an empty
+            die 'ERROR: "--group" requires a non-empty option argument.'
+            ;;
         -f|--fog)
             if [ "$type" != "device" ]; then
                 die 'ERROR: "type" cannot be reassigned.'
@@ -193,6 +217,13 @@ if [ -e "$file" ]; then
     fi
 
     cd $folder
+    if [ $group != "." ]; then
+        mkdir $group
+        cd $group
+        ln -s ../jamout.js jamout.js
+        ln -s ../a.out a.out
+    fi
+
     if [ -e jamout.js ]; then
         # execute the program.. we are in the folder..
         case $type in
