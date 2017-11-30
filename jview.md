@@ -25,7 +25,11 @@ The slider widget possesses two modes. Its first mode will emit its new value wh
 
 The button emits to the backend a boolean value and alternates between the values of **true** and **false**.
 
-Like the slider, the button also has two modes. Similarly, the first mode will emit a boolean whenever it is pressed, while the second mode will emit its current state every **interval** of time specified in milliseconds. In the second move, only pressing the button will change its value regardless of how many times it has emitted to the backend.
+Like the slider, the button also has two modes. Similarly, the first mode will emit a boolean whenever it is pressed, while the second mode will emit its current state every **interval** of time specified in milliseconds. Only pressing the button will change its value.
+
+##### Multistate Button
 
 ##### Terminal
+
+The terminal uses a ReactJS component to simulate the real terminal, found [here](https://github.com/nitin42/terminal-in-react)
 
