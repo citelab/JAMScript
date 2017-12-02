@@ -1,9 +1,0 @@
-#include <unistd.h>
-
-
-
-int main() {
-  printf("Registering...");
-  regme("hello", regcallback);
-  return 0;
-}

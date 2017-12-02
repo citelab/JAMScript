@@ -197,10 +197,6 @@ void jamdata_logger_cb(redisAsyncContext *c, void *r, void *privdata)
     //    free(privdata);
     }
 
-    if (js != NULL)
-        printf("JAMScript Not NULL.... devid %s\n", js->cstate->device_id);
-
-
     // Wait on the dataoutq, if it has a data item (key, value) to send
     // to the Redis.. we use the same callback..
     while (1)
