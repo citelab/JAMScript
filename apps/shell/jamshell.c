@@ -76,7 +76,7 @@ jasync getGlobalNodeInfo(char *m, jcallback cb) {
 	printf("Global node info requested...\n");
 	char* res = getAllNodes();
 	printf("%s\n", res);
-	cb(res);
+	//cb(res);
 }
 
 int main() {
