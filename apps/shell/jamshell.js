@@ -192,7 +192,7 @@ shell
       if(args.location == '@device') {
         console.log("Received @device exec command...Executing at device node");
       }
-      if(args.location == 'pipe') {
+      if(args.location == '<>') {
         console.log("Piping command received...Building pipe..");
         executeProgram(args.progPath);
         shellOut.start();
@@ -210,11 +210,9 @@ shell
         console.log("Input redirection command received...");
         executeProgram(args.progPath);
         var inputFilename = args.locationNames[0];
-        // var fileInputFlow = Flow.from("fs://" + process.cwd() + "/" + inputFilename)
-        //   .foreach((line) => console.log(line));
-        var fileInputFlow = Flow.from("fs://" + process.cwd() + "/" + inputFilename)
+        var fileInputFlow = Flow.fromFile(process.cwd() + "/" + inputFilename);
         var shellFileOutflow = new OutFlow("shellFileOutflow", fileInputFlow);
-        shellFileOutflow.addChannel(peek);
+        shellFileOutflow.start();
       }
     }
     callback();
