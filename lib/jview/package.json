@@ -29,7 +29,8 @@
   "dependencies": {
     "fs-path": "0.0.23",
     "js-beautify": "^1.6.14",
-    "ncp": "^2.0.0"
+    "ncp": "^2.0.0",
+    "terminal-in-react": "^3.5.1"
   },
   "homepage": "https://github.com/gazcn007/treeflow#readme"
 }

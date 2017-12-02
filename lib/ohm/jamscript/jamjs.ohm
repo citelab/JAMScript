@@ -69,7 +69,7 @@ JAMJS <: ES6 {
     MemberExpr      = identifier "(" MemberExpr ")"                 -- funcExpr
                     | MemberExpr "." identifier                     -- propRefExp
                     | identifier
-                    | stringLiteral
+                    | literal
 
     jcond_op        = "==" | ">=" | ">" | "<=" | "<" | "!="
 

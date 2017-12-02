@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Edit the following locations to provide the
 MOSQUITTO=/usr/local/sbin/mosquitto
