@@ -22,6 +22,7 @@ To start the C node:
 - `exit` - exits the shell, terminating spawned programs.
 - `exec path/to/progX` - Executes a compiled JAMScript program from the shell. Accepts a relative path to the program.
 - `exec progX > outfile.txt` - Executes a program, redirecting the output to a file.
+- `exec progX < inputFile.txt` - Executes a program, redirecting input from a file.
 - `exec progX <> progY` - Executes program X, piping its output to program Y.
 - `nodes` - Lists the name, and type of the nodes in the encapsulated subtree of the current node.
 - `nodes all` - Lists the name, and type of the nodes in the global tree. Output is displayed from the highest level node.
