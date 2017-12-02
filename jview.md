@@ -31,5 +31,5 @@ Like the slider, the button also has two modes. Similarly, the first mode will e
 
 ##### Terminal
 
-The terminal uses a ReactJS component to simulate the real terminal, found [here](https://github.com/nitin42/terminal-in-react)
+The terminal uses a ReactJS component to simulate the real terminal, found [here](https://github.com/nitin42/terminal-in-react). On pressing the return key, the widget
 
