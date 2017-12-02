@@ -6,7 +6,7 @@ jdata {
 }
 
 jcond {
-    numcheck: y < 15 && z > 2 , notequal;
+    numcheck: y < 15 && z > 2, notequal;
 }
 
 jasync {numcheck} function pong() {
