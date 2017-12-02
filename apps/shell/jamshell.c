@@ -1,4 +1,4 @@
-void* getHealth(char *);
+char* getHealth(char *);
 char* getAllNodes();
 
 struct programInfo {
@@ -75,8 +75,11 @@ jasync forwardHealthCommand(char* node) {
 jasync getGlobalNodeInfo(char *m, jcallback cb) {
 	printf("Global node info requested...\n");
 	char* res = getAllNodes();
-	printf("%s\n", res);
-	cb(res);
+	int i = 1;
+	switch(i) {
+	   case 1:
+		cb(res);
+	}
 }
 
 int main() {
