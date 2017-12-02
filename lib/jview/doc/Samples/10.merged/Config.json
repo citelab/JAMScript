@@ -7,6 +7,7 @@
   },
   "path" : "./app",
   "port" : "3000",
+  "maxMemorySize" : "30",
   "pages" : [
     {
       "name" : "Dashboard",
