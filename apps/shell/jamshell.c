@@ -42,6 +42,9 @@ void* startC(void *pinfo) {
         free(info);
         return 0;
 }
+
+
+
 /**
 * Takes care of spawning the pthread to exec the C node of pname
 * @param name of the program to exec
@@ -69,9 +72,10 @@ jasync forwardHealthCommand(char* node) {
 	getHealth(node);
 }
 
-jasync getGlobalNodeInfo() {
+jasync getGlobalNodeInfo(char *m, jcallback cb) {
 	printf("Global node info requested...\n");
-	getAllNodes();
+	char* res = getAllNodes();
+	cb(res);
 }
 
 int main() {
