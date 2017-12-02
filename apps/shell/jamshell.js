@@ -73,9 +73,10 @@ jasync function getHealth(node) {
   //displayHealth(node);
 }
 
-jasync {cloudonly} function getAllNodes() {
+jsync {cloudonly} function getAllNodes() {
   console.log("Cloud received node info command...");
-  getNodeInfo();
+  var nodeInfo = JSON.stringify(getNodeInfo());
+  return nodeInfo;
 }
 
 /**----------------HELPER FUNCTIONS-------------------------------**/
@@ -111,12 +112,12 @@ jasync{deviceonly} function executeProgram(path) {
 */
 var getNodeInfo = function(key,entry) {
   var i = 0;
+  var nodeList = [];
   while(nodeInfo[i] !== undefined && !nodeInfo[i].isEmpty()) {
-    console.log(i,'key: ',nodeInfo[i].key);
-    // console.log('data',nodeInfo[i].lastData());
-    // console.log('value',nodeInfo[i].lastValue());
+    nodeList.push(nodeInfo[i].lastValue());
     i++;
   }
+  return nodeList;
 }
 
 /**
@@ -175,6 +176,10 @@ function peek(raw) {
   console.log(raw.data);
 }
 
+function q(m) {
+  console.log("unique:",m);
+}
+
 /**----------------SPECIAL COMMANDS-------------------------------**/
 shell
   .command('exec <progPath> [location] [locationNames...]', 'Execute a JAMProgram')
@@ -227,7 +232,7 @@ shell
     }
     if(args.location == 'all') {
       console.log("Displaying global node info....");
-      getGlobalNodeInfo();
+      getGlobalNodeInfo("",q);
     }
     callback();
   });

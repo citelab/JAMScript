@@ -1,5 +1,5 @@
 void* getHealth(char *);
-void* getAllNodes();
+char* getAllNodes();
 
 struct programInfo {
 	char* path;
@@ -42,6 +42,9 @@ void* startC(void *pinfo) {
         free(info);
         return 0;
 }
+
+
+
 /**
 * Takes care of spawning the pthread to exec the C node of pname
 * @param name of the program to exec
@@ -69,9 +72,11 @@ jasync forwardHealthCommand(char* node) {
 	getHealth(node);
 }
 
-jasync getGlobalNodeInfo() {
+jasync getGlobalNodeInfo(char *m, jcallback cb) {
 	printf("Global node info requested...\n");
-	getAllNodes();
+	char* res = getAllNodes();
+	printf("%s\n", res);
+	//cb(res);
 }
 
 int main() {
