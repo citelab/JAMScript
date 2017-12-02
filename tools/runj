@@ -1,8 +1,15 @@
 #!/bin/bash
 
 # Edit the following locations to provide the
-MOSQUITTO=/usr/local/sbin/mosquitto
-MOSQUITTO_PUB=/usr/local/bin/mosquitto_pub
+MOSQUITTO=`which mosquitto`
+if [ -z $MOSQUITTO ]; then
+    MOSQUITTO=/usr/local/sbin/mosquitto
+fi
+MOSQUITTO_PUB=`which mosquitto_pub`
+if [ -z $MOSQUITTO_PUB ]; then
+    MOSQUITTO_PUB=/usr/local/bin/mosquitto_pub
+fi
+
 
 # No need to edit below this line unless you find a bug!
 

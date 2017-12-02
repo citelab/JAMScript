@@ -1,7 +1,10 @@
 #!/bin/bash
 
 # Edit the following locations to provide the
-TMUX=/usr/local/bin/tmux
+TMUX=`which tmux`
+if [ -z $TMUX ]; then
+    TMUX=/usr/local/bin/tmux
+fi
 
 # No need to edit below this line unless you find a bug!
 
