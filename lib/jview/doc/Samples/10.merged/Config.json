@@ -47,7 +47,31 @@
           "type": "Controller",
           "controlList": [
             {
-              "id": "5",
+              "id": "2",
+              "type": "button",
+              "dispLabel": "On",
+              "className": "btn-primary",
+              "value": "currentValue1",
+              "valueName": "currentValue1",
+              "trigger": "emitValue",
+              "disabled": "disabledState1",
+              "mode": 0,
+              "interval": 3000
+            },
+            {
+              "id": "3",
+              "type": "button",
+              "dispLabel": "Off",
+              "className": "btn-primary",
+              "value": "currentValue2",
+              "valueName": "currentValue2",
+              "trigger": "emitValue",
+              "disabled": "disabledState2",
+              "mode": 0,
+              "interval": 3000
+            },
+            {
+              "id": "1",
               "type": "terminal",
               "dispLabel": "terminal",
               "commandsList": "commands",
@@ -61,7 +85,11 @@
             "socket": {
               "id": 0
             },
-            "commands": []
+            "commands": [],
+            "currentValue1": false,
+            "disabledState1": false,
+            "currentValue2": false,
+            "disabledState2": true
           }
         } 
       ]
