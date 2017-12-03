@@ -75,11 +75,16 @@ jasync forwardHealthCommand(char* node) {
 jasync getGlobalNodeInfo(char *m, jcallback cb) {
 	printf("Global node info requested...\n");
 	char* res = getAllNodes();
+<<<<<<< HEAD
 	int i = 1;
 	switch(i) {
 	   case 1:
 		cb(res);
 	}
+=======
+	printf("%s\n", res);
+	//cb(res);
+>>>>>>> 7609e7f4519af5202935ecb4aa9fdf376af0d327
 }
 
 int main() {
