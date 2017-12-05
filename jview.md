@@ -39,7 +39,7 @@ The slider widget possesses two modes. Its first mode will emit its new value wh
 			"valueName": "presentValueName", // This is a string that refers to the variable in the store
 			"trigger": "emitValue", // Callback. This specific one will emit to the backend
 			"mode": 0, // 0: triggers on change 1: triggers every interval
-			"interval": 500 // Interval in milliseconds. Won't do anything if mode = 0
+			"interval": 500 // Interval in milliseconds. Inactive if mode = 0
 		}
 	],
 	store: {
