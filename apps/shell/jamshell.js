@@ -125,7 +125,7 @@ function executeProgram(path) {
         function(data) {
             console.log('' + data);
         });
-    execProg(progPath, progName);
+    execProg(pathlib.resolve(progPath), progName);
 }
 
 /**
