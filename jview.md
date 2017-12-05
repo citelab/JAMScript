@@ -57,8 +57,8 @@ The above is an example of the configuration necessary for a slider, in the _Con
 ```shell
 // Example of what the slider emits to the backend
 {
-	id: "1",
-	value: 50 // The value is the value at the new position of the slider.
+	"id": "1",
+	"value": 50 // The value is the value at the new position of the slider.
 }
 ```
 
@@ -99,8 +99,8 @@ Like the slider, the button also has two modes. Similarly, the first mode will e
 ```shell
 // Example of what the button emits to the backend
 {
-	id: "1",
-	value: true // The value alternates between true and false.
+	"id": "1",
+	"value": true // The value alternates between true and false.
 }
 ```
 
@@ -146,8 +146,8 @@ The multistate button is a button that can have more states than *true* or *fals
 ```shell
 // Example of what the multistate button emits to the backend
 {
-	id: "1",
-	value: "some string" // The value can be anything specified in the Config.json file.
+	"id": "1",
+	"value": "some string" // The value can be anything specified in the Config.json file.
 }
 ```
 
@@ -158,8 +158,8 @@ The terminal uses a ReactJS component to simulate the real terminal, found [here
 ```shell
 // Example of what the terminal emits to the backend
 {
-	id: "1",
-	value: "./a.out" // The value is any string passed into the terminal.
+	"id": "1",
+	"value": "./a.out" // The value is any string passed into the terminal.
 }
 ```
 
