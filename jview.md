@@ -41,10 +41,18 @@ The slider widget possesses two modes. Its first mode will emit its new value wh
 			"mode": 0, // 0: triggers on change 1: triggers every interval
 			"interval": 500 // Interval in milliseconds. Won't do anything if mode = 0
 		}
-	]
+	],
+	store: {
+		"maxValueName": 100,
+		"minValueName": 0,
+		"stepValueName": 5,
+		"presentValueName": 50
+	}
 }
 ...
 ```
+
+The above is an example of the configuration necessary for a slider, in the _Config.json_ file. The store values will be placed in the ControllerStore.js' map property. The store is necessary to make the button work. The *trigger* property contains the callback of the slider. *emitValue* is a predefined one that will send a message of the shape below through a web socket.
 
 ```shell
 // Example of what the slider emits to the backend
