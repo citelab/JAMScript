@@ -21,15 +21,43 @@ The slider is a simple HTML5 input element that can be controlled by clicking on
 
 The slider widget possesses two modes. Its first mode will emit its new value whenever it is moved. The second mode will emit the current value every **interval** of time specified in milliseconds. Moving the slider in the second mode will not stream to the backend until the next interval of time.
 
+```shell
+{
+	id: "1",
+	value: 50 // The value is the value at the new position of the slider.
+}
+```
+
 ##### Button
 
 The button emits to the backend a boolean value and alternates between the values of **true** and **false**.
 
 Like the slider, the button also has two modes. Similarly, the first mode will emit a boolean whenever it is pressed, while the second mode will emit its current state every **interval** of time specified in milliseconds. Only pressing the button will change its value.
 
+```shell
+{
+	id: "1",
+	value: true // The value alternates between true and false.
+}
+```
+
 ##### Multistate Button
+
+```shell
+{
+	id: "1",
+	value: 100 // The value can be anything specified in the Config.json file.
+}
+```
 
 ##### Terminal
 
-The terminal uses a ReactJS component to simulate the real terminal, found [here](https://github.com/nitin42/terminal-in-react). On pressing the return key, the widget
+The terminal uses a ReactJS component to simulate the real terminal, found [here](https://github.com/nitin42/terminal-in-react). On pressing the return key, the widget will emit the command along with the terminal's ID.
+
+```shell
+{
+	id: "1",
+	value: "./a.out" // The value is any string passed into the terminal.
+}
+```
 
