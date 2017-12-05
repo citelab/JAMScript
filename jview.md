@@ -21,7 +21,7 @@ The slider is a simple HTML5 input element that can be controlled by clicking on
 
 The slider widget possesses two modes. Its first mode will emit its new value whenever it is moved. The second mode will emit the current value every **interval** of time specified in milliseconds. Moving the slider in the second mode will not stream to the backend until the next interval of time.
 
-###### Examples
+###### Example
 
 ```shell
 // Full example can be found in sample 9.
@@ -42,7 +42,7 @@ The slider widget possesses two modes. Its first mode will emit its new value wh
 			"interval": 500 // Interval in milliseconds. Inactive if mode = 0
 		}
 	],
-	store: {
+	"store": {
 		"maxValueName": 100,
 		"minValueName": 0,
 		"stepValueName": 5,
@@ -52,7 +52,7 @@ The slider widget possesses two modes. Its first mode will emit its new value wh
 ...
 ```
 
-The above is an example of the configuration necessary for a slider, in the _Config.json_ file. The store values will be placed in the ControllerStore.js' map property. The store is necessary to make the button work. The *trigger* property contains the callback of the slider. *emitValue* is a predefined one that will send a message of the shape below through a web socket.
+The above is an example of the configuration necessary for a slider, in the _Config.json_ file. The store values will be placed in the ControllerStore.js' map property. The store is necessary to make the button work. The *trigger* property contains the callback of the slider. *emitValue* (See StoreGenerator.js) is a predefined one that will send a message of the shape below through a web socket.
 
 ```shell
 // Example of what the slider emits to the backend
@@ -67,6 +67,34 @@ The above is an example of the configuration necessary for a slider, in the _Con
 The button emits to the backend a boolean value and alternates between the values of **true** and **false**.
 
 Like the slider, the button also has two modes. Similarly, the first mode will emit a boolean whenever it is pressed, while the second mode will emit its current state every **interval** of time specified in milliseconds. Only pressing the button will change its value.
+
+###### Examples
+
+```shell
+// Full example can be found in sample 9 and 10.
+...
+{
+	"controlList": [
+		{
+			"id": "1",
+			"type": "button",
+			"dispLabel": "The button's name",
+			"className": "btn-primary", // refer to bootstrapJS doc
+			"value": "presentValueName", // This is a string that refers to the variable in the store
+			"valueName": "presentValueName", // This is a string that refers to the variable in the store
+			"trigger": "emitValue", // Callback. This specific one will emit to the backend
+			"disabled": "disabledStateName" 
+			"mode": 0, // 0: triggers on change 1: triggers every interval
+			"interval": 500 // Interval in milliseconds. Inactive if mode = 0
+		}
+	],
+	"store": {
+		"presentValueName": true // boolean only
+		"disabledStateName": false // boolean only. Button is disabled if true.
+	}
+}
+...
+```
 
 ```shell
 // Example of what the button emits to the backend
