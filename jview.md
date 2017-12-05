@@ -52,7 +52,7 @@ The slider widget possesses two modes. Its first mode will emit its new value wh
 ...
 ```
 
-The above is an example of the configuration necessary for a slider, in the _Config.json_ file. The store values will be placed in the ControllerStore.js' map property. The store is necessary to make the button work. The *trigger* property contains the callback of the slider. *emitValue* (See StoreGenerator.js) is a predefined one that will send a message of the shape below through a web socket.
+The above is an example of the configuration necessary for a slider, in the _Config.json_ file. The store values will be placed in the _ControllerStore.js_' map property. The store is necessary to make the button work. The *trigger* property contains the callback of the slider. *emitValue* (See _StoreGenerator.js_) is a predefined one that will send a message of the shape below through a web socket.
 
 ```shell
 // Example of what the slider emits to the backend
@@ -106,13 +106,48 @@ Like the slider, the button also has two modes. Similarly, the first mode will e
 
 ##### Multistate Button
 
+The multistate button is a button that can have more states than *true* or *false*. The button will NOT alternate between states on click. On the click event, it will emit whatever value is associated to the current state, as defined in the _Config.json_. *See sections below to see how to change the state of the button*.
 
+###### Examples
+
+```shell
+// Full example can be found in sample 9 and 11.
+...
+{
+	"controlList": [
+		{
+			"id": "1",
+			"type": "multiStateButton",
+			"dispLabel": "The button's name",
+			"className": "btn-primary", // refer to bootstrapJS doc
+			"states": [
+				{
+					"state_1": 1 // key is the name of the state. Value is the value emitted and can be anything
+				},
+				{
+					"state_two": "some string" // The key will be on the button
+				},
+				{
+					"On/Off": "5000" // The key can be any string. Key can be string/int
+				}
+			}
+			]
+			"trigger": "emitValue", // Callback. This specific one will emit to the backend,
+			"state": "currentState" // This is a string that refers to the variable in the store
+		}
+	],
+	"store": {
+		"currentState": "state_1"
+	}
+}
+...
+```
 
 ```shell
 // Example of what the multistate button emits to the backend
 {
 	id: "1",
-	value: 100 // The value can be anything specified in the Config.json file.
+	value: "some string" // The value can be anything specified in the Config.json file.
 }
 ```
 
