@@ -52,7 +52,7 @@ The slider widget possesses two modes. Its first mode will emit its new value wh
 ...
 ```
 
-The above is an example of the configuration necessary for a slider, in the _Config.json_ file. The store values will be placed in the _ControllerStore.js_' map property. The store is necessary to make the button work. The *trigger* property contains the callback of the slider. *emitValue* (See _StoreGenerator.js_) is a predefined one that will send a message of the shape below through a web socket.
+The above is an example of the configuration necessary for a slider, in the _Config.json_ file. The store values will be placed in the _ControllerStore.js_' map property. The store is necessary to make the button work. The **trigger** property contains the callback of the slider. **emitValue** (See _StoreGenerator.js_) is a predefined one that will send a message of the shape below through a web socket.
 
 ```shell
 // Example of what the slider emits to the backend
@@ -106,7 +106,7 @@ Like the slider, the button also has two modes. Similarly, the first mode will e
 
 ##### Multistate Button
 
-The multistate button is a button that can have more states than *true* or *false*. The button will NOT alternate between states on click. On the click event, it will emit whatever value is associated to the current state, as defined in the _Config.json_. *See sections below to see how to change the state of the button*.
+The multistate button is a button that can have more states than *true* or **false**. The button will NOT alternate between states on click. On the click event, it will emit whatever value is associated to the current state, as defined in the _Config.json_. **See sections below to see how to change the state of the button**.
 
 ###### Examples
 
@@ -153,7 +153,30 @@ The multistate button is a button that can have more states than *true* or *fals
 
 ##### Terminal
 
-The terminal uses a ReactJS component to simulate the real terminal, found [here](https://github.com/nitin42/terminal-in-react). On pressing the return key, the widget will emit the command along with the terminal's ID.
+The terminal uses a ReactJS component to simulate the real terminal, found [here](https://github.com/nitin42/terminal-in-react). On pressing the return key, the widget will emit the command along with the terminal's ID. **STDOUT** and **STDERR** will be sent back to the terminal when the command terminates.
+
+###### Examples
+
+```shell
+// Full example can be found in sample 9 and 10.
+...
+{
+	"controlList": [
+		{
+			"id": "1",
+			"type": "multiStateButton",
+			"dispLabel": "The button's name",
+			"commandsList": "commands", // Refers to the variable in the store that holds the history of commands
+			"buttonTrigger": "addCommand", // additional callBack. addCommand will add the command to the commandsList
+			"trigger": "emitValue", // Callback. This specific one will emit to the backend
+		}
+	],
+	"store": {
+		"commands": []
+	}
+}
+...
+```
 
 ```shell
 // Example of what the terminal emits to the backend
