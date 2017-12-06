@@ -1,0 +1,120 @@
+{
+  "package" : {
+    "name": "JView",
+    "version": "1.0.0",
+    "description": "A Simple JView system using React+Mobx+Node+MongoDB",
+    "author": "Carl Liu"
+  },
+  "path" : "./app",
+  "port" : "3000",
+  "pages" : [
+    {
+      "name" : "Controller Panel",
+      "route" : "/controller-panel",
+      "layout" : "default",
+      "panels" : [
+        {
+          "type": "Controller",
+          "controlList": [
+            {
+              "id": "1",
+              "type": "slider",
+              "dispLabel": "Controller #1",
+              "max": "maxValue1",
+              "min": "minValue1",
+              "step": "stepValue1",
+              "value": "currentValue1",
+              "valueName": "currentValue1",
+              "trigger": "emitValue",
+              "mode": 0,
+              "interval": 5000
+            },
+            {
+              "id": "2",
+              "type": "slider",
+              "dispLabel": "Controller #2",
+              "max": "maxValue2",
+              "min": "minValue2",
+              "step": "stepValue2",
+              "value": "currentValue2",
+              "valueName": "currentValue2",
+              "trigger": "emitValue",
+              "mode": 0,
+              "interval": 3000
+            },
+            {
+              "id": "3",
+              "type": "button",
+              "dispLabel": "Button #1",
+              "className": "btn-primary",
+              "value": "currentValue3",
+              "valueName": "currentValue3",
+              "trigger": "emitValue",
+              "disabled": "disabledState3",
+              "mode": 0,
+              "interval": 3000
+            },
+            {
+              "id": "6",
+              "type": "button",
+              "dispLabel": "Button #2",
+              "className": "btn-primary",
+              "value": "currentValue4",
+              "valueName": "currentValue4",
+              "trigger": "/Function(function() {this.changeValue('state_3', 'currentState')})/",
+              "disabled": "disabledState4",
+              "mode": 0,
+              "interval": 3000
+            },
+            {
+              "id": "4",
+              "type": "multiStateButton",
+              "dispLabel": "Multi State Button #1",
+              "className": "btn-primary",
+              "states": [
+                {
+                  "state_1": 1
+                },
+                {
+                  "state_2": 2
+                },
+                {
+                  "state_3": 3
+                }
+              ],
+              "state": "currentState",
+              "trigger": "emitValue"
+            },
+            {
+              "id": "5",
+              "type": "terminal",
+              "dispLabel": "terminal",
+              "commandsList": "commands",
+              "buttonTrigger": "addCommand",
+              "trigger": "emitValue"
+            }
+          ],
+          "store": {
+            "socket": {
+              "id": 0
+            },
+            "maxValue1": 100,
+            "minValue1": 0,
+            "stepValue1": 10,
+            "currentValue1": 20,
+            "maxValue2": 100,
+            "minValue2": 0,
+            "stepValue2": 10,
+            "currentValue2": 20,
+            "currentValue3": false,
+            "disabledState3": false,
+            "currentValue4": false,
+            "disabledState4": false,
+            "commands": [],
+            "currentState": "state_1"
+          }
+        } 
+      ]
+    }
+  ]
+}
