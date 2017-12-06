@@ -94,9 +94,6 @@ jsync {cloudonly} function getAllNodes() {
  * Execute a program
  */
 //runj progName.jxe --app=progName
-jasync {
-    deviceonly
-}
 function executeProgram(path) {
     console.log("Executing external JAMProgram...");
     var currPath = process.cwd();
@@ -106,7 +103,7 @@ function executeProgram(path) {
     console.log('Changing directories to program path...');
     process.chdir(progPath);
     console.log('Spawning program...');
-    var child = spawn('runj', [progName + '.jxe', '--app=' + progName]);
+    var child = spawn('runj', [progName + '.jxe', '--app=' + progName, '--data=' + results.data]);
     var job = {
         name: progName,
         pid: child.pid
@@ -341,6 +338,8 @@ process.on('exit', (code) => {
 
 /**----------------SHELL INIT-------------------------------**/
 generateNodeInfo();
+
+var results = shell.parse(process.argv, {use: 'minimist'});
 
 shell
     .delimiter('>>')
