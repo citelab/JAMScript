@@ -67,7 +67,6 @@ function changeDirectory(path) {
 jasync {
     namechk
 }
-
 function displayHealth(node) {
     console.log("JCond broadcast is working!");
     console.log("If this prints, it means jcond succeeded and namechk = nodename");
@@ -83,11 +82,8 @@ function getHealth(node) {
     //displayHealth(node);
 }
 
-jsync {
-    cloudonly
-}
 
-function getAllNodes() {
+jsync {cloudonly} function getAllNodes() {
     console.log("Cloud received node info command...");
     var nodeInfo = JSON.stringify(getNodeInfo());
     return nodeInfo;
@@ -101,7 +97,6 @@ function getAllNodes() {
 jasync {
     deviceonly
 }
-
 function executeProgram(path) {
     console.log("Executing external JAMProgram...");
     var currPath = process.cwd();
