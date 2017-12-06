@@ -249,7 +249,7 @@ shell
     .action(function(args, callback) {
         if (args.location == undefined) {
             console.log("Displaying node info....");
-            getNodeInfo();
+            console.log(getNodeInfo());
         }
         if (args.location == 'all') {
             console.log("Displaying global node info....");
