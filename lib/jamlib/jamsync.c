@@ -118,6 +118,8 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
             if (rargs == NULL)
                 return NULL;
 
+            return rargs;
+            
             command_t *bcmd = command_new_using_cbor("REXEC-SYN", "NRT", condstr, condvec, aname, jact->actid,
                 js->cstate->device_id, arr2, qargs2, i);
             bcmd->cbor_item_list = list2;
@@ -164,14 +166,15 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     activity_thread_t *athr = athread_getbyindx(js->atable, jact->jindx);
 
     // Repeat for three times ... under failure..
-    for (int i = 0; i < 3 && !valid_results; i++)
-    {
+    //for (int i = 0; i < 3 && !valid_results; i++)
+//    {
         // Send the command to the remote side
         // The send is executed via the worker thread..
         queue_enq(athr->outq, cmd, sizeof(command_t));
 
         jam_set_timer(js, jact->actid, timeout);
         nvoid_t *nv = pqueue_deq(athr->resultq);
+        jam_clear_timer(js, jact->actid);
 
         if (nv != NULL)
         {
@@ -192,7 +195,7 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
             }
             free(nv);
         }
-    }
+    //}
 
     // repcode is NULL if there is a failure
     // repcode is not used when jam_sync_runner is used for
