@@ -196,5 +196,24 @@ These widgets trigger the **emitValue** callback. This only emits a message thro
 
 ###### Changing Values
 
-As mentioned in the multistate button section, the backend can change any value contained in the controller store. The example below shows how to:
+As mentioned in the multistate button section, the backend can change any value contained in the controller store's map. This is due to the fact that the store will listen to the websocket **changeValue**. The example below shows the backend sending a message back to the store telling the button with id '2' to change it's disabled state to **true**
+
+```shell
+...
+socket.on('emitValue', body => {
+    console.log(body);
+   	if (body.id === '2') {
+        socket.emit('changeValue', {
+            id: '2',
+            name: 'disabledState1',
+            value: true
+        });
+    }
+});    
+```
+
+###### Samples
+See sample-10 and the NodeGenerator.js from **line 165** to see how the two buttons start processes in the backend, terminates them and changes each other's values.
+See sample-11 and the NodeGenerator.js from **line 203** to see how the multistate button can change state as well as start processes in the backend.
+See sample-9 and the NodeGenerator.js from **line 102** to multiple widgets on a single page interracting with eachother. It should be noted that at **line 64**, there is an example of how to give custom commands to a widget. In this case, the button will change the multistate button to _state_3_ and this is not done through the backend or a websocket.
 
