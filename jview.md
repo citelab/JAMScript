@@ -214,6 +214,8 @@ socket.on('emitValue', body => {
 
 ###### Samples
 See sample-10 and the NodeGenerator.js from **line 165** to see how the two buttons start processes in the backend, terminates them and changes each other's values.
+
 See sample-11 and the NodeGenerator.js from **line 203** to see how the multistate button can change state as well as start processes in the backend.
+
 See sample-9 and the NodeGenerator.js from **line 102** to multiple widgets on a single page interracting with eachother. It should be noted that at **line 64**, there is an example of how to give custom commands to a widget. In this case, the button will change the multistate button to _state_3_ and this is not done through the backend or a websocket.
 
