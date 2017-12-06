@@ -44,8 +44,8 @@ JAMJS <: ES6 {
     Page_name       = name ":" identifier
 
     Disp_spec       = type ":" display_type
-                    | title ":" literal
-                    | options ":" literal
+                    | title ":" stringLiteral
+                    | options ":" stringLiteral
                     | source ":" identifier
 
     display_type    = linegraph | scatterplot
