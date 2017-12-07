@@ -50,6 +50,18 @@ else
     sudo apt-get install -y mosquitto
 fi
 
+if (command -v mosquitto_pub > /dev/null); then
+    echo "mosquitto_pub already installed.."
+else
+    sudo apt-get install -y mosquitto-clients
+fi
+
+if (command -v tmux > /dev/null); then
+    echo "terminal multiplexor already installed.."
+else
+    sudo apt-get install -y tmux    
+fi
+
 # Install latest Node
 if (command -v node > /dev/null); then
     echo "node already installed.."
