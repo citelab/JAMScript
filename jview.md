@@ -106,12 +106,12 @@ Like the slider, the button also has two modes. Similarly, the first mode will e
 
 ##### Multistate Button
 
-The multistate button is a button that can have more states than *true* or **false**. The button will NOT alternate between states on click. On the click event, it will emit whatever value is associated to the current state, as defined in the _Config.json_. **See sections below to see how to change the state of the button**.
+The multistate button is a button that can have more states than *true* or **false**. The button will NOT alternate between states on click. On the click event, it will emit whatever value is associated to the current state, as defined in the _Config.json_. **See sections below to see how to change the state of the button**. Like the slider and the button, the multistate button also has another mode where it can emit the current state's value to the backend if it's **onStatus** is set to true. On click, it will turn true or false the **onStatus** boolean.
 
 ###### Examples
 
 ```shell
-// Full example can be found in sample 9 and 11.
+// Full example can be found in sample 9, 11 and 12.
 ...
 {
 	"controlList": [
@@ -133,11 +133,16 @@ The multistate button is a button that can have more states than *true* or **fal
 			}
 			]
 			"trigger": "emitValue", // Callback. This specific one will emit to the backend,
-			"state": "currentState" // This is a string that refers to the variable in the store
+			"state": "currentState", // This is a string that refers to the variable in the store
+			"mode": 0,
+			"interval": 2000, // no effect while in mode 1
+			"onStatus": "onStatus", // no effect while in mode 1
+			"onStatusName": "onStatus" // no effect while in mode 1
 		}
 	],
 	"store": {
-		"currentState": "state_1"
+		"currentState": "state_1",
+		"onStatus": false // no effect while in mode 1
 	}
 }
 ...
@@ -216,6 +221,8 @@ socket.on('emitValue', body => {
 See sample-10 and the NodeGenerator.js from **line 165** to see how the two buttons start processes in the backend, terminates them and changes each other's values.
 
 See sample-11 and the NodeGenerator.js from **line 203** to see how the multistate button can change state as well as start processes in the backend.
+
+See sample-12 to see how a multistate button in mode 1 can emit it's state value at **interval**.
 
 See sample-9 and the NodeGenerator.js from **line 102** to multiple widgets on a single page interracting with eachother. It should be noted that at **line 64**, there is an example of how to give custom commands to a widget. In this case, the button will change the multistate button to _state_3_ and this is not done through the backend or a websocket.
 
