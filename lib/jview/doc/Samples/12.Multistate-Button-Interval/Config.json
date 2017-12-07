@@ -1,0 +1,51 @@
+{
+  "package" : {
+    "name": "JView",
+    "version": "1.0.0",
+    "description": "A Simple JView system using React+Mobx+Node+MongoDB",
+    "author": "Carl Liu"
+  },
+  "path" : "./app",
+  "port" : "3000",
+  "pages" : [
+    {
+      "name" : "Controller Panel",
+      "route" : "/controller-panel",
+      "layout" : "default",
+      "panels" : [
+        {
+          "type": "Controller",
+          "controlList": [
+            {
+              "id": "15",
+              "type": "multiStateButton",
+              "dispLabel": "Multi State Button #1",
+              "className": "btn-primary",
+              "states": [
+                {
+                  "state_1": 1
+                },
+                {
+                  "state_2": 2
+                },
+                {
+                  "state_3": 3
+                }
+              ],
+              "state": "currentState",
+              "trigger": "emitValue",
+              "mode": 1,
+              "interval": 2000,
+              "onStatus": "onStatus",
+              "onStatusName": "onStatus"
+            }
+          ],
+          "store": {
+            "currentState": "state_1",
+            "onStatus": true
+          }
+        } 
+      ]
+    }
+  ]
+}

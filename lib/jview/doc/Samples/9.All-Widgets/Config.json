@@ -83,7 +83,9 @@
                 }
               ],
               "state": "currentState",
-              "trigger": "emitValue"
+              "trigger": "emitValue",
+              "mode": 0,
+              "interval": 2000
             },
             {
               "id": "5",
