@@ -17,7 +17,7 @@ setInterval(function() {
 	
     }, 1000);
 
-var namelogger = name.addMyDataStream();
+var namelogger = name.getMyDataStream();
 
 setInterval(function() {
 
