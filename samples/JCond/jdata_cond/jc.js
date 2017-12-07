@@ -1,12 +1,12 @@
 
 jdata {
-    int x as logger;
+    char   *   x as logger;
     int y as broadcaster;
     int z as broadcaster;
 }
 
 jcond {
-    numcheck: y < 15 && z > 2, notequal;
+    numcheck: x < 15 && z > 2, notequal;
     check2: max(x) < y, notequal;
 }
 

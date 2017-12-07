@@ -318,6 +318,7 @@ function log(index, value){
     }, 30);
 }
 
+
 function* generateLogs() {
     //for (let i = 0; i < 100; i++) {
     while(true){
@@ -339,6 +340,7 @@ function* generateLogs() {
 
     //setTimeout(doFlowOps, 0);
 }
+
 
 
 (function poll1(){
