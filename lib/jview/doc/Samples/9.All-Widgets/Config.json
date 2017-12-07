@@ -83,17 +83,17 @@
                 }
               ],
               "state": "currentState",
-              "trigger": "emitValue"
+              "trigger": "emitValue",
+              "mode": 0,
+              "interval": 2000
             },
             {
               "id": "5",
               "type": "terminal",
               "dispLabel": "terminal",
               "commandsList": "commands",
-              "className": "btn-primary",
               "buttonTrigger": "addCommand",
-              "trigger": "emitValue",
-              "buttonLabel": "Send"
+              "trigger": "emitValue"
             }
           ],
           "store": {
