@@ -15,7 +15,7 @@ setInterval(function() {
 		console.log("Logger value undefined...");
 	}
 	
-    }, 1000);
+    }, 5000);
 
 var namelogger = name.getMyDataStream();
 
@@ -25,4 +25,4 @@ setInterval(function() {
 		if (!results.status)
 		    console.log(results.error);
 	    });
-    }, 1000);
+    }, 5000);
