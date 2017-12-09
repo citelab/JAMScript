@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 
+
 char *label;
 int isFree = 1;
 int hgrid;

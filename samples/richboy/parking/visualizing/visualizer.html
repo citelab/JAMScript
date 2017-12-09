@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Parking Spot App Visualizer</title>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="https://rawgit.com/ominibyte/richflow/master/richflow.js"></script>
+    <script src="Box.js"></script>
+</head>
+<body>
+    <h1 style="text-align: center">Fog #6</h1>
+
+    <script>
+        var boxes = [], b;
+
+        for( let i = 0; i < 50; i++ ) {
+            b = new Box();
+            b.id = "box" + i;
+            b.style.textAlign = "center";
+            b.style.verticalAlign = "middle";
+            b.setProperty("hasCar", false);
+            if( i % 2 == 0 )
+                b.style.backgroundColor = "#EEE";
+            boxes.push(b);
+        }
+
+        boxes.forEach((box) => document.body.appendChild(box.get()))
+
+        function process(){
+            var index = Math.floor(Math.random() * boxes.length);
+
+            var box = boxes[index];
+            if( box.getProperty("hasCar") )
+                box.innerHTML = "";
+            else
+                box.innerHTML = '<img src="car.png" style="width: '+ (parseInt(box.style.width) - 10) +'px" />';
+
+            box.setProperty("hasCar", !box.getProperty("hasCar"));
+        }
+
+        setInterval(process, 2000);
+    </script>
+</body>
+</html>

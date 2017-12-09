@@ -2,6 +2,19 @@
  * Created by Richboy on 30/06/17.
  */
 
+//This app will run all the way to the cloud level but several activities will be restricted to certain levels
+//This app, at the fog level will share data with the allocator running on the fog.
+//This app, at the fog and cloud levels, will share data with the visualizer
+
+jdata{
+    stuct spotInfo{
+        string label;           //parking label
+        int isFree;             //0=occupied, 1=free
+        int accessibility;      //0=for all, 1=restricted
+        int parkingDuration;
+    } spotInfo as logger;
+}
+
 //TODO
 //For now, This application should listen for notification when a car has left a parking spot. ideally, this sensor
 //should automatically detect the occupancy of a parking spot.
