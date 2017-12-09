@@ -38,8 +38,8 @@ var fogName;
 var cloudName;
 var outputFileName;
 
-nodeInfo.addDatastream(nodeName);
-jobs.addDatastream(nodeName);
+var nodelogger = nodeInfo.getMyDataStream();
+var jobslogger = jobs.getMyDataStream();
 var selfInfo = {
     "name": nodeName,
     "type": jsys.type
@@ -94,7 +94,7 @@ jsync {cloudonly} function getAllNodes() {
  * Execute a program
  */
 //runj progName.jxe --app=progName
-function executeProgram(path) {
+jasync function executeProgram(path) {
     console.log("Executing external JAMProgram...");
     var currPath = process.cwd();
     var progPath = pathlib.dirname(path);
@@ -103,13 +103,16 @@ function executeProgram(path) {
     console.log('Changing directories to program path...');
     process.chdir(progPath);
     console.log('Spawning program...');
-    var child = spawn('runj', [progName + '.jxe', '--app=' + progName, '--data=' + results.data]);
+    console.log('runj ' + progName + '.jxe' + ' --app=' + progName +  ' --data=' + results.data + ' --port=' + results.port + ' --' + jsys.type);
+    var child = spawn('runj', [progName + '.jxe', '--app=' + progName, '--data=' + results.data,
+      '--port=' + results.port, '--' + jsys.type]);
+    //var child = spawn('runj', [progName + '.jxe', '--app=' + progName, '--data=' + results.data]);
     var job = {
         name: progName,
         pid: child.pid
     };
     jobList.push(job);
-    logJob(0, job);
+    logJob(job);
     console.log("Pushed child: " + child.pid + " to joblist");
     console.log('Returning to previous directory...');
     process.chdir(currPath);
@@ -117,7 +120,10 @@ function executeProgram(path) {
         function(data) {
             console.log('' + data);
         });
-    execProg(pathlib.resolve(progPath), progName);
+    if(jsys.type == 'device') {
+      console.log("Executing C node on device");
+      execProg(pathlib.resolve(progPath), progName);
+    }
 }
 
 /**
@@ -136,18 +142,18 @@ var getNodeInfo = function(key, entry) {
 /**
  * Logging utility for self-logging node-info
  */
-function logNodeInfo(index, value) {
+function logNodeInfo(value) {
     setTimeout(function() {
-        nodeInfo[index].log(value, function(result) {
+        nodelogger.log(value, function(result) {
             if (!result.status)
                 console.log(result.error);
         });
     }, 30);
 }
 
-function logJob(index, value) {
+function logJob(value) {
     setTimeout(function() {
-        jobs[index].log(value, function(result) {
+        jobslogger.log(value, function(result) {
             if (!result.status)
                 console.log('yyyy', result.error);
         });
@@ -155,10 +161,11 @@ function logJob(index, value) {
 }
 
 var getJobs = function(key, entry) {
-    var i = 0;
-    while (jobs[i] !== undefined && !jobs[i].isEmpty()) {
-        console.log(jobs[i].lastValue());
-        i++;
+
+    for(i = 0; i < jobs.size(); i++) {
+        if (jobs[i] !== undefined && !jobs[i].isEmpty()) {
+            console.log(jobs[i].lastValue());
+        }
     }
 }
 
@@ -172,7 +179,7 @@ function generateNodeInfo() {
         fog: fogName,
         cloud: cloudName
     };
-    logNodeInfo(0, val);
+    logNodeInfo(val);
 }
 
 function listener(raw) {
@@ -340,6 +347,7 @@ process.on('exit', (code) => {
 generateNodeInfo();
 
 var results = shell.parse(process.argv, {use: 'minimist'});
+console.log(results);
 
 shell
     .delimiter('>>')
