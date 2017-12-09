@@ -94,7 +94,7 @@ jsync {cloudonly} function getAllNodes() {
  * Execute a program
  */
 //runj progName.jxe --app=progName
-function executeProgram(path) {
+jasync function executeProgram(path) {
     console.log("Executing external JAMProgram...");
     var currPath = process.cwd();
     var progPath = pathlib.dirname(path);
@@ -103,7 +103,10 @@ function executeProgram(path) {
     console.log('Changing directories to program path...');
     process.chdir(progPath);
     console.log('Spawning program...');
-    var child = spawn('runj', [progName + '.jxe', '--app=' + progName, '--data=' + results.data]);
+    console.log('runj ' + progName + '.jxe' + ' --app=' + progName +  ' --data=' + results.data + ' --port=' + results.port + ' --' + jsys.type);
+    var child = spawn('runj', [progName + '.jxe', '--app=' + progName, '--data=' + results.data,
+      '--port=' + results.port, '--' + jsys.type]);
+    //var child = spawn('runj', [progName + '.jxe', '--app=' + progName, '--data=' + results.data]);
     var job = {
         name: progName,
         pid: child.pid
@@ -117,7 +120,10 @@ function executeProgram(path) {
         function(data) {
             console.log('' + data);
         });
-    execProg(pathlib.resolve(progPath), progName);
+    if(jsys.type == 'device') {
+      console.log("Executing C node on device");
+      execProg(pathlib.resolve(progPath), progName);
+    }
 }
 
 /**
@@ -340,6 +346,7 @@ process.on('exit', (code) => {
 generateNodeInfo();
 
 var results = shell.parse(process.argv, {use: 'minimist'});
+console.log(results);
 
 shell
     .delimiter('>>')
