@@ -38,8 +38,8 @@ var fogName;
 var cloudName;
 var outputFileName;
 
-nodeInfo.addDatastream(nodeName);
-jobs.addDatastream(nodeName);
+var nodelogger = nodeInfo.getMyDataStream();
+var jobslogger = jobs.getMyDataStream();
 var selfInfo = {
     "name": nodeName,
     "type": jsys.type
@@ -112,7 +112,7 @@ jasync function executeProgram(path) {
         pid: child.pid
     };
     jobList.push(job);
-    logJob(0, job);
+    logJob(job);
     console.log("Pushed child: " + child.pid + " to joblist");
     console.log('Returning to previous directory...');
     process.chdir(currPath);
@@ -142,18 +142,18 @@ var getNodeInfo = function(key, entry) {
 /**
  * Logging utility for self-logging node-info
  */
-function logNodeInfo(index, value) {
+function logNodeInfo(value) {
     setTimeout(function() {
-        nodeInfo[index].log(value, function(result) {
+        nodelogger.log(value, function(result) {
             if (!result.status)
                 console.log(result.error);
         });
     }, 30);
 }
 
-function logJob(index, value) {
+function logJob(value) {
     setTimeout(function() {
-        jobs[index].log(value, function(result) {
+        jobslogger.log(value, function(result) {
             if (!result.status)
                 console.log('yyyy', result.error);
         });
@@ -161,10 +161,11 @@ function logJob(index, value) {
 }
 
 var getJobs = function(key, entry) {
-    var i = 0;
-    while (jobs[i] !== undefined && !jobs[i].isEmpty()) {
-        console.log(jobs[i].lastValue());
-        i++;
+
+    for(i = 0; i < jobs.size(); i++) {
+        if (jobs[i] !== undefined && !jobs[i].isEmpty()) {
+            console.log(jobs[i].lastValue());
+        }
     }
 }
 
@@ -178,7 +179,7 @@ function generateNodeInfo() {
         fog: fogName,
         cloud: cloudName
     };
-    logNodeInfo(0, val);
+    logNodeInfo(val);
 }
 
 function listener(raw) {
