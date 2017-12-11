@@ -9,7 +9,7 @@ jcond {
     cloudonly: sys.type == "cloud";
 }
 
-jasync {cloudonly && namecheck} function runTheProc(name) {
+jasync {namecheck} function runTheProc(name) {
     console.log("========= FOUND The " + name + "! ================");
 }
 
@@ -32,7 +32,7 @@ setInterval(()=> {
     else if (q < 0.6)
         xlogger.log("bucks");
     else if (q < 0.9)
-        xlogger.log("magicks");
+        xlogger.log("bucks");
     else
         xlogger.log("raptors");
 
