@@ -46,12 +46,12 @@ var selfInfo = {
 };
 
 /**----------------ADVERTISE SELF----------------------------------**/
-jsys.ad_up('name', selfInfo)
+jsys.adUp('name', selfInfo)
 
-jsys.ad_up_fogcback('name', function(x) {
+jsys.adUpFogcback('name', function(x) {
     fogName = x;
 });
-jsys.ad_up_cloudcback('name', function(x) {
+jsys.adUpCloudcback('name', function(x) {
     cloudName = x;
 });
 
