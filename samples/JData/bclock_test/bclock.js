@@ -4,10 +4,25 @@ jdata {
 
 var count = 10;
 
-setInterval(function() {
-	y.broadcast(count++);
-    }, 500);
+jcond{
+    fogonly: sys.type == "fog";
+    cloudonly: sys.type == "cloud";
+}
+
+// jasync {fogonly || cloudonly} function bcast(){
+//     y.broadcast(count++);
+// }
+
+function bcast(){
+    if( !JAMManager.isDevice )
+        y.broadcast(count++);
+}
 
 setInterval(function() {
-	console.log(y.getClock());
-    }, 2000);
+    bcast();
+}, 500);
+
+setInterval(function() {
+    var clock = y.getClock();
+	console.log(clock, ' = ', y.getMessageAtClock(clock));
+}, 500);
