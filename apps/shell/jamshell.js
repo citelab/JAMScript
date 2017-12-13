@@ -130,13 +130,16 @@ jasync function executeProgram(path) {
  * Get node info from connected devices.
  */
 var getNodeInfo = function(key, entry) {
-    var i = 0;
-    var nodeList = [];
-    while (nodeInfo[i] !== undefined && !nodeInfo[i].isEmpty()) {
-        nodeList.push(nodeInfo[i].lastValue());
-        i++;
+    var vals = {};
+
+    for (k = 0; k < 10; k++) {
+        for (i = 0; i < nodeInfo.size(); i++) {
+            if (nodeInfo[i] !== undefined && !nodeInfo[i].isEmpty())
+                vals[i] = nodeInfo[i].lastValue();
+        }
     }
-    return nodeList;
+
+    return Object.values(vals);
 }
 
 /**
