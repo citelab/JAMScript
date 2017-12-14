@@ -132,10 +132,15 @@ jasync function executeProgram(path) {
 var getNodeInfo = function(key, entry) {
     var vals = {};
 
+    console.log("nodeInfo size ", nodeInfo.size());
     for (k = 0; k < 10; k++) {
         for (i = 0; i < nodeInfo.size(); i++) {
-            if (nodeInfo[i] !== undefined && !nodeInfo[i].isEmpty())
+            console.log("i = ", i);
+            if (nodeInfo[i] !== undefined) {
                 vals[i] = nodeInfo[i].lastValue();
+                console.log("vals ", vals[i]);
+            }
+
         }
     }
 
