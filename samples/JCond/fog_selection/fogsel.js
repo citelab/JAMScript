@@ -63,6 +63,7 @@ jasync {devonly} function askforId() {
 //
 jasync {devonly && matchid} function runAtDevice() {
     console.log("Running at the device J..with ID = ", myid);
+    console.log("Type ", jsys.type);
 }
 
 
@@ -86,7 +87,7 @@ jasync {fogonly} function callMyDevice() {
 // Main event loop at the J
 // J is doing something every 1 sec.
 setInterval(function() {
-    console.log("Running J... flag ", gotmyid);
+    console.log("Running J... ");
     if (!gotmyid)
         askforId();
     else {
