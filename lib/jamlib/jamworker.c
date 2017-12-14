@@ -404,6 +404,7 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
         for (int i = 0; i < 3; i++)
             if (js->cstate->mqttenabled[i] == true)
             {
+                printf("Sending from act outq %d\n", i);
                 mqtt_publish(js->cstate->mqttserv[i], "/level/func/request", rcmd);
             }
     }

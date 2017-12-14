@@ -7,3 +7,10 @@ jsync function getid() {
 jasync function pingj(src) {
     console.log("Ping received from ..", src);
 }
+
+
+setInterval(function() {
+	doping();
+}, 1000);
+
+
