@@ -1,18 +1,15 @@
 
-int initialized = false;
-int getid();
+int getMyId();
 
-jasync docinit() {
+jasync call_get_myid(char *msg, jcallback putid) {
 
-  if (!initialized) {
-    initialized = true
-    
-    int myid = getid();
+  char buf[256];
+  int myid = getMyId();
+
+  if (jam_error == 0) {
     printf("My id %d\n", myid);
-
-
-
-
+    sprintf(buf, "%d", myid);
+    putid(buf);
   }
 }
 
