@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "chance": "^1.0.12",
+    "express": "^4.16.2",
     "flows.js": "file:lib/flow",
     "gaussian": "^1.1.0",
     "jamserver": "file:lib/jamserver",
@@ -18,6 +19,7 @@
     "ohm-js": "^0.13.1",
     "ps-node": "^0.1.6",
     "redis-fast-driver": "^1.0.5",
+    "socket.io": "^2.0.4",
     "terminal-kit": "1.13.13",
     "vorpal": "^1.12.0",
     "yargs": "^10.0.3"
