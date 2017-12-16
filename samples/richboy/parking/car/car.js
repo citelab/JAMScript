@@ -119,7 +119,7 @@ jasync {isDevice} function launch(){ //this method is only available at the devi
     });
 }
 
-launch();    //begin running code at the device level
+setTimeout(launch, 2000);    //begin running code at the device level
 carRequestOut.start();  //start the outflow to listen and send data out to allocator
 
 

@@ -70,7 +70,7 @@ sensingIn.setTerminalFunction(function(data){
         datastream = spots.addDatastream(data.key);
         deviceMap[data.key] = datastream;
         deviceMap[data.assignedID] = datastream;    //save this reference as well as that of the key's
-        new OutFlow("allocatingOut", Flow.from(datastream)).setTransformer(input => {input[sys.type] = JAMManager.deviceID; return input;}).start();    //create and start an outflow to listen for data
+        new OutFlow("allocatingOut", Flow.from(datastream)).setTransformer(input => {input[jsys.type] = JAMManager.deviceID; return input;}).start();    //create and start an outflow to listen for data
     }
 
     //log the data on this stream
@@ -124,7 +124,7 @@ carRequestIn.setTerminalFunction(function(data){
                             carID: data.carID,
                             slotID: spot.assignedID,
                             postcode: spot.postcode,
-                            key: datastream.key
+                            key: datastream.getDeviceId()
                         });
 
                         return;
@@ -166,7 +166,7 @@ carRequestIn.setTerminalFunction(function(data){
                     carID: data.carID,
                     slotID: spot.assignedID,
                     postcode: spot.postcode,
-                    key: datastream.key
+                    key: datastream.getDeviceId()
                 });
             }
 
@@ -183,7 +183,7 @@ carRequestIn.setTerminalFunction(function(data){
                 carID: data.carID,
                 slotID: data.slotID,
                 postcode: data.postcode,
-                key: datastream.key
+                key: datastream.getDeviceId()
             });
             break;
         case 3: //reject
@@ -210,7 +210,7 @@ carRequestIn.setTerminalFunction(function(data){
                 carID: data.carID,
                 slotID: data.slotID,
                 postcode: data.postcode,
-                key: datastream.key
+                key: datastream.getDeviceId()
             });
             break;
         case 4: //leave
@@ -226,7 +226,7 @@ carRequestIn.setTerminalFunction(function(data){
                 carID: data.carID,
                 slotID: data.slotID,
                 postcode: data.postcode,
-                key: datastream.key
+                key: datastream.getDeviceId()
             });
 
             //clear rejected list for this car

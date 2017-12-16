@@ -3,6 +3,9 @@
  */
 
 var devices = 1;    //keep track of the number of devices and use it to generate ids for each connecting device
+var labels = ["Slot 1", "Slot 2", "Slot 3", "Slot 4", "Slot 5", "Slot 6", "Slot 7", "Slot 8"];
+var postcodes = ["H1N", "H1N", "H1N", "H1N", "H1N", "H1N", "H1N", "H1N"];
+var addresses = ["No 1 parking zone, Montreal"];
 
 jdata{
     struct spot{
@@ -28,6 +31,18 @@ jdata{
     } assignment as broadcaster;
 }
 
+//Since we are having a lil issue with getting the device JNode to send back data using C->J, lets transform
+the data before it is sent to the fog and onwards
+if( jsys.type == "device" ){
+    spot.setTransformer((input, datastream) => {
+        input.key = datastream.getDeviceId();
+        input.postcode = postcodes[input.assignedID - 1];
+        input.label = labels[input.assignedID - 1];
+        input.address = addresses[0];
+        return input;
+    });
+}
+
 jcond{
     isFog: sys.type == "fog";
     isDevice: sys.type == "device";
@@ -45,24 +60,36 @@ function spotFlowFunc(inputFlow){
 }
 
 
-jsync {isDevice} function getAssignedID() {
+jsync {isFog} function getAssignedID() {
     return devices++;
 }
 
-jsync {isDevice} function getStreamKey(assignedID) {
+jsync {isFog} function getLabel(assignedID) {
+    return labels[assignedID - 1];
+}
+
+jsync {isFog} function getPostcode(assignedID) {
+    return postcodes[assignedID - 1];
+}
+
+jsync {isFog} function getAddress(assignedID) {
+    return addresses[0];
+}
+
+jsync {isDevice} function getStreamKey(assignedID) {//
     //use the assigned id to find the datastream and return the key
     for( var i = 0; i < spot.size(); i++ ){
         var lastValue = spot[i].getLastValue();
         if( lastValue == null )
             continue;
         if( lastValue.assignedID && lastValue.assignedID == assignedID )
-            return spot[i].key;
+            return spot[i].getDeviceId();
     }
     console.error("Did not find Stream Key");
     return "null";
 }
 
-jsync {isDevice} function addBroadcastHook(){
+jasync {isDevice} function addBroadcastHook(){
     //since the broadcast at the C is not yet working, for now lets use J->C when we get to the device level
     assignment.addHook(function(pack){
         if( pack.origin === "parent" ){//only pay attention to broadcasts from the fog
@@ -71,7 +98,7 @@ jsync {isDevice} function addBroadcastHook(){
             var datastream = null;
 
             for( var i = 0; i < spot.size(); i++ ){
-                if( spot[i].key == message.key ){
+                if( spot[i].getDeviceId() == message.key ){
                     datastream = spot[i];
                     break;
                 }
