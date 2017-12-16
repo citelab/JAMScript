@@ -63,8 +63,8 @@
             "tools/jamrun",
             "tools/jamkill",
             "tools/jamterm",
-            "tools/runc",
-            "tools/runj"
+            "tools/crun",
+            "tools/jrun"
            ]
         }
       ]
