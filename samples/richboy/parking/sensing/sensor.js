@@ -31,17 +31,17 @@ jdata{
     } assignment as broadcaster;
 }
 
-//Since we are having a lil issue with getting the device JNode to send back data using C->J, lets transform
-the data before it is sent to the fog and onwards
-if( jsys.type == "device" ){
-    spot.setTransformer((input, datastream) => {
-        input.key = datastream.getDeviceId();
-        input.postcode = postcodes[input.assignedID - 1];
-        input.label = labels[input.assignedID - 1];
-        input.address = addresses[0];
-        return input;
-    });
-}
+// //Since we are having a lil issue with getting the device JNode to send back data using C->J, lets transform
+// //the data before it is sent to the fog and onwards
+// if( jsys.type == "device" ){
+//     spot.setTransformer((input, datastream) => {
+//         input.key = datastream.getDeviceId();
+//         input.postcode = postcodes[input.assignedID - 1];
+//         input.label = labels[input.assignedID - 1];
+//         input.address = addresses[0];
+//         return input;
+//     });
+// }
 
 jcond{
     isFog: sys.type == "fog";
@@ -59,20 +59,25 @@ function spotFlowFunc(inputFlow){
     return inputFlow;
 }
 
+jasync {isFog} function isFogRunning(){
+    return 1;
+}
 
-jsync {isFog} function getAssignedID() {
+
+jsync {isDevice} function getAssignedID() {
+    console.log("IN GET ASSIGNED ID");
     return devices++;
 }
 
-jsync {isFog} function getLabel(assignedID) {
+jsync {isDevice} function getLabel(assignedID) {
     return labels[assignedID - 1];
 }
 
-jsync {isFog} function getPostcode(assignedID) {
+jsync {isDevice} function getPostcode(assignedID) {
     return postcodes[assignedID - 1];
 }
 
-jsync {isFog} function getAddress(assignedID) {
+jsync {isDevice} function getAddress(assignedID) {
     return addresses[0];
 }
 
