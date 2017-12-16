@@ -289,7 +289,6 @@ void run_activity(void *arg)
             if (jact == NULL)
                 continue;
 
-
             // If the activity is local.. we check whether this is servicing JSYNC task processing
             if ((!jact->remote) && jact->type == SYNC_RTE)
             {
