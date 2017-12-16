@@ -6,7 +6,7 @@ jdata{
     carRequestIn as inflow of app://car.carRequestOut;
 
     //sorts of replicates the spot struct in sensor.js
-    stuct spots{
+    struct spots{
         char* label;           //parking label
         char* postcode;
         char* address;
@@ -26,7 +26,8 @@ jdata{
         char* key;
     } alloc as logger; //NOT SURE YET if we may need to restrict this to fog alone
 
-    allocSenseOut as outflow of alloc;  //outflow for sensor.js
+    allocFlow as flow with flowFunc of alloc;
+    allocSenseOut as outflow of allocFlow;  //outflow for sensor.js
 
     struct assign{
         int messageType;    //1=found a slot, 2=no slot found
@@ -39,8 +40,16 @@ jdata{
         int timeout;        //For message type 2 or message 1 with isPreferred = 0. This tells when to ask for another slot. (in milliseconds)
     } assign as logger; //NOT SURE YET if we may need to restrict this to fog alone
 
-    allocResponseOut as outflow of assign;  //outflow for car.js
+    assignFlow as flow with flowFunc of assign;
+    allocResponseOut as outflow of assignFlow;  //outflow for car.js
 }
+
+function flowFunc(inputFlow){
+    return inputFlow;
+}
+
+//TODO add a functionality where a fog sends a request to the cloud for free spot information on other fogs
+//TODO Also, check if this fog manages the postcode that is in the preferred request before assigning one, else ask the cloud to find the fog
 
 //keep track of spots that a car has rejected. So that when they re-request, we won't end up sending same spot to them
 var carRejects = {};
@@ -61,7 +70,7 @@ sensingIn.setTerminalFunction(function(data){
         datastream = spots.addDatastream(data.key);
         deviceMap[data.key] = datastream;
         deviceMap[data.assignedID] = datastream;    //save this reference as well as that of the key's
-        new OutFlow("allocatingOut", Flow.from(datastream)).start();    //create and start an outflow to listen for data
+        new OutFlow("allocatingOut", Flow.from(datastream)).setTransformer(input => {input[sys.type] = JAMManager.deviceID; return input;}).start();    //create and start an outflow to listen for data
     }
 
     //log the data on this stream
@@ -245,3 +254,5 @@ function freeSpotsFlow(inputFlow){
     //     .where(stream => !stream.isEmpty()).select(stream => stream.lastValue()).where(json => json.status == "free");
 }
 
+allocSenseOut.start();
+allocResponseOut.start();

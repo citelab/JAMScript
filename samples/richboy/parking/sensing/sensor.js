@@ -5,7 +5,7 @@
 var devices = 1;    //keep track of the number of devices and use it to generate ids for each connecting device
 
 jdata{
-    stuct spot{
+    struct spot{
         char* label;           //parking label
         char* postcode;
         char* address;
@@ -15,7 +15,8 @@ jdata{
         char* key;         //this is the datastream key for the node
     } spot as logger(fog);      //This logger does not go beyond the fog
 
-    sensingOut as outflow of spot;
+    spotFlow as flow with spotFlowFunc of spot;
+    sensingOut as outflow of spotFlow;
     allocSensorIn as inflow of app://allocating.allocSenseOut;
 
     struct assignment{
@@ -29,15 +30,19 @@ jdata{
 
 jcond{
     isFog: sys.type == "fog";
-    isDevice: sys.type == "device" || sys.type == "dev";
+    isDevice: sys.type == "device";
 }
 
 //function to share the data only at the fog level
-jasync {isFog} shareOnFog(){
+jasync {isFog} function shareOnFog(){
     sensingOut.start(); //start sharing on the fog
 }
 
 shareOnFog();
+
+function spotFlowFunc(inputFlow){
+    return inputFlow;
+}
 
 
 jsync {isDevice} function getAssignedID() {

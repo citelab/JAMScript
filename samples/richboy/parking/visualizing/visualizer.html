@@ -6,39 +6,55 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <script src="https://rawgit.com/ominibyte/richflow/master/richflow.js"></script>
     <script src="Box.js"></script>
+    <script src="./socket.io.js"></script>
+    <script>
+        var socket = io();
+        var fogs = {};
+        var isCloud = false;
+        var ids = 1;
+        socket.on('state', function(data){   //new data received
+            if( data.cloud && !isCloud )
+                $(document.body).append($('<h1 style="text-align: center">Cloud ' + data.cloud + '</h1>'));
+
+            if( !fogs[data.fog] ){
+                var div = $('<div/>', {style: "padding-top: 15px; padding-bottom: 15px; margin-bottom: 15px; border-bottom: 1px solid #999"});
+                div.append('<h3 style="text-align: center">Fog ' + data.fog + '</h3>');
+                fogs[data.fog] = {
+                    root: div,
+                    entries: {}
+                };
+                $(document.body).append(div);
+            }
+
+            //check if we have created a box for the data coming in
+            if( !fogs[data.fog].entries[data.key] ){
+                var box = new Box();
+                box.id = "box" + (ids++);
+                b.style.textAlign = "center";
+                b.style.verticalAlign = "middle";
+                b.setProperty("hasCar", false);
+                var color = "#FFF";
+                if( Object.keys(fogs[data.fog].entries).length % 2 === 0 ) {
+                    b.style.backgroundColor = "#EEE";
+                    color = "#EEE";
+                }
+                fogs[data.fog].entries[data.key] = {box: box, label: data.label, color: color};
+                fogs[data.fog].root.append(box.get());
+            }
+
+            var entry = fogs[data.fog].entries[data.key];
+            entry.box.setProperty("hasCar", false);
+            var html = entry.label + "<p>&nbsp;</p>";
+            if( status == "occupied" ) {
+                html += '<img src="car.png" style="width: ' + (parseInt(box.style.width) - 10) + 'px" />';
+                entry.box.setProperty("hasCar", true);
+            }
+            else if( status == "onhold" )
+                entry.box.style.backgroundColor = "yellow";
+            entry.box.innerHTML = html;
+        });
+    </script>
 </head>
 <body>
-    <h1 style="text-align: center">Fog #6</h1>
-
-    <script>
-        var boxes = [], b;
-
-        for( let i = 0; i < 50; i++ ) {
-            b = new Box();
-            b.id = "box" + i;
-            b.style.textAlign = "center";
-            b.style.verticalAlign = "middle";
-            b.setProperty("hasCar", false);
-            if( i % 2 == 0 )
-                b.style.backgroundColor = "#EEE";
-            boxes.push(b);
-        }
-
-        boxes.forEach((box) => document.body.appendChild(box.get()))
-
-        function process(){
-            var index = Math.floor(Math.random() * boxes.length);
-
-            var box = boxes[index];
-            if( box.getProperty("hasCar") )
-                box.innerHTML = "";
-            else
-                box.innerHTML = '<img src="car.png" style="width: '+ (parseInt(box.style.width) - 10) +'px" />';
-
-            box.setProperty("hasCar", !box.getProperty("hasCar"));
-        }
-
-        setInterval(process, 2000);
-    </script>
 </body>
 </html>

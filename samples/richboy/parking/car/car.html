@@ -14,6 +14,10 @@
             connected = true;
             document.getElementById('status').style.backgroundColor = "green";
         });
+        socket.on('reconnect', function(){
+            connected = true;
+            document.getElementById('status').style.backgroundColor = "green";
+        });
         socket.on('id', function(data){   //car id sent on first connection and probably the current known status of the car
             carID = data.carID;
         });

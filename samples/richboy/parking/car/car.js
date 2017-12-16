@@ -4,7 +4,7 @@
 var express, socket, clientSocket, carID;
 
 jdata{
-    stuct request{
+    struct request{
         int messageType;            //1=request, 2=accept, 3=reject, 4=leave (this should be detectable by the sensor ideally)
         char* carID;                //The id of the car sending the request
         char* postcode;             //preferred postcode for parking. Could be location. If message is not 1, it is the rejected or accepted area
@@ -14,7 +14,7 @@ jdata{
 
     carRequestOut as outflow of request;
     allocCarAssignIn as inflow of app://allocating.allocResponseOut;  //inflow from the allocation app reporting slot information
-    struct response{
+    struct resp{
         int messageType;    //1=found a slot, 2=no slot found
         char* label;        //The label of the assigned spot
         char* slotID;       //the assigned id of this spot
@@ -23,33 +23,41 @@ jdata{
         char* postcode;     //the post code area of the parking spot being sent
         int duration;       //The allowed maximum parking duration
         int timeout;        //For message type 2 or message 1 with isPreferred = 0. This tells when to ask for another slot. (in milliseconds)
-    } response as broadcaster;
+    } resp as broadcaster;
 }
 
 var currentSpot, tempSpot;
 
 jcond{
-    isDevice: sys.type == "device" || sys.type == "dev";
+    isDevice: sys.type == "device";
     isFog: sys.type == "fog";
 }
 
 jsync {isDevice} function getCarID() {
     if( !carID )
-        carID = ("car" + new Date().getTime() + Math.random()).replaceAll(".", "");
+        carID = ("car" + new Date().getTime() + Math.random()).replace(/\./g, "");
     return carID;
 }
 
 jasync {isDevice} function launch(){ //this method is only available at the device level
+    console.log("\n\n --------------- GOT INSIDE HERE  ---------- \n\n");
     //generate car id
     if( !carID )
-        carID = ("car" + new Date().getTime() + Math.random()).replaceAll(".", "");
+        carID = ("car" + new Date().getTime() + Math.random()).replace(/\./g, "");
 
     express = (require('express'))();
     var server = require('http').createServer(express);
     socket = require('socket.io')(server);
     socket.on('connection', function(client){
         clientSocket = client;
-        client.on('connect', function(){
+        console.log("client connected");
+        client.emit("id", {carID: carID, currentSpot: currentSpot});
+        client.on('reconnect', function(){
+            console.log("client reconnected");
+            client.emit("id", {carID: carID, currentSpot: currentSpot});
+        });
+        client.on('disconnect', function(){
+            console.log("client disconnected");
             client.emit("id", {carID: carID, currentSpot: currentSpot});
         });
         client.on('request', function(data){//request for parking spot
@@ -69,13 +77,14 @@ jasync {isDevice} function launch(){ //this method is only available at the devi
             request.log(data);
         });
     });
-    server.listen(JAMManager.port + 1);    //get the data depot port and add one to it
+    server.listen(JAMManager.port - 0 + 1);    //get the data depot port and add one to it
 
     express.get("/", (req, res) => res.sendFile(__dirname + "/car.html"));
+    express.get("/*", (req, res) => res.sendFile(__dirname + req.url));
 
 
     //since the broadcast at the C is not yet working, for now lets use J->C when we get to the device level
-    response.addHook(function(pack){
+    resp.addHook(function(pack){
         if( pack.origin === "parent" ){//only pay attention to broadcasts from the fog
             var message = pack.message;
             //since this is a broadcast, check if it concerns this node
@@ -119,5 +128,5 @@ carRequestOut.start();  //start the outflow to listen and send data out to alloc
 allocCarAssignIn.setTerminalFunction(function(data){
     //TODO data received, use J->J to send the data to the level below
     //For now let us use broadcaster to push the data down
-    response.broadcast(data);   //data should have the structure in the response struct
+    resp.broadcast(data);   //data should have the structure in the resp struct
 });
