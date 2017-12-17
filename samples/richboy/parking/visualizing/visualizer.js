@@ -13,6 +13,11 @@ socket = require('socket.io')(server);
 socket.on('connection', function(client){
     clients[client.id] = {connected: true, client: client, queue: []};
     console.log("client connected");
+    //send all the available data when a client connects
+    if( alldata.length > 0 ){
+        for( var i in alldata )
+            client.emit("state", alldata[i]);
+    }
 
     client.on('all', function(){
         if( alldata.length > 0 ){
@@ -42,14 +47,15 @@ express.get("/*", (req, res) => res.sendFile(__dirname + req.url));
 
 
 allocIn.setTerminalFunction(function(data){
+    console.log("Status is: ", data.status);
     var keys = Object.keys(clients);
-    var client;
+    var clientObject;
     for(var i in keys){
-        client = clients[keys[i]];
-        if( client.connected )
-            client.emit("state", data);
+        clientObject = clients[keys[i]];
+        if( clientObject.connected )
+            clientObject.client.emit("state", data);
         else
-            client.queue.push(data);
+            clientObject.queue.push(data);
     }
     alldata.push(data);
 });

@@ -12,6 +12,7 @@
     "express": "^4.16.2",
     "flows.js": "file:lib/flow",
     "gaussian": "^1.1.0",
+    "graceful-fs": "^4.1.11",
     "jamserver": "file:lib/jamserver",
     "jdiscovery": "file:lib/jdiscovery",
     "jszip": "^3.1.5",

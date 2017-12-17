@@ -26,7 +26,7 @@ void doLog(){
 }
 
 int main(){//int argc, char **argv
-    printf("C is running...");
+    printf("C is running...\n");
     srand(time(NULL));
 
 
@@ -37,11 +37,11 @@ int main(){//int argc, char **argv
 
     //The logger has some concerns which may need attending to later
     //we need the data to go up to the fog so the data can be shared so we poll till the fog comes online
-    int isFogOnline = isFogRunning();
-    while (jam_error != 0) {
-        usleep(2000);
-        isFogOnline = isFogRunning();
-    }
+//    int isFogOnline = isFogRunning();
+//    while (jam_error != 0) {
+//        usleep(2000);
+//        isFogOnline = isFogRunning();
+//    }
 
     //TODO before logging, use C->J to get the location details for this parking area, add it to the logged information
     assignedID = getAssignedID();
@@ -60,8 +60,6 @@ int main(){//int argc, char **argv
 
     doLog();  //log first so that the jside can see the log and get the stream key
 
-    sleep(3);   //give the log some time to propagate
-
     //now request for the stream key
     key = getStreamKey(assignedID);
     while (jam_error != 0 || strncmp(key, "null", 4) == 0 ) {
@@ -71,6 +69,8 @@ int main(){//int argc, char **argv
     printf("Assigned ID is: %d, Stream Key is: %s\n", assignedID, key);
 
     doLog();  //now do a proper log with the key
+    doLog();
+    doLog();
 
     return 0;
 }

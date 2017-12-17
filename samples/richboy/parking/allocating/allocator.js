@@ -57,11 +57,17 @@ var deviceMap = {}; //to optimize finding devices as opposed to looping with arr
 
 //read the data passed in from the sensing application. This should only work in the Fog
 sensingIn.setTerminalFunction(function(data){
-    //console.log(data);
+    if( typeof data === "string" ){
+        console.log("sensingIn input data in allocator.js is string");
+        data = JSON.parse(data);
+    }
+    console.log(data.key);
 
     //check that this message has a valid key else skip it.
-    if( data.key === "null" )
+    if( data.key === "null" ) {
+        console.log("RETURNING...key is null");
         return;
+    }
 
     //find device stream
     var datastream = deviceMap[data.key];
@@ -70,21 +76,42 @@ sensingIn.setTerminalFunction(function(data){
         datastream = spots.addDatastream(data.key);
         deviceMap[data.key] = datastream;
         deviceMap[data.assignedID] = datastream;    //save this reference as well as that of the key's
-        new OutFlow("allocatingOut", Flow.from(datastream)).setTransformer(input => {input[jsys.type] = JAMManager.deviceID; return input;}).start();    //create and start an outflow to listen for data
+        new OutFlow("allocatingOut", Flow.from(datastream)).setTransformer(input => {input = input.data; input[jsys.type] = JAMManager.deviceID; return input;}).start();    //create and start an outflow to listen for data
     }
 
     //log the data on this stream
     datastream.log(data);
+    freeSpots.push(data);
 });
 
-carRequestIn.setTerminalFunction(function(data){
+carRequestIn.setTerminalFunction(function f(data){
+    if( typeof data === "string" ){
+        console.log("carRequestIn input data in allocator.js is string");
+        try {
+            data = JSON.parse(data);
+        }
+        catch(e){
+            console.error(e);
+        }
+    }
+    if( data.messageType === undefined ) {
+        console.log(data);
+        return;
+    }
+
+    console.log("IN CAR REQUEST FUNCTION", data.messageType - 0);
     switch(data.messageType - 0){
         case 1: //request
             //first check for the preferred location
+            if( freeSpots.getCustomResult() == null ){
+                console.log("Custom Result is null ");
+                setTimeout(() => f(data), 500);
+                return;
+            }
             var objects = freeSpots.getCustomResult();  //computed free slots
             var keys = Object.keys(objects);
             var spot = Flow.from(keys)
-                .select(key => computedFree[key])
+                .select(key => objects[key])
                 .where(obj => obj.postcode == data.postcode)
                 .findFirst();
 
@@ -92,7 +119,7 @@ carRequestIn.setTerminalFunction(function(data){
                 //so we check for a spot that is nearby if the user has indicated that option
                 if( data.openToNearbyLocation == 1 ){
                     spot = Flow.from(keys)
-                        .select(key => computedFree[key])
+                        .select(key => objects[key])
                         .where(obj => { //ignore all those the car has rejected
                             if( carRejects[data.carID] )
                                 return !carRejects[data.carID][obj.postcode];
@@ -115,16 +142,18 @@ carRequestIn.setTerminalFunction(function(data){
 
                         var datastream = deviceMap[spot.assignedID];    //find the datastream
                         //log the changes so it can also be shared on the outflow channel
-                        var log = datastream.getLastValue();
-                        log.status = "onhold";
-                        datastream.log(log);
-                        //share this on the channel that sensing is listening on
-                        alloc.getMyDataStream().log({
-                            status: "onhold",
-                            carID: data.carID,
-                            slotID: spot.assignedID,
-                            postcode: spot.postcode,
-                            key: datastream.getDeviceId()
+                        datastream.getLastValueSync().then(log => {
+                            log.status = "onhold";
+                            datastream.log(log);
+                            freeSpots.push(log);
+                            //share this on the channel that sensing is listening on
+                            alloc.getMyDataStream().log({
+                                status: "onhold",
+                                carID: data.carID,
+                                slotID: spot.assignedID,
+                                postcode: spot.postcode,
+                                key: datastream.getDeviceId()
+                            });
                         });
 
                         return;
@@ -157,34 +186,43 @@ carRequestIn.setTerminalFunction(function(data){
 
                 var datastream = deviceMap[spot.assignedID];    //find the datastream
                 //log the changes so it can also be shared on the outflow channel
-                var log = datastream.getLastValue();
-                log.status = "occupied";
-                datastream.log(log);
-                //share this on the channel that sensing is listening on
-                alloc.getMyDataStream().log({
-                    status: "occupied",
-                    carID: data.carID,
-                    slotID: spot.assignedID,
-                    postcode: spot.postcode,
-                    key: datastream.getDeviceId()
+                console.log("waiting...");
+                datastream.getLastValueSync().then(log => {
+                    console.log("done waiting...");
+                    log.status = "occupied";
+                    console.log(log);
+                    datastream.log(log);
+                    freeSpots.push(log);
+                    //share this on the channel that sensing is listening on
+                    alloc.getMyDataStream().log({
+                        status: "occupied",
+                        carID: data.carID,
+                        slotID: spot.assignedID,
+                        postcode: spot.postcode,
+                        key: datastream.getDeviceId()
+                    });
                 });
+
             }
 
             break;
         case 2: //accept
             var datastream = deviceMap[data.slotID];    //find the datastream
             //log the changes so it can also be shared on the outflow channel
-            var log = datastream.getLastValue();
-            log.status = "occupied";
-            datastream.log(log);
-            //share this on the channel that sensing is listening on
-            alloc.getMyDataStream().log({
-                status: "occupied",
-                carID: data.carID,
-                slotID: data.slotID,
-                postcode: data.postcode,
-                key: datastream.getDeviceId()
+            datastream.getLastValueSync().then(log => {
+                log.status = "occupied";
+                datastream.log(log);
+                freeSpots.push(log);
+                //share this on the channel that sensing is listening on
+                alloc.getMyDataStream().log({
+                    status: "occupied",
+                    carID: data.carID,
+                    slotID: data.slotID,
+                    postcode: data.postcode,
+                    key: datastream.getDeviceId()
+                });
             });
+
             break;
         case 3: //reject
             //add to rejects for this car so that when this car requests again, we will not serve this spot
@@ -201,43 +239,50 @@ carRequestIn.setTerminalFunction(function(data){
             //this slot is now free, so update state and inform sensor
             var datastream = deviceMap[data.slotID];    //find the datastream
             //log the changes so it can also be shared on the outflow channel
-            var log = datastream.getLastValue();
-            log.status = "free";
-            datastream.log(log);
-            //share this on the channel that sensing is listening on
-            alloc.getMyDataStream().log({
-                status: "free",
-                carID: data.carID,
-                slotID: data.slotID,
-                postcode: data.postcode,
-                key: datastream.getDeviceId()
+            datastream.getLastValueSync().then(log => {
+                log.status = "free";
+                datastream.log(log);
+                freeSpots.push(log);
+                //share this on the channel that sensing is listening on
+                alloc.getMyDataStream().log({
+                    status: "free",
+                    carID: data.carID,
+                    slotID: data.slotID,
+                    postcode: data.postcode,
+                    key: datastream.getDeviceId()
+                });
             });
+
             break;
         case 4: //leave
             //this slot is now free, so update state and inform sensor
             var datastream = deviceMap[data.slotID];    //find the datastream
             //log the changes so it can also be shared on the outflow channel
-            var log = datastream.getLastValue();
-            log.status = "free";
-            datastream.log(log);
-            //share this on the channel that sensing is listening on
-            alloc.getMyDataStream().log({
-                status: "free",
-                carID: data.carID,
-                slotID: data.slotID,
-                postcode: data.postcode,
-                key: datastream.getDeviceId()
+            datastream.getLastValueSync().then(log => {
+                log.status = "free";
+                datastream.log(log);
+                freeSpots.push(log);
+                //share this on the channel that sensing is listening on
+                alloc.getMyDataStream().log({
+                    status: "free",
+                    carID: data.carID,
+                    slotID: data.slotID,
+                    postcode: data.postcode,
+                    key: datastream.getDeviceId()
+                });
+
+                //clear rejected list for this car
+                delete carRejects[data.carID];
             });
 
-            //clear rejected list for this car
-            delete carRejects[data.carID];
             break;
+        default: console.log("DID NOT MATCH ANY CASE");
     }
 });
 
 
 function freeSpotsFlow(inputFlow){
-    inputFlow.rootFlow.shouldCache = false; //we do not want the data to cache through the pipe
+    //inputFlow.rootFlow.shouldCache = false; //we do not want the data to cache through the pipe
 
     return inputFlow.select("data").runningReduce({custom: (cv, nv) => {
         if( cv == null )
@@ -254,5 +299,5 @@ function freeSpotsFlow(inputFlow){
     //     .where(stream => !stream.isEmpty()).select(stream => stream.lastValue()).where(json => json.status == "free");
 }
 
-allocSenseOut.start();
-allocResponseOut.start();
+allocSenseOut.setExtractDataTransformer().start();
+allocResponseOut.setExtractDataTransformer().start();

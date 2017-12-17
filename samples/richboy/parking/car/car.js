@@ -34,13 +34,14 @@ jcond{
 }
 
 jsync {isDevice} function getCarID() {
+    console.log("--- IN GET CAR ID FUNCTION ---");
     if( !carID )
         carID = ("car" + new Date().getTime() + Math.random()).replace(/\./g, "");
     return carID;
 }
 
-jasync {isDevice} function launch(){ //this method is only available at the device level
-    console.log("\n\n --------------- GOT INSIDE HERE  ---------- \n\n");
+//jasync {isDevice} function launch(){ //this method is only available at the device level
+if( JAMManager.isDevice ){
     //generate car id
     if( !carID )
         carID = ("car" + new Date().getTime() + Math.random()).replace(/\./g, "");
@@ -58,23 +59,22 @@ jasync {isDevice} function launch(){ //this method is only available at the devi
         });
         client.on('disconnect', function(){
             console.log("client disconnected");
-            client.emit("id", {carID: carID, currentSpot: currentSpot});
         });
         client.on('request', function(data){//request for parking spot
-            request.log(data);
+            request.getMyDataStream().log(data);   //since there exists only one c at the device level. One pair for each car
         });
         client.on('accept', function(data){//accept parking spot
             currentSpot = tempSpot;
-            park(currentSpot.postcode, currentSpot.label);
-            request.log(data);
+            //park(currentSpot.postcode, currentSpot.label);
+            request.getMyDataStream().log(data);   //since there exists only one c at the device level. One pair for each car
         });
         client.on('reject', function(data){//reject parking spot
             tempSpot = null;
-            request.log(data);
+            request.getMyDataStream().log(data);   //since there exists only one c at the device level. One pair for each car
         });
         client.on('leave', function(data){//leave parking spot. Ideally this should not be the case
             currentSpot = null;
-            request.log(data);
+            request.getMyDataStream().log(data);   //since there exists only one c at the device level. One pair for each car
         });
     });
     server.listen(JAMManager.port - 0 + 1);    //get the data depot port and add one to it
@@ -86,12 +86,11 @@ jasync {isDevice} function launch(){ //this method is only available at the devi
     //since the broadcast at the C is not yet working, for now lets use J->C when we get to the device level
     resp.addHook(function(pack){
         if( pack.origin === "parent" ){//only pay attention to broadcasts from the fog
+            console.log("IN BROADCAST HOOK FOR DEVICE");
             var message = pack.message;
             //since this is a broadcast, check if it concerns this node
             if( message.carID != carID )
                 return;
-
-
 
             //check if the allocator found a spot for us
             if( message.messageType == 2 ){ //no spot was found
@@ -105,7 +104,7 @@ jasync {isDevice} function launch(){ //this method is only available at the devi
 
             if( message.isPreferred == 1 ){//this is our preferred area
                 currentSpot = message;  //save as current spot
-                park(message.postcode, message.label);  //send to the C-side
+                //park(message.postcode, message.label);  //send to the C-side
                 //send to visualizer to process
                 clientSocket.emit("response", message);
             }
@@ -119,13 +118,18 @@ jasync {isDevice} function launch(){ //this method is only available at the devi
     });
 }
 
-setTimeout(launch, 2000);    //begin running code at the device level
-carRequestOut.start();  //start the outflow to listen and send data out to allocator
+//setTimeout(launch, 2000);    //begin running code at the device level
+if( JAMManager.isFog )
+    carRequestOut.setExtractDataTransformer().start();  //start the outflow to listen and send data out to allocator
 
 
 //no need to use jcond to make this function run only at the fog level because no sharing will be done by the
 //allocator at the device level
 allocCarAssignIn.setTerminalFunction(function(data){
+    if( typeof data === "string" ){
+        console.log("allocCarAssignIn input data in car.js is string");
+        data = JSON.parse(data);
+    }
     //TODO data received, use J->J to send the data to the level below
     //For now let us use broadcaster to push the data down
     resp.broadcast(data);   //data should have the structure in the resp struct

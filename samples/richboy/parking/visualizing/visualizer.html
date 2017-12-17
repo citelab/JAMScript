@@ -12,9 +12,15 @@
         var fogs = {};
         var isCloud = false;
         var ids = 1;
+        //        socket.on('connect', function(){
+        //            console.log('Connected to Server');
+        //            socket.emit('all', {});
+        //        });
         socket.on('state', function(data){   //new data received
-            if( data.cloud && !isCloud )
+            if( data.cloud && !isCloud ) {
                 $(document.body).append($('<h1 style="text-align: center">Cloud ' + data.cloud + '</h1>'));
+                isCloud = true;
+            }
 
             if( !fogs[data.fog] ){
                 var div = $('<div/>', {style: "padding-top: 15px; padding-bottom: 15px; margin-bottom: 15px; border-bottom: 1px solid #999"});
@@ -30,12 +36,12 @@
             if( !fogs[data.fog].entries[data.key] ){
                 var box = new Box();
                 box.id = "box" + (ids++);
-                b.style.textAlign = "center";
-                b.style.verticalAlign = "middle";
-                b.setProperty("hasCar", false);
+                box.style.textAlign = "center";
+                box.style.verticalAlign = "middle";
+                box.setProperty("hasCar", false);
                 var color = "#FFF";
                 if( Object.keys(fogs[data.fog].entries).length % 2 === 0 ) {
-                    b.style.backgroundColor = "#EEE";
+                    box.style.backgroundColor = "#EEE";
                     color = "#EEE";
                 }
                 fogs[data.fog].entries[data.key] = {box: box, label: data.label, color: color};
@@ -44,13 +50,19 @@
 
             var entry = fogs[data.fog].entries[data.key];
             entry.box.setProperty("hasCar", false);
-            var html = entry.label + "<p>&nbsp;</p>";
-            if( status == "occupied" ) {
-                html += '<img src="car.png" style="width: ' + (parseInt(box.style.width) - 10) + 'px" />';
+            var html = entry.label + "<br/><br/>";
+            console.log(data.status);
+            if( data.status == "occupied" ) {
+                entry.box.style.backgroundColor = entry.color;
+                html += '<img src="car.png" style="width: ' + (parseInt(entry.box.style.width) - 10) + 'px" />';
                 entry.box.setProperty("hasCar", true);
             }
-            else if( status == "onhold" )
+            else if( data.status == "onhold" ) {
                 entry.box.style.backgroundColor = "yellow";
+                html += '<span><em>ON HOLD</em></span>';
+            }
+            else
+                entry.box.style.backgroundColor = entry.color;
             entry.box.innerHTML = html;
         });
     </script>

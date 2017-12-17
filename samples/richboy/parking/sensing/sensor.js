@@ -49,17 +49,16 @@ jcond{
 }
 
 //function to share the data only at the fog level
-jasync {isFog} function shareOnFog(){
-    sensingOut.start(); //start sharing on the fog
+if( JAMManager.isFog ){
+    sensingOut.setExtractDataTransformer().start(); //start sharing on the fog
 }
 
-shareOnFog();
 
 function spotFlowFunc(inputFlow){
     return inputFlow;
 }
 
-jasync {isFog} function isFogRunning(){
+jsync {isFog} function isFogRunning(){
     return 1;
 }
 
@@ -87,8 +86,10 @@ jsync {isDevice} function getStreamKey(assignedID) {//
         var lastValue = spot[i].getLastValue();
         if( lastValue == null )
             continue;
-        if( lastValue.assignedID && lastValue.assignedID == assignedID )
+        if( lastValue.assignedID && lastValue.assignedID == assignedID ) {
+            console.error("Found Stream Key");
             return spot[i].getDeviceId();
+        }
     }
     console.error("Did not find Stream Key");
     return "null";
@@ -117,9 +118,40 @@ jasync {isDevice} function addBroadcastHook(){
     });
 }
 
+spot.findAllStreams();  //get all the streams from Redis which may not yet be loaded in memory
+
+//subscribe to when parent comes online and then push the last data from all the streams, but only one that is not null
+var subObj = {
+    func: function(info, redis, parentLevel){
+        if( parentLevel == "fog" ){ //this will execute only on the device
+            JAMManager.removeParentUpSub(subObj);   //only do this on first connection
+
+            //setup the device to only push values having the required key to the fog
+            for(var i = 0; i < spot.size(); i++){
+                (function(dSpot){
+                    var poll = function(s){
+                        if( s.getLastValue() == null ||  s.getLastValue().key == "null" )
+                            setTimeout(() => poll(s), 100);
+                        else
+                            JAMManager.simpleLog(s.key, s.getLastValue(), null, JAMManager.getParentRedisLogger());
+                    };
+                    poll(dSpot);
+                })(spot[i]);
+            }
+        }
+    },
+    context: null
+};
+
+JAMManager.addParentUpSub(subObj);
+
 //no need to use jcond to make this function run only at the fog level because no sharing will be done by the
 //allocator at the device level
 allocSensorIn.setTerminalFunction(function(data){
+    if( typeof data === "string" ){
+        console.log("allocSensorIn input data in sensor.js is string");
+        data = JSON.parse(data);
+    }
     //TODO data received, use J->J to send the data to the level below
     //For now let us use broadcaster to push the data down
     assignment.broadcast(data);   //data should have the structure in the response struct
