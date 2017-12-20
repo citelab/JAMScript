@@ -18,7 +18,8 @@
     "terminal-kit": "latest",
     "yargs-parser": "latest",
     "camelcase": "latest",
-    "figlet": "latest"
+    "figlet": "latest",
+    "node-cmd": "latest"
   },
   "bin": {
     "jamshell": "index.js"

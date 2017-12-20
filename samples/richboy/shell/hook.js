@@ -5,6 +5,7 @@
 'use strict';
 
 var camelCase = require('camelcase');
+var fs = require('fs');
 
 /**
  * This class defines common methods for hooking onto the shell app
@@ -15,7 +16,7 @@ class Hook{
      * @param opts The option settings
      */
     constructor(opts){
-        this.prompt = "App> ";  //the prompt text
+        this.prompt = "|> ";  //the prompt text
         this.terminal = opts.terminal; //The reference to the terminal library
         this.trigger = "\n";   //the trigger character that causes code execution
         this.args = opts.args;
@@ -23,6 +24,7 @@ class Hook{
         this.figlet = opts.figlet;   //An ascii banner drawing library object handle
         this.banner = null;
         this.bannerColor = "black";
+        this.type = opts.type;
     }
 
     /**
@@ -36,6 +38,32 @@ class Hook{
             }));
             console.log("\n");
         }
+    }
+
+    /**
+     * This is used to get the prompt and resolve when an input or error is encountered
+     * It can be overridden to provide a custom implementation on when to show the prompt
+     * @returns {Promise}
+     */
+    getInput(history){
+        var self = this;
+        return new Promise((resolve, reject) => {
+            self.terminal.inputField(
+                {
+                    history: history,
+                    tokenHook: self.tokenizer,
+                    autoCompleteHint: true,
+                    autoComplete: self.getAutoCompleteData()
+                },
+                (err, input) => {
+                    if( err )
+                        reject(err);
+                    else {
+                        resolve(input);
+                    }
+                }
+            );
+        });
     }
 
     /**
@@ -64,7 +92,12 @@ class Hook{
      * This method is called whenever the trigger text is encountered
      * @param code the code to execute
      */
-    execute(code){}
+    execute(code){
+    }
+
+    writeToHistory(code){
+        fs.appendFile(this.type + '_history.txt', code + "\n", 'utf8', function(){});
+    }
 
     /**
      * this method will be called whenever the process is about to quit
@@ -133,12 +166,18 @@ class Hook{
 
         //build the command arguments...the arguments after the main command that are not options
         var cmdArgs = obj.cmd.match(/(<[a-zA-Z]+[a-zA-Z0-9_]*>)/g);
-        var pos = 1;
+
+        var cmdParts = cmdArgs.length > 0 ? obj.cmd.substring(0, obj.cmd.indexOf(cmdArgs[0])).trim().split(/\s+/) : [''];
+        if( cmdParts[cmdParts.length - 1].trim() === "" )
+            cmdParts.splice(cmdParts.length - 1, 1);
+
+        var pos = cmdArgs.length > 0 ? cmdParts.length : 1;
         for( let cmdArg of cmdArgs ){
             cmdArg = camelCase(cmdArg.substring(1, cmdArg.length - 1));
             if( parsed[cmdArg] )
                 throw new Error("Duplicate: Command argument '%s' conflicts with another or some option", cmdArg);
             parsed[cmdArg] = pos < parsed._.length ? parseType(cmdArg, parsed._[pos++], types) : null;
+            //console.log("parsed:", cmdArg, " " , parsed[cmdArg]);
         }
 
         //check if command was used in options or in command arguments
@@ -162,6 +201,8 @@ function parseType(key, text, types){
         type = "number";
     if( types.boolean.indexOf(key) >= 0 )
         type = "boolean";
+
+    //console.log(key, text, type);
 
     switch(type){
         case "number":
