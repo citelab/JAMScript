@@ -123,6 +123,8 @@ typedef struct _jamstate_t
     threadsem_t *bgsem;
     threadsem_t *jdsem;
 
+    int registered;
+    
 } jamstate_t;
 
 

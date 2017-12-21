@@ -131,6 +131,8 @@ corestate_t *core_init(int serialnum)
     cs->cf_pending = true;
     cs->serial_num = serialnum;
 
+    // redserver and redport are already initialized to NULL and 0, respectively
+    //
     core_setup(cs);
     return cs;
 }
@@ -245,5 +247,6 @@ void core_check_pending(corestate_t *cs)
         if (!cs->mqttenabled[i])
             flag = true;
 
+    // cf_pending is true if we are still seeking information.
     cs->cf_pending = flag;
 }

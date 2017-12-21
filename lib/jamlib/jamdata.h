@@ -70,9 +70,6 @@ char *jamdata_encode(char *fmt, ...);
 void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...);
 void jamdata_log_to_server(char *ns, char *lname, char *value, int iscbor);
 
-
-
-
 jambroadcaster_t *jambroadcaster_init(int mode, char *ns, char *varname);
 jambroadcaster_t *create_jambroadcaster(int mode, char *ns, char *varname);
 char *get_bcast_value(jambroadcaster_t *bcast);

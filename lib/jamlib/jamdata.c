@@ -127,8 +127,9 @@ void *jamdata_init(void *jsp)
     // Just send a test value to bootup the event loop..
     // There is no significance to this data.
     // The actual data transfer takes place in the callback entered afterwards
-    char *key = jamdata_makekey("test", "s");
-    __jamdata_logto_server(js->redctx, key, "dummy_value", jamdata_logger_cb, 0);
+
+    // char *key = jamdata_makekey("test", "s");
+    //__jamdata_logto_server(js->redctx, key, "dummy_value", jamdata_logger_cb, 0);
 
     thread_signal(js->jdsem);
 
@@ -532,6 +533,9 @@ void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...)
 }
 
 
+// One connection for each broadcaster...?
+// TODO: Is this efficient?
+//
 void *jambcast_runner(void *arg)
 {
     jambroadcaster_t *jval = arg;

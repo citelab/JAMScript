@@ -40,17 +40,26 @@ extern list_elem_t *cache;
 extern int cachesize;
 extern char app_id[64];
 
+
+// Helper functions..
+
+void send_register(corestate_t *cs, int level)
+{
+    command_t *cmd;
+
+    cmd = command_new("REGISTER", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
+    mqtt_publish(cs->mqttserv[level], "/admin/request/all", cmd);
+}
+
+
 void on_dev_connect(void* context, MQTTAsync_successData* response)
 {
-    command_t *scmd;
-
     corestate_t *cs = (corestate_t *)context;
 
     // Set the subscriptions
     core_set_subscription(cs, 0);
-
-    scmd = command_new("REGISTER", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
-    mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd);
+    // This may not work.. because the REGISTER is going to the MQTT broker!
+    send_register(cs, 0);
 
     // NOTE: For now, I am putting the mqttenabled flag setting here.
     // This is for the device.
@@ -61,16 +70,11 @@ void on_dev_connect(void* context, MQTTAsync_successData* response)
 
 void on_fog_connect(void* context, MQTTAsync_successData* response)
 {
-    command_t *scmd;
     corestate_t *cs = (corestate_t *)context;
 
     // Set the subscriptions
     core_set_subscription(cs, 1);
-
-    printf(">>>>>>>>>>>>>>On Fog connection \n");
-
-    scmd = command_new("REGISTER", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
-    mqtt_publish(cs->mqttserv[1], "/admin/request/all", scmd);
+    send_register(cs, 1);
 
     // NOTE: For now, I am putting the mqttenabled flag setting here.
     // This is for the fog.
@@ -82,16 +86,11 @@ void on_fog_connect(void* context, MQTTAsync_successData* response)
 
 void on_cloud_connect(void* context, MQTTAsync_successData* response)
 {
-    command_t *scmd;
     corestate_t *cs = (corestate_t *)context;
 
     // Set the subscriptions
     core_set_subscription(cs, 2);
-
-    printf(">>>>>>>>>>>>>> On Cloud connection \n");
-
-    scmd = command_new("REGISTER", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
-    mqtt_publish(cs->mqttserv[2], "/admin/request/all", scmd);
+    send_register(cs, 2);
 
     // NOTE: For now, I am putting the mqttenabled flag setting here.
     // This is for the cloud.
@@ -445,6 +444,7 @@ void jwork_process_device(jamstate_t *js)
         else
         if (strcmp(rcmd->cmd, "REGISTER-ACK") == 0)
         {
+            js->registered = true;
             command_t *scmd = command_new("GET-CF-INFO", "-", "-", 0, "-", "-", js->cstate->device_id, "");
             mqtt_publish(js->cstate->mqttserv[0], "/admin/request/all", scmd);
             // We are done with
@@ -455,6 +455,9 @@ void jwork_process_device(jamstate_t *js)
         {
             // If registration is still not complete.. send another registration
             // Although this could be a very rare event.. (missing REGISTER message)
+
+            if (!js->registered)
+                send_register(js->cstate, 0);
 
             // If CF information is still pending.. send a REFRESH to get the
             // latest information... the callback is already there..
