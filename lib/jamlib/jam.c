@@ -69,7 +69,6 @@ jamstate_t *jam_init(int serialnum)
     // Initialize the overflow detector
     odcount = ODCOUNT_MAX;
 
-
     // Initialize the jconditional
     jcond_init();
     jcond_eval_str("var sys = {type: 'device'};");
@@ -83,9 +82,6 @@ jamstate_t *jam_init(int serialnum)
     }
 
     jcond_eval_str("function jcondContext(a) { return eval(a); }");
-
-
-    core_set_redis(js->cstate, "127.0.0.1", 6379);
 
     // Initialization of the activity and task tables
     // This is kind of an hack. There should be a better way structuring the code
@@ -108,22 +104,30 @@ jamstate_t *jam_init(int serialnum)
     js->synctimer = timer_init("synctimer");
 
     js->bgsem = threadsem_new();
-    js->jdsem = threadsem_new();
-
-    int rval;
-#ifdef DEBUG_LVL1
-        printf("Jdata initialization... \t\t[started]\n");
+#ifdef linux
+    sem_init(&js->jdsem, 0, 0);
+#elif __APPLE__
+    char semname[64];
+    sprintf(semname, "/jdsem-%d", getpid());
+    sem_unlink(semname);
+    js->jdsem = sem_open(semname, O_CREAT|O_EXCL, 0644, 0);
+    if (js->jdsem == SEM_FAILED)
+        perror("sem_open_icount");
 #endif
 
+#ifdef DEBUG_LVL1
+    printf("Jdata initialization... \t\t[started]\n");
+#endif
+
+    int rval;
     rval = pthread_create(&(js->jdthread), NULL, jamdata_init, (void *)js);
     if (rval != 0) {
         perror("ERROR! Unable to start the jamdata thread");
         exit(1);
     }
-    task_wait(js->jdsem);
 
 #ifdef DEBUG_LVL1
-        printf("Worker bgthread initialization... \t\t[started]\n");
+    printf("Worker bgthread initialization... \t\t[started]\n");
 #endif
     rval = pthread_create(&(js->bgthread), NULL, jwork_bgthread, (void *)js);
     if (rval != 0) {
@@ -131,11 +135,13 @@ jamstate_t *jam_init(int serialnum)
         exit(1);
     }
 
+    // We wait until we get an ack for the REGISTER message from the J side
     task_wait(js->bgsem);
 
 #ifdef DEBUG_LVL1
-        printf("JAM Library initialization... \t\t[completed]\n");
+    printf("JAM Library initialization... \t\t[completed]\n");
 #endif
+
     return js;
 }
 

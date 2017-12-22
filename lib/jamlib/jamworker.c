@@ -51,6 +51,29 @@ void send_register(corestate_t *cs, int level)
     mqtt_publish(cs->mqttserv[level], "/admin/request/all", cmd);
 }
 
+void send_infoquery(corestate_t *cs)
+{
+    command_t *cmd;
+
+    cmd = command_new("REF-CF-INFO", "-", "-", 0, "-", "-", cs->device_id, "");
+    mqtt_publish(cs->mqttserv[0], "/admin/request/all", cmd);
+}
+
+
+void jam_set_redis(jamstate_t *js, char *server, int port)
+{
+    js->cstate->redserver = strdup(server);
+    js->cstate->redport = port;
+
+    // signal the waiting threads...
+#ifdef linux
+    sem_post(&js->jdsem);
+#elif __APPLE__
+    sem_post(js->jdsem);
+#endif
+
+}
+
 
 void on_dev_connect(void* context, MQTTAsync_successData* response)
 {
@@ -416,7 +439,6 @@ void jwork_process_device(jamstate_t *js)
 {
     // Get the message from the device to process
     //
-
     nvoid_t *nv = queue_deq(js->deviceinq);
     if (nv == NULL) return;
 
@@ -447,7 +469,8 @@ void jwork_process_device(jamstate_t *js)
             js->registered = true;
             command_t *scmd = command_new("GET-CF-INFO", "-", "-", 0, "-", "-", js->cstate->device_id, "");
             mqtt_publish(js->cstate->mqttserv[0], "/admin/request/all", scmd);
-            // We are done with
+
+            // We are done with registration...
             thread_signal(js->bgsem);
         }
         else
@@ -455,22 +478,31 @@ void jwork_process_device(jamstate_t *js)
         {
             // If registration is still not complete.. send another registration
             // Although this could be a very rare event.. (missing REGISTER message)
-
             if (!js->registered)
                 send_register(js->cstate, 0);
 
             // If CF information is still pending.. send a REFRESH to get the
             // latest information... the callback is already there..
-
             if (js->cstate->cf_pending)
-            {
-                command_t *scmd = command_new("REF-CF-INFO", "-", "-", 0, "-", "-", js->cstate->device_id, "");
-                mqtt_publish(js->cstate->mqttserv[0], "/admin/request/all", scmd);
-            }
+                send_infoquery(js->cstate);
         }
         else
         if (strcmp(rcmd->cmd, "PUT-CF-INFO") == 0)
         {
+            if (strcmp(rcmd->actarg, "redis") == 0)
+            {
+                if (rcmd->nargs == 2)
+                {
+                    char *host = rcmd->args[0].val.sval;
+                    int port;
+                    if (rcmd->args[1].type == INT_TYPE)
+                        port = rcmd->args[1].val.ival;
+                    else
+                        port = atoi(rcmd->args[1].val.sval);
+                    jam_set_redis(js, host, port);
+                }
+            }
+            else
             if (strcmp(rcmd->actarg, "fog") == 0)
             {
                 if  (strcmp(rcmd->opt, "ADD") == 0)

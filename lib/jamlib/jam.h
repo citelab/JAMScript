@@ -121,10 +121,14 @@ typedef struct _jamstate_t
     pthread_t jdthread;
 
     threadsem_t *bgsem;
-    threadsem_t *jdsem;
+#ifdef linux
+    sem_t jdsem;
+#elif __APPLE__
+    sem_t *jdsem;
+#endif
 
     int registered;
-    
+
 } jamstate_t;
 
 
@@ -167,6 +171,10 @@ void process_missing_replies(jactivity_t *jact, int nreplies, int ecount);
 /*
  * Functions defined in jamworker.c
  */
+
+void send_register(corestate_t *cs, int level);
+void send_infoquery(corestate_t *cs);
+void jam_set_redis(jamstate_t *js, char *server, int port);
 void *jwork_bgthread(void *arg);
 void jwork_set_subscriptions(jamstate_t *js);
 

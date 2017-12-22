@@ -97,20 +97,23 @@ void *jamdata_init(void *jsp)
     js->eloop = event_base_new();
     js->bloop = event_base_new();
 
-    // Do we have a server location set for Redis?
-    if (js->cstate->redserver != NULL && js->cstate->redport != 0)
+    // If we don't have a redis server location set.. wait
+    if (js->cstate->redserver == NULL)
+    #ifdef linux
+        sem_wait(&js->jdsem);
+    #elif __APPLE__
+        sem_wait(js->jdsem);
+    #endif
+#ifdef linux
+    sem_post(&js->jdsem);
+#elif __APPLE__
+    sem_post(js->jdsem);
+#endif
+
+    js->redctx = redisAsyncConnect(js->cstate->redserver, js->cstate->redport);
+    if (js->redctx->err)
     {
-        js->redctx = redisAsyncConnect(js->cstate->redserver, js->cstate->redport);
-        if (js->redctx->err)
-        {
-            printf("ERROR! Connecting to the Redis server at %s:%d\n", js->cstate->redserver, js->cstate->redport);
-            exit(1);
-        }
-    }
-    else
-    {
-        printf("ERROR! Redis server location unknown. Failed to initialize JAM data\n");
-        printf("Exiting...\n\n");
+        printf("ERROR! Connecting to the Redis server at %s:%d\n", js->cstate->redserver, js->cstate->redport);
         exit(1);
     }
 
@@ -118,7 +121,6 @@ void *jamdata_init(void *jsp)
     if (strlen(app_id) == 0)
         strncpy(app_id, DEFAULT_APP_NAME, sizeof(app_id) - 1);
     strncpy(dev_id, js->cstate->device_id, sizeof(dev_id) - 1);
-
 
     redisLibeventAttach(js->redctx, js->eloop);
     redisAsyncSetConnectCallback(js->redctx, jamdata_def_connect);
@@ -128,10 +130,8 @@ void *jamdata_init(void *jsp)
     // There is no significance to this data.
     // The actual data transfer takes place in the callback entered afterwards
 
-    // char *key = jamdata_makekey("test", "s");
-    //__jamdata_logto_server(js->redctx, key, "dummy_value", jamdata_logger_cb, 0);
-
-    thread_signal(js->jdsem);
+    char *key = jamdata_makekey("test", "s");
+    __jamdata_logto_server(js->redctx, key, "dummy_value", jamdata_logger_cb, 0);
 
     event_base_dispatch(js->eloop);
 
@@ -539,6 +539,22 @@ void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...)
 void *jambcast_runner(void *arg)
 {
     jambroadcaster_t *jval = arg;
+
+    // Wait if there is no redserver -
+    // There could be a potential race here - a 'break' between if - taskwait
+    // We avoid it here - because we are only using this 'one shot'
+    //
+    if (js->cstate->redserver == NULL)
+    #ifdef linux
+        sem_wait(&js->jdsem);
+    #elif __APPLE__
+        sem_wait(js->jdsem);
+    #endif
+#ifdef linux
+    sem_post(&js->jdsem);
+#elif __APPLE__
+    sem_post(js->jdsem);
+#endif
 
     //Create new context for the jdata. One unique connection for each variable.
     jval->redctx = redisAsyncConnect(js->cstate->redserver, js->cstate->redport);

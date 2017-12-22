@@ -138,12 +138,6 @@ corestate_t *core_init(int serialnum)
 }
 
 
-void core_set_redis(corestate_t *cs, char *server, int port)
-{
-    cs->redserver = strdup(server);
-    cs->redport = port;
-}
-
 
 void core_createserver(corestate_t *cs, int indx, char *url)
 {
