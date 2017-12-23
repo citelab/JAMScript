@@ -97,6 +97,11 @@ void *jamdata_init(void *jsp)
     js->eloop = event_base_new();
     js->bloop = event_base_new();
 
+    // setup the app_id and dev_id locally.
+    if (strlen(app_id) == 0)
+        strncpy(app_id, DEFAULT_APP_NAME, sizeof(app_id) - 1);
+    strncpy(dev_id, js->cstate->device_id, sizeof(dev_id) - 1);
+
     // If we don't have a redis server location set.. wait
     if (js->cstate->redserver == NULL)
     #ifdef linux
@@ -116,11 +121,6 @@ void *jamdata_init(void *jsp)
         printf("ERROR! Connecting to the Redis server at %s:%d\n", js->cstate->redserver, js->cstate->redport);
         exit(1);
     }
-
-    // setup the app_id and dev_id locally.
-    if (strlen(app_id) == 0)
-        strncpy(app_id, DEFAULT_APP_NAME, sizeof(app_id) - 1);
-    strncpy(dev_id, js->cstate->device_id, sizeof(dev_id) - 1);
 
     redisLibeventAttach(js->redctx, js->eloop);
     redisAsyncSetConnectCallback(js->redctx, jamdata_def_connect);
@@ -211,6 +211,7 @@ void jamdata_logger_cb(redisAsyncContext *c, void *r, void *privdata)
             char *value = cptr->arg2;
             int iscbor = cptr->iarg;
             // TODO: Free nv
+            // TODO: Free memory contained in nv
 
             __jamdata_logto_server(js->redctx, key, value, jamdata_logger_cb, iscbor);
             break;
