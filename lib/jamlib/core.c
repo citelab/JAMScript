@@ -36,80 +36,95 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "MQTTAsync.h"
 
 
-void core_setup(corestate_t *cs)
+void core_setup(corestate_t *cs, int port)
 {
     DIR *dir = NULL;
-    // We wait for the device.conf to show up..
-    // This is a by product of C nodes starting earlier than the J nodes
-    // that create the device.conf file.
+    FILE *fp = NULL;
+    char portstr[64];
+    char machtype[64];
+    char fname[64];
+
+    // Save the port..
+    cs->port = port;
+
+    // Spin for at most 60 seconds for the directory to show up
     //
-    for (int i = 0; (i < 10 && dir == NULL); i++)
+    sprintf(portstr, "%d", port);
+    for (int i = 0; (i < 60 && dir == NULL); i++)
     {
-        dir = opendir("./device.conf");
+        dir = opendir(portstr);
         sleep(1);
     }
 
     if (dir == NULL)
     {
-        printf("ERROR! Missing ./device.conf folder.\n");
-        printf("Start the J node first and then the C node\n");
-        printf("Start the C node from the same directory as the J node.\n");
+        printf("ERROR! Missing ./%d folder.\n", port);
         exit(1);
+    }
+
+    sprintf(fname, "./%d/machType", port);
+    // Spin again if needed for the machType in the directory to show up
+    for (int i = 0; (i < 10 && fp == NULL); i++)
+    {
+        fp = fopen(fname, "r");
+        sleep(1);
+    }
+
+    if (fp == NULL)
+    {
+        printf("ERROR! Opening the file %s\n", fname);
+        exit(1);
+    }
+
+    if (fscanf(fp, "%s", machtype) != 1)
+    {
+        printf("ERROR! Malformed device type in the configuration file\n");
+        exit(1);
+    }
+    if (strcmp(machtype, "device") != 0)
+    {
+        printf("ERROR! Can't connect C to a J of %s type\n", machtype);
+        exit(1);
+    }
+
+    sprintf(fname, "./%d/cdeviceId.%d", port, cs->serial_num);
+    if (access(fname, F_OK) != -1)
+    {
+        char devid[UUID4_LEN+1];
+        // Get the device ID from the file... check for consistency..
+        fp = fopen(fname, "r");
+        if (fp == NULL)
+        {
+            printf("ERROR! Opening the file %s\n", fname);
+            printf("Start the J node first and then the C node\n");
+            exit(1);
+        }
+        if (fscanf(fp, "%s", devid) != 1)
+        {
+            printf("ERROR! Malformed device ID found in the configuration file\n");
+            printf("Configuration file at %s is corrupted\n", fname);
+            exit(1);
+        }
+
+        cs->device_id = strdup(devid);
     }
     else
     {
-        char fname[64];
-        sprintf(fname, "./device.conf/port");
-        FILE *fp = fopen(fname, "r");
+        // Create the deviceId and store it..
+        char buf[UUID4_LEN];
+        uuid4_generate(buf);
+        cs->device_id = strdup(buf);
+
+        // Save it under fname..
+        fp = fopen(fname, "w");
         if (fp == NULL)
         {
-            printf("ERROR! Opening the port information file \n");
+            printf("ERROR! Unknown permission issue in opening the file %s\n", fname);
+            printf("Exiting.\n");
             exit(1);
         }
-        int port;
-        fscanf(fp, "%d", &port);
-        cs->port = port;
+        fprintf(fp, "%s", cs->device_id);
         fclose(fp);
-
-        sprintf(fname, "./device.conf/cdeviceId.%d", cs->serial_num);
-        if (access(fname, F_OK) != -1)
-        {
-            char devid[UUID4_LEN+1];
-            // Get the device ID from the file... check for consistency..
-            FILE *fp = fopen(fname, "r");
-            if (fp == NULL)
-            {
-                printf("ERROR! Opening the file %s\n", fname);
-                printf("Start the J node first and then the C node\n");
-                exit(1);
-            }
-            if (fscanf(fp, "%s", devid) != 1)
-            {
-                printf("ERROR! Malformed device ID found in the configuration file\n");
-                printf("Configuration file at %s is corrupted\n", fname);
-                exit(1);
-            }
-
-            cs->device_id = strdup(devid);
-        }
-        else
-        {
-            // Create the deviceId and store it..
-            char buf[UUID4_LEN];
-            uuid4_generate(buf);
-            cs->device_id = strdup(buf);
-
-            // Save it under fname..
-            FILE *fp = fopen(fname, "w");
-            if (fp == NULL)
-            {
-                printf("ERROR! Unknown permission issue in opening the file %s\n", fname);
-                printf("Exiting.\n");
-                exit(1);
-            }
-            fprintf(fp, "%s", cs->device_id);
-            fclose(fp);
-        }
     }
 }
 
@@ -119,7 +134,7 @@ void core_setup(corestate_t *cs)
 // of messages. The restriction is lifted after the core_init() phase is over.
 //
 
-corestate_t *core_init(int serialnum)
+corestate_t *core_init(int port, int serialnum)
 {
     #ifdef DEBUG_LVL1
         printf("Core initialization...");
@@ -133,7 +148,7 @@ corestate_t *core_init(int serialnum)
 
     // redserver and redport are already initialized to NULL and 0, respectively
     //
-    core_setup(cs);
+    core_setup(cs, port);
     return cs;
 }
 

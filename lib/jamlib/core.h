@@ -55,8 +55,8 @@ typedef struct _corestate_t
 // ------------------------------
 
 // Initialize the core.. the first thing we need to call
-corestate_t *core_init(int serialnum);
-void core_setup(corestate_t *cs);
+corestate_t *core_init(int port, int serialnum);
+void core_setup(corestate_t *cs, int port);
 void core_set_redis(corestate_t *cs, char *server, int port);
 void core_createserver(corestate_t *cs, int indx, char *url);
 void core_connect(corestate_t *cs, int indx, void (*onconnect)(void *, MQTTAsync_successData *));

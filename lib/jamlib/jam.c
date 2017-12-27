@@ -37,6 +37,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <pthread.h>
 
 int jamflag;
+int jamport;
 int odcount;
 list_elem_t *cache;
 int cachesize;
@@ -54,7 +55,7 @@ jamstate_t *jam_init(int serialnum)
 
     jamstate_t *js = (jamstate_t *)calloc(1, sizeof(jamstate_t));
 
-    js->cstate = core_init(serialnum);
+    js->cstate = core_init(jamport, serialnum);
 
     if (js->cstate == NULL)
     {
@@ -291,10 +292,12 @@ int jamargs(int argc, char **argv, char *appid, char *tag, int *num)
 
     // This is a global variable that indicates whether we are using jamrun or not
     jamflag = 0;
+    // Default port Number
+    jamport = 1883;
 
     opterr = 0;
 
-    while ((c = getopt (argc, argv, "a:jn:t:")) != -1)
+    while ((c = getopt (argc, argv, "p:a:jn:t:")) != -1)
         switch (c)
         {
             case 'a':
@@ -309,9 +312,12 @@ int jamargs(int argc, char **argv, char *appid, char *tag, int *num)
             case 't':
                 tvalue = optarg;
             break;
+            case 'p':
+                jamport = atoi(optarg);
+            break;
         default:
             printf("ERROR! Argument input error..\n");
-            printf("Usage: program -a app_id [-t tag] [-n num]\n");
+            printf("Usage: program -a app_id [-t tag] [-n num] [-p port]\n");
             exit(1);
         }
 

@@ -15,6 +15,8 @@ if [ -z $TMUX ]; then
 fi
 
 # No need to edit below this line unless you find a bug!
+## Some functions used in this script
+
 
 die() {
     printf '%s\n' "$1" >&2
@@ -24,9 +26,9 @@ die() {
 show_usage() {
     cat << EOF
 Usage: jamrun file.jxe [--app=appl_name] [--fog|--cloud] [--num=num_c_devs]
-                                    [--port=port_number] [--data=data-url]
+                                    [--data=data-url]
                                     [--tags=quoted_list_of_tags]
-                                    [--force]
+
 The jamrun command runs the given JAM executable (file.jxe).
 You specify the node type to run: cloud, fog, or device (by default).
 With device you start a J instance and one or more C instances.
@@ -38,20 +40,115 @@ running at the time. The MQTT broker will continue to run after the application
 has completed execution. The --data option takes a URL pointing to the data
 depot (Redis instance) to be used by the jdata subsystem.
 
-Use the --force option to use the latest version of the JAM executable.
-
 EOF
 }
 
 
+startmqtt() {
+    local port=$1
+
+    # Check whether the MQTT server is running.. if not start it
+    $MOSQUITTO_PUB -p $port -t "test" -m "hello"
+    if [ $? -ne 0 ]; then
+        echo "MQTT is not running at $port"
+        echo "Attempting to start MQTT at $port"
+        $MOSQUITTO -p $port &
+    fi
+}
+
+dojamout() {
+    local type=$1
+    local pnum=$2
+
+    startmqtt $pnum
+
+    case $type in
+        cloud)
+            if [ -z "$tags" ]; then
+                node jamout.js --app=$app --cloud --port=$pnum --data=$data
+            else
+                node jamout.js --app=$app --cloud --port=$pnum --data=$data --tags=$tags
+            fi
+            ;;
+        fog)
+            if [ -z "$tags" ]; then
+                node jamout.js --app=$app --fog --port=$pnum --data=$data
+            else
+                node jamout.js --app=$app --fog --port=$pnum --data=$data --tags=$tags
+            fi
+            ;;
+        device)
+            if [ -z "$tags" ]; then
+                node jamout.js --app=$app --port=$pnum --data=$data
+            else
+                node jamout.js --app=$app --port=$pnum --data=$data --tags=$tags
+            fi
+            ;;
+    esac
+}
+
+doaout() {
+    local counter=1
+    local indx=0
+    local num=$1
+    local port=$2
+    if [ -e a.out ]; then
+        chmod +x a.out
+    fi
+    while [ $counter -le $num ]; do
+        if [ -e a.out ]; then
+            # execute the program.. we are in the folder..
+            $TMUX send-keys -t $tmuxapp:0.$indx "./a.out -j -a $app -p $port -n $counter" C-m
+        fi
+        ((counter++))
+        ((indx++))
+    done
+}
+
+# This is always scanning for a command with 'node'
+portavailable() {
+    local folder=$1
+    local port=$2
+
+    if [ -d $folder/$port ]; then
+        if [ -e $folder/$port/processId ]; then
+            local pid=`cat $folder/$port/processId`
+            if [ ! -z $pid ]; then
+                porttaken=`ps -p $pid | grep node | wc -l`
+            else
+                porttaken=0
+            fi
+        else
+            porttaken=0
+        fi
+    else
+        porttaken=0
+    fi
+
+}
+
+
+setuptmux() {
+    tmuxapp=$app_$1
+
+    if [ "$type" == "device" ]; then
+        $TMUX new -s $tmuxapp -d
+        counter=1
+        while [ $counter -le $num ]; do
+            $TMUX split-window -v -t $tmuxapp
+            $TMUX select-layout -t $tmuxapp tiled
+            ((counter++))
+        done
+    fi
+}
+
 # Initialize all the option variables.
 app=testapp
-port=1883
 type=device
 data=127.0.0.1
 num=1
-force=
 tags=
+porttaken=0
 
 file=$1
 shift
@@ -112,20 +209,6 @@ while :; do
         --tags=)            # Handle the case of an empty
             die 'ERROR: "--tags" requires a non-empty option argument.'
             ;;
-        -p|--port)           # Takes an option argument; ensure it has been specified.
-            if [ "$2" ]; then
-                port=$2
-                shift
-            else
-                die 'ERROR: "--port" requires a non-empty option argument.'
-            fi
-            ;;
-        --port=?*)
-            port=${1#*=}     # Delete everything up to "=" and assign the remainder.
-            ;;
-        --port=)            # Handle the case of an empty
-            die 'ERROR: "--port" requires a non-empty option argument.'
-            ;;
         -n|--num)           # Takes an option argument; ensure it has been specified.
             if [ "$2" ]; then
                 num=$2
@@ -170,9 +253,6 @@ while :; do
                 num=
             fi
             ;;
-        -r|--force)
-            force=1
-            ;;
         --)              # End of all options.
             shift
             break
@@ -193,93 +273,69 @@ if [ "$type" != "device" ] && [ -n "$num" ]; then
     die "number of devices can't be speciied for fog/cloud"
 fi
 
-if [ "$type" == "device" ] && $TMUX has-session -t $app ; then
-    echo "ERROR! Another jamrun session is running for $app."
-    die "Run 'jamkill' or 'jamkill --app=app_name'."
-fi
-
 
 if [ -e "$file" ]; then
 
-    # Check whether the MQTT server is running.. if not start it
-    $MOSQUITTO_PUB -p $port -t "test" -m "hello"
-    if [ $? -ne 0 ]; then
-        echo "MQTT is not running at $port"
-        echo "Attempting to start MQTT at $port"
-        $MOSQUITTO -p $port &
-    fi
 
+    jamfolder=$HOME"/__jamruns"
+    if [ ! -d $jamfolder ]; then
+        mkdir $jamfolder
+    fi
     # Get the folder
     filenoext="${file%.*}"
-    folder=$filenoext"_"$app
+    folder=$HOME"/__jamruns/"$filenoext"_"$app
     if [ ! -d "$folder" ]; then
         mkdir $folder
     fi
 
     # unzip the executable in the folder and run it..
-    if [ -n "$force" ]; then
-        unzip $file -d $folder
-        if [ $? -ne 0 ]; then
-            die "Problem reading file: $file"
-        fi
-    else
-        if [ ! -e $folder/jamout.js ] && [ ! -e $folder/a.out ]; then
-            unzip $file -d $folder
-            if [ $? -ne 0 ]; then
-                die "Problem reading the file: $file"
-            fi
-        fi
+    # We are unzipping the copying the files no matter what!
+    unzip -oq $file -d $folder
+    if [ $? -ne 0 ]; then
+        die "Problem reading file: $file"
     fi
 
     cd $folder
-    if [ "$type" == "device" ]; then
-        $TMUX new -s $app -d
-        counter=1
-        while [ $counter -le $num ]; do
-            $TMUX split-window -v -t $app
-            $TMUX select-layout -t $app tiled
-            ((counter++))
-        done
-    fi
+
 
     if [ -e jamout.js ]; then
         # execute the program.. we are in the folder..
+
         case $type in
             cloud)
-                if [ -z "$tags" ]; then
-                    node jamout.js --app=$app --cloud --port=$port --data=$data
-                else
-                    node jamout.js --app=$app --cloud --port=$port --data=$data --tags=$tags
-                fi
-                ;;
-            fog)
-                if [ -z "$tags" ]; then
-                    node jamout.js --app=$app --fog --port=$port --data=$data
-                else
-                    node jamout.js --app=$app --fog --port=$port --data=$data --tags=$tags
-                fi
-                ;;
-            device)
-                # First start the C nodes...
-                counter=1
-                indx=0
-                while [ $counter -le $num ]; do
-                    if [ -e a.out ]; then
-                        chmod +x a.out
-                        # execute the program.. we are in the folder..
-                        $TMUX send-keys -t $app:0.$indx "./a.out -j -a $app -n $counter" C-m
-                    fi
-                    ((counter++))
-                    ((indx++))
+                iport=9883
+                while [ : ]; do
+                    portavailable $folder $iport
+                    [[ $porttaken == 1 ]] || break
+                    ((iport++))
                 done
-
-                # Then start the J node
-                if [ -z "$tags" ]; then
-                    node jamout.js --app=$app --port=$port --data=$data
-                else
-                    node jamout.js --app=$app --port=$port --data=$data --tags="$tags"
-                fi
-                ;;
+                dojamout $type $iport
+            ;;
+            fog)
+                iport=5883
+                while [ : ]; do
+                    portavailable $folder $iport
+                    [[ $porttaken == 1 ]] || break
+                    ((iport++))
+                done
+                dojamout $type $iport
+            ;;
+            device)
+                iport=1883
+                echo "Hello... "
+                while [ : ]; do
+                    portavailable $folder $iport
+                    echo "Porttaken " $porttaken
+                    if [ $porttaken == 0 ]; then
+                        break
+                    fi
+                    echo "Incrementing..."
+                    ((iport++))
+                done
+                setuptmux $iport
+                doaout $num $iport
+                dojamout $type $iport
+            ;;
         esac
     else
         die "File: $file is not a valid JAMScript executable"
