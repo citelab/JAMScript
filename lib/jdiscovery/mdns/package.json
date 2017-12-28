@@ -1,85 +1,104 @@
 {
-  "name": "mdns",
-  "version": "2.3.3",
-  "description": "multicast DNS service discovery",
-  "main": "./lib/mdns.js",
-  "scripts": {
-    "test": "node utils/testrun"
+  "_from": "mdns",
+  "_id": "mdns@2.3.4",
+  "_inBundle": false,
+  "_integrity": "sha512-Z4WTKeTukCtJG53SS3BGNnsGkHdIXNZa9nwGMYeoohU1AjEBPS3c/1vIx95SEfeQKYduuOMTo1E4RfXDUt2ZYg==",
+  "_location": "/mdns",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "mdns",
+    "name": "mdns",
+    "escapedName": "mdns",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
   },
-  "keywords": [
-    "zeroconf",
-    "bonjour",
-    "dns_sd",
-    "mDNSResponder"
+  "_requiredBy": [
+    "#USER",
+    "/"
   ],
-  "devDependencies": {
-    "ejs": "*",
-    "less": "*",
-    "mkdirp": "*",
-    "nopt": "*",
-    "slide": "*",
-    "glob": "*",
-    "ncp": "*",
-    "minimatch": "*",
-    "proxyquire": "^1.7.3"
+  "_resolved": "https://registry.npmjs.org/mdns/-/mdns-2.3.4.tgz",
+  "_shasum": "650380ac76089430cf6c8981a945dbd27d02f5b7",
+  "_spec": "mdns",
+  "_where": "/Users/kstricks/Documents/McGill/4thyear/second_term/400/JAMScript-beta",
+  "author": {
+    "name": "David Siegel",
+    "email": "agnat@me.com"
   },
-  "repository": {
-    "type": "git",
-    "url": "http://github.com/agnat/node_mdns.git"
-  },
-  "homepage": "http://agnat.github.com/node_mdns",
   "bugs": {
     "url": "http://github.com/agnat/node_mdns/issues"
   },
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "http://github.com/agnat/node_mdns/raw/master/LICENSE"
-    }
-  ],
-  "author": {
-    "name": "David Siegel",
-    "email": "david@artcom.de",
-    "github": "agnat"
-  },
+  "bundleDependencies": false,
   "contributors": [
     {
       "name": "Orlando Vazquez",
       "email": "ovazquez@gmail.com",
-      "url": "http://or.lan.do/",
-      "github": "orlandov"
+      "url": "http://or.lan.do/"
     },
     {
       "name": "Ryan Dahl",
       "email": "ry at tiny clouds dot org",
-      "url": "http://four.livejournal.com/",
-      "github": "ry"
+      "url": "http://four.livejournal.com/"
     },
     {
       "name": "Dominic Tarr",
-      "url": "http://twitter.com/dominictarr",
-      "github": "dominictarr"
+      "url": "http://twitter.com/dominictarr"
     },
     {
-      "name": "Emil Stenqvist",
-      "github": "emilisto"
+      "name": "Emil Stenqvist"
     },
     {
-      "name": "Toby Ealden",
-      "github": "TobyEalden"
+      "name": "Toby Ealden"
     },
     {
-      "name": "Cong Liu",
-      "github": "ghostoy"
+      "name": "Cong Liu"
     },
     {
-      "name": "Tian Zhang",
-      "github": "KhaosT"
+      "name": "Tian Zhang"
     }
   ],
   "dependencies": {
     "bindings": "~1.2.1",
     "nan": "~2.3.0"
   },
-  "gypfile": true
+  "deprecated": false,
+  "description": "multicast DNS service discovery",
+  "devDependencies": {
+    "ejs": "*",
+    "glob": "*",
+    "less": "*",
+    "minimatch": "*",
+    "mkdirp": "*",
+    "ncp": "*",
+    "nopt": "*",
+    "proxyquire": "^1.7.3",
+    "slide": "*"
+  },
+  "gypfile": true,
+  "homepage": "http://agnat.github.com/node_mdns",
+  "keywords": [
+    "zeroconf",
+    "bonjour",
+    "dns_sd",
+    "mDNSResponder"
+  ],
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://github.com/agnat/node_mdns/raw/master/LICENSE"
+    }
+  ],
+  "main": "./lib/mdns.js",
+  "name": "mdns",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/agnat/node_mdns.git"
+  },
+  "scripts": {
+    "install": "node-gyp rebuild",
+    "test": "node utils/testrun"
+  },
+  "version": "2.3.4"
 }
