@@ -17,6 +17,24 @@ Try the following:
 - `npm start cloud` - starts a cloud node
 See `app.js` to figure out who discovers whom :)
 
+### If the mdns module stops working...
+You should update it! Do the following:
+- Run `npm pack mdns` to download the latest mdns source
+- Unzip the downloaded source
+- Replace the contents of the `mdns` folder in this directory with the contents of the unzipped source
+- Open up `mdns/lib/service_type.js` and comment out the sections of the code that limit the length of the advertisement's name. Currently (mdns version 2.3.4), the code blocks that do this are:
+```
+    if (str.length > 15) {
+        throw new Error('type ' + str + ' has more than 15 characters');
+    }
+```
+```
+    if (str.length > 16) { // 16 is correct because we have a leading underscore
+        throw new Error('type ' + _uu(str) + ' has more than 15 characters');
+    }
+```
+- Follow the steps in the `To Run` section above to make sure the module is properly linked
+
 ## Registrar
 The `Registrar` is the object you'll be interfacing with. It is responsible for finding other nodes running the same application as this one, and making this node visible so that other nodes may find it too. You create a Registrar as follows:
 ```
