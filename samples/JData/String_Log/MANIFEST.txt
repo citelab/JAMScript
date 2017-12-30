@@ -1,4 +1,0 @@
-VERSION = 1.0
-DESCRIPTION = JAMScript executable file
-NAME = stringlog
-CREATE-TIME = 1514164167028

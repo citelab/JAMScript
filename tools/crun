@@ -10,13 +10,17 @@ show_usage() {
 Usage: runc file.jxe -a appl_name -n number -g group_name
 
 The runc command runs the C component of the file.jxe (JAM executable).
+The -g group_name needs to specified to connect the C node to the proper
+group (J node). Otherwise, it will connect the C node to the 'default'
+group.
 EOF
 }
 
 # Initialize all the option variables.
 app=testapp
 num=1
-group="."
+group="default"
+port=
 
 file=$1
 shift
@@ -31,6 +35,24 @@ if [ "$fext" != "jxe" ]; then
     die "file extension is not .jxe"
 fi
 
+# Set the global variable 'port' based on the
+# group name.
+getgroupport() {
+    local gname=$1
+    if [ $gname == "default" ]; then
+        port=1883
+    fi
+
+    for dir in */; do
+        if [ -e $dir/group ]; then
+            local grp=`cat $dir/group`
+            if [ $grp == $gname ]; then
+                $port=$dir
+                break;
+            fi
+        fi
+    done
+}
 
 while :; do
     case $1 in
@@ -94,9 +116,13 @@ while :; do
     shift
 done
 
-echo $num
-
 if [ -e "$file" ]; then
+
+    # Check whether the global __jamruns folder is there
+    jamfolder=$HOME"/__jamruns"
+    if [ ! -d $jamfolder ]; then
+        die "$jamfolder not found"
+    fi
 
     # Get the folder
     filenoext="${file%.*}"
@@ -106,13 +132,12 @@ if [ -e "$file" ]; then
     fi
 
     cd $folder
-    if [ $group != "." ]; then
-        cd $group
-    fi
+    getgroupport $group
+
     if [ -e a.out ]; then
         # execute the program.. we are in the folder..
         chmod +x a.out
-        ./a.out -a $app -n $num
+        ./a.out -a $app -n $num -p $port
     else
         die "$file is not a valid JAMScript executable"
     fi

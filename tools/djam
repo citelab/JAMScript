@@ -1,0 +1,51 @@
+#!/bin/bash
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+show_usage() {
+    cat << EOF
+
+Runs JAMScript instances in docker containers.
+The docker version of the normal 'jam' commands
+
+djam help - prints this help
+djam list - lists all the JAMScript programs running in the system
+djam term - show the tmux terminals of the running nodes
+djam kill - kill a node
+djam clean - clean the setup left behind by old runs
+djam run - start a device, fog, or cloud
+
+
+EOF
+}
+
+if [ -z $1 ] || [ $1 == "help" ]; then
+    show_usage
+    exit 0
+fi
+
+jcmd=$1
+shift 1
+params=$@
+
+
+case $jcmd in
+    list)
+        djamlist $params
+        ;;
+    term)
+        djamterm $params
+        ;;
+    kill)
+        djamkill $params
+        ;;
+    clean)
+        djamclean $params
+        ;;
+    run)
+        djamrun $params
+        ;;
+esac

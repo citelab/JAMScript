@@ -25,24 +25,52 @@ die() {
 
 show_usage() {
     cat << EOF
+jamrun program.jxe
+Runs J and C node, one each, of a device with program.jxe
+under the application name 'testapp'. To run under a different
+app name X, use the --app=X option.
+
+jamrun program.jxe --fog
+Runs a fog node (only J node) with program.jxe. Similarly, the --cloud
+flag runs a cloud node.
+
+By default, jamrun uses a Redis server running at 127.0.0.1:6379 as the
+data store. The Redis server needs to be started before launching the
+application. To use a different Redis server use the --data option.
+
+jamrun program.jxe --data=127.0.0.1:7000
+Runs program.jxe and connects it to an already running Redis server at
+port 7000 of the local host. Redis server can run outside the
+local host (Redis needs to the configured to accept outside
+connections).
+
+To start more than one C node at a device use the following command.
+jamrun program.jxe --num=4
+
+To provide a set of tags to the program, use the following command.
+jamrun program.jxe --tag="param1, param2"
+
 Usage: jamrun file.jxe [--app=appl_name] [--fog|--cloud] [--num=num_c_devs]
                                     [--data=data-url]
                                     [--tags=quoted_list_of_tags]
 
-The jamrun command runs the given JAM executable (file.jxe).
-You specify the node type to run: cloud, fog, or device (by default).
-With device you start a J instance and one or more C instances.
-With cloud or fog, you start on J instances (one for each invocation).
-
-The --port option is useful to start multiple J components in the same machine.
-The jamrun command will start the MQTT broker in the given port if the broker is not
-running at the time. The MQTT broker will continue to run after the application
-has completed execution. The --data option takes a URL pointing to the data
-depot (Redis instance) to be used by the jdata subsystem.
-
+The jamrun command creates a run state in the $HOME/__jamrun folder.
 EOF
 }
 
+checkmosquitto() {
+
+    # Check the required commands..
+    if [ ! -e $MOSQUITTO ]; then
+        die "Mosquitto MQTT broker $MOSQUITTO not found. Set new location."
+    fi
+    if [ ! -e $MOSQUITTO_PUB ]; then
+        die "Mosquitto tools $MOSQUITTO_PUB not found. Set new location."
+    fi
+    if [ ! -e $TMUX ]; then
+        die "terminal multiplexor $TMUX not found. Set new location."
+    fi
+}
 
 startmqtt() {
     local port=$1
@@ -129,7 +157,7 @@ portavailable() {
 
 
 setuptmux() {
-    tmuxapp=$app_$1
+    tmuxapp=$app"_"$1
 
     if [ "$type" == "device" ]; then
         $TMUX new -s $tmuxapp -d
@@ -161,17 +189,6 @@ fi
 
 if [ "$fext" != "jxe" ]; then
     die "Extension on $file is not .jxe"
-fi
-
-# Check the required commands..
-if [ ! -e $MOSQUITTO ]; then
-    die "Mosquitto MQTT broker $MOSQUITTO not found. Set new location."
-fi
-if [ ! -e $MOSQUITTO_PUB ]; then
-    die "Mosquitto tools $MOSQUITTO_PUB not found. Set new location."
-fi
-if [ ! -e $TMUX ]; then
-    die "terminal multiplexor $TMUX not found. Set new location."
 fi
 
 
@@ -273,10 +290,12 @@ if [ "$type" != "device" ] && [ -n "$num" ]; then
     die "number of devices can't be speciied for fog/cloud"
 fi
 
+# Check whether mosquitto tools are there
+checkmosquitto
 
 if [ -e "$file" ]; then
 
-
+    # Check whether the global __jamruns folder is there
     jamfolder=$HOME"/__jamruns"
     if [ ! -d $jamfolder ]; then
         mkdir $jamfolder
@@ -322,14 +341,11 @@ if [ -e "$file" ]; then
             ;;
             device)
                 iport=1883
-                echo "Hello... "
                 while [ : ]; do
                     portavailable $folder $iport
-                    echo "Porttaken " $porttaken
                     if [ $porttaken == 0 ]; then
                         break
                     fi
-                    echo "Incrementing..."
                     ((iport++))
                 done
                 setuptmux $iport
