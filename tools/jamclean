@@ -22,63 +22,49 @@ Purges inactive JAMScript programs from the listing.
 EOF
 }
 
-checkprocess() {
-    local pid=`cat $1/processId`
-    local present=`ps -p $pid | grep node | wc -l`
-    if [ $present == "1" ]; then
-        running="true"
-    else
-        running="false"
+
+checkrunning() {
+    local folder=$1
+    local runf=$2
+    echo $folder
+    echo $runf
+    local runflag="false"
+    for q in `ls $folder/$runf`; do
+        echo $q
+        local dir=$folder/$runf$q
+        if [ -d $dir ]; then
+            local pid=`cat $1$q/processId`
+            local present=`ps -p $pid | grep node | wc -l`
+            if [ $present == "1" ]; then
+                runflag="true"
+            fi
+        fi
+    done
+    running=$runflag
+}
+
+if [ ! -z $1 ]; then
+    if [ $1 == "-h" ] || [ $1 == "--help" ]; then
+        show_usage
+        exit
     fi
-}
-
-
-
-printappl() {
-
-    local prog=`echo $1 | awk '{split($0,a,"_"); print a[1]}'`
-    local appl=`echo $1 | awk '{split($0,a,"_"); split(a[2],b, "/"); print b[1]}'`
-
-    echo "PROGRAM $prog AS $appl"
-}
-
-printnodeinfo() {
-    local port=$1
-    local mtype=`cat $2/machType`
-    if [ $mtype == "device" ]; then
-        local temp=`ls $2/cdeviceId.*`
-        local cdevs=`echo $temp | awk '{n=split($0, a, "__")} END{print n-1}'`
-        echo -e "\t$mtype\tat port $port with $cdevs C nodes"
-    else
-        echo -e "\t$mtype\tat port $port"
-    fi
-}
-
-
-if [ $1 == "-h" ] || [ $1 == "--help" ]; then
-    show_usage
-    exit
 fi
 
 jamfolder=$HOME"/__jamruns"
 if [ ! -d $jamfolder ]; then
-    echo "No running instances of JAMScript."
     exit 0
 fi
 
-cd $jamfolder
+if [ "$(ls -A $jamfolder)" ]; then
 
-for jruns in */; do
-    if [[ $jruns =~ .*$app.* ]]; then
-        printappl $jruns
-        for jexs in `ls $jamfolder/$jruns`; do
-            dir=$jamfolder/$jruns$jexs
-            if [ -d $dir ]; then
-                checkprocess $dir
-                if [ $running == "true" ]; then
-                    printnodeinfo $jexs $dir
-                fi
+    cd $jamfolder
+
+    for jruns in */; do
+        if [[ $jruns =~ .*$app.* ]]; then
+            checkrunning $jamfolder/$jruns
+            if [ $running == "false" ]; then
+                rm -rf $jamfolder/$jruns
             fi
-        done
-    fi
-done
+        fi
+    done
+fi

@@ -99,19 +99,26 @@ if [ ! -d $jamfolder ]; then
     exit 0
 fi
 
-cd $jamfolder
+if [ "$(ls -A $jamfolder)" ]; then
 
-for jruns in */; do
-    if [[ $jruns =~ .*$app.* ]]; then
-        printappl $jruns
-        for jexs in `ls $jamfolder/$jruns`; do
-            dir=$jamfolder/$jruns$jexs
-            if [ -d $dir ]; then
-                checkprocess $dir
-                if [ $running == "true" ]; then
-                    printnodeinfo $jexs $dir
+    cd $jamfolder
+
+    for jruns in */; do
+        if [[ $jruns =~ .*$app.* ]]; then
+            printappl $jruns
+            for jexs in `ls $jamfolder/$jruns`; do
+                dir=$jamfolder/$jruns$jexs
+                if [ -d $dir ]; then
+                    checkprocess $dir
+                    if [ $running == "true" ]; then
+                        printnodeinfo $jexs $dir
+                    fi
                 fi
-            fi
-        done
-    fi
-done
+            done
+        fi
+    done
+
+else
+    echo "No running instances of JAMScript."
+    exit 0
+fi

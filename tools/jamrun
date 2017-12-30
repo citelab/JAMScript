@@ -170,6 +170,15 @@ setuptmux() {
     fi
 }
 
+createdir() {
+    local jpath=$1
+    local jdir=$2
+
+    if [ ! -e $jpath/$jdir ]; then
+        mkdir $jpath/$jdir
+    fi
+}
+
 # Initialize all the option variables.
 app=testapp
 type=device
@@ -348,6 +357,7 @@ if [ -e "$file" ]; then
                     fi
                     ((iport++))
                 done
+                createdir $folder $iport
                 setuptmux $iport
                 doaout $num $iport
                 dojamout $type $iport
