@@ -182,7 +182,7 @@ file=$1
 shift
 fext="${file##*.}"
 
-if [ -z $file ] || [ $file = "-h" ]; then
+if [ -z $file ] || [ $file = "-h" ] || [ $file = "--help" ]; then
     show_usage
     exit 1
 fi

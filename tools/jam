@@ -17,7 +17,7 @@ jam kill - kill a node
 jam clean - clean the setup left behind by old runs
 jam run - start a device, fog, or cloud
 
-
+Type jam cmd for more help on the specific command.
 
 EOF
 }

@@ -1,7 +1,0 @@
-TODO
-
-Leverage the history record to confirm user intent. For example, when a
-command is ambiguous we should fail and let the user rerun it. This way
-we know that the intention is to go in the original direction.
-
-Use the signature in the history buffer to figure out the original run.
