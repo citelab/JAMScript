@@ -47,7 +47,7 @@ getgroupport() {
         if [ -e $dir/group ]; then
             local grp=`cat $dir/group`
             if [ $grp == $gname ]; then
-                $port=$dir
+                port=$dir
                 break;
             fi
         fi
@@ -126,7 +126,7 @@ if [ -e "$file" ]; then
 
     # Get the folder
     filenoext="${file%.*}"
-    folder=$filenoext"_"$app
+    folder=$HOME"/__jamruns/"$filenoext"_"$app
     if [ ! -d "$folder" ]; then
         die "Folder: $folder not found to start the program"
     fi

@@ -51,11 +51,10 @@ writegroup() {
     local port=$1
     local gname=$2
 
-    if [ -e $port ]; then
-        cat $gname > $port/group
-    else
-        die "Port directory is missing.."
+    if [ ! -e $port ]; then
+        mkdir $port
     fi
+    echo $gname > $port/group
 }
 
 checkmosquitto() {
@@ -279,12 +278,6 @@ if [ -e "$file" ]; then
     fi
 
     cd $folder
-    if [ $group != "." ]; then
-        mkdir $group
-        cd $group
-        ln -s ../jamout.js jamout.js
-        ln -s ../a.out a.out
-    fi
 
     if [ -e jamout.js ]; then
         # execute the program.. we are in the folder..
