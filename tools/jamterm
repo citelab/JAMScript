@@ -15,18 +15,19 @@ die() {
 
 show_usage() {
     cat << EOF
-Usage: jamterm [--app=appl_name]
+jamterm --app=X --port=N
+Shows the background terminals of the application X running at port N.
 
-The jamterm command attaches the C nodes created by the jamrun.
-If no application name is given, it connects to the
-instances belonging to the testapp.
+If no --app is specified, default application ('testapp') is used.
+Similarly, the default port is 1883.
+
 
 EOF
 }
 
 # Initialize all the option variables.
 app=testapp
-
+port=1883
 
 while :; do
     case $1 in
@@ -48,6 +49,21 @@ while :; do
         --app=)            # Handle the case of an empty
             die 'ERROR: "--app" requires a non-empty option argument.'
             ;;
+        -p|--port)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                port=$2
+                shift
+            else
+                die 'ERROR: "--port" requires a non-empty option argument.'
+            fi
+            ;;
+        --port=?*)
+            port=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --port=)            # Handle the case of an empty
+            die 'ERROR: "--port" requires a non-empty option argument.'
+            ;;
+
         --)              # End of all options.
             shift
             break
@@ -62,6 +78,9 @@ while :; do
     shift
 done
 
-if $TMUX has-session -t $app; then
-    $TMUX attach -t $app
+tmuxapp=$app"_"$port
+
+if $TMUX has-session -t $tmuxapp; then
+    # This is overkill.. we would kill instances belonging to other applications
+    $TMUX attach -t $tmuxapp
 fi
