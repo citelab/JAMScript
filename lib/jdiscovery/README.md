@@ -40,29 +40,27 @@ The `Registrar` is the object you'll be interfacing with. It is responsible for 
 ```
     var reggie = new Registrar(app, machType, id, port, config);
 ```
-where `app` is the name of the application, `machType` (machine type) is one of 'device', 'fog', or 'cloud', `id` is the id of the node, `port` is the port it is running on, and `config` is an optional parameter in which you specify what protocols you want to use (by default, all are used). To use all protocols, you can leave config undefined, or pass
+where `app` is the name of the application, `machType` (machine type) is one of 'device', 'fog', or 'cloud', `id` is the id of the node, `port` is the port it is running on, and `config` is an optional parameter with the following options:
+- `protocols`: An object in which you specify what protocols you want to use. If this option is not present, all protocols will be used. e.g. To use just mDNS, you might pass
 ```
     {
-        mqtt: true,
-        mdns: true,
-        localStorage: true
+        protocols: {
+            mqtt: false,
+            mdns: true,
+            localStorage: false
+        }
     }
 ```
-As another example, if you just want to use mdns, you can pass
+Alternatively
 ```
     {
-        mdns: true
+        protocols: {
+            mdns: true
+        }
     }
 ```
-or
-```
-    {
-        mqtt: false,
-        mdns: true,
-        localStorage: false
-    }
-```
-etc.
+will suffice.
+- `eliminateDuplicates`: Set to `true` if you want the `Registrar` to automatically eliminate duplicate discoveries, so that only one event will be returned to the app per discovery. Set this to `false` if you want to be notified separately if/when a discovery is made by each of local storage, mDNS, and MQTT. The default is `true`.
 
 Now, before we get into how to use our new Registrar object, we'll need to understand what **attributes** are.
 
@@ -91,20 +89,20 @@ In addition to giving each node the status attribute, the system is configured s
     var reggie = new Registrar(app, machType, id, port);
 
     // devices will receive these events by default
-    reggie.on('fog-up', function(id, connInfo) {
+    reggie.on('fog-up', function(id, connInfo, protocol) {
         console.log('Fog ' + id + ' is online, with ip ' + connInfo.ip + ' and port ' + connInfo.port);
     });
 
-    reggie.on('fog-down', function(id) {
+    reggie.on('fog-down', function(id, protocol) {
         console.log('Fog ' + id + ' has gone offline');
     });
 
     // fogs will receive these events by default
-    reggie.on('cloud-up', function(id, connInfo) {
+    reggie.on('cloud-up', function(id, connInfo, protocol) {
         console.log('Cloud ' + id + ' is online, with ip ' + connInfo.ip + ' and port ' + connInfo.port);
     });
 
-    reggie.on('cloud-down', function(id) {
+    reggie.on('cloud-down', function(id, protocol) {
         console.log('Cloud ' + id + ' has gone offline');
     });
 
@@ -130,11 +128,11 @@ We see that devices discover fogs statuses and fogs discover clouds statuses by 
     });
 
     // now this node (a cloud) will receive fog-up and fog-down events
-    reggie.on('fog-up', function(id, connInfo) {
+    reggie.on('fog-up', function(id, connInfo, protocol) {
         console.log('Fog ' + id + ' is online, with ip ' + connInfo.ip + ' and port ' + connInfo.port);
     });
 
-    reggie.on('fog-down', function(id) {
+    reggie.on('fog-down', function(id, protocol) {
         console.log('Fog ' + id + ' has gone offline');
     });
 
@@ -155,18 +153,27 @@ By this point, you're probably sick of the status attribute. Surely there are ot
         }
     });
 
-    reggie.on('i-found-a-thermostat', function(id, value) {
+    reggie.on('i-found-a-thermostat', function(id, value, protocol) {
         console.log('Node ' + id + ' is apparently a thermostat with temperature ' + value);
     });
 
-    reggie.on('this-node-is-no-longer-a-thermostat', function(id) {
+    reggie.on('this-node-is-no-longer-a-thermostat', function(id, protocol) {
         console.log('Node ' + id + ' is apparently no longer a thermostat');
     });
 
     // ...
 ```
 
-...but hold on a second...isn't status the only attribute that any node has by default? Yes. If you want to be able to discover nodes that are thermostats, you'll have to first give nodes the thermostat attribute.
+Notice the parameters to the functions called upon a discovery. When a discovery is made, the following arguments are available:
+- `nodeId`: the ID of the node for which the discovery was made
+- `attributeValue`: the value of the attribute discovered
+- `protocol`: the protocol which made the discovery
+    - The protocol will be one of the values defined in `../jamserver/constants.js#globals.Protocol`
+When an attribute is removed from a node, or the node goes down (status becomes offline), then there are just two parameters to the function:
+- `nodeId`: the ID of the node which removed the attribute, or went down
+- `protocol`: the protocol which made the discovery
+
+Now back to attributes. If status is the only attribute that any node has by default, then how can we give nodes other attributes? This is done by announcing attributes.
 
 ## Announcing attributes
 In order to give a node an attribute, you use the `addAttributes` API. For example, to add the thermostat attribute, you could use:
