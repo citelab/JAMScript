@@ -59,12 +59,19 @@
       "copies": [
         {
           "destination": "/usr/local/bin/",
-          "files": [ 
+          "files": [
+            "tools/jam",
             "tools/jamrun",
             "tools/jamkill",
             "tools/jamterm",
+            "tools/jamclean",
+            "tools/jamclose",
+            "tools/jamlist",
             "tools/crun",
-            "tools/jrun"
+            "tools/jrun",
+            "tools/djam",
+            "tools/djampull",
+            "tools/djamrun"            
            ]
         }
       ]
@@ -73,7 +80,7 @@
    	  "target_name": "liblibjam",
 	  	"type": "static_library",
       "dependencies": [ "deps/libtask/binding.gyp:liblibtask" ],
-      "sources": [ 
+      "sources": [
       	"<!@(ls -1 lib/jamlib/*.c)"
       ],
       "configurations": {

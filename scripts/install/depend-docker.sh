@@ -144,7 +144,7 @@ npm install cbor
 npm install deasync
 npm install json-fn
 npm install mime
-
+npm install redis-fast-driver
 
 cd $scriptdir
 # install the following here..
