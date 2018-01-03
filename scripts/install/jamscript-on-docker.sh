@@ -2,7 +2,7 @@
 
 # Make /usr/lib/node_modules writeable
 
-sudo chmod o+w  /usr/lib/node_modules
+sudo chmod o+w  /usr/local/lib/node_modules
 sudo chmod o+w /usr/bin
 sudo chmod o+w /usr/local/share
 sudo chmod o+w /usr/local/lib
@@ -28,7 +28,12 @@ npm install -g lib/jdiscovery
 
 # Reset permissions
 
-sudo chmod o-w /usr/lib/node_modules
+sudo chmod o-w /usr/local/lib/node_modules
 sudo chmod o-w /usr/bin
 sudo chmod o-w /usr/local/share
 sudo chmod o-w /usr/local/lib
+
+# This is a hack!
+cd /JAMScript-beta/lib/jamserver
+# There should not be a node_modules directory here
+rm -rf node_modules
