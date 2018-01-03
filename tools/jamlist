@@ -34,27 +34,40 @@ checkprocess() {
 }
 
 
+# save information in global varibales
+# appl=
+# prog=
+saveapplinfo() {
 
-printappl() {
-
-    local prog=`echo $1 | awk '{split($0,a,"_"); print a[1]}'`
-    local appl=`echo $1 | awk '{split($0,a,"_"); split(a[2],b, "/"); print b[1]}'`
-
-    echo "PROGRAM $prog AS $appl"
+    prog=`echo $1 | awk '{split($0,a,"_"); print a[1]}'`
+    appl=`echo $1 | awk '{split($0,a,"_"); split(a[2],b, "/"); print b[1]}'`
 }
 
 printnodeinfo() {
     local port=$1
     local mtype=`cat $2/machType`
+    local appid=`cat $3/appid`
+    local dstore=`cat $2/dataStore`
+
     if [ $mtype == "device" ]; then
-        local temp=`ls $2/cdeviceId.*`
-        local cdevs=`echo $temp | awk '{n=split($0, a, "__")} END{print n-1}'`
-        echo -e "\t$mtype\tat port $port with $cdevs C nodes"
+        local tmuxid=`cat $2/tmuxid`
+        local cdevs=0
+        for pidf in `ls $2/cdevProcessId.*`; do
+            local pid=`cat $pidf`
+            local pidok=`ps -p $pid | grep a.out | wc -l`
+            if [ $pidok == 1 ]; then
+                ((cdevs++))
+            fi
+        done
+        printf "%8s %12s %12s %12s %15s %10s %7s %10s\n" "$appid" "$appl" "$prog" "Local:$port" "$dstore" "$mtype" "$cdevs" "$tmuxid"
     else
-        echo -e "\t$mtype\tat port $port"
+        printf "%8s %12s %12s %12s %15s %10s %7s %10s\n" "$appid" "$appl" "$prog" "Local:$port" "$dstore" "$mtype" "--" "--"
     fi
 }
 
+printheader() {
+    printf "\n%8s %12s %12s %12s %15s %10s %7s %10s\n" "ID" "NAME" "PROGRAM" "HOST" "D-STORE" "TYPE" "C-NODES" "TMUX-ID"
+}
 
 app=
 
@@ -103,15 +116,16 @@ if [ "$(ls -A $jamfolder)" ]; then
 
     cd $jamfolder
 
+    printheader
     for jruns in */; do
         if [[ $jruns =~ .*$app.* ]]; then
-            printappl $jruns
+            saveapplinfo $jruns
             for jexs in `ls $jamfolder/$jruns`; do
                 dir=$jamfolder/$jruns$jexs
                 if [ -d $dir ]; then
                     checkprocess $dir
                     if [ $running == "true" ]; then
-                        printnodeinfo $jexs $dir
+                        printnodeinfo $jexs $dir $jamfolder/$jruns
                     fi
                 fi
             done

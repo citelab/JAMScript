@@ -1,22 +1,5 @@
 #!/bin/bash
 
-# Edit the following locations to provide the
-MOSQUITTO=`which mosquitto`
-if [ -z $MOSQUITTO ]; then
-    MOSQUITTO=/usr/local/sbin/mosquitto
-fi
-MOSQUITTO_PUB=`which mosquitto_pub`
-if [ -z $MOSQUITTO_PUB ]; then
-    MOSQUITTO_PUB=/usr/local/bin/mosquitto_pub
-fi
-TMUX=`which tmux`
-if [ -z $TMUX ]; then
-    die "Warning tmux not found"
-fi
-
-# No need to edit below this line unless you find a bug!
-## Some functions used in this script
-
 
 die() {
     printf '%s\n' "$1" >&2
@@ -25,12 +8,14 @@ die() {
 
 show_usage() {
     cat << EOF
-jamrun program.jxe
+Runs the JAMScript executable (.jxe) in a Docker container.
+
+djamrun program.jxe
 Runs J and C node, one each, of a device with program.jxe
-under a default application name 'app-N'. To run under a different
+under the application name 'app-N'. To run under a different
 app name X, use the --app=X option.
 
-jamrun program.jxe --fog
+djamrun program.jxe --fog
 Runs a fog node (only J node) with program.jxe. Similarly, the --cloud
 flag runs a cloud node.
 
@@ -38,150 +23,72 @@ By default, jamrun uses a Redis server running at 127.0.0.1:6379 as the
 data store. The Redis server needs to be started before launching the
 application. To use a different Redis server use the --data option.
 
-jamrun program.jxe --data=127.0.0.1:7000
+djamrun program.jxe --data=127.0.0.1:7000
 Runs program.jxe and connects it to an already running Redis server at
 port 7000 of the local host. Redis server can run outside the
 local host (Redis needs to the configured to accept outside
 connections).
 
 To start more than one C node at a device use the following command.
-jamrun program.jxe --num=4
+djamrun program.jxe --num=4
 
 To provide a set of tags to the program, use the following command.
 jamrun program.jxe --tag="param1, param2"
 
 Use the --bg option to run a command in the backgroud.
 
-Usage: jamrun file.jxe [--app=appl_name] [--fog|--cloud] [--num=num_c_devs]
+Usage: djamrun file.jxe [--app=appl_name] [--fog|--cloud] [--num=num_c_devs]
                                     [--data=data-url]
                                     [--tags=quoted_list_of_tags]
                                     [--bg]
 
 
-The jamrun command creates a run state in the $HOME/__jamrun folder.
+The djamrun command creates a run state in the $HOME/__jamrun folder.
 EOF
 }
 
-checkmosquitto() {
+checkdocker() {
 
-    # Check the required commands..
-    if [ ! -e $MOSQUITTO ]; then
-        die "Mosquitto MQTT broker $MOSQUITTO not found. Set new location."
-    fi
-    if [ ! -e $MOSQUITTO_PUB ]; then
-        die "Mosquitto tools $MOSQUITTO_PUB not found. Set new location."
-    fi
-    if [ ! -e $TMUX ]; then
-        die "terminal multiplexor $TMUX not found. Set new location."
+    dockeravail=`which docker`
+    if [ -z $dockeravail ]; then
+        die "Docker not installed in this machine. Exiting!"
     fi
 }
 
-startmqtt() {
-    local port=$1
 
-    # Check whether the MQTT server is running.. if not start it
-    $MOSQUITTO_PUB -p $port -t "test" -m "hello"
-    if [ $? -ne 0 ]; then
-        echo "MQTT is not running at $port"
-        echo "Attempting to start MQTT at $port"
-        $MOSQUITTO -p $port &
-    fi
-}
-
-dojamout() {
+dojamrun() {
     local type=$1
-    local pnum=$2
+    local dockid=$2
     local floc=$3
+    local file=$4
 
-    startmqtt $pnum
-    echo $data > $floc/$pnum/dataStore
+    echo $data > $floc/$dockid/dataStore
 
     case $type in
         cloud)
             if [ -z "$tags" ]; then
-                node jamout.js --app=$jappid --cloud --port=$pnum --data=$data &
-                jpid=$!
+                sudo docker exec -d $dockid jamrun $file --app=$jappid --cloud --data=$data
             else
-                node jamout.js --app=$jappid --cloud --port=$pnum --data=$data --tags=$tags &
-                jpid=$!
+                sudo docker exec -d $dockid jamrun $file --app=$jappid --cloud --data=$data --tag=$tags $file
             fi
             ;;
         fog)
             if [ -z "$tags" ]; then
-                node jamout.js --app=$jappid --fog --port=$pnum --data=$data &
-                jpid=$!
+                sudo docker exec -d $dockid jamrun $file  --app=$jappid --fog --data=$data
             else
-                node jamout.js --app=$jappid --fog --port=$pnum --data=$data --tags=$tags &
-                jpid=$!
+                sudo docker exec -d $dockid jamrun $file --app=$jappid --fog --data=$data --tag=$tags
             fi
             ;;
         device)
             if [ -z "$tags" ]; then
-                node jamout.js --app=$jappid --port=$pnum --data=$data &
-                jpid=$!
+                sudo docker exec -d $dockid jamrun $file --app=$jappid  --data=$data
             else
-                node jamout.js --app=$jappid --port=$pnum --data=$data --tags=$tags &
-                jpid=$!
+                sudo docker exec -d $dockid jamrun $file --app=$jappid  --data=$data --tag=$tags
             fi
             ;;
     esac
 }
 
-doaout() {
-    local counter=1
-    local indx=0
-    local num=$1
-    local port=$2
-    if [ -e a.out ]; then
-        chmod +x a.out
-    fi
-    while [ $counter -le $num ]; do
-        if [ -e a.out ]; then
-            # execute the program.. we are in the folder..
-            $TMUX send-keys -t $tmuxapp:0.$indx "./a.out -a $jappid -p $port -n $counter" C-m
-        fi
-        ((counter++))
-        ((indx++))
-    done
-}
-
-# This is always scanning for a command with 'node'
-portavailable() {
-    local folder=$1
-    local port=$2
-
-    if [ -d $folder/$port ]; then
-        if [ -e $folder/$port/processId ]; then
-            local pid=`cat $folder/$port/processId`
-            if [ ! -z $pid ]; then
-                porttaken=`ps -p $pid | grep node | wc -l`
-            else
-                porttaken=0
-            fi
-        else
-            porttaken=0
-        fi
-    else
-        porttaken=0
-    fi
-
-}
-
-
-setuptmux() {
-    tmuxapp="tg-"$1
-    echo $tmuxapp > $dirpath/tmuxid
-
-    if [ "$type" == "device" ]; then
-        $TMUX new -s $tmuxapp -d
-        counter=1
-        while [ $counter -le $num ]; do
-            $TMUX split-window -v -t $tmuxapp
-            $TMUX select-layout -t $tmuxapp tiled
-            ((counter++))
-        done
-    fi
-}
 
 createdir() {
     local jpath=$1
@@ -212,14 +119,16 @@ getappid() {
     fi
 
     jappid=`cat $localf/appid`
+    dockerid="docker-"$count
 }
 
+setupdockermach() {
+    local docid=$1
+    local file=$2
+    dockerImage=`cat $jamfolder/dockerImage`
 
-cleanuptmux() {
-    if [ ! -z $tmuxapp ]; then
-        $TMUX kill-session -t $tmuxapp
-    fi
-    exit
+    sudo docker run --name $docid -t -d --privileged $dockerImage
+    sudo docker cp $file $docid:`basename $2`
 }
 
 
@@ -231,15 +140,17 @@ waitforcmd() {
     fi
 }
 
+processjxe() {
+    result="ok"
+}
 
 # Initialize all the option variables.
 app=app-n
 type=device
 data=127.0.0.1:6379
-num=1
 tags=
 bg=
-porttaken=0
+
 
 file=$1
 shift
@@ -356,8 +267,6 @@ if [ "$type" != "device" ] && [ -n "$num" ]; then
     die "number of devices can't be speciied for fog/cloud"
 fi
 
-# Check whether mosquitto tools are there
-checkmosquitto
 
 if [ -e "$file" ]; then
 
@@ -373,64 +282,19 @@ if [ -e "$file" ]; then
         mkdir $folder
     fi
 
-    # unzip the executable in the folder and run it..
-    # We are unzipping the copying the files no matter what!
-    unzip -oq $file -d $folder
-    if [ $? -ne 0 ]; then
-        die "Problem reading file: $file"
+    # process the .jxe file
+    file=`pwd`/$file
+    processjxe $file
+    if [ $result != "ok" ]; then
+        die "Problem with JAMScript executable"
     fi
 
     cd $folder
-
-
-    if [ -e jamout.js ]; then
-        # execute the program.. we are in the folder..
-
-        case $type in
-            cloud)
-                iport=9883
-                while [ : ]; do
-                    portavailable $folder $iport
-                    [[ $porttaken == 1 ]] || break
-                    ((iport++))
-                done
-                getappid $jamfolder $folder
-                createdir $folder $iport
-                dojamout $type $iport $folder
-                waitforcmd
-            ;;
-            fog)
-                iport=5883
-                while [ : ]; do
-                    portavailable $folder $iport
-                    [[ $porttaken == 1 ]] || break
-                    ((iport++))
-                done
-                getappid $jamfolder $folder
-                createdir $folder $iport
-                dojamout $type $iport $folder
-                waitforcmd
-            ;;
-            device)
-                iport=1883
-                while [ : ]; do
-                    portavailable $folder $iport
-                    if [ $porttaken == 0 ]; then
-                        break
-                    fi
-                    ((iport++))
-                done
-                getappid $jamfolder $folder
-                createdir $folder $iport
-                dojamout $type $iport $folder
-                setuptmux $jpid
-                doaout $num $iport
-                waitforcmd
-            ;;
-        esac
-    else
-        die "File: $file is not a valid JAMScript executable"
-    fi
+    getappid $jamfolder $folder
+    createdir $folder $dockerid
+    setupdockermach $dockerid $file $jamfolder
+    dojamrun $type $dockerid $folder `basename $file`
+    echo "Completed the run.."
 
 else
     die "File: $file not found"

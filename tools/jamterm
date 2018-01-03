@@ -15,70 +15,19 @@ die() {
 
 show_usage() {
     cat << EOF
-jamterm --app=X --port=N
-Shows the background terminals of the application X running at port N.
 
-If no --app is specified, default application ('testapp') is used.
-Similarly, the default port is 1883.
-
+jamterm tmux-id
+Shows the background terminals of with the given tmux-id.
 
 EOF
 }
 
-# Initialize all the option variables.
-app=testapp
-port=1883
+if [ -z $1 ] || [ $1 == "-h" ] || [ $1 == "--help" ]; then
+    show_usage
+    exit
+fi
 
-while :; do
-    case $1 in
-        -h|-\?|--help)
-            show_usage      # Display a usage synopsis.
-            exit
-            ;;
-        -a|--app)           # Takes an option argument; ensure it has been specified.
-            if [ "$2" ]; then
-                app=$2
-                shift
-            else
-                die 'ERROR: "--app" requires a non-empty option argument.'
-            fi
-            ;;
-        --app=?*)
-            app=${1#*=}     # Delete everything up to "=" and assign the remainder.
-            ;;
-        --app=)            # Handle the case of an empty
-            die 'ERROR: "--app" requires a non-empty option argument.'
-            ;;
-        -p|--port)           # Takes an option argument; ensure it has been specified.
-            if [ "$2" ]; then
-                port=$2
-                shift
-            else
-                die 'ERROR: "--port" requires a non-empty option argument.'
-            fi
-            ;;
-        --port=?*)
-            port=${1#*=}     # Delete everything up to "=" and assign the remainder.
-            ;;
-        --port=)            # Handle the case of an empty
-            die 'ERROR: "--port" requires a non-empty option argument.'
-            ;;
-
-        --)              # End of all options.
-            shift
-            break
-        ;;
-        -?*)
-            printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
-            ;;
-        *)               # Default case: No more options, so break out of the loop.
-            break
-    esac
-
-    shift
-done
-
-tmuxapp=$app"_"$port
+tmuxapp=$1
 
 if $TMUX has-session -t $tmuxapp; then
     # This is overkill.. we would kill instances belonging to other applications

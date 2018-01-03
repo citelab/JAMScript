@@ -133,7 +133,6 @@ typedef struct _jamstate_t
 
 
 // Globals defined in jam.c
-extern int jamflag;
 extern int odcount;
 
 // Global defined in the jamout.c (compiler generated)

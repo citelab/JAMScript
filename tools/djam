@@ -11,13 +11,17 @@ show_usage() {
 Runs JAMScript instances in docker containers.
 The docker version of the normal 'jam' commands
 
-djam help - prints this help
-djam list - lists all the JAMScript programs running in the system
-djam term - show the tmux terminals of the running nodes
-djam kill - kill a node
-djam clean - clean the setup left behind by old runs
-djam run - start a device, fog, or cloud
+djam help   - prints this help
+djam clean  - clean the setup left behind by old runs
+djam close  - close terminals
+djam kill   - kill a node
+djam list   - lists all the JAMScript programs running in the system
+djam pull   - pull the given docker image
+djam run    - start a device, fog, or cloud
+djam term   - show the tmux terminals of the running nodes
 
+
+Type 'djam cmd --help' for more help on the specific command.
 
 EOF
 }
@@ -34,7 +38,7 @@ params=$@
 
 case $jcmd in
     list)
-        djamlist $params
+        jamlist $params
         ;;
     term)
         djamterm $params
@@ -47,5 +51,11 @@ case $jcmd in
         ;;
     run)
         djamrun $params
+        ;;
+    close)
+        djamclose $params
+        ;;
+    pull)
+        djampull $params
         ;;
 esac

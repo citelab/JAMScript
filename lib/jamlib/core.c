@@ -87,7 +87,7 @@ void core_setup(corestate_t *cs, int port)
         exit(1);
     }
 
-    sprintf(fname, "./%d/cdeviceId.%d", port, cs->serial_num);
+    sprintf(fname, "./%d/cdevId.%d", port, cs->serial_num);
     if (access(fname, F_OK) != -1)
     {
         char devid[UUID4_LEN+1];
@@ -126,6 +126,16 @@ void core_setup(corestate_t *cs, int port)
         fprintf(fp, "%s", cs->device_id);
         fclose(fp);
     }
+    sprintf(fname, "./%d/cdevProcessId.%d", port, cs->serial_num);
+    fp = fopen(fname, "w");
+    if (fp == NULL)
+    {
+        printf("ERROR! Unknown permission issue in opening the file %s\n", fname);
+        printf("Exiting.\n");
+        exit(1);
+    }
+    fprintf(fp, "%d", getpid());
+    fclose(fp);
 }
 
 

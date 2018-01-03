@@ -26,11 +26,8 @@ EOF
 checkrunning() {
     local folder=$1
     local runf=$2
-    echo $folder
-    echo $runf
     local runflag="false"
     for q in `ls $folder/$runf`; do
-        echo $q
         local dir=$folder/$runf$q
         if [ -d $dir ]; then
             local pid=`cat $1$q/processId`

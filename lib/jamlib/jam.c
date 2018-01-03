@@ -36,7 +36,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <strings.h>
 #include <pthread.h>
 
-int jamflag;
 int jamport;
 int odcount;
 list_elem_t *cache;
@@ -290,21 +289,16 @@ int jamargs(int argc, char **argv, char *appid, char *tag, int *num)
     char *nvalue = NULL;
     int c;
 
-    // This is a global variable that indicates whether we are using jamrun or not
-    jamflag = 0;
     // Default port Number
     jamport = 1883;
 
     opterr = 0;
 
-    while ((c = getopt (argc, argv, "p:a:jn:t:")) != -1)
+    while ((c = getopt (argc, argv, "p:a:n:t:")) != -1)
         switch (c)
         {
             case 'a':
                 avalue = optarg;
-            break;
-            case 'j':
-                jamflag = 1;
             break;
             case 'n':
                 nvalue = optarg;
