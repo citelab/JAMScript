@@ -29,15 +29,17 @@ closeall() {
         cd $jamfolder
 
         for jruns in */; do
-            for jport in `ls $jamfolder/$jruns`; do
-                dir=$jamfolder/$jruns$jport
-                if [ -d $dir ]; then
-                    if [ -e $dir/tmuxid ]; then
-                        local tmuxid=`cat $dir/tmuxid`
-                        closeterm $tmuxid
+            if [ $jruns != "*/" ]; then
+                for jport in `ls $jamfolder/$jruns`; do
+                    dir=$jamfolder/$jruns$jport
+                    if [ -d $dir ]; then
+                        if [ -e $dir/tmuxid ]; then
+                            local tmuxid=`cat $dir/tmuxid`
+                            closeterm $tmuxid
+                        fi
                     fi
-                fi
-            done
+                done
+            fi
         done
     fi
 }

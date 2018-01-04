@@ -57,10 +57,12 @@ if [ "$(ls -A $jamfolder)" ]; then
     cd $jamfolder
 
     for jruns in */; do
-        if [[ $jruns =~ .*$app.* ]]; then
-            checkrunning $jamfolder/$jruns
-            if [ $running == "false" ]; then
-                rm -rf $jamfolder/$jruns
+        if [ $jruns != "*/" ]; then
+            if [[ $jruns =~ .*$app.* ]]; then
+                checkrunning $jamfolder/$jruns
+                if [ $running == "false" ]; then
+                    rm -rf $jamfolder/$jruns
+                fi
             fi
         fi
     done

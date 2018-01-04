@@ -24,12 +24,16 @@ EOF
 }
 
 checkprocess() {
-    local pid=`cat $1/processId`
-    local present=`ps -p $pid | grep node | wc -l`
-    if [ $present == "1" ]; then
-        running="true"
-    else
-        running="false"
+    if [ -e $1/processId ]; then
+        local pid=`cat $1/processId`
+        local present=`ps -p $pid | grep node | wc -l`
+        if [ $present == "1" ]; then
+            running="ps"
+        else
+            running="none"
+        fi
+    elif [ -e $1/dockerId ]; then
+        running="docker"
     fi
 }
 
@@ -118,17 +122,21 @@ if [ "$(ls -A $jamfolder)" ]; then
 
     printheader
     for jruns in */; do
-        if [[ $jruns =~ .*$app.* ]]; then
-            saveapplinfo $jruns
-            for jexs in `ls $jamfolder/$jruns`; do
-                dir=$jamfolder/$jruns$jexs
-                if [ -d $dir ]; then
-                    checkprocess $dir
-                    if [ $running == "true" ]; then
-                        printnodeinfo $jexs $dir $jamfolder/$jruns
+        if [ $jruns != "*/" ]; then
+            if [[ $jruns =~ .*$app.* ]]; then
+                saveapplinfo $jruns
+                for jexs in `ls $jamfolder/$jruns`; do
+                    dir=$jamfolder/$jruns$jexs
+                    if [ -d $dir ]; then
+                        checkprocess $dir
+                        if [ $running == "ps" ]; then
+                            printnodeinfo $jexs $dir $jamfolder/$jruns
+                        elif [ $running == "docker" ]; then
+                            echo "Docker"
+                        fi
                     fi
-                fi
-            done
+                done
+            fi
         fi
     done
 

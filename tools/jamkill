@@ -18,83 +18,74 @@ show_usage() {
 jamkill --all
 kills all running instances
 
-jamkill --app=X
-kills all running instances that are from application X.
+jamkill app-id
+kills all running instances that are from application app-id
 
-jamkill --port=N
-kill the running instances of all applications on port N
+Usage: jamkill --all|app-id
 
-jamkill --app=X --port=N
-
-Usage: jamkill [--app=appl_name] [--port=port] [--all]
 EOF
 }
 
+
 killprocess() {
-    local pid=`cat $1/processId`
-    local present=`ps -p $pid | grep node | wc -l`
-    if [ $present == "1" ]; then
-        kill -9 $pid
+    if [ -e $1/processId ]; then
+        local pid=`cat $1/processId`
+        local present=`ps -p $pid | grep node | wc -l`
+        if [ $present == "1" ]; then
+            kill -9 $pid
+        fi
     fi
 }
 
 
-# Initialize all the option variables.
-app=testapp
-all="false"
-port=
+killjob() {
+    local jobid=$1
 
-while :; do
-    case $1 in
-        -h|-\?|--help)
-            show_usage      # Display a usage synopsis.
-            exit
-            ;;
-        -a|--app)           # Takes an option argument; ensure it has been specified.
-            if [ "$2" ]; then
-                app=$2
-                shift
-            else
-                die 'ERROR: "--app" requires a non-empty option argument.'
+    for jruns in */; do
+        if [ $jruns != "*/" ]; then
+            local appid=`cat $jamfolder/$jruns/appid`
+            if [ $appid == $jobid ]; then
+                for jexs in `ls $jamfolder/$jruns`; do
+                    dir=$jamfolder/$jruns$jexs
+                    if [ -d $dir ]; then
+                        echo "Killing application running at " $jexs
+                        killprocess $dir
+                        if [ -e $dir/tmuxid ]; then
+                            killtmux `cat $dir/tmuxid`
+                        fi
+                    fi
+                done
             fi
-            ;;
-        --app=?*)
-            app=${1#*=}     # Delete everything up to "=" and assign the remainder.
-            ;;
-        --app=)            # Handle the case of an empty
-            die 'ERROR: "--app" requires a non-empty option argument.'
-            ;;
-        -p|--port)           # Takes an option argument; ensure it has been specified.
-            if [ "$2" ]; then
-                port=$2
-                shift
-            else
-                die 'ERROR: "--port" requires a non-empty option argument.'
-            fi
-            ;;
-        --port=?*)
-            port=${1#*=}     # Delete everything up to "=" and assign the remainder.
-            ;;
-        --port=)            # Handle the case of an empty
-            die 'ERROR: "--port" requires a non-empty option argument.'
-            ;;
-        -l|--all)
-            all="true"
-            ;;
+        fi
+    done
+}
 
-        --)              # End of all options.
-            shift
-            break
-        ;;
-        -?*)
-            printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
-            ;;
-        *)               # Default case: No more options, so break out of the loop.
-            break
-    esac
+killalljobs() {
 
-    shift
-done
+    for jruns in */; do
+        if [ $jruns != "*/" ]; then
+            for jexs in `ls $jamfolder/$jruns`; do
+                dir=$jamfolder/$jruns$jexs
+                if [ -d $dir ]; then
+                    echo "Killing application running at " $jexs
+                    killprocess $dir
+                    if [ -e $dir/tmuxid ]; then
+                        local tmuxid=`cat $dir/tmuxid`
+                        $TMUX kill-session -t $tmuxid
+                    fi
+                fi
+            done
+        fi
+    done
+
+}
+
+
+if [ -z $1 ] || [ $1 == "-h" ] || [ $1 == "--help" ]; then
+    show_usage
+    exit
+fi
+
 
 jamfolder=$HOME"/__jamruns"
 if [ ! -d $jamfolder ]; then
@@ -105,31 +96,11 @@ fi
 if [ "$(ls -A $jamfolder)" ]; then
 
     cd $jamfolder
-    if [ $all == "true" ]; then
-        echo "WARNING! All jobs are going to be terminated!"
+
+    if [ $1 == "--all" ]; then
+        killalljobs
+        exit
     fi
 
-    for jruns in */; do
-        if [[ $jruns =~ .*$app.* ]]; then
-            for jexs in `ls $jamfolder/$jruns`; do
-                if [ -z $port ] || [ $port == $jexs ]; then
-                    dir=$jamfolder/$jruns$jexs
-                    if [ -d $dir ]; then
-                        echo "Killing application running at " $jexs
-                        killprocess $dir
-                    fi
-                fi
-            done
-        fi
-    done
-
-fi
-
-if [ ! -z $app ] && [ ! -z $port ]; then
-    tmuxapp=$app"_"$port
-
-    if $TMUX has-session -t $tmuxapp; then
-        # This is overkill.. we would kill instances belonging to other applications
-        $TMUX kill-session -t $tmuxapp
-    fi
+    killjob $1
 fi
