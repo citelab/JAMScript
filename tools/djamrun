@@ -75,10 +75,50 @@ runatcloud() {
             sudo docker exec -d --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --cloud --data=$data --tag=$tags
         fi
     fi
+}
 
+runatfog() {
+    local dockid=$1
+    local file=$2
+    local appid=$3
+    local data=$4
+    local tags=$5
 
+    if [ -z $tags ]; then
+        if [ -z $bg ]; then
+            sudo docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --fog --data=$data
+        else
+            sudo docker exec -d --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --fog --data=$data
+        fi
+    else
+        if [ -z $bg ]; then
+            sudo docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --fog --data=$data --tag=$tags
+        else
+            sudo docker exec -d --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --fog --data=$data --tag=$tags
+        fi
+    fi
+}
 
-    sudo docker exec -it  --privileged --env NODE_PATH= jam  jamrun stringlog.jxe --fog
+runatdevice() {
+    local dockid=$1
+    local file=$2
+    local appid=$3
+    local data=$4
+    local tags=$5
+
+    if [ -z $tags ]; then
+        if [ -z $bg ]; then
+            sudo docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --data=$data
+        else
+            sudo docker exec -d --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid  --data=$data
+        fi
+    else
+        if [ -z $bg ]; then
+            sudo docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --data=$data --tag=$tags
+        else
+            sudo docker exec -d --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --data=$data --tag=$tags
+        fi
+    fi
 }
 
 
@@ -92,25 +132,13 @@ dojamrun() {
 
     case $type in
         cloud)
-            if [ -z "$tags" ]; then
-                sudo docker exec -d $dockid jamrun $file --app=$jappid --cloud --data=$data
-            else
-                sudo docker exec -d $dockid jamrun $file --app=$jappid --cloud --data=$data --tag=$tags $file
-            fi
+            runatcloud $dockid $file $jappid $data $tags
             ;;
         fog)
-            if [ -z "$tags" ]; then
-                sudo docker exec -d $dockid jamrun $file  --app=$jappid --fog --data=$data
-            else
-                sudo docker exec -d $dockid jamrun $file --app=$jappid --fog --data=$data --tag=$tags
-            fi
+            runatfog $dockid $file $jappid $data $tags
             ;;
         device)
-            if [ -z "$tags" ]; then
-                sudo docker exec -d $dockid jamrun $file --app=$jappid  --data=$data
-            else
-                sudo docker exec -d $dockid jamrun $file --app=$jappid  --data=$data --tag=$tags
-            fi
+            runatdevice $dockid $file $jappid $data $tags
             ;;
     esac
 }

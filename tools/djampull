@@ -34,5 +34,5 @@ if [ $1 == "-h" ] || [ $1 == "--help" ]; then
 fi
 
 # Now we pull a given image
-echo $1 > $jamfolder/dImage
+echo $1 > $jamfolder/dockerImage
 sudo docker pull $1
