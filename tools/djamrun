@@ -55,6 +55,32 @@ checkdocker() {
     fi
 }
 
+runatcloud() {
+    local dockid=$1
+    local file=$2
+    local appid=$3
+    local data=$4
+    local tags=$5
+
+    if [ -z $tags ]; then
+        if [ -z $bg ]; then
+            sudo docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --cloud --data=$data
+        else
+            sudo docker exec -d --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --cloud --data=$data
+        fi
+    else
+        if [ -z $bg ]; then
+            sudo docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --cloud --data=$data --tag=$tags
+        else
+            sudo docker exec -d --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --cloud --data=$data --tag=$tags
+        fi
+    fi
+
+
+
+    sudo docker exec -it  --privileged --env NODE_PATH= jam  jamrun stringlog.jxe --fog
+}
+
 
 dojamrun() {
     local type=$1
