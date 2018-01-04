@@ -35,6 +35,7 @@ checkprocess() {
     elif [ -e $1/dockerId ]; then
         running="docker"
     fi
+    running="none"
 }
 
 
@@ -133,6 +134,8 @@ if [ "$(ls -A $jamfolder)" ]; then
                             printnodeinfo $jexs $dir $jamfolder/$jruns
                         elif [ $running == "docker" ]; then
                             echo "Docker"
+                        else
+                            echo "None"
                         fi
                     fi
                 done
