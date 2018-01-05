@@ -95,6 +95,7 @@ dojamout() {
 
     startmqtt $pnum
     echo $data > $floc/$pnum/dataStore
+    echo "process" > $floc/$pnum/class
 
     case $type in
         cloud)

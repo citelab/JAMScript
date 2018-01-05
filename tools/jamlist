@@ -24,6 +24,7 @@ EOF
 }
 
 checkprocess() {
+
     if [ -e $1/processId ]; then
         local pid=`cat $1/processId`
         local present=`ps -p $pid | grep node | wc -l`
@@ -33,7 +34,13 @@ checkprocess() {
             running="none"
         fi
     elif [ -e $1/dockerId ]; then
-        running="docker"
+        local did=`cat $1/dockerId`
+        local present=`docker ps --filter id=$did | grep $did | wc -l`
+        if [ $present == "1" ]; then
+            running="docker"
+        else
+            running="none"
+        fi
     fi
     running="none"
 }
@@ -69,6 +76,29 @@ printnodeinfo() {
         printf "%8s %12s %12s %12s %15s %10s %7s %10s\n" "$appid" "$appl" "$prog" "Local:$port" "$dstore" "$mtype" "--" "--"
     fi
 }
+
+
+printdockerinfo() {
+    local port=$1
+    local mtype=`cat $2/machType`
+    local appid=`cat $3/appid`
+    local dstore=`cat $2/dataStore`
+    local tmuxid=`cat $2/tmuxid`
+    local dockerid=`cat $2/dockerId`
+
+    if [ ! `tmux has-session -t $tmuxid` ]; then
+        tmuxid="-"
+    fi
+
+    if [ $mtype == "device" ]; then
+        local cdevs=`docker exec $dockerid jamquery $appid cdevs`
+        printf "%8s %12s %12s %12s %15s %10s %7s %10s\n" "$appid" "$appl" "$prog" "Dkr:$dockerid" "$dstore" "$mtype" "$cdevs" "$tmuxid"
+    else
+        printf "%8s %12s %12s %12s %15s %10s %7s %10s\n" "$appid" "$appl" "$prog" "Dkr:$dockerid" "$dstore" "$mtype" "--" "--"
+    fi
+}
+
+
 
 printheader() {
     printf "\n%8s %12s %12s %12s %15s %10s %7s %10s\n" "ID" "NAME" "PROGRAM" "HOST" "D-STORE" "TYPE" "C-NODES" "TMUX-ID"
@@ -133,7 +163,7 @@ if [ "$(ls -A $jamfolder)" ]; then
                         if [ $running == "ps" ]; then
                             printnodeinfo $jexs $dir $jamfolder/$jruns
                         elif [ $running == "docker" ]; then
-                            echo "Docker"
+                            printdockerinfo $jexs $dir $jamfolder/$jruns
                         else
                             echo "None"
                         fi

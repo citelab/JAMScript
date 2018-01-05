@@ -128,7 +128,16 @@ dojamrun() {
     local floc=$3
     local file=$4
 
+    echo $type > $floc/$dockid/machType
     echo $data > $floc/$dockid/dataStore
+    echo $dockerSer > $floc/$dockid/dockerId
+    echo "docker" > $floc/$dockid/class
+    if [ -z $bg ]; then
+        echo "-" > $floc/$dockid/tmuxid
+    else
+        echo $dockid > $floc/$dockid/tmuxid
+    fi
+
 
     case $type in
         cloud)
@@ -181,7 +190,8 @@ setupdockermach() {
     local file=$2
     dockerImage=`cat $jamfolder/dockerImage`
 
-    docker run --name $docid -t -d --privileged $dockerImage
+    dockerSer=docker run --name $docid -t -d --privileged $dockerImage
+    dockerSer=${dockerSer:0:12}
     docker cp $file $docid:`basename $2`
 }
 
