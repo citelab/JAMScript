@@ -181,8 +181,8 @@ setupdockermach() {
     local file=$2
     dockerImage=`cat $jamfolder/dockerImage`
 
-    sudo docker run --name $docid -t -d --privileged $dockerImage
-    sudo docker cp $file $docid:`basename $2`
+    docker run --name $docid -t -d --privileged $dockerImage
+    docker cp $file $docid:`basename $2`
 }
 
 
