@@ -20,8 +20,8 @@ EOF
 
 jamfolder=$HOME"/__jamruns"
 if [ -z $1 ]; then
-    if [ -e $jamfolder/dImage ]; then
-        sudo docker pull `cat $jamfolder/dImage`
+    if [ -e $jamfolder/dockerImage ]; then
+        docker pull `cat $jamfolder/dockerImage`
     else
         echo "ERROR! Need to provide for the first use"
     fi
@@ -35,4 +35,4 @@ fi
 
 # Now we pull a given image
 echo $1 > $jamfolder/dockerImage
-sudo docker pull $1
+docker pull $1
