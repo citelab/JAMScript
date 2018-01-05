@@ -34,8 +34,9 @@ checkprocess() {
             running="none"
         fi
     elif [ -e $1/dockerId ]; then
-        local did=`cat $1/dockerId`
-        local present=`docker ps --filter id=$did | grep $did | wc -l`
+        local didp=`cat $1/dockerId`
+        echo "------> "$didp
+        local present=`docker ps --filter id=$didp | grep $didp | wc -l`
         if [ $present == "1" ]; then
             running="docker"
         else
