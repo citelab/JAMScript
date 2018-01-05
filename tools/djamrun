@@ -190,7 +190,7 @@ setupdockermach() {
     local file=$2
     dockerImage=`cat $jamfolder/dockerImage`
 
-    dockerSer=docker run --name $docid -t -d --privileged $dockerImage
+    dockerSer=`docker run --name $docid -t -d --privileged $dockerImage`
     dockerSer=${dockerSer:0:12}
     docker cp $file $docid:`basename $2`
 }
