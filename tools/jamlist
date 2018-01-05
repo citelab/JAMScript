@@ -91,6 +91,12 @@ printdockerinfo() {
         tmuxid="-"
     fi
 
+    echo $mtype
+    echo "______ ___ "
+    echo $appid
+    echo $tmuxid
+    echo $dockerid
+
     if [ $mtype == "device" ]; then
         local cdevs=`docker exec $dockerid jamquery $appid cdevs`
         printf "%8s %12s %12s %12s %15s %10s %7s %10s\n" "$appid" "$appl" "$prog" "Dkr:$dockerid" "$dstore" "$mtype" "$cdevs" "$tmuxid"
