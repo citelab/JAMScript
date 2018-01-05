@@ -85,7 +85,9 @@ printdockerinfo() {
     local tmuxid=`cat $2/tmuxid`
     local dockerid=`cat $2/dockerId`
 
-    if [ ! `tmux has-session -t $tmuxid` ]; then
+    tmux has-session -t $tmuxid 2>/dev/null
+    local res=$?
+    if [ $res == "1" ]; then
         tmuxid="-"
     fi
 
@@ -160,7 +162,6 @@ if [ "$(ls -A $jamfolder)" ]; then
                     dir=$jamfolder/$jruns$jexs
                     if [ -d $dir ]; then
                         checkprocess $dir
-                        echo "Running " $running
                         if [ $running == "ps" ]; then
                             printnodeinfo $jexs $dir $jamfolder/$jruns
                         elif [ $running == "docker" ]; then

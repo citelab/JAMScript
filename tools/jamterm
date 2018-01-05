@@ -30,7 +30,7 @@ fi
 tmuxapp=$1
 $TMUX has-session -t $tmuxapp 2>/dev/null
 res=$?
-if [ $res == "1" ]; then
+if [ $res == "0" ]; then
     # This is overkill.. we would kill instances belonging to other applications
     $TMUX attach -t $tmuxapp
 fi
