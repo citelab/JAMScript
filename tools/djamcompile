@@ -1,0 +1,46 @@
+#!/bin/bash
+
+
+# No need to edit below this line unless you find a bug!
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+show_usage() {
+    cat << EOF
+
+djamcompile or djamcompile -h or djamcompile --help prints this help
+information.
+
+djamcompile f1.jxe f2.c
+compiles f1.js and f2.c to obtain f1.jxe. Here, the source files are
+copied into the docker container and the compiler is run in the container.
+The resulting file f1.jxe is copied back to the host.
+
+EOF
+}
+
+jamfolder=$HOME"/__jamruns"
+if [ ! -d $jamfolder ]; then
+    echo "JAMScript not setup in the system."
+    exit 0
+fi
+
+dockerImage=`cat $jamfolder/dockerImage`
+
+# Check if the build container is running..
+present=`docker ps --filter name=dbuild_container | grep dbuild_container | wc -l`
+if [ $present == "0" ]; then
+    # Otherwise spawn one
+    docker run -it -d --name dbuild_container $dockerImage
+fi
+
+docker cp $1 dbuild_container:$1
+docker cp $2 dbuild_container:$2
+
+docker exec -it dbuild_container jamc $1 $2
+filename=$1
+jxefile="${filename%.*}.jxe"
+docker cp dbuild_container:jxefile jxefile

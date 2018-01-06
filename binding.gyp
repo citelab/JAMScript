@@ -71,7 +71,8 @@
             "tools/jrun",
             "tools/djam",
             "tools/djampull",
-            "tools/djamrun"            
+            "tools/djamrun",
+            "tools/djamcompile"           
            ]
         }
       ]

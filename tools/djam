@@ -44,7 +44,7 @@ case $jcmd in
         djamterm $params
         ;;
     kill)
-        djamkill $params
+        jamkill $params
         ;;
     clean)
         djamclean $params
@@ -57,5 +57,9 @@ case $jcmd in
         ;;
     pull)
         djampull $params
+        ;;
+    comp)
+    compile)
+        djamcompile $params
         ;;
 esac

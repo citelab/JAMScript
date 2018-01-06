@@ -55,70 +55,103 @@ checkdocker() {
     fi
 }
 
+# runatcloud $dockid $file $jappid $data $floc $tags
 runatcloud() {
     local dockid=$1
     local file=$2
     local appid=$3
     local data=$4
-    local tags=$5
+    local floc=$5
+    local tags=$6
+
 
     if [ -z $tags ]; then
         if [ -z $bg ]; then
+            echo "-" > $floc/$dockid/tmuxid
             docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --cloud --data=$data
         else
+            echo $dockid"-cloud" > $floc/$dockid/tmuxid
             tmux new-session -s $dockid docker exec -it  --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --cloud --data=$data
         fi
     else
         if [ -z $bg ]; then
+            echo "-" > $floc/$dockid/tmuxid
             docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --cloud --data=$data --tag=$tags
         else
+            echo $dockid"-cloud" > $floc/$dockid/tmuxid
             tmux new-session -s $dockid docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --cloud --data=$data --tag=$tags
         fi
     fi
 }
 
+# runatfog $dockid $file $jappid $data $floc $tags
 runatfog() {
     local dockid=$1
     local file=$2
     local appid=$3
     local data=$4
-    local tags=$5
+    local floc=$5
+    local tags=$6
 
     if [ -z $tags ]; then
         if [ -z $bg ]; then
+            echo "-" > $floc/$dockid/tmuxid
             docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --fog --data=$data
         else
+            echo $dockid"-fog" > $floc/$dockid/tmuxid
             tmux new-session -s $dockid docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --fog --data=$data
         fi
     else
         if [ -z $bg ]; then
+            echo "-" > $floc/$dockid/tmuxid
             docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --fog --data=$data --tag=$tags
         else
+            echo $dockid"-fog" > $floc/$dockid/tmuxid
             tmux new-session -s $dockid docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --fog --data=$data --tag=$tags
         fi
     fi
 }
 
+# runatdevice $dockid $file $jappid $data $num $floc $tags
 runatdevice() {
     local dockid=$1
     local file=$2
     local appid=$3
     local data=$4
-    local tags=$5
+    local num=$5
+    local floc=$6
+    local tags=$7
 
+    # Start J
     if [ -z $tags ]; then
         if [ -z $bg ]; then
-            docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --data=$data
+            echo "-" > $floc/$dockid/tmuxid
+            docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jrun $file --app=$appid --data=$data --group=$dockid
         else
-            tmux new-session -s $dockid docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid  --data=$data
+            echo $dockid"-dev" > $floc/$dockid/tmuxid
+            tmux new-session -s $dockid"-dev" docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jrun $file --app=$appid  --data=$data --group=$dockid
         fi
+
+        for i in `seq 1 $num`; do
+            echo $dockid"-devc-"$i > $floc/$dockid/tmuxid
+            tmux new-session -s $dockid"-devc-"$i docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid crun $file --app=$appid  --data=$data --group=$dockid
+        done
+
     else
         if [ -z $bg ]; then
-            docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --data=$data --tag=$tags
+            echo "-" > $floc/$dockid/tmuxid
+            docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jrun $file --app=$appid --data=$data --group=$dockid
         else
-            tmux new-session -s $dockid docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --data=$data --tag=$tags
+            echo $dockid"-dev" > $floc/$dockid/tmuxid
+            tmux new-session -s $dockid"-dev" docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jrun $file --app=$appid  --data=$data --group=$dockid
         fi
+
+        for i in `seq 1 $num`; do
+            echo $dockid"-devc-"$i > $floc/$dockid/tmuxid
+            tmux new-session -s $dockid"-devc-"$i docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid crun $file --app=$appid  --data=$data --group=$dockid
+        done
     fi
+
 }
 
 
@@ -127,27 +160,23 @@ dojamrun() {
     local dockid=$2
     local floc=$3
     local file=$4
+    local num=$5
 
     echo $type > $floc/$dockid/machType
     echo $data > $floc/$dockid/dataStore
     echo $dockerSer > $floc/$dockid/dockerId
     echo "docker" > $floc/$dockid/class
-    if [ -z $bg ]; then
-        echo "-" > $floc/$dockid/tmuxid
-    else
-        echo $dockid > $floc/$dockid/tmuxid
-    fi
 
 
     case $type in
         cloud)
-            runatcloud $dockid $file $jappid $data $tags
+            runatcloud $dockid $file $jappid $data $floc $tags
             ;;
         fog)
-            runatfog $dockid $file $jappid $data $tags
+            runatfog $dockid $file $jappid $data $floc $tags
             ;;
         device)
-            runatdevice $dockid $file $jappid $data $tags
+            runatdevice $dockid $file $jappid $data $num $floc $tags
             ;;
     esac
 }
@@ -213,6 +242,7 @@ app=app-n
 type=device
 data=127.0.0.1:6379
 tags=
+num=1
 bg=
 
 
@@ -357,7 +387,7 @@ if [ -e "$file" ]; then
     getappid $jamfolder $folder
     createdir $folder $dockerid
     setupdockermach $dockerid $file $jamfolder
-    dojamrun $type $dockerid $folder `basename $file`
+    dojamrun $type $dockerid $folder `basename $file` $num
     echo "Completed the run.."
 
 else

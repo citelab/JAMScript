@@ -26,6 +26,15 @@ Usage: jamkill --all|app-id
 EOF
 }
 
+killtmux() {
+    local tmid=$1
+
+    tmux has-session -t $tmid 2>/dev/null
+    local res=$?
+    if [ $res == "0" ]; then
+        tmux kill-session -t $tmid
+    fi
+}
 
 killprocess() {
     if [ -e $1/processId ]; then
@@ -33,6 +42,13 @@ killprocess() {
         local present=`ps -p $pid | grep node | wc -l`
         if [ $present == "1" ]; then
             kill -9 $pid
+        fi
+    elif [ -e $1/dockerId ]; then
+        local didp=`cat $1/dockerId`
+        local present=`docker ps --filter id=$didp | grep $didp | wc -l`
+        if [ $present == "1" ]; then
+            docker kill $didp
+            docker rm $didp            
         fi
     fi
 }
@@ -70,8 +86,7 @@ killalljobs() {
                     echo "Killing application running at " $jexs
                     killprocess $dir
                     if [ -e $dir/tmuxid ]; then
-                        local tmuxid=`cat $dir/tmuxid`
-                        $TMUX kill-session -t $tmuxid
+                        killtmux `cat $dir/tmuxid`
                     fi
                 fi
             done
