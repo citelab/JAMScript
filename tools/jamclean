@@ -37,7 +37,7 @@ checkrunning() {
                     runflag="true"
                 fi
             elif [ -e $1$q/dockerId ]; then
-                local didp=`cat $1/dockerId`
+                local didp=`cat $1$q/dockerId`
                 local present=`docker ps --filter id=$didp | grep $didp | wc -l`
                 if [ $present == "1" ]; then
                     runflag="true"
