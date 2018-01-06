@@ -93,7 +93,7 @@ printdockerinfo() {
 
     if [ $mtype == "device" ]; then
 #        local cdevs=`docker exec $dockerid jamquery $appid cdevs`
-        cdevs="Not-Avail"
+        cdevs=`cat $2/cdevs`
         printf "%8s %12s %12s %12s %15s %10s %7s %10s\n" "$appid" "$appl" "$prog" "Dkr:$dockerid" "$dstore" "$mtype" "$cdevs" "$tmuxid"
     else
         printf "%8s %12s %12s %12s %15s %10s %7s %10s\n" "$appid" "$appl" "$prog" "Dkr:$dockerid" "$dstore" "$mtype" "--" "--"

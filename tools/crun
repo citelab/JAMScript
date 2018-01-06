@@ -137,6 +137,7 @@ if [ -e "$file" ]; then
     if [ -e a.out ]; then
         # execute the program.. we are in the folder..
         chmod +x a.out
+
         ./a.out -a $app -n $num -p $port
     else
         die "$file is not a valid JAMScript executable"

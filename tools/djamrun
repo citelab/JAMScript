@@ -71,7 +71,7 @@ runatcloud() {
             docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --cloud --data=$data
         else
             echo $dockid"-cloud" > $floc/$dockid/tmuxid
-            tmux new-session -s $dockid docker exec -it  --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --cloud --data=$data
+            tmux new-session -s $dockid -d docker exec -it  --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --cloud --data=$data
         fi
     else
         if [ -z $bg ]; then
@@ -79,7 +79,7 @@ runatcloud() {
             docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --cloud --data=$data --tag=$tags
         else
             echo $dockid"-cloud" > $floc/$dockid/tmuxid
-            tmux new-session -s $dockid docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --cloud --data=$data --tag=$tags
+            tmux new-session -s $dockid -d docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --cloud --data=$data --tag=$tags
         fi
     fi
 }
@@ -99,7 +99,7 @@ runatfog() {
             docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --fog --data=$data
         else
             echo $dockid"-fog" > $floc/$dockid/tmuxid
-            tmux new-session -s $dockid docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --fog --data=$data
+            tmux new-session -s $dockid -d  docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --fog --data=$data
         fi
     else
         if [ -z $bg ]; then
@@ -107,7 +107,7 @@ runatfog() {
             docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --fog --data=$data --tag=$tags
         else
             echo $dockid"-fog" > $floc/$dockid/tmuxid
-            tmux new-session -s $dockid docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --fog --data=$data --tag=$tags
+            tmux new-session -s $dockid -d  docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --fog --data=$data --tag=$tags
         fi
     fi
 }
@@ -122,34 +122,43 @@ runatdevice() {
     local floc=$6
     local tags=$7
 
+    echo $num > $floc/$dockid/cdevs
+
     # Start J
     if [ -z $tags ]; then
         if [ -z $bg ]; then
             echo "-" > $floc/$dockid/tmuxid
-            docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jrun $file --app=$appid --data=$data --group=$dockid
+            tmux new-session -s $dockid"-dev" -d docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jrun $file --app=$appid --data=$data --group=$dockid
         else
             echo $dockid"-dev" > $floc/$dockid/tmuxid
-            tmux new-session -s $dockid"-dev" docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jrun $file --app=$appid  --data=$data --group=$dockid
+            tmux new-session -s $dockid"-dev" -d docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jrun $file --app=$appid  --data=$data --group=$dockid
         fi
 
         for i in `seq 1 $num`; do
-            echo $dockid"-devc-"$i > $floc/$dockid/tmuxid
-            tmux new-session -s $dockid"-devc-"$i docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid crun $file --app=$appid  --data=$data --group=$dockid
+            tmux new-session -s $dockid"-dev-"$i -d docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid crun $file --app=$appid  --data=$data --group=$dockid
         done
+
+        if [ -z $bg ]; then
+            tmux attach-session -t $dockid"-dev"
+        fi
 
     else
         if [ -z $bg ]; then
             echo "-" > $floc/$dockid/tmuxid
-            docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jrun $file --app=$appid --data=$data --group=$dockid
+            tmux new-session -s $dockid"-dev" -d docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jrun $file --app=$appid --data=$data --group=$dockid
         else
             echo $dockid"-dev" > $floc/$dockid/tmuxid
-            tmux new-session -s $dockid"-dev" docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jrun $file --app=$appid  --data=$data --group=$dockid
+            tmux new-session -s $dockid"-dev" -d docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jrun $file --app=$appid  --data=$data --group=$dockid
         fi
 
         for i in `seq 1 $num`; do
-            echo $dockid"-devc-"$i > $floc/$dockid/tmuxid
-            tmux new-session -s $dockid"-devc-"$i docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid crun $file --app=$appid  --data=$data --group=$dockid
+            tmux new-session -s $dockid"-dev-"$i -d docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid crun $file --app=$appid  --data=$data --group=$dockid
         done
+
+        if [ -z $bg ]; then
+            tmux attach-session -t $dockid"-dev"
+        fi
+
     fi
 
 }
@@ -214,6 +223,32 @@ getappid() {
     dockerid="docker-"$count
 }
 
+removetmux() {
+    local tmid=$1
+
+    tmux has-session -t $tmid 2>/dev/null
+    local res=$?
+    if [ $res == "0" ]; then
+        tmux kill-session -t $tmid
+    fi
+}
+
+removedockermach() {
+
+    local tmid=`cat $folder/$dockerid/tmuxid`
+    removetmux $tmid
+
+    if [ -e $folder/$dockerid/cdevs ]; then
+        local num=`cat $folder/$dockerid/cdevs`
+        for i in `seq 1 $num`; do
+            removetmux $tmid"-"$i
+        done
+    fi
+
+    docker kill $dockerSer
+    docker rm $dockerid
+}
+
 setupdockermach() {
     local docid=$1
     local file=$2
@@ -222,6 +257,8 @@ setupdockermach() {
     dockerSer=`docker run --name $docid -t -d --privileged $dockerImage`
     dockerSer=${dockerSer:0:12}
     docker cp $file $docid:`basename $2`
+
+    trap removedockermach SIGINT
 }
 
 
