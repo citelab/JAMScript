@@ -166,8 +166,6 @@ if [ "$(ls -A $jamfolder)" ]; then
                             printnodeinfo $jexs $dir $jamfolder/$jruns
                         elif [ $running == "docker" ]; then
                             printdockerinfo $jexs $dir $jamfolder/$jruns
-                        else
-                            echo "None"
                         fi
                     fi
                 done
