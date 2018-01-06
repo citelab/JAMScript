@@ -70,8 +70,9 @@ runatcloud() {
             echo "-" > $floc/$dockid/tmuxid
             docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --cloud --data=$data
         else
+
             echo $dockid"-cloud" > $floc/$dockid/tmuxid
-            tmux new-session -s $dockid -d docker exec -it  --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --cloud --data=$data
+            tmux new-session -s $dockid docker exec -it  --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --cloud --data=$data
         fi
     else
         if [ -z $bg ]; then
@@ -258,17 +259,8 @@ setupdockermach() {
     dockerSer=${dockerSer:0:12}
     docker cp $file $docid:`basename $2`
 
-    trap removedockermach SIGINT
 }
 
-
-waitforcmd() {
-
-    if [ -z $bg ]; then
-        trap cleanuptmux SIGINT
-        wait $jpid
-    fi
-}
 
 processjxe() {
     result="ok"
@@ -425,7 +417,9 @@ if [ -e "$file" ]; then
     createdir $folder $dockerid
     setupdockermach $dockerid $file $jamfolder
     dojamrun $type $dockerid $folder `basename $file` $num
-    echo "Completed the run.."
+    if [ -z $bg ]; then
+        removedockermach
+    fi
 
 else
     die "File: $file not found"
