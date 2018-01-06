@@ -59,6 +59,8 @@ case $jcmd in
         djampull $params
         ;;
     comp)
+        djamcompile $params
+        ;;
     compile)
         djamcompile $params
         ;;

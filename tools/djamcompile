@@ -43,4 +43,4 @@ docker cp $2 dbuild_container:$2
 docker exec -it dbuild_container jamc $1 $2
 filename=$1
 jxefile="${filename%.*}.jxe"
-docker cp dbuild_container:jxefile jxefile
+docker cp dbuild_container:$jxefile $jxefile
