@@ -41,19 +41,19 @@ case $jcmd in
         jamlist $params
         ;;
     term)
-        djamterm $params
+        jamterm $params
         ;;
     kill)
         jamkill $params
         ;;
     clean)
-        djamclean $params
+        jamclean $params
         ;;
     run)
         djamrun $params
         ;;
     close)
-        djamclose $params
+        jamclose $params
         ;;
     pull)
         djampull $params

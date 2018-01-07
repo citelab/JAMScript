@@ -274,7 +274,7 @@ processjxe() {
 # Initialize all the option variables.
 app=app-n
 type=device
-data=127.0.0.1:6379
+data=docker:6379
 tags=
 num=1
 bg=

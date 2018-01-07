@@ -237,6 +237,36 @@ waitforcmd() {
     fi
 }
 
+startredis() {
+    local port=$1
+
+    redis-server --port $port &
+}
+
+configureredis() {
+    local port=$1
+
+    redis-cli -p $port CONFIG SET protected-mode no
+}
+
+
+resolvedocker() {
+    local name=$1
+
+    local host="${name%:*}"
+    local port="${name##*:}"
+
+    startredis $port
+
+    if [ $home == "docker" ]; then
+        local ipaddr=`hostname -I`
+        name=$ipaddr:$port
+
+        configureredis $port
+    fi
+    data=$name
+}
+
 
 # Initialize all the option variables.
 app=app-n
@@ -388,6 +418,7 @@ if [ -e "$file" ]; then
 
     cd $folder
 
+    resolvedocker $data
 
     if [ -e jamout.js ]; then
         # execute the program.. we are in the folder..
