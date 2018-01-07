@@ -258,7 +258,7 @@ resolvedocker() {
 
     startredis $port
 
-    if [ $home == "docker" ]; then
+    if [ $host == "docker" ]; then
         local ipaddr=`hostname -I`
         name=$ipaddr:$port
 
