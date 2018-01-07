@@ -206,6 +206,7 @@ createdir() {
 getappid() {
     local mainf=$1
     local localf=$2
+    local appid=$3
 
     if [ -e $mainf/counter ]; then
         local count=`cat $mainf/counter`
@@ -216,8 +217,12 @@ getappid() {
         echo $count > $mainf/counter
     fi
 
-    if [ ! -e $localf/appid ]; then
-        echo "app-"$count > $localf/appid
+    if [ $appid == "app-n" ]; then
+        if [ ! -e $localf/appid ]; then
+            echo "app-"$count > $localf/appid
+        fi
+    else
+        echo $appid > $localf/appid
     fi
 
     jappid=`cat $localf/appid`
@@ -413,7 +418,7 @@ if [ -e "$file" ]; then
     fi
 
     cd $folder
-    getappid $jamfolder $folder
+    getappid $jamfolder $folder $app
     createdir $folder $dockerid
     setupdockermach $dockerid $file $jamfolder
     dojamrun $type $dockerid $folder `basename $file` $num

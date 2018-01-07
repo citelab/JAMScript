@@ -198,6 +198,7 @@ createdir() {
 getappid() {
     local mainf=$1
     local localf=$2
+    local appid=$3
 
     if [ -e $mainf/counter ]; then
         local count=`cat $mainf/counter`
@@ -208,8 +209,12 @@ getappid() {
         echo $count > $mainf/counter
     fi
 
-    if [ ! -e $localf/appid ]; then
-        echo "app-"$count > $localf/appid
+    if [[ $appid == app-* ]]; then
+        if [ ! -e $localf/appid ]; then
+            echo "app-"$count > $localf/appid
+        fi
+    elif
+        echo $appid > $localf/appid
     fi
 
     jappid=`cat $localf/appid`
@@ -395,7 +400,7 @@ if [ -e "$file" ]; then
                     [[ $porttaken == 1 ]] || break
                     ((iport++))
                 done
-                getappid $jamfolder $folder
+                getappid $jamfolder $folder $app
                 createdir $folder $iport
                 dojamout $type $iport $folder
                 waitforcmd
@@ -407,7 +412,7 @@ if [ -e "$file" ]; then
                     [[ $porttaken == 1 ]] || break
                     ((iport++))
                 done
-                getappid $jamfolder $folder
+                getappid $jamfolder $folder $app
                 createdir $folder $iport
                 dojamout $type $iport $folder
                 waitforcmd
@@ -421,7 +426,7 @@ if [ -e "$file" ]; then
                     fi
                     ((iport++))
                 done
-                getappid $jamfolder $folder
+                getappid $jamfolder $folder $app
                 createdir $folder $iport
                 dojamout $type $iport $folder
                 setuptmux $jpid
