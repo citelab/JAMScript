@@ -213,7 +213,7 @@ getappid() {
         if [ ! -e $localf/appid ]; then
             echo "app-"$count > $localf/appid
         fi
-    elif
+    else
         echo $appid > $localf/appid
     fi
 
