@@ -83,6 +83,37 @@ startmqtt() {
     fi
 }
 
+startredis() {
+    local port=$1
+
+    redis-server --port $port &
+}
+
+configureredis() {
+    local port=$1
+
+    redis-cli -p $port CONFIG SET protected-mode no
+}
+
+
+resolvedocker() {
+    local name=$1
+
+    local host="${name%:*}"
+    local port="${name##*:}"
+
+    startredis $port
+
+    if [ $host == "docker" ]; then
+        local ipaddr=`hostname -I`
+        name=$ipaddr:$port
+
+        configureredis $port
+    fi
+    data=$name
+}
+
+
 dojamout() {
     local type=$1
     local pnum=$2
@@ -255,6 +286,8 @@ if [ "$type" != "device" ] && [ -n "$num" ]; then
     die "number of devices can't be speciied for fog/cloud"
 fi
 
+
+resolvedocker $data
 
 if [ -e "$file" ]; then
 
