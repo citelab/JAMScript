@@ -29,18 +29,19 @@ if [ ! -d $jamfolder ]; then
 fi
 
 dockerImage=`cat $jamfolder/dockerImage`
+dbuildc="dbuildctnr-"$UID
 
 # Check if the build container is running..
-present=`docker ps --filter name=dbuild_container | grep dbuild_container | wc -l`
+present=`docker ps --filter name=$dbuildc | grep $dbuildc | wc -l`
 if [ $present == "0" ]; then
     # Otherwise spawn one
-    docker run -it -d --name dbuild_container $dockerImage
+    docker run -it -d --name $dbuildc $dockerImage
 fi
 
-docker cp $1 dbuild_container:$1
-docker cp $2 dbuild_container:$2
+docker cp $1 $dbuildc:$1
+docker cp $2 $dbuildc:$2
 
-docker exec -it dbuild_container jamc $1 $2
+docker exec -it $dbuildc jamc $1 $2
 filename=$1
 jxefile="${filename%.*}.jxe"
-docker cp dbuild_container:$jxefile $jxefile
+docker cp $dbuildc:$jxefile $jxefile

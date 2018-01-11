@@ -11,15 +11,17 @@ show_usage() {
 Runs JAMScript instances in docker containers.
 The docker version of the normal 'jam' commands
 
-djam help   - prints this help
-djam clean  - clean the setup left behind by old runs
-djam close  - close terminals
-djam kill   - kill a node
-djam list   - lists all the JAMScript programs running in the system
-djam pull   - pull the given docker image
-djam run    - start a device, fog, or cloud
-djam term   - show the tmux terminals of the running nodes
-
+djam help   - Prints this help
+djam clean  - Cleans up the mess left behind by old runs
+              Use this command if errors occur due to incomplete runs
+djam close  - Close all tmux terminals opened by the 'term' command
+djam kill   - Kill a particular application or all active applications
+djam list   - Lists all the JAMScript programs running in the system
+djam pull   - Pull the given docker image and make it the default
+djam run    - Start a device, fog, or cloud
+djam term   - Reattach to a tmux terminal ofa running JAMScript instance
+              Use the 'list' command to find out the ID to connect.
+              
 
 Type 'djam cmd --help' for more help on the specific command.
 
