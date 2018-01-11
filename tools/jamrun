@@ -243,6 +243,19 @@ startredis() {
     redis-server --port $port &
 }
 
+waitforredis() {
+    local port=$1
+
+    while : ; do
+        local present=`ps ax | grep redis-server | grep $port | wc -l`
+        if [ $preset == "1" ]; then
+            break
+        fi
+        sleep 1
+    done
+}
+
+
 configureredis() {
     local port=$1
 
@@ -257,6 +270,7 @@ resolvedocker() {
     local port="${name##*:}"
 
     startredis $port
+    waitforredis $port
 
     if [ $host == "docker" ]; then
         local ipaddr=`hostname -I`
