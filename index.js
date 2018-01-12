@@ -127,7 +127,7 @@ try {
         
         // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
         Promise.all(tasks).then(function(value) {
-            createZip(results.JS, results.manifest, tmpDir, outPath);
+            createZip(results.JS, results.jView, results.manifest, tmpDir, outPath);
             if (!debug) {
                 for (var i = 0; i < value.length; i++) {
                     console.log(value[i]);
@@ -244,10 +244,11 @@ function flowCheck(input, verbose) {
     });
 }
 
-function createZip(jsout, mout, tmpDir, outputName) {
+function createZip(jsout, jview, mout, tmpDir, outputName) {
     var zip = new JSZip();
     zip.file("MANIFEST.txt", mout);
     zip.file("jamout.js", jsout);
+    zip.file("jview.json", JSON.stringify(jview));
     zip.file("a.out", fs.readFileSync(`${tmpDir}/a.out`));
     zip.generateNodeStream({
         type: 'nodebuffer',

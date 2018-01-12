@@ -28,32 +28,32 @@ JAMJS <: ES6 {
 
     Jdata_decl (a jdata declaration) = jdata "{" Jdata_spec* "}"
 
-    Jview_spec      = NonemptyListOf<Jview_page, ";">
-                    | beat ":" identifier ";"                       -- beat
+    Jview_spec      = beat ":" identifier ";"                       -- beat
+                    | Jview_page
 
-    Jview_page      = identifier as page "{" NonemptyListOf<Page_elem, ";"> "}"
+    Jview_page      = identifier as page "{" Page_elem+ "}"
 
     Page_elem       = Display_elem
                     | Control_elem
                     | Page_name
 
-    Display_elem    = identifier is display "{" NonemptyListOf<Disp_spec, ";"> "}"
+    Display_elem    = identifier is display "{" Disp_spec+ "}"
 
-    Control_elem    = identifier is controller "{" NonemptyListOf<Ctrl_spec, ";"> "}"
+    Control_elem    = identifier is controller "{" Ctrl_spec+ "}"
 
-    Page_name       = name ":" identifier
+    Page_name       = name ":" identifier ";"
 
-    Disp_spec       = type ":" display_type
-                    | title ":" stringLiteral
-                    | options ":" stringLiteral
-                    | source ":" identifier
+    Disp_spec       = type ":" display_type ";"
+                    | title ":" stringLiteral ";"
+                    | options ":" stringLiteral ";"
+                    | source ":" identifier ";"
 
     display_type    = linegraph | scatterplot
 
-    Ctrl_spec       = type ":" control_type
-                    | title ":" literal
-                    | options ":" literal
-                    | sink ":" identifier
+    Ctrl_spec       = type ":" control_type ";"
+                    | title ":" literal ";"
+                    | options ":" literal ";"
+                    | sink ":" identifier ";"
 
     control_type    = slider | terminal | button
 
