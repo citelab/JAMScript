@@ -59,9 +59,9 @@ printnodeinfo() {
     local mtype=`cat $2/machType`
     local appid=`cat $3/appid`
     local dstore=`cat $2/dataStore`
+    local tmuxid=`cat $2/tmuxid`
 
     if [ $mtype == "device" ]; then
-        local tmuxid=`cat $2/tmuxid`
         local cdevs=0
         for pidf in `ls $2/cdevProcessId.*`; do
             local pid=`cat $pidf`
@@ -72,7 +72,7 @@ printnodeinfo() {
         done
         printf "%8s %12s %12s %12s %15s %10s %7s %10s\n" "$appid" "$appl" "$prog" "Local:$port" "$dstore" "$mtype" "$cdevs" "$tmuxid"
     else
-        printf "%8s %12s %12s %12s %15s %10s %7s %10s\n" "$appid" "$appl" "$prog" "Local:$port" "$dstore" "$mtype" "--" "--"
+        printf "%8s %12s %12s %12s %15s %10s %7s %10s\n" "$appid" "$appl" "$prog" "Local:$port" "$dstore" "$mtype" "--" "$tmuxid"
     fi
 }
 
@@ -96,7 +96,7 @@ printdockerinfo() {
         cdevs=`cat $2/cdevs`
         printf "%8s %12s %12s %12s %15s %10s %7s %10s\n" "$appid" "$appl" "$prog" "$dockerid" "$dstore" "$mtype" "$cdevs" "$tmuxid"
     else
-        printf "%8s %12s %12s %12s %15s %10s %7s %10s\n" "$appid" "$appl" "$prog" "$dockerid" "$dstore" "$mtype" "--" "--"
+        printf "%8s %12s %12s %12s %15s %10s %7s %10s\n" "$appid" "$appl" "$prog" "$dockerid" "$dstore" "$mtype" "--" "$tmuxid"
     fi
 }
 

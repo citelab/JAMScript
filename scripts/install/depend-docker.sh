@@ -15,8 +15,11 @@ scriptdir=$(dirname -- $(readlink -fn -- "$0"))
 mkdir temp_install_src
 cd temp_install_src
 
-# Install some packages..
 sudo apt-get update
+# Install some packages..
+sudo apt-get -y iproute2
+sudo apt-get -y net-tools
+
 sudo apt-get install -y xz-utils
 sudo apt-get install -y texinfo
 sudo apt-get install -y libc-dev
