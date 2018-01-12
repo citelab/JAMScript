@@ -226,7 +226,7 @@ getappid() {
     fi
 
     jappid=`cat $localf/appid`
-    dockerid="docker-"$count
+    dockerid="u-"$UID"-dkr-"$count
 }
 
 removetmux() {
