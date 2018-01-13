@@ -17,8 +17,9 @@ cd temp_install_src
 
 sudo apt-get update
 # Install some packages..
-sudo apt-get -y iproute2
-sudo apt-get -y net-tools
+sudo apt-get install -y iproute2
+sudo apt-get install -y net-tools
+sudo apt-get install -y iputils-ping
 
 sudo apt-get install -y xz-utils
 sudo apt-get install -y texinfo
