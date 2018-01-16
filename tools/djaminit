@@ -226,16 +226,13 @@ echo "on" > $jamfolder/pumba
 
 # Set delay between cloud and fogs
 # we are setting for 1 hour recurrent delay. There is one minute every 1hr where the delay is not in effect
-echo "pumba --interval 1h netem --duration 59m delay -t $clddelay -j $cldjitter ^u-$UID-cloud" > $jamfolder/pumba_cloud_cmd
-restartcloudpumba
+echo "pumba --interval 1h netem --duration 59m delay -t $clddelay -j $cldjitter " > $jamfolder/pumba_cloud_cmd
 
 # Set delay inside fog zones
-echo "pumba --interval 1h netem --duration 59m delay -t $inpdelay -j $inpjitter ^u-$UID-fog" > $jamfolder/pumba_infog_cmd
-restartfogpumba
+echo "pumba --interval 1h netem --duration 59m delay -t $inpdelay -j $inpjitter " > $jamfolder/pumba_infog_cmd
 
 # Set delay between fog zones
-echo "pumba --interval 1h netem --duration 59m delay -t $outpdelay -j $outpjitter ^u-$UID-router" > $jamfolder/pumba_outfog_cmd
-restartrouterpumba
+echo "pumba --interval 1h netem --duration 59m delay -t $outpdelay -j $outpjitter " > $jamfolder/pumba_outfog_cmd
 
 # Write the number of num_of_zones
 echo $zones > $jamfolder/zones

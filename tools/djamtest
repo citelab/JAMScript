@@ -137,9 +137,14 @@ docker run -it -d --name "u-$UID-fog-test-2"  $dockerImage
 docker run -it -d --name "u-$UID-dev-test-1"  $dockerImage
 docker run -it -d --name "u-$UID-dev-test-2"  $dockerImage
 
-restartcloudpumba
-restartrouterpumba
-restartfogpumba
+# Start the two routers
+docker run -it -d --name "u-$UID-router-test-1"  $dockerImage
+docker run -it -d --name "u-$UID-router-test-2"  $dockerImage
+
+
+restartcloudpumba "u-$UID-cloud-test"
+restartrouterpumba "u-$UID-router-test-1" "u-$UID-router-test-2"
+restartfogpumba "u-$UID-fog-test-1" "u-$UID-fog-test-2"
 
 # Print a message
 echo "Done. Configured the test topology."
