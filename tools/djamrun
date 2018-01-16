@@ -224,7 +224,12 @@ getappid() {
     if [ $appid == "app-n" ]; then
         if [ ! -e $appfolder/appid ]; then
             echo "app-"$count > $appfolder/appid
-        fi
+        else
+            local x=`cat $appfolder/appid`
+            if [ -z $x ]; then
+                echo "app-"$count > $appfolder/appid
+            fi
+        fi            
     else
         echo $appid > $appfolder/appid
     fi
