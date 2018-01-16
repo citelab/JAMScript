@@ -41,6 +41,8 @@ checkprocess() {
         else
             running="none"
         fi
+    else
+        running="none"
     fi
 }
 
