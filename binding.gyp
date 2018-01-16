@@ -72,7 +72,11 @@
             "tools/djam",
             "tools/djampull",
             "tools/djamrun",
-            "tools/djamcompile"           
+            "tools/djamcompile",
+            "tools/djaminit",
+            "tools/djamload",
+            "tools/djamtest",
+            "tools/djammrun"                                                                                            
            ]
         }
       ]

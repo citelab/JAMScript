@@ -1,0 +1,70 @@
+#!/bin/bash
+
+# No need to edit below this line unless you find a bug!
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+show_usage() {
+    cat << EOF
+
+djamtest
+Creates a test configuration of containers. Does not run JAMScript. One cloud node
+(u-UID-test-cloud), two fog nodes (u-UID-test-fog-1) and (u-UID-test-fog-2). The fog
+nodes are in different zones. It also creates two device nodes (u-UID-test-dev-1) and
+(u-UID-test-dev-2).
+
+You can login into the different nodes and ping each other to test the inter-container
+latency.
+
+All machines are detached. You need to attach to them again using:
+
+docker attach node-name
+
+EOF
+}
+
+jamfolder=$HOME"/__jamruns"
+if [ ! -e $jamfolder ]; then
+    die "JAMScript emulation is not yet initialized. Run djaminit first."
+fi
+
+if [ $1 == "-h" ] || [ $1 == "--help" ]; then
+    show_usage
+    exit
+fi
+
+# Image
+dockerImage=`cat $jamfolder/dockerImage`
+
+# These containers are not created in the proper way
+# This is for testing purposes.. so this is OK.
+
+# Start a cloud machine
+docker run -it -d --name "u-$UID-cloud-test"  $dockerImage
+
+# Start two fog machines
+
+docker run -it -d --name "u-$UID-fog-test-1"  $dockerImage
+docker run -it -d --name "u-$UID-fog-test-2"  $dockerImage
+
+# Start two devices
+docker run -it -d --name "u-$UID-dev-test-1"  $dockerImage
+docker run -it -d --name "u-$UID-dev-test-2"  $dockerImage
+
+# Setup the delay to the cloud
+cloudDelay=`cat $jamfolder/pumba_cloud_cmd`
+$cloudDelay
+
+# Setup the delay within the fog clusters
+fogIDelay=`cat $jamfolder/pumba_infog_cmd`
+$fogIDelay
+
+# Setup the delay between the fog clusters
+fogODelay=`cat $jamfolder/pumba_outfog_cmd`
+$fogODelay
+
+# Print a message
+echo "Done. Configured the test topology."

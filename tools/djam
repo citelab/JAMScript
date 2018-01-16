@@ -11,18 +11,25 @@ show_usage() {
 Runs JAMScript instances in docker containers.
 The docker version of the normal 'jam' commands
 
-djam help   - Prints this help
-djam clean  - Cleans up the mess left behind by old runs
-              Use this command if errors occur due to incomplete runs
-djam close  - Close all tmux terminals opened by the 'term' command
-djam kill   - Kill a particular application or all active applications
-djam list   - Lists all the JAMScript programs running in the system
+djam help   - Prints this help.
+djam clean  - Cleans up the mess left behind by old runs.
+              Use this command if errors occur due to incomplete runs.
+djam close  - Close all tmux terminals opened by the 'term' command.
+djam comp   - Compile the JAMScript program in the container.
+              Executable file is copied back to the original folder.]
+djam init   - Initializes the delay values for the docker topology.
+              Saves zones information and starts pumba (net emulator).
+djam kill   - Kill a particular application or all active applications.
+djam list   - Lists all the JAMScript programs running in the system.
+djam load   - Loads the given file into each node in the current topology.
+              New file goes into the /jamfiles folder.
+djam mrun   - Starts more than one node (using the 'run' command).
 djam pull   - Pull the given docker image and make it the default
 djam run    - Start a device, fog, or cloud
 djam term   - Reattach to a tmux terminal ofa running JAMScript instance
               Use the 'list' command to find out the ID to connect.
-djam comp   - Compile the JAMScript program in the container.
-              Executable file is copied
+djam test   - Configures a test topology based on the parameter provided in 'init'.
+
 
 Type 'djam cmd --help' for more help on the specific command.
 
