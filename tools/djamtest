@@ -181,8 +181,8 @@ createnetwork
 # Start a cloud machine
 startglobalmach "u-$UID-cloud-test"
 
-startzonerouter 1
-startzonerouter 2
+startzonerouter 1 "u-$UID-router-test-1"
+startzonerouter 2 "u-$UID-router-test-2"
 
 # Start two fog machines
 
