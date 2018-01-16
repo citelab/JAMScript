@@ -50,6 +50,9 @@ case $jcmd in
     list)
         jamlist $params
         ;;
+    init)
+        djaminit $params
+        ;;
     term)
         jamterm $params
         ;;

@@ -31,10 +31,25 @@ if [ ! -e $jamfolder ]; then
     die "JAMScript emulation is not yet initialized. Run djaminit first."
 fi
 
-if [ $1 == "-h" ] || [ $1 == "--help" ]; then
-    show_usage
-    exit
+if [ ! -z $1 ]; then
+    if [ $1 == "-h" ] || [ $1 == "--help" ]; then
+        show_usage
+        exit
+    fi
 fi
+
+if [ ! -e $jamfolder/pumba_cloud_cmd ]; then
+    die "Run 'djam init' before running the 'djam test'. "
+fi
+
+if [ ! -e $jamfolder/pumba_infog_cmd ]; then
+    die "Run 'djam init' before running the 'djam test'. "
+fi
+
+if [ ! -e $jamfolder/pumba_outfog_cmd ]; then 
+    die "Run 'djam init' before running the 'djam test'. "
+fi
+
 
 # Image
 dockerImage=`cat $jamfolder/dockerImage`
