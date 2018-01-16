@@ -173,6 +173,8 @@ fi
 # Image
 dockerImage=`cat $jamfolder/dockerImage`
 
+createnetwork
+
 # These containers are not created in the proper way
 # This is for testing purposes.. so this is OK.
 
