@@ -53,6 +53,9 @@ case $jcmd in
     term)
         jamterm $params
         ;;
+    test)
+        djamtest $params
+        ;;
     kill)
         jamkill $params
         ;;
