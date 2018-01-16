@@ -26,6 +26,72 @@ docker attach node-name
 EOF
 }
 
+
+
+killrouterpumba() {
+
+    local pid=`ps axw | grep pumba | grep router | awk '{split($0,a, " "); print a[1]}'`
+    if [ ! -z $pid ]; then
+        kill $pid
+    fi
+}
+
+startrouterpumba() {
+
+    local routercmd=`cat $jamfolder/pumba_outfog_cmd`
+    $routercmd &
+}
+
+restartrouterpumba() {
+
+    killrouterpumba
+    startrouterpumba
+}
+
+
+killfogpumba() {
+
+    local pid=`ps axw | grep pumba | grep fog | awk '{split($0,a, " "); print a[1]}'`
+    if [ ! -z $pid ]; then
+        kill $pid
+    fi
+}
+
+startfogpumba() {
+
+    local fogcmd=`cat $jamfolder/pumba_infog_cmd`
+    $fogcmd &
+}
+
+restartfogpumba() {
+
+    killfogpumba
+    startfogpumba
+}
+
+
+killcloudpumba() {
+
+    local pid=`ps axw | grep pumba | grep cloud | awk '{split($0,a, " "); print a[1]}'`
+    if [ ! -z $pid ]; then
+        kill $pid
+    fi
+}
+
+startcloudpumba() {
+
+    local cloudcmd=`cat $jamfolder/pumba_cloud_cmd`
+    $cloudcmd &
+}
+
+restartcloudpumba() {
+
+    killcloudpumba
+    startcloudpumba
+}
+
+
+
 jamfolder=$HOME"/__jamruns"
 if [ ! -e $jamfolder ]; then
     die "JAMScript emulation is not yet initialized. Run djaminit first."
@@ -38,6 +104,8 @@ if [ ! -z $1 ]; then
     fi
 fi
 
+
+
 if [ ! -e $jamfolder/pumba_cloud_cmd ]; then
     die "Run 'djam init' before running the 'djam test'. "
 fi
@@ -46,7 +114,7 @@ if [ ! -e $jamfolder/pumba_infog_cmd ]; then
     die "Run 'djam init' before running the 'djam test'. "
 fi
 
-if [ ! -e $jamfolder/pumba_outfog_cmd ]; then 
+if [ ! -e $jamfolder/pumba_outfog_cmd ]; then
     die "Run 'djam init' before running the 'djam test'. "
 fi
 
@@ -69,17 +137,9 @@ docker run -it -d --name "u-$UID-fog-test-2"  $dockerImage
 docker run -it -d --name "u-$UID-dev-test-1"  $dockerImage
 docker run -it -d --name "u-$UID-dev-test-2"  $dockerImage
 
-# Setup the delay to the cloud
-cloudDelay=`cat $jamfolder/pumba_cloud_cmd`
-$cloudDelay
-
-# Setup the delay within the fog clusters
-fogIDelay=`cat $jamfolder/pumba_infog_cmd`
-$fogIDelay
-
-# Setup the delay between the fog clusters
-fogODelay=`cat $jamfolder/pumba_outfog_cmd`
-$fogODelay
+restartcloudpumba
+restartrouterpumba
+restartfogpumba
 
 # Print a message
 echo "Done. Configured the test topology."
