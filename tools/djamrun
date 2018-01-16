@@ -301,11 +301,11 @@ removetmux() {
 
 removedockermach() {
 
-    local tmid=`cat $folder/$dockerid/tmuxid`
+    local tmid=`cat $appfolder/$dockerid/tmuxid`
     removetmux $tmid
 
-    if [ -e $folder/$dockerid/cdevs ]; then
-        local num=`cat $folder/$dockerid/cdevs`
+    if [ -e $appfolder/$dockerid/cdevs ]; then
+        local num=`cat $appfolder/$dockerid/cdevs`
         for i in `seq 1 $num`; do
             removetmux $tmid"-"$i
         done
