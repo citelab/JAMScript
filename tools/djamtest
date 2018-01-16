@@ -10,7 +10,7 @@ die() {
 show_usage() {
     cat << EOF
 
-djamtest
+djam test
 Creates a test configuration of containers. Does not run JAMScript. One cloud node
 (u-UID-test-cloud), two fog nodes (u-UID-test-fog-1) and (u-UID-test-fog-2). The fog
 nodes are in different zones. It also creates two device nodes (u-UID-test-dev-1) and
@@ -23,14 +23,21 @@ All machines are detached. You need to attach to them again using:
 
 docker attach node-name
 
+To stop the test, run
+
+djam test stop
+
 EOF
 }
 
 
 
 killrouterpumba() {
-
-    local pid=`ps axw | grep pumba | grep router | awk '{split($0,a, " "); print a[1]}'`
+    if [ -z $1]
+        local pid=`ps axw | grep pumba | grep router | awk '{split($0,a, " "); print a[1]}'`
+    else
+        local pid=`ps axw | grep pumba | grep router | grep $1 | awk '{split($0,a, " "); print a[1]}'`
+    fi
     if [ ! -z $pid ]; then
         kill $pid
     fi
@@ -51,7 +58,12 @@ restartrouterpumba() {
 
 killfogpumba() {
 
-    local pid=`ps axw | grep pumba | grep fog | awk '{split($0,a, " "); print a[1]}'`
+    if [ -z $1]
+        local pid=`ps axw | grep pumba | grep fog | awk '{split($0,a, " "); print a[1]}'`
+    else
+        local pid=`ps axw | grep pumba | grep fog | grep $1 | awk '{split($0,a, " "); print a[1]}'`
+    fi
+
     if [ ! -z $pid ]; then
         kill $pid
     fi
@@ -72,7 +84,12 @@ restartfogpumba() {
 
 killcloudpumba() {
 
-    local pid=`ps axw | grep pumba | grep cloud | awk '{split($0,a, " "); print a[1]}'`
+    if [ -z $1]
+        local pid=`ps axw | grep pumba | grep cloud | awk '{split($0,a, " "); print a[1]}'`
+    else
+        local pid=`ps axw | grep pumba | grep cloud | grep $1 | awk '{split($0,a, " "); print a[1]}'`
+    fi
+
     if [ ! -z $pid ]; then
         kill $pid
     fi
@@ -156,45 +173,63 @@ if [ ! -z $1 ]; then
 fi
 
 
+if [ $1 == "stop" ]; then
+    killfogpumba "-test-"
+    killrouterpumba "-test-"
+    killcloudpumba "-test"
 
-if [ ! -e $jamfolder/pumba/cloud_cmd ]; then
-    die "Run 'djam init' before running the 'djam test'. "
+    docker kill $(docker ps -a -q --filter name=cloud-test)
+    docker rm $(docker ps -a -q --filter name=cloud-test)
+
+    docker kill $(docker ps -a -q --filter name=fog-test)
+    docker rm $(docker ps -a -q --filter name=fog-test)
+
+    docker kill $(docker ps -a -q --filter name=dev-test)
+    docker rm $(docker ps -a -q --filter name=dev-test)
+
+else
+
+
+
+    if [ ! -e $jamfolder/pumba/cloud_cmd ]; then
+        die "Run 'djam init' before running the 'djam test'. "
+    fi
+
+    if [ ! -e $jamfolder/pumba/infog_cmd ]; then
+        die "Run 'djam init' before running the 'djam test'. "
+    fi
+
+    if [ ! -e $jamfolder/pumba/outfog_cmd ]; then
+        die "Run 'djam init' before running the 'djam test'. "
+    fi
+
+
+    # Image
+    dockerImage=`cat $jamfolder/dockerImage`
+
+    createnetwork
+
+    # These containers are not created in the proper way
+    # This is for testing purposes.. so this is OK.
+
+    # Start a cloud machine
+    startglobalmach "u-$UID-cloud-test"
+
+    startzonerouter 1 "u-$UID-router-test-1"
+    startzonerouter 2 "u-$UID-router-test-2"
+
+    # Start two fog machines
+
+    startzonemach 1 "u-$UID-fog-test-1"
+    startzonemach 1 "u-$UID-dev-test-1"
+
+    startzonemach 2 "u-$UID-fog-test-2"
+    startzonemach 2 "u-$UID-dev-test-2"
+
+    restartcloudpumba "u-$UID-cloud-test"
+    restartrouterpumba "u-$UID-router-test-1" "u-$UID-router-test-2"
+    restartfogpumba "u-$UID-fog-test-1" "u-$UID-fog-test-2"
+
+    # Print a message
+    echo "Done. Configured the test topology."
 fi
-
-if [ ! -e $jamfolder/pumba/infog_cmd ]; then
-    die "Run 'djam init' before running the 'djam test'. "
-fi
-
-if [ ! -e $jamfolder/pumba/outfog_cmd ]; then
-    die "Run 'djam init' before running the 'djam test'. "
-fi
-
-
-# Image
-dockerImage=`cat $jamfolder/dockerImage`
-
-createnetwork
-
-# These containers are not created in the proper way
-# This is for testing purposes.. so this is OK.
-
-# Start a cloud machine
-startglobalmach "u-$UID-cloud-test"
-
-startzonerouter 1 "u-$UID-router-test-1"
-startzonerouter 2 "u-$UID-router-test-2"
-
-# Start two fog machines
-
-startzonemach 1 "u-$UID-fog-test-1"
-startzonemach 1 "u-$UID-dev-test-1"
-
-startzonemach 2 "u-$UID-fog-test-2"
-startzonemach 2 "u-$UID-dev-test-2"
-
-restartcloudpumba "u-$UID-cloud-test"
-restartrouterpumba "u-$UID-router-test-1" "u-$UID-router-test-2"
-restartfogpumba "u-$UID-fog-test-1" "u-$UID-fog-test-2"
-
-# Print a message
-echo "Done. Configured the test topology."

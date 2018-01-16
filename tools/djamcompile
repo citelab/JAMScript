@@ -51,6 +51,9 @@ make_container() {
         echo $dockerSer > $jamfolder/type/contname/dockerId
         echo "1" > $jamfolder/type/contname/refCount
     else
+        if [ ! -e $jamfolder/type/contname/refCount ]; then
+            echo "0" > $jamfolder/type/contname/refCount
+        fi
         local rcount=`cat $jamfolder/type/contname/refCount`
         ((rcount++))
         echo $rcount > $jamfolder/type/contname/refCount
