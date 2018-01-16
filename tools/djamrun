@@ -175,8 +175,8 @@ runatdevice() {
 dojamrun() {
     local type=$1
     local dockid=$2
-    local file=$4
-    local num=$5
+    local file=$3
+    local num=$4
 
     echo $type > $appfolder/$dockid/machType
     echo $data > $appfolder/$dockid/dataStore
@@ -210,8 +210,7 @@ createdir() {
 }
 
 getappid() {
-    local localf=$2
-    local appid=$3
+    local appid=$1
 
     if [ -e $jamfolder/counter ]; then
         local count=`cat $jamfolder/counter`
