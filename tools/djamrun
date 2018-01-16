@@ -267,7 +267,7 @@ getdockerid() {
     if [ -z $rundock ] || [ `docker ps --filter name=$rundock | grep $rundock | wc -l` == "0" ]; then
         getcount
         local count=$res
-        dockerid="u-"$UID"-$type"$count
+        dockerid="u-"$UID"-$type-"$count
         make_container $type $dockerid
     else
         dockerid=$rundock
