@@ -199,9 +199,12 @@ while :; do
     shift
 done
 
+if [ ! -d $jamfolder/pumba ]; then
+    mkdir $jamfolder/pumba
+fi
 
 if [ ! -z $ideal ]; then
-    echo "off" > $jamfolder/pumba
+    echo "off" > $jamfolder/pumba/status
     killpumba
     exit
 fi
@@ -222,17 +225,21 @@ inpjitter="${indelay##*:}"
 outpdelay="${outdelay%:*}"
 outpjitter="${outdelay##*:}"
 
-echo "on" > $jamfolder/pumba
+echo "on" > $jamfolder/pumba/status
 
 # Set delay between cloud and fogs
 # we are setting for 1 hour recurrent delay. There is one minute every 1hr where the delay is not in effect
-echo "pumba --interval 1h netem --duration 59m delay -t $clddelay -j $cldjitter " > $jamfolder/pumba_cloud_cmd
+echo "pumba --interval 1h netem --duration 59m delay -t $clddelay -j $cldjitter " > $jamfolder/pumba/cloud_cmd
 
 # Set delay inside fog zones
-echo "pumba --interval 1h netem --duration 59m delay -t $inpdelay -j $inpjitter " > $jamfolder/pumba_infog_cmd
+echo "pumba --interval 1h netem --duration 59m delay -t $inpdelay -j $inpjitter " > $jamfolder/pumba/infog_cmd
 
 # Set delay between fog zones
-echo "pumba --interval 1h netem --duration 59m delay -t $outpdelay -j $outpjitter " > $jamfolder/pumba_outfog_cmd
+echo "pumba --interval 1h netem --duration 59m delay -t $outpdelay -j $outpjitter " > $jamfolder/pumba/outfog_cmd
 
 # Write the number of num_of_zones
-echo $zones > $jamfolder/zones
+if [ ! -d $jamfolder/zones ]; then
+    mkdir $jamfolder/zones
+fi
+
+echo $zones > $jamfolder/zones/count
