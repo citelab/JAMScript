@@ -111,7 +111,7 @@ startzonemach() {
     if [ ! -e $jamfolder/zones/count ]; then
         echo "10" > $jamfolder/zones/count
     fi
-    local count=$jamfolder/zones/count
+    local count=`cat $jamfolder/zones/count`
     ((count++))
     echo $count > $jamfolder/zones/count
 
@@ -134,7 +134,7 @@ startglobalmach() {
     if [ ! -e $jamfolder/global/count ]; then
         echo "10" > $jamfolder/global/count
     fi
-    local count=$jamfolder/global/count
+    local count=`cat $jamfolder/global/count`
     ((count++))
     echo $count > $jamfolder/global/count
 
