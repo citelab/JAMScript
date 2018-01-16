@@ -49,7 +49,7 @@ killrouterpumba() {
 
 startrouterpumba() {
 
-    local routercmd=`cat $jamfolder/pumba_outfog_cmd`
+    local routercmd=`cat $jamfolder/pumba/outfog_cmd`
     $routercmd &
 }
 
@@ -70,7 +70,7 @@ killfogpumba() {
 
 startfogpumba() {
 
-    local fogcmd=`cat $jamfolder/pumba_infog_cmd`
+    local fogcmd=`cat $jamfolder/pumba/infog_cmd`
     $fogcmd &
 }
 
@@ -91,7 +91,7 @@ killcloudpumba() {
 
 startcloudpumba() {
 
-    local cloudcmd=`cat $jamfolder/pumba_cloud_cmd`
+    local cloudcmd=`cat $jamfolder/pumba/cloud_cmd`
     $cloudcmd &
 }
 
