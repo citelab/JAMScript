@@ -57,23 +57,7 @@ if [ ! -z $1 ]; then
     fi
 fi
 
-
-if [ $1 == "stop" ]; then
-    killfogpumba "-test-"
-    killrouterpumba "-test-"
-    killcloudpumba "-test"
-
-    docker kill $(docker ps -a -q --filter name=cloud-test)
-    docker rm $(docker ps -a -q --filter name=cloud-test)
-
-    docker kill $(docker ps -a -q --filter name=fog-test)
-    docker rm $(docker ps -a -q --filter name=fog-test)
-
-    docker kill $(docker ps -a -q --filter name=dev-test)
-    docker rm $(docker ps -a -q --filter name=dev-test)
-
-else
-
+if [ -z $1 ]; then
 
 
     if [ ! -e $jamfolder/pumba/cloud_cmd ]; then
@@ -118,4 +102,19 @@ else
 
     # Print a message
     echo "Done. Configured the test topology."
+
+elif [ $1 == "stop" ]; then
+
+    killfogpumba "-test-"
+    killrouterpumba "-test-"
+    killcloudpumba "-test"
+
+    docker kill $(docker ps -a -q --filter name=cloud-test)
+    docker rm $(docker ps -a -q --filter name=cloud-test)
+
+    docker kill $(docker ps -a -q --filter name=fog-test)
+    docker rm $(docker ps -a -q --filter name=fog-test)
+
+    docker kill $(docker ps -a -q --filter name=dev-test)
+    docker rm $(docker ps -a -q --filter name=dev-test)
 fi
