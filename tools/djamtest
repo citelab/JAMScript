@@ -105,9 +105,9 @@ if [ -z $1 ]; then
 
 elif [ $1 == "stop" ]; then
 
-    killfogpumba "-test-"
-    killrouterpumba "-test-"
-    killcloudpumba "-test"
+    killfogpumba "\-test\-"
+    killrouterpumba "\-test\-"
+    killcloudpumba "\-test"
 
     docker kill $(docker ps -a -q --filter name=cloud-test)
     docker rm $(docker ps -a -q --filter name=cloud-test)
