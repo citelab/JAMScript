@@ -229,7 +229,7 @@ getappid() {
             if [ -z $x ]; then
                 echo "app-"$count > $appfolder/appid
             fi
-        fi            
+        fi
     else
         echo $appid > $appfolder/appid
     fi
@@ -493,6 +493,7 @@ if [ -e "$file" ]; then
     getappid $app
     getdockerid $ruon
     createdir $appfolder $dockerid
+    docker cp $file $dockerid:`basename $file`
     dojamrun $type $dockerid `basename $file` $num
     if [ -z $bg ]; then
         removedockermach
