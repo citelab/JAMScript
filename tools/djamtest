@@ -117,4 +117,7 @@ elif [ $1 == "stop" ]; then
 
     docker kill $(docker ps -a -q --filter name=dev-test)
     docker rm $(docker ps -a -q --filter name=dev-test)
+
+    docker kill $(docker ps -a -q --filter name=router-test)
+    docker rm $(docker ps -a -q --filter name=router-test)
 fi
