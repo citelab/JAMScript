@@ -110,25 +110,25 @@ elif [ $1 == "stop" ]; then
     killcloudpumba "test"
 
     res=$(docker ps -a -q --filter name=cloud-test)
-    if [ -z $res ]; then
+    if [ ! -z $res ]; then
         docker kill $res
         docker rm $res
     fi
 
     res=$(docker ps -a -q --filter name=fog-test)
-    if [ -z $res ]; then
+    if [ ! -z $res ]; then
         docker kill $res
         docker rm $res
     fi
 
     res=$(docker ps -a -q --filter name=dev-test)
-    if [ -z $res ]; then
+    if [ ! -z $res ]; then
         docker kill $res
         docker rm $res
     fi
 
     res=$(docker ps -a -q --filter name=router-test)
-    if [ -z $res ]; then
+    if [ ! -z $res ]; then
         docker kill $res
         docker rm $res
     fi
