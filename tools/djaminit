@@ -1,12 +1,12 @@
 #!/bin/bash
 
+IDIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$IDIR" ]]; then IDIR="$PWD"; fi
+source "$IDIR/inc/pumba_tools.sh"
+source "$IDIR/inc/misc_tools.sh"
+source "$IDIR/inc/docker_tools.sh"
 
-# No need to edit below this line unless you find a bug!
 
-die() {
-    printf '%s\n' "$1" >&2
-    exit 1
-}
 
 show_usage() {
     cat << EOF
@@ -39,80 +39,10 @@ if [ -z $1 ]; then
 fi
 
 
-killrouterpumba() {
-
-    local pid=`ps axw | grep pumba | grep router | awk '{split($0,a, " "); print a[1]}'`
-    if [ ! -z $pid ]; then
-        kill $pid
-    fi
-}
-
-startrouterpumba() {
-
-    local routercmd=`cat $jamfolder/pumba/outfog_cmd`
-    $routercmd &
-}
-
-restartrouterpumba() {
-
-    killrouterpumba
-    startrouterpumba
-}
-
-
-killfogpumba() {
-
-    local pid=`ps axw | grep pumba | grep fog | awk '{split($0,a, " "); print a[1]}'`
-    if [ ! -z $pid ]; then
-        kill $pid
-    fi
-}
-
-startfogpumba() {
-
-    local fogcmd=`cat $jamfolder/pumba/infog_cmd`
-    $fogcmd &
-}
-
-restartfogpumba() {
-
-    killfogpumba
-    startfogpumba
-}
-
-
-killcloudpumba() {
-
-    local pid=`ps axw | grep pumba | grep cloud | awk '{split($0,a, " "); print a[1]}'`
-    if [ ! -z $pid ]; then
-        kill $pid
-    fi
-}
-
-startcloudpumba() {
-
-    local cloudcmd=`cat $jamfolder/pumba/cloud_cmd`
-    $cloudcmd &
-}
-
-restartcloudpumba() {
-
-    killcloudpumba
-    startcloudpumba
-}
-
-killpumba() {
-    killcloudpumba
-    killfogpumba
-    killrouterpumba
-}
-
-
 # Check the __jamruns folder
 jamfolder=$HOME"/__jamruns"
-if [ ! -d $jamfolder ]; then
-    mkdir $jamfolder
-fi
+create_missingdir $jamfolder
+
 
 ideal=
 zones=1
@@ -199,9 +129,7 @@ while :; do
     shift
 done
 
-if [ ! -d $jamfolder/pumba ]; then
-    mkdir $jamfolder/pumba
-fi
+create_missingdir $jamfolder/pumba
 
 if [ ! -z $ideal ]; then
     echo "off" > $jamfolder/pumba/status
@@ -209,10 +137,7 @@ if [ ! -z $ideal ]; then
     exit
 fi
 
-present=`which pumba`
-if [ -z $present ]; then
-    die "Pumba not installed. Download it from https://github.com/gaia-adm/pumba/releases"
-fi
+check_prog pumba "Pumba not installed. Download it from https://github.com/gaia-adm/pumba/releases"
 
 # We are using pumba - validate parameters
 
@@ -225,21 +150,19 @@ inpjitter="${indelay##*:}"
 outpdelay="${outdelay%:*}"
 outpjitter="${outdelay##*:}"
 
-echo "on" > $jamfolder/pumba/status
+save "on" $jamfolder/pumba/status
 
 # Set delay between cloud and fogs
 # we are setting for 1 hour recurrent delay. There is one minute every 1hr where the delay is not in effect
-echo "pumba --interval 1h netem --duration 59m delay -t $clddelay -j $cldjitter " > $jamfolder/pumba/cloud_cmd
+save "pumba --interval 1h netem --duration 59m delay -t $clddelay -j $cldjitter " $jamfolder/pumba/cloud_cmd
 
 # Set delay inside fog zones
-echo "pumba --interval 1h netem --duration 59m delay -t $inpdelay -j $inpjitter " > $jamfolder/pumba/infog_cmd
+save "pumba --interval 1h netem --duration 59m delay -t $inpdelay -j $inpjitter " $jamfolder/pumba/infog_cmd
 
 # Set delay between fog zones
-echo "pumba --interval 1h netem --duration 59m delay -t $outpdelay -j $outpjitter " > $jamfolder/pumba/outfog_cmd
+save "pumba --interval 1h netem --duration 59m delay -t $outpdelay -j $outpjitter " $jamfolder/pumba/outfog_cmd
 
 # Write the number of num_of_zones
-if [ ! -d $jamfolder/zones ]; then
-    mkdir $jamfolder/zones
-fi
+create_missingdir $jamfolder/zones
 
-echo $zones > $jamfolder/zones/count
+save $zones $jamfolder/zones/count

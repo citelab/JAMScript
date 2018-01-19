@@ -1,10 +1,13 @@
 #!/bin/bash
 
+IDIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$IDIR" ]]; then IDIR="$PWD"; fi
+source "$IDIR/inc/pumba_tools.sh"
+source "$IDIR/inc/mach_tools.sh"
+source "$IDIR/inc/misc_tools.sh"
+source "$IDIR/inc/docker_tools.sh"
 
-die() {
-    printf '%s\n' "$1" >&2
-    exit 1
-}
+
 
 show_usage() {
     cat << EOF
@@ -48,156 +51,6 @@ The djamrun command creates a run state in the $HOME/__jamrun folder.
 EOF
 }
 
-checkdocker() {
-
-    local dockeravail=`which docker`
-    if [ -z $dockeravail ]; then
-        die "Docker not installed in this machine. Exiting!"
-    fi
-}
-
-createnetwork() {
-
-    local present=`docker network ls | grep jamnet | wc -l`
-    if [ $present == "0" ]; then
-        docker network create --driver=bridge --subnet=10.10.0.0/16 --ip-range=10.10.0.0/16 jamtest
-    fi
-}
-
-
-# killrouterpumba pattern to kill a router matching the pattern
-# No pattern matches just a router
-killrouterpumba() {
-    if [ -z $1]
-        local pid=`ps axw | grep pumba | grep router | awk '{split($0,a, " "); print a[1]}'`
-    else
-        local pid=`ps axw | grep pumba | grep router | grep $1 | awk '{split($0,a, " "); print a[1]}'`
-    fi
-    if [ ! -z $pid ]; then
-        kill $pid
-    fi
-}
-
-startrouterpumba() {
-
-    local routercmd=`cat $jamfolder/pumba/outfog_cmd`
-    $routercmd $@ &
-}
-
-restartrouterpumba() {
-
-    killrouterpumba $@
-    startrouterpumba $@
-}
-
-
-killfogpumba() {
-
-    if [ -z $1]
-        local pid=`ps axw | grep pumba | grep fog | awk '{split($0,a, " "); print a[1]}'`
-    else
-        local pid=`ps axw | grep pumba | grep fog | grep $1 | awk '{split($0,a, " "); print a[1]}'`
-    fi
-
-    if [ ! -z $pid ]; then
-        kill $pid
-    fi
-}
-
-startfogpumba() {
-
-    local fogcmd=`cat $jamfolder/pumba/infog_cmd`
-    $fogcmd $@ &
-}
-
-restartfogpumba() {
-
-    killfogpumba $@
-    startfogpumba $@
-}
-
-
-killcloudpumba() {
-
-    if [ -z $1]
-        local pid=`ps axw | grep pumba | grep cloud | awk '{split($0,a, " "); print a[1]}'`
-    else
-        local pid=`ps axw | grep pumba | grep cloud | grep $1 | awk '{split($0,a, " "); print a[1]}'`
-    fi
-
-    if [ ! -z $pid ]; then
-        kill $pid
-    fi
-}
-
-startcloudpumba() {
-
-    local cloudcmd=`cat $jamfolder/pumba/cloud_cmd`
-    $cloudcmd $@ &
-}
-
-restartcloudpumba() {
-
-    killcloudpumba $@
-    startcloudpumba $@
-}
-
-
-
-startzonerouter() {
-    local zonenum=$1
-    # Create the machine
-    docker run -it -d --name $2 --network=jamtest --ip=10.10.$zonenum.254 $dockerImage
-}
-
-
-startzonemach() {
-    local zonenum=$1
-    if [ ! -e $jamfolder/zones ]; then
-        mkdir $jamfolder/zones
-    fi
-    if [ ! -e $jamfolder/zones/count ]; then
-        echo "10" > $jamfolder/zones/count
-    fi
-    local count=`cat $jamfolder/zones/count`
-    ((count++))
-    echo $count > $jamfolder/zones/count
-
-    # Create the machine
-    docker run -it -d --name $2 --network=jamtest --ip=10.10.$zonenum.$count --cap-add=NET_ADMIN $dockerImage
-
-    # Setup the routes
-    docker exec -d $2 ip route del 10.10/16
-    docker exec -d $2 ip route add 10.10.0/24 dev eth0
-    docker exec -d $2 ip route add 10.10.$zonenum/24 dev eth0
-    docker exec -d $2 ip route add 10.10/16 via 10.10.$zonenum.254
-
-}
-
-startglobalmach() {
-
-    if [ ! -e $jamfolder/global ]; then
-        mkdir $jamfolder/global
-    fi
-    if [ ! -e $jamfolder/global/count ]; then
-        echo "10" > $jamfolder/global/count
-    fi
-    local count=`cat $jamfolder/global/count`
-    ((count++))
-    echo $count > $jamfolder/global/count
-
-    # Create the machine
-    docker run -it -d --name $1 --network=jamtest --ip=10.10.0.$count $dockerImage
-
-}
-
-
-getcount() {
-    local cvar=`cat $jamfolder/counter`
-    ((cvar++))
-    echo $cvar > $jamfolder/counter
-    res=$cvar
-}
 
 
 # runatcloud $dockid $file $jappid $data $tags
@@ -313,11 +166,10 @@ dojamrun() {
     local file=$3
     local num=$4
 
-    echo $type > $appfolder/$dockid/machType
-    echo $data > $appfolder/$dockid/dataStore
-    echo $dockerSer > $appfolder/$dockid/dockerId
-    echo "docker" > $appfolder/$dockid/class
-
+    save $type $appfolder/$dockid/machType
+    save $data $appfolder/$dockid/dataStore
+    save $dockerSer $appfolder/$dockid/dockerId
+    save "docker" $appfolder/$dockid/class
 
     case $type in
         cloud)
@@ -333,95 +185,89 @@ dojamrun() {
 }
 
 
-createdir() {
-    local jpath=$1
-    local jdir=$2
-    # set a global directory..
-    dirpath=$jpath/$jdir
-
-    if [ ! -e $jpath/$jdir ]; then
-        mkdir $jpath/$jdir
-    fi
-}
-
 getappid() {
     local appid=$1
 
-    if [ -e $jamfolder/counter ]; then
-        local count=`cat $jamfolder/counter`
-        ((count++))
-        echo $count > $jamfolder/counter
-    else
-        local count=1
-        echo $count > $jamfolder/counter
-    fi
+    inc_counter $jamfolder/counter
+    count=$result
 
     if [ $appid == "app-n" ]; then
-        if [ ! -e $appfolder/appid ]; then
-            echo "app-"$count > $appfolder/appid
-        else
-            local x=`cat $appfolder/appid`
-            if [ -z $x ]; then
-                echo "app-"$count > $appfolder/appid
-            fi
-        fi
+        save_no_overwrite "app-"$count $appfolder/appid
     else
-        echo $appid > $appfolder/appid
+        save $appid $appfolder/appid
     fi
 
     jappid=`cat $appfolder/appid`
-}
-
-make_container() {
-    local type=$1
-    local contname=$2
-
-    local dockerImage=`cat $jamfolder/dockerImage`
-
-    if [ ! -e $jamfolder/$type ]; then
-        mkdir $jamfolder/$type
-    fi
-
-    if [ ! -e $jamfolder/$type/$contname ]; then
-        mkdir $jamfolder/$type/$contname
-    fi
-
-    # Check if the build container is running..
-    present=`docker ps --filter name=$contname | grep $contname | wc -l`
-    if [ $present == "0" ]; then
-        # Otherwise spawn one
-        local dockerSer=`docker run -it -d --privileged --name $contname $dockerImage`
-        local dockerSer=${dockerSer:0:12}
-        echo $dockerSer > $jamfolder/$type/$contname/dockerId
-        echo "1" > $jamfolder/$type/$contname/refCount
-    else
-        local rcount=`cat $jamfolder/$type/$contname/refCount`
-        ((rcount++))
-        echo $rcount > $jamfolder/$type/$contname/refCount
-    fi
 }
 
 
 getdockerid() {
     local rundock=$1
     if [ -z $rundock ] || [ `docker ps --filter name=$rundock | grep $rundock | wc -l` == "0" ]; then
-        getcount
-        local count=$res
+        inc_counter $jamfolder/counter
+        local count=$result
         dockerid="u-"$UID"-$type-"$count
-        make_container $type $dockerid
+        result="new"
     else
         dockerid=$rundock
+        result="old"
     fi
 }
+
+
+make_container() {
+    local type=$1
+    local contname=$2
+
+    create_missingdir $jamfolder/$type
+    create_missingdir $jamfolder/$type/$contname
+
+    if [ $type == "cloud" ]; then
+        startglobalmach $contname jamnet 10
+        restartcloudpumba $contname
+    else
+        exit_missingfile $jamfolder/zones/count
+        local zcount=`cat $jamfolder/zones/count`
+        if [ -z $zcount ]; then
+            die "Zone count is undefined.. run djaminit again."
+        fi
+        local zone=$(( $RANDOM % $zcount ))
+
+        startzonemach $zone $contname jamnet 10
+        if [ $type == "fog" ]; then
+            restartfogpumba $contname
+        fi
+    fi
+
+    save $result $jamfolder/$type/$contname/dockerId
+    save "1" $jamfolder/$type/$contname/refCount
+}
+
+reuse_container() {
+    local type=$1
+    local contname=$2
+
+    inc_counter $jamfolder/$type/$contname/refCount
+}
+
+createzonerouters() {
+    exit_missingfile $jamfolder/zones/count
+
+    local zcount=`cat $jamfolder/zones/count`
+    for i in `seq 1 $zcount`; do
+        echo "I= "$i
+        startzonerouter $i "u-$UID-router-$i" jamnet 10
+        restartrouterpumba "u-$UID-router-$i"
+    done
+}
+
 
 killdocker() {
     local dock_id=$1
 
     if [ -e $jamfolder/$type/$dock_id ]; then
-        local rcount=`cat $jamfolder/$type/$dock_id/refCount`
-        ((rcount--))
-        echo $rcount > $jamfolder/$type/$dock_id/refCount
-        if [ $rcount == 0 ]; then
+        dec_counter $jamfolder/$type/$dock_id/refCount
+        if [ $result == 0 ]; then
             docker kill `cat $jamfolder/$type/$dock_id/dockerId`
             docker rm $dock_id
         fi
@@ -601,20 +447,21 @@ fi
 
 # If docker is not installed, we fail here
 checkdocker
+# Check whether the global __jamruns folder is there
+jamfolder=$HOME"/__jamruns"
+exit_missingdir $jamfolder "__jamdir directory not found. Run djam pull first. "
+exit_missingfile $jamfolder/dockerImage "DockerImage not setup. Run djam pull first."
+
+create_missingdir $jamfolder/apps
+
 
 if [ -e "$file" ]; then
 
-    # Check whether the global __jamruns folder is there
-    jamfolder=$HOME"/__jamruns"
-    if [ ! -d $jamfolder ]; then
-        mkdir $jamfolder
-    fi
+
     # Get the folder
     filenoext="${file%.*}"
-    appfolder=$HOME"/__jamruns/"$filenoext"_"$app
-    if [ ! -d "$appfolder" ]; then
-        mkdir $appfolder
-    fi
+    appfolder=$HOME"/__jamruns/apps/"$filenoext"_"$app
+    create_missingdir $appfolder
 
     # process the .jxe file
     file=`pwd`/$file
@@ -623,19 +470,34 @@ if [ -e "$file" ]; then
         die "Problem with JAMScript executable"
     fi
 
-    createnetwork
+    dockerImage=`cat $jamfolder/dockerImage`
+
+    createzonerouters
+    createnetwork jamnet 10
 
     # cd into the $appfolder
     cd $appfolder
+
     getappid $app
     getdockerid $runon
-    createdir $appfolder $dockerid
+    if [ $result == "new" ]; then
+        echo "make new $app $type $dockerid"
+        make_container $type $dockerid
+    else
+        echo "reuse.."
+        reuse_container $type $dockerid
+    fi
+        echo "hello..3"
+
+    create_missingdir $appfolder/$dockerid
     docker cp $file $dockerid:`basename $file`
+        echo "hello.."
     dojamrun $type $dockerid `basename $file` $num
     if [ -z $bg ]; then
         removedockermach
     fi
 
+    echo "hello..4"
 else
     die "File: $file not found"
 fi

@@ -35,11 +35,15 @@ checkprocess() {
         fi
     elif [ -e $1/dockerId ]; then
         local didp=`cat $1/dockerId`
-        local present=`docker ps --filter id=$didp | grep $didp | wc -l`
-        if [ $present == "1" ]; then
-            running="docker"
-        else
+        if [ -z $didp ]; then
             running="none"
+        else
+            local present=`docker ps --filter id=$didp | grep $didp | wc -l`
+            if [ $present == "1" ]; then
+                running="docker"
+            else
+                running="none"
+            fi
         fi
     else
         running="none"
@@ -145,36 +149,33 @@ while :; do
     shift
 done
 
-jamfolder=$HOME"/__jamruns"
-if [ ! -d $jamfolder ]; then
+appsfolder=$HOME"/__jamruns/apps"
+if [ ! -d $appsfolder ]; then
     echo "No running instances of JAMScript."
     exit 0
 fi
 
-if [ "$(ls -A $jamfolder)" ]; then
+if [ "$(ls -A $appsfolder)" ]; then
 
-    cd $jamfolder
+    cd $appsfolder
 
     printheader
     for jruns in */; do
         if [ $jruns != "*/" ]; then
-            if [[ $jruns =~ .*$app.* ]]; then
-                saveapplinfo $jruns
-                for jexs in `ls $jamfolder/$jruns`; do
-                    dir=$jamfolder/$jruns$jexs
-                    if [ -d $dir ]; then
-                        checkprocess $dir
-                        if [ $running == "ps" ]; then
-                            printnodeinfo $jexs $dir $jamfolder/$jruns
-                        elif [ $running == "docker" ]; then
-                            printdockerinfo $jexs $dir $jamfolder/$jruns
-                        fi
+            saveapplinfo $jruns
+            for jexs in `ls $appsfolder/$jruns`; do
+                dir=$appsfolder/$jruns$jexs
+                if [ -d $dir ]; then
+                    checkprocess $dir
+                    if [ $running == "ps" ]; then
+                        printnodeinfo $jexs $dir $appsfolder/$jruns
+                    elif [ $running == "docker" ]; then
+                        printdockerinfo $jexs $dir $appsfolder/$jruns
                     fi
-                done
-            fi
+                fi
+            done
         fi
     done
-
 else
     echo "No running instances of JAMScript."
     exit 0

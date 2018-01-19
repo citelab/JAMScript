@@ -2,8 +2,9 @@
 
 IDIR="${BASH_SOURCE%/*}"
 if [[ ! -d "$IDIR" ]]; then IDIR="$PWD"; fi
-source "$IDIR/pumba_tools.sh"
-source "$IDIR/mach_tools.sh"
+source "$IDIR/inc/pumba_tools.sh"
+source "$IDIR/inc/mach_tools.sh"
+source "$IDIR/inc/misc_tools.sh"
 
 
 # No need to edit below this line unless you find a bug!
@@ -36,19 +37,8 @@ djam test stop
 EOF
 }
 
-
-createnetwork() {
-
-    local present=`docker network ls | grep jamtest | wc -l`
-    if [ $present == "0" ]; then
-        docker network create --driver=bridge --subnet=10.54.0.0/16 --ip-range=10.54.0.0/16 jamtest
-    fi
-}
-
 jamfolder=$HOME"/__jamruns"
-if [ ! -e $jamfolder ]; then
-    die "JAMScript emulation is not yet initialized. Run djaminit first."
-fi
+exit_missingdir $jamfolder "JAMScript emulation is not yet initialized. Run djaminit first."
 
 if [ ! -z $1 ]; then
     if [ $1 == "-h" ] || [ $1 == "--help" ]; then
@@ -59,40 +49,31 @@ fi
 
 if [ -z $1 ]; then
 
-
-    if [ ! -e $jamfolder/pumba/cloud_cmd ]; then
-        die "Run 'djam init' before running the 'djam test'. "
-    fi
-
-    if [ ! -e $jamfolder/pumba/infog_cmd ]; then
-        die "Run 'djam init' before running the 'djam test'. "
-    fi
-
-    if [ ! -e $jamfolder/pumba/outfog_cmd ]; then
-        die "Run 'djam init' before running the 'djam test'. "
-    fi
+    exit_missingfile $jamfolder/pumba/cloud_cmd "Run 'djam init' before running the 'djam test'. "
+    exit_missingfile $jamfolder/pumba/infog_cmd "Run 'djam init' before running the 'djam test'. "
+    exit_missingfile $jamfolder/pumba/outfog_cmd "Run 'djam init' before running the 'djam test'. "
 
     # Image
     dockerImage=`cat $jamfolder/dockerImage`
 
-    createnetwork
+    createnetwork jamtest 54
 
     # These containers are not created in the proper way
     # This is for testing purposes.. so this is OK.
 
     # Start a cloud machine
-    startglobalmach "u-$UID-cloud-test"
+    startglobalmach "u-$UID-cloud-test" jamtest 54
 
-    startzonerouter 1 "u-$UID-router-test-1"
-    startzonerouter 2 "u-$UID-router-test-2"
+    startzonerouter 1 "u-$UID-router-test-1" jamtest 54
+    startzonerouter 2 "u-$UID-router-test-2" jamtest 54
 
     # Start two fog machines
 
-    startzonemach 1 "u-$UID-fog-test-1"
-    startzonemach 1 "u-$UID-dev-test-1"
+    startzonemach 1 "u-$UID-fog-test-1" jamtest 54
+    startzonemach 1 "u-$UID-dev-test-1" jamtest 54
 
-    startzonemach 2 "u-$UID-fog-test-2"
-    startzonemach 2 "u-$UID-dev-test-2"
+    startzonemach 2 "u-$UID-fog-test-2" jamtest 54
+    startzonemach 2 "u-$UID-dev-test-2" jamtest 54
 
     restartcloudpumba "u-$UID-cloud-test"
     restartrouterpumba "u-$UID-router-test-1"
@@ -109,28 +90,28 @@ elif [ $1 == "stop" ]; then
     killrouterpumba "test"
     killcloudpumba "test"
 
-    res=$(docker ps -a -q --filter name=cloud-test)
-    if [ ! -z $res ]; then
+    resarr=$(docker ps -a -q --filter name=cloud-test)
+    for res in $resarr; do
         docker kill $res
         docker rm $res
-    fi
+    done
 
-    res=$(docker ps -a -q --filter name=fog-test)
-    if [ ! -z $res ]; then
+    resarr=$(docker ps -a -q --filter name=fog-test)
+    for res in $resarr; do
         docker kill $res
         docker rm $res
-    fi
+    done
 
-    res=$(docker ps -a -q --filter name=dev-test)
-    if [ ! -z $res ]; then
+    resarr=$(docker ps -a -q --filter name=dev-test)
+    for res in $resarr; do
         docker kill $res
         docker rm $res
-    fi
+    done
 
-    res=$(docker ps -a -q --filter name=router-test)
-    if [ ! -z $res ]; then
+    resarr=$(docker ps -a -q --filter name=router-test)
+    for res in $resarr; do
         docker kill $res
         docker rm $res
-    fi
+    done
 
 fi

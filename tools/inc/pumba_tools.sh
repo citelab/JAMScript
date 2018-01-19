@@ -7,11 +7,9 @@ killrouterpumba() {
         local pid=`ps axw | grep pumba | grep router | grep $1 | awk '{split($0,a, " "); print a[1]}'`
     fi
 
-    echo "Route Pid " $pid
-
-    if [ ! -z $pid ]; then
-        kill $pid
-    fi
+    for p in $pid; do
+        kill $p
+    done
 }
 
 startrouterpumba() {
@@ -35,11 +33,9 @@ killfogpumba() {
         local pid=`ps axw | grep pumba | grep fog | grep $1 | awk '{split($0,a, " "); print a[1]}'`
     fi
 
-    echo "Pid " $pid
-
-    if [ ! -z $pid ]; then
-        kill $pid
-    fi
+    for p in $pid; do
+        kill $p
+    done
 }
 
 startfogpumba() {
