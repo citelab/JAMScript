@@ -254,6 +254,7 @@ createzonerouters() {
     exit_missingfile $jamfolder/zones/count
 
     local zcount=`cat $jamfolder/zones/count`
+
     for i in `seq 1 $zcount`; do
         echo "I= "$i
         startzonerouter $i "u-$UID-router-$i" jamnet 10
@@ -473,6 +474,7 @@ if [ -e "$file" ]; then
     dockerImage=`cat $jamfolder/dockerImage`
 
     createzonerouters
+
     createnetwork jamnet 10
 
     # cd into the $appfolder

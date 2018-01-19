@@ -41,15 +41,9 @@ startzonemach() {
     local netname=$3
     local subnet=$4
 
-    if [ ! -e $jamfolder/zones ]; then
-        mkdir $jamfolder/zones
-    fi
-    if [ ! -e $jamfolder/zones/count ]; then
-        echo "10" > $jamfolder/zones/count
-    fi
-    local count=`cat $jamfolder/zones/count`
-    ((count++))
-    echo $count > $jamfolder/zones/count
+    create_missingdir $jamfolder/zones/$zonenum
+    inc_counter $jamfolder/zones/$zonenum/count
+    local count=$result
 
     # Create the machine
     dockerSer=`docker run -it -d --name $machname --network=$netname --ip=10.$subnet.$zonenum.$count --cap-add=NET_ADMIN $dockerImage`
@@ -68,15 +62,9 @@ startglobalmach() {
     local netname=$2
     local subnet=$3
 
-    if [ ! -e $jamfolder/global ]; then
-        mkdir $jamfolder/global
-    fi
-    if [ ! -e $jamfolder/global/count ]; then
-        echo "10" > $jamfolder/global/count
-    fi
-    local count=`cat $jamfolder/global/count`
-    ((count++))
-    echo $count > $jamfolder/global/count
+    create_missingdir $jamfolder/global
+    inc_counter $jamfolder/global/count
+    local count=$result
 
     # Create the machine
     docker run -it -d --name $machname --network=$netname --ip=10.$subnet.0.$count $dockerImage
