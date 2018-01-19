@@ -47,6 +47,7 @@ JAMJS <: ES6 {
                     | title ":" stringLiteral ";"
                     | options ":" stringLiteral ";"
                     | source ":" identifier ";"
+                    | refresh ":" decimalIntegerLiteral ";"
 
     display_type    = linegraph | scatterplot
 
@@ -115,6 +116,7 @@ JAMJS <: ES6 {
     options = "options" ~identifierPart
     outflow = "outflow" ~identifierPart
     page = "page" ~identifierPart
+    refresh = "refresh" ~identifierPart
     scatterplot = "scatterplot" ~identifierPart
     sink = "sink" ~identifierPart
     slider = "slider" ~identifierPart
