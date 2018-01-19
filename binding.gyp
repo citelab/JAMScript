@@ -60,19 +60,8 @@
         {
           "destination": "/usr/local/bin/",
           "files": [
-            "tools/jam",
-            "tools/jamrun",
-            "tools/jamkill",
-            "tools/jamterm",
-            "tools/jamclean",
-            "tools/jamclose",
-            "tools/jamlist",
-            "tools/crun",
-            "tools/jrun",
-            "tools/djam",
-            "tools/djampull",
-            "tools/djamrun",
-            "tools/djamcompile"           
+            "tools/",
+            "tools/inc"            
            ]
         }
       ]

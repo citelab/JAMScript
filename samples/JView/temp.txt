@@ -1,0 +1,8 @@
+jview {
+	X as page {
+		y is display {
+			type: linegraph;
+			title: "hello world";
+		}
+	}
+}

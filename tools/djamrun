@@ -1,10 +1,13 @@
 #!/bin/bash
 
+IDIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$IDIR" ]]; then IDIR="$PWD"; fi
+source "$IDIR/inc/pumba_tools.sh"
+source "$IDIR/inc/mach_tools.sh"
+source "$IDIR/inc/misc_tools.sh"
+source "$IDIR/inc/docker_tools.sh"
 
-die() {
-    printf '%s\n' "$1" >&2
-    exit 1
-}
+
 
 show_usage() {
     cat << EOF
@@ -41,97 +44,89 @@ Usage: djamrun file.jxe [--app=appl_name] [--fog|--cloud] [--num=num_c_devs]
                                     [--data=data-url]
                                     [--tags=quoted_list_of_tags]
                                     [--bg]
+                                    [--runon=container_to_run]
 
 
 The djamrun command creates a run state in the $HOME/__jamrun folder.
 EOF
 }
 
-checkdocker() {
 
-    dockeravail=`which docker`
-    if [ -z $dockeravail ]; then
-        die "Docker not installed in this machine. Exiting!"
-    fi
-}
 
-# runatcloud $dockid $file $jappid $data $floc $tags
+# runatcloud $dockid $file $jappid $data $tags
 runatcloud() {
     local dockid=$1
     local file=$2
     local appid=$3
     local data=$4
-    local floc=$5
-    local tags=$6
+    local tags=$5
 
 
     if [ -z $tags ]; then
         if [ -z $bg ]; then
-            echo "-" > $floc/$dockid/tmuxid
+            echo "-" > $appfolder/$dockid/tmuxid
             docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --cloud --data=$data
         else
 
-            echo $dockid"-cloud" > $floc/$dockid/tmuxid
+            echo $dockid"-cloud" > $appfolder/$dockid/tmuxid
             tmux new-session -s $dockid docker exec -it  --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --cloud --data=$data
         fi
     else
         if [ -z $bg ]; then
-            echo "-" > $floc/$dockid/tmuxid
+            echo "-" > $appfolder/$dockid/tmuxid
             docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --cloud --data=$data --tag=$tags
         else
-            echo $dockid"-cloud" > $floc/$dockid/tmuxid
+            echo $dockid"-cloud" > $appfolder/$dockid/tmuxid
             tmux new-session -s $dockid -d docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --cloud --data=$data --tag=$tags
         fi
     fi
 }
 
-# runatfog $dockid $file $jappid $data $floc $tags
+# runatfog $dockid $file $jappid $data $tags
 runatfog() {
     local dockid=$1
     local file=$2
     local appid=$3
     local data=$4
-    local floc=$5
-    local tags=$6
+    local tags=$5
 
     if [ -z $tags ]; then
         if [ -z $bg ]; then
-            echo "-" > $floc/$dockid/tmuxid
+            echo "-" > $appfolder/$dockid/tmuxid
             docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --fog --data=$data
         else
-            echo $dockid"-fog" > $floc/$dockid/tmuxid
+            echo $dockid"-fog" > $appfolder/$dockid/tmuxid
             tmux new-session -s $dockid -d  docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --fog --data=$data
         fi
     else
         if [ -z $bg ]; then
-            echo "-" > $floc/$dockid/tmuxid
+            echo "-" > $appfolder/$dockid/tmuxid
             docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --fog --data=$data --tag=$tags
         else
-            echo $dockid"-fog" > $floc/$dockid/tmuxid
+            echo $dockid"-fog" > $appfolder/$dockid/tmuxid
             tmux new-session -s $dockid -d  docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jamrun $file --app=$appid --fog --data=$data --tag=$tags
         fi
     fi
 }
 
-# runatdevice $dockid $file $jappid $data $num $floc $tags
+# runatdevice $dockid $file $jappid $data $num $tags
 runatdevice() {
     local dockid=$1
     local file=$2
     local appid=$3
     local data=$4
     local num=$5
-    local floc=$6
-    local tags=$7
+    local tags=$6
 
-    echo $num > $floc/$dockid/cdevs
+    echo $num > $appfolder/$dockid/cdevs
 
     # Start J
     if [ -z $tags ]; then
         if [ -z $bg ]; then
-            echo "-" > $floc/$dockid/tmuxid
+            echo "-" > $appfolder/$dockid/tmuxid
             tmux new-session -s $dockid"-dev" -d docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jrun $file --app=$appid --data=$data --group=$dockid
         else
-            echo $dockid"-dev" > $floc/$dockid/tmuxid
+            echo $dockid"-dev" > $appfolder/$dockid/tmuxid
             tmux new-session -s $dockid"-dev" -d docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jrun $file --app=$appid  --data=$data --group=$dockid
         fi
 
@@ -145,10 +140,10 @@ runatdevice() {
 
     else
         if [ -z $bg ]; then
-            echo "-" > $floc/$dockid/tmuxid
+            echo "-" > $appfolder/$dockid/tmuxid
             tmux new-session -s $dockid"-dev" -d docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jrun $file --app=$appid --data=$data --group=$dockid
         else
-            echo $dockid"-dev" > $floc/$dockid/tmuxid
+            echo $dockid"-dev" > $appfolder/$dockid/tmuxid
             tmux new-session -s $dockid"-dev" -d docker exec -it --env NODE_PATH=/usr/local/lib/node_modules $dockid jrun $file --app=$appid  --data=$data --group=$dockid
         fi
 
@@ -168,66 +163,117 @@ runatdevice() {
 dojamrun() {
     local type=$1
     local dockid=$2
-    local floc=$3
-    local file=$4
-    local num=$5
+    local file=$3
+    local num=$4
 
-    echo $type > $floc/$dockid/machType
-    echo $data > $floc/$dockid/dataStore
-    echo $dockerSer > $floc/$dockid/dockerId
-    echo "docker" > $floc/$dockid/class
-
+    save $type $appfolder/$dockid/machType
+    save $data $appfolder/$dockid/dataStore
+    save $dockerSer $appfolder/$dockid/dockerId
+    save "docker" $appfolder/$dockid/class
 
     case $type in
         cloud)
-            runatcloud $dockid $file $jappid $data $floc $tags
+            runatcloud $dockid $file $jappid $data $tags
             ;;
         fog)
-            runatfog $dockid $file $jappid $data $floc $tags
+            runatfog $dockid $file $jappid $data $tags
             ;;
         device)
-            runatdevice $dockid $file $jappid $data $num $floc $tags
+            runatdevice $dockid $file $jappid $data $num $tags
             ;;
     esac
 }
 
 
-createdir() {
-    local jpath=$1
-    local jdir=$2
-    # set a global directory..
-    dirpath=$jpath/$jdir
-
-    if [ ! -e $jpath/$jdir ]; then
-        mkdir $jpath/$jdir
-    fi
-}
-
 getappid() {
-    local mainf=$1
-    local localf=$2
-    local appid=$3
+    local appid=$1
 
-    if [ -e $mainf/counter ]; then
-        local count=`cat $mainf/counter`
-        ((count++))
-        echo $count > $mainf/counter
-    else
-        local count=1
-        echo $count > $mainf/counter
-    fi
+    inc_counter $jamfolder/counter
+    count=$result
 
     if [ $appid == "app-n" ]; then
-        if [ ! -e $localf/appid ]; then
-            echo "app-"$count > $localf/appid
-        fi
+        save_no_overwrite "app-"$count $appfolder/appid
     else
-        echo $appid > $localf/appid
+        save $appid $appfolder/appid
     fi
 
-    jappid=`cat $localf/appid`
-    dockerid="u-"$UID"-dkr-"$count
+    jappid=`cat $appfolder/appid`
 }
+
+
+getdockerid() {
+    local rundock=$1
+    if [ -z $rundock ] || [ `docker ps --filter name=$rundock | grep $rundock | wc -l` == "0" ]; then
+        inc_counter $jamfolder/counter
+        local count=$result
+        dockerid="u-"$UID"-$type-"$count
+        result="new"
+    else
+        dockerid=$rundock
+        result="old"
+    fi
+}
+
+
+make_container() {
+    local type=$1
+    local contname=$2
+
+    create_missingdir $jamfolder/$type
+    create_missingdir $jamfolder/$type/$contname
+
+    if [ $type == "cloud" ]; then
+        startglobalmach $contname jamnet 10
+        restartcloudpumba $contname
+    else
+        exit_missingfile $jamfolder/zones/count
+        local zcount=`cat $jamfolder/zones/count`
+        if [ -z $zcount ]; then
+            die "Zone count is undefined.. run djaminit again."
+        fi
+        local zone=$(( $RANDOM % $zcount ))
+
+        startzonemach $zone $contname jamnet 10
+        if [ $type == "fog" ]; then
+            restartfogpumba $contname
+        fi
+    fi
+
+    save $result $jamfolder/$type/$contname/dockerId
+    save "1" $jamfolder/$type/$contname/refCount
+}
+
+reuse_container() {
+    local type=$1
+    local contname=$2
+
+    inc_counter $jamfolder/$type/$contname/refCount
+}
+
+createzonerouters() {
+    exit_missingfile $jamfolder/zones/count
+
+    local zcount=`cat $jamfolder/zones/count`
+    for i in `seq 1 $zcount`; do
+        echo "I= "$i
+        startzonerouter $i "u-$UID-router-$i" jamnet 10
+        restartrouterpumba "u-$UID-router-$i"
+    done
+}
+
+
+killdocker() {
+    local dock_id=$1
+
+    if [ -e $jamfolder/$type/$dock_id ]; then
+        dec_counter $jamfolder/$type/$dock_id/refCount
+        if [ $result == 0 ]; then
+            docker kill `cat $jamfolder/$type/$dock_id/dockerId`
+            docker rm $dock_id
+        fi
+    fi
+}
+
 
 removetmux() {
     local tmid=$1
@@ -241,28 +287,17 @@ removetmux() {
 
 removedockermach() {
 
-    local tmid=`cat $folder/$dockerid/tmuxid`
+    local tmid=`cat $appfolder/$dockerid/tmuxid`
     removetmux $tmid
 
-    if [ -e $folder/$dockerid/cdevs ]; then
-        local num=`cat $folder/$dockerid/cdevs`
+    if [ -e $appfolder/$dockerid/cdevs ]; then
+        local num=`cat $appfolder/$dockerid/cdevs`
         for i in `seq 1 $num`; do
             removetmux $tmid"-"$i
         done
     fi
 
-    docker kill $dockerSer
-    docker rm $dockerid
-}
-
-setupdockermach() {
-    local docid=$1
-    local file=$2
-    dockerImage=`cat $jamfolder/dockerImage`
-
-    dockerSer=`docker run --name $docid -t -d --privileged $dockerImage`
-    dockerSer=${dockerSer:0:12}
-    docker cp $file $docid:`basename $2`
+    killdocker $dockerid
 
 }
 
@@ -278,6 +313,7 @@ data=docker:6379
 tags=
 num=1
 bg=
+runon=
 
 
 file=$1
@@ -312,7 +348,21 @@ while :; do
             app=${1#*=}     # Delete everything up to "=" and assign the remainder.
             ;;
         --app=)            # Handle the case of an empty
-            die 'ERROR: "--args" requires a non-empty option argument.'
+            die 'ERROR: "--app" requires a non-empty option argument.'
+            ;;
+        -o|--runon)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                runon=$2
+                shift
+            else
+                die 'ERROR: "--runon" requires a non-empty option argument.'
+            fi
+            ;;
+        --runon=?*)
+            runon=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --runon=)            # Handle the case of an empty
+            die 'ERROR: "--runon" requires a non-empty option argument.'
             ;;
         -s|--tags)           # Takes an option argument; ensure it has been specified.
             if [ "$2" ]; then
@@ -395,20 +445,23 @@ if [ "$type" != "device" ] && [ -n "$num" ]; then
     die "number of devices can't be speciied for fog/cloud"
 fi
 
+# If docker is not installed, we fail here
+checkdocker
+# Check whether the global __jamruns folder is there
+jamfolder=$HOME"/__jamruns"
+exit_missingdir $jamfolder "__jamdir directory not found. Run djam pull first. "
+exit_missingfile $jamfolder/dockerImage "DockerImage not setup. Run djam pull first."
+
+create_missingdir $jamfolder/apps
+
 
 if [ -e "$file" ]; then
 
-    # Check whether the global __jamruns folder is there
-    jamfolder=$HOME"/__jamruns"
-    if [ ! -d $jamfolder ]; then
-        mkdir $jamfolder
-    fi
+
     # Get the folder
     filenoext="${file%.*}"
-    folder=$HOME"/__jamruns/"$filenoext"_"$app
-    if [ ! -d "$folder" ]; then
-        mkdir $folder
-    fi
+    appfolder=$HOME"/__jamruns/apps/"$filenoext"_"$app
+    create_missingdir $appfolder
 
     # process the .jxe file
     file=`pwd`/$file
@@ -417,15 +470,34 @@ if [ -e "$file" ]; then
         die "Problem with JAMScript executable"
     fi
 
-    cd $folder
-    getappid $jamfolder $folder $app
-    createdir $folder $dockerid
-    setupdockermach $dockerid $file $jamfolder
-    dojamrun $type $dockerid $folder `basename $file` $num
+    dockerImage=`cat $jamfolder/dockerImage`
+
+    createzonerouters
+    createnetwork jamnet 10
+
+    # cd into the $appfolder
+    cd $appfolder
+
+    getappid $app
+    getdockerid $runon
+    if [ $result == "new" ]; then
+        echo "make new $app $type $dockerid"
+        make_container $type $dockerid
+    else
+        echo "reuse.."
+        reuse_container $type $dockerid
+    fi
+        echo "hello..3"
+
+    create_missingdir $appfolder/$dockerid
+    docker cp $file $dockerid:`basename $file`
+        echo "hello.."
+    dojamrun $type $dockerid `basename $file` $num
     if [ -z $bg ]; then
         removedockermach
     fi
 
+    echo "hello..4"
 else
     die "File: $file not found"
 fi

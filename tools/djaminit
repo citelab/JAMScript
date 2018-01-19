@@ -1,0 +1,168 @@
+#!/bin/bash
+
+IDIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$IDIR" ]]; then IDIR="$PWD"; fi
+source "$IDIR/inc/pumba_tools.sh"
+source "$IDIR/inc/misc_tools.sh"
+source "$IDIR/inc/docker_tools.sh"
+
+
+
+show_usage() {
+    cat << EOF
+
+djaminit --ideal
+The inter-container delays are not manipulated. They are set at the natural values
+to get a packet transmitted from container A to container B. No other option
+should be specified with this one.
+
+djaminit --zones=num_of_zones --indelay=delay:jitter --outdelay=delay:jitter
+Inside a zone we have small delays and between zones we have large delays.
+The '--indelay' option tells the delay and jitter within a zone and '--outdelay'
+tells the delay and jitter between zones.
+
+djaminit --cldelay=delay:jitter
+Is the delay and jitter to the cloud from the zones.
+
+The pumba is started if the option is not '--ideal'.
+
+All delay and jitter values are in milliseconds. IMPORTANT: Just numbers should
+be specified - no units.
+
+EOF
+}
+
+# Show the usage
+if [ -z $1 ]; then
+    show_usage
+    exit
+fi
+
+
+# Check the __jamruns folder
+jamfolder=$HOME"/__jamruns"
+create_missingdir $jamfolder
+
+
+ideal=
+zones=1
+cldelay=0:0
+indelay=0:0
+outdelay=0:0
+
+while :; do
+    case $1 in
+        -h|-\?|--help)
+            show_usage      # Display a usage synopsis.
+            exit
+            ;;
+        -c|--cldelay)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                cldelay=$2
+                shift
+            else
+                die 'ERROR: "--cldelay" requires a non-empty option argument.'
+            fi
+            ;;
+        --cldelay=?*)
+            cldelay=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --cldelay=)            # Handle the case of an empty
+            die 'ERROR: "--cldelay" requires a non-empty option argument.'
+            ;;
+        -i|--indelay)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                indelay=$2
+                shift
+            else
+                die 'ERROR: "--indelay" requires a non-empty option argument.'
+            fi
+            ;;
+        --indelay=?*)
+            indelay=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --indelay=)            # Handle the case of an empty
+            die 'ERROR: "--indelay" requires a non-empty option argument.'
+            ;;
+        -o|--outdelay)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                outdelay=$2
+                shift
+            else
+                die 'ERROR: "--outdelay" requires a non-empty option argument.'
+            fi
+            ;;
+        --outdelay=?*)
+            outdelay=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --outdelay=)            # Handle the case of an empty
+            die 'ERROR: "--outdelay" requires a non-empty option argument.'
+            ;;
+        -z|--zones)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                zones=$2
+                shift
+            else
+                die 'ERROR: "--zones" requires a non-empty option argument.'
+            fi
+            ;;
+        --zones=?*)
+            zones=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --zones=)            # Handle the case of an empty
+            die 'ERROR: "--zones" requires a non-empty option argument.'
+            ;;
+        -d|--ideal)
+            ideal=1
+            ;;
+        --)              # End of all options.
+            shift
+            break
+        ;;
+        -?*)
+            printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+            ;;
+        *)               # Default case: No more options, so break out of the loop.
+            break
+    esac
+
+    shift
+done
+
+create_missingdir $jamfolder/pumba
+
+if [ ! -z $ideal ]; then
+    echo "off" > $jamfolder/pumba/status
+    killpumba
+    exit
+fi
+
+check_prog pumba "Pumba not installed. Download it from https://github.com/gaia-adm/pumba/releases"
+
+# We are using pumba - validate parameters
+
+clddelay="${cldelay%:*}"
+cldjitter="${cldelay##*:}"
+
+inpdelay="${indelay%:*}"
+inpjitter="${indelay##*:}"
+
+outpdelay="${outdelay%:*}"
+outpjitter="${outdelay##*:}"
+
+save "on" $jamfolder/pumba/status
+
+# Set delay between cloud and fogs
+# we are setting for 1 hour recurrent delay. There is one minute every 1hr where the delay is not in effect
+save "pumba --interval 1h netem --duration 59m delay -t $clddelay -j $cldjitter " $jamfolder/pumba/cloud_cmd
+
+# Set delay inside fog zones
+save "pumba --interval 1h netem --duration 59m delay -t $inpdelay -j $inpjitter " $jamfolder/pumba/infog_cmd
+
+# Set delay between fog zones
+save "pumba --interval 1h netem --duration 59m delay -t $outpdelay -j $outpjitter " $jamfolder/pumba/outfog_cmd
+
+# Write the number of num_of_zones
+create_missingdir $jamfolder/zones
+
+save $zones $jamfolder/zones/count

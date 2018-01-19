@@ -48,7 +48,7 @@ killprocess() {
         local present=`docker ps --filter id=$didp | grep $didp | wc -l`
         if [ $present == "1" ]; then
             docker kill $didp
-            docker rm $didp            
+            docker rm $didp
         fi
     fi
 }
@@ -59,10 +59,10 @@ killjob() {
 
     for jruns in */; do
         if [ $jruns != "*/" ]; then
-            local appid=`cat $jamfolder/$jruns/appid`
+            local appid=`cat $appsfolder/$jruns/appid`
             if [ $appid == $jobid ]; then
-                for jexs in `ls $jamfolder/$jruns`; do
-                    dir=$jamfolder/$jruns$jexs
+                for jexs in `ls $appsfolder/$jruns`; do
+                    dir=$appsfolder/$jruns$jexs
                     if [ -d $dir ]; then
                         echo "Killing application running at " $jexs
                         killprocess $dir
@@ -80,8 +80,8 @@ killalljobs() {
 
     for jruns in */; do
         if [ $jruns != "*/" ]; then
-            for jexs in `ls $jamfolder/$jruns`; do
-                dir=$jamfolder/$jruns$jexs
+            for jexs in `ls $appsfolder/$jruns`; do
+                dir=$appsfolder/$jruns$jexs
                 if [ -d $dir ]; then
                     echo "Killing application running at " $jexs
                     killprocess $dir
@@ -103,14 +103,13 @@ fi
 
 
 jamfolder=$HOME"/__jamruns"
-if [ ! -d $jamfolder ]; then
-    echo "No running instances of JAMScript."
-    exit 0
-fi
+exit_missingdir $jamfolder "No running instances of JAMScript."
 
-if [ "$(ls -A $jamfolder)" ]; then
+appsfolder=$jamfolder/apps
 
-    cd $jamfolder
+if [ "$(ls -A $appsfolder)" ]; then
+
+    cd $appsfolder
 
     if [ $1 == "--all" ]; then
         killalljobs

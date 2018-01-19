@@ -1,12 +1,18 @@
 #!/bin/bash
 
+IDIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$IDIR" ]]; then IDIR="$PWD"; fi
+source "$IDIR/inc/misc_tools.sh"
 
-# No need to edit below this line unless you find a bug!
 
-die() {
-    printf '%s\n' "$1" >&2
-    exit 1
-}
+# Spin up the build container if it is not there.
+# No need to spin up if the container is already there
+
+# Copy the files into the container
+# Run the jamc compiler in the container using 'docker exec..'
+# Get the results back - copy the .jxe file back to the original folder
+#
+
 
 show_usage() {
     cat << EOF
@@ -22,21 +28,33 @@ The resulting file f1.jxe is copied back to the host.
 EOF
 }
 
+make_container() {
+    local type=$1
+    local contname=$2
+
+    local dockerImage=`cat $jamfolder/dockerImage`
+
+    create_missingdir $jamfolder/type
+    create_missingdir $jamfolder/type/contname
+
+    # Check if the build container is running..
+    present=`docker ps --filter name=$contname | grep $contname | wc -l`
+    if [ $present == "0" ]; then
+        # Otherwise spawn one
+        local dockerSer=`docker run -it -d --privileged --name $contname $dockerImage`
+        local dockerSer=${dockerSer:0:12}
+        echo $dockerSer > $jamfolder/type/contname/dockerId
+        echo "1" > $jamfolder/type/contname/refCount
+    else
+        inc_counter $jamfolder/type/contname/refCount
+    fi
+}
+
 jamfolder=$HOME"/__jamruns"
-if [ ! -d $jamfolder ]; then
-    echo "JAMScript not setup in the system."
-    exit 0
-fi
+exit_missingdir $jamfolder "JAMScript not setup in the system."
 
-dockerImage=`cat $jamfolder/dockerImage`
 dbuildc="dbuildctnr-"$UID
-
-# Check if the build container is running..
-present=`docker ps --filter name=$dbuildc | grep $dbuildc | wc -l`
-if [ $present == "0" ]; then
-    # Otherwise spawn one
-    docker run -it -d --name $dbuildc $dockerImage
-fi
+make_container test $dbuildc
 
 docker cp $1 $dbuildc:$1
 docker cp $2 $dbuildc:$2
