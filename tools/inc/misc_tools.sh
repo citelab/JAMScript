@@ -30,6 +30,17 @@ inc_counter() {
     echo $value > $counter
 }
 
+# set_counter 10 $jamfolder/global/count
+set_counter() {
+    local value=$1
+    local counter=$2
+
+    if [ ! -e $counter ]; then
+        echo $value > $counter
+    fi 
+}
+
+
 
 # dec_counter counter_name
 #

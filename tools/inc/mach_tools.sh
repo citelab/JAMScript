@@ -63,6 +63,8 @@ startglobalmach() {
     local subnet=$3
 
     create_missingdir $jamfolder/global
+    set_counter 10 $jamfolder/global/count
+    # Above command runs if the counter is not already set
     inc_counter $jamfolder/global/count
     local count=$result
 

@@ -40,6 +40,7 @@ EOF
 jamfolder=$HOME"/__jamruns"
 exit_missingdir $jamfolder "JAMScript emulation is not yet initialized. Run djaminit first."
 
+
 if [ ! -z $1 ]; then
     if [ $1 == "-h" ] || [ $1 == "--help" ]; then
         show_usage
@@ -48,6 +49,8 @@ if [ ! -z $1 ]; then
 fi
 
 if [ -z $1 ]; then
+
+    exit_missingfile $jamfolder/dockerImage "Run djam pull to setup the docker image"
 
     exit_missingfile $jamfolder/pumba/cloud_cmd "Run 'djam init' before running the 'djam test'. "
     exit_missingfile $jamfolder/pumba/infog_cmd "Run 'djam init' before running the 'djam test'. "

@@ -168,7 +168,7 @@ dojamrun() {
 
     save $type $appfolder/$dockid/machType
     save $data $appfolder/$dockid/dataStore
-    save $dockerSer $appfolder/$dockid/dockerId
+    save ${dockerSer:0:12} $appfolder/$dockid/dockerId
     save "docker" $appfolder/$dockid/class
 
     case $type in
@@ -451,13 +451,13 @@ checkdocker
 # Check whether the global __jamruns folder is there
 jamfolder=$HOME"/__jamruns"
 exit_missingdir $jamfolder "__jamdir directory not found. Run djam pull first. "
+exit_missingdir $jamfolder/zones "zones not setup. Run djam init first"
 exit_missingfile $jamfolder/dockerImage "DockerImage not setup. Run djam pull first."
 
 create_missingdir $jamfolder/apps
 
 
 if [ -e "$file" ]; then
-
 
     # Get the folder
     filenoext="${file%.*}"
@@ -472,34 +472,25 @@ if [ -e "$file" ]; then
     fi
 
     dockerImage=`cat $jamfolder/dockerImage`
-
     createzonerouters
-
     createnetwork jamnet 10
-
     # cd into the $appfolder
     cd $appfolder
 
     getappid $app
     getdockerid $runon
     if [ $result == "new" ]; then
-        echo "make new $app $type $dockerid"
         make_container $type $dockerid
     else
-        echo "reuse.."
         reuse_container $type $dockerid
     fi
-        echo "hello..3"
 
     create_missingdir $appfolder/$dockerid
     docker cp $file $dockerid:`basename $file`
-        echo "hello.."
     dojamrun $type $dockerid `basename $file` $num
     if [ -z $bg ]; then
         removedockermach
     fi
-
-    echo "hello..4"
 else
     die "File: $file not found"
 fi
