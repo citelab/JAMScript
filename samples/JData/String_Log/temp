@@ -1,0 +1,5 @@
+djam init --zones=3 --indelay=3:1 --outdelay=5:2 --cldelay=28:3
+
+for i in `seq 1 5`; do
+    djam run stringlog.jxe --fog --app=q6 --bg
+done

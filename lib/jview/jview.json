@@ -9,7 +9,7 @@
     "path": "./app",
     "pages": [{
         "name": "page1",
-        "route": "page1",
+        "route": "/page1",
         "layout": "default",
         "panels": [{
             "dispLabel": "disp1",
@@ -27,7 +27,7 @@
         }]
     }, {
         "name": "page2",
-        "route": "page2",
+        "route": "/page2",
         "layout": "default",
         "panels": [{
             "dispLabel": "disp2",

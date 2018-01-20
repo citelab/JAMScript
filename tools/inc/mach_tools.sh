@@ -23,10 +23,13 @@ startzonerouter() {
     local netname=$3
     local subnet=$4
 
-    if [ `docker ps --filter name=$machname | grep $machname | wc -l` != "1" ]; then
+    local present=`docker ps -a --filter name=$machname | grep $machname | wc -l`
+
+    if [ $present == "0" ]; then
         # Create the machine
         dockerSer=`docker run -it -d --name $machname --network=$netname --ip=10.$subnet.$zonenum.254 $dockerImage`
-        result=${dockerSer:0:12}
+        dockerSer=${dockerSer:0:12}
+        result=$dockerSer
     fi
 
 }
@@ -45,9 +48,12 @@ startzonemach() {
     inc_counter $jamfolder/zones/$zonenum/count
     local count=$result
 
+    echo "-------------------------- IP " 10.$subnet.$zonenum.$count
+
     # Create the machine
     dockerSer=`docker run -it -d --name $machname --network=$netname --ip=10.$subnet.$zonenum.$count --cap-add=NET_ADMIN $dockerImage`
-    result=${dockerSer:0:12}
+    dockerSer=${dockerSer:0:12}
+    result=$dockerSer
 
     # Setup the routes
     docker exec -d $machname ip route del 10.$subnet/16

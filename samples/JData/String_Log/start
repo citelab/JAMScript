@@ -1,0 +1,9 @@
+djam run stringlog.jxe --cloud --app=q5 --bg
+
+for i in `seq 1 3`; do 
+    djam run stringlog.jxe --fog --app=q5 --bg
+done
+
+for i in `seq 1 12`; do
+    djam run stringlog.jxe --app=q5  --bg
+done
