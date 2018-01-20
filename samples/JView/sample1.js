@@ -6,16 +6,16 @@ jdata {
 jview {
     page1 as page {
         disp1 is display {
-            type: linegraph;
-            title: "Temperature data";
+            type: scatterplot;
+            title: 'Temperature';
             source: temp;
-            options: "blah blah";
+            options: 'blah blah';
         }
     }
     page2 as page {
         disp2 is display {
-            type: linegraph;
-            title: "Temperature data";
+            type: scatterplot;
+            title: 'Temp';
             source: pos;
             options: "blah2 blah2";
         }
