@@ -133,6 +133,7 @@ doaout() {
     local indx=0
     local num=$1
     local port=$2
+
     if [ -e a.out ]; then
         chmod +x a.out
     fi

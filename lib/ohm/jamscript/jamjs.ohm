@@ -49,7 +49,7 @@ JAMJS <: ES6 {
                     | source ":" identifier ";"
                     | refresh ":" decimalIntegerLiteral ";"
 
-    display_type    = linegraph | scatterplot
+    display_type    = linegraph | scatter | stackedgraph
 
     Ctrl_spec       = type ":" control_type ";"
                     | title ":" literal ";"
@@ -117,10 +117,11 @@ JAMJS <: ES6 {
     outflow = "outflow" ~identifierPart
     page = "page" ~identifierPart
     refresh = "refresh" ~identifierPart
-    scatterplot = "scatterplot" ~identifierPart
+    scatter = "scatter" ~identifierPart
     sink = "sink" ~identifierPart
     slider = "slider" ~identifierPart
     source = "source" ~identifierPart
+    stackedgraph = "stackedgraph" ~identifierPart        
     terminal = "terminal" ~identifierPart
     title = "title" ~identifierPart
     type = "type" ~identifierPart

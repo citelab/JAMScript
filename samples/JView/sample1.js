@@ -6,7 +6,7 @@ jdata {
 jview {
     page1 as page {
         disp1 is display {
-            type: scatterplot;
+            type: stackedgraph;
             title: 'Temperature';
             source: temp;
             options: 'blah blah';
@@ -14,7 +14,7 @@ jview {
     }
     page2 as page {
         disp2 is display {
-            type: scatterplot;
+            type: stackedgraph;
             title: 'Temp';
             source: pos;
             options: "blah2 blah2";
