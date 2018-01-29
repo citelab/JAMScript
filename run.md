@@ -25,15 +25,16 @@ To compile a JAMScript program, do the following.
 
 To run a device using the `stringlog.jxe` with 2 C nodes, use the following command.
 ```shell
-djam run stringlog.jxe --num=2
+djam run stringlog.jxe --num=2 --app=q5
 ```
 To see the status of the docker JAMScript execution, run the following command.
 ```shell
 djam list
 ```
-You should see something like the following
+You should see something like the following.
 ```shell
       ID         NAME      PROGRAM         HOST         D-STORE       TYPE C-NODES    TMUX-ID
+      
       q5           q5    stringlog ec0cd9fa0887     docker:6379      cloud      -- u-501-cloud-5-cloud
       q5           q5    stringlog ad38d5fb718a     docker:6379     device       1 u-501-device-13-dev
       q5           q5    stringlog 4e0c4d9a7732     docker:6379     device       1 u-501-device-17-dev
@@ -47,6 +48,9 @@ You should see something like the following
       q5           q5    stringlog c3cf5c274ab9     docker:6379     device       1 u-501-device-35-dev
       q5           q5    stringlog 45c292e451de     docker:6379        fog      -- u-501-fog-7-fog
 ```
+
+
+
 
 ### Running the example programs
 
