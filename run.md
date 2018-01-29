@@ -12,10 +12,16 @@ JAMScript can be compiled and run without a local installation. This is the simp
 2. Add the `tools` directory to your execution path. This way `djam` and `jam` tools are available for you.
 3. Make `docker` run without `sudo`. 
 4. Test that you actually completed Step 3 successfully. Use a command like `docker ps` and see whether it runs.
+5. Pull the docker container with JAMScript. Use `djam pull mahes25/jamscript`. 
 
 Everything should be setup at this point. Type `djam` or `jam` and you should see a menu of sub commands available under each of them.
 
-
+To compile a JAMScript program, do the following. 
+1. Write or get a JAMScript program. The easiest is to download the **JAMSamples**. Run `git clone https://github.com/anrl/JAMSamples samples` to download many example programs into a `samples` folder. 
+2. Change to a folder containing a valid JAMScript program. `cd samples/JData/String_Log` will change to the folder containing the string logging example. 
+3. To compile this program: `djam compile stringlog.*`. 
+4. After a successful compile, you should see `stringlog.jxe` in the folder. If not, the compilation did not succeed. You should have seen some error messages in the console to that effect.
+5. Once you have compiled the sample program, you can run the program in different ways: in a device, fog, or cloud. When you run in a device, you can specify different number of C nodes as well. By default, the `djam run` sub command creates a single C node.
 
 ### Running the example programs
 
