@@ -8,7 +8,8 @@ subtitle: Compiling and running a JAMScript program
 
 JAMScript can be compiled and run without a local installation. This is the simplest way to try out JAMScript. You need a local installation only if you want to debug or develop JAMScript itself!
 
-
+1. Download **JAMTools** into a local directory `tools` like `git clone https://github.com/anrl/JAMTools tools`. 
+2. 
 
 ### Running the example programs
 
