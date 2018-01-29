@@ -6,10 +6,16 @@ subtitle: Compiling and running a JAMScript program
 
 ## Inside a Docker container
 
-JAMScript can be compiled and run without a local installation. This is the simplest way to try out JAMScript. You need a local installation only if you want to debug or develop JAMScript itself!
+JAMScript can be compiled and run without a local installation. This is the simplest way to try out JAMScript. You need a local installation only if you want to debug or develop JAMScript itself! The following are the preparatory steps to get Docker JAM tools working in your system.
 
-1. Download **JAMTools** into a local directory `tools` like `git clone https://github.com/anrl/JAMTools tools`. 
-2. 
+1. Download **JAMTools** into a local directory called `tools` like `git clone https://github.com/anrl/JAMTools tools`. 
+2. Add the `tools` directory to your execution path. This way `djam` and `jam` tools are available for you.
+3. Make `docker` run without `sudo`. 
+4. Test that you actually completed Step 3 successfully. Use a command like `docker ps` and see whether it runs.
+
+Everything should be setup at this point. Type `djam` or `jam` and you should see a menu of sub commands available under each of them.
+
+
 
 ### Running the example programs
 
