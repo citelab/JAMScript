@@ -55,7 +55,8 @@ following command.
 jam term u-501-device-13-dev
 ```
 
-To detach from the terminal, press **Ctrl-B** and **d**.
+To detach from the terminal, press **Ctrl-B** and **d**. Some `djam` subcommands and interchangeable with the `jam`  subcommands (e.g., `jam term`
+    `djam term` are the same).
 
 You can start a whole topology using a script like the following.
 
@@ -76,3 +77,13 @@ done
 The above script, is setting up a network with three zones. The `--indelay` in the first line is specifying the delay within a zone.
 The `--outdelay` is specifying the delay across two different zones. The `--cldelay` parameter specifies the delay between the cloud and
 a machine (fog or device) in a zone.
+You will notice that all machines (cloud, fogs, and devices) are started with the same application name (i.e., `q5`). This is necessary for
+the nodes to create a single topology. You can delete all nodes in the topology, using the following command.
+```shell
+djam kill q5
+```
+
+If you want to see how the delay is setup among the nodes, use the `djam test` command. It should create a **test** topology of bare nodes (i.e.,
+    no JAMScript program is running in them). You can see them running by issuing the `docker ps` command, they should have `-test` in their names.
+    Log in to a device, fog, and cloud test node and run a ping to a corresponding test node. You can see the network delay. To obtain the
+    IP address of a node, run `hostname -I` while in the node. 
