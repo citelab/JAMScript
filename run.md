@@ -86,4 +86,12 @@ djam kill q5
 If you want to see how the delay is setup among the nodes, use the `djam test` command. It should create a **test** topology of bare nodes (i.e.,
     no JAMScript program is running in them). You can see them running by issuing the `docker ps` command, they should have `-test` in their names.
     Log in to a device, fog, and cloud test node and run a ping to a corresponding test node. You can see the network delay. To obtain the
-    IP address of a node, run `hostname -I` while in the node. 
+    IP address of a node, run `hostname -I` while in the node.
+
+
+## On the local machine
+
+You can run JAMScript programs natively in Linux (Ubuntu), MacOS, or Rasberry Pi (Raspbian Linux). To run natively, you need to install JAMScript
+on the local machine following the instructions under Install. After that, follow the steps below to get JAMScript programs running on yoru machine.
+
+**To be completed.**
