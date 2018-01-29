@@ -4,8 +4,11 @@ title: Run
 subtitle: Compiling and running a JAMScript program
 ---
 
+## Inside a Docker container
 
-## Trying out the JAMScript compiler
+JAMScript can be compiled and run without a local installation. This is the simplest way to try out JAMScript. You need a local installation only if you want to debug or develop JAMScript itself!
+
+
 
 ### Running the example programs
 
