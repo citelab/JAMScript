@@ -1,6 +1,6 @@
 [submodule "tools"]
 	path = tools
-	url = https://github.com/anrl/JAMScript-tools
+	url = https://github.com/anrl/JAMTools
 [submodule "samples"]
 	path = samples
 	url = https://github.com/anrl/JAMSamples
