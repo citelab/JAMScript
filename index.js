@@ -26,6 +26,7 @@ var tmpDir = "/tmp/jam-" + randomValueHex(20);
 var cPath;
 var jsPath;
 var outPath;
+var supFiles = [];
 
 for (var i = 0; i < args.length; i++) {
     if (args[i].charAt(0) === "-") {
@@ -53,12 +54,20 @@ for (var i = 0; i < args.length; i++) {
         var inputPath = args[i];
         var extension = path.extname(inputPath);
         if (extension === '.js') {
-            jsPath = inputPath;
-            if (outPath === undefined) {
-                outPath = path.basename(inputPath, '.js');
+            if (jsPath === undefined) {
+                jsPath = inputPath;
+                if (outPath === undefined) {
+                    outPath = path.basename(inputPath, '.js');
+                }
+            } else {
+                if (path.extname(inputPath) !== '.jxe')
+                    supFiles.push(inputPath);
             }
         } else if (extension === '.c') {
             cPath = inputPath;
+        } else {
+            if (path.extname(inputPath) !== '.jxe')
+                supFiles.push(inputPath);
         }
     }
 }
@@ -124,7 +133,7 @@ try {
         ];
 
         results.manifest = createManifest(outPath);
-        
+
         // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
         Promise.all(tasks).then(function(value) {
             createZip(results.JS, results.jView, results.manifest, tmpDir, outPath);
@@ -250,6 +259,13 @@ function createZip(jsout, jview, mout, tmpDir, outputName) {
     zip.file("jamout.js", jsout);
     zip.file("jview.json", JSON.stringify(jview));
     zip.file("a.out", fs.readFileSync(`${tmpDir}/a.out`));
+
+    if (supFiles.length > 0)
+        supFiles.forEach(function(e) {
+            console.log("Copying file: ", e);
+            zip.file(path.basename(e), fs.readFileSync(e));
+        });
+
     zip.generateNodeStream({
         type: 'nodebuffer',
         streamFiles: true
