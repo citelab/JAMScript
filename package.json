@@ -21,6 +21,7 @@
     "ps-node": "^0.1.6",
     "redis-fast-driver": "^1.0.5",
     "socket.io": "^2.0.4",
+    "terminal-in-react": "^3.5.2",
     "terminal-kit": "1.13.13",
     "vorpal": "^1.12.0",
     "yargs": "^10.0.3"
