@@ -1,42 +1,73 @@
 {
-  "name": "jamc",
-  "description": "Compiler for the JAMScript language",
-  "version": "0.0.1",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/anrl/JAM.git"
-  },
-  "dependencies": {
-    "chance": "^1.0.12",
-    "express": "^4.16.2",
-    "flows.js": "file:lib/flow",
-    "gaussian": "^1.1.0",
-    "graceful-fs": "^4.1.11",
-    "jamserver": "file:lib/jamserver",
-    "jdiscovery": "file:lib/jdiscovery",
-    "jszip": "^3.1.5",
-    "mathjs": "^3.17.0",
-    "ohm-js": "^0.13.1",
-    "ps-node": "^0.1.6",
-    "redis-fast-driver": "^1.0.5",
-    "socket.io": "^2.0.4",
-    "terminal-in-react": "^3.5.2",
-    "terminal-kit": "1.13.13",
-    "vorpal": "^1.12.0",
-    "yargs": "^10.0.3"
-  },
-  "bin": "./index.js",
-  "engines": {
-    "node": ">= 7.0.0"
-  },
-  "os": [
-    "darwin",
-    "linux"
-  ],
-  "preferGlobal": true,
-  "files": [
-    "lib/ohm",
-    "index.js"
-  ]
+    "name": "jamc",
+    "description": "Compiler for the JAMScript language",
+    "version": "0.0.1",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/anrl/JAM.git"
+    },
+    "dependencies": {
+        "babel-core": "^6.26.0",
+        "babel-loader": "^6.4.1",
+        "babel-plugin-transform-class-properties": "^6.10.2",
+        "babel-plugin-transform-decorators-legacy": "^1.3.4",
+        "babel-preset-es2015": "^6.9.0",
+        "babel-preset-react": "^6.11.1",
+        "babel-preset-stage-0": "^6.16.0",
+        "body-parser": "^1.17.2",
+        "chance": "^1.0.12",
+        "css-loader": "^0.26.0",
+        "echarts": "^3.6.1",
+        "element-resize-event": "^2.0.9",
+        "express": "^4.16.2",
+        "flows.js": "file:lib/flow",
+        "fs-path": "0.0.23",
+        "gaussian": "^1.1.0",
+        "graceful-fs": "^4.1.11",
+        "image-webpack-loader": "^3.0.0",
+        "jamserver": "file:lib/jamserver",
+        "jdiscovery": "file:lib/jdiscovery",
+        "js-beautify": "^1.6.14",
+        "jszip": "^3.1.5",
+        "less": "^2.7.1",
+        "less-loader": "^2.2.3",
+        "mathjs": "^3.17.0",
+        "mobx": "^2.3.7",
+        "mobx-react": "^3.5.1",
+        "mobx-react-router": "^4.0.1",
+        "mongoose": "^4.11.0",
+        "ncp": "^2.0.0",
+        "ohm-js": "^0.13.1",
+        "ps-node": "^0.1.6",
+        "react": "^15.2.1",
+        "react-addons-test-utils": "^15.3.0",
+        "react-dom": "^15.3.0",
+        "react-router": "^4.1.1",
+        "react-router-dom": "^4.1.1",
+        "redis-fast-driver": "^1.0.5",
+        "socket.io": "^2.0.4",
+        "style-loader": "^0.13.1",
+        "terminal-in-react": "^3.5.2",
+        "terminal-kit": "1.13.13",
+        "vorpal": "^1.12.0",
+        "webpack": "^1.15.0",
+        "webpack-dev-middleware": "^1.12.2",
+        "webpack-dev-server": "^1.16.5",
+        "webpack-hot-middleware": "^2.21.0",
+        "yargs": "^10.0.3"
+    },
+    "bin": "./index.js",
+    "engines": {
+        "node": ">= 7.0.0"
+    },
+    "os": [
+        "darwin",
+        "linux"
+    ],
+    "preferGlobal": true,
+    "files": [
+        "lib/ohm",
+        "index.js"
+    ]
 }

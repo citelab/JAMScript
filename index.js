@@ -27,6 +27,7 @@ var cPath;
 var jsPath;
 var outPath;
 var supFiles = [];
+var jviewPort;
 
 for (var i = 0; i < args.length; i++) {
     if (args[i].charAt(0) === "-") {
@@ -38,6 +39,10 @@ for (var i = 0; i < args.length; i++) {
             noCompile = true;
         } else if (args[i] === "-o") { // Output name
             outPath = args[i + 1];
+            i = i + 1;
+        } else if (args[i] === "--jview") {
+            jviewPort = args[i+1];
+            i = i + 1;
         } else if (args[i] === "-P") { // Preprocessor only
             preprocessOnly = true;
         } else if (args[i] === "-V") { // Verbose
@@ -60,8 +65,7 @@ for (var i = 0; i < args.length; i++) {
                     outPath = path.basename(inputPath, '.js');
                 }
             } else {
-                if (path.extname(inputPath) !== '.jxe')
-                    supFiles.push(inputPath);
+                supFiles.push(inputPath);
             }
         } else if (extension === '.c') {
             cPath = inputPath;
@@ -107,7 +111,7 @@ try {
     //   printAndExit(cTree + jsTree);
     // }
 
-    var results = jam.compile(preprocessed, fs.readFileSync(jsPath).toString());
+    var results = jam.compile(preprocessed, fs.readFileSync(jsPath).toString(), jviewPort);
 
     if (callGraphFlag) {
         fs.writeFileSync("callgraph.html", callGraph.createWebpage());
@@ -257,7 +261,9 @@ function createZip(jsout, jview, mout, tmpDir, outputName) {
     var zip = new JSZip();
     zip.file("MANIFEST.txt", mout);
     zip.file("jamout.js", jsout);
-    zip.file("jview.json", JSON.stringify(jview));
+
+    if (jview.length !== 0)
+        zip.file("jview.json", JSON.stringify(jview));
     zip.file("a.out", fs.readFileSync(`${tmpDir}/a.out`));
 
     if (supFiles.length > 0)
