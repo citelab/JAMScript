@@ -351,12 +351,15 @@ process.on('exit', (code) => {
     console.log('Exiting JAMShell...');
 });
 
+
 /**----------------SHELL INIT-------------------------------**/
 generateNodeInfo();
 
-var results = shell.parse(process.argv, {use: 'minimist'});
-console.log(results);
+setTimeout(function() {
+    var results = shell.parse(process.argv, {use: 'minimist'});
+    console.log(results);
 
-shell
-    .delimiter('>>')
-    .show();
+    shell
+        .delimiter('>>')
+        .show();
+    }, 500);
