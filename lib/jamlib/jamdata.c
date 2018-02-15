@@ -302,11 +302,12 @@ void jamdata_log_to_server(char *ns, char *lname, char *value, int iscbor)
 {
     if(value != NULL)
     {
+        char *lvalue = strdup(value);
         // Create the key
         char *key = jamdata_makekey(ns, lname);
 
         // Create a comboptr_t using the key and value
-        comboptr_t *cptr = create_combo3i_ptr(key, value, NULL, iscbor);
+        comboptr_t *cptr = create_combo3i_ptr(key, lvalue, NULL, iscbor);
 
         // Stick the value into the queue..
         semqueue_enq(js->dataoutq, cptr, sizeof(comboptr_t));
