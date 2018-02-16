@@ -1,0 +1,15 @@
+    },
+    "bin": "./index.js",
+    "engines": {
+        "node": ">= 7.0.0"
+    },
+    "os": [
+        "darwin",
+        "linux"
+    ],
+    "preferGlobal": true,
+    "files": [
+        "lib/ohm",
+        "index.js"
+    ]
+}
