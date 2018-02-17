@@ -268,10 +268,20 @@ function createZip(jsout, jview, mout, tmpDir, outputName) {
 
     if (supFiles.length > 0)
         supFiles.forEach(function(e) {
-            console.log("Copying file: ", e);
-            zip.file(path.basename(e), fs.readFileSync(e));
+            var st = fs.statSync(e);
+            if (st.isDirectory()) {
+                var dir = fs.readdirSync(e);
+                process.chdir(e);
+                dir.forEach(function(f) {
+                    console.log("Copying file: ", e + "/" + f);
+                    zip.folder(path.basename(e)).file(path.basename(f), fs.readFileSync(f));
+                });
+                process.chdir("..");
+            } else {
+                console.log("Copying file: ", e);
+                zip.file(path.basename(e), fs.readFileSync(e));
+            }
         });
-
     zip.generateNodeStream({
         type: 'nodebuffer',
         streamFiles: true
