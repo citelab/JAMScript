@@ -36,7 +36,7 @@ nvoid_t *nvoid_new(void *data, int len)
 {
     nvoid_t *nv = (nvoid_t *)calloc(1, sizeof(nvoid_t));
     assert(nv != NULL);
-    void *dc = (void *)malloc(len);
+    void *dc = (void *)calloc(1, len);
     assert(dc != NULL);
 
     memcpy(dc, data, len);

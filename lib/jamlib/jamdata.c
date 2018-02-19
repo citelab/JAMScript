@@ -38,6 +38,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "jamdata.h"
 #include "base64.h"
 #include "simplelist.h"
+#include "jparser.h"
+#include "json.h"
 
 
 extern char app_id[64];
@@ -404,6 +406,39 @@ char *get_bcast_value(jambroadcaster_t *bcast)
 }
 
 
+int get_bcast_int(char *msg)
+{
+    init_parse(msg);
+    parse_value();
+    JSONValue *jval = get_value();
+    JSONValue *jjval = query_value(jval, "s", "message");
+
+    return jjval->val.ival;
+}
+
+
+float get_bcast_float(char *msg)
+{
+    init_parse(msg);
+    parse_value();
+    JSONValue *jval = get_value();
+    JSONValue *jjval = query_value(jval, "s", "message");
+
+    return (float)jjval->val.dval;
+
+}
+
+char *get_bcast_char(char *msg)
+{
+    init_parse(msg);
+    parse_value();
+    JSONValue *jval = get_value();
+    JSONValue *jjval = query_value(jval, "s", "message");
+
+    return jjval->val.sval;
+}
+
+
 char *get_bcast_next_value(jambroadcaster_t *bcast)
 {
     char *dval;
@@ -429,7 +464,7 @@ char *get_bcast_next_value(jambroadcaster_t *bcast)
         printf("ERROR! Null value from the broadcaster..\n");
         exit(1);
     }
-    // This was a string before so - no need to put a '0' at the end.
+
     dval = (char *)nv->data;
     free(nv);
 
@@ -524,7 +559,7 @@ void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...)
         }
         else if(type == 'f')
         {
-            f = cbor_float_get_float8(handle[i].value);
+            f = cbor_float_get_float(handle[i].value);
             memcpy(buffer+offset, &f, sizeof(float));
         }
         else

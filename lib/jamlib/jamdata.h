@@ -75,8 +75,10 @@ jambroadcaster_t *create_jambroadcaster(int mode, char *ns, char *varname);
 char *get_bcast_value(jambroadcaster_t *bcast);
 char *get_bcast_next_value(jambroadcaster_t *bcast);
 char *get_bcast_last_value(jambroadcaster_t *bcast);
+int get_bcast_int(char *msg);
+float get_bcast_float(char *msg);
+char *get_bcast_char(char *msg);
 int get_bcast_count(jambroadcaster_t *bcast);
-void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...);
 void *jambcast_runner(void *arg);
 void jambcast_recv_callback(redisAsyncContext *c, void *r, void *privdata);
 

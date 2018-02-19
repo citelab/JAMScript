@@ -5,7 +5,7 @@
         "js_type": "number",
         "c_code": "i",
         "js_code": "n",
-        "caster": "atoi",
+        "caster": "get_bcast_int",
         "jbroadcast": "JBROADCAST_INT"
     },
     "float": {
@@ -14,7 +14,7 @@
         "js_type": "number",
         "c_code": "f",
         "js_code": "n",
-        "caster": "atof",
+        "caster": "get_bcast_float",
         "jbroadcast": "JBROADCAST_FLOAT"
     },
     "string": {
@@ -32,7 +32,7 @@
         "js_type": "string",
         "c_code": "s",
         "js_code": "s",
-        "caster": "",
+        "caster": "get_bcast_char",
         "jbroadcast": "JBROADCAST_STRING"
     },
     "char": {
