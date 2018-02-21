@@ -4,7 +4,7 @@
 
 body {
   font-family: 'Lora', 'Times New Roman', serif;
-  font-size: 14px;
+  font-size: 16px;
   color: #606060;
   position: relative;
   background: #FFF;
@@ -588,7 +588,7 @@ table tr td :last-child {
 /* --- Code blocks --- */
 
 pre {
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.5em;
 }
 pre code {
