@@ -26,6 +26,7 @@ navbar-links:
   Install:
     - Linux: "linux"
     - Mac: "mac"
+    - Embedded Computers: "iot"
   Run:
     - In Workstation: "native-run"
     - In Emulator: "emulator-run"
@@ -33,14 +34,12 @@ navbar-links:
     - Overview: "jam-overview"
     - Remote/Local Tasks: "tasks"
     - Data Persistence: "data-per"
-    - Basics: write
-    - Hello World: hello
-  Run: run
-  Docs:
-    - Activities: activities
-    - jdata: jdata
-    - jconditional: jconditional
-    - jview: jview
+    - Data Intelligence: "data-intel"
+    - Conditional Tasks: "cond-tasks"
+    - Visualization & Control: "visual-cont"
+  Examples:
+    - JAMShell: "jamshell"
+    - Parking Spot App: "parking-spot"
 
   # Install: "install"
   # Resources:
