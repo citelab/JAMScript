@@ -4,38 +4,28 @@ title: JAMScript
 subtitle: A Language and Middleware for Cloud of Moving Things
 ---
 
-Cloud computing is the backend of choice for many Internet of Things (IoT) applications
-that create high rate data streams. Despite its widespread acceptance, cloud computing has
-its share of drawbacks: high and variable access latency, global computing context, and
-data privacy concerns.
+Cloud computing is the backend of choice for many Internet of Things (IoT)
+applications that create high rate data streams. Despite its widespread
+acceptance, cloud computing has its share of drawbacks: high and variable access
+latency, global computing context, and data privacy concerns. Fog computing
+(known by different names such as Cloudlets, edge computing) is proposed as a
+way of addressing some of these concerns. In fog computing, resources are
+distributed closer to the edge so that client devices can access data and
+services with high reliability and low access latency.
 
+While fog computing brings enormous potential to improve the overall
+performance, it also complicates the application development and deployment. In
+particular, applications need to leverage both the fog for short-term needs and
+clouds for long-term needs such as long-term data storage. Another important
+problem  is disconnection and fault tolerance. Cloud computing concentrates the
+resources at the  datacenters whereas fog computing disperses the resources
+throughout the network. Therefore, the disconnection and fault  tolerance approaches
+developed for cloud computing are not suitable for fogs.
 
-
-To provide reduce the access latency, improve reliability
-and localize the context, fog computing has been introduced to the mix as well.
-
-
-resource or data intensive
-applications running in mobile or desktop computers. With the emerging
-
-
-<p> Cloud of Moving Things (CoMT) is a computing model that combines the widely popular
-cloud computing with Internet of Things (IoT).
-One of the major problems with CoMT is the latency of accessing distant cloud resources from the
-devices, where the data is captured. To address this problem, paradigms such
-as fog computing and Cloudlets have been proposed to interpose another layer
-of computing between the clouds and devices. Such a three-layered
-cloud-fog-device computing architecture is touted as the most suitable
-approach for deploying many next generation ubiquitous computing
-applications. Programming applications to run on such a platform is quite
-challenging because disconnections between the different layers are bound to
-happen in a large-scale CoMT system, where the devices can be mobile. </p>
-
-This needs to be modified.
-
-
-<p>JAMScript is a polglot programming language that combines C and JavaScript
-for a three-layered CoT system. A proof-of-concept compiler and runtime for
+JAMScript is a <I>systems programming language</I> and middleware designed for a
+three-tiered system of clouds, fogs, and devices. It is a polyglot language
+that combines C and JavaScript. A proof-of-concept compiler and runtime for different
+*nix operating system
 different distributed systems are provided in this repository.
 Our goal is to get JAMScript to work in many platforms so that heterogeneous
 systems can be developed using it. You can see the associated publications to
