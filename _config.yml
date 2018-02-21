@@ -4,7 +4,7 @@
 # baseurl is the website's URL without the hostname
 
 # If you are building a simple GitHub user page (http://username.github.io) then use these settings:
-url: "http://anrl.github.io"
+url: "http://anrl.github.io/JAMScript-beta"
 baseurl: "/JAMScript-beta"
 
 # If you are building a GitHub project page then use these settings:
@@ -23,10 +23,16 @@ description: A Language and Middleware for Cloud of Moving Things
 
 # List of links in the navigation bar
 navbar-links:
-  Install2:
+  Install:
     - Linux: "linux"
     - Mac: "mac"
-  Write:
+  Run:
+    - In Workstation: "native-run"
+    - In Emulator: "emulator-run"
+  Language:
+    - Overview: "jam-overview"
+    - Remote/Local Tasks: "tasks"
+    - Data Persistence: "data-per"
     - Basics: write
     - Hello World: hello
   Run: run
