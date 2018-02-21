@@ -14,7 +14,7 @@ baseurl: "/JAMScript-beta"
 # Of course don't forget to change the username and projectname to YOUR username and project
 
 # Name of website
-title: JAMScript
+title: JAMScript-beta
 
 # Short description of your site
 description: A Language and Middleware for Cloud of Moving Things
@@ -23,10 +23,10 @@ description: A Language and Middleware for Cloud of Moving Things
 
 # List of links in the navigation bar
 navbar-links:
-  Install:
+  Install2:
     - Linux: "linux"
     - Mac: "mac"
-  Write: 
+  Write:
     - Basics: write
     - Hello World: hello
   Run: run
@@ -35,7 +35,7 @@ navbar-links:
     - jdata: jdata
     - jconditional: jconditional
     - jview: jview
-    
+
   # Install: "install"
   # Resources:
   #   - Beautiful Jekyll: "http://deanattali.com/beautiful-jekyll/"
