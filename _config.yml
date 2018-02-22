@@ -23,6 +23,7 @@ description: A Language and Middleware for Cloud of Moving Things
 
 # List of links in the navigation bar
 navbar-links:
+  Quick Start: "qstart"
   Install:
     - Linux: "linux"
     - Mac: "mac"
@@ -32,11 +33,11 @@ navbar-links:
     - In Emulator: "emulator-run"
   Language:
     - Overview: "jam-overview"
-    - Remote/Local Tasks: "tasks"
+    - Remote/Local Tasks: "jam-tasks"
     - Data Persistence: "data-per"
     - Data Intelligence: "data-intel"
     - Conditional Tasks: "cond-tasks"
-    - Visualization & Control: "visual-cont"
+    - Visualization & Control: "visual-ctrl"
   Examples:
     - JAMShell: "jamshell"
     - Parking Spot App: "parking-spot"
