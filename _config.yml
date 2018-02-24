@@ -25,6 +25,7 @@ description: A Language and Middleware for Cloud of Moving Things
 navbar-links:
   Quick Start: "qstart"
   Install:
+    - Get Source: "get-src"
     - Linux: "linux"
     - Mac: "mac"
     - Embedded Computers: "iot"
