@@ -78,7 +78,7 @@ int main() {
 Now, lets looks at the J side. The J side, introduces a JAMScript keyword - **jsync**. Simply by putting this keyword
 in front of the function, we have asked the compiler to export the function to the C side. Of course, proper matching
 C prototypes (as shown in the above code block) are necessary to complete the export.
-```JavaScript
+```javascript
 jsync function add(num1, num2) {
     return num1 + num2;
 }
@@ -110,5 +110,35 @@ location.
 To run `calc.jxe`, issue the following commands.
 ```shell
 djam init --zones 2 --indelay=3:1 --outdelay=5:2 --cldelay=18:5
-djam run calc.jxe --bg
+djam run calc.jxe --num=2 --bg
+```
+
+The `djam init` command is setting up the network topology for the cluster of dockers. In this particular example, it is
+not useful. However, the `djam run` command will not run without a valid topology setup.
+Here, the `djam run` command is executing `calc.jxe` in the background. It runs a single J node and 2 C nodes (observe the **--num** option).
+
+Now, run `jam list` to see the status of the execution.
+
+You should see a listing like the following.
+```shell
+ID         NAME      PROGRAM         HOST         D-STORE       TYPE C-NODES    TMUX-ID
+app-457        app-n        calc 76b9053e2844     docker:6379     device       2 u-501-device-461-dev
+```
+
+Since we did not specify the application name the `djam run` with the **--app** option, the default application (*app-n*) is
+used in the execution. Remember the command line interface (CLI) is running in the C node. So, to interact with the application
+we need to open a terminal to the C node. Here, we have two C nodes running. The **tmux id** for the J node is shown in the
+above listing. You can append `-` and node id of the C node to get the tmux id for the C node.
+
+Run the following commands to see the two terminals.
+```shell
+jam term u-501-device-461-dev-1
+jam term u-501-device-461-dev-2
+```
+
+We are using tmux. So, to detach use `Ctrl-B d`.
+
+To stop the application executing in the above listing, we need to run the following command.
+```shell
+jam kill app-457
 ```
