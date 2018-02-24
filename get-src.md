@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Get Source
-subtitle: Downloading the latest JAMScript compiler, tools, and samples
+subtitle: Get the latest JAMScript Compiler, Tools, and Samples
 ---
 
 The JAMScript source package is in three repositories: JAMScript-beta, JAMTools, and JAMSamples.

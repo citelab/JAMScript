@@ -28,6 +28,7 @@ navbar-links:
     - Get Source: "get-src"
     - Linux: "linux"
     - Mac: "mac"
+    - Docker: "docker"
     - Embedded Computers: "iot"
   Run:
     - In Workstation: "native-run"

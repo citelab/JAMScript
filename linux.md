@@ -4,83 +4,41 @@ title: Install
 subtitle: Installing JAMScript on Linux
 ---
 
-## Preparing your system (Ubuntu)    
+## Preliminary Setup
 
-Please make sure you have the latest Node.js (> 8.0.0) and npm (> 5.0.0) installed on your system.
-If you an older version, please manually remove it. 
-Install dependencies:  
+This step assumes you have already downloaded the JAMScript source following the instructions [here](../get-src.md).
+
+Ensure you have the latest Node.js (> 8.0.0) and npm (> 5.0.0) installed on your system.
+If you older versions, you need to manually remove them.
+If you have multiple Node versions or Node version manager (NVM) installed, you can
+encounter problems **not documented here**. In that case, you need to watch out where the install scripts fail
+and take remedial actions.
+
+Include JAMTools in the path. If you are using BASH as the shell, include the following in `.bash_profile`.
 ```shell
-cd script/install
-./depend-install-ubuntu.sh
+export JAMHOME=$HOME/JAMScript-beta
+# This is assuming you have downloaded JAMScript in your home directory
+export PATH=$JAMHOME/tools
+# Assumes you did not download JAMTools into a separate folder
 ```  
-This will install all the dependencies, including the newest Node.js on your system.  
 
-Configure node_modules path:
+If you logout and login again or `src .bash_profile` the settings should take effect. You should see the JAMTools
+in your path. To test, run `which jamrun` and you should see the location printed out. Same way check the JAMHOME
+points to the correct location by running `cd $JAMHOME`.
+
+## Installing JAMScript
+
+We have tried to automate the installation of JAMScript. It is still a work-in-progress (as the rest!). Your feedback or help
+is important to fix the problems. You should be able to install JAMScript by issuing the following command from any where
+in the file system after completing the preliminary setup.
+
 ```shell
-vi ~/.bashrc
-add the following line:
-export NODE_PATH=$HOME/node_modules:/usr/local/lib/node_modules:$NODE_PATH
-save file and quit
-source .bashrc
-```  
-  
-Install JAMScript:
-```shell
-./jamscript-install.sh
+jam install ubuntu
 ```
 
-Run `which jamc` to verify that JAMScript compiler installed on your system. It should show the location of jamc.
+After successful installation, you should see the JAMScript compiler in your path: run `which jamc` to see it.
+Unfortunately, at this point, we don't have a test or validation suite for JAMScript installs, you can go into the
+samples (`cd $JAMHOME/samples`) and try running them to make sure JAMScript install has succeeded.
 
-## Preparing your Raspberry Pi
-
-Copy depend-rpi.sh and jamscript-on-ubuntu.sh from scripts/install into the root folder of JAMScript, then run the following commands:  
-```shell
-./depend-rpi.sh
-./jamscript-on-ubuntu.sh
-```
-
-
-## Build a docker image of JAMScript-beta  
-
-Get the Dockerfile from /scripts/install.
-Then run the following command from where the Dockerfile is located
-
-```shell
-docker build -t imageName .
-```
-  
-**To run a JS node on a container**, enter the following command first, the `--privileged` is needed in order to start avahi-daemon.
-  
-```shell
-docker run -t --privileged --name containerName imageName
-```
-  
-Then to run an actual JS program on this container, get into command line of the container by doing
-
-```shell
-docker exec -it containerName /bin/bash
-```
-  
-Start up MQTT server manually by doing
-```shell
-mosquitto &
-```
-  
-Now you are ready to start up a JS program
-
-
-**To run a C program in a separate container**, start up a container by doing
-```shell
-docker run --name containerName -t -d  imagename /bin/bash
-```
-  
-Get into command line the same way
-```shell
-docker exec -it containerName /bin/bash
-```
-  
-Or you could directly execute a C program by entering
-
-```shell
-docker exec -t containerName /bin/bash -c "./path/to/directory/a.out"
-```
+*Ubuntu* is the only Linux distribution currently supported by the installation scripts. However, JAMScript should run in
+any Linux distribution if manually installed.
