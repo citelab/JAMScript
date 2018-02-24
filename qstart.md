@@ -97,7 +97,7 @@ jsync function divide(num1, num2) {
 ```
 
 Save the C block as `calc.c` and J block as `calc.js`. Now, run the following command to compile the files.
-```Shell
+```shell
 djam pull mahes25/jamscript
 djam compile calc.c calc.js
 ```
@@ -108,7 +108,7 @@ command compiled the source files inside a docker container. The resulting execu
 location.
 
 To run `calc.jxe`, issue the following commands.
-```Shell
+```shell
 djam init --zones 2 --indelay=3:1 --outdelay=5:2 --cldelay=18:5
 djam run calc.jxe --bg
 ```
