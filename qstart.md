@@ -75,9 +75,9 @@ int main() {
 }
 ```
 
-Now, lets looks at the J side. The J side, introduces a JAMScript keyword - **jsync**. Simply by putting this keyword
-in front of the function, we have asked the compiler to export the function to the C side. Of course, proper matching
-C prototypes (as shown in the above code block) are necessary to complete the export.
+Now, lets looks at the J side. The J side introduces a JAMScript keyword - **jsync**. Simply by putting this keyword
+in front of the function we have asked the compiler to export the function to the C side. Of course, proper matching
+C prototypes in the C code (as shown in the above code block) are necessary to complete the export.
 ```javascript
 jsync function add(num1, num2) {
     return num1 + num2;
