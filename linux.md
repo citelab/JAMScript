@@ -6,7 +6,7 @@ subtitle: Installing JAMScript on Linux
 
 ## Preliminary Setup
 
-This step assumes you have already downloaded the JAMScript source following the instructions [here](../get-src.md).
+This step assumes you have already downloaded the JAMScript source following the instructions [here](../get-src).
 
 Ensure you have the latest Node.js (> 8.0.0) and npm (> 5.0.0) installed on your system.
 If you older versions, you need to manually remove them.
@@ -18,7 +18,7 @@ Include JAMTools in the path. If you are using BASH as the shell, include the fo
 ```shell
 export JAMHOME=$HOME/JAMScript-beta
 # This is assuming you have downloaded JAMScript in your home directory
-export PATH=$JAMHOME/tools
+export PATH=$JAMHOME/tools:$PATH
 # Assumes you did not download JAMTools into a separate folder
 ```  
 
