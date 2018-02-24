@@ -23,7 +23,7 @@ The listing below shows the JAMScript enhanced C code that implements the C node
 particular example there is no JAMScript specific constructs in the C code. As the four external
 functions (`add`, `subtract`, `multiply`, `divide`)
 are not implemented in the C side, you would expect them to be implemented by the J (JavaScript) side.
-```C
+```c
 #include <stdio.h>
 
 int add(int, int);
