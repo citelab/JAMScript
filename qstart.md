@@ -18,7 +18,7 @@ will not work with a docker-based installation.
 In this quick start, we will use a simple calculator example. The CLI for the calculator is
 implemented in the C node. The calculating server is implemented in the J node. We can run multiple
 CLI (C) nodes with a single calculating server as shown in the figure below.
-[[https://www.dropbox.com/s/kktkcb5fqoipshr/Notebook-1.png?dl=0]]
+![Calc diagram](https://www.dropbox.com/s/kktkcb5fqoipshr/Notebook-1.png?dl=0 "Calculator diagram")
 
 The listing below shows the JAMScript enhanced C code that implements the C node. In this
 particular example there is no JAMScript specific constructs in the C code. As the four external
