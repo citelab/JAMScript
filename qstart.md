@@ -6,7 +6,7 @@ subtitle: A Tutorial Introduction to JAMScript
 
 ## Preliminary Setup
 
-The easiest way to start programming JAMScript it is use the docker installation.
+The easiest way to start programming JAMScript is using the docker installation.
 Follow the instructions in the [docker installation](../docker) page to get the tools and images for the
 docker-based JAMScript.
 
@@ -17,7 +17,8 @@ will not work with a docker-based installation.
 
 In this quick start, we will use a simple calculator example. The CLI for the calculator is
 implemented in the C node. The calculating server is implemented in the J node. We can run multiple
-CLI (C) nodes with a single calculating server.
+CLI (C) nodes with a single calculating server as shown in the figure below.
+[[https://www.dropbox.com/s/kktkcb5fqoipshr/Notebook-1.png?dl=0]]
 
 The listing below shows the JAMScript enhanced C code that implements the C node. In this
 particular example there is no JAMScript specific constructs in the C code. As the four external
