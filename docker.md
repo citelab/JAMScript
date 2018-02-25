@@ -14,6 +14,17 @@ does not have a latest feature that is required by your application.
 
 
 
+## Installing and Using JAMScript Containers
+
+
+
+
+Docker install get the latest.
+
+
+
+
+
 This step assumes you have already downloaded the JAMScript source following the instructions [here](../get-src).
 
 Ensure you have the latest Node.js (> 8.0.0) and npm (> 5.0.0) installed on your system.
