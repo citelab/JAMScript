@@ -1,20 +1,21 @@
 ---
 layout: page
-title: Run
-subtitle: Compiling and running a JAMScript program
+title: Run in Emulator
+subtitle: Running JAMScript Programs in a Docker-based Emulator
 ---
 
-## Inside a Docker container
+## Preliminary Steps
 
-JAMScript can be compiled and run without a local installation. This is the simplest way to try out JAMScript. You need a local installation only if you want to debug or develop JAMScript itself! The following are the preparatory steps to get Docker JAM tools working in your system.
+You need to get the *tools* to run the emulator. Follow the instructions in [Get Source](../get-src) to
+download the tools and make them available for execution.
 
-1. Download **JAMTools** into a local directory called `tools` like `git clone https://github.com/anrl/JAMTools tools`.
-2. Add the `tools` directory to your execution path. This way `djam` and `jam` tools are available for you.
-3. Make `docker` run without `sudo`.
-4. Test that you actually completed Step 3 successfully. Use a command like `docker ps` and see whether it runs.
-5. Pull the docker container with JAMScript. Use `djam pull mahes25/jamscript`.
+You can see the instructions for getting the JAMScript working with docker containers [here](../docker).
 
-Everything should be setup at this point. Type `djam` or `jam` and you should see a menu of sub commands available under each of them.
+If everything is setup properly, you should be able to type
+`djam` or `jam` and you should see a menu of sub commands available under each of them.
+
+
+## Compiling and Running JAMScript in Containers
 
 To compile a JAMScript program, do the following.
 1. Write or get a JAMScript program. The easiest is to download the **JAMSamples**. Run `git clone https://github.com/anrl/JAMSamples samples` to download many example programs into a `samples` folder.
@@ -89,9 +90,4 @@ If you want to see how the delay is setup among the nodes, use the `djam test` c
     IP address of a node, run `hostname -I` while in the node.
 
 
-## On the local machine
-
-You can run JAMScript programs natively in Linux (Ubuntu), MacOS, or Rasberry Pi (Raspbian Linux). To run natively, you need to install JAMScript
-on the local machine following the instructions under Install. After that, follow the steps below to get JAMScript programs running on yoru machine.
-
-**To be completed.**
+## Description of Docker JAMScript Tools

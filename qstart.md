@@ -10,7 +10,7 @@ The easiest way to start programming JAMScript it is use the docker installation
 Follow the instructions in the [docker installation](../docker) page to get the tools and images for the
 docker-based JAMScript.
 
-At this point, any examples related to JView (the visualization and control part of JAMScript)
+At this time, any example program related to JView (the visualization and control part of JAMScript)
 will not work with a docker-based installation.
 
 ## A Calculator Example

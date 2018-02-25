@@ -4,60 +4,56 @@ title: Install
 subtitle: Docker and JAMScript
 ---
 
+
+## Preliminary Steps
+
+You need to get the *tools* to run the emulator. Follow the instructions in [Get
+Source](../get-src) to download the tools and make them available for execution.
+At least the *djam* tools should be available to proceed with the docker-based
+execution.
+
+Any docker-based JAMScript execution (even if it is a single node) requires the
+configuration of a network topology. To configure the network topology, [Pumba
+Chaos Testing Tool](https://github.com/alexei-led/pumba) is required. Therefore,
+you need to install it by selecting the appropriate executable depending on your
+Operating System. If your machine already has the tool, you should find it using
+`which pumba`.
+
+The next step, is to make docker run without `sudo`. Find the sequence of steps
+necessary for your Linux or MacOS (if you are running docker in MacOS). Test
+that you actually succeeded in configuring docker to run without `sudo` by using
+a command like `docker ps` and observing whether it runs or not. It is essential
+that docker runs without `sudo`.
+
+## Getting a Docker Image with JAMScript
+
+Assuming that you have the *tools* (JAMTools) in your path, you can use `djam
+pull mahes25/jamscript` get the docker image with JAMScript. If you have an
+alternate image, you can pull that one by substituting it for
+`mahes25/jamscript` in the above command.
+
+After this step, you have the docker image with JAMScript setup. Follow the
+instructions in [Emulator Run](../emulator-run) to carry out experiments using
+the docker image.
+
 ## Packaging JAMScript in Docker Containers
 
-JAMScript is already packaged in Docker containers. You can use them following the instructions [here](../emulator-run).
+If you have added a feature to the JAMScript language runtime or compiler and
+want to have that in the Docker version, you need to repackage the container
+images. You can share your container image with others using a public Docker
+image repository.
 
-Here, we describe how JAMScript can be repackaged in Docker containers. You need to do this if the current container
-does not have a latest feature that is required by your application.
-
-
-
-
-## Installing and Using JAMScript Containers
-
-
-
-
-Docker install get the latest.
-
-
-
-
-
-This step assumes you have already downloaded the JAMScript source following the instructions [here](../get-src).
-
-Ensure you have the latest Node.js (> 8.0.0) and npm (> 5.0.0) installed on your system.
-If you older versions, you need to manually remove them.
-If you have multiple Node versions or Node version manager (NVM) installed, you can
-encounter problems **not documented here**. In that case, you need to watch out where the install scripts fail
-and take remedial actions.
-
-Include JAMTools in the path. If you are using BASH as the shell, include the following in `.bash_profile`.
+The JAMScript source package has a `Dockerfile` necessary for rebuilding the docker image.
+`cd $JAMHOME/scripts/install` to see the `Dockerfile`. You can edit it if you want to make changes.
+Run the following command from there to rebuild a container image. The `Dockerfile` is
+configured to use the files from the repository at `https://github.com/anrl/JAMScript-beta`. Therefore, if you
+need any additions to the rebuilt image, those additions should be committed to the above repository or
+the `Dockerfile` needs to be edited to use another location for the source files.
 ```shell
-export JAMHOME=$HOME/JAMScript-beta
-# This is assuming you have downloaded JAMScript in your home directory
-export PATH=$JAMHOME/tools:$PATH
-# Assumes you did not download JAMTools into a separate folder
-```  
-
-If you logout and login again or `src .bash_profile` the settings should take effect. You should see the JAMTools
-in your path. To test, run `which jamrun` and you should see the location printed out. Same way check the JAMHOME
-points to the correct location by running `cd $JAMHOME`.
-
-## Installing JAMScript
-
-We have tried to automate the installation of JAMScript. It is still a work-in-progress (as the rest!). Your feedback or help
-is important to fix the problems. You should be able to install JAMScript by issuing the following command from any where
-in the file system after completing the preliminary setup.
-
-```shell
-jam install ubuntu
+docker build --no-cache -t imageName .
 ```
-
-After successful installation, you should see the JAMScript compiler in your path: run `which jamc` to see it.
-Unfortunately, at this point, we don't have a test or validation suite for JAMScript installs, you can go into the
-samples (`cd $JAMHOME/samples`) and try running them to make sure JAMScript install has succeeded.
-
-*Ubuntu* is the only Linux distribution currently supported by the installation scripts. However, JAMScript should run in
-any Linux distribution if manually installed.
+The `imageName` could be `jamscript`. After the build is completed, you can push the image to a remote repository like
+the following.
+```shell
+docker push jamscript
+```
