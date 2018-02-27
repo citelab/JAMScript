@@ -50,10 +50,11 @@ configured to use the files from the repository at `https://github.com/anrl/JAMS
 need any additions to the rebuilt image, those additions should be committed to the above repository or
 the `Dockerfile` needs to be edited to use another location for the source files.
 ```shell
-docker build --no-cache -t imageName .
+docker build --no-cache -t jamscript .
 ```
-The `imageName` could be `jamscript`. After the build is completed, you can push the image to a remote repository like
+After the build is completed, you can push the image to a remote repository like
 the following.
 ```shell
-docker push jamscript
+docker tag jamscript docker_hub_user/jamscript
+docker push docker_hub_user/jamscript
 ```

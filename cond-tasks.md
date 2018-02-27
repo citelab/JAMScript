@@ -6,7 +6,37 @@ subtitle: Conditional Execution of Remote Tasks
 
 ## What are Conditional Tasks?
 
-While transferring data in the JAM system, nodes often need to restrict their data flow to nodes with certain attributes. For example, a J-Node on the cloud may only want to broadcasting data to fog-level nodes. Then a JConditional should be used here to prevent data going to device-level nodes.
+In JAMScript, controllers broadcast remote task execution requests to the
+sub-controllers or workers. Similarly, workers  send remote task execution
+requests to the controllers at the different levels.  The conditional execution
+is a mechanism to control the remote task executions in a context-sensitive way.
+The execution context could be defined based on node type (e.g., device, fog, or
+cloud) or values of the *exo-state variables* (e.g., loggers and broadcasters).
+
+For instance, using such a conditional remote execution mechanism a worker can
+precisely place its remote execution at a particular level. That is, to benefit
+from local contexts, it could ask the execution to remain at the fog level
+instead of reaching the  cloud level. Conversely, a worker could request certain
+other tasks be executed at the  global context (i.e., at the cloud level).
+
+As another example consider a cloud controller requesting certain devices to run a
+given task. The eligibility to execute the task is decided based on data values generated
+by the devices. We can setup a conditional to test for the eligibility based on the data
+values.
+
+
+
+
+
+
+can precisely place its
+remote task executions between the different available levels: device, fog, or cloud.
+
+
+request certain calls for remote task
+executions must be run at the cloud instead of the fogs. ensure that its
+call to the controller is executed at the cloud-level instea
+
 
 ## How to specify a Condition?
 
@@ -137,4 +167,4 @@ jasync {low_temp && dev_only} function fname2() {
 }
 ```
 
-## 
+##
