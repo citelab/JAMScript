@@ -52,8 +52,8 @@ JAMJS <: ES6 {
     display_type    = graph | scatter | stackedgraph
 
     Ctrl_spec       = type ":" control_type ";"
-                    | title ":" literal ";"
-                    | options ":" literal ";"
+                    | title ":" stringLiteral ";"
+                    | options ":" stringLiteral ";"
                     | sink ":" identifier ";"
 
     control_type    = slider | terminal | button
