@@ -60,8 +60,8 @@
         {
           "destination": "/usr/local/bin/",
           "files": [
-            "tools/",
-            "tools/inc"            
+            "<!@(ls -1 tools/*)",
+            "tools/inc"
            ]
         }
       ]
