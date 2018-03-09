@@ -20,6 +20,7 @@ sudo apt-get update
 sudo apt-get install -y iproute2
 sudo apt-get install -y net-tools
 sudo apt-get install -y iputils-ping
+sudo apt install -y inotify-tools
 
 sudo apt-get install -y xz-utils
 sudo apt-get install -y texinfo
