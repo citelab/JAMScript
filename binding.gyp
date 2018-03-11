@@ -70,6 +70,7 @@
             "tools/jrun",
             "tools/crun",
             "tools/djam",
+            "tools/djambuild",
             "tools/djamcompile",
             "tools/djamexec",
             "tools/djaminit",
