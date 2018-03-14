@@ -413,6 +413,7 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
     #endif
     // Don't use nvoid_free() .. it is not deep enough
 
+    printf("Processing the actoutq...\n");
     if (rcmd != NULL)
     {
         // TODO: What else goes here..???
@@ -426,8 +427,9 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
         // relay the command to the remote servers..
         for (int i = 0; i < 3; i++)
             if (js->cstate->mqttenabled[i] == true)
-                mqtt_publish(js->cstate->mqttserv[i], "/level/func/request", rcmd);        
+                mqtt_publish(js->cstate->mqttserv[i], "/level/func/request", rcmd);
     }
+    printf("Done.. processing..\n");
 }
 
 
@@ -846,7 +848,7 @@ void tcallback(void *arg)
     activity_thread_t *athr = (activity_thread_t *)arg;
 
     #ifdef DEBUG_LVL1
-        printf("Callback.. Thread ID %d.. Queue %d, actid %s\n", athr->threadid, athr->inq->queue->pushsock, athr->actid);
+        printf("Callback.. Thread ID %d.. Queue %d \n", athr->threadid, athr->inq->queue->pushsock);
     #endif
     // stick the "TIMEOUT" message into the queue for the activity
     command_t *tmsg = command_new("TIMEOUT", "-", "-", 0, "ACTIVITY", "__", "__", "");

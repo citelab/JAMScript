@@ -26,6 +26,7 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
     // Check whether the mask specified..
     assert(fmask != NULL);
     // Check the height condition
+    printf("Checking the height... %d\n", machine_height(js));
     if (machine_height(js) < requested_level(condvec))
         return NULL;
 
@@ -119,7 +120,7 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
                 return NULL;
 
             return rargs;
-            
+
             command_t *bcmd = command_new_using_cbor("REXEC-SYN", "NRT", condstr, condvec, aname, jact->actid,
                 js->cstate->device_id, arr2, qargs2, i);
             bcmd->cbor_item_list = list2;

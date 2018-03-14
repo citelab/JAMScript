@@ -31,6 +31,7 @@ extern "C" {
 #ifndef __JAMLIB_H__
 #define __JAMLIB_H__
 
+
 #include "core.h"
 #include "simplequeue.h"
 #include "semqueue.h"
