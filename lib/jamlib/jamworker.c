@@ -87,6 +87,7 @@ void on_dev_connect(void* context, MQTTAsync_successData* response)
     // NOTE: For now, I am putting the mqttenabled flag setting here.
     // This is for the device.
     // A better alternative is to get the REGISTER-ACK and set the flag
+    printf("Device. Core.. finally... connected... %s\n", cs->mqtthost[0]);
     cs->mqttenabled[0] = true;
     core_check_pending(cs);
 }
@@ -102,6 +103,7 @@ void on_fog_connect(void* context, MQTTAsync_successData* response)
     // NOTE: For now, I am putting the mqttenabled flag setting here.
     // This is for the fog.
     // A better alternative is to get the REGISTER-ACK and set the flag
+    printf("Fog. Core.. finally... connected... %s\n", cs->mqtthost[1]);
     cs->mqttenabled[1] = true;
     core_check_pending(cs);
 }
@@ -118,6 +120,7 @@ void on_cloud_connect(void* context, MQTTAsync_successData* response)
     // NOTE: For now, I am putting the mqttenabled flag setting here.
     // This is for the cloud.
     // A better alternative is to get the REGISTER-ACK and set the flag
+    printf("Cloud. Core.. finally... connected... %s\n", cs->mqtthost[2]);
     cs->mqttenabled[2] = true;
     core_check_pending(cs);
 }
@@ -418,16 +421,12 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
         // Increment the hold on rcmd.. so that memory deallocation happens after all use
         for (i = 1; i < 3; i++)
             if (js->cstate->mqttenabled[i] == true)
-            {
                 command_hold(rcmd);
-            }
 
         // relay the command to the remote servers..
         for (int i = 0; i < 3; i++)
             if (js->cstate->mqttenabled[i] == true)
-            {
-                mqtt_publish(js->cstate->mqttserv[i], "/level/func/request", rcmd);
-            }
+                mqtt_publish(js->cstate->mqttserv[i], "/level/func/request", rcmd);        
     }
 }
 
