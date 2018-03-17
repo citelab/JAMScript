@@ -146,6 +146,7 @@ void jam_event_loop(void *js);
 jactivity_t *jam_create_activity(jamstate_t *js);
 int machine_height(jamstate_t *js);
 int requested_level(int cvec);
+int wait_for_machine(jamstate_t *js, int level, int maxtime);
 int jamargs(int argc, char **argv, char *appid, char *tag, int *num);
 
 /*

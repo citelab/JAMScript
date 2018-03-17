@@ -25,10 +25,13 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
 
     // Check whether the mask specified..
     assert(fmask != NULL);
-    // Check the height condition
-    printf("Checking the height... %d\n", machine_height(js));
-    if (machine_height(js) < requested_level(condvec))
+
+    // wait for 100 seconds before failing.
+    if (wait_for_machine(js, requested_level(condvec), 1000000) < 0)
+    {
+        printf("ERROR! Unable to connect cloud, fog, or device J node \n");
         return NULL;
+    }
 
     // Put the parameters into a command structure
     if (strlen(fmask) > 0) {

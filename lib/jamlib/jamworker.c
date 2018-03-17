@@ -47,6 +47,7 @@ void send_register(corestate_t *cs, int level)
 {
     command_t *cmd;
 
+    printf("Sending Register.. \n");
     cmd = command_new("REGISTER", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
     mqtt_publish(cs->mqttserv[level], "/admin/request/all", cmd);
 }
@@ -79,6 +80,7 @@ void on_dev_connect(void* context, MQTTAsync_successData* response)
 {
     corestate_t *cs = (corestate_t *)context;
 
+    cs->mqttenabled[0] = true;
     // Set the subscriptions
     core_set_subscription(cs, 0);
     // This may not work.. because the REGISTER is going to the MQTT broker!
@@ -88,14 +90,16 @@ void on_dev_connect(void* context, MQTTAsync_successData* response)
     // This is for the device.
     // A better alternative is to get the REGISTER-ACK and set the flag
     printf("Device. Core.. finally... connected... %s\n", cs->mqtthost[0]);
-    cs->mqttenabled[0] = true;
+
     core_check_pending(cs);
+
 }
 
 void on_fog_connect(void* context, MQTTAsync_successData* response)
 {
     corestate_t *cs = (corestate_t *)context;
 
+    cs->mqttenabled[1] = true;
     // Set the subscriptions
     core_set_subscription(cs, 1);
     send_register(cs, 1);
@@ -104,7 +108,7 @@ void on_fog_connect(void* context, MQTTAsync_successData* response)
     // This is for the fog.
     // A better alternative is to get the REGISTER-ACK and set the flag
     printf("Fog. Core.. finally... connected... %s\n", cs->mqtthost[1]);
-    cs->mqttenabled[1] = true;
+
     core_check_pending(cs);
 }
 
@@ -113,6 +117,7 @@ void on_cloud_connect(void* context, MQTTAsync_successData* response)
 {
     corestate_t *cs = (corestate_t *)context;
 
+    cs->mqttenabled[2] = true;
     // Set the subscriptions
     core_set_subscription(cs, 2);
     send_register(cs, 2);
@@ -121,7 +126,6 @@ void on_cloud_connect(void* context, MQTTAsync_successData* response)
     // This is for the cloud.
     // A better alternative is to get the REGISTER-ACK and set the flag
     printf("Cloud. Core.. finally... connected... %s\n", cs->mqtthost[2]);
-    cs->mqttenabled[2] = true;
     core_check_pending(cs);
 }
 
@@ -173,6 +177,7 @@ void *jwork_bgthread(void *arg)
     while (1)
     {
         int nfds = jwork_wait_fds(js);
+
         if (nfds == 0)
             continue;
         else if(nfds < 0)

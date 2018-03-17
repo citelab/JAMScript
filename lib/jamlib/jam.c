@@ -279,8 +279,27 @@ int machine_height(jamstate_t *js)
 
 int requested_level(int cvec)
 {
-    return (JCOND_LEVEL_MASK & cvec)/2;
+    int level = JCOND_LEVEL_MASK & cvec;
+    if (level < 4)
+        return level;
+    else
+        return 3;
 }
+
+// maxtime is in milliseconds..
+int wait_for_machine(jamstate_t *js, int level, int maxtime)
+{
+    for (int i = 0; i < maxtime; i++)
+    {
+        if (machine_height(js) >= level)
+            return 1;
+        usleep(1000);
+    }
+
+    return -1;
+}
+
+
 
 int jamargs(int argc, char **argv, char *appid, char *tag, int *num)
 {

@@ -31,9 +31,13 @@ jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, i
         return NULL;
 
     assert(fmask != NULL);
-    // Check the height condition
-    if (machine_height(js) < requested_level(condvec))
-        return jact;
+
+    // wait for 250 milliseconds before failing.
+    if (wait_for_machine(js, requested_level(condvec), 1000) < 0)
+    {
+        printf("ERROR! Unable to connect cloud, fog, or device J node \n");
+        return NULL;
+    }
 
     if (strlen(fmask) > 0)
         qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));

@@ -213,7 +213,6 @@ void core_connect(corestate_t *cs, int indx, void (*onconnect)(void *, MQTTAsync
         printf("Device could have moved away from the fog connection zone.\n");
     }
 
-    cs->mqttenabled[indx] = true;
 }
 
 
