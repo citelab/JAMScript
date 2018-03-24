@@ -66,6 +66,7 @@
             "tools/jamkill",
             "tools/jamlist",
             "tools/jamrun",
+            "tools/jamexec",            
             "tools/jamterm",
             "tools/jrun",
             "tools/crun",
