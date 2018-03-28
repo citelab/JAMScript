@@ -1,0 +1,6 @@
+
+Here is what the Node Cache should do.
+
+Node Cache
+
+Push fogs and clouds into the cache.
