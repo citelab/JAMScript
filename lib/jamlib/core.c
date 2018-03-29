@@ -187,7 +187,7 @@ void core_createserver(corestate_t *cs, int indx, char *url)
 }
 
 
-void core_connect(corestate_t *cs, int indx, void (*onconnect)(void *, MQTTAsync_successData *))
+void core_connect(corestate_t *cs, int indx, void (*onconnect)(void *, MQTTAsync_successData *), char *hid)
 {
     int rc;
 
@@ -213,13 +213,32 @@ void core_connect(corestate_t *cs, int indx, void (*onconnect)(void *, MQTTAsync
         printf("Device could have moved away from the fog connection zone.\n");
     }
 
+    // We are saving the eventual host that would be connected here.
+    // The connection won't be alive until the on-X-connect() handler is fired
+    //
+    if (hid != NULL)
+        cs->hid[indx] = strdup(hid);
 }
 
+void core_sethost(corestate_t *cs, int indx, char *hid)
+{
+    if (hid != NULL)
+        cs->hid[indx] = strdup(hid);
+}
 
-
-void core_disconnect(corestate_t *cs, int indx)
+bool core_disconnect(corestate_t *cs, int indx, char *hid)
 {
     int rc;
+
+    // If this is a stray disconnection request, we should just ignore it.
+    // Only valid request is the server (fog, cloud, device) we are connected to...
+    if ((cs->mqttenabled[indx]) &&
+        (cs->hid[indx] != NULL) &&
+        (strcmp(cs->hid[indx], hid) != 0))
+            return false;
+    // release the old one..
+    free(cs->hid[indx]);
+    cs->hid[indx] = NULL;
 
     MQTTAsync_disconnectOptions dconn_opts = MQTTAsync_disconnectOptions_initializer;
     dconn_opts.timeout = 0;
@@ -231,6 +250,8 @@ void core_disconnect(corestate_t *cs, int indx)
 
     printf("Core.. disconnected... %s\n", cs->mqtthost[indx]);
     cs->mqttenabled[indx] = false;
+
+    return true;
 }
 
 

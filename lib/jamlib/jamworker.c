@@ -159,7 +159,7 @@ void *jwork_bgthread(void *arg)
     core_setcallbacks(js->cstate, ctx, jwork_connect_lost, jwork_msg_arrived, NULL);
 
     // Now do the connection to the local server
-    core_connect(js->cstate, 0, on_dev_connect);
+    core_connect(js->cstate, 0, on_dev_connect, NULL);
 
     // assemble the poller.. insert the FDs that should go into the poller
     jwork_assemble_fds(js);
@@ -471,6 +471,8 @@ void jwork_process_device(jamstate_t *js)
             command_t *scmd = command_new("GET-CF-INFO", "-", "-", 0, "-", "-", js->cstate->device_id, "");
             mqtt_publish(js->cstate->mqttserv[0], "/admin/request/all", scmd);
 
+            // We know the host actid - in this case the device J. save it.
+            core_sethost(js->cstate, 0, rcmd->actid);
             // We are done with registration...
             thread_signal(js->bgsem);
         }
@@ -513,15 +515,17 @@ void jwork_process_device(jamstate_t *js)
                         core_createserver(js->cstate, 1, rcmd->args[0].val.sval);
                         comboptr_t *ctx = create_combo3i_ptr(js, js->foginq, NULL, 1);
                         core_setcallbacks(js->cstate, ctx, jwork_connect_lost, jwork_msg_arrived, NULL);
-                        core_connect(js->cstate, 1, on_fog_connect);
+                        core_connect(js->cstate, 1, on_fog_connect, rcmd->actid);
                         printf("Machine height %d\n", machine_height(js));
                     }
                 }
                 else
                 if (strcmp(rcmd->opt, "DEL") == 0)
                 {
-                    printf("==>>>>>>>>>>=== FOG deletion ----------------->>>>>>>>>\n");
-                    core_disconnect(js->cstate, 1);
+                    if (core_disconnect(js->cstate, 1, rcmd->actid))
+                        printf("==>>>>>>>>>>=== FOG deleted ----------------->>>>>>>>>\n");
+                    else
+                        printf("==>>>>>>>>>>=== FOG delete  IGNORED ----------------->>>>>>>>>\n");
                 }
             }
             else
@@ -535,14 +539,16 @@ void jwork_process_device(jamstate_t *js)
                         core_createserver(js->cstate, 2, rcmd->args[0].val.sval);
                         comboptr_t *ctx = create_combo3i_ptr(js, js->cloudinq, NULL, 2);
                         core_setcallbacks(js->cstate, ctx, jwork_connect_lost, jwork_msg_arrived, NULL);
-                        core_connect(js->cstate, 2, on_cloud_connect);
+                        core_connect(js->cstate, 2, on_cloud_connect, rcmd->actid);
                     }
                 }
                 else
                 if (strcmp(rcmd->opt, "DEL") == 0)
                 {
-                    printf("==>>>>>>>>>>=== CLOUD deletion ----------------->>>>>>>>>\n");
-                    core_disconnect(js->cstate, 2);
+                    if (core_disconnect(js->cstate, 2, rcmd->actid))
+                        printf("==>>>>>>>>>>=== CLOUD deleted ----------------->>>>>>>>>\n");
+                    else
+                        printf("==>>>>>>>>>>=== CLOUD delete IGNORED ----------------->>>>>>>>>\n");
                 }
             }
             command_free(rcmd);
