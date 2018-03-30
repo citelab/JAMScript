@@ -14,10 +14,11 @@
       "layout" : "default",
       "panels" : [
         {
+          "name": "HEY",
           "type": "Controller",
           "controlList": [
             {
-              "id": "1",
+              "id": "hi",
               "type": "slider",
               "dispLabel": "Controller #1",
               "max": "maxValue1",
@@ -30,7 +31,7 @@
               "interval": 5000
             },
             {
-              "id": "2",
+              "id": "ho",
               "type": "slider",
               "dispLabel": "Controller #2",
               "max": "maxValue2",
@@ -43,7 +44,7 @@
               "interval": 3000
             },
             {
-              "id": "3",
+              "id": "hy",
               "type": "button",
               "dispLabel": "Button #1",
               "className": "btn-primary",
@@ -55,7 +56,7 @@
               "interval": 3000
             },
             {
-              "id": "6",
+              "id": "lo",
               "type": "button",
               "dispLabel": "Button #2",
               "className": "btn-primary",
@@ -67,7 +68,7 @@
               "interval": 3000
             },
             {
-              "id": "4",
+              "id": "bo",
               "type": "multiStateButton",
               "dispLabel": "Multi State Button #1",
               "className": "btn-primary",
@@ -88,7 +89,7 @@
               "interval": 2000
             },
             {
-              "id": "5",
+              "id": "zo",
               "type": "terminal",
               "dispLabel": "terminal",
               "commandsList": "commands",
