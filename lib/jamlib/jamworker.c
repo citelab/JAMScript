@@ -386,10 +386,7 @@ void jwork_process_globaloutq(jamstate_t *js)
 
         for (i = 0; i < 3; i++)
             if (js->cstate->mqttenabled[i] == true)
-            {
-                printf("Global outq %d\n", i);
                 mqtt_publish(js->cstate->mqttserv[i], "/level/func/request", rcmd);
-            }
     }
 }
 
@@ -418,7 +415,6 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
     #endif
     // Don't use nvoid_free() .. it is not deep enough
 
-    printf("Processing the actoutq...\n");
     if (rcmd != NULL)
     {
         // TODO: What else goes here..???
@@ -434,7 +430,6 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
             if (js->cstate->mqttenabled[i] == true)
                 mqtt_publish(js->cstate->mqttserv[i], "/level/func/request", rcmd);
     }
-    printf("Done.. processing..\n");
 }
 
 
