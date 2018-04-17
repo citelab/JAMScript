@@ -104,7 +104,7 @@ jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, i
 
 jactivity_t *jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
 {
-    int timeout = 300;
+    int timeout = 150;
     bool valid_acks = false;
     int results;
 

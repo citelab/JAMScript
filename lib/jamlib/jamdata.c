@@ -45,6 +45,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 extern char app_id[64];
 char dev_id[256] = { 0 };
 
+int count = 0;
+
 //jamstate variable to be kept in reference
 jamstate_t *js;
 
@@ -177,6 +179,28 @@ void __jamdata_logto_server(redisAsyncContext *c, char *key, char *val, msg_rcv_
                                                 local insert_order =  redis.call('ZCARD', KEYS[1]) + 1; \
                                                 redis.call('ZADD', KEYS[1], t, ARGV[1] .. \"$$$\" .. insert_order .. \"$$$\" .. t); \
                                                 return {t}", key, val);
+    }
+}
+
+
+
+
+void time_operation() {
+
+    static struct timespec start;
+    static int count = 0;
+
+
+    if (count == 0)
+        clock_gettime(CLOCK_MONOTONIC, &start);
+
+    count++;
+
+    if (count == 500)
+    {
+        struct timespec stop;
+        clock_gettime(CLOCK_MONOTONIC, &stop);
+        printf("Elapsed time %ld\n", ((stop.tv_sec - start.tv_sec) * 1000000L + (stop.tv_nsec - start.tv_nsec))/500);
     }
 }
 
