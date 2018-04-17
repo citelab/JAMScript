@@ -125,7 +125,9 @@ jasync {targetDeviceFromFog} function execProgTargetDeviceFromFog(progPath, targ
 }
 
 // called from a fog to execute a program on the target device which is not in its subtree
-function targetDeviceFromFogCallback(progPath, targetId) {
+function targetDeviceFromFogCallback(params) {
+	var progPath = params[0];
+	var targetId = params[1];
 	exec_prog_cloud_from_fog(progPath, 'device', targetId, jsys.id, getTaskId());
 }
 
