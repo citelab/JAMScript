@@ -22,9 +22,8 @@ JAMJS <: ES6 {
 
     Flow            = identifier as flow with identifier of identifier              -- flow
                     | identifier as outflow of identifier                           -- outflow
-                    | identifier as inflow of inflow_type                           -- inflow
+                    | identifier as inflow                                          -- inflow
 
-    inflow_type     = "app://" identifier "." identifier
 
     Jdata_decl (a jdata declaration) = jdata "{" Jdata_spec* "}"
 
