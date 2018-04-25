@@ -168,14 +168,14 @@ void __jamdata_logto_server(redisAsyncContext *c, char *key, char *val, msg_rcv_
         if (iscbor)
             redisAsyncCommand(c, callback, val, "EVAL %s 1 %s %s", "redis.replicate_commands(); \
                                                 local timeArray = redis.call('TIME'); \
-                                                local t = tonumber(timeArray[1] .. '' .. timeArray[2]); \
+                                                local t = tonumber(string.format('%d%06d', timeArray[1], timeArray[2])); \
                                                 local insert_order =  redis.call('ZCARD', KEYS[1]) + 1; \
                                                 redis.call('ZADD', KEYS[1], t, ARGV[1] .. \"$$$\" .. insert_order .. \"$$$\" .. t .. \"$$$\" .. \"cbor\"); \
                                                 return {t}", key, val);
         else
             redisAsyncCommand(c, callback, val, "EVAL %s 1 %s %s", "redis.replicate_commands(); \
                                                 local timeArray = redis.call('TIME'); \
-                                                local t = tonumber(timeArray[1] .. '' .. timeArray[2]); \
+                                                local t = tonumber(string.format('%d%06d', timeArray[1], timeArray[2])); \
                                                 local insert_order =  redis.call('ZCARD', KEYS[1]) + 1; \
                                                 redis.call('ZADD', KEYS[1], t, ARGV[1] .. \"$$$\" .. insert_order .. \"$$$\" .. t); \
                                                 return {t}", key, val);
