@@ -1,23 +1,25 @@
-void execProgCloudFromFog(char* progPath, char* targetType, char* targetId, char* nodeId, char* taskId);
-void execProgCloudFromDevice(char* progPath, char* targetType, char* targetId);
-void execProgFogFromDevice(char* progPath, char* targetType, char* targetId);
+void execProgCloudFromFog(char* progPath, char* inFlowId, char* outFlowId, char* targetType, char* targetId, char* nodeId, char* taskId);
 
-jasync exec_prog_cloud_from_fog(char* prog_path, char* target_type, char* target_id, char* node_id, char* task_id)
+jasync exec_prog_cloud_from_fog(char* progPath, char* inFlowId, char* outFlowId, char* targetType, char* targetId, char* nodeId, char* taskId)
 {
-	execProgCloudFromFog(prog_path, target_type, target_id, node_id, task_id);
+  execProgCloudFromFog(progPath, inFlowId, outFlowId, targetType, targetId, nodeId, taskId);
 }
 
-jasync exec_prog_cloud_from_device(char* prog_path, char* target_type, char* target_id)
+void execProgCloudFromDevice(char* progPath, char* inFlowId, char* outFlowId, char* targetType, char* targetId);
+
+jasync exec_prog_cloud_from_device(char* progPath, char* inFlowId, char* outFlowId, char* targetType, char* targetId)
 {
-	execProgCloudFromDevice(prog_path, target_type, target_id);
+  execProgCloudFromDevice(progPath, inFlowId, outFlowId, targetType, targetId);
 }
 
-jasync exec_prog_fog_from_device(char* prog_path, char* target_type, char* target_id)
+void execProgFogFromDevice(char* progPath, char* inFlowId, char* outFlowId, char* targetType, char* targetId);
+
+jasync exec_prog_fog_from_device(char* progPath, char* inFlowId, char* outFlowId, char* targetType, char* targetId)
 {
-	execProgFogFromDevice(prog_path, target_type, target_id);
+  execProgFogFromDevice(progPath, inFlowId, outFlowId, targetType, targetId);
 }
 
 int main(int argc, char* argv[])
 {
-	return 0;
+  return 0;
 }
