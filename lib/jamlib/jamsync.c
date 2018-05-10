@@ -26,12 +26,17 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
     // Check whether the mask specified..
     assert(fmask != NULL);
 
+
+    printf("Begin wait......\n");
+
     // wait for 100 seconds before failing.
     if (wait_for_machine(js, requested_level(condvec), 1000000) < 0)
     {
         printf("ERROR! Unable to connect cloud, fog, or device J node \n");
         return NULL;
     }
+
+    printf("After wait......\n");
 
     // Put the parameters into a command structure
     if (strlen(fmask) > 0) {
@@ -117,10 +122,14 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
         if (machine_height(js) > 1)
         {
             jact->type = SYNC_RTE;
+            printf("Calling jam runner....\n");
             rargs = jam_sync_runner(js, jact, cmd);
             // quit if we failed to execute at the root.
             if (rargs == NULL)
+            {
+                printf("Returning NULL \n");
                 return NULL;
+            }
 
             return rargs;
 
@@ -167,39 +176,45 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         printf("Starting JAM exec runner... \n");
     #endif
 
-    activity_thread_t *athr = athread_getbyindx(js->atable, jact->jindx);
-
     // Repeat for three times ... under failure..
-    //for (int i = 0; i < 3 && !valid_results; i++)
-//    {
+    for (int i = 0; i < 3 && !valid_results; i++)
+    {
         // Send the command to the remote side
         // The send is executed via the worker thread..
-        queue_enq(athr->outq, cmd, sizeof(command_t));
-
-        jam_set_timer(js, jact->actid, timeout);
-        nvoid_t *nv = pqueue_deq(athr->resultq);
-        jam_clear_timer(js, jact->actid);
-
-        if (nv != NULL)
+        activity_thread_t *athr = athread_getbyindx(js->atable, jact->jindx);
+        if (athr != NULL)
         {
-            switch (nv->len) {
-                case sizeof(arg_t):
-                    repcode = (arg_t *)nv->data;
-                    valid_results = true;
-                    break;
+            queue_enq(athr->outq, cmd, sizeof(command_t));
 
-                case sizeof(int):
-                    results = (*(int *)nv->data);
-                    if (results)
+            jam_set_timer(js, jact->actid, timeout);
+            nvoid_t *nv = pqueue_deq(athr->resultq);
+            jam_clear_timer(js, jact->actid);
+
+            printf("HERE......\n");
+
+            if (nv != NULL)
+            {
+                printf("THERE.......\n");
+
+                switch (nv->len) {
+                    case sizeof(arg_t):
+                        repcode = (arg_t *)nv->data;
                         valid_results = true;
-                    break;
+                        break;
 
-                default:
-                    break;
+                    case sizeof(int):
+                        results = (*(int *)nv->data);
+                        if (results)
+                            valid_results = true;
+                        break;
+
+                    default:
+                        break;
+                }
+                free(nv);
             }
-            free(nv);
         }
-    //}
+    }
 
     // repcode is NULL if there is a failure
     // repcode is not used when jam_sync_runner is used for
