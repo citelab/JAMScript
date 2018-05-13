@@ -34,7 +34,7 @@
         "posix-clock": "^1.0.0",
         "ps-node": "^0.1.6",
         "random-js": "^1.0.8",
-        "redis-fast-driver": "^1.0.5",
+        "redis-fast-driver": "file:lib/jamserver/redis-fast-driver",
         "socket.io-client": "^2.0.4",
         "vorpal": "^1.12.0",
         "yargs": "^10.0.3"
