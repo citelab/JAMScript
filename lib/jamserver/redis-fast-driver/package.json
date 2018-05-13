@@ -1,0 +1,60 @@
+{
+  "_from": "redis-fast-driver@^1.0.5",
+  "_id": "redis-fast-driver@1.0.5",
+  "_inBundle": false,
+  "_integrity": "sha1-2J3JmYxzutA31u2zNppJV5X8M/I=",
+  "_location": "/jamc/redis-fast-driver",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "range",
+    "registry": true,
+    "raw": "redis-fast-driver@^1.0.5",
+    "name": "redis-fast-driver",
+    "escapedName": "redis-fast-driver",
+    "rawSpec": "^1.0.5",
+    "saveSpec": null,
+    "fetchSpec": "^1.0.5"
+  },
+  "_requiredBy": [
+    "/jamc",
+    "/jamc/jamserver"
+  ],
+  "_resolved": "https://registry.npmjs.org/redis-fast-driver/-/redis-fast-driver-1.0.5.tgz",
+  "_shasum": "d89dc9998c73bad037d6edb3369a495795fc33f2",
+  "_spec": "redis-fast-driver@^1.0.5",
+  "_where": "/Users/maheswar/temp/JAMScript-beta",
+  "author": {
+    "name": "Arseniy Pavlenko",
+    "url": "h0x91b"
+  },
+  "bugs": {
+    "url": "https://github.com/h0x91b/redis-fast-driver/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "nan": "latest"
+  },
+  "deprecated": false,
+  "description": "Fast truly async driver for redis (based on hiredis async version)",
+  "devDependencies": {
+    "matcha": "^0.7.0"
+  },
+  "engines": {
+    "node": ">=0.8"
+  },
+  "gypfile": true,
+  "homepage": "https://github.com/h0x91b/redis-fast-driver",
+  "license": "MIT",
+  "main": "index.js",
+  "name": "redis-fast-driver",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/h0x91b/redis-fast-driver.git"
+  },
+  "scripts": {
+    "bench": "matcha benchmarks/*.js",
+    "install": "node-gyp rebuild",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "1.0.5"
+}
