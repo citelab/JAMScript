@@ -8,11 +8,12 @@
         "url": "https://github.com/anrl/JAM.git"
     },
     "dependencies": {
+        "bindings": "^1.3.0",
         "body-parser": "^1.17.2",
         "cbor": "^3.0.3",
         "chance": "^1.0.12",
         "command-line-args": "^5.0.2",
-        "deasync": "^0.1.12",
+        "deasync": "^0.1.13",
         "element-resize-event": "^2.0.9",
         "express": "^4.16.2",
         "flows.js": "file:lib/flow",

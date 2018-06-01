@@ -143,13 +143,9 @@ cd $scriptdir
 npm install ohm-js
 
 
-
 echo
 echo
 echo "All done!"
 echo "Remember to erase the temp_install_src folder!"
 echo 
 echo
-
-
-

@@ -113,6 +113,7 @@ void *jamdata_init(void *jsp)
     #elif __APPLE__
         sem_wait(js->jdsem);
     #endif
+
 #ifdef linux
     sem_post(&js->jdsem);
 #elif __APPLE__
@@ -133,6 +134,7 @@ void *jamdata_init(void *jsp)
     // Just send a test value to bootup the event loop..
     // There is no significance to this data.
     // The actual data transfer takes place in the callback entered afterwards
+
 
     char *key = jamdata_makekey("test", "s");
     __jamdata_logto_server(js->redctx, key, "dummy_value", jamdata_logger_cb, 0);

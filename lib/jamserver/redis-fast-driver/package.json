@@ -1,49 +1,65 @@
 {
-  "_from": "redis-fast-driver@^1.0.5",
-  "_id": "redis-fast-driver@1.0.5",
+  "_from": "redis-fast-driver",
+  "_id": "redis-fast-driver@2.1.2",
   "_inBundle": false,
-  "_integrity": "sha1-2J3JmYxzutA31u2zNppJV5X8M/I=",
-  "_location": "/jamc/redis-fast-driver",
+  "_integrity": "sha512-3buu2GU39yuTrxcV6slnSh/ZCOUqJAdtWeBQrUZEPGLC8ZCy0yr9z4Vl9l03u5uz6HJ6axjRWgxya3RkDOrelw==",
+  "_location": "/redis-fast-driver",
   "_phantomChildren": {},
   "_requested": {
-    "type": "range",
+    "type": "tag",
     "registry": true,
-    "raw": "redis-fast-driver@^1.0.5",
+    "raw": "redis-fast-driver",
     "name": "redis-fast-driver",
     "escapedName": "redis-fast-driver",
-    "rawSpec": "^1.0.5",
+    "rawSpec": "",
     "saveSpec": null,
-    "fetchSpec": "^1.0.5"
+    "fetchSpec": "latest"
   },
   "_requiredBy": [
-    "/jamc",
-    "/jamc/jamserver"
+    "#USER",
+    "/"
   ],
-  "_resolved": "https://registry.npmjs.org/redis-fast-driver/-/redis-fast-driver-1.0.5.tgz",
-  "_shasum": "d89dc9998c73bad037d6edb3369a495795fc33f2",
-  "_spec": "redis-fast-driver@^1.0.5",
-  "_where": "/Users/maheswar/temp/JAMScript-beta",
+  "_resolved": "https://registry.npmjs.org/redis-fast-driver/-/redis-fast-driver-2.1.2.tgz",
+  "_shasum": "44df8e83bd6aebfcac46d51f207993d4f220e916",
+  "_spec": "redis-fast-driver",
+  "_where": "/Users/maheswar",
   "author": {
     "name": "Arseniy Pavlenko",
-    "url": "h0x91b"
+    "url": "https://github.com/h0x91b"
   },
   "bugs": {
     "url": "https://github.com/h0x91b/redis-fast-driver/issues"
   },
   "bundleDependencies": false,
+  "contributors": [
+    {
+      "name": "Samuel Reed",
+      "url": "https://github.com/strml"
+    }
+  ],
   "dependencies": {
     "nan": "latest"
   },
   "deprecated": false,
   "description": "Fast truly async driver for redis (based on hiredis async version)",
   "devDependencies": {
-    "matcha": "^0.7.0"
+    "bluebird": "^3.5.1",
+    "eslint": "^4.12.1",
+    "intelli-espower-loader": "^1.0.1",
+    "matcha": "^0.7.0",
+    "mocha": "^4.0.1",
+    "power-assert": "^1.4.4"
   },
   "engines": {
-    "node": ">=0.8"
+    "node": ">=4"
   },
   "gypfile": true,
   "homepage": "https://github.com/h0x91b/redis-fast-driver",
+  "keywords": [
+    "redis",
+    "async",
+    "pipelining"
+  ],
   "license": "MIT",
   "main": "index.js",
   "name": "redis-fast-driver",
@@ -54,7 +70,8 @@
   "scripts": {
     "bench": "matcha benchmarks/*.js",
     "install": "node-gyp rebuild",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint .",
+    "test": "mocha --require intelli-espower-loader test/*.js"
   },
-  "version": "1.0.5"
+  "version": "2.1.2"
 }
