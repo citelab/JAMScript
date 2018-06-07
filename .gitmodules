@@ -1,0 +1,8 @@
+[submodule "samples"]
+	path = samples
+	url = https://github.com/anrl/JAMSamples
+	branch = master
+[submodule "tools"]
+	path = tools
+	url = https://github.com/anrl/JAMTools
+	branch = master
