@@ -35,7 +35,13 @@ jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, i
     // wait for 250 milliseconds before failing.
     if (wait_for_machine(js, requested_level(condvec), 1000) < 0)
     {
-        printf("ERROR! Unable to connect cloud, fog, or device J node \n");
+        int lv = requested_level(condvec);
+        if (lv == 3)
+            printf("ERROR! Cloud required by the program - unable to connect to Cloud\n");
+        else if (lv == 2)
+            printf("ERROR! Fog required by the program - unable to connect to Fog\n");
+        else
+            printf("ERROR! Unable to connect to J node\n");
         return NULL;
     }
 
