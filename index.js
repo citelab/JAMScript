@@ -136,10 +136,11 @@ try {
             compile(results.C, verbose)
         ];
 
-        results.manifest = createManifest(outPath);
+
 
         // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
         Promise.all(tasks).then(function(value) {
+            results.manifest = createManifest(outPath, results.maxLevel);
             createZip(results.JS, results.jView, results.manifest, tmpDir, outPath);
             if (!debug) {
                 for (var i = 0; i < value.length; i++) {
@@ -288,7 +289,7 @@ function createZip(jsout, jview, mout, tmpDir, outputName) {
     }).pipe(fs.createWriteStream(`${outputName}.jxe`));
 }
 
-function createManifest(outName) {
+function createManifest(outName, level) {
     var mout;
     var ctime = new Date().getTime();
 
@@ -296,6 +297,7 @@ function createManifest(outName) {
     mout += 'DESCRIPTION = JAMScript executable file\n';
     mout += `NAME = ${outName}\n`;
     mout += `CREATE-TIME = ${ctime}\n`;
+    mout += `MAX-HEIGHT = ${level}\n`;
 
     return mout;
 }

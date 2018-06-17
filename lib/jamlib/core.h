@@ -42,6 +42,7 @@ typedef struct _corestate_t
 
     MQTTAsync mqttserv[3];
     bool mqttenabled[3];
+    bool mqttpending[3];
     char *mqtthost[3];
     char *hid[3];           // This points to the endpoint that is connected through MQTT broker
 

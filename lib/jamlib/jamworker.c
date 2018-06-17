@@ -56,6 +56,8 @@ void send_infoquery(corestate_t *cs)
 {
     command_t *cmd;
 
+    printf("Sending infoquery..\n");
+
     cmd = command_new("REF-CF-INFO", "-", "-", 0, "-", "-", cs->device_id, "");
     mqtt_publish(cs->mqttserv[0], "/admin/request/all", cmd);
 }
@@ -505,8 +507,9 @@ void jwork_process_device(jamstate_t *js)
             {
                 if  (strcmp(rcmd->opt, "ADD") == 0)
                 {
-                    if (!js->cstate->mqttenabled[1])
+                    if (!js->cstate->mqttenabled[1] && !js->cstate->mqttpending[1])
                     {
+                        js->cstate->mqttpending[1] = true;
                         core_createserver(js->cstate, 1, rcmd->args[0].val.sval);
                         comboptr_t *ctx = create_combo3i_ptr(js, js->foginq, NULL, 1);
                         core_setcallbacks(js->cstate, ctx, jwork_connect_lost, jwork_msg_arrived, NULL);

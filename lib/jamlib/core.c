@@ -183,7 +183,7 @@ void core_createserver(corestate_t *cs, int indx, char *url)
         printf("Could be an error in the endpoint discovered or configured at %s.\n", cs->mqtthost[0]);
     }
 
-    cs->mqttenabled[indx] = false;
+//    cs->mqttenabled[indx] = false;
 }
 
 
@@ -281,7 +281,7 @@ void core_set_subscription(corestate_t *cs, int level)
 void core_check_pending(corestate_t *cs)
 {
     bool flag = false;
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 2; i++)
         if (!cs->mqttenabled[i])
             flag = true;
 
