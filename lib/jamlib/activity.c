@@ -284,12 +284,18 @@ void run_activity(void *arg)
 
         if (cmd != NULL)
         {
-
             jact = activity_getbyindx(at, jindx);
             if (jact == NULL)
                 continue;
 
             // If the activity is local.. we check whether this is servicing JSYNC task processing
+            if ((!jact->remote) && (strcmp(cmd->cmd, "LEXEC-ASY") == 0))
+            {
+                activity_callback_reg_t *creg = activity_findcallback(js->atable, cmd->actname);
+                creg->cback(jact, cmd);
+                activity_free(jact);
+            }
+            else
             if ((!jact->remote) && jact->type == SYNC_RTE)
             {
                 jam_clear_timer(js, jact->actid);
@@ -363,12 +369,12 @@ void run_activity(void *arg)
                 jam_clear_timer(js, jact->actid);
                 bool ack_failed = false;
 
-                for (int i = 0; i < machine_height(js); i++)
+                for (int i = 0; i < machine_height(js) -1 ; i++)
                 {
                     if ((strcmp(cmd->cmd, "TIMEOUT") == 0) || (strcmp(cmd->cmd, "REXEC-NAK") == 0))
                         ack_failed = true;
 
-                    if (i < machine_height(js) -1)
+                    if (i < machine_height(js) -2)
                     {
                         int timeout = 300;
                         jam_set_timer(js, jact->actid, timeout);
@@ -468,6 +474,28 @@ activity_thread_t *athread_init(activity_table_t *atbl)
     // return the pointer
     return at;
 }
+
+
+activity_thread_t *athread_getmine(activity_table_t *at)
+{
+    int i;
+    int myid = taskid();
+
+    // Get an EMPTY thread if available
+    pthread_mutex_lock(&(at->lock));
+    for (i = 0; i < MAX_ACT_THREADS; i++)
+    {
+        // thread found .. just return it.
+        if (at->athreads[i]->taskid == myid)
+        {
+            pthread_mutex_unlock(&(at->lock));
+            return at->athreads[i];
+        }
+    }
+
+    return NULL;
+}
+
 
 activity_thread_t *athread_get(activity_table_t *at, int jindx)
 {

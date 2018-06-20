@@ -362,7 +362,6 @@ void jamdata_log_to_server(char *ns, char *lname, char *value, int iscbor)
  */
 
 
-
 jambroadcaster_t *jambroadcaster_init(int mode, char *ns, char *varname)
 {
     // Initialize the broadcaster object.

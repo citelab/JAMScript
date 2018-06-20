@@ -32,6 +32,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "MQTTAsync.h"
 
 #define MAX_SERVERS             3
+#define MAX_PENDING_CNT         500
 
 typedef struct _corestate_t
 {
@@ -43,6 +44,7 @@ typedef struct _corestate_t
     MQTTAsync mqttserv[3];
     bool mqttenabled[3];
     bool mqttpending[3];
+    int pendingcount;
     char *mqtthost[3];
     char *hid[3];           // This points to the endpoint that is connected through MQTT broker
 
@@ -50,6 +52,9 @@ typedef struct _corestate_t
     int redport;
 
 } corestate_t;
+
+
+extern int mheight;
 
 
 // ------------------------------

@@ -150,6 +150,7 @@ void run_activity(void *arg);
 
 activity_thread_t *athread_init(activity_table_t *atbl);
 
+activity_thread_t *athread_getmine(activity_table_t *at);
 activity_thread_t *athread_get(activity_table_t *at, int jindx);
 
 jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote);

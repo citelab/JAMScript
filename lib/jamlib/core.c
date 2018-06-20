@@ -281,7 +281,7 @@ void core_set_subscription(corestate_t *cs, int level)
 void core_check_pending(corestate_t *cs)
 {
     bool flag = false;
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < mheight; i++)
         if (!cs->mqttenabled[i])
             flag = true;
 

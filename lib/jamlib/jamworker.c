@@ -485,6 +485,17 @@ void jwork_process_device(jamstate_t *js)
             // latest information... the callback is already there..
             if (js->cstate->cf_pending)
                 send_infoquery(js->cstate);
+
+            // Handle mqttpending[] - decrement the counter. if the counter hits
+            // zero, turn off mqttpending[].. this should be done only if mqttpending[] is true
+            if (js->cstate->mqttpending[1])
+            {
+                if (js->cstate->pendingcount-- < 0)
+                {
+                    js->cstate->pendingcount = 0;
+                    js->cstate->mqttpending[1] = false;
+                }
+            }
         }
         else
         if (strcmp(rcmd->cmd, "PUT-CF-INFO") == 0)
@@ -510,6 +521,7 @@ void jwork_process_device(jamstate_t *js)
                     if (!js->cstate->mqttenabled[1] && !js->cstate->mqttpending[1])
                     {
                         js->cstate->mqttpending[1] = true;
+                        js->cstate->pendingcount = MAX_PENDING_CNT;
                         core_createserver(js->cstate, 1, rcmd->args[0].val.sval);
                         comboptr_t *ctx = create_combo3i_ptr(js, js->foginq, NULL, 1);
                         core_setcallbacks(js->cstate, ctx, jwork_connect_lost, jwork_msg_arrived, NULL);

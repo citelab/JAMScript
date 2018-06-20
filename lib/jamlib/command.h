@@ -99,6 +99,8 @@ command_t *command_rebuild(command_t *cmd);
 command_t *command_new_using_cbor(const char *cmd, char *opt, char *cond, int condvec, char *actname, char *actid, char *actarg, cbor_item_t *arr, arg_t *args, int nargs);
 command_t *command_new_using_arg(char *cmd, char *opt, char *cond, int condvec,
                     char *actname, char *actid, char *actarg, arg_t *args, int nargs);
+command_t *command_new_using_arg_only(const char *cmd, char *opt, char *cond, int condvec, char *actname, char *actid, char *actarg,
+                    arg_t *args, int nargs);
 command_t *command_new(const char *cmd, char *opt, char *cond, int condvec, char *actname, char *actid, char *actarg, const char *fmt, ...);
 command_t *command_from_data(char *fmt, nvoid_t *data);
 

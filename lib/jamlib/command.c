@@ -241,6 +241,7 @@ command_t *command_rebuild(command_t *cmd)
 }
 
 
+
 /*
  * Return a command in CBOR format (as an unsigned char array) that can be sent out..
  *
@@ -393,6 +394,32 @@ command_t *command_new_using_arg(char *cmd, char *opt, char *cond, int condvec,
     return c;
 }
 
+
+// This should NOT be used in general - only useful for local invocation.
+// This command structure is not complete - missing the CBOR portion!
+//
+command_t *command_new_using_arg_only(const char *cmd, char *opt, char *cond, int condvec, char *actname, char *actid, char *actarg,
+                                arg_t *args, int nargs)
+{
+    // Allocate a new command structure.. we are going to save the cbor
+    // version in the command structure. Not much of the command is used
+    command_t *cmdo = (command_t *) calloc(1, sizeof(command_t));
+
+    // hookup parameter such as cmd, opt, actname, etc
+    cmdo->cmd = strdup(cmd);
+    cmdo->opt = strdup(opt);
+    cmdo->cond = strdup(cond);
+    cmdo->condvec = condvec;
+    cmdo->actname = strdup(actname);
+    cmdo->actid = strdup(actid);
+    cmdo->actarg = strdup(actarg);
+    cmdo->args = args;
+    cmdo->nargs = nargs;
+
+    cmdo->refcount = 1;
+
+    return cmdo;
+}
 
 
 /*
