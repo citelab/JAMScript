@@ -21,6 +21,7 @@
 #include <stddef.h>
 
 #include "simplelist.h"
+#include "pushqueue.h"
 
 #include "cborutils.h"
 
@@ -40,6 +41,9 @@ typedef struct _jambroadcaster_t
 {
     int mode;
     char *key;
+
+    pushqueue_t *dataq;
+
     list_elem_t *data;
 #ifdef linux
     sem_t lock;

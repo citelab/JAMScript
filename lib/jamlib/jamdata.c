@@ -393,26 +393,7 @@ jambroadcaster_t *create_jambroadcaster(int mode, char *ns, char *varname)
     jval->key = strdup(key);
     jval->data = create_list();
     jval->readysem = threadsem_new();
-
-#ifdef linux
-    sem_init(&jval->lock, 0, 1);
-#elif __APPLE__
-    sprintf(semname, "/jlock-%s-%d", varname, getpid());
-    sem_unlink(semname);
-    jval->lock = sem_open(semname, O_CREAT|O_EXCL, 0644, 1);
-    if (jval->lock == SEM_FAILED)
-        perror("sem_open_lock");
-#endif
-
-#ifdef linux
-    sem_init(&jval->icount, 0, 0);
-#elif __APPLE__
-    sprintf(semname, "/jicnt-%s-%d", varname, getpid());
-    sem_unlink(semname);
-    jval->icount = sem_open(semname, O_CREAT|O_EXCL, 0644, 0);
-    if (jval->icount == SEM_FAILED)
-        perror("sem_open_icount");
-#endif
+    jval->dataq = pqueue_new(true);
 
     // Start the runner
     pthread_create(&(jval->thread), NULL, jambcast_runner, jval);
@@ -422,12 +403,11 @@ jambroadcaster_t *create_jambroadcaster(int mode, char *ns, char *varname)
     return jval;
 }
 
+
+// TODO: Fix the last vs next mode
 char *get_bcast_value(jambroadcaster_t *bcast)
 {
-    if (bcast->mode == BCAST_RETURNS_NEXT)
-        return get_bcast_next_value(bcast);
-    else
-        return get_bcast_last_value(bcast);
+    return get_bcast_next_value(bcast);
 }
 
 
@@ -468,72 +448,30 @@ char *get_bcast_next_value(jambroadcaster_t *bcast)
 {
     char *dval;
 
-    // Wait on the icount semaphore.. only happens if there are data objs
-#ifdef linux
-    sem_wait(&bcast->icount);
-#elif __APPLE__
-    sem_wait(bcast->icount);
-#endif
-
-    // Lock
-#ifdef linux
-    sem_wait(&bcast->lock);
-#elif __APPLE__
-    sem_wait(bcast->lock);
-#endif
-
-    // get the value at the head of the linked list (oldest)
-    nvoid_t *nv = get_list_head(bcast->data);
-    if (nv == NULL)
+    nvoid_t *nv = pqueue_deq(bcast->dataq);
+    if (nv != NULL)
     {
-        printf("ERROR! Null value from the broadcaster..\n");
-        exit(1);
+        dval = (char *)nv->data;
+        free(nv);
+
+        return dval;
     }
 
-    dval = (char *)nv->data;
-    free(nv);
-
-    // Unlock ..
-#ifdef linux
-    sem_post(&bcast->lock);
-#elif __APPLE__
-    sem_post(bcast->lock);
-#endif
-
-    return dval;
+    return NULL;
 }
 
-char *get_bcast_last_value(jambroadcaster_t *bcast)
-{
-    int count = get_bcast_count(bcast) -1;
-    for (int i = 0; i < count; i++)
-        get_bcast_next_value(bcast);
 
-    return get_bcast_next_value(bcast);
-}
 
-int get_bcast_count(jambroadcaster_t *bcast)
-{
-    int count;
-
-    // Lock
-#ifdef linux
-    sem_wait(&bcast->lock);
-#elif __APPLE__
-    sem_wait(bcast->lock);
-#endif
-
-    count = list_length(bcast->data);
-
-    // Unlock ..
-#ifdef linux
-    sem_post(&bcast->lock);
-#elif __APPLE__
-    sem_post(bcast->lock);
-#endif
-
-    return count;
-}
+// TODO: Reimplement this one with the new design
+//
+// char *get_bcast_last_value(jambroadcaster_t *bcast)
+// {
+//     int count = get_bcast_count(bcast) -1;
+//     for (int i = 0; i < count; i++)
+//         get_bcast_next_value(bcast);
+//
+//     return get_bcast_next_value(bcast);
+// }
 
 
 // data          - encoded cbor data to be decoded
@@ -665,27 +603,6 @@ void jambcast_recv_callback(redisAsyncContext *c, void *r, void *privdata)
         result = reply->element[2]->str;
 
         if ((result != NULL) && (strcmp(varname, jval->key) == 0))
-        {
-#ifdef linux
-            sem_wait(&jval->lock);
-#elif __APPLE__
-            sem_wait(jval->lock);
-#endif
-            put_list_tail(jval->data, strdup(result), strlen(result));
-
-#ifdef linux
-            sem_post(&jval->icount);
-#elif __APPLE__
-            if (sem_post(jval->icount) < 0)
-                perror("sem_post_icount");
-#endif
-
-
-#ifdef linux
-            sem_post(&jval->lock);
-#elif __APPLE__
-            sem_post(jval->lock);
-#endif
-        }
+            pqueue_enq(jval->dataq, result, strlen(result));
     }
 }
