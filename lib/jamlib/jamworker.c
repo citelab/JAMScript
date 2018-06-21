@@ -516,6 +516,8 @@ void jwork_process_device(jamstate_t *js)
             else
             if (strcmp(rcmd->actarg, "fog") == 0)
             {
+                printf("Information about a fog %s, %s, %d %d\n", rcmd->opt, rcmd->args[0].val.sval, js->cstate->mqttenabled[1], js->cstate->mqttpending[1]);
+
                 if  (strcmp(rcmd->opt, "ADD") == 0)
                 {
                     if (!js->cstate->mqttenabled[1] && !js->cstate->mqttpending[1])
@@ -533,7 +535,10 @@ void jwork_process_device(jamstate_t *js)
                 if (strcmp(rcmd->opt, "DEL") == 0)
                 {
                     if (core_disconnect(js->cstate, 1, rcmd->actid))
+                    {
                         printf("==>>>>>>>>>>=== FOG deleted ----------------->>>>>>>>>\n");
+                        js->cstate->mqttpending[1] = false;
+                    }
                     else
                         printf("==>>>>>>>>>>=== FOG delete  IGNORED ----------------->>>>>>>>>\n");
                 }
