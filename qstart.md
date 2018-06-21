@@ -6,29 +6,32 @@ subtitle: A Tutorial Introduction to JAMScript
 
 ## Preliminary Setup
 
-The easiest way to start programming JAMScript is using the docker installation.
-Follow the instructions in the [docker installation](../docker) page to get the tools and images for the
-docker-based JAMScript.
-
-At this time, any example program related to JView (the visualization and control part of JAMScript)
-will not work with a docker-based installation.
+In this quick start, we use the Docker-based JAMScript installation because it is
+quite straightforward to get going. Follow the instructions in the
+[Docker installation](../docker) page to get the tools and images for the
+Docker-based JAMScript.
 
 ## A Calculator Example
 
-In this quick start, we will use a simple calculator example. The CLI for the calculator is
-implemented in the C node. The calculating server is implemented in the J node. We can run multiple
+We will use a simple calculator example in this quick start. The calculator is implemented in
+two parts: server and client. The server is responsible for actually performing the calculations
+and the client is responsible for implementing the command line interface (CLI) to perform the
+I/O. The server that performs the calculations is implemented as a J node while the C node
+implements the CLI. We can run multiple
 CLI (C) nodes with a single calculating server as shown in the figure below.
 <p align="center">
 <img src="{{ site.baseurl }}/images/calc.png" />
 </p>
 
-The listing below shows the JAMScript enhanced C code that implements the C node. In this
-particular example there is no JAMScript specific constructs in the C code. As the four external
-functions (`add`, `subtract`, `multiply`, `divide`)
-are not implemented in the C side, you would expect them to be implemented by the J (JavaScript) side.
+The listing below shows the JAMScript enhanced C code that implements the C
+node. In this particular example there is no JAMScript specific constructs in
+the C code. You will notice  that the four functions  (`add`, `subtract`,
+`multiply`, `divide`) used for computations are not implemented in the C side.
+They are implemented in the J (JavaScript)  side.
 ```C
 #include <stdio.h>
 
+// Prototypes for the functions exported from the J side
 int add(int, int);
 int subtract(int, int);
 int multiply(int, int);
@@ -79,8 +82,8 @@ int main() {
 ```
 
 Now, lets looks at the J side. The J side introduces a JAMScript keyword - **jsync**. Simply by putting this keyword
-in front of the function we have asked the compiler to export the function to the C side. Of course, proper matching
-C prototypes in the C code (as shown in the above code block) are necessary to complete the export.
+in front of a function we have asked the compiler to export the function to the C side. Of course, proper matching
+C prototypes in the C side (as shown in the above code block) are necessary to complete the export.
 ```javascript
 jsync function add(num1, num2) {
     return num1 + num2;
@@ -99,7 +102,7 @@ jsync function divide(num1, num2) {
 }
 ```
 
-Save the C block as `calc.c` and J block as `calc.js`. Now, run the following command to compile the files.
+Save the C code block as `calc.c` and J code block as `calc.js`. Now, run the following command to compile the files.
 ```shell
 djam pull mahes25/jamscript
 djam compile calc.c calc.js
@@ -107,18 +110,18 @@ djam compile calc.c calc.js
 
 After running the above commands, you should see the JAMScript executable `calc.jxe` in the directory where the
 source files are located. The `djam pull` command brought in a docker image with JAMScript language. The `djam compile`
-command compiled the source files inside a docker container. The resulting executable `calc.jxe` is copied back to the original
-location.
+command compiled the source files inside a docker container. The resulting executable `calc.jxe` is copied back to the original location.
 
 To run `calc.jxe`, issue the following commands.
 ```shell
-djam init --zones 2 --indelay=3:1 --outdelay=5:2 --cldelay=18:5
+djam init ideal
 djam run calc.jxe --num=2 --bg
 ```
 
-The `djam init` command is setting up the network topology for the cluster of dockers. In this particular example, it is
-not useful. However, the `djam run` command will not run without a valid topology setup.
-Here, the `djam run` command is executing `calc.jxe` in the background. It runs a single J node and 2 C nodes (observe the **--num** option).
+The `djam init` command is setting up the system configuration for the sole Docker container.
+The `djam run` command runs the `calc.jxe` program in the Docker container.
+The command runs a single J node and two C nodes
+(observe the **--num** option).
 
 Now, run `jam list` to see the status of the execution.
 
@@ -139,7 +142,7 @@ jam term u-501-device-461-dev-1
 jam term u-501-device-461-dev-2
 ```
 
-We are using tmux. So, to detach use `Ctrl-B d`.
+We are using tmux. So, to detach press `Ctrl-B d`.
 
 To stop the application executing in the above listing, we need to run the following command.
 ```shell
