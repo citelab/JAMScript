@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+  <!-- Beautiful Jekyll | MIT license | Copyright Dean Attali 2016 -->
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <title>JView</title>
+
+  <meta name="author" content="Robert Wenger" />
+  
+  
+  <meta name="description" content="JView Documentation">
+  
+
+  <link rel="alternate" type="application/rss+xml" title="JAMScript - A Language and Middleware for Cloud of Moving Things" href="/JAMScript-beta/feed.xml" />
+
+  
+    
+      <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.0/css/font-awesome.min.css" />
+    
+      
+  
+  
+    
+      <link rel="stylesheet" href="/JAMScript-beta/css/bootstrap.min.css" />
+    
+      <link rel="stylesheet" href="/JAMScript-beta/css/bootstrap-social.css" />
+    
+      <link rel="stylesheet" href="/JAMScript-beta/css/main.css" />
+    
+    
+  
+  
+    
+      <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" />
+    
+      <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" />
+    
+  
+
+    
+  
+  
+
+  
+
+  <!-- Facebook OpenGraph tags -->
+  <meta property="og:title" content="JView" />
+  <meta property="og:type" content="website" />
+  
+  <meta property="og:url" content="http://anrl.github.io/JAMScript-beta/jview/" />
+  
+  
+  <meta property="og:image" content="" />
+  
+  
+  <!-- Twitter summary cards -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="@" />
+  <meta name="twitter:creator" content="@" />
+  <meta name="twitter:title" content="JView" />
+  <meta name="twitter:description" content="JView Controllers Controllers are widgets that are capable of sending commands to the backend and control. They are part of the output side of JView. These widgets have different configurations possible to bring a variety of control over a JAMScript program from an arbitrary web browser. All widgets are made..." />
+  
+  
+</head>
+
+
+  <body>
+  
+    <nav class="navbar navbar-default navbar-fixed-top navbar-custom">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="http://anrl.github.io/JAMScript-beta">JAMScript</a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="main-navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+          <li>
+            
+            
+
+
+
+
+
+<a href="/JAMScript-beta/qstart">Quick Start</a>
+
+          </li>
+        
+        
+        
+          <li class="navlinks-container">
+            <a class="navlinks-parent" href="javascript:void(0)">Install</a>
+            <div class="navlinks-children">
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/get-src">Get Source</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/linux">Linux</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/mac">Mac</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/docker">Docker</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/iot">Embedded Computers</a>
+
+                
+              
+            </div>
+          </li>
+        
+        
+        
+          <li class="navlinks-container">
+            <a class="navlinks-parent" href="javascript:void(0)">Run</a>
+            <div class="navlinks-children">
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/native-run">In Workstation</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/emulator-run">In Emulator</a>
+
+                
+              
+            </div>
+          </li>
+        
+        
+        
+          <li class="navlinks-container">
+            <a class="navlinks-parent" href="javascript:void(0)">Language</a>
+            <div class="navlinks-children">
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/jam-overview">Overview</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/jam-tasks">Remote/Local Tasks</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/data-per">Data Persistence</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/flow">Flow Computing</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/data-intel">Data Intelligence</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/cond-tasks">Conditional Tasks</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/visual-ctrl">Visualization & Control</a>
+
+                
+              
+            </div>
+          </li>
+        
+        
+        
+          <li class="navlinks-container">
+            <a class="navlinks-parent" href="javascript:void(0)">Examples</a>
+            <div class="navlinks-children">
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/jamshell">JAMShell</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/parking-spot">Parking Spot App</a>
+
+                
+              
+            </div>
+          </li>
+        
+        
+      </ul>
+    </div>
+
+	
+
+  </div>
+</nav>
+
+
+    <!-- TODO this file has become a mess, refactor it -->
+
+
+
+
+
+<header class="header-section ">
+
+<div class="intro-header no-img">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="page-heading">
+          <h1>JView</h1>
+		  
+		    
+            <hr class="small">
+            <span class="page-subheading">JView Documentation</span>
+			
+		  
+		  
+		  
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</header>
+
+
+
+
+<div class="container" role="main">
+  <div class="row">
+    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+      <h2 id="jview">JView</h2>
+
+<h3 id="controllers">Controllers</h3>
+<p>Controllers are widgets that are capable of sending commands to the backend and control. They are part of the output side of JView. These widgets have different configurations possible to bring a variety of control over a JAMScript program from an arbitrary web browser. All widgets are made in ReactJS and can be customizable inside the Config.json file.</p>
+
+<p>There are currently 4 types of widgets: a slider, a button, a multistate button and a terminal. The slider and button have several modes to personalize the way the data is sent to the backend. The multistate button is similar to a button, but can emit different values depending on the state it is currently in. Finally, the terminal is a simple abstraction of an actual machine’s own terminal capable of sending commands to and receiving responses from it.</p>
+
+<h4 id="widgets">Widgets</h4>
+
+<p>All widgets are associated to the ControllerStore which governs the values and state of each widget. There must be a MobX store associated with the widgets in order for them to function. This store is automatically generated through the StoreGenerator.js with the appropriate Config.json file. They emit to the backend through a websocket.</p>
+
+<h5 id="slider">Slider</h5>
+
+<p>The slider is a simple HTML5 input element that can be controlled by clicking on its dial and sliding it left or right. Users can customize the slider’s range by inputting a <strong>min</strong> value and a <strong>max</strong> value. In addition, its <strong>step</strong> can be changed to specify a specific increment whenever the dial is moved. The slider’s initial <strong>value</strong> can also be customized to give the slider a specific value when it is first rendered.</p>
+
+<p>The slider widget possesses two modes. Its first mode will emit its new value whenever it is moved. The second mode will emit the current value every <strong>interval</strong> of time specified in milliseconds. Moving the slider in the second mode will not stream to the backend until the next interval of time.</p>
+
+<h6 id="example">Example</h6>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>// Full example can be found <span class="k">in </span>sample 9.
+...
+<span class="o">{</span>
+	<span class="s2">"controlList"</span>: <span class="o">[</span>
+		<span class="o">{</span>
+			<span class="s2">"id"</span>: <span class="s2">"1"</span>,
+			<span class="s2">"type"</span>: <span class="s2">"slider"</span>,
+			<span class="s2">"dispLabel"</span>: <span class="s2">"The slider's name"</span>,
+			<span class="s2">"max"</span>: <span class="s2">"maxValueName"</span>, // This is a string that refers to the variable <span class="k">in </span>the store
+			<span class="s2">"min"</span>: <span class="s2">"minValueName"</span>, // This is a string that refers to the variable <span class="k">in </span>the store
+			<span class="s2">"step"</span>: <span class="s2">"stepValueName"</span>, // This is a string that refers to the variable <span class="k">in </span>the store
+			<span class="s2">"value"</span>: <span class="s2">"presentValueName"</span>, // This is a string that refers to the variable <span class="k">in </span>the store
+			<span class="s2">"valueName"</span>: <span class="s2">"presentValueName"</span>, // This is a string that refers to the variable <span class="k">in </span>the store
+			<span class="s2">"trigger"</span>: <span class="s2">"emitValue"</span>, // Callback. This specific one will emit to the backend
+			<span class="s2">"mode"</span>: 0, // 0: triggers on change 1: triggers every interval
+			<span class="s2">"interval"</span>: 500 // Interval <span class="k">in </span>milliseconds. Inactive <span class="k">if </span>mode <span class="o">=</span> 0
+		<span class="o">}</span>
+	<span class="o">]</span>,
+	<span class="s2">"store"</span>: <span class="o">{</span>
+		<span class="s2">"maxValueName"</span>: 100,
+		<span class="s2">"minValueName"</span>: 0,
+		<span class="s2">"stepValueName"</span>: 5,
+		<span class="s2">"presentValueName"</span>: 50
+	<span class="o">}</span>
+<span class="o">}</span>
+...
+</code></pre>
+</div>
+
+<p>The above is an example of the configuration necessary for a slider, in the <em>Config.json</em> file. The store values will be placed in the <em>ControllerStore.js</em>’ map property. The store is necessary to make the button work. The <strong>trigger</strong> property contains the callback of the slider. <strong>emitValue</strong> (See <em>StoreGenerator.js</em>) is a predefined one that will send a message of the shape below through a web socket.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>// Example of what the slider emits to the backend
+<span class="o">{</span>
+	<span class="s2">"id"</span>: <span class="s2">"1"</span>,
+	<span class="s2">"value"</span>: 50 // The value is the value at the new position of the slider.
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<h5 id="button">Button</h5>
+
+<p>The button emits to the backend a boolean value and alternates between the values of <strong>true</strong> and <strong>false</strong>.</p>
+
+<p>Like the slider, the button also has two modes. Similarly, the first mode will emit a boolean whenever it is pressed, while the second mode will emit its current state every <strong>interval</strong> of time specified in milliseconds. Only pressing the button will change its value.</p>
+
+<h6 id="examples">Examples</h6>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>// Full example can be found <span class="k">in </span>sample 9 and 10.
+...
+<span class="o">{</span>
+	<span class="s2">"controlList"</span>: <span class="o">[</span>
+		<span class="o">{</span>
+			<span class="s2">"id"</span>: <span class="s2">"1"</span>,
+			<span class="s2">"type"</span>: <span class="s2">"button"</span>,
+			<span class="s2">"dispLabel"</span>: <span class="s2">"The button's name"</span>,
+			<span class="s2">"className"</span>: <span class="s2">"btn-primary"</span>, // refer to bootstrapJS doc
+			<span class="s2">"value"</span>: <span class="s2">"presentValueName"</span>, // This is a string that refers to the variable <span class="k">in </span>the store
+			<span class="s2">"valueName"</span>: <span class="s2">"presentValueName"</span>, // This is a string that refers to the variable <span class="k">in </span>the store
+			<span class="s2">"trigger"</span>: <span class="s2">"emitValue"</span>, // Callback. This specific one will emit to the backend
+			<span class="s2">"disabled"</span>: <span class="s2">"disabledStateName"</span> 
+			<span class="s2">"mode"</span>: 0, // 0: triggers on change 1: triggers every interval
+			<span class="s2">"interval"</span>: 500 // Interval <span class="k">in </span>milliseconds. Inactive <span class="k">if </span>mode <span class="o">=</span> 0
+		<span class="o">}</span>
+	<span class="o">]</span>,
+	<span class="s2">"store"</span>: <span class="o">{</span>
+		<span class="s2">"presentValueName"</span>: <span class="nb">true</span> // boolean only
+		<span class="s2">"disabledStateName"</span>: <span class="nb">false</span> // boolean only. Button is disabled <span class="k">if </span>true.
+	<span class="o">}</span>
+<span class="o">}</span>
+...
+</code></pre>
+</div>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>// Example of what the button emits to the backend
+<span class="o">{</span>
+	<span class="s2">"id"</span>: <span class="s2">"1"</span>,
+	<span class="s2">"value"</span>: <span class="nb">true</span> // The value alternates between <span class="nb">true </span>and false.
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<h5 id="multistate-button">Multistate Button</h5>
+
+<p>The multistate button is a button that can have more states than <em>true</em> or <strong>false</strong>. The button will NOT alternate between states on click. On the click event, it will emit whatever value is associated to the current state, as defined in the <em>Config.json</em>. <strong>See sections below to see how to change the state of the button</strong>. Like the slider and the button, the multistate button also has another mode where it can emit the current state’s value to the backend if it’s <strong>onStatus</strong> is set to true. On click, it will turn true or false the <strong>onStatus</strong> boolean.</p>
+
+<h6 id="examples-1">Examples</h6>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>// Full example can be found <span class="k">in </span>sample 9, 11 and 12.
+...
+<span class="o">{</span>
+	<span class="s2">"controlList"</span>: <span class="o">[</span>
+		<span class="o">{</span>
+			<span class="s2">"id"</span>: <span class="s2">"1"</span>,
+			<span class="s2">"type"</span>: <span class="s2">"multiStateButton"</span>,
+			<span class="s2">"dispLabel"</span>: <span class="s2">"The button's name"</span>,
+			<span class="s2">"className"</span>: <span class="s2">"btn-primary"</span>, // refer to bootstrapJS doc
+			<span class="s2">"states"</span>: <span class="o">[</span>
+				<span class="o">{</span>
+					<span class="s2">"state_1"</span>: 1 // key is the name of the state. Value is the value emitted and can be anything
+				<span class="o">}</span>,
+				<span class="o">{</span>
+					<span class="s2">"state_two"</span>: <span class="s2">"some string"</span> // The key will be on the button
+				<span class="o">}</span>,
+				<span class="o">{</span>
+					<span class="s2">"On/Off"</span>: <span class="s2">"5000"</span> // The key can be any string. Key can be string/int
+				<span class="o">}</span>
+			<span class="o">}</span>
+			<span class="o">]</span>
+			<span class="s2">"trigger"</span>: <span class="s2">"emitValue"</span>, // Callback. This specific one will emit to the backend,
+			<span class="s2">"state"</span>: <span class="s2">"currentState"</span>, // This is a string that refers to the variable <span class="k">in </span>the store
+			<span class="s2">"mode"</span>: 0,
+			<span class="s2">"interval"</span>: 2000, // no effect <span class="k">while in </span>mode 1
+			<span class="s2">"onStatus"</span>: <span class="s2">"onStatus"</span>, // no effect <span class="k">while in </span>mode 1
+			<span class="s2">"onStatusName"</span>: <span class="s2">"onStatus"</span> // no effect <span class="k">while in </span>mode 1
+		<span class="o">}</span>
+	<span class="o">]</span>,
+	<span class="s2">"store"</span>: <span class="o">{</span>
+		<span class="s2">"currentState"</span>: <span class="s2">"state_1"</span>,
+		<span class="s2">"onStatus"</span>: <span class="nb">false</span> // no effect <span class="k">while in </span>mode 1
+	<span class="o">}</span>
+<span class="o">}</span>
+...
+</code></pre>
+</div>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>// Example of what the multistate button emits to the backend
+<span class="o">{</span>
+	<span class="s2">"id"</span>: <span class="s2">"1"</span>,
+	<span class="s2">"value"</span>: <span class="s2">"some string"</span> // The value can be anything specified <span class="k">in </span>the Config.json file.
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<h5 id="terminal">Terminal</h5>
+
+<p>The terminal uses a ReactJS component to simulate the real terminal, found <a href="https://github.com/nitin42/terminal-in-react">here</a>. On pressing the return key, the widget will emit the command along with the terminal’s ID. <strong>STDOUT</strong> and <strong>STDERR</strong> will be sent back to the terminal when the command terminates.</p>
+
+<h6 id="examples-2">Examples</h6>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>// Full example can be found <span class="k">in </span>sample 9 and 10.
+...
+<span class="o">{</span>
+	<span class="s2">"controlList"</span>: <span class="o">[</span>
+		<span class="o">{</span>
+			<span class="s2">"id"</span>: <span class="s2">"1"</span>,
+			<span class="s2">"type"</span>: <span class="s2">"multiStateButton"</span>,
+			<span class="s2">"dispLabel"</span>: <span class="s2">"The button's name"</span>,
+			<span class="s2">"commandsList"</span>: <span class="s2">"commands"</span>, // Refers to the variable <span class="k">in </span>the store that holds the <span class="nb">history </span>of commands
+			<span class="s2">"buttonTrigger"</span>: <span class="s2">"addCommand"</span>, // additional callBack. addCommand will add the <span class="nb">command </span>to the commandsList
+			<span class="s2">"trigger"</span>: <span class="s2">"emitValue"</span>, // Callback. This specific one will emit to the backend
+		<span class="o">}</span>
+	<span class="o">]</span>,
+	<span class="s2">"store"</span>: <span class="o">{</span>
+		<span class="s2">"commands"</span>: <span class="o">[]</span>
+	<span class="o">}</span>
+<span class="o">}</span>
+...
+</code></pre>
+</div>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>// Example of what the terminal emits to the backend
+<span class="o">{</span>
+	<span class="s2">"id"</span>: <span class="s2">"1"</span>,
+	<span class="s2">"value"</span>: <span class="s2">"./a.out"</span> // The value is any string passed into the terminal.
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<h5 id="additional-comments">Additional Comments</h5>
+
+<p>To add multiple widgets on the same page, simply add the widgets with a unique ID (string, or int) in the controlList. All store variables should have a unique name and values indicated in the store object.</p>
+
+<h6 id="backend">Backend</h6>
+
+<p>These widgets trigger the <strong>emitValue</strong> callback. This only emits a message through a websocket to the backend (see <em>NodeGenerator.js</em>). Should you want to do anything meaninful such as triggering unix command, do calculations, or trigger backend functions, The backend server should contain all these actions. For the sake of the samples (demos), the server, <em>jview/app/index.js</em>, generated by <em>NodeGenerator.js</em> contains examples of how to deal with the messages in the backend. One can use the widget’s unique ID to filter incoming messages and routing them accordingly to different functions.</p>
+
+<h6 id="changing-values">Changing Values</h6>
+
+<p>As mentioned in the multistate button section, the backend can change any value contained in the controller store’s map. This is due to the fact that the store will listen to the websocket <strong>changeValue</strong>. The example below shows the backend sending a message back to the store telling the button with id ‘2’ to change it’s disabled state to <strong>true</strong></p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>...
+socket.on<span class="o">(</span><span class="s1">'emitValue'</span>, body <span class="o">=</span>&gt; <span class="o">{</span>
+    console.log<span class="o">(</span>body<span class="o">)</span>;
+   	<span class="k">if</span> <span class="o">(</span>body.id <span class="o">===</span> <span class="s1">'2'</span><span class="o">)</span> <span class="o">{</span>
+        socket.emit<span class="o">(</span><span class="s1">'changeValue'</span>, <span class="o">{</span>
+            id: <span class="s1">'2'</span>,
+            name: <span class="s1">'disabledState1'</span>,
+            value: <span class="nb">true</span>
+        <span class="o">})</span>;
+    <span class="o">}</span>
+<span class="o">})</span>;    
+</code></pre>
+</div>
+
+<h6 id="samples">Samples</h6>
+<p>See sample-10 and the NodeGenerator.js from <strong>line 165</strong> to see how the two buttons start processes in the backend, terminates them and changes each other’s values.</p>
+
+<p>See sample-11 and the NodeGenerator.js from <strong>line 203</strong> to see how the multistate button can change state as well as start processes in the backend.</p>
+
+<p>See sample-12 to see how a multistate button in mode 1 can emit it’s state value at <strong>interval</strong>.</p>
+
+<p>See sample-9 and the NodeGenerator.js from <strong>line 102</strong> to multiple widgets on a single page interracting with eachother. It should be noted that at <strong>line 64</strong>, there is an example of how to give custom commands to a widget. In this case, the button will change the multistate button to <em>state_3</em> and this is not done through the backend or a websocket.</p>
+
+
+	    
+    </div>
+  </div>
+</div>
+
+
+    <footer>
+  <div class="container beautiful-jekyll-footer">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <ul class="list-inline text-center footer-links">
+          
+          
+          <li>
+            <a href="https://github.com/wenger" title="GitHub">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          
+		  
+      
+		  
+          <li>
+            <a href="mailto:robert.wenger@mail.mcgill.ca" title="Email me">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          
+		  
+		  
+		  
+      
+      
+      
+      
+		  
+        </ul>
+        <p class="copyright text-muted">
+		  Robert Wenger
+		  &nbsp;&bull;&nbsp;
+		  2018
+
+		  
+	    </p>
+	        <!-- Please don't remove this, keep my open source work credited :) -->
+		<p class="theme-by text-muted">
+		  Theme by
+		  <a href="http://deanattali.com/beautiful-jekyll/">beautiful-jekyll</a>
+		</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+  
+    
+
+
+
+
+
+
+  
+    <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
+    
+      <script>
+      	if (typeof jQuery == 'undefined') {
+      	  document.write('<script src="/JAMScript-beta/js/jquery-1.11.2.min.js"></scr' + 'ipt>');
+      	}
+      </script>
+    
+  
+    <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
+    
+	<script src="/JAMScript-beta/js/bootstrap.min.js"></script>
+    
+  
+    <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
+    
+	<script src="/JAMScript-beta/js/main.js"></script>
+    
+  
+
+
+
+
+  
+  </body>
+</html>

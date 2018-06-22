@@ -6,12 +6,12 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
-  <title>JAMScript</title>
+  <title>Install</title>
 
   <meta name="author" content="Robert Wenger" />
   
   
-  <meta name="description" content="A Programming Language for Edge-Oriented Mobile IoT">
+  <meta name="description" content="Docker and JAMScript">
   
 
   <link rel="alternate" type="application/rss+xml" title="JAMScript - A Language and Middleware for Cloud of Moving Things" href="/JAMScript-beta/feed.xml" />
@@ -47,10 +47,10 @@
   
 
   <!-- Facebook OpenGraph tags -->
-  <meta property="og:title" content="JAMScript" />
+  <meta property="og:title" content="Install" />
   <meta property="og:type" content="website" />
   
-  <meta property="og:url" content="http://anrl.github.io/JAMScript-beta/" />
+  <meta property="og:url" content="http://anrl.github.io/JAMScript-beta/docker/" />
   
   
   <meta property="og:image" content="" />
@@ -60,8 +60,8 @@
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:site" content="@" />
   <meta name="twitter:creator" content="@" />
-  <meta name="twitter:title" content="JAMScript" />
-  <meta name="twitter:description" content="Edge computing (used interchangeably with fog computing in this site) and mobile IoT are poised to play pivotal roles along with cloud computing in future cyber-physical computing applications such as smart cities, autonomous vehicles, and smart energy. While edge computing brings enormous potential to improve the overall performance of such..." />
+  <meta name="twitter:title" content="Install" />
+  <meta name="twitter:description" content="Preliminary Steps You need to get the tools to run the emulator. Follow the instructions in Get Source to download the tools. You will see many jam-x and djam-x programs in the tools folder. Make them available for execution by including the tools folder in your path. At least the..." />
   
   
 </head>
@@ -348,11 +348,11 @@
     <div class="row">
       <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
         <div class="page-heading">
-          <h1>JAMScript</h1>
+          <h1>Install</h1>
 		  
 		    
             <hr class="small">
-            <span class="page-subheading">A Programming Language for Edge-Oriented Mobile IoT</span>
+            <span class="page-subheading">Docker and JAMScript</span>
 			
 		  
 		  
@@ -370,43 +370,59 @@
 <div class="container" role="main">
   <div class="row">
     <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-      <p>
-<a href="https://www.ge.com/digital/blog/what-edge-computing">Edge computing</a> (used
-interchangeably with fog computing in this site)
-and <a href="https://www.gsma.com/iot/mobile-iot-introduction/">mobile IoT</a>
-are poised to play pivotal roles along with cloud computing in future cyber-physical computing applications
-such as smart cities, autonomous vehicles, and smart energy.
-While edge computing brings enormous potential to improve the overall
-performance of such systems, it also complicates application development and deployment. In
-particular, applications need to leverage both the fog for short-term needs and
-clouds for long-term needs such as long-term data storage. Another important
-problem  is disconnection and fault tolerance. Cloud computing concentrates the
-resources at the  datacenters whereas fog computing disperses the resources
-throughout the network. Therefore, new fog specific approaches are needed for disconnection and fault  tolerance.
-The diagram below illustrates an example cloud-fog-device deployment.
-<p align="center">
-<img src="/JAMScript-beta/images/scenario.png" />
-</p>
+      <h2 id="preliminary-steps">Preliminary Steps</h2>
 
-<p>JAMScript is a <B>systems programming language</B> and middleware designed for a
-three-tiered system of clouds, fogs, and devices. It is a polyglot language
-that combines C and JavaScript. A proof-of-concept compiler and runtime for different
-<I>*nix</I> operating systems are provided in this repository. As part of ongoing research,
-we are carrying out many different
-experiments and prototyping interesting applications (e.g, distributed shells, parking spot managers) using
-JAMScript. An emulator using Docker containers has been developed to
-quickly launch and test various distributed system configurations with JAMScript code loaded in them.
-It is highly suitable for running various prototyping experiments involving clouds, fogs, and devices.
+<p>You need to get the <em>tools</em> to run the emulator. Follow the instructions in <a href="../get-src">Get
+Source</a> to download the tools. You will see many <strong>jam-x</strong> and <strong>djam-x</strong> programs
+in the tools folder. Make them available for execution by including the tools folder in your
+path. At least the <strong>djam</strong> tools should be available to proceed with the Docker-based
+execution.</p>
 
-<p>This is an open source project. If you are interested in contributing towards this
-project, we would be delighted to hear from you. Please contact maheswar@cs.mcgill.ca
-for more information on how you could contribute to this project.</p>
+<p>Any Docker-based JAMScript execution (even if it is a single node) requires the
+configuration of a network topology. To configure the network topology, <a href="https://github.com/alexei-led/pumba/releases">Pumba
+Chaos Testing Tool</a> is required. From the
+above link, you need to download the appropriate executable for your OS.</p>
 
-<div class="posts-list">
-  
-</div>
+<p>The next step is to make Docker containers run without <code class="highlighter-rouge">sudo</code>. Find the sequence of steps
+necessary for your Linux distribution or MacOS by searching the Internet. Test that you
+actually succeeded in configuring Docker containers to run
+without <code class="highlighter-rouge">sudo</code> by using
+a command like <code class="highlighter-rouge">docker ps</code> and observing the outcome. You won’t be able to continue the
+experiments <strong>without completing</strong> this step.</p>
 
+<h2 id="getting-a-docker-image-with-jamscript">Getting a Docker Image with JAMScript</h2>
 
+<p>Assuming that you have the <em>tools</em> (JAMTools) in your path, you can use <code class="highlighter-rouge">djam
+pull mahes25/jamscript</code> to get a Docker image with JAMScript. If you have an
+alternate image, you can pull that one by substituting it for
+<code class="highlighter-rouge">mahes25/jamscript</code> in the above command.</p>
+
+<p>After this step, you have a Docker image with JAMScript. Follow the
+instructions in <a href="../emulator-run">Emulator Run</a> to carry out the experiments using
+this Docker image.</p>
+
+<h2 id="packaging-jamscript-in-docker-containers">Packaging JAMScript in Docker Containers</h2>
+
+<p>If you have added a feature to the JAMScript language runtime or compiler and
+want to have that in the Docker version, you need to repackage the container
+images. You can share your container image with others using a public Docker
+image repository.</p>
+
+<p>The JAMScript source package has a <code class="highlighter-rouge">Dockerfile</code> necessary for rebuilding the docker image.
+<code class="highlighter-rouge">cd $JAMHOME/scripts/install</code> to see the <code class="highlighter-rouge">Dockerfile</code>. You can edit it if you want to make changes.
+Run the following command from there to rebuild a container image. The <code class="highlighter-rouge">Dockerfile</code> is
+configured to use the files from the repository at <a href="https://github.com/anrl/JAMScript-beta">https://github.com/anrl/JAMScript-beta</a>. Therefore, if you
+need any additions to the rebuilt image, those additions should be committed to the above repository or
+the <code class="highlighter-rouge">Dockerfile</code> needs to be edited to use another location for the source files.
+<code class="highlighter-rouge">shell
+docker build --no-cache -t jamscript .
+</code>
+After the build is completed, you can push the image to a remote repository like
+the following.
+<code class="highlighter-rouge">shell
+docker tag jamscript docker_hub_user/jamscript
+docker push docker_hub_user/jamscript
+</code></p>
 
 	    
     </div>

@@ -6,12 +6,12 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
-  <title>JAMScript</title>
+  <title>Tasks</title>
 
   <meta name="author" content="Robert Wenger" />
   
   
-  <meta name="description" content="A Programming Language for Edge-Oriented Mobile IoT">
+  <meta name="description" content="Local and Remote Tasks in JAMScript">
   
 
   <link rel="alternate" type="application/rss+xml" title="JAMScript - A Language and Middleware for Cloud of Moving Things" href="/JAMScript-beta/feed.xml" />
@@ -47,10 +47,10 @@
   
 
   <!-- Facebook OpenGraph tags -->
-  <meta property="og:title" content="JAMScript" />
+  <meta property="og:title" content="Tasks" />
   <meta property="og:type" content="website" />
   
-  <meta property="og:url" content="http://anrl.github.io/JAMScript-beta/" />
+  <meta property="og:url" content="http://anrl.github.io/JAMScript-beta/jam-tasks/" />
   
   
   <meta property="og:image" content="" />
@@ -60,8 +60,8 @@
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:site" content="@" />
   <meta name="twitter:creator" content="@" />
-  <meta name="twitter:title" content="JAMScript" />
-  <meta name="twitter:description" content="Edge computing (used interchangeably with fog computing in this site) and mobile IoT are poised to play pivotal roles along with cloud computing in future cyber-physical computing applications such as smart cities, autonomous vehicles, and smart energy. While edge computing brings enormous potential to improve the overall performance of such..." />
+  <meta name="twitter:title" content="Tasks" />
+  <meta name="twitter:description" content="Tasks in JAMScript Programs A JAMScript program has C and JavaScript functions with some of them prepended with the jasync or jsync keywords. In this section, we refer to such tagged functions as JAMScript tasks. A JAMScript task runs in a single node; that is, a given task is not..." />
   
   
 </head>
@@ -348,11 +348,11 @@
     <div class="row">
       <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
         <div class="page-heading">
-          <h1>JAMScript</h1>
+          <h1>Tasks</h1>
 		  
 		    
             <hr class="small">
-            <span class="page-subheading">A Programming Language for Edge-Oriented Mobile IoT</span>
+            <span class="page-subheading">Local and Remote Tasks in JAMScript</span>
 			
 		  
 		  
@@ -370,43 +370,32 @@
 <div class="container" role="main">
   <div class="row">
     <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-      <p>
-<a href="https://www.ge.com/digital/blog/what-edge-computing">Edge computing</a> (used
-interchangeably with fog computing in this site)
-and <a href="https://www.gsma.com/iot/mobile-iot-introduction/">mobile IoT</a>
-are poised to play pivotal roles along with cloud computing in future cyber-physical computing applications
-such as smart cities, autonomous vehicles, and smart energy.
-While edge computing brings enormous potential to improve the overall
-performance of such systems, it also complicates application development and deployment. In
-particular, applications need to leverage both the fog for short-term needs and
-clouds for long-term needs such as long-term data storage. Another important
-problem  is disconnection and fault tolerance. Cloud computing concentrates the
-resources at the  datacenters whereas fog computing disperses the resources
-throughout the network. Therefore, new fog specific approaches are needed for disconnection and fault  tolerance.
-The diagram below illustrates an example cloud-fog-device deployment.
+      <h2 id="tasks-in-jamscript-programs">Tasks in JAMScript Programs</h2>
+
+<p>A JAMScript program has C and JavaScript functions with some of them prepended with
+the <strong>jasync</strong> or <strong>jsync</strong> keywords. In this section, we refer to such tagged functions
+as <em>JAMScript tasks</em>. A JAMScript task runs in a single node; that is, a given task is not distributed
+across multiple nodes. A task is considered <strong>local</strong> if it runs in the same node as the invoking function
+while the tasks running in a different node are considered <strong>remote</strong>.</p>
+
+<p>We have local tasks in the worker (C) side as well as the controller
+(J) side. The remote tasks are in between C and J node.
+For the time being, we will ignore multiple (hierarchically organized) controllers.
+The C nodes can invoke remote tasks only on J nodes.</p>
 <p align="center">
-<img src="/JAMScript-beta/images/scenario.png" />
+<img src="/JAMScript-beta/images/lang_tasks/fig1.jpeg" width="300" />
 </p>
 
-<p>JAMScript is a <B>systems programming language</B> and middleware designed for a
-three-tiered system of clouds, fogs, and devices. It is a polyglot language
-that combines C and JavaScript. A proof-of-concept compiler and runtime for different
-<I>*nix</I> operating systems are provided in this repository. As part of ongoing research,
-we are carrying out many different
-experiments and prototyping interesting applications (e.g, distributed shells, parking spot managers) using
-JAMScript. An emulator using Docker containers has been developed to
-quickly launch and test various distributed system configurations with JAMScript code loaded in them.
-It is highly suitable for running various prototyping experiments involving clouds, fogs, and devices.
+<p>Different C nodes are not connected
+to each other.</p>
 
-<p>This is an open source project. If you are interested in contributing towards this
-project, we would be delighted to hear from you. Please contact maheswar@cs.mcgill.ca
-for more information on how you could contribute to this project.</p>
+<h2 id="defining-and-using-local-tasks">Defining and Using Local Tasks</h2>
 
-<div class="posts-list">
-  
-</div>
+<h2 id="defining-and-using-remote-tasks">Defining and Using Remote Tasks</h2>
 
+<h2 id="synchronous-tasks-and-returning-values">Synchronous Tasks and Returning Values</h2>
 
+<h2 id="chaining-asynchronous-task-executions-via-callbacks">Chaining Asynchronous Task Executions via Callbacks</h2>
 
 	    
     </div>

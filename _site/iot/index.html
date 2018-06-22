@@ -6,15 +6,15 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
-  <title>Run</title>
+  <title>Install</title>
 
   <meta name="author" content="Robert Wenger" />
   
   
-  <meta name="description" content="Compiling and running a JAMScript program">
+  <meta name="description" content="Installing JAMScript on Embedded Computers">
   
 
-  <link rel="alternate" type="application/rss+xml" title="JAMScript - Programming language for the fog" href="/feed.xml" />
+  <link rel="alternate" type="application/rss+xml" title="JAMScript - A Language and Middleware for Cloud of Moving Things" href="/JAMScript-beta/feed.xml" />
 
   
     
@@ -24,11 +24,11 @@
   
   
     
-      <link rel="stylesheet" href="/css/bootstrap.min.css" />
+      <link rel="stylesheet" href="/JAMScript-beta/css/bootstrap.min.css" />
     
-      <link rel="stylesheet" href="/css/bootstrap-social.css" />
+      <link rel="stylesheet" href="/JAMScript-beta/css/bootstrap-social.css" />
     
-      <link rel="stylesheet" href="/css/main.css" />
+      <link rel="stylesheet" href="/JAMScript-beta/css/main.css" />
     
     
   
@@ -47,10 +47,10 @@
   
 
   <!-- Facebook OpenGraph tags -->
-  <meta property="og:title" content="Run" />
+  <meta property="og:title" content="Install" />
   <meta property="og:type" content="website" />
   
-  <meta property="og:url" content="http://localhost/run/" />
+  <meta property="og:url" content="http://anrl.github.io/JAMScript-beta/iot/" />
   
   
   <meta property="og:image" content="" />
@@ -60,8 +60,8 @@
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:site" content="@" />
   <meta name="twitter:creator" content="@" />
-  <meta name="twitter:title" content="Run" />
-  <meta name="twitter:description" content="Trying out the JAMScript compiler Running the example programs JAMScript comes with a bunch of sample programs. You can cd into samples/chat and run jamc chat.c chat.js to compile the program. You should see chat.jxe in that directory. A JAMScript executable has native (compiled C) and Node (JavaScript) components. To..." />
+  <meta name="twitter:title" content="Install" />
+  <meta name="twitter:description" content="Overall Goal JAMScript has a C part and J (JavaScript) part. The goal of the dual part architecture is to map the C parts to the extreme peripheries of computing such as tiny micro-controllers in smart clothing. Currently, however, the C node implemented using messaging libraries that are not lightweight..." />
   
   
 </head>
@@ -78,12 +78,26 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="http://localhost">JAMScript</a>
+      <a class="navbar-brand" href="http://anrl.github.io/JAMScript-beta">JAMScript</a>
     </div>
 
     <div class="collapse navbar-collapse" id="main-navbar">
       <ul class="nav navbar-nav navbar-right">
       
+        
+          <li>
+            
+            
+
+
+
+
+
+<a href="/JAMScript-beta/qstart">Quick Start</a>
+
+          </li>
+        
+        
         
           <li class="navlinks-container">
             <a class="navlinks-parent" href="javascript:void(0)">Install</a>
@@ -97,7 +111,7 @@
 
 
 
-<a href="/linux">Linux</a>
+<a href="/JAMScript-beta/get-src">Get Source</a>
 
                 
               
@@ -109,7 +123,43 @@
 
 
 
-<a href="/mac">Mac</a>
+<a href="/JAMScript-beta/linux">Linux</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/mac">Mac</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/docker">Docker</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/iot">Embedded Computers</a>
 
                 
               
@@ -119,7 +169,7 @@
         
         
           <li class="navlinks-container">
-            <a class="navlinks-parent" href="javascript:void(0)">Write</a>
+            <a class="navlinks-parent" href="javascript:void(0)">Run</a>
             <div class="navlinks-children">
               
                 
@@ -130,7 +180,7 @@
 
 
 
-<a href="/write">Basics</a>
+<a href="/JAMScript-beta/native-run">In Workstation</a>
 
                 
               
@@ -142,7 +192,7 @@
 
 
 
-<a href="/hello">Hello World</a>
+<a href="/JAMScript-beta/emulator-run">In Emulator</a>
 
                 
               
@@ -151,16 +201,128 @@
         
         
         
-          <li>
+          <li class="navlinks-container">
+            <a class="navlinks-parent" href="javascript:void(0)">Language</a>
+            <div class="navlinks-children">
+              
+                
+                  
             
+
+
+
+
+
+<a href="/JAMScript-beta/jam-overview">Overview</a>
+
+                
+              
+                
+                  
             
 
 
 
 
 
-<a href="/run">Run</a>
+<a href="/JAMScript-beta/jam-tasks">Remote/Local Tasks</a>
 
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/data-per">Data Persistence</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/flow">Flow Computing</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/data-intel">Data Intelligence</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/cond-tasks">Conditional Tasks</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/visual-ctrl">Visualization & Control</a>
+
+                
+              
+            </div>
+          </li>
+        
+        
+        
+          <li class="navlinks-container">
+            <a class="navlinks-parent" href="javascript:void(0)">Examples</a>
+            <div class="navlinks-children">
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/jamshell">JAMShell</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/parking-spot">Parking Spot App</a>
+
+                
+              
+            </div>
           </li>
         
         
@@ -186,11 +348,11 @@
     <div class="row">
       <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
         <div class="page-heading">
-          <h1>Run</h1>
+          <h1>Install</h1>
 		  
 		    
             <hr class="small">
-            <span class="page-subheading">Compiling and running a JAMScript program</span>
+            <span class="page-subheading">Installing JAMScript on Embedded Computers</span>
 			
 		  
 		  
@@ -208,21 +370,27 @@
 <div class="container" role="main">
   <div class="row">
     <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-      <h2 id="trying-out-the-jamscript-compiler">Trying out the JAMScript compiler</h2>
+      <h2 id="overall-goal">Overall Goal</h2>
 
-<h3 id="running-the-example-programs">Running the example programs</h3>
+<p>JAMScript has a C part and J (JavaScript) part. The goal of the dual part architecture is to
+map the C parts to the extreme peripheries of computing such as tiny micro-controllers
+in smart clothing. Currently, however, the C node implemented using messaging libraries that
+are not lightweight enough to map into tiny micro-controllers.</p>
 
-<p>JAMScript comes with a bunch of sample programs. You can cd into samples/chat
-and run <code class="highlighter-rouge">jamc chat.c chat.js</code> to compile the program. You should see <code class="highlighter-rouge">chat.jxe</code> in
-that directory.</p>
+<p>We would like to <em>get help in stripping down middleware</em> to a smaller footprint
+(with correspondingly less features) so that
+the compiler can use it for tiny micro-controllers.</p>
 
-<p>A JAMScript executable has native (compiled C) and Node (JavaScript) components.
-To run the C and J nodes use the following commands.</p>
+<h2 id="current-status">Current Status</h2>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>jamrun -c chat.jxe
-jamrun -j chat.jxe
-</code></pre>
-</div>
+<p>JAMScript can run in its current version in Raspberry Pi 3 and Raspberry Zero.</p>
+
+<p>Copy depend-rpi.sh and jamscript-on-ubuntu.sh from scripts/install into the
+root folder of JAMScript, then run the following commands:<br />
+<code class="highlighter-rouge">shell
+./depend-rpi.sh
+./jamscript-on-ubuntu.sh
+</code></p>
 
 	    
     </div>
@@ -270,7 +438,7 @@ jamrun -j chat.jxe
         <p class="copyright text-muted">
 		  Robert Wenger
 		  &nbsp;&bull;&nbsp;
-		  2016
+		  2018
 
 		  
 	    </p>
@@ -297,19 +465,19 @@ jamrun -j chat.jxe
     
       <script>
       	if (typeof jQuery == 'undefined') {
-      	  document.write('<script src="/js/jquery-1.11.2.min.js"></scr' + 'ipt>');
+      	  document.write('<script src="/JAMScript-beta/js/jquery-1.11.2.min.js"></scr' + 'ipt>');
       	}
       </script>
     
   
     <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
     
-	<script src="/js/bootstrap.min.js"></script>
+	<script src="/JAMScript-beta/js/bootstrap.min.js"></script>
     
   
     <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
     
-	<script src="/js/main.js"></script>
+	<script src="/JAMScript-beta/js/main.js"></script>
     
   
 

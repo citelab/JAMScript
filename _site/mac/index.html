@@ -14,7 +14,7 @@
   <meta name="description" content="Installing JAMScript on MacOS">
   
 
-  <link rel="alternate" type="application/rss+xml" title="JAMScript - Programming language for the fog" href="/feed.xml" />
+  <link rel="alternate" type="application/rss+xml" title="JAMScript - A Language and Middleware for Cloud of Moving Things" href="/JAMScript-beta/feed.xml" />
 
   
     
@@ -24,11 +24,11 @@
   
   
     
-      <link rel="stylesheet" href="/css/bootstrap.min.css" />
+      <link rel="stylesheet" href="/JAMScript-beta/css/bootstrap.min.css" />
     
-      <link rel="stylesheet" href="/css/bootstrap-social.css" />
+      <link rel="stylesheet" href="/JAMScript-beta/css/bootstrap-social.css" />
     
-      <link rel="stylesheet" href="/css/main.css" />
+      <link rel="stylesheet" href="/JAMScript-beta/css/main.css" />
     
     
   
@@ -50,7 +50,7 @@
   <meta property="og:title" content="Install" />
   <meta property="og:type" content="website" />
   
-  <meta property="og:url" content="http://localhost/mac/" />
+  <meta property="og:url" content="http://anrl.github.io/JAMScript-beta/mac/" />
   
   
   <meta property="og:image" content="" />
@@ -61,7 +61,7 @@
   <meta name="twitter:site" content="@" />
   <meta name="twitter:creator" content="@" />
   <meta name="twitter:title" content="Install" />
-  <meta name="twitter:description" content="Preparing your system We will use the homebrew package manager to install the prequisites of JAMScript. Once homebrew is installed run the following commands: brew install scons brew install node brew install redis brew install hiredis brew install libcbor brew install nanomsg Installing JAMScript cd (jamscript folder) sudo scons install..." />
+  <meta name="twitter:description" content="Preliminary Setup This step assumes you have already downloaded the JAMScript source following the instructions here. Ensure you have the latest Node.js (&amp;gt; 8.0.0) and npm (&amp;gt; 5.0.0) installed on your system. If you older versions, you need to manually remove them. If you have multiple Node versions or Node..." />
   
   
 </head>
@@ -78,12 +78,26 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="http://localhost">JAMScript</a>
+      <a class="navbar-brand" href="http://anrl.github.io/JAMScript-beta">JAMScript</a>
     </div>
 
     <div class="collapse navbar-collapse" id="main-navbar">
       <ul class="nav navbar-nav navbar-right">
       
+        
+          <li>
+            
+            
+
+
+
+
+
+<a href="/JAMScript-beta/qstart">Quick Start</a>
+
+          </li>
+        
+        
         
           <li class="navlinks-container">
             <a class="navlinks-parent" href="javascript:void(0)">Install</a>
@@ -97,7 +111,7 @@
 
 
 
-<a href="/linux">Linux</a>
+<a href="/JAMScript-beta/get-src">Get Source</a>
 
                 
               
@@ -109,7 +123,43 @@
 
 
 
-<a href="/mac">Mac</a>
+<a href="/JAMScript-beta/linux">Linux</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/mac">Mac</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/docker">Docker</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/iot">Embedded Computers</a>
 
                 
               
@@ -119,7 +169,7 @@
         
         
           <li class="navlinks-container">
-            <a class="navlinks-parent" href="javascript:void(0)">Write</a>
+            <a class="navlinks-parent" href="javascript:void(0)">Run</a>
             <div class="navlinks-children">
               
                 
@@ -130,7 +180,7 @@
 
 
 
-<a href="/write">Basics</a>
+<a href="/JAMScript-beta/native-run">In Workstation</a>
 
                 
               
@@ -142,7 +192,7 @@
 
 
 
-<a href="/hello">Hello World</a>
+<a href="/JAMScript-beta/emulator-run">In Emulator</a>
 
                 
               
@@ -151,16 +201,128 @@
         
         
         
-          <li>
+          <li class="navlinks-container">
+            <a class="navlinks-parent" href="javascript:void(0)">Language</a>
+            <div class="navlinks-children">
+              
+                
+                  
             
+
+
+
+
+
+<a href="/JAMScript-beta/jam-overview">Overview</a>
+
+                
+              
+                
+                  
             
 
 
 
 
 
-<a href="/run">Run</a>
+<a href="/JAMScript-beta/jam-tasks">Remote/Local Tasks</a>
 
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/data-per">Data Persistence</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/flow">Flow Computing</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/data-intel">Data Intelligence</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/cond-tasks">Conditional Tasks</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/visual-ctrl">Visualization & Control</a>
+
+                
+              
+            </div>
+          </li>
+        
+        
+        
+          <li class="navlinks-container">
+            <a class="navlinks-parent" href="javascript:void(0)">Examples</a>
+            <div class="navlinks-children">
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/jamshell">JAMShell</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/parking-spot">Parking Spot App</a>
+
+                
+              
+            </div>
           </li>
         
         
@@ -208,25 +370,44 @@
 <div class="container" role="main">
   <div class="row">
     <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-      <h2 id="preparing-your-system">Preparing your system</h2>
+      <h2 id="preliminary-setup">Preliminary Setup</h2>
 
-<p>We will use the <a href="http://brew.sh">homebrew package manager</a> to install the prequisites of JAMScript. Once homebrew is installed run the following commands:</p>
+<p>This step assumes you have already downloaded the JAMScript source following the instructions <a href="../get-src">here</a>.</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>brew install scons
-brew install node
-brew install redis
-brew install hiredis
-brew install libcbor
-brew install nanomsg
-</code></pre>
-</div>
+<p>Ensure you have the latest Node.js (&gt; 8.0.0) and npm (&gt; 5.0.0) installed on your system.
+If you older versions, you need to manually remove them.
+If you have multiple Node versions or Node version manager (NVM) installed, you can
+encounter problems <strong>not documented here</strong>. In that case, you need to watch out where the install scripts fail
+and take remedial actions.</p>
+
+<p>Include JAMTools in the path. If you are using BASH (default in MacOS) as the shell, include the following in <code class="highlighter-rouge">.bash_profile</code>.
+<code class="highlighter-rouge">shell
+export JAMHOME=$HOME/JAMScript-beta
+# This is assuming you have downloaded JAMScript in your home directory
+export PATH=$JAMHOME/tools:$PATH
+# Assumes you did not download JAMTools into a separate folder
+</code></p>
+
+<p>If you logout and login again or <code class="highlighter-rouge">src .bash_profile</code> the settings should take effect. You should see the JAMTools
+in your path. To test, run <code class="highlighter-rouge">which jamrun</code> and you should see the location printed out. Same way check the JAMHOME
+points to the correct location by running <code class="highlighter-rouge">cd $JAMHOME</code>.</p>
+
+<p>We will use the <a href="http://brew.sh">Homebrew package manager</a> to install JAMScript. Install Homebrew before continuing with the rest
+of the instructions.</p>
 
 <h2 id="installing-jamscript">Installing JAMScript</h2>
 
-<div class="highlighter-rouge"><pre class="highlight"><code><span class="nb">cd</span> <span class="o">(</span>jamscript folder<span class="o">)</span>
-sudo scons install
+<p>We have tried to automate the installation of JAMScript. It is still a work-in-progress (as the rest!). Your feedback or help
+is important to fix the problems. You should be able to install JAMScript by issuing the following command from any where
+in the file system after completing the preliminary setup.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>jam install macos
 </code></pre>
 </div>
+
+<p>After successful installation, you should see the JAMScript compiler in your path: run <code class="highlighter-rouge">which jamc</code> to see it.
+Unfortunately, at this point, we don’t have a test or validation suite for JAMScript installs, you can go into the
+samples (<code class="highlighter-rouge">cd $JAMHOME/samples</code>) and try running them to make sure JAMScript install has succeeded.</p>
 
 	    
     </div>
@@ -274,7 +455,7 @@ sudo scons install
         <p class="copyright text-muted">
 		  Robert Wenger
 		  &nbsp;&bull;&nbsp;
-		  2016
+		  2018
 
 		  
 	    </p>
@@ -301,19 +482,19 @@ sudo scons install
     
       <script>
       	if (typeof jQuery == 'undefined') {
-      	  document.write('<script src="/js/jquery-1.11.2.min.js"></scr' + 'ipt>');
+      	  document.write('<script src="/JAMScript-beta/js/jquery-1.11.2.min.js"></scr' + 'ipt>');
       	}
       </script>
     
   
     <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
     
-	<script src="/js/bootstrap.min.js"></script>
+	<script src="/JAMScript-beta/js/bootstrap.min.js"></script>
     
   
     <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
     
-	<script src="/js/main.js"></script>
+	<script src="/JAMScript-beta/js/main.js"></script>
     
   
 

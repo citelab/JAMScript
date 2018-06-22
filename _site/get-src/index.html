@@ -6,12 +6,12 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
-  <title>JAMScript</title>
+  <title>Get Source</title>
 
   <meta name="author" content="Robert Wenger" />
   
   
-  <meta name="description" content="A Programming Language for Edge-Oriented Mobile IoT">
+  <meta name="description" content="Get the latest JAMScript Compiler, Tools, and Samples">
   
 
   <link rel="alternate" type="application/rss+xml" title="JAMScript - A Language and Middleware for Cloud of Moving Things" href="/JAMScript-beta/feed.xml" />
@@ -47,10 +47,10 @@
   
 
   <!-- Facebook OpenGraph tags -->
-  <meta property="og:title" content="JAMScript" />
+  <meta property="og:title" content="Get Source" />
   <meta property="og:type" content="website" />
   
-  <meta property="og:url" content="http://anrl.github.io/JAMScript-beta/" />
+  <meta property="og:url" content="http://anrl.github.io/JAMScript-beta/get-src/" />
   
   
   <meta property="og:image" content="" />
@@ -60,8 +60,8 @@
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:site" content="@" />
   <meta name="twitter:creator" content="@" />
-  <meta name="twitter:title" content="JAMScript" />
-  <meta name="twitter:description" content="Edge computing (used interchangeably with fog computing in this site) and mobile IoT are poised to play pivotal roles along with cloud computing in future cyber-physical computing applications such as smart cities, autonomous vehicles, and smart energy. While edge computing brings enormous potential to improve the overall performance of such..." />
+  <meta name="twitter:title" content="Get Source" />
+  <meta name="twitter:description" content="The JAMScript source is in three repositories: JAMScript-beta, JAMTools, and JAMSamples. The tools and samples are linked as submodules under the main repository (JAMScript-beta). You could get them as one package or as three separate packages. Run the following command from the folder where you want JAMScript downloaded. shell git..." />
   
   
 </head>
@@ -348,11 +348,11 @@
     <div class="row">
       <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
         <div class="page-heading">
-          <h1>JAMScript</h1>
+          <h1>Get Source</h1>
 		  
 		    
             <hr class="small">
-            <span class="page-subheading">A Programming Language for Edge-Oriented Mobile IoT</span>
+            <span class="page-subheading">Get the latest JAMScript Compiler, Tools, and Samples</span>
 			
 		  
 		  
@@ -370,43 +370,36 @@
 <div class="container" role="main">
   <div class="row">
     <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-      <p>
-<a href="https://www.ge.com/digital/blog/what-edge-computing">Edge computing</a> (used
-interchangeably with fog computing in this site)
-and <a href="https://www.gsma.com/iot/mobile-iot-introduction/">mobile IoT</a>
-are poised to play pivotal roles along with cloud computing in future cyber-physical computing applications
-such as smart cities, autonomous vehicles, and smart energy.
-While edge computing brings enormous potential to improve the overall
-performance of such systems, it also complicates application development and deployment. In
-particular, applications need to leverage both the fog for short-term needs and
-clouds for long-term needs such as long-term data storage. Another important
-problem  is disconnection and fault tolerance. Cloud computing concentrates the
-resources at the  datacenters whereas fog computing disperses the resources
-throughout the network. Therefore, new fog specific approaches are needed for disconnection and fault  tolerance.
-The diagram below illustrates an example cloud-fog-device deployment.
-<p align="center">
-<img src="/JAMScript-beta/images/scenario.png" />
-</p>
+      <p>The JAMScript source is in three repositories: JAMScript-beta, JAMTools, and JAMSamples.
+The tools and samples are linked as submodules under the main repository (JAMScript-beta). You could get them as
+one package or as three separate packages.</p>
 
-<p>JAMScript is a <B>systems programming language</B> and middleware designed for a
-three-tiered system of clouds, fogs, and devices. It is a polyglot language
-that combines C and JavaScript. A proof-of-concept compiler and runtime for different
-<I>*nix</I> operating systems are provided in this repository. As part of ongoing research,
-we are carrying out many different
-experiments and prototyping interesting applications (e.g, distributed shells, parking spot managers) using
-JAMScript. An emulator using Docker containers has been developed to
-quickly launch and test various distributed system configurations with JAMScript code loaded in them.
-It is highly suitable for running various prototyping experiments involving clouds, fogs, and devices.
+<p>Run the following command from the folder where you want JAMScript downloaded.
+<code class="highlighter-rouge">shell
+git clone --recursive https://github.com/anrl/JAMScript-beta
+</code><br />
+This should create a <em>JAMScript-beta</em> folder there.</p>
 
-<p>This is an open source project. If you are interested in contributing towards this
-project, we would be delighted to hear from you. Please contact maheswar@cs.mcgill.ca
-for more information on how you could contribute to this project.</p>
+<p>Run the following commands to update the submodules that are embedded in the JAMScript-beta
+repository.
+<code class="highlighter-rouge">shell
+cd JAMScript-beta
+cd tools
+git checkout master &amp;&amp; git pull
+cd ../samples
+git checkout master &amp;&amp; git pull
+</code><br />
+You should have the most up-to-date JAMScript source package in the JAMScript-beta folder.</p>
 
-<div class="posts-list">
-  
-</div>
+<p>If you want to download the JAMTools as a separate package, run the following command.
+<code class="highlighter-rouge">shell
+git clone https://github.com/anrl/JAMTools
+</code></p>
 
-
+<p>Same way if you want to download the JAMSamples as a separate package, run the following command.
+<code class="highlighter-rouge">shell
+git clone https://github.com/anrl/JAMSamples
+</code></p>
 
 	    
     </div>
