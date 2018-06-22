@@ -7,8 +7,8 @@ subtitle: A High-Level Description of the JAMScript Concepts
 ## Anatomy of a JAMScript Program
 
 JAMScript is based on a **controller-worker** model similar to the one that
-underpins recent paradigms such as (Software Defined
-Networking)[https://en.wikipedia.org/wiki/Software-defined_networking]. The
+underpins recent paradigms such as [Software Defined
+Networking](https://en.wikipedia.org/wiki/Software-defined_networking). The
 *controller* and *worker* are co-programmed. That is, a single program is
 developed for the controller and worker combination. In JAMScript, the
 controller portion of the program is written in JavaScript and the worker
@@ -17,7 +17,8 @@ portion of the program is written in C.
 In the simplest scenario, we can have a single controller and a single worker.
 To run a JAMScript program we need to instantiate both components: controller
 worker. The controller can call the worker or the worker can initiate calls on
-the controller. Quite easily, we can generalize this setup to include multiple workers.
+the controller. Quite easily, we can generalize this setup to include multiple
+workers.
 
 
 A little bit more complex
