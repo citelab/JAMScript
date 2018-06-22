@@ -5,38 +5,28 @@ subtitle: A Programming Language for Edge-Oriented Mobile IoT
 ---
 
 <p>
-<a href="https://www.ge.com/digital/blog/what-edge-computing">Edge computing</a>
+<a href="https://www.ge.com/digital/blog/what-edge-computing">Edge computing</a> (used
+interchangeably with fog computing in this site)
 and <a href="https://www.gsma.com/iot/mobile-iot-introduction/">mobile IoT</a>
 are poised to play pivotal roles along with cloud computing in future cyber-physical computing applications
 such as smart cities, autonomous vehicles, and smart energy.
-
-<p align="center">
-<img src="{{ site.baseurl }}/images/scenario.png" />
-</p>
-
-eading roles in
-     are Cloud computing is the backend of choice for many Internet of Things (IoT)
-applications that create high rate data streams. Despite its widespread
-acceptance, cloud computing has its share of drawbacks: high and variable access
-latency, global computing context, and data privacy concerns. Fog computing
-(known by different names such as Cloudlets, edge computing) is proposed as a
-way of addressing some of these concerns. In fog computing, resources are
-distributed closer to the edge so that client devices can access data and
-services with high reliability and low access latency.
-
-<p>While fog computing brings enormous potential to improve the overall
-performance, it also complicates the application development and deployment. In
+While edge computing brings enormous potential to improve the overall
+performance of such systems, it also complicates application development and deployment. In
 particular, applications need to leverage both the fog for short-term needs and
 clouds for long-term needs such as long-term data storage. Another important
 problem  is disconnection and fault tolerance. Cloud computing concentrates the
 resources at the  datacenters whereas fog computing disperses the resources
-throughout the network. Therefore, the disconnection and fault  tolerance approaches
-developed for cloud computing are not suitable for fogs.
+throughout the network. Therefore, new fog specific approaches are needed for disconnection and fault  tolerance.
+The diagram below illustrates an example cloud-fog-device deployment.
+<p align="center">
+<img src="{{ site.baseurl }}/images/scenario.png" />
+</p>
 
 <p>JAMScript is a <B>systems programming language</B> and middleware designed for a
 three-tiered system of clouds, fogs, and devices. It is a polyglot language
 that combines C and JavaScript. A proof-of-concept compiler and runtime for different
-<I>*nix</I> operating systems are provided in this repository. We are carrying out many different
+<I>*nix</I> operating systems are provided in this repository. As part of ongoing research,
+we are carrying out many different
 experiments and prototyping interesting applications (e.g, distributed shells, parking spot managers) using
 JAMScript. An emulator using Docker containers has been developed to
 quickly launch and test various distributed system configurations with JAMScript code loaded in them.
