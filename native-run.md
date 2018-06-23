@@ -24,14 +24,17 @@ To compile a JAMScript program, do the following.
 5. Once you have compiled the sample program, you can run the program in different ways: in a device, fog, or cloud. When you run in a device, you can specify different number of C nodes as well. By default, the `djam run` sub command creates a single C node.
 
 To run a device using the `stringlog.jxe` with 2 C nodes under the app name `q5` in background, use the following command.
+
 ```shell
 djam run stringlog.jxe --num=2 --app=q5 --bg
 ```
 To see the status of the docker JAMScript execution, run the following command.
+
 ```shell
 djam list
 ```
 You should see something like the following.
+
 ```shell
       ID         NAME      PROGRAM         HOST         D-STORE       TYPE C-NODES    TMUX-ID
 

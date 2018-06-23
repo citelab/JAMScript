@@ -393,79 +393,81 @@ CLI (C) nodes with a single calculating server as shown in the figure below.</p>
 node. In this particular example there is no JAMScript specific constructs in
 the C code. You will notice  that the four functions  (<code class="highlighter-rouge">add</code>, <code class="highlighter-rouge">subtract</code>,
 <code class="highlighter-rouge">multiply</code>, <code class="highlighter-rouge">divide</code>) used for computations are not implemented in the C side.
-They are implemented in the J (JavaScript)  side.
-```C
-#include <stdio.h></stdio.h></p>
+They are implemented in the J (JavaScript)  side.</p>
 
-<p>// Prototypes for the functions exported from the J side
+<pre><code class="language-C">#include &lt;stdio.h&gt;
+
+// Prototypes for the functions exported from the J side
 int add(int, int);
 int subtract(int, int);
 int multiply(int, int);
-int divide(int, int);</p>
+int divide(int, int);
 
-<p>int main() {</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>char operator;
-int num1, num2;
+int main() {
 
-while(1) {
-    printf("Enter an operator (+, -, *, /) or q to quit:");
-    scanf("%c", &amp;operator);
-    if(operator == 'q' ) {
-        exit(0);
+    char operator;
+    int num1, num2;
+
+    while(1) {
+        printf("Enter an operator (+, -, *, /) or q to quit:");
+        scanf("%c", &amp;operator);
+        if(operator == 'q' ) {
+            exit(0);
+        }
+        printf("Enter the first integer operand: ");
+        scanf("%i", &amp;num1);
+
+        printf("Enter the second integer operand: ");
+        scanf("%i", &amp;num2);
+
+        switch(operator) {
+        case '+':
+            printf("%i + %i = %i\n", num1, num2, add(num1, num2));
+            break;
+        case '-':
+            printf("%i - %i = %i\n", num1, num2, subtract(num1, num2));
+            break;
+        case '*':
+            printf("%i * %i = %i\n", num1, num2, multiply(num1, num2));
+            break;
+        case '/':
+            printf("%i / %i = %i\n", num1, num2, divide(num1, num2));
+            break;
+        // operator doesn't match any case constant (+, -, *, /)
+        default:
+            printf("Error! operator is not correct\n");
+        }
+
+        //Lazy input clear
+        int c;
+        while ((c = getchar()) != '\n' &amp;&amp; c != EOF) {}
     }
-    printf("Enter the first integer operand: ");
-    scanf("%i", &amp;num1);
-
-    printf("Enter the second integer operand: ");
-    scanf("%i", &amp;num2);
-
-    switch(operator) {
-    case '+':
-        printf("%i + %i = %i\n", num1, num2, add(num1, num2));
-        break;
-    case '-':
-        printf("%i - %i = %i\n", num1, num2, subtract(num1, num2));
-        break;
-    case '*':
-        printf("%i * %i = %i\n", num1, num2, multiply(num1, num2));
-        break;
-    case '/':
-        printf("%i / %i = %i\n", num1, num2, divide(num1, num2));
-        break;
-    // operator doesn't match any case constant (+, -, *, /)
-    default:
-        printf("Error! operator is not correct\n");
-    }
-
-    //Lazy input clear
-    int c;
-    while ((c = getchar()) != '\n' &amp;&amp; c != EOF) {}
+    return 0;
 }
-return 0; } ```
 </code></pre>
-</div>
 
 <p>Now, lets looks at the J side. The J side introduces a JAMScript keyword - <strong>jsync</strong>. Simply by putting this keyword
 in front of a function we have asked the compiler to export the function to the C side. Of course, proper matching
-C prototypes in the C side (as shown in the above code block) are necessary to complete the export.
-```javascript
-jsync function add(num1, num2) {
-    return num1 + num2;
-}</p>
+C prototypes in the C side (as shown in the above code block) are necessary to complete the export.</p>
 
-<p>jsync function subtract(num1, num2) {
-    return num1 - num2;
-}</p>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nx">jsync</span> <span class="kd">function</span> <span class="nx">add</span><span class="p">(</span><span class="nx">num1</span><span class="p">,</span> <span class="nx">num2</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">num1</span> <span class="o">+</span> <span class="nx">num2</span><span class="p">;</span>
+<span class="p">}</span>
 
-<p>jsync function multiply(num1, num2) {
-    return num1 * num2;
-}</p>
+<span class="nx">jsync</span> <span class="kd">function</span> <span class="nx">subtract</span><span class="p">(</span><span class="nx">num1</span><span class="p">,</span> <span class="nx">num2</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">num1</span> <span class="o">-</span> <span class="nx">num2</span><span class="p">;</span>
+<span class="p">}</span>
 
-<p>jsync function divide(num1, num2) {
-    return num1 / num2;
-}
-```</p>
+<span class="nx">jsync</span> <span class="kd">function</span> <span class="nx">multiply</span><span class="p">(</span><span class="nx">num1</span><span class="p">,</span> <span class="nx">num2</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">num1</span> <span class="o">*</span> <span class="nx">num2</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nx">jsync</span> <span class="kd">function</span> <span class="nx">divide</span><span class="p">(</span><span class="nx">num1</span><span class="p">,</span> <span class="nx">num2</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">num1</span> <span class="o">/</span> <span class="nx">num2</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+</div>
 
 <p>Save the C code block as <code class="highlighter-rouge">calc.c</code> and J code block as <code class="highlighter-rouge">calc.js</code>. Now, run the following command to compile the files.
 <code class="highlighter-rouge">shell
@@ -477,11 +479,12 @@ djam compile calc.c calc.js
 source files are located. The <code class="highlighter-rouge">djam pull</code> command brought in a docker image with JAMScript language. The <code class="highlighter-rouge">djam compile</code>
 command compiled the source files inside a docker container. The resulting executable <code class="highlighter-rouge">calc.jxe</code> is copied back to the original location.</p>
 
-<p>To run <code class="highlighter-rouge">calc.jxe</code>, issue the following commands.
-<code class="highlighter-rouge">shell
-djam init ideal
-djam run calc.jxe --num=2 --bg
-</code></p>
+<p>To run <code class="highlighter-rouge">calc.jxe</code>, issue the following commands.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>djam init ideal
+djam run calc.jxe --num<span class="o">=</span>2 --bg
+</code></pre>
+</div>
 
 <p>The <code class="highlighter-rouge">djam init</code> command is setting up the system configuration for the sole Docker container.
 The <code class="highlighter-rouge">djam run</code> command runs the <code class="highlighter-rouge">calc.jxe</code> program in the Docker container.
@@ -490,29 +493,32 @@ The command runs a single J node and two C nodes
 
 <p>Now, run <code class="highlighter-rouge">jam list</code> to see the status of the execution.</p>
 
-<p>You should see a listing like the following.
-<code class="highlighter-rouge">shell
-ID         NAME      PROGRAM         HOST         D-STORE       TYPE C-NODES    TMUX-ID
+<p>You should see a listing like the following.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>ID         NAME      PROGRAM         HOST         D-STORE       TYPE C-NODES    TMUX-ID
 app-457        app-n        calc 76b9053e2844     docker:6379     device       2 u-501-device-461-dev
-</code></p>
+</code></pre>
+</div>
 
 <p>Since we did not specify the application name the <code class="highlighter-rouge">djam run</code> with the <strong>–app</strong> option, the default application (<em>app-n</em>) is
 used in the execution. Remember the command line interface (CLI) is running in the C node. So, to interact with the application
 we need to open a terminal to the C node. Here, we have two C nodes running. The <strong>tmux id</strong> for the J node is shown in the
 above listing. You can append <code class="highlighter-rouge">-</code> and node id of the C node to get the tmux id for the C node.</p>
 
-<p>Run the following commands to see the two terminals.
-<code class="highlighter-rouge">shell
-jam term u-501-device-461-dev-1
+<p>Run the following commands to see the two terminals.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>jam term u-501-device-461-dev-1
 jam term u-501-device-461-dev-2
-</code></p>
+</code></pre>
+</div>
 
 <p>We are using tmux. So, to detach press <code class="highlighter-rouge">Ctrl-B d</code>.</p>
 
-<p>To stop the application executing in the above listing, we need to run the following command.
-<code class="highlighter-rouge">shell
-jam kill app-457
-</code></p>
+<p>To stop the application executing in the above listing, we need to run the following command.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>jam <span class="nb">kill </span>app-457
+</code></pre>
+</div>
 
 	    
     </div>

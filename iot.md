@@ -21,6 +21,7 @@ JAMScript can run in its current version in Raspberry Pi 3 and Raspberry Zero.
 
 Copy depend-rpi.sh and jamscript-on-ubuntu.sh from scripts/install into the
 root folder of JAMScript, then run the following commands:  
+
 ```shell
 ./depend-rpi.sh
 ./jamscript-on-ubuntu.sh

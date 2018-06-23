@@ -61,7 +61,7 @@
   <meta name="twitter:site" content="@" />
   <meta name="twitter:creator" content="@" />
   <meta name="twitter:title" content="Tasks" />
-  <meta name="twitter:description" content="Tasks in JAMScript Programs A JAMScript program has C and JavaScript functions with some of them prepended with the jasync or jsync keywords. In this section, we refer to such tagged functions as JAMScript tasks. A JAMScript task runs in a single node; that is, a given task is not..." />
+  <meta name="twitter:description" content="Tasks in JAMScript Programs A JAMScript program has C and JavaScript functions with some of them prepended with the jasync or jsync keywords. In this section, we refer to such tagged functions as JAMScript tasks. A task is considered local if it runs in the same node as the invoking..." />
   
   
 </head>
@@ -374,28 +374,332 @@
 
 <p>A JAMScript program has C and JavaScript functions with some of them prepended with
 the <strong>jasync</strong> or <strong>jsync</strong> keywords. In this section, we refer to such tagged functions
-as <em>JAMScript tasks</em>. A JAMScript task runs in a single node; that is, a given task is not distributed
-across multiple nodes. A task is considered <strong>local</strong> if it runs in the same node as the invoking function
-while the tasks running in a different node are considered <strong>remote</strong>.</p>
+as <em>JAMScript tasks</em>.  A task is considered <strong>local</strong> if it runs in the same node as the invoking function
+while the tasks running in a different node are considered <strong>remote</strong>.
+A JAMScript task runs in a single node; that is, a given task is not distributed
+across multiple nodes.</p>
 
 <p>We have local tasks in the worker (C) side as well as the controller
-(J) side. The remote tasks are in between C and J node.
+(J) side. The remote tasks are in between C and J nodes.
 For the time being, we will ignore multiple (hierarchically organized) controllers.
-The C nodes can invoke remote tasks only on J nodes.</p>
+The C nodes can invoke remote tasks only on J nodes. Similarly, J nodes can invoke remote tasks on C nodes.
+A simple configuration with one J node and three C nodes is shown in the figure below.</p>
 <p align="center">
-<img src="/JAMScript-beta/images/lang_tasks/fig1.jpeg" width="300" />
+<img src="/JAMScript-beta/images/lang_tasks/fig1.jpeg" width="470" />
 </p>
-
-<p>Different C nodes are not connected
-to each other.</p>
 
 <h2 id="defining-and-using-local-tasks">Defining and Using Local Tasks</h2>
 
+<p>Local tasks can be defined at the worker and controller sides. Here, we illustrate the definition
+of local tasks in the C side. Consider the following C side program.</p>
+
+<pre><code class="language-C">jasync localme(int c, char *s)
+{
+    while(1)
+    {
+        jsleep(20);
+        printf("Message from me: %d, %s\n", c, s);
+    }
+}
+
+jasync localyou(int c, char *s)
+{
+    while(1)
+    {
+        jsleep(100);
+        printf("Message from you  %d, %s\n", c, s);
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    localme(10, "my message");
+    localyou(100, "your message");
+}
+</code></pre>
+
+<p>You will notice that all the calls made by the C program are local. Therefore,
+this worker (C) program can run with a NULL controller (empty J program). The
+local tasks are invoked just like any other function. However, because the local
+tasks are asynchronous (defined using the <code class="highlighter-rouge">jasync</code> keyword), there is no return
+value from them. In this example, the <code class="highlighter-rouge">localme</code> and <code class="highlighter-rouge">localyou</code> tasks run
+concurrently. For compute only tasks, you need insert <code class="highlighter-rouge">jsleep(n)</code> to yield the
+coroutine thread; otherwise, you would not have the intended execution.</p>
+
+<p>You can save the above
+code under a file with a <code class="highlighter-rouge">.c</code> extension (<code class="highlighter-rouge">local.c</code>) and create another empty file <code class="highlighter-rouge">.js</code> extension (<code class="highlighter-rouge">local.js</code>).
+To create the executable, you run the following command.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>djam compile local.c local.js
+</code></pre>
+</div>
+
+<p>This should create <code class="highlighter-rouge">local.jxe</code> as the output. You can run the JAMScript executable <code class="highlighter-rouge">local.jxe</code> as follows:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>djam run local.jxe
+</code></pre>
+</div>
+
+<p>To view the output of the program (in this case from the C side), run the following command.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>djam term
+</code></pre>
+</div>
+
+<p>The primary use case for local tasks is to perform concurrent processing at the worker. All local tasks
+and the main program run on a single kernel-level thread because JAMScript is a single-threaded language
+like JavaScript.</p>
+
+<p>The above example shows how to multiplex two task that print messages to the terminal. In addition, we can
+also have local tasks that read data from the controller as illustrated in an example shown later.</p>
+
 <h2 id="defining-and-using-remote-tasks">Defining and Using Remote Tasks</h2>
 
-<h2 id="synchronous-tasks-and-returning-values">Synchronous Tasks and Returning Values</h2>
+<p>Remote tasks are important for the controllers and workers to interoperate. Lets consider a slight variation of the
+above program with two local tasks in the worker. In the program below, we just have one of the tasks <code class="highlighter-rouge">localme</code>.
+However, instead of calling that task locally, we call it from the controller.</p>
 
-<h2 id="chaining-asynchronous-task-executions-via-callbacks">Chaining Asynchronous Task Executions via Callbacks</h2>
+<pre><code class="language-C">jasync localme(int c, char *s)
+{
+    while(1)
+    {
+        jsleep(20);
+        printf("Message for me: %d, %s\n", c, s);
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    printf("Not calling any local tasks \n");
+}
+</code></pre>
+
+<p>The J node runs the very simple program shown below.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">count</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+
+<span class="nx">setInterval</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">localme</span><span class="p">(</span><span class="nx">count</span><span class="p">,</span> <span class="s2">"message from J"</span><span class="p">);</span>
+    <span class="nx">count</span><span class="o">++</span><span class="p">;</span>
+<span class="p">},</span> <span class="mi">10000</span><span class="p">);</span>
+</code></pre>
+</div>
+
+<p>In the above program, the J node is calling <code class="highlighter-rouge">localme</code> as a remote task. You can see that the J node spawns a different
+instance of the <code class="highlighter-rouge">localme</code> at each call, which runs forever. Therefore, we will run out of the resources at the devices
+after few invocations.</p>
+
+<p>Typically, the remote tasks run to completion within a given duration so the resource usage at the worker
+side would not keep increasing like in the above example.</p>
+
+<p>In the above example, the controller was calling a remote task in the worker. We can call a remote task in the
+controller from the worker as well. In the code fragment shown below, we export a J function so that it can be
+called from the C node.</p>
+
+<pre><code class="language-javaScript">jasync function printMsg(msg) {
+    console.log("This is a message from C" + msg);
+}
+</code></pre>
+
+<p>In the C side, the function exported from the J side needs a prototype definition so that it can be used there.</p>
+
+<pre><code class="language-C">
+void printMsg();
+
+int main(int argc, char *argv[])
+{
+    printMsg("Hello, Controller");
+}
+</code></pre>
+
+<p>A controller can have many workers underneath it. Therefore, when a controller
+issues a remote asynchronous task execution request (like the <code class="highlighter-rouge">localme</code> request
+in the above example), all workers underneath the controller will execute the
+task. However, when a worker invokes a task on the controller, the task runs in
+the controller that is attached to the worker (like <code class="highlighter-rouge">printMsg</code> running in the
+controller).</p>
+
+<h2 id="synchronous-tasks-and-return-values">Synchronous Tasks and Return Values</h2>
+
+<p>Asynchronous tasks are fired and forgotten by the caller. With the <strong>synchronous tasks</strong>, the
+caller <strong>waits</strong> for the completion and the ensuing return result. The calculator example from the
+Quick Start section is an example use of synchronous tasks. The listing below shows the
+calculator server.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nx">jsync</span> <span class="kd">function</span> <span class="nx">add</span><span class="p">(</span><span class="nx">num1</span><span class="p">,</span> <span class="nx">num2</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">num1</span> <span class="o">+</span> <span class="nx">num2</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nx">jsync</span> <span class="kd">function</span> <span class="nx">subtract</span><span class="p">(</span><span class="nx">num1</span><span class="p">,</span> <span class="nx">num2</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">num1</span> <span class="o">-</span> <span class="nx">num2</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nx">jsync</span> <span class="kd">function</span> <span class="nx">multiply</span><span class="p">(</span><span class="nx">num1</span><span class="p">,</span> <span class="nx">num2</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">num1</span> <span class="o">*</span> <span class="nx">num2</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nx">jsync</span> <span class="kd">function</span> <span class="nx">divide</span><span class="p">(</span><span class="nx">num1</span><span class="p">,</span> <span class="nx">num2</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">num1</span> <span class="o">/</span> <span class="nx">num2</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<p>The functions that perform the calculator functions such as <code class="highlighter-rouge">add</code>, <code class="highlighter-rouge">subtract</code>, <code class="highlighter-rouge">multiply</code>, and <code class="highlighter-rouge">divide</code> are defined
+as synchronous tasks.</p>
+
+<p>The C side shown below calls the synchronous tasks to perform the required calculations. The C call blocks
+until the task is complete and a result is available from the task. The function prototype (required) in the C
+side defines the return type of the task.</p>
+
+<pre><code class="language-C">#include &lt;stdio.h&gt;
+
+// Prototypes for the functions exported from the J side
+int add(int, int);
+int subtract(int, int);
+int multiply(int, int);
+int divide(int, int);
+
+
+int main() {
+
+    char operator;
+    int num1, num2;
+
+    while(1) {
+        printf("Enter an operator (+, -, *, /) or q to quit:");
+        scanf("%c", &amp;operator);
+        if(operator == 'q' ) {
+            exit(0);
+        }
+        printf("Enter the first integer operand: ");
+        scanf("%i", &amp;num1);
+
+        printf("Enter the second integer operand: ");
+        scanf("%i", &amp;num2);
+
+        switch(operator) {
+        case '+':
+            printf("%i + %i = %i\n", num1, num2, add(num1, num2));
+            break;
+        case '-':
+            printf("%i - %i = %i\n", num1, num2, subtract(num1, num2));
+            break;
+        case '*':
+            printf("%i * %i = %i\n", num1, num2, multiply(num1, num2));
+            break;
+        case '/':
+            printf("%i / %i = %i\n", num1, num2, divide(num1, num2));
+            break;
+        // operator doesn't match any case constant (+, -, *, /)
+        default:
+            printf("Error! operator is not correct\n");
+        }
+
+        //Lazy input clear
+        int c;
+        while ((c = getchar()) != '\n' &amp;&amp; c != EOF) {}
+    }
+    return 0;
+}
+</code></pre>
+
+<!---
+discuss about J2C problem..
+-->
+
+<p>In the above program, worker (C) is calling synchronous tasks provided by the
+controller (J). A call from the worker leads to a single execution because a
+worker connects to a single controller. Now consider the reverse situation where
+the  worker is hosting the synchronous task. There could be many workers
+underneath a controller. So when the controller calls the synchronous task, we have
+many concurrent runs at the different workers. The controller needs to wait for the
+completion of all task runs and return an array of all the results. To collect all
+the results, we need to have all the tasks completing around the same time.
+The task runs at the different workers can take different times due to
+processor or data differences. Therefore, the only constraint JAMScript makes
+is to start all the runs at the same time across all the workers.</p>
+
+<p>Here is an example program with both controller (J) to worker (C) and worker (C)
+to controller (J) synchronous task calls. The C program shown below has one
+local task (<code class="highlighter-rouge">trygetid</code>) that calls a synchronous remote task (<code class="highlighter-rouge">getID</code>) to get an
+identifier from the controller, which is stored in a local variable called
+<code class="highlighter-rouge">myid</code>. The synchronous remote task hosted by the worker (<code class="highlighter-rouge">tellid</code>) returns this
+identifier upon invocation.</p>
+
+<pre><code class="language-C">int getID();
+
+int myid = -1;
+
+jasync trygetid()
+{
+    while(1)
+    {
+        jsleep(1000);
+        myid = getID();
+        printf("MyID %d\n", myid);
+    }
+}
+
+jsync int tellid()
+{
+    return myid;
+}
+
+int main(int argc, char *argv[])
+{
+    trygetid();
+}
+</code></pre>
+
+<p>The J program is shown below. It implements the <em>synchronous remote task</em>
+<code class="highlighter-rouge">getID</code>, which the workers call to get their identifiers. Periodically, the
+controller is calling the synchronous task <code class="highlighter-rouge">tellid</code> to get the list of workers
+underneath it. Because the workers periodically refresh their identifiers by calling
+<code class="highlighter-rouge">getID</code>, we should see an array of different numbers printed out by the program below.
+The number of elements in the array corresponds to the number of workers underneath the
+controller.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">count</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+
+<span class="nx">jsync</span> <span class="kd">function</span> <span class="nx">getID</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">count</span><span class="o">++</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+<span class="kd">var</span> <span class="nx">nodes</span><span class="p">;</span>
+
+<span class="nx">setInterval</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">nodes</span> <span class="o">=</span> <span class="nx">tellid</span><span class="p">();</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">nodes</span> <span class="o">!==</span> <span class="kc">undefined</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">nodes</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">},</span> <span class="mi">1000</span><span class="p">);</span>
+</code></pre>
+</div>
+
+<h2 id="chaining-asynchronous-tasks-via-callbacks">Chaining Asynchronous Tasks via Callbacks</h2>
+
+<!---
+Show C2J task chaining
+-->
+
+<!---
+Show J2C task chaining
+-->
+
+<!---
+Show recursive ping type of chaining
+-->
+
+<h2 id="tasks-at-cloud-fog-and-device-levels">Tasks at Cloud, Fog, and Device Levels</h2>
+
+<!---
+Tasks at multiple levels - just the way it is launched
+-->
+
+<!---
+Discuss multiple levels: workers having controllers at different levels
+-->
 
 	    
     </div>

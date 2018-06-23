@@ -380,13 +380,14 @@ If you have multiple Node versions or Node version manager (NVM) installed, you 
 encounter problems <strong>not documented here</strong>. In that case, you need to watch out where the install scripts fail
 and take remedial actions.</p>
 
-<p>Include JAMTools in the path. If you are using BASH as the shell, include the following in <code class="highlighter-rouge">.bash_profile</code>.
-<code class="highlighter-rouge">shell
-export JAMHOME=$HOME/JAMScript-beta
-# This is assuming you have downloaded JAMScript in your home directory
-export PATH=$JAMHOME/tools:$PATH
-# Assumes you did not download JAMTools into a separate folder
-</code></p>
+<p>Include JAMTools in the path. If you are using BASH as the shell, include the following in <code class="highlighter-rouge">.bash_profile</code>.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nb">export </span><span class="nv">JAMHOME</span><span class="o">=</span><span class="nv">$HOME</span>/JAMScript-beta
+<span class="c"># This is assuming you have downloaded JAMScript in your home directory</span>
+<span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$JAMHOME</span>/tools:<span class="nv">$PATH</span>
+<span class="c"># Assumes you did not download JAMTools into a separate folder</span>
+</code></pre>
+</div>
 
 <p>If you logout and login again or <code class="highlighter-rouge">src .bash_profile</code> the settings should take effect. You should see the JAMTools
 in your path. To test, run <code class="highlighter-rouge">which jamrun</code> and you should see the location printed out. Same way check the JAMHOME

@@ -10,6 +10,7 @@ While transferring data in the JAM system, nodes often need to restrict their da
 
 ## How to create a JCondtional variable?
 Conditions should always be defined in a **jcond{...}** section on a J-node. Each jcond defination statement can hold multiple JConditionals.
+
 ```shell
 jcond {
     condName: expression;
@@ -19,6 +20,7 @@ condName: the name of the condition variable.
 expression: the corresponding condition expression.
 
 **Example:** creating conditions for choosing activity level.
+
 ```shell
 jcond {
     cloudonly: sys.type == "cloud";
@@ -36,6 +38,7 @@ Suppose we have some JavaScript functions in a JAMScript program that we want to
 If we want to restrict the execution of the function to a particular level, we need to **prepend the function definition with a condition**. This way the execution only occurs where the condition evaluates to true. In the following example, the function process_at_cloud() runs only at the cloud because it is prepended by the cloudonly condition that is defined above.
 
 **Example:** restrict a function to be executed only at the cloud level.
+
 ```shell
 // Definition of the function in the J side
 jasync {cloudonly} function process_at_cloud() {
@@ -71,13 +74,14 @@ The condition expressed using the exec is object is very different from the othe
 By default, when jdata defined parameters are used in expressions, average values are computed for each parameter before the comparison.
 
 **Example:** create a jconditional on a logger
+
 ```shell
 jdata{
     float x as logger;
 }
 
 jcond{
-    less: x<22.5; 
+    less: x<22.5;
 }
 ```
 Here, we are comparing the average (measured over a window of logged values) to 22.5 and the condition would evaluate to true if the average of the temperature values is smaller than 22.5. The average value used in the condition expression is computed over all the streams at the device, where the condition is evaluated.
@@ -85,6 +89,7 @@ Here, we are comparing the average (measured over a window of logged values) to 
 Instead of average values other measures such as min, max can be used by specifying them in the expression as follows. The average, min, and max values are computed over a moving window of values of the time series. When multiple streams (i.e., multiple devices) the window spans all available streams.
 
 **Example:** create a jconditional to evaluate the maximum value recorded by a logger
+
 ```shell
 jdata{
     float x as logger;
@@ -96,6 +101,7 @@ jcond{
 ```
 
 **Example:** create a jconditional to evaluate the value of a structural logger
+
 ```shell
 jdata{
     struct temp_reading {
@@ -114,7 +120,8 @@ jcond {
 
 Yes sure. There are two places where we can use logical operators. They can be used either in a jcond{...} section to defined a jconditional variable, or inside an activity declaration to combine two or more jconditional variables.
 
-**Example:** 
+**Example:**
+
 ```shell
 jdata {
     float temp as logger(fog);

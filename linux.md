@@ -15,6 +15,7 @@ encounter problems **not documented here**. In that case, you need to watch out 
 and take remedial actions.
 
 Include JAMTools in the path. If you are using BASH as the shell, include the following in `.bash_profile`.
+
 ```shell
 export JAMHOME=$HOME/JAMScript-beta
 # This is assuming you have downloaded JAMScript in your home directory

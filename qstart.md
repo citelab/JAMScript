@@ -28,6 +28,7 @@ node. In this particular example there is no JAMScript specific constructs in
 the C code. You will notice  that the four functions  (`add`, `subtract`,
 `multiply`, `divide`) used for computations are not implemented in the C side.
 They are implemented in the J (JavaScript)  side.
+
 ```C
 #include <stdio.h>
 
@@ -84,6 +85,7 @@ int main() {
 Now, lets looks at the J side. The J side introduces a JAMScript keyword - **jsync**. Simply by putting this keyword
 in front of a function we have asked the compiler to export the function to the C side. Of course, proper matching
 C prototypes in the C side (as shown in the above code block) are necessary to complete the export.
+
 ```javascript
 jsync function add(num1, num2) {
     return num1 + num2;
@@ -113,6 +115,7 @@ source files are located. The `djam pull` command brought in a docker image with
 command compiled the source files inside a docker container. The resulting executable `calc.jxe` is copied back to the original location.
 
 To run `calc.jxe`, issue the following commands.
+
 ```shell
 djam init ideal
 djam run calc.jxe --num=2 --bg
@@ -126,6 +129,7 @@ The command runs a single J node and two C nodes
 Now, run `jam list` to see the status of the execution.
 
 You should see a listing like the following.
+
 ```shell
 ID         NAME      PROGRAM         HOST         D-STORE       TYPE C-NODES    TMUX-ID
 app-457        app-n        calc 76b9053e2844     docker:6379     device       2 u-501-device-461-dev
@@ -137,6 +141,7 @@ we need to open a terminal to the C node. Here, we have two C nodes running. The
 above listing. You can append `-` and node id of the C node to get the tmux id for the C node.
 
 Run the following commands to see the two terminals.
+
 ```shell
 jam term u-501-device-461-dev-1
 jam term u-501-device-461-dev-2
@@ -145,6 +150,7 @@ jam term u-501-device-461-dev-2
 We are using tmux. So, to detach press `Ctrl-B d`.
 
 To stop the application executing in the above listing, we need to run the following command.
+
 ```shell
 jam kill app-457
 ```

@@ -399,25 +399,27 @@ call to the controller is executed at the cloud-level instea</p>
 
 <h2 id="how-to-specify-a-condition">How to specify a Condition?</h2>
 
-<p>Conditions should always be defined in a <strong>jcond{…}</strong> section on a J-node. Each jcond defination statement can hold multiple JConditionals.
-<code class="highlighter-rouge">shell
-jcond {
+<p>Conditions should always be defined in a <strong>jcond{…}</strong> section on a J-node. Each jcond defination statement can hold multiple JConditionals.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>jcond <span class="o">{</span>
     condName: expression;
-}
-</code>
-condName: the name of the condition variable.
+<span class="o">}</span>
+</code></pre>
+</div>
+<p>condName: the name of the condition variable.
 expression: the corresponding condition expression.</p>
 
-<p><strong>Example:</strong> creating conditions for choosing activity level.
-<code class="highlighter-rouge">shell
-jcond {
-    cloudonly: sys.type == "cloud";
-    // type is a member of the sys object
-    fogonly: sys.type == "fog";
-    devonly: sys.type == "dev";
-}
-</code>
-This JConditional defination uses the global system context object <code class="highlighter-rouge">sys</code> . The global context object <code class="highlighter-rouge">sys</code> has several attributes that describe the runtime context. The <code class="highlighter-rouge">sys.type</code> field tells us the <code class="highlighter-rouge">type</code> of the node at which the program is currently running. And the <code class="highlighter-rouge">type</code> could be a device, fog, or cloud.</p>
+<p><strong>Example:</strong> creating conditions for choosing activity level.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>jcond <span class="o">{</span>
+    cloudonly: sys.type <span class="o">==</span> <span class="s2">"cloud"</span>;
+    // <span class="nb">type </span>is a member of the sys object
+    fogonly: sys.type <span class="o">==</span> <span class="s2">"fog"</span>;
+    devonly: sys.type <span class="o">==</span> <span class="s2">"dev"</span>;
+<span class="o">}</span>
+</code></pre>
+</div>
+<p>This JConditional defination uses the global system context object <code class="highlighter-rouge">sys</code> . The global context object <code class="highlighter-rouge">sys</code> has several attributes that describe the runtime context. The <code class="highlighter-rouge">sys.type</code> field tells us the <code class="highlighter-rouge">type</code> of the node at which the program is currently running. And the <code class="highlighter-rouge">type</code> could be a device, fog, or cloud.</p>
 
 <h2 id="how-to-use-condition-in-task-invocation">How to use Condition in Task Invocation?</h2>
 
@@ -425,15 +427,16 @@ This JConditional defination uses the global system context object <code class="
 
 <p>If we want to restrict the execution of the function to a particular level, we need to <strong>prepend the function definition with a condition</strong>. This way the execution only occurs where the condition evaluates to true. In the following example, the function process_at_cloud() runs only at the cloud because it is prepended by the cloudonly condition that is defined above.</p>
 
-<p><strong>Example:</strong> restrict a function to be executed only at the cloud level.
-<code class="highlighter-rouge">shell
-// Definition of the function in the J side
-jasync {cloudonly} function process_at_cloud() {
+<p><strong>Example:</strong> restrict a function to be executed only at the cloud level.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>// Definition of the <span class="k">function in </span>the J side
+jasync <span class="o">{</span>cloudonly<span class="o">}</span> <span class="k">function </span>process_at_cloud<span class="o">()</span> <span class="o">{</span>
     ...
-}
-// Invocation of the function in the C side
-process_at_cloud();
-</code></p>
+<span class="o">}</span>
+// Invocation of the <span class="k">function in </span>the C side
+process_at_cloud<span class="o">()</span>;
+</code></pre>
+</div>
 
 <h2 id="what-values-can-be-evaluted-by-jconditional">What values can be evaluted by JConditional?</h2>
 
@@ -470,70 +473,74 @@ By default, when jdata defined parameters are used in expressions, average value
   </li>
 </ul>
 
-<p><strong>Example:</strong> create a jconditional on a logger
-```shell
-jdata{
-    float x as logger;
-}</p>
+<p><strong>Example:</strong> create a jconditional on a logger</p>
 
-<p>jcond{
+<div class="highlighter-rouge"><pre class="highlight"><code>jdata<span class="o">{</span>
+    float x as logger;
+<span class="o">}</span>
+
+jcond<span class="o">{</span>
     less: x&lt;22.5;
-}
-```
-Here, we are comparing the average (measured over a window of logged values) to 22.5 and the condition would evaluate to true if the average of the temperature values is smaller than 22.5. The average value used in the condition expression is computed over all the streams at the device, where the condition is evaluated.</p>
+<span class="o">}</span>
+</code></pre>
+</div>
+<p>Here, we are comparing the average (measured over a window of logged values) to 22.5 and the condition would evaluate to true if the average of the temperature values is smaller than 22.5. The average value used in the condition expression is computed over all the streams at the device, where the condition is evaluated.</p>
 
 <p>Instead of average values other measures such as min, max can be used by specifying them in the expression as follows. The average, min, and max values are computed over a moving window of values of the time series. When multiple streams (i.e., multiple devices) the window spans all available streams.</p>
 
-<p><strong>Example:</strong> create a jconditional to evaluate the maximum value recorded by a logger
-```shell
-jdata{
+<p><strong>Example:</strong> create a jconditional to evaluate the maximum value recorded by a logger</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>jdata<span class="o">{</span>
     float x as logger;
-}</p>
+<span class="o">}</span>
 
-<p>jcond{
-    much_less: max(x)&lt;22.5;
-}
-```</p>
+jcond<span class="o">{</span>
+    much_less: max<span class="o">(</span>x<span class="o">)</span>&lt;22.5;
+<span class="o">}</span>
+</code></pre>
+</div>
 
-<p><strong>Example:</strong> create a jconditional to evaluate the value of a structural logger
-```shell
-jdata{
-    struct temp_reading {
+<p><strong>Example:</strong> create a jconditional to evaluate the value of a structural logger</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>jdata<span class="o">{</span>
+    struct temp_reading <span class="o">{</span>
         int tempvalue;
         int xcoord;
         int ycoord;
-    } readings as logger;
-}</p>
+    <span class="o">}</span> readings as logger;
+<span class="o">}</span>
 
-<p>jcond {
-    low_temp: avg(readings.tempvalue) &lt; 22.5;
-}
-```</p>
+jcond <span class="o">{</span>
+    low_temp: avg<span class="o">(</span>readings.tempvalue<span class="o">)</span> &lt; 22.5;
+<span class="o">}</span>
+</code></pre>
+</div>
 
 <h2 id="can-i-use-logical-operators">Can I use logical operators?</h2>
 
 <p>Yes sure. There are two places where we can use logical operators. They can be used either in a jcond{…} section to defined a jconditional variable, or inside an activity declaration to combine two or more jconditional variables.</p>
 
-<p><strong>Example:</strong>
-```shell
-jdata {
-    float temp as logger(fog);
-}</p>
+<p><strong>Example:</strong></p>
 
-<p>jcond {
-    low_dev_temp: sys.type == “dev” &amp;&amp; temp &lt; 18.5;
-    dev_only: sys.type == “dev”;
+<div class="highlighter-rouge"><pre class="highlight"><code>jdata <span class="o">{</span>
+    float temp as logger<span class="o">(</span>fog<span class="o">)</span>;
+<span class="o">}</span>
+
+jcond <span class="o">{</span>
+    low_dev_temp: sys.type <span class="o">==</span> <span class="s2">"dev"</span> <span class="o">&amp;&amp;</span> temp &lt; 18.5;
+    dev_only: sys.type <span class="o">==</span> “dev”;
     low_temp: temp &lt; 18.5;
-}</p>
+<span class="o">}</span>
 
-<p>jasync {low_dev_temp} function fname() {
-    // turns on the heater in the room
-}</p>
+jasync <span class="o">{</span>low_dev_temp<span class="o">}</span> <span class="k">function </span>fname<span class="o">()</span> <span class="o">{</span>
+    // turns on the heater <span class="k">in </span>the room
+<span class="o">}</span>
 
-<p>jasync {low_temp &amp;&amp; dev_only} function fname2() {
-    // turns on the heater in the room
-}
-```</p>
+jasync <span class="o">{</span>low_temp <span class="o">&amp;&amp;</span> dev_only<span class="o">}</span> <span class="k">function </span>fname2<span class="o">()</span> <span class="o">{</span>
+    // turns on the heater <span class="k">in </span>the room
+<span class="o">}</span>
+</code></pre>
+</div>
 
 <h1 id="section">#</h1>
 
