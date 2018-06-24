@@ -442,7 +442,7 @@ fog, and device levels. The C node runs only at the device level. That is, the
 device level has both J and C nodes while the rest run only J nodes. The figure below
 shows the different deployment scenarios.
 <p align="center">
-<img src="{{ site.baseurl }}/images/lang_tasks/fig2.jpeg"  />
+<img src="{{ site.baseurl }}/images/lang_tasks/fig3.jpeg"  />
 </p>
 
 
