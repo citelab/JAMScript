@@ -1,16 +1,13 @@
 ---
 layout: page
-title: Tasks
-subtitle: Local and Remote Tasks in JAMScript
+title: Data Persistence
+subtitle: Logging and Broadcasting Data in JAMScript
 ---
 
-## Anatomy of a JAMScript Program
+## Overview of Data Management
 
 
-## Different Ways of Running JAMScript
+## Logging Data
 
 
-## A Peek Under the Hood
-
-
-##
+## Broadcasting Data

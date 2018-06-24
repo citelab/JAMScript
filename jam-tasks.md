@@ -322,23 +322,107 @@ setInterval(function() {
 ```
 
 
-
 ## Chaining Asynchronous Tasks via Callbacks
 
 <!---
 Show C2J task chaining
 -->
 
+The *fire and forget* nature of the asynchronous remote tasks is quite useful when you want to launch
+a task in the remote node (it could be the controller or worker) and proceed to the next statement
+in the program. However, in some problems it is necessary to perform another task after the
+asynchronous task so launched has completed or even perform a remedial action if the asynchronous
+task failed. For this purpose, JAMScript supports **callbacks** for asynchronous tasks.
+
+Consider the following program in the C side. In this program, through a local task (`trycallback`) we
+are calling remote task `printMsg`. The call, however, is **different** from the previous ones -- here we are
+passing a callback as the last parameter in the call. The callback is a special type in JAMScript -- *jcallback*.
+
+```C
+void printMsg(char*, jcallback);
+
+void printRet(char *s)
+{
+    printf("Callback returned %s\n", s);
+}
+
+jasync trycallback()
+{
+    int i;
+    for (i = 0; i < 3; i++)
+    {
+        jsleep(500);
+        printMsg("hello from worker", printRet);
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    trycallback();
+}
+```
+
+The J side of the program that implements the remote task with callback support is shown below.
+The callback from the controller **only** goes to the worker that made the initial call. It
+does not reach other workers that are present underneath the controller. When we run the program
+shown here with 3 workers, 9 messages will be printed at the controller, but only 3 messages will
+be printed at each worker that corresponds to the calls that were made by the worker.
+
+```javascript
+var mymsg = "hello from controller";
+
+jasync function printMsg(msg, cb) {
+    console.log("Message from worker: " + msg);
+    cb(mymsg);
+}
+```
+
 
 <!---
 Show J2C task chaining
 -->
 
+In the above example, the controller calls back the worker. It is possible to have the workers
+calling back the controller as well. In this case, the controller can receive many callbacks
+corresponding to each worker it has underneath it for each remote task it executes. The
+example below shows workers calling back the controller. You can notice that the
+remote task `callworker` has the last parameter as `jcallback`.
+
+```C
+jasync callworker(int x, jcallback q)
+{
+    printf("Value %d\n", x);
+    q("message to controller");
+}
+
+int main(int argc, char *argv[])
+{
+    // Empty main
+}
+```
+
+The J side (controller) is supplying a callback function (in this case *poke*) when it calls
+the remote task *callworker*. If you run this program with 4 workers, you will the callbacks arriving
+as groups of 4 at the controller (i.e., one from each worker).
+
+```javascript
+function poke(msg) {
+    console.log(msg);
+}
+
+(function qpoll(q) {
+    q = q -1;
+    console.log("I = ", q);
+    callworker(10, poke);
+    if (q > 0)
+        setTimeout(qpoll, 500, q);
+})(10);
+```
 
 <!---
 Show recursive ping type of chaining
+TODO!
 -->
-
 
 
 ## Tasks at Cloud, Fog, and Device Levels
@@ -347,6 +431,19 @@ Show recursive ping type of chaining
 <!---
 Tasks at multiple levels - just the way it is launched
 -->
+
+JAMScript is designed so that programs written in the language can run
+in a distributed collection of nodes in cloud, fog, device levels. Optimally mapping
+the program components into the distributed system formed by the cloud, fogs,
+and devices is part of ongoing research in JAMScript.
+
+Lets consider the cloud, fog, device hierarchy. The J node can run at the cloud,
+fog, and device levels. The C node runs only at the device level. That is, the
+device level has both J and C nodes while the rest run only J nodes. The figure below
+shows the different deployment scenarios.
+<p align="center">
+<img src="{{ site.baseurl }}/images/lang_tasks/fig2.jpeg"  />
+</p>
 
 
 <!---
