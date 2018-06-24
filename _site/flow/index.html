@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+  <!-- Beautiful Jekyll | MIT license | Copyright Dean Attali 2016 -->
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <title>Flow Processing</title>
+
+  <meta name="author" content="Robert Wenger" />
+  
+  
+  <meta name="description" content="Applying Computations on Streaming Data in JAMScript">
+  
+
+  <link rel="alternate" type="application/rss+xml" title="JAMScript - A Language and Middleware for Cloud of Moving Things" href="/JAMScript-beta/feed.xml" />
+
+  
+    
+      <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.0/css/font-awesome.min.css" />
+    
+      
+  
+  
+    
+      <link rel="stylesheet" href="/JAMScript-beta/css/bootstrap.min.css" />
+    
+      <link rel="stylesheet" href="/JAMScript-beta/css/bootstrap-social.css" />
+    
+      <link rel="stylesheet" href="/JAMScript-beta/css/main.css" />
+    
+    
+  
+  
+    
+      <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" />
+    
+      <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" />
+    
+  
+
+    
+  
+  
+
+  
+
+  <!-- Facebook OpenGraph tags -->
+  <meta property="og:title" content="Flow Processing" />
+  <meta property="og:type" content="website" />
+  
+  <meta property="og:url" content="http://anrl.github.io/JAMScript-beta/flow/" />
+  
+  
+  <meta property="og:image" content="" />
+  
+  
+  <!-- Twitter summary cards -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="@" />
+  <meta name="twitter:creator" content="@" />
+  <meta name="twitter:title" content="Flow Processing" />
+  <meta name="twitter:description" content="
+" />
+  
+  
+</head>
+
+
+  <body>
+  
+    <nav class="navbar navbar-default navbar-fixed-top navbar-custom">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="http://anrl.github.io/JAMScript-beta">JAMScript</a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="main-navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+          <li>
+            
+            
+
+
+
+
+
+<a href="/JAMScript-beta/qstart">Quick Start</a>
+
+          </li>
+        
+        
+        
+          <li class="navlinks-container">
+            <a class="navlinks-parent" href="javascript:void(0)">Install</a>
+            <div class="navlinks-children">
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/get-src">Get Source</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/linux">Linux</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/mac">Mac</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/docker">Docker</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/iot">Embedded Computers</a>
+
+                
+              
+            </div>
+          </li>
+        
+        
+        
+          <li class="navlinks-container">
+            <a class="navlinks-parent" href="javascript:void(0)">Run</a>
+            <div class="navlinks-children">
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/native-run">In Workstation</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/emulator-run">In Emulator</a>
+
+                
+              
+            </div>
+          </li>
+        
+        
+        
+          <li class="navlinks-container">
+            <a class="navlinks-parent" href="javascript:void(0)">Language</a>
+            <div class="navlinks-children">
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/jam-overview">Overview</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/jam-tasks">Remote/Local Tasks</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/data-per">Data Persistence</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/flow">Flow Computing</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/data-intel">Data Intelligence</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/cond-tasks">Conditional Tasks</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/visual-ctrl">Visualization & Control</a>
+
+                
+              
+            </div>
+          </li>
+        
+        
+        
+          <li class="navlinks-container">
+            <a class="navlinks-parent" href="javascript:void(0)">Examples</a>
+            <div class="navlinks-children">
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/jamshell">JAMShell</a>
+
+                
+              
+                
+                  
+            
+
+
+
+
+
+<a href="/JAMScript-beta/parking-spot">Parking Spot App</a>
+
+                
+              
+            </div>
+          </li>
+        
+        
+      </ul>
+    </div>
+
+	
+
+  </div>
+</nav>
+
+
+    <!-- TODO this file has become a mess, refactor it -->
+
+
+
+
+
+<header class="header-section ">
+
+<div class="intro-header no-img">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="page-heading">
+          <h1>Flow Processing</h1>
+		  
+		    
+            <hr class="small">
+            <span class="page-subheading">Applying Computations on Streaming Data in JAMScript</span>
+			
+		  
+		  
+		  
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</header>
+
+
+
+
+<div class="container" role="main">
+  <div class="row">
+    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+      
+
+	    
+    </div>
+  </div>
+</div>
+
+
+    <footer>
+  <div class="container beautiful-jekyll-footer">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <ul class="list-inline text-center footer-links">
+          
+          
+          <li>
+            <a href="https://github.com/wenger" title="GitHub">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          
+		  
+      
+		  
+          <li>
+            <a href="mailto:robert.wenger@mail.mcgill.ca" title="Email me">
+              <span class="fa-stack fa-lg">
+                <i class="fa fa-circle fa-stack-2x"></i>
+                <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+              </span>
+            </a>
+          </li>
+          
+		  
+		  
+		  
+      
+      
+      
+      
+		  
+        </ul>
+        <p class="copyright text-muted">
+		  Robert Wenger
+		  &nbsp;&bull;&nbsp;
+		  2018
+
+		  
+	    </p>
+	        <!-- Please don't remove this, keep my open source work credited :) -->
+		<p class="theme-by text-muted">
+		  Theme by
+		  <a href="http://deanattali.com/beautiful-jekyll/">beautiful-jekyll</a>
+		</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+  
+    
+
+
+
+
+
+
+  
+    <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
+    
+      <script>
+      	if (typeof jQuery == 'undefined') {
+      	  document.write('<script src="/JAMScript-beta/js/jquery-1.11.2.min.js"></scr' + 'ipt>');
+      	}
+      </script>
+    
+  
+    <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
+    
+	<script src="/JAMScript-beta/js/bootstrap.min.js"></script>
+    
+  
+    <!-- doing something a bit funky here because I want to be careful not to include JQuery twice! -->
+    
+	<script src="/JAMScript-beta/js/main.js"></script>
+    
+  
+
+
+
+
+  
+  </body>
+</html>
