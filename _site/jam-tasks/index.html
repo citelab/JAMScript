@@ -790,10 +790,27 @@ and devices is part of ongoing research in JAMScript.</p>
 <p>Lets consider the cloud, fog, device hierarchy. The J node can run at the cloud,
 fog, and device levels. The C node runs only at the device level. That is, the
 device level has both J and C nodes while the rest run only J nodes. The figure below
-shows the different deployment scenarios.</p>
+shows the different deployment scenarios that are possible in JAMScript.</p>
 <p align="center">
 <img src="/JAMScript-beta/images/lang_tasks/fig3.jpeg" />
 </p>
+
+<p>The <em>JAMTools</em> (i.e., the <code class="highlighter-rouge">jamrun</code> and <code class="highlighter-rouge">djamrun</code> commands) determine the mode of deployment
+of a JAMScript executable. That is, a JAMScript executable is universally deployable in
+many different forms. From inside a JAMScript program, we can determine certain parameters of the
+deployment such as node type. The code shows how a J node could print out different messages based on
+the level at which it runs.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="nx">jsys</span><span class="p">.</span><span class="nx">type</span> <span class="o">===</span> <span class="s2">"cloud"</span><span class="p">)</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"I am running at the cloud"</span><span class="p">);</span>
+<span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">jsys</span><span class="p">.</span><span class="nx">type</span> <span class="o">===</span> <span class="s2">"fog"</span><span class="p">)</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"I am running at the fog"</span><span class="p">);</span>
+<span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">jsys</span><span class="p">.</span><span class="nx">type</span> <span class="o">===</span> <span class="s2">"device"</span><span class="p">)</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"I am running at the device"</span><span class="p">);</span>
+<span class="k">else</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"Unable to determine the level"</span><span class="p">);</span>
+</code></pre>
+</div>
 
 <!---
 Discuss multiple levels: workers having controllers at different levels

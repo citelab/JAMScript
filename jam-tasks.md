@@ -440,10 +440,27 @@ and devices is part of ongoing research in JAMScript.
 Lets consider the cloud, fog, device hierarchy. The J node can run at the cloud,
 fog, and device levels. The C node runs only at the device level. That is, the
 device level has both J and C nodes while the rest run only J nodes. The figure below
-shows the different deployment scenarios.
+shows the different deployment scenarios that are possible in JAMScript.
 <p align="center">
 <img src="{{ site.baseurl }}/images/lang_tasks/fig3.jpeg"  />
 </p>
+
+The *JAMTools* (i.e., the `jamrun` and `djamrun` commands) determine the mode of deployment
+of a JAMScript executable. That is, a JAMScript executable is universally deployable in
+many different forms. From inside a JAMScript program, we can determine certain parameters of the
+deployment such as node type. The code shows how a J node could print out different messages based on
+the level at which it runs.
+
+```javascript
+if (jsys.type === "cloud")
+    console.log("I am running at the cloud");
+else if (jsys.type === "fog")
+    console.log("I am running at the fog");
+else if (jsys.type === "device")
+    console.log("I am running at the device");
+else
+    console.log("Unable to determine the level");
+```
 
 
 <!---
