@@ -38,9 +38,7 @@ navbar-links:
     - Remote/Local Tasks: "jam-tasks"
     - Data Persistence: "data-per"
     - Flow Computing: "flow"
-    - Data Intelligence: "data-intel"
     - Conditional Tasks: "cond-tasks"
-    - Visualization & Control: "visual-ctrl"
   Examples:
     - JAMShell: "jamshell"
     - Parking Spot App: "parking-spot"

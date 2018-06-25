@@ -61,7 +61,7 @@
   <meta name="twitter:site" content="@" />
   <meta name="twitter:creator" content="@" />
   <meta name="twitter:title" content="Get Source" />
-  <meta name="twitter:description" content="The JAMScript source is in three repositories: JAMScript-beta, JAMTools, and JAMSamples. The tools and samples are linked as submodules under the main repository (JAMScript-beta). You could get them as one package or as three separate packages. Run the following command from the folder where you want JAMScript downloaded. shell git..." />
+  <meta name="twitter:description" content="The JAMScript source is in three repositories: JAMScript-beta, JAMTools, and JAMSamples. The tools and samples are linked as submodules under the main repository (JAMScript-beta). You could get them as one package or as three separate packages. Run the following command from the folder where you want JAMScript downloaded. git clone..." />
   
   
 </head>
@@ -261,31 +261,7 @@
 
 
 
-<a href="/JAMScript-beta/data-intel">Data Intelligence</a>
-
-                
-              
-                
-                  
-            
-
-
-
-
-
 <a href="/JAMScript-beta/cond-tasks">Conditional Tasks</a>
-
-                
-              
-                
-                  
-            
-
-
-
-
-
-<a href="/JAMScript-beta/visual-ctrl">Visualization & Control</a>
 
                 
               
@@ -374,32 +350,36 @@
 The tools and samples are linked as submodules under the main repository (JAMScript-beta). You could get them as
 one package or as three separate packages.</p>
 
-<p>Run the following command from the folder where you want JAMScript downloaded.
-<code class="highlighter-rouge">shell
-git clone --recursive https://github.com/anrl/JAMScript-beta
-</code><br />
-This should create a <em>JAMScript-beta</em> folder there.</p>
+<p>Run the following command from the folder where you want JAMScript downloaded.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>git clone --recursive https://github.com/anrl/JAMScript-beta
+</code></pre>
+</div>
+<p>This should create a <em>JAMScript-beta</em> folder there.</p>
 
 <p>Run the following commands to update the submodules that are embedded in the JAMScript-beta
-repository.
-<code class="highlighter-rouge">shell
-cd JAMScript-beta
-cd tools
-git checkout master &amp;&amp; git pull
-cd ../samples
-git checkout master &amp;&amp; git pull
-</code><br />
-You should have the most up-to-date JAMScript source package in the JAMScript-beta folder.</p>
+repository.</p>
 
-<p>If you want to download the JAMTools as a separate package, run the following command.
-<code class="highlighter-rouge">shell
-git clone https://github.com/anrl/JAMTools
-</code></p>
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nb">cd </span>JAMScript-beta
+<span class="nb">cd </span>tools
+git checkout master <span class="o">&amp;&amp;</span> git pull
+<span class="nb">cd</span> ../samples
+git checkout master <span class="o">&amp;&amp;</span> git pull
+</code></pre>
+</div>
+<p>You should have the most up-to-date JAMScript source package in the JAMScript-beta folder.</p>
 
-<p>Same way if you want to download the JAMSamples as a separate package, run the following command.
-<code class="highlighter-rouge">shell
-git clone https://github.com/anrl/JAMSamples
-</code></p>
+<p>If you want to download the JAMTools as a separate package, run the following command.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>git clone https://github.com/anrl/JAMTools
+</code></pre>
+</div>
+
+<p>Same way if you want to download the JAMSamples as a separate package, run the following command.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>git clone https://github.com/anrl/JAMSamples
+</code></pre>
+</div>
 
 	    
     </div>

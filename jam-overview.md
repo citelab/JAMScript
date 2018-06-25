@@ -52,4 +52,20 @@ worker. The compiler is responsible for splitting the program
 ## A Peek Under the Hood
 
 
+
+<p align="center">
+<img src="{{ site.baseurl }}/images/lang/fig1.jpeg" width="500" />
+</p>
+
+
+<p align="center">
+<img src="{{ site.baseurl }}/images/lang/fig2.jpeg" width="450" />
+</p>
+
+
+
+<p align="center">
+<img src="{{ site.baseurl }}/images/lang/fig3.jpeg" width="550" />
+</p>
+
 ##
