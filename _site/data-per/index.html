@@ -398,7 +398,159 @@ controllers can read the logger and obtain values at different positions of the
 stream. For instance, the controller can get values by arrival time or by
 position (last, first, etc) in the stream.</p>
 
+<p>The following listings show two code segments: the J and C sides, respectively, of a JAMScript program
+that is pushing data towards the controller for persistence. The controllers can apply different
+types of computations (not shown) on the data. In the J side, the variable <code class="highlighter-rouge">name</code> is defined as a
+string logger. Also, the J side (controller) is writing a data stream into the logger in addition to reading the
+streams that are already part of the logger. The J side is writing different data values depending on its level:
+cloud, fog, or device.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nx">jdata</span> <span class="p">{</span>
+    <span class="kr">char</span> <span class="o">*</span><span class="nx">name</span> <span class="nx">as</span> <span class="nx">logger</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">var</span> <span class="nx">nlogger</span> <span class="o">=</span> <span class="nx">name</span><span class="p">.</span><span class="nx">getMyDataStream</span><span class="p">();</span>
+<span class="kd">var</span> <span class="nx">count</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+
+<span class="nx">setInterval</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nx">jsys</span><span class="p">.</span><span class="nx">type</span> <span class="o">===</span> <span class="s2">"cloud"</span><span class="p">)</span>
+        <span class="nx">nlogger</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"fred@cloud-"</span> <span class="o">+</span> <span class="nx">count</span><span class="p">);</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">jsys</span><span class="p">.</span><span class="nx">type</span> <span class="o">===</span> <span class="s2">"fog"</span><span class="p">)</span>
+        <span class="nx">nlogger</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"fred@fog-"</span> <span class="o">+</span> <span class="nx">count</span><span class="p">);</span>
+    <span class="k">else</span>
+        <span class="nx">nlogger</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"fred@device-"</span> <span class="o">+</span> <span class="nx">count</span><span class="p">);</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">name</span><span class="p">.</span><span class="nx">size</span><span class="p">();</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">name</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">!==</span> <span class="kc">undefined</span><span class="p">)</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"I: "</span><span class="p">,</span> <span class="nx">i</span><span class="p">,</span> <span class="s2">" Name "</span><span class="p">,</span> <span class="nx">name</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">lastValue</span><span class="p">());</span>
+        <span class="k">else</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"Logger value undefined..."</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="nx">count</span> <span class="o">=</span> <span class="nx">count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">},</span> <span class="mi">1000</span><span class="p">);</span>
+</code></pre>
+</div>
+
+<p>The listing below shows the C side of the program that writes to the logger. To write to the logger, we
+simply assign a value to the logger. In this case, <code class="highlighter-rouge">name</code> is assigned <code class="highlighter-rouge">buf</code> that holds the string to be
+logged. If <code class="highlighter-rouge">jsleep()</code> is used to intersperse the logs, we need to put the logging actions into a local
+task so that <code class="highlighter-rouge">jsleep()</code> can be used.</p>
+
+<pre><code class="language-C">jasync logdata() {
+
+    char *names[10] = {"david", "mayer", "justin", "richard", "lekan", "ben", "owen", "nicholas", "karu", "clark"};
+    int i;
+    char buf[32];
+
+    for (i = 0; i &lt; 1000; i++) {
+        sprintf(buf, "%d-%s", i, names[i % 10]);
+        name = buf;
+        printf("Wrote .. name: %s\n", buf);
+        jsleep(1000);
+    }
+}
+
+int main()
+{
+    logdata();
+}
+</code></pre>
+
+<h2 id="data-access-scoping-in-loggers">Data Access Scoping in Loggers</h2>
+
+<p>When declaring loggers, we can specify the level to store the data: device, fog or cloud.
+Data can be written from any level at or below the one specified and can only be read to from the level specified.
+This means that a <em>cloud logger</em> can be written from the device, fog or cloud levels
+but can only be read from the cloud.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Specifier</th>
+      <th>Write Access</th>
+      <th>Read Access</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Device</td>
+      <td>Device</td>
+      <td>Device</td>
+    </tr>
+    <tr>
+      <td>Fog</td>
+      <td>Device, Fog</td>
+      <td>Fog</td>
+    </tr>
+    <tr>
+      <td>Cloud</td>
+      <td>Device, Fog, Cloud</td>
+      <td>Cloud</td>
+    </tr>
+  </tbody>
+</table>
+
 <h2 id="broadcasting-data">Broadcasting Data</h2>
+
+<p>While loggers push data from the workers towards controllers, broadcasters do the reverse. They are useful
+for the controllers to push control data to the workers or sub controllers.
+In the program shown below, two broadcasters <code class="highlighter-rouge">x</code> and <code class="highlighter-rouge">y</code> are defined. They are <em>string</em> broadcasters.
+The J side is pushing different string values on <code class="highlighter-rouge">x</code> and <code class="highlighter-rouge">y</code> every 100 ms.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code><span class="nx">jdata</span> <span class="p">{</span>
+    <span class="kr">char</span> <span class="o">*</span><span class="nx">x</span> <span class="nx">as</span> <span class="nx">broadcaster</span><span class="p">;</span>
+    <span class="kr">char</span> <span class="o">*</span><span class="nx">y</span> <span class="nx">as</span> <span class="nx">broadcaster</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">var</span> <span class="nx">count</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+<span class="nx">setInterval</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">msg</span> <span class="o">=</span> <span class="s2">"msg-on-x="</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="nx">count</span><span class="p">;</span>
+    <span class="nx">x</span><span class="p">.</span><span class="nx">broadcast</span><span class="p">(</span><span class="nx">msg</span><span class="p">);</span>
+    <span class="kd">var</span> <span class="nx">msg2</span> <span class="o">=</span> <span class="s2">"msg-on-y="</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="nx">count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+    <span class="nx">y</span><span class="p">.</span><span class="nx">broadcast</span><span class="p">(</span><span class="nx">msg2</span><span class="p">);</span>
+    <span class="nx">count</span><span class="o">++</span><span class="p">;</span>
+<span class="p">},</span> <span class="mi">100</span><span class="p">);</span>
+</code></pre>
+</div>
+
+<p>In the C side, we define a local
+task to read the incoming value. The local task waits for the value to arrive. Because the braodcaster
+reception is in a local task, the main thread is still available to process other tasks.</p>
+
+<pre><code class="language-C">jasync checkx()
+{
+    char *msg;
+    while(1)
+    {
+        msg = x;
+        printf("%s\n", msg);
+    }
+}
+
+jasync checky()
+{
+    char *msg;
+    while(1)
+    {
+        msg = y;
+        printf("%s\n", msg);
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    checkx();
+    checky();
+}
+</code></pre>
+
+<p>We can have programs that combine braadcasting and logging because local tasks can concurrently handle both tasks. However,
+any other statements in the local tasks such as reading the terminal must be non-blocking.</p>
+
+<p>The broadcaster is written to by the controllers and read by the worker (i.e., the worker cannot write to the
+broadcaster).</p>
 
 	    
     </div>

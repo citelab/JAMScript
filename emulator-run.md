@@ -18,6 +18,7 @@ If everything is setup properly, you should be able to type
 ## Compiling and Running JAMScript in Containers
 
 To compile a JAMScript program, do the following.
+
 1. Write or get a JAMScript program. The easiest is to download the **JAMSamples**. Run `git clone https://github.com/anrl/JAMSamples samples` to download many example programs into a `samples` folder.
 2. Change to a folder containing a valid JAMScript program. `cd samples/JData/String_Log` will change to the folder containing the string logging example.
 3. To compile this program: `djam compile stringlog.*`.
@@ -25,14 +26,17 @@ To compile a JAMScript program, do the following.
 5. Once you have compiled the sample program, you can run the program in different ways: in a device, fog, or cloud. When you run in a device, you can specify different number of C nodes as well. By default, the `djam run` sub command creates a single C node.
 
 To run a device using the `stringlog.jxe` with 2 C nodes under the app name `q5` in background, use the following command.
+
 ```shell
 djam run stringlog.jxe --num=2 --app=q5 --bg
 ```
 To see the status of the docker JAMScript execution, run the following command.
+
 ```shell
 djam list
 ```
 You should see something like the following.
+
 ```shell
       ID         NAME      PROGRAM         HOST         D-STORE       TYPE C-NODES    TMUX-ID
 
@@ -52,6 +56,7 @@ You should see something like the following.
 
 The second line corresponds to the device created by the previously issued command. It is created under the `ID` `q5`. Also, the `NAME` is same as the `ID`. The `HOST` gives the docker `ID` for the container running the device. The `D-STORE` shows the URL for the data depot used by the device. By default the `djam` puts a data depot inside each container at the default port. The `TMUX-ID` shows the `tmux` terminal that runs the program. To connect to the terminal issue the
 following command.
+
 ```shell
 jam term u-501-device-13-dev
 ```
@@ -80,14 +85,12 @@ The `--outdelay` is specifying the delay across two different zones. The `--clde
 a machine (fog or device) in a zone.
 You will notice that all machines (cloud, fogs, and devices) are started with the same application name (i.e., `q5`). This is necessary for
 the nodes to create a single topology. You can delete all nodes in the topology, using the following command.
+
 ```shell
 djam kill q5
 ```
 
-If you want to see how the delay is setup among the nodes, use the `djam test` command. It should create a **test** topology of bare nodes (i.e.,
-    no JAMScript program is running in them). You can see them running by issuing the `docker ps` command, they should have `-test` in their names.
-    Log in to a device, fog, and cloud test node and run a ping to a corresponding test node. You can see the network delay. To obtain the
-    IP address of a node, run `hostname -I` while in the node.
-
+If you want to see how the delay is setup among the nodes, use the `djam test` command. It should create a **test** topology of bare nodes (i.e., no JAMScript program is running in them). You can see them running by issuing the `docker ps` command, they should have `-test` in their names.
+Log in to a device, fog, and cloud test node and run a ping to a corresponding test node. You can see the network delay. To obtain the IP address of a node, run `hostname -I` while in the node.
 
 ## Description of Docker JAMScript Tools

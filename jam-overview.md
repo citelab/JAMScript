@@ -7,7 +7,7 @@ subtitle: A High-Level Description of the JAMScript Concepts
 ## Anatomy of a JAMScript Program
 
 JAMScript is based on a **controller-worker** model similar to the one that
-underpins recent paradigms such as [Software Defined
+underpins popular paradigms such as [Software Defined
 Networking](https://en.wikipedia.org/wiki/Software-defined_networking). The
 *controller* and *worker* are co-programmed. That is, a single program is
 developed for the controller and worker combination. In JAMScript, the

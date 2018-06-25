@@ -142,7 +142,6 @@ jasync function printMsg(msg) {
 In the C side, the function exported from the J side needs a prototype definition so that it can be used there.
 
 ```C
-
 void printMsg();
 
 int main(int argc, char *argv[])
