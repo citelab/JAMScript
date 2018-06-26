@@ -36,10 +36,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <strings.h>
 #include <pthread.h>
 
+int mheight = 1;
+
 int jamport;
 int odcount;
 list_elem_t *cache;
 int cachesize;
+
+extern jamstate_t *js;
 
 // Initialize the JAM library.. nothing much done here.
 // We just initialize the Core ..
@@ -268,14 +272,21 @@ bool have_fog_or_cloud(jamstate_t *js)
         return false;
 }
 
+
 int machine_height(jamstate_t *js)
 {
     corestate_t *cs = js->cstate;
 
-    return ((cs->mqttenabled[2] == true) +
-            (cs->mqttenabled[1] == true) +
-            (cs->mqttenabled[0] == true));
+    if (cs->mqttenabled[1])
+    {
+        if (cs->mqttenabled[2])
+            return 3;
+        else
+            return 2;
+    }
+    return 1;
 }
+
 
 int requested_level(int cvec)
 {
@@ -313,7 +324,7 @@ int jamargs(int argc, char **argv, char *appid, char *tag, int *num)
 
     opterr = 0;
 
-    while ((c = getopt (argc, argv, "p:a:n:t:")) != -1)
+    while ((c = getopt (argc, argv, "p:a:n:t:h:")) != -1)
         switch (c)
         {
             case 'a':
@@ -328,9 +339,12 @@ int jamargs(int argc, char **argv, char *appid, char *tag, int *num)
             case 'p':
                 jamport = atoi(optarg);
             break;
+            case 'h':
+                mheight = atoi(optarg);
+            break;
         default:
             printf("ERROR! Argument input error..\n");
-            printf("Usage: program -a app_id [-t tag] [-n num] [-p port]\n");
+            printf("Usage: program -a app_id [-t tag] [-n num] [-p port] [-h height]\n");
             exit(1);
         }
 
@@ -350,4 +364,21 @@ int jamargs(int argc, char **argv, char *appid, char *tag, int *num)
         *num = 1;
 
     return optind;
+}
+
+// Exported jamlib functions...
+//
+void jsleep(int ms)
+{
+    activity_thread_t *athr = athread_getmine(js->atable);
+
+    if (athr != NULL)
+    {
+        jactivity_t *jact = activity_getbyindx(js->atable, athr->jindx);
+
+        jam_set_timer(js, jact->actid, ms);
+        nvoid_t *nv = pqueue_deq(athr->inq);
+        jam_clear_timer(js, jact->actid);
+    }
+
 }

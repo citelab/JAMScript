@@ -161,7 +161,8 @@ char *get_root_condition(jamstate_t *js);
 /*
  * Functions defined in jamasync.c
  */
-jactivity_t *jam_lexec_async(char *aname, ...);
+
+void jam_lexec_async(jamstate_t *js, char *aname, ...);
 jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, int condvec, char *aname, char *fmask, ...);
 void jam_rexec_run_wrapper(void *arg);
 jactivity_t *jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd);
@@ -227,6 +228,12 @@ bool jrun_check_signature(activity_callback_reg_t *creg, command_t *cmd);
 void jrun_arun_callback(jactivity_t *jact, command_t *cmd, activity_callback_reg_t *creg);
 
 bool jwork_evaluate_cond(char *cond);
+
+
+// External functions..
+
+void jsleep(int ms);
+
 
 #endif  /* __JAMLIB_H__ */
 

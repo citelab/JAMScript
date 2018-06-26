@@ -9,11 +9,60 @@
 
 
 // Local execution handler
-// What should go in here??
 //
-jactivity_t *jam_lexec_async(char *aname, ...)
+void jam_lexec_async(jamstate_t *js, char *aname, ...)
 {
-    return NULL;
+    va_list args;
+    nvoid_t *nv;
+    int i = 0;
+    arg_t *qargs = NULL;
+
+    jactivity_t *jact = jam_create_activity(js);
+    activity_callback_reg_t *creg = activity_findcallback(js->atable, aname);
+
+    jact->type = ASYNC;
+    char *fmask = creg->signature;
+    if (strlen(fmask) > 0)
+    {
+        qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
+
+        va_start(args, aname);
+
+        while (*fmask)
+        {
+            switch (*fmask++)
+            {
+                case 'n':
+                    nv = va_arg(args, nvoid_t*);
+                    qargs[i].val.nval = nv;
+                    qargs[i].type = NVOID_TYPE;
+                    break;
+                case 's':
+                    qargs[i].val.sval = strdup(va_arg(args, char *));
+                    qargs[i].type = STRING_TYPE;
+                    break;
+                case 'i':
+                    qargs[i].val.ival = va_arg(args, int);
+                    qargs[i].type = INT_TYPE;
+                    break;
+                case 'd':
+                case 'f':
+                    qargs[i].val.dval = va_arg(args, double);
+                    qargs[i].type = DOUBLE_TYPE;
+                    break;
+                default:
+                    break;
+            }
+            i++;
+        }
+        va_end(args);
+    }
+
+    command_t *cmd = command_new_using_arg_only("LEXEC-ASY", "-", "-", 0, aname, jact->actid, "-", qargs, i);
+    activity_thread_t *athr = athread_getbyindx(js->atable, jact->jindx);
+    pqueue_enq(athr->inq, cmd, sizeof(command_t));
+
+    // activity is deallocated after the run has completed...
 }
 
 // The jactivity structure needs to be defined outside the function.
@@ -35,7 +84,13 @@ jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, i
     // wait for 250 milliseconds before failing.
     if (wait_for_machine(js, requested_level(condvec), 1000) < 0)
     {
-        printf("ERROR! Unable to connect cloud, fog, or device J node \n");
+        int lv = requested_level(condvec);
+        if (lv == 3)
+            printf("ERROR! Cloud required by the program - unable to connect to Cloud\n");
+        else if (lv == 2)
+            printf("ERROR! Fog required by the program - unable to connect to Fog\n");
+        else
+            printf("ERROR! Unable to connect to J node\n");
         return NULL;
     }
 

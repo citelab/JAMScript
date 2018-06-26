@@ -56,6 +56,8 @@ void send_infoquery(corestate_t *cs)
 {
     command_t *cmd;
 
+    printf("Sending infoquery..\n");
+
     cmd = command_new("REF-CF-INFO", "-", "-", 0, "-", "-", cs->device_id, "");
     mqtt_publish(cs->mqttserv[0], "/admin/request/all", cmd);
 }
@@ -272,7 +274,7 @@ void jwork_connect_lost(void *ctx, char *cause)
     else
     {
         printf("Connection lost at %d.. reconnecting\n", indx);
-    //    core_reconnect_i(js->cstate, indx);
+        // core_reconnect_i(js->cstate, indx);
     }
 }
 
@@ -483,6 +485,17 @@ void jwork_process_device(jamstate_t *js)
             // latest information... the callback is already there..
             if (js->cstate->cf_pending)
                 send_infoquery(js->cstate);
+
+            // Handle mqttpending[] - decrement the counter. if the counter hits
+            // zero, turn off mqttpending[].. this should be done only if mqttpending[] is true
+            if (js->cstate->mqttpending[1])
+            {
+                if (js->cstate->pendingcount-- < 0)
+                {
+                    js->cstate->pendingcount = 0;
+                    js->cstate->mqttpending[1] = false;
+                }
+            }
         }
         else
         if (strcmp(rcmd->cmd, "PUT-CF-INFO") == 0)
@@ -503,10 +516,14 @@ void jwork_process_device(jamstate_t *js)
             else
             if (strcmp(rcmd->actarg, "fog") == 0)
             {
+                printf("Information about a fog %s, %s, %d %d\n", rcmd->opt, rcmd->args[0].val.sval, js->cstate->mqttenabled[1], js->cstate->mqttpending[1]);
+
                 if  (strcmp(rcmd->opt, "ADD") == 0)
                 {
-                    if (!js->cstate->mqttenabled[1])
+                    if (!js->cstate->mqttenabled[1] && !js->cstate->mqttpending[1])
                     {
+                        js->cstate->mqttpending[1] = true;
+                        js->cstate->pendingcount = MAX_PENDING_CNT;
                         core_createserver(js->cstate, 1, rcmd->args[0].val.sval);
                         comboptr_t *ctx = create_combo3i_ptr(js, js->foginq, NULL, 1);
                         core_setcallbacks(js->cstate, ctx, jwork_connect_lost, jwork_msg_arrived, NULL);
@@ -518,7 +535,10 @@ void jwork_process_device(jamstate_t *js)
                 if (strcmp(rcmd->opt, "DEL") == 0)
                 {
                     if (core_disconnect(js->cstate, 1, rcmd->actid))
+                    {
                         printf("==>>>>>>>>>>=== FOG deleted ----------------->>>>>>>>>\n");
+                        js->cstate->mqttpending[1] = false;
+                    }
                     else
                         printf("==>>>>>>>>>>=== FOG delete  IGNORED ----------------->>>>>>>>>\n");
                 }
