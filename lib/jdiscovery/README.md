@@ -1,39 +1,20 @@
-# JAMScript Registration and Discovery
+# JDISCOVERY: A Discovery Service for JAMScript
 
-## To Run
-If on Ubuntu, or other debianesque systems, you'll need to install `libavahi-compat-libdnssd-dev` for the mdns module to work:
-`sudo apt install libavahi-compat-libdnssd-dev`
-You'll also need to link the mdns module, regardless of whether you're on a debianesque system:
-- macOS: `cd mdns && npm link`
-- Ubuntu: `cd mdns && sudo npm link --unsafe-perm` (because Ubuntu sucks)
-If you want to use MQTT, start an MQTT broker: `mosquitto`
+JAMScript nodes discover each other using jdiscovery and its attribute system.
 
-### To run app.js
-Try the following:
-- `npm start device` - starts a device node
-- `npm start device iPhone 1234567` - starts a device with attribute `iPhone` and phone number `1234567`
-- `npm start device Android 1234567` - starts a device with attribute `Android` and phone number `1234567`
-- `npm start fog` - starts a fog node
-- `npm start cloud` - starts a cloud node
-See `app.js` to figure out who discovers whom :)
+## Quick Setup and Demo
 
-### If the mdns module stops working...
-You should update it! Do the following:
-- Run `npm pack mdns` to download the latest mdns source
-- Unzip the downloaded source
-- Replace the contents of the `mdns` folder in this directory with the contents of the unzipped source
-- Open up `mdns/lib/service_type.js` and comment out the sections of the code that limit the length of the advertisement's name. Currently (mdns version 2.3.4), the code blocks that do this are:
-```
-    if (str.length > 15) {
-        throw new Error('type ' + str + ' has more than 15 characters');
-    }
-```
-```
-    if (str.length > 16) { // 16 is correct because we have a leading underscore
-        throw new Error('type ' + _uu(str) + ' has more than 15 characters');
-    }
-```
-- Follow the steps in the `To Run` section above to make sure the module is properly linked
+### Dependencies
+The following are automatically installed by the JAMScript setup scripts.
+- `node.js & npm`
+- `mosquitto` - MQTT Broker
+- npm packages: `bonjour, mqtt`
+
+### Demo
+Open two terminals to the jdiscovery directory and run the following commands (one in each).
+- `node apps/tester.js node-0 device 42420`
+- `node apps/tester.js node-1 fog 42421`
+
 
 ## Registrar
 The `Registrar` is the object you'll be interfacing with. It is responsible for finding other nodes running the same application as this one, and making this node visible so that other nodes may find it too. You create a Registrar as follows:
@@ -116,7 +97,7 @@ In addition to giving each node the status attribute, the system is configured s
 We see that devices discover fogs statuses and fogs discover clouds statuses by default, but what if we're a cloud node and we want to discover fogs? No problem, we can use the `discoverAttributes` API as follows:
 
 ```
-    var reggie = new Registrar(app, machType, id, port);
+    var reggie = new Registrar(app, type, id, port);
 
     reggie.discoverAttributes({
         fog: {
@@ -188,21 +169,7 @@ In order to give a node an attribute, you use the `addAttributes` API. For examp
     // ...
 ```
 
-Or, if you want to wait to provide the temperature until the exact moment that the Registrar announces the attribute on the network, you can provide a function that returns the temperature:
-
-```
-    // ...
-
-    reggie.addAttributes({
-        thermostat: function() {
-            return theTemperature;
-        }
-    });
-
-    // ...
-```
-
-Lastly, if you want to keep the rest of the network up to date on your temperature, you can simply set an interval:
+If you want to keep the rest of the network up to date on your temperature, you can simply set an interval:
 
 ```
     // ...
@@ -294,171 +261,73 @@ In addition to `fog-up`, `fog-down`, `cloud-up`, and `cloud-down` events, the Re
     });
 ```
 
-## Example
-Finally, an example, putting everything together, and assuming that the type of the node (device, fog, or cloud) is indeterminate until runtime:
+## External API
 
-**app.js**
-```
-    var Registrar = require('./jregistrar'),
-        errLog = require('../jerrlog'),
-        globals = require('../constants').globals,
-        events = require('events'),
-        Random = require('random-js');
+const Registrar = require('jdiscovery');
+const reggie = new Registrar(app, type, id, port, config);
 
-    var random = new Random(Random.engines.mt19937().autoSeed());
+Register a node on the network, and discover other nodes.
+`options` is an optional parameter
+`options` include:
+attrsToSet: key/value pair as in this.setAttributes
+attrsToDiscover: as in this.discoverAttributes
 
-    var machType = process.argv[2],
-        phoneType = process.argv[3],
-        phoneNumber = process.argv[4],
-        app = 'keithTest',
-        port = 1337,
-        id = random.uuid4();
+reggie.registerAndDiscover();
 
-    // don't forget to initialize the logger!
-    errLog.init(app, false);
 
-    console.log('_______________________________________________');
-    console.log(machType + ' id: ' + id);
-    console.log('-----------------------------------------------');
-    console.log();
+Add custom, discoverable attributes to this node
+attrs is an object of key value pairs
 
-    var reggie = new Registrar(app, machType, id, port);
+reggie.setAttributes(attrs);
+reggie.removeAttributes(attrs);
 
-    //------------------------------------------------------------------------------
-    // Default discoveries
-    //------------------------------------------------------------------------------
-
-    if (machType === 'device') {
-        reggie.on('fog-up', function(fogId, connInfo) {
-            console.log('FOG UP: id: ' + fogId + ', ip: ' + connInfo.ip + ', port: ' + connInfo.port);
-        });
-
-        reggie.on('fog-down', function(fogId) {
-            console.log('FOG DOWN: id: ' + fogId);
-        });
-    } else if (machType === 'fog') {
-        reggie.on('cloud-up', function(cloudId, connInfo) {
-            console.log('CLOUD UP: id: ' + cloudId + ', ip: ' + connInfo.ip + ', port: ' + connInfo.port);
-
-        });
-
-        reggie.on('cloud-down', function(cloudId) {
-            console.log('CLOUD DOWN: id: ' + cloudId);
-        });
+Specify attributes to be discovered.
+dattrs can have one of the following forms:
+(a)
+    {
+        all: {attr: event, ...}, // discover these attributes for all nodes
+        device: {attr: event, ...}, // discover these attributes just for devices
+        fog: {attr: event, ...}, // discover these attributes just for fogs
+        cloud: {attr: event, ...} // discover these attributes just for clouds
     }
-
-    // on rare occasions, you might get an error
-    reggie.on('error', function(err) {
-        switch(err.name) {
-            case 'permissions_err':
-                console.log(err.message);
-                console.log('Subscriptions: ' + err.value);
-                break;
-            default:
-                console.log('unknown error');
-                break;
+(b) As a shortcut for _all_, one can simply pass an object of <attr, event> pairs
+    For the status attribute, the format is:
+        status: {
+            online: 'fog-up',
+            offline: 'fog-down'
         }
-    });
-
-    //------------------------------------------------------------------------------
-    // Custom attributes/discoveries
-    //------------------------------------------------------------------------------
-
-    if (machType === 'device') {
-        // we'll have devices announce if they are phones (iphone or android)
-        // we'll say all devices are thermostats too...I know it doesn't make sense but it's just meant
-        // to be demonstrative :P
-        if (phoneType === 'iPhone') {
-            reggie.addAttributes({
-                iPhone: phoneNumber
-            });
-        } else if (phoneType === 'Android') {
-            reggie.addAttributes({
-                android: 'psych, get an iPhone!'
-            });
-
-            // in 10 seconds, turn this android into an iphone
-            setTimeout(function() {
-                reggie.removeAttributes('android');
-                reggie.addAttributes({
-                    iPhone: phoneNumber
-                });
-            }, 5000);
+    Whereas for custom attributes, the format is:
+        is_a_phone: {
+            onAdd: 'phone-found'
+            onRemove: 'phone-lost'
         }
-        reggie.addAttributes({
-            thermostat: function() {
-                // returns some random number, which we'll treat as the temperature
-                return 'Temperature: ' + Math.random() * 100;
-            }
-        });
-    } else if (machType === 'fog') {
-        // since we'll have clouds discover fogs, we don't need fogs to discover clouds
-        reggie.stopDiscoveringAttributes({
-            cloud: ['status']
-        });
 
-        reggie.discoverAttributes({
-            device: {
-                thermostat: {
-                    onAdd: 'thermo-added',
-                    onRemove: 'thermo-removed'
-                }
-            }
-        });
+reggie.discoverAttributes(dattrs);
+reggie.stopDiscoveringAttributes(dattrs);
+reggie.quit();
 
-        reggie.on('thermo-added', function(id, temp) {
-            console.log('DEVICE ' + id + ' is a thermostat with temperature ' + temp);
-        });
+## Developer Notes
 
-        reggie.on('thermo-removed', function(id, temp) {
-            console.log('DEVICE ' + id + ' is no longer a thermostat');
-        });
-    } else {
-        // maybe clouds want to discover fogs, and iphone devices
-        reggie.discoverAttributes({
-            device: {
-                iPhone: {
-                    onAdd: 'iPhone-added',
-                    onRemove: 'iPhone-removed'
-                },
-                android: {
-                    onAdd: 'android-added',
-                    onRemove: 'android-removed'
-                }
-            },
-            fog: {
-                status: {
-                    online: 'fog-up',
-                    offline: 'fog-down'
-                }
-            }
-        });
-
-        reggie.on('fog-up', function(fogId, connInfo) {
-            console.log('FOG UP: id: ' + fogId + ', ip: ' + connInfo.ip + ', port: ' + connInfo.port);
-        });
-
-        reggie.on('fog-down', function(fogId) {
-            console.log('FOG DOWN: id: ' + fogId);
-        });
-
-        reggie.on('iPhone-added', function(deviceId, phoneNumber) {
-            console.log('DEVICE ' + deviceId + ' is an iPhone with number ' + phoneNumber);
-        });
-
-        reggie.on('iPhone-removed', function(deviceId) {
-            console.log('DEVICE ' + deviceId + ' is no longer an iPhone');
-        });
-
-        reggie.on('android-added', function(deviceId, phoneNumber) {
-            console.log('DEVICE ' + deviceId + ' is an Android with number: ' + phoneNumber);
-        });
-
-        reggie.on('android-removed', function(deviceId) {
-            console.log('DEVICE ' + deviceId + ' is no longer an Android');
-        });
-    }
-
-    reggie.registerAndDiscover();
-
-```
+DISCOVERY TABLE (dt)
+Notes:
+ --> We don't keep an entry for our own node
+And an example...
+{
+     node_id : {
+         'attrs' : {
+             'status' : {
+                 'seqval' : seqval,
+                 'data' : data
+             },
+             other_attr : {
+                 'seqval' : seqval,
+                 'data' : data
+             }
+         }
+         'network' : 'LAN' || 'WAN',
+         'other_useful_info' : ...
+     },
+     other_node_id : {
+         ...
+     }
+}
