@@ -190,8 +190,8 @@ const reggie = new Registrar(app, type, id, port, config);
 ### reggie.registerAndDiscover([options]);
 Kick-starts registration (announcing of attributes) and discovery.
 
-`options` is an optional way to specify attributes of the node and those it should discover, rather than using `reggie.addAttributes` and `reggie.discoverAttributes`. It is an object that accepts the following `<key, value>` pairs:
-- `attrsToAdd`: an object of the same form as that accepted by `reggie.addAttributes`
+`options` is an optional way to specify attributes of the node and those it should discover, rather than using `reggie.setAttributes` and `reggie.discoverAttributes`. It is an object that accepts the following `<key, value>` pairs:
+- `attrsToAdd`: an object of the same form as that accepted by `reggie.setAttributes`
 - `attrsToDiscover`: an object of the same form as that accepted by `reggie.discoverAttributes`
 
 ### reggie.setAttributes(attrs)
@@ -228,6 +228,7 @@ In other words, dattrs can have one of the following forms:
         fog: {attr: event, ...}, // discover these attributes just for fogs
         cloud: {attr: event, ...} // discover these attributes just for clouds
     }
+```
 (b) As a shortcut for _all_, one can simply pass an object of <attr, event> pairs
     For the status attribute, the format is:
 ```
