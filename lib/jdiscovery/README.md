@@ -1,6 +1,6 @@
 # JDISCOVERY: A Discovery Service for JAMScript
 
-JAMScript nodes discover each other using jdiscovery and its attribute system.
+JAMScript nodes discover each other using jdiscovery and its attribute system. Below, you will find a quick start guide as well as a description of its external and developer APIs.
 
 ## Quick Setup and Demo
 
@@ -15,8 +15,9 @@ Open two terminals to the jdiscovery directory and run the following commands (o
 - `node apps/tester.js node-0 device 42420`
 - `node apps/tester.js node-1 fog 42421`
 
+## System Description
 
-## Registrar
+### Registrar
 The `Registrar` is the object you'll be interfacing with. It is responsible for finding other nodes running the same application as this one, and making this node visible so that other nodes may find it too. You create a Registrar as follows:
 ```
     var reggie = new Registrar(app, machType, id, port, config);
@@ -28,7 +29,6 @@ where `app` is the name of the application, `machType` (machine type) is one of 
         protocols: {
             mqtt: false,
             mdns: true,
-            localStorage: false
         }
     }
 ```
@@ -41,17 +41,16 @@ Alternatively
     }
 ```
 will suffice.
-- `eliminateDuplicates`: Set to `true` if you want the `Registrar` to automatically eliminate duplicate discoveries, so that only one event will be returned to the app per discovery. Set this to `false` if you want to be notified separately if/when a discovery is made by each of local storage, mDNS, and MQTT. The default is `true`.
 
 Now, before we get into how to use our new Registrar object, we'll need to understand what **attributes** are.
 
-## Attributes
+### Attributes
 The system revolves around attributes. An attribute is some aspect of a node with an associated value (or not - an attribute need not have a value). Nodes have attributes that are discoverable by other nodes. If you can follow that, then the rest should be easy - that's really all there is to it. But, to solidify the idea, here are a couple of examples:
 - `thermostat` - You might give this attribute to a device that is a thermostat. The value of this attribute could be the temperature measured by the device.
 - `dimmable` - Maybe you have some smart light bulbs that can be dimmed. If so, perhaps you'd want to give them this attribute. The associated value could be the percentage of full brightness that the bulb is currently set to.
 - `cellPhone` - Perhaps you want a fog node to discover all nearby devices that are cell phones, for whatever reason. You could give such devices this attribute. The value of the attribute could be null if you don't need to know anything other than the fact that the device is a cell phone. Remember: you don't need to have a value associated with an attribute.
 
-## Discovering attributes
+### Discovering attributes
 This module is all about registration and discovery, so obviously we'll want to discover some attributes of the nodes out there. But what is out there to begin with?
 
 ### Built-in attributes/discoveries
@@ -157,12 +156,12 @@ When an attribute is removed from a node, or the node goes down (status becomes 
 Now back to attributes. If status is the only attribute that any node has by default, then how can we give nodes other attributes? This is done by announcing attributes.
 
 ## Announcing attributes
-In order to give a node an attribute, you use the `addAttributes` API. For example, to add the thermostat attribute, you could use:
+In order to give a node an attribute, you use the `setAttributes` method of the Registrar. For example, to add the thermostat attribute, you could use:
 
 ```
     // ...
 
-    reggie.addAttributes({
+    reggie.setAttributes({
         thermostat: 20
     });
 
@@ -175,38 +174,32 @@ If you want to keep the rest of the network up to date on your temperature, you 
     // ...
 
     // update the temperature every five seconds
-    setInterval(reggie.addAttributes, 5000, { thermostat: theTemperature });
+    setInterval(reggie.setAttributes, 5000, { thermostat: theTemperature });
 
     // ...
 ```
 
-## API
+## External API
 
-### reggie.addAttributes(attrs)
-Adds the specified attributes to the node.
+### Import and Constructor
+```
+const Registrar = require('jdiscovery');
+const reggie = new Registrar(app, type, id, port, config);
+```
+
+### reggie.registerAndDiscover([options]);
+Kick-starts registration (announcing of attributes) and discovery.
+
+`options` is an optional way to specify attributes of the node and those it should discover, rather than using `reggie.addAttributes` and `reggie.discoverAttributes`. It is an object that accepts the following `<key, value>` pairs:
+- `attrsToAdd`: an object of the same form as that accepted by `reggie.addAttributes`
+- `attrsToDiscover`: an object of the same form as that accepted by `reggie.discoverAttributes`
+
+### reggie.setAttributes(attrs)
+Sets the specified attributes to the node.
 
 `attrs` is an object of `<attributeName, attributeValue>` pairs. The `attributeName` is limited to valid JavaScript object keys. The attribute value can be any basic data type, `null`, a JavaScript object, an array, or a function that returns a basic data type, `null`, or a JavaScript object or array.
 
-If a function is passed, then the function will be executed to retrieve the value of the attribute just before the Registrar announces the attribute on the network. If you need to pass parameters to the function, you can use bind:
-```
-    var x = 10;
-    var y = 12;
-
-    reggie.addAttributes({
-        someAttribute: function(a, b) {
-            return a + b;
-        }.bind(null, x, y)
-    });
-```
-
 Both the attribute name and the attribute value **should be kept brief**. The Registrar uses MQTT and mDNS under the hood, which are both lightweight messaging protocols. You may run into some trouble if you try to send too much information! **Remember: This module is should be used for basic discovery only. If nodes need to exchange larger chunks of information, then a separate connection should be made**.
-
-#### Reserved attributes
-As a general rule, you can add any attributes that you'd like. However, the following names are reserved by the system, and cannot be reused:
-- `status`
-- `lastCheckIn`
-- `createdAt`
-- `updatedAt`
 
 ### reggie.removeAttributes(attrs)
 Removes the specified attributes from the node.
@@ -226,63 +219,7 @@ The value of each of these keys should be an object of `<attributeName, eventNam
 
 If you wish to just pass attributes to be discovered on all other nodes, regardless of device, fog, or cloud, then `dattrs` can simply be an object of `<attributeName, eventName>` pairs.
 
-### reggie.stopDiscoveringAttributes(dattrs)
-Tells the Registrar to stop discovering the given attributes of other nodes.
-
-`dattrs` is an object with one or more of the following keys:
--  `all`: an `Array` of attributes of **all** other nodes that the node should stop discovering
-- `device`: an `Array` of attributes of devices that the node should stop discovering
-- `fog`: an `Array` of attributes of fogs that the node should stop discovering
-- `cloud`: an `Array` of attributes of clouds that the node should stop discovering
-
-Alternatively, if you want to stop discovering attributes on all other nodes, regardless of type, `dattrs` cam simply be an `Array` of the attribute names.
-
-### reggie.registerAndDiscover([options])
-Kick-starts registration (announcing of attributes) and discovery.
-
-`options` is an optional way to specify attributes of the node and those it should discover, rather than using `reggie.addAttributes` and `reggie.discoverAttributes`. It is an object that accepts the following `<key, value>` pairs:
-- `attrsToAdd`: an object of the same form as that accepted by `reggie.addAttributes`
-- `attrsToDiscover`: an object of the same form as that accepted by `reggie.discoverAttributes`
-
-## Other events
-In addition to `fog-up`, `fog-down`, `cloud-up`, and `cloud-down` events, the Regisrar also emits an `error` event. However, currently this event is only emitted if `MQTT` denies you from discovering certain attributes due to a permissions issue, which would be weird (at least in the current state of JAMScript) and should be flagged. The idea is that this `error` event can be extended to represent other issues that should be noted by you, the programmer.
-
-```
-    reggie.on('error', function(err) {
-        switch(err.name) {
-            case 'permissions_err':
-                console.log(err.message);
-                console.log('The following MQTT subscriptions were denied: ' + err.value);
-                break;
-            default:
-                console.log('unknown error');
-                break;
-        }
-    });
-```
-
-## External API
-
-const Registrar = require('jdiscovery');
-const reggie = new Registrar(app, type, id, port, config);
-
-Register a node on the network, and discover other nodes.
-`options` is an optional parameter
-`options` include:
-attrsToSet: key/value pair as in this.setAttributes
-attrsToDiscover: as in this.discoverAttributes
-
-reggie.registerAndDiscover();
-
-
-Add custom, discoverable attributes to this node
-attrs is an object of key value pairs
-
-reggie.setAttributes(attrs);
-reggie.removeAttributes(attrs);
-
-Specify attributes to be discovered.
-dattrs can have one of the following forms:
+In other words, dattrs can have one of the following forms:
 (a)
     {
         all: {attr: event, ...}, // discover these attributes for all nodes
@@ -302,9 +239,19 @@ dattrs can have one of the following forms:
             onRemove: 'phone-lost'
         }
 
-reggie.discoverAttributes(dattrs);
-reggie.stopDiscoveringAttributes(dattrs);
-reggie.quit();
+### reggie.stopDiscoveringAttributes(dattrs)
+Tells the Registrar to stop discovering the given attributes of other nodes.
+
+`dattrs` is an object with one or more of the following keys:
+-  `all`: an `Array` of attributes of **all** other nodes that the node should stop discovering
+- `device`: an `Array` of attributes of devices that the node should stop discovering
+- `fog`: an `Array` of attributes of fogs that the node should stop discovering
+- `cloud`: an `Array` of attributes of clouds that the node should stop discovering
+
+Alternatively, if you want to stop discovering attributes on all other nodes, regardless of type, `dattrs` cam simply be an `Array` of the attribute names.
+
+### reggie.quit();
+Perform a clean exit for the current node on the network.
 
 ## Developer Notes
 
