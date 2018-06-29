@@ -204,7 +204,7 @@ Both the attribute name and the attribute value **should be kept brief**. The Re
 ### reggie.removeAttributes(attrs)
 Removes the specified attributes from the node.
 
-`attrs` can be a `String` or an `Array` of `String`s.
+`attrs` is an `Array` of `String`s (**not** just a `String`).
 
 ### reggie.discoverAttributes(dattrs)
 Causes the node to begin discovering the given attributes of other nodes.
@@ -219,8 +219,8 @@ The value of each of these keys should be an object of `<attributeName, eventNam
 
 If you wish to just pass attributes to be discovered on all other nodes, regardless of device, fog, or cloud, then `dattrs` can simply be an object of `<attributeName, eventName>` pairs.
 
-In other words, dattrs can have one of the following forms:
-(a)
+In other words, dattrs can have one of the following forms:\
+- (a)
 ```
     {
         all: {attr: event, ...}, // discover these attributes for all nodes
@@ -229,7 +229,7 @@ In other words, dattrs can have one of the following forms:
         cloud: {attr: event, ...} // discover these attributes just for clouds
     }
 ```
-(b) As a shortcut for _all_, one can simply pass an object of <attr, event> pairs
+- (b) As a shortcut for _all_, one can simply pass an object of <attr, event> pairs.\
     For the status attribute, the format is:
 ```
         status: {
