@@ -23,7 +23,7 @@ The `Registrar` is the object you'll be interfacing with. It is responsible for 
     var reggie = new Registrar(app, type, id, port, config);
 ```
 where `app` is the name of the application, `type` (machine type) is one of 'device', 'fog', or 'cloud', `id` is the id of the node, `port` is the port it is running on, and `config` is an optional parameter with the following options:
-- `protocols`: An object in which you specify what protocols you want to use. If this option is not present, all protocols will be used. e.g. To use just mDNS, you might pass
+- `protocols`: An object in which you specify what protocols you want to use. If this option is not present, all protocols will be used. e.g. To use just mDNS, you would pass:
 ```
     {
         protocols: {
@@ -32,16 +32,6 @@ where `app` is the name of the application, `type` (machine type) is one of 'dev
         }
     }
 ```
-Alternatively
-```
-    {
-        protocols: {
-            mdns: true
-        }
-    }
-```
-will suffice.
-
 Now, before we get into how to use our new Registrar object, we'll need to understand what **attributes** are.
 
 ### Attributes
