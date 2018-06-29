@@ -6,7 +6,7 @@ JAMScript nodes discover each other using jdiscovery and its attribute system. B
 
 ### Dependencies
 The following are automatically installed by the JAMScript setup scripts.
-- `node.js & npm`
+- `node.js` & `npm`
 - `mosquitto` - MQTT Broker
 - npm packages: `bonjour, mqtt`
 
@@ -20,9 +20,9 @@ Open two terminals to the jdiscovery directory and run the following commands (o
 ### Registrar
 The `Registrar` is the object you'll be interfacing with. It is responsible for finding other nodes running the same application as this one, and making this node visible so that other nodes may find it too. You create a Registrar as follows:
 ```
-    var reggie = new Registrar(app, machType, id, port, config);
+    var reggie = new Registrar(app, type, id, port, config);
 ```
-where `app` is the name of the application, `machType` (machine type) is one of 'device', 'fog', or 'cloud', `id` is the id of the node, `port` is the port it is running on, and `config` is an optional parameter with the following options:
+where `app` is the name of the application, `type` (machine type) is one of 'device', 'fog', or 'cloud', `id` is the id of the node, `port` is the port it is running on, and `config` is an optional parameter with the following options:
 - `protocols`: An object in which you specify what protocols you want to use. If this option is not present, all protocols will be used. e.g. To use just mDNS, you might pass
 ```
     {
@@ -53,7 +53,7 @@ The system revolves around attributes. An attribute is some aspect of a node wit
 ### Discovering attributes
 This module is all about registration and discovery, so obviously we'll want to discover some attributes of the nodes out there. But what is out there to begin with?
 
-### Built-in attributes/discoveries
+#### Built-in attributes/discoveries
 By default, each device, fog, and cloud on the network has only a single attribute: *status*. The *status* attribute is used to discover which nodes are online and which are offline. If a node is online, then its status attribute will have a value of form:
 ```
     {
@@ -92,7 +92,7 @@ In addition to giving each node the status attribute, the system is configured s
     reggie.registerAndDiscover();
 ```
 
-### Custom discoveries
+#### Custom discoveries
 We see that devices discover fogs statuses and fogs discover clouds statuses by default, but what if we're a cloud node and we want to discover fogs? No problem, we can use the `discoverAttributes` API as follows:
 
 ```
@@ -155,7 +155,7 @@ When an attribute is removed from a node, or the node goes down (status becomes 
 
 Now back to attributes. If status is the only attribute that any node has by default, then how can we give nodes other attributes? This is done by announcing attributes.
 
-## Announcing attributes
+### Announcing attributes
 In order to give a node an attribute, you use the `setAttributes` method of the Registrar. For example, to add the thermostat attribute, you could use:
 
 ```
