@@ -221,6 +221,7 @@ If you wish to just pass attributes to be discovered on all other nodes, regardl
 
 In other words, dattrs can have one of the following forms:
 (a)
+```
     {
         all: {attr: event, ...}, // discover these attributes for all nodes
         device: {attr: event, ...}, // discover these attributes just for devices
@@ -229,15 +230,19 @@ In other words, dattrs can have one of the following forms:
     }
 (b) As a shortcut for _all_, one can simply pass an object of <attr, event> pairs
     For the status attribute, the format is:
+```
         status: {
             online: 'fog-up',
             offline: 'fog-down'
         }
+```
     Whereas for custom attributes, the format is:
+```
         is_a_phone: {
             onAdd: 'phone-found'
             onRemove: 'phone-lost'
         }
+```
 
 ### reggie.stopDiscoveringAttributes(dattrs)
 Tells the Registrar to stop discovering the given attributes of other nodes.
@@ -255,10 +260,11 @@ Perform a clean exit for the current node on the network.
 
 ## Developer Notes
 
-DISCOVERY TABLE (dt)
+### Discovery Table
 Notes:
  --> We don't keep an entry for our own node
 And an example...
+```
 {
      node_id : {
          'attrs' : {
@@ -278,3 +284,4 @@ And an example...
          ...
      }
 }
+```
