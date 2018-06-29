@@ -219,8 +219,8 @@ The value of each of these keys should be an object of `<attributeName, eventNam
 
 If you wish to just pass attributes to be discovered on all other nodes, regardless of device, fog, or cloud, then `dattrs` can simply be an object of `<attributeName, eventName>` pairs.
 
-In other words, dattrs can have one of the following forms:\
-- (a)
+In other words, dattrs can have one of the following forms:
+
 ```
     {
         all: {attr: event, ...}, // discover these attributes for all nodes
@@ -229,21 +229,7 @@ In other words, dattrs can have one of the following forms:\
         cloud: {attr: event, ...} // discover these attributes just for clouds
     }
 ```
-- (b) As a shortcut for _all_, one can simply pass an object of <attr, event> pairs.\
-    For the status attribute, the format is:
-```
-        status: {
-            online: 'fog-up',
-            offline: 'fog-down'
-        }
-```
-    Whereas for custom attributes, the format is:
-```
-        is_a_phone: {
-            onAdd: 'phone-found'
-            onRemove: 'phone-lost'
-        }
-```
+**OR** As a shortcut for _all_, one can simply pass an object of <attr, event> pairs.
 
 ### reggie.stopDiscoveringAttributes(dattrs)
 Tells the Registrar to stop discovering the given attributes of other nodes.
@@ -262,9 +248,7 @@ Perform a clean exit for the current node on the network.
 ## Developer Notes
 
 ### Discovery Table
-Notes:
- --> We don't keep an entry for our own node
-And an example...
+The discovery table kept in the jregistrar-tail holds a map of the nodes on the network currently. An example discovery table can be found below. Refer to the in-code comments for further details.
 ```
 {
      node_id : {
