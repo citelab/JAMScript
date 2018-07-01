@@ -6,11 +6,11 @@ jdata {
 jobsLogger.findAllStreams();
 
 jcond {
-  cloudOnly: sys.type == "cloud";
-  fogOnly: sys.type == "fog";
-  targetFogFromCloud: sys.type == "fog" && execTargetId == sys.id;
-  targetDeviceFromCloud: sys.type == "device" && execTargetId == sys.id;
-  targetDeviceFromFog: sys.type == "device" && execTargetId == sys.id, targetDeviceFromFogCallback;
+  cloudOnly: jsys.type == "cloud";
+  fogOnly: jsys.type == "fog";
+  targetFogFromCloud: jsys.type == "fog" && execTargetId == jsys.id;
+  targetDeviceFromCloud: jsys.type == "device" && execTargetId == jsys.id;
+  targetDeviceFromFog: jsys.type == "device" && execTargetId == jsys.id, targetDeviceFromFogCallback;
 }
 
 var fs = require('fs');
