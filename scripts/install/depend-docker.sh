@@ -29,6 +29,7 @@ sudo apt-get install -y libhiredis-dev
 sudo apt-get install -y libevent-dev
 sudo apt-get install -y libbsd-dev
 sudo apt-get install -y libavahi-compat-libdnssd-dev
+sudo apt-get install -y libssl-dev
 
 # Check and install..
 if (command -v clang > /dev/null); then
