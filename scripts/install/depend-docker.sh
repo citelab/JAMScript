@@ -125,18 +125,6 @@ else
 fi
 
 
-# MQTT
-qres=$(ldconfig -p | grep mqtt3a | tr -d ' ')
-if [ -z $qres ]; then
-    sudo apt-get install -y libssl-dev
-    git clone https://github.com/eclipse/paho.mqtt.c.git
-    cd paho.mqtt.c
-    make
-    sudo make install
-    cd ..
-fi
-
-
 
 echo "Setting up the NPM modules in the user directory..."
 echo

@@ -16,6 +16,9 @@ sudo make install
 cd ../mujs2
 make
 sudo make install
+cd ../paho
+make
+sudo make install
 cd ../..
 
 # Install JAMScript compiler
