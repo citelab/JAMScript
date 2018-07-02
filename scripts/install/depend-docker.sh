@@ -113,6 +113,18 @@ else
 fi
 
 
+# Redis
+if (command -v redis-server > /dev/null); then
+    echo "Redis already installed"
+else
+    wget http://download.redis.io/redis-stable.tar.gz
+    tar xvzf redis-stable.tar.gz
+    cd redis-stable
+    make
+    sudo make install
+fi
+
+
 # MQTT
 qres=$(ldconfig -p | grep mqtt3a | tr -d ' ')
 if [ -z $qres ]; then
@@ -125,16 +137,6 @@ if [ -z $qres ]; then
 fi
 
 
-# Redis
-if (command -v redis-server > /dev/null); then
-    echo "Redis already installed"
-else
-    wget http://download.redis.io/redis-stable.tar.gz
-    tar xvzf redis-stable.tar.gz
-    cd redis-stable
-    make
-    sudo make install
-fi
 
 echo "Setting up the NPM modules in the user directory..."
 echo

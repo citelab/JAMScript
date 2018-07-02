@@ -8,7 +8,7 @@ if !([ -e /etc/lsb-release ] &&
       fi
 
 # Store the script home.. where the "depend-install-ubuntu.sh was located
-scriptdir=$(dirname -- $(readlink -fn -- "$0"))   
+scriptdir=$(dirname -- $(readlink -fn -- "$0"))
 
 
 # Create a temp directory
@@ -59,7 +59,7 @@ fi
 if (command -v tmux > /dev/null); then
     echo "terminal multiplexor already installed.."
 else
-    sudo apt-get install -y tmux    
+    sudo apt-get install -y tmux
 fi
 
 # Install latest Node
@@ -101,6 +101,18 @@ else
 fi
 
 
+# Redis
+if (command -v redis-server > /dev/null); then
+    echo "Redis already installed"
+else
+    wget http://download.redis.io/redis-stable.tar.gz
+    tar xvzf redis-stable.tar.gz
+    cd redis-stable
+    make
+    sudo make install
+fi
+
+
 # MQTT
 qres=$(ldconfig -p | grep mqtt3a | tr -d ' ')
 if [ -z $qres ]; then
@@ -112,17 +124,6 @@ if [ -z $qres ]; then
     cd ..
 fi
 
-
-# Redis
-if (command -v redis-server > /dev/null); then
-    echo "Redis already installed"
-else
-    wget http://download.redis.io/redis-stable.tar.gz
-    tar xvzf redis-stable.tar.gz
-    cd redis-stable
-    make
-    sudo make install
-fi
 
 echo "Setting up the NPM modules in the user directory..."
 echo
@@ -147,5 +148,5 @@ echo
 echo
 echo "All done!"
 echo "Remember to erase the temp_install_src folder!"
-echo 
+echo
 echo
