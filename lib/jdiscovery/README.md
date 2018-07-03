@@ -235,10 +235,10 @@ Alternatively, if you want to stop discovering attributes on all other nodes, re
 ### reggie.quit();
 Perform a clean exit for the current node on the network.
 
-## Developer Notes
+### reggie.getDiscoveryTable(handler);
+Allows access to the discovery table (which is, essentially, a map of the current locally known network state). A call to getDiscoveryTable(...) does **NOT** return a copy of the discovery table. It is through the `handler` callback that the received discovery table can be processed.
 
-### Discovery Table
-The discovery table kept in the jregistrar-tail holds a map of the nodes on the network currently. An example discovery table can be found below. Refer to the in-code comments for further details.
+An example discovery table can be found below. Refer to the in-code comments for further details.
 ```
 {
      node_id : {
