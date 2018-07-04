@@ -232,10 +232,10 @@ Tells the Registrar to stop discovering the given attributes of other nodes.
 
 Alternatively, if you want to stop discovering attributes on all other nodes, regardless of type, `dattrs` cam simply be an `Array` of the attribute names.
 
-### reggie.quit();
+### reggie.quit()
 Perform a clean exit for the current node on the network.
 
-### reggie.getDiscoveryTable(handler);
+### reggie.getDiscoveryTable(handler)
 Allows access to the discovery table (which is, essentially, a map of the current locally known network state). A call to getDiscoveryTable(...) does **NOT** return a copy of the discovery table. It is through the `handler` callback that the received discovery table can be processed.
 
 An example discovery table can be found below. Refer to the in-code comments for further details.
