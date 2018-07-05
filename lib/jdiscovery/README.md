@@ -30,7 +30,11 @@ console.log();
 
 // Construct registrar and start it
 const   reggie = new Registrar(app, type, id, port,
-                           { protocols: { mqtt: false, mdns: true } });
+                           { protocols: { mqtt: true, mdns: true } });
+// ... if the mqtt discovery option is enabled, you need to have a broker
+// ... running at the address specified in JAMScript-beta/lib/jamserver/constants.js
+// ... at constants.mqtt.brokerUrl
+
 reggie.registerAndDiscover();
 
 // Setup default discoveries
@@ -104,11 +108,11 @@ Open two terminals to the jdiscovery directory and run the following commands (o
 const Registrar = require('jdiscovery');
 const reggie = new Registrar(app, type, id, port, config);
 ```
--`app`: Application name
--`type`: Node type ('device', 'fog', 'cloud')
--`id`: Node identifier (must be unique w.r.t. application name)
--`port`: Port number where the application can be reached
--`config`: Object with property `protocols` for regirstrar setup (as is for flexibility)
+- `app`: Application name
+- `type`: Node type ('device', 'fog', 'cloud')
+- `id`: Node identifier (must be unique w.r.t. application name)
+- `port`: Port number where the application can be reached
+- `config`: Object with property `protocols` for regirstrar setup (as is for flexibility)
 ```
     const config =
     {
