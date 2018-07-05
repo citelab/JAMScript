@@ -143,7 +143,15 @@ Both attribute names and values **should be kept brief**. The Registrar uses MQT
     });
     // If you want to keep the rest of the network up to date on your temperature, you can simply set an interval
     // ... update the temperature every five seconds
-    setInterval(reggie.setAttributes, 
+    setInterval(
+                /**
+                 * XXX N.B. XXX
+                 * The call must be bound to this scope
+                 * using either a lambda expression,
+                 * or, a call to bind()
+                 * It will NOT work otherwise!
+                 */
+                (o) => { reggie.setAttributes(o); }, 
                 5000, 
                 { thermostat: _getThermostatTemp() }
     );
