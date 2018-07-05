@@ -14,14 +14,88 @@ The following are automatically installed by the JAMScript setup scripts.
 ```
 /* Source in apps/demo.js */
 
+const   Registrar = require('../jregistrar-head.js'),
+        globals = require('../../jamserver/constants').globals,
+        events = require('events');
 
+const   id = process.argv[2],
+        type = process.argv[3],
+        port = process.argv[4],
+        app = 'tester';
 
+console.log('_______________________________________________');
+console.log(' id: ' + id + ' type: ' + type + ' port: ' + port);
+console.log('-----------------------------------------------');
+console.log();
 
+// Construct registrar and start it
+const   reggie = new Registrar(app, type, id, port,
+                           { protocols: { mqtt: false, mdns: true } });
+reggie.registerAndDiscover();
+
+// Setup default discoveries
+if (type === 'device') {
+
+    reggie.on('fog-up', function(fogId, connInfo) {
+        console.log('FOG UP: id: ' + fogId + ', ip: ' + connInfo.ip + ', port: ' + connInfo.port);
+    });
+    reggie.on('fog-down', function(fogId) {
+        console.log('FOG DOWN: id: ' + fogId);
+    });
+} else if (type === 'fog') {
+
+    reggie.on('cloud-up', function(cloudId, connInfo) {
+        console.log('CLOUD UP: id: ' + cloudId + ', ip: ' + connInfo.ip + ', port: ' + connInfo.port);
+    });
+    reggie.on('cloud-down', function(cloudId) {
+        console.log('CLOUD DOWN: id: ' + cloudId);
+    });
+}
+
+// Setup custom attributes/discoveries
+if (type === 'device') {
+    const ticker = setInterval(
+                /**
+                 * XXX N.B. XXX
+                 * The call must be bound to this scope
+                 * using either a lambda expression,
+                 * or, a call to bind()
+                 * It will NOT work otherwise!
+                 */
+                (o) => { reggie.setAttributes(o); },
+                5000,
+                { secret : Math.random().toString(16) }
+    );
+    setTimeout(
+        (attrs) => {
+            clearInterval(ticker);
+            reggie.removeAttributes(['secret']);
+            reggie.quit();
+        },
+        22000
+    );
+} else if (type === 'fog') {
+    
+    reggie.on('new-secret', function(id, secret) {
+        console.log('NEW-SECRET: id: ' + id + ' secret: ' + secret);
+    });
+    reggie.on('no-more-secret', function(id) {
+        console.log('NO-MORE-SECRET: id: ' + id);
+    });
+    reggie.discoverAttributes({ 
+        device: {
+            secret: { 
+                onAdd : 'new-secret', 
+                onRemove : 'no-more-secret' 
+            }
+        }
+    });
+}    
 ```
 
 Open two terminals to the jdiscovery directory and run the following commands (one in each).
-- `node apps/tester.js node-0 device 42420`
-- `node apps/tester.js node-1 fog 42421`
+- `node apps/demo.js node-0 device 42420`
+- `node apps/demo.js node-1 fog 42421`
 
 ## API
 
@@ -46,7 +120,7 @@ const reggie = new Registrar(app, type, id, port, config);
 ```
 
 ### reggie.registerAndDiscover([options]);
-Kick-starts registration (announcing of attributes) and discovery. **This method must be called for the registrar to start functioning; it is best to call it once all interests have been registered and base attributes set.** See the demo code above for an example.
+Kick-starts registration (announcing of attributes) and discovery. **This method must be called for the registrar to start functioning; it is best to call it right after calling the constructor.** See the demo code above for an example.
 
 `options` is an optional way to specify attributes of the node and those it should discover, rather than using `reggie.setAttributes` and `reggie.discoverAttributes`. It is an object that accepts the following `<key, value>` pairs:
 - `attrsToAdd`: an object of the same form as that accepted by `reggie.setAttributes`
