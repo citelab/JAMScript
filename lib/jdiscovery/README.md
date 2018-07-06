@@ -123,12 +123,8 @@ const reggie = new Registrar(app, type, id, port, config);
     }
 ```
 
-### reggie.registerAndDiscover([options]);
+### reggie.registerAndDiscover();
 Kick-starts registration (announcing of attributes) and discovery. **This method must be called for the registrar to start functioning; it is best to call it right after calling the constructor.** See the demo code above for an example.
-
-`options` is an optional way to specify attributes of the node and those it should discover, rather than using `reggie.setAttributes` and `reggie.discoverAttributes`. It is an object that accepts the following `<key, value>` pairs:
-- `attrsToAdd`: an object of the same form as that accepted by `reggie.setAttributes`
-- `attrsToDiscover`: an object of the same form as that accepted by `reggie.discoverAttributes`
 
 ### reggie.setAttributes(attrs);
 Sets the specified attributes to the node. Calling this method multiple times updates the attribute value being shared with the network.
