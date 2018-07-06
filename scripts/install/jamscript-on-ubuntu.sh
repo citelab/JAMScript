@@ -20,6 +20,9 @@ sudo make install
 cd ../mujs2
 make
 sudo make install
+cd ../paho
+make
+sudo make install
 cd ../..
 
 sudo chmod o+w /usr/local/lib

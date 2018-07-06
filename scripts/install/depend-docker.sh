@@ -29,6 +29,7 @@ sudo apt-get install -y libhiredis-dev
 sudo apt-get install -y libevent-dev
 sudo apt-get install -y libbsd-dev
 sudo apt-get install -y libavahi-compat-libdnssd-dev
+sudo apt-get install -y libssl-dev
 
 # Check and install..
 if (command -v clang > /dev/null); then
@@ -113,18 +114,6 @@ else
 fi
 
 
-# MQTT
-qres=$(ldconfig -p | grep mqtt3a | tr -d ' ')
-if [ -z $qres ]; then
-    sudo apt-get install -y libssl-dev
-    git clone https://github.com/eclipse/paho.mqtt.c.git
-    cd paho.mqtt.c
-    make
-    sudo make install
-    cd ..
-fi
-
-
 # Redis
 if (command -v redis-server > /dev/null); then
     echo "Redis already installed"
@@ -135,6 +124,8 @@ else
     make
     sudo make install
 fi
+
+
 
 echo "Setting up the NPM modules in the user directory..."
 echo
