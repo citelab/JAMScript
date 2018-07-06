@@ -68,10 +68,10 @@ if (type === 'device') {
                  */
                 (o) => { reggie.setAttributes(o); },
                 5000,
-                { secret : Math.random().toString(16) }
+                { secret : () => Math.random().toString(16) }
     );
     setTimeout(
-        (attrs) => {
+        () => {
             clearInterval(ticker);
             reggie.removeAttributes(['secret']);
             reggie.quit();
@@ -133,7 +133,7 @@ Kick-starts registration (announcing of attributes) and discovery. **This method
 ### reggie.setAttributes(attrs);
 Sets the specified attributes to the node. Calling this method multiple times updates the attribute value being shared with the network.
 
-`attrs` is an object of `<attr, value>` pairs. The `attr` is the name of the attribute and is limited to valid JavaScript object keys. The attribute `value` can be any basic data type, `null`, or a JavaScript object.
+`attrs` is an object of `<attr, value>` pairs. The `attr` is the name of the attribute and is limited to valid JavaScript object keys. The attribute `value` can be any basic data type, `null`, a JavaScript object, or a function returning one of the previous. Note that functions should be wrapped in a lambda expression as in the example below to avoid binding issues with `this`.
 
 Both attribute names and values **should be kept brief**. The Registrar uses MQTT and mDNS under the hood, which are both lightweight messaging protocols. You may run into some trouble if you try to send too much information! **Remember: This module is should be used for basic discovery only. If nodes need to exchange larger chunks of information, then a separate connection should be made**.
 ```
@@ -153,7 +153,7 @@ Both attribute names and values **should be kept brief**. The Registrar uses MQT
                  */
                 (o) => { reggie.setAttributes(o); }, 
                 5000, 
-                { thermostat: _getThermostatTemp() }
+                { thermostat: () => _getThermostatTemp() }
     );
 ```
 
