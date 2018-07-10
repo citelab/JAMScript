@@ -52,5 +52,5 @@ void mqtt_publish(MQTTAsync mcl, char *topic, command_t *cmd)
     opts.context = cmd;
 
     if (MQTTAsync_send(mcl, fulltopic, cmd->length, cmd->buffer, 1, 0, &opts) != MQTTASYNC_SUCCESS)
-        printf("WARNING!! Unable to publish message to MQTT broker - topic: %s, buffer %s", topic, cmd->buffer);
+        printf("WARNING!! Unable to publish message to MQTT broker - topic: %s, cmdr %s\n", topic, cmd->cmd);
 }
