@@ -197,6 +197,7 @@ void core_connect(corestate_t *cs, int indx, void (*onconnect)(void *, MQTTAsync
     conn_opts.onSuccess = onconnect;
     conn_opts.context = cs;
     conn_opts.onFailure = NULL;
+    conn_opts.automaticReconnect = 1;
 
     rc = MQTTAsync_connect(cs->mqttserv[indx], &conn_opts);
 

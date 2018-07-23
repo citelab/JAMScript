@@ -273,7 +273,7 @@ void jwork_connect_lost(void *ctx, char *cause)
     }
     else
     {
-        printf("Connection lost at %d.. reconnecting\n", indx);
+        printf("Connection lost at %d.. reconnecting.. \n", indx);
         // core_reconnect_i(js->cstate, indx);
     }
 }
