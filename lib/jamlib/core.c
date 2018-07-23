@@ -186,6 +186,15 @@ void core_createserver(corestate_t *cs, int indx, char *url)
 //    cs->mqttenabled[indx] = false;
 }
 
+void core_reconnect_i(corestate_t *cs, int indx)
+{
+    int rc;
+
+    rc = MQTTAsync_reconnect(cs->mqttserv[indx]);
+    if (rc != MQTTASYNC_SUCCESS)
+        printf("WARNING!! Unable to reconnect to %d\n", indx);
+}
+
 
 void core_connect(corestate_t *cs, int indx, void (*onconnect)(void *, MQTTAsync_successData *), char *hid)
 {
@@ -197,7 +206,6 @@ void core_connect(corestate_t *cs, int indx, void (*onconnect)(void *, MQTTAsync
     conn_opts.onSuccess = onconnect;
     conn_opts.context = cs;
     conn_opts.onFailure = NULL;
-    conn_opts.automaticReconnect = 1;
 
     rc = MQTTAsync_connect(cs->mqttserv[indx], &conn_opts);
 
