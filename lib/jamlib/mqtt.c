@@ -15,6 +15,8 @@ MQTTAsync mqtt_create(char *mhost)
     char clientid[64];
     sprintf(clientid, "CLIENTID-%d-%s", getpid(), mhost);
 
+    printf("Creating clientid %s\n", clientid);
+
     if (MQTTAsync_create(&mcl, mhost, clientid, MQTTCLIENT_PERSISTENCE_NONE, NULL) == MQTTASYNC_SUCCESS)
         return mcl;
     else
