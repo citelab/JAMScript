@@ -193,6 +193,8 @@ void core_reconnect_i(corestate_t *cs, int indx)
     rc = MQTTAsync_reconnect(cs->mqttserv[indx]);
     if (rc != MQTTASYNC_SUCCESS)
         printf("WARNING!! Unable to reconnect to %d\n", indx);
+    else
+        printf("Reconnected...to %d\n", indx);    
 }
 
 
