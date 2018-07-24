@@ -8,14 +8,12 @@
 
 extern char app_id[64];
 
-MQTTAsync mqtt_create(char *mhost)
+MQTTAsync mqtt_create(char *mhost, int i, char *devid)
 {
     MQTTAsync mcl;
 
     char clientid[64];
-    sprintf(clientid, "CLIENTID-%d-%s", getpid(), mhost);
-
-    printf("Creating clientid %s\n", clientid);
+    sprintf(clientid, "%s-%d-%d", devid, i, getpid());
 
     if (MQTTAsync_create(&mcl, mhost, clientid, MQTTCLIENT_PERSISTENCE_NONE, NULL) == MQTTASYNC_SUCCESS)
         return mcl;

@@ -6,7 +6,7 @@
 #include "command.h"
 
 
-MQTTAsync mqtt_create(char *mhost);
+MQTTAsync mqtt_create(char *mhost, int i, char *devid);
 void mqtt_subscribe(MQTTAsync mcl, char *topic);
 void mqtt_publish(MQTTAsync mcl, char *topic, command_t *cmd);
 

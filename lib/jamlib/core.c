@@ -175,7 +175,7 @@ void core_createserver(corestate_t *cs, int indx, char *url)
     cs->mqtthost[indx] = strdup(url);
 
     // open an mqtt connection to localhost
-    cs->mqttserv[indx] = mqtt_create(cs->mqtthost[indx]);
+    cs->mqttserv[indx] = mqtt_create(cs->mqtthost[indx], indx, cs->device_id);
 
     if (cs->mqttserv[indx] == NULL)
     {
@@ -194,7 +194,7 @@ void core_reconnect_i(corestate_t *cs, int indx)
     if (rc != MQTTASYNC_SUCCESS)
         printf("WARNING!! Unable to reconnect to %d\n", indx);
     else
-        printf("Reconnected...to %d\n", indx);    
+        printf("Reconnected...to %d\n", indx);
 }
 
 
