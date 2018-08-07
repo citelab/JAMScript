@@ -10,6 +10,8 @@ cd temp_install_src
 
 # Install some packages..
 sudo apt-get update
+sudo apt-get install -y curl
+sudo apt-get install -y wget
 sudo apt-get install -y xz-utils
 sudo apt-get install -y texinfo
 sudo apt-get install -y libc-dev
@@ -60,9 +62,9 @@ fi
 if (command -v node > /dev/null); then
     echo "node already installed.."
 else
-    sudo apt-get install -y python-software-properties
-    wget https://nodejs.org/dist/v8.2.1/node-v8.2.1-linux-armv7l.tar.xz
-    sudo tar -C /usr/local --strip-components 1 -xJf node-v8.2.1-linux-armv7l.tar.xz
+    curl -sL https://deb.nodesource.com/setup_10.x -o nodesource_setup.sh
+    sudo bash nodesource_setup.sh
+    sudo apt-get install nodejs
 fi
 
 cd
@@ -111,7 +113,7 @@ fi
 qres=$(ldconfig -p | grep mqtt3a | tr -d ' ')
 if [ -z $qres ]; then
     sudo apt-get install -y libssl-dev
-    git clone https://github.com/eclipse/paho.mqtt.c.git
+    git clone https://github.com/Wenger/paho.mqtt.c
     cd paho.mqtt.c
     make
     sudo make install
