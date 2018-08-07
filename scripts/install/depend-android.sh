@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+echo Please specify an HTTP proxy for npm
+read proxyAddr
+
 # Store the script home.. where the "depend-install-ubuntu.sh was located
 scriptdir=$(dirname -- $(readlink -fn -- "$0"))   
 
@@ -10,7 +13,6 @@ cd temp_install_src
 
 # Install some packages..
 sudo apt-get update
-sudo apt-get install -y curl
 sudo apt-get install -y wget
 sudo apt-get install -y xz-utils
 sudo apt-get install -y texinfo
@@ -62,7 +64,7 @@ fi
 if (command -v node > /dev/null); then
     echo "node already installed.."
 else
-    curl -sL https://deb.nodesource.com/setup_10.x -o nodesource_setup.sh
+    wget https://deb.nodesource.com/setup_10.x -O nodesource_setup.sh
     sudo bash nodesource_setup.sh
     sudo apt-get install nodejs
 fi
@@ -134,6 +136,8 @@ fi
 
 echo "Setting up the NPM modules in the user directory..."
 echo
+npm config set proxy $proxyAddr
+npm config set https-proxy $proxyAddr
 cd $HOME
 npm install mqtt
 npm install command-line-args
