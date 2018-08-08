@@ -66,7 +66,7 @@ if (command -v node > /dev/null); then
 else
     wget https://deb.nodesource.com/setup_10.x -O nodesource_setup.sh
     sudo bash nodesource_setup.sh
-    sudo apt-get install nodejs
+    sudo apt-get install -y nodejs
 fi
 
 cd
@@ -154,7 +154,7 @@ cd $scriptdir
 # install the following here..
 npm install ohm-js
 
-
+sudo npm install -g node-gyp
 
 echo
 echo

@@ -67,8 +67,8 @@ fi
 if (command -v node > /dev/null); then
     echo "node already installed.."
 else
-    sudo apt-get install -y python-software-properties
-    curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+    wget https://deb.nodesource.com/setup_10.x -O nodesource_setup.sh
+    sudo bash nodesource_setup.sh
     sudo apt-get install -y nodejs
 fi
 
@@ -83,7 +83,7 @@ else
     mkdir build
     cd build
     cmake ..
-    cmake --build
+    cmake --build .
     ctest -G Debug
     sudo cmake --build . --target install
     sudo ldconfig
