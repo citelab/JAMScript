@@ -83,7 +83,7 @@ else
     mkdir build
     cd build
     cmake ..
-    cmake --build
+    cmake --build .
     ctest -G Debug
     sudo cmake --build . --target install
     sudo ldconfig
