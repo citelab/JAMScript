@@ -100,7 +100,6 @@ JAMJS <: ES6 {
     display = "display" ~identifierPart
     flow = "flow" ~identifierPart
     graph = "graph" ~identifierPart
-    in := "in" ~identifierPart
     is = "is" ~identifierPart
     inflow = "inflow" ~identifierPart
     jasync = "jasync" ~identifierPart
