@@ -1,0 +1,82 @@
+Thoughts on Fault Tolerance
+
+Fog Fault Tolerance
+
+Fog fails:
+Device gets a notification from the advertisement service.
+Device updates the fogcache. If the failed fog is the current fog, we need
+to set it as failed. J needs to set it as failed. C devices (all of them)
+should get the failed messages as well.
+
+Now the application could be running (a) an async task or (b) sync task
+at the time of failure.
+
+If the async task is being executed, we don't notice the failure.
+If the sync task is being executed, we will notice the failure. I mean the
+application will see the failure because the requested result would not
+appear. Here I am considering a device wanting a result from the fog via
+a sync call.
+
+We have two options: change the fog as soon as we detect a change
+or wait for the application to request a change through a sync call
+(C2J sync call).
+
+Disadvantage of delaying the switch is that all the async calls would have
+failed because there is no valid fog. The advantage of delaying is that the
+application is either going to execute the functions in the correct fog
+or not. We also have an unknown situation if the program does not have a
+C2J sync call at all. How or when do we establish the correct fog? Is
+it the fog we have when the program starts that is considered the correct
+fog? So a program without C2J sync calls cannot reestablish state at the
+fog.
+
+Now.. lets consider the situation where the fog is switched as soon as
+possible. That is we get a down notification and then we run the FogSelector()
+routine to figure out an alternative fog and try to connect with another one.
+We could use different measures in determining the replacement fog
+for the failed one such as network proximity, data freshness (if that is quantifiable), etc.
+
+Because the fog that failed has been replaced with another one, we reduce
+the number of failed C2J calls. There is a fog to execute the calls from the device.
+However, there could be different fogs at different times.
+
+How do we deal with the DATA CONSISTENCY ISSUE?
+
+Should we ensure that the device is being switched over to a fog that contains
+all the updates? This is the traditional approach - could be quite costly
+to implement.
+
+Here is the approach we want to proceed with.
+
+When a device relies on a particular fog's correct operation, we say that the
+device is bound to the fog. Any device that is bound to a particular fog would fail
+with its computation if the fog fails. So, if a device runs a program and the whole
+program is bound to the fog, the device is not fault tolerant. It is bound to fail
+when the fog goes down. The programming pattern recommended by JAMScript and may
+be examined in the future by a JAMScript program analyzer would be the following.
+
+We bind the device to a fog at the function scope. We expect the function to have
+a limited runtime. Because the device is bound to the fog for the duration of the
+function, we have fault tolerance the following way.
+
+When the function starts off, it is going to bind to a particular fog by
+asking the fog to give a piece of work. The function can do this by running a
+C2J sync function that returns a result from the fog.
+
+If we are able to complete the function with the same fog, we have a successful
+execution of the function. If the fog fails before the function completes, we have
+problem. The program can decide how the situation is going to be handled.
+
+Now there are two options for the way the fault is going to be detected. I mean
+a fog change or failure is going to be detected by the function.
+
+
+
+
+
+We should not bind a whole program at the device to a fog.
+The device should bind inside a function that runs to completion within a
+given time. We expect the fog to stay alive with high probability during that time.
+However, fog could fail and we need to have a backup plan.
+
+How can we propagate execution error through the function?

@@ -1,97 +1,60 @@
 
 #include <unistd.h>
-#include <MQTTClient.h>
+#include <MQTTAsync.h>
 #include <string.h>
 
 #include "mqtt.h"
 #include "command.h"
 
+extern char app_id[64];
 
-
-MQTTClient mqtt_open(char *mhost) 
+MQTTAsync mqtt_create(char *mhost, int i, char *devid)
 {
-    MQTTClient mcl;
-    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
+    MQTTAsync mcl;
 
     char clientid[64];
-    sprintf(clientid, "CLIENTID-%d", getpid());
+    sprintf(clientid, "%s-%d-%d", devid, i, getpid());
 
-    MQTTClient_create(&mcl, mhost, clientid, MQTTCLIENT_PERSISTENCE_NONE, NULL);
-    conn_opts.keepAliveInterval = 20;
-    conn_opts.cleansession = 1;
-
-    int rc;
-
-    // OK, MQTTClient is actually a typedef on void *
-    if ((rc = MQTTClient_connect(mcl, &conn_opts)) != MQTTCLIENT_SUCCESS)
+    if (MQTTAsync_create(&mcl, mhost, clientid, MQTTCLIENT_PERSISTENCE_NONE, NULL) == MQTTASYNC_SUCCESS)
+        return mcl;
+    else
         return NULL;
-
-    MQTTClient_subscribe(mcl, "/admin/announce/all", 1);
-
-    return mcl;
 }
 
-
-MQTTClient mqtt_reopen(MQTTClient mcl)
-{
-    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
-    conn_opts.keepAliveInterval = 20;
-    conn_opts.cleansession = 1;
-
-    int rc;
-
-    // OK, MQTTClient is actually a typedef on void *
-    if ((rc = MQTTClient_connect(mcl, &conn_opts)) != MQTTCLIENT_SUCCESS)
-        return NULL;
-
-    MQTTClient_subscribe(mcl, "/admin/announce/all", 1);
-
-    return mcl;
-}
 
 // Subscribe using QoS level 1
 //
-void mqtt_subscribe(MQTTClient mcl, char *topic) 
+void mqtt_subscribe(MQTTAsync mcl, char *topic)
 {
+    char fulltopic[128];
+    sprintf(fulltopic, "/%s%s", app_id, topic);
+
     if (topic != NULL)
-        MQTTClient_subscribe(mcl, topic, 1);
+        MQTTAsync_subscribe(mcl, fulltopic, 1, NULL);
 }
 
-void mqtt_publish(MQTTClient mcl, char *topic, command_t *cmd)
+void mqtt_onpublish(void* context, MQTTAsync_successData* response)
 {
-    if (MQTTClient_publish(mcl, topic, cmd->length, cmd->buffer, 1, 0, NULL) != MQTTCLIENT_SUCCESS)
-        printf("WARNING!! Unable to publish message to MQTT broker - topic: %s", topic);
-
+    command_t *cmd = (command_t *)context;
+    command_free(cmd);
 }
 
-command_t *mqtt_receive(MQTTClient mcl, char *cmdstr, char *topic, int timeout)
+
+// Publish without retain..QoS level 1
+//
+void mqtt_publish(MQTTAsync mcl, char *topic, command_t *cmd)
 {
-    char *topicname;
-    int tlen;
-    MQTTClient_message *msg;
-    if (MQTTClient_receive(mcl, &topicname, &tlen, &msg, timeout) == MQTTCLIENT_SUCCESS)
-    {
-        // timeout occured..
-        if (msg == NULL)
-            return NULL;
-        
-        // if wrong topic, ignore the message 
-        if (strcmp(topic, topicname) != 0)
-            return NULL;
+    if (MQTTAsync_isConnected(mcl) == false)
+        printf("WARNING! The handle.. is offline..\n");
 
-        nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
-        command_t *cmd = command_from_data(NULL, nv);
-        nvoid_free(nv);
+    char fulltopic[128];
+    sprintf(fulltopic, "/%s%s", app_id, topic);
 
-        // if wrong command in the message, ignore the message as well
-        if (strcmp(cmd->cmd, cmdstr) != 0)
-        {
-            command_free(cmd);
-            return NULL;
-        }
+    MQTTAsync_responseOptions opts = MQTTAsync_responseOptions_initializer;
+    opts.onSuccess = mqtt_onpublish;
+    opts.context = cmd;
 
-        return cmd;
-    }
-
-    return NULL;
+    int rc = MQTTAsync_send(mcl, fulltopic, cmd->length, cmd->buffer, 1, 0, &opts);
+    if (rc != MQTTASYNC_SUCCESS)
+        printf("WARNING!! Unable to publish message (error %d) to MQTT broker - topic: %s, cmdr %s\n", rc, topic, cmd->cmd);
 }

@@ -26,23 +26,126 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <dirent.h>
 
 #include "core.h"
 #include "mqtt.h"
-#include "uuid4.h"
 #include "command.h"
+#include "comboptr.h"
+#include "uuid4.h"
+#include "MQTTAsync.h"
+
+
+void core_setup(corestate_t *cs, int port)
+{
+    DIR *dir = NULL;
+    FILE *fp = NULL;
+    char portstr[64];
+    char machtype[64];
+    char fname[64];
+
+    // Save the port..
+    cs->port = port;
+
+    // Spin for at most 60 seconds for the directory to show up
+    //
+    sprintf(portstr, "%d", port);
+    for (int i = 0; (i < 60 && dir == NULL); i++)
+    {
+        dir = opendir(portstr);
+        sleep(1);
+    }
+
+    if (dir == NULL)
+    {
+        printf("ERROR! Missing ./%d folder.\n", port);
+        exit(1);
+    }
+
+    sprintf(fname, "./%d/machType", port);
+    // Spin again if needed for the machType in the directory to show up
+    for (int i = 0; (i < 10 && fp == NULL); i++)
+    {
+        fp = fopen(fname, "r");
+        sleep(1);
+    }
+
+    if (fp == NULL)
+    {
+        printf("ERROR! Opening the file %s\n", fname);
+        exit(1);
+    }
+
+    if (fscanf(fp, "%s", machtype) != 1)
+    {
+        printf("ERROR! Malformed device type in the configuration file\n");
+        exit(1);
+    }
+    if (strcmp(machtype, "device") != 0)
+    {
+        printf("ERROR! Can't connect C to a J of %s type\n", machtype);
+        exit(1);
+    }
+
+    sprintf(fname, "./%d/cdevId.%d", port, cs->serial_num);
+    if (access(fname, F_OK) != -1)
+    {
+        char devid[UUID4_LEN+1];
+        // Get the device ID from the file... check for consistency..
+        fp = fopen(fname, "r");
+        if (fp == NULL)
+        {
+            printf("ERROR! Opening the file %s\n", fname);
+            printf("Start the J node first and then the C node\n");
+            exit(1);
+        }
+        if (fscanf(fp, "%s", devid) != 1)
+        {
+            printf("ERROR! Malformed device ID found in the configuration file\n");
+            printf("Configuration file at %s is corrupted\n", fname);
+            exit(1);
+        }
+
+        cs->device_id = strdup(devid);
+    }
+    else
+    {
+        // Create the deviceId and store it..
+        char buf[UUID4_LEN];
+        uuid4_generate(buf);
+        cs->device_id = strdup(buf);
+
+        // Save it under fname..
+        fp = fopen(fname, "w");
+        if (fp == NULL)
+        {
+            printf("ERROR! Unknown permission issue in opening the file %s\n", fname);
+            printf("Exiting.\n");
+            exit(1);
+        }
+        fprintf(fp, "%s", cs->device_id);
+        fclose(fp);
+    }
+    sprintf(fname, "./%d/cdevProcessId.%d", port, cs->serial_num);
+    fp = fopen(fname, "w");
+    if (fp == NULL)
+    {
+        printf("ERROR! Unknown permission issue in opening the file %s\n", fname);
+        printf("Exiting.\n");
+        exit(1);
+    }
+    fprintf(fp, "%d", getpid());
+    fclose(fp);
+}
+
 
 // The core_init() is the bootstrapping function for JAMlib. It runs the MQTT client
-// (Paho) library in single thread mode - synchronous send and receive. Later we switch
-// it to multi-threaded mode. 
+// in asynchronous mode - it uses a slightly restricted callback to listen to a subset
+// of messages. The restriction is lifted after the core_init() phase is over.
 //
 
-
-corestate_t *core_init(int port, int timeout)
+corestate_t *core_init(int port, int serialnum)
 {
-    command_t *scmd, *rcmd, *rcmd2;
-    char serverhost[64];
-    int count;
     #ifdef DEBUG_LVL1
         printf("Core initialization...");
     #endif
@@ -50,163 +153,149 @@ corestate_t *core_init(int port, int timeout)
     // create the core state structure..
     corestate_t *cs = (corestate_t *)calloc(1, sizeof(corestate_t));
     // device_id set inside the following function
-    core_setup(cs, timeout);
-    sprintf(serverhost, "tcp://localhost:%d", port);
-    // open an mqtt connection to localhost
-    cs->mqttserv[0] = mqtt_open(serverhost);
-    if (cs->mqttserv[0] == NULL)
-    {
-        printf("\nERROR! Unable to connect to the MQTT server at [%d].\n", port);
-        printf("** Check whether an MQTT server is running at [%d] **\n\n", port);
-        exit(1);
-    }
+    cs->cf_pending = true;
+    cs->serial_num = serialnum;
 
-    // send register message
-    scmd = command_new("REGISTER", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
-    mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd);
-    rcmd = mqtt_receive(cs->mqttserv[0], "REGISTER-ACK", "/admin/announce/all", cs->timeout);
-    // if we did not get the reply.. wait for the PING from an active server node
-    if (rcmd == NULL) 
-    {
-        // wait with a large timeout.. about 1 hr.
-        rcmd = mqtt_receive(cs->mqttserv[0], "PING", "/admin/announce/all", 1000 * 60 * 60);
-        if (rcmd == NULL)
-        {
-            printf("ERROR! Connection cannot be established to the server (J). \nQuiting.\n\n");
-            exit(1);
-        }
-        command_free(rcmd);
-        // send register message
-        scmd = command_new("REGISTER", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
-        mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd);
-        rcmd = mqtt_receive(cs->mqttserv[0], "REGISTER-ACK", "/admin/announce/all", cs->timeout);
-        
-        // get the register acknowledge message 
-        if (rcmd == NULL) 
-        {
-            // if the acknowledege timed out or registration failed.. report it.
-            printf("\nQUITING. REGISTER failed. Service component (J) not running?? \n\n");
-            exit(1);
-        }
-        command_free(rcmd);
-    }
-    else 
-        command_free(rcmd);
-
-    cs->mqttenabled[0] = true;
-
-    // get information about the machine state: fog address, cloud address
-    scmd = command_new("GET-CF-INFO", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
-
-    // No need to retry many times.. the server is already there..
-    count = 0;
-    do {
-        mqtt_publish(cs->mqttserv[0], "/admin/request/all", scmd);
-        rcmd = mqtt_receive(cs->mqttserv[0], "PUT-CF-INFO", "/admin/announce/all", cs->timeout);
-    } while ((rcmd == NULL) && (count++ < 5));
-    command_free(scmd);
-
-    if (rcmd == NULL) 
-    {
-        // Unable to get fog/cloud status from the broker..
-        printf("\nERROR! Unable to get cloud/fog status information.. \n");
-        exit(1);
-    } else
-    {        
-        // process the information that we just received..
-        for (int i = 0; i < rcmd->nargs; i++) 
-        {
-            cs->mqttserv[i+1] = mqtt_open(rcmd->args[i].val.sval);
-            if (cs->mqttserv[i+1] != NULL) 
-            {
-                scmd = command_new("REGISTER", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
-                mqtt_publish(cs->mqttserv[i+1], "/admin/request/all", scmd); 
-                command_free(scmd);
-    
-                // get the register acknowledge message 
-                if ((rcmd2 = mqtt_receive(cs->mqttserv[i+1], "REGISTER-ACK", "/admin/announce/all", cs->timeout)) == NULL)
-                    cs->mqttenabled[i+1] = false;
-                else
-                {
-                    cs->mqttenabled[i+1] = true;
-                    command_free(rcmd2);
-                }
-            }
-        }
-    }
-
-    // We need to turn on the Asynchronous mode in the MQTT client...
-    // This could be done later.. when we know the callbacks
+    // redserver and redport are already initialized to NULL and 0, respectively
+    //
+    core_setup(cs, port);
     return cs;
 }
 
 
-void core_setup(corestate_t *cs, int timeout)
-{
-    cs->timeout = timeout;
 
-    char buf[UUID4_LEN];
-    uuid4_generate(buf);
-    cs->device_id = strdup(buf);
+void core_createserver(corestate_t *cs, int indx, char *url)
+{
+    // If we are trying to create the previous server... just return!
+    // This happens because the server previously connected became available after
+    // a disconnection..
+    if (cs->mqtthost[indx] != NULL && strcmp(cs->mqtthost[indx], url) == 0)
+        return;
+
+    cs->mqtthost[indx] = strdup(url);
+
+    // open an mqtt connection to localhost
+    cs->mqttserv[indx] = mqtt_create(cs->mqtthost[indx], indx, cs->device_id);
+
+    if (cs->mqttserv[indx] == NULL)
+    {
+        printf("WARNING! Cannot create MQTT endpoint at %s\n", url);
+        printf("Could be an error in the endpoint discovered or configured at %s.\n", cs->mqtthost[0]);
+    }
+
+//    cs->mqttenabled[indx] = false;
 }
 
-// Core callback handlers for MQTT in Async mode 
-void core_connlost(void *ctx, char *cause)
+void core_reconnect_i(corestate_t *cs, int indx)
 {
+    int rc;
 
-}
-
-int core_msgarr(void *ctx, char *topicname, int tlen, MQTTClient_message *msg)
-{
-    return 0;
-}
-
-void core_delcomp(void *ctx, MQTTClient_deliveryToken dt)
-{
-    
-}
-
-
-// We are trying to do re-initialization because the connection is lost 
-// We could have inferred this through a callback trigger
-//
-// TODO: We need have a core reinitialization routine. The challenge
-// here is to handle the reply in the asynchronous mode. We need to create a
-// local context and let the handlers update that context. We need to have asynchronous 
-// receive routines that would actually receive from the local context. Check the local
-// context for the completion of the reception. Get the message from there. Use a sleep 
-// in the receiver to check. 
-// 
-void core_reinit(corestate_t *cs)
-{
-    int i;
-    command_t *scmd;
-
-    corecontext_t *ctx = (corecontext_t *)calloc(1, sizeof(corecontext_t));
-
-    // Reset the callback handlers
-    for (i = 0; i < 3; i++)
-        MQTTClient_setCallbacks(cs->mqttserv[i], ctx, core_connlost, core_msgarr, core_delcomp);
-
-    // TODO: This is totally incomplete.
+    rc = MQTTAsync_reconnect(cs->mqttserv[indx]);
+    if (rc != MQTTASYNC_SUCCESS)
+        printf("WARNING!! Unable to reconnect to %d\n", indx);
+    else
+        printf("Reconnected...to %d\n", indx);
 }
 
 
-void core_disconnect(corestate_t *cs)
+void core_connect(corestate_t *cs, int indx, void (*onconnect)(void *, MQTTAsync_successData *), char *hid)
 {
-    int i;
+    int rc;
 
-    for(i = 0; i < 3; i++)
-        if (cs->mqttenabled[i] == true)
-            MQTTClient_disconnect(cs->mqttserv[i], 500);
-    usleep(500 * 1000);
+    MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
+    conn_opts.keepAliveInterval = 20;
+    conn_opts.cleansession = 1;
+    conn_opts.onSuccess = onconnect;
+    conn_opts.context = cs;
+    conn_opts.onFailure = NULL;
+
+    rc = MQTTAsync_connect(cs->mqttserv[indx], &conn_opts);
+
+    if ((rc != MQTTASYNC_SUCCESS) && (indx == 0))
+    {
+        printf("\nERROR! Unable to connect to the MQTT server at [%s].\n", cs->mqtthost[indx]);
+        printf("** Check whether an MQTT server is running at [%s] **\n\n", cs->mqtthost[indx]);
+        exit(1);
+    }
+    else if ((rc != MQTTASYNC_SUCCESS) && (indx != 0))
+    {
+        printf("\nWARNING! Unable to reconnect to the MQTT server at [%s].\n", cs->mqtthost[indx]);
+        printf("** Check whether an MQTT server is running at [%s] **\n\n", cs->mqtthost[indx]);
+        printf("Device could have moved away from the fog connection zone.\n");
+    }
+
+    // We are saving the eventual host that would be connected here.
+    // The connection won't be alive until the on-X-connect() handler is fired
+    //
+    if (hid != NULL)
+        cs->hid[indx] = strdup(hid);
 }
 
-void core_reconnect(corestate_t *cs)
+void core_sethost(corestate_t *cs, int indx, char *hid)
 {
-    int i;
+    if (hid != NULL)
+        cs->hid[indx] = strdup(hid);
+}
 
-    for(i = 0; i < 3; i++)
-        if (cs->mqttenabled[i] == true)
-            cs->mqttserv[i] = mqtt_reopen(cs->mqttserv[i]);
+bool core_disconnect(corestate_t *cs, int indx, char *hid)
+{
+    int rc;
+
+    // If this is a stray disconnection request, we should just ignore it.
+    // Only valid request is the server (fog, cloud, device) we are connected to...
+    if ((cs->mqttenabled[indx]) &&
+        (cs->hid[indx] != NULL) &&
+        (strcmp(cs->hid[indx], hid) != 0))
+            return false;
+    // release the old one..
+    free(cs->hid[indx]);
+    cs->hid[indx] = NULL;
+
+    MQTTAsync_disconnectOptions dconn_opts = MQTTAsync_disconnectOptions_initializer;
+    dconn_opts.timeout = 0;
+    dconn_opts.onSuccess = NULL;
+    dconn_opts.context = cs;
+    dconn_opts.onFailure = NULL;
+
+    rc = MQTTAsync_disconnect(cs->mqttserv[indx], &dconn_opts);
+
+    printf("Core.. disconnected... %s\n", cs->mqtthost[indx]);
+    cs->mqttenabled[indx] = false;
+
+    return true;
+}
+
+
+void core_setcallbacks(corestate_t *cs, comboptr_t *ctx,
+        MQTTAsync_connectionLost *cl,
+        MQTTAsync_messageArrived *ma,
+        MQTTAsync_deliveryComplete *dc)
+{
+    MQTTAsync_setCallbacks(cs->mqttserv[ctx->iarg], ctx, cl, ma, dc);
+}
+
+
+
+void core_set_subscription(corestate_t *cs, int level)
+{
+    if (!cs->mqttenabled[level])
+        return;
+
+    mqtt_subscribe(cs->mqttserv[level], "/admin/announce/all");
+    mqtt_subscribe(cs->mqttserv[level], "/level/func/reply/#");
+    mqtt_subscribe(cs->mqttserv[level], "/mach/func/request");
+            // Subscribe to the "go" topic for sync purpose.
+    mqtt_subscribe(cs->mqttserv[level], "/admin/request/go");
+}
+
+
+void core_check_pending(corestate_t *cs)
+{
+    bool flag = false;
+    for (int i = 0; i < mheight; i++)
+        if (!cs->mqttenabled[i])
+            flag = true;
+
+    // cf_pending is true if we are still seeking information.
+    cs->cf_pending = flag;
 }

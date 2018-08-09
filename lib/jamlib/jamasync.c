@@ -8,7 +8,64 @@
 #include "free_list.h"
 
 
-// The jactivity structure needs to be defined outside the function. 
+// Local execution handler
+//
+void jam_lexec_async(jamstate_t *js, char *aname, ...)
+{
+    va_list args;
+    nvoid_t *nv;
+    int i = 0;
+    arg_t *qargs = NULL;
+
+    jactivity_t *jact = jam_create_activity(js);
+    activity_callback_reg_t *creg = activity_findcallback(js->atable, aname);
+
+    jact->type = ASYNC;
+    char *fmask = creg->signature;
+    if (strlen(fmask) > 0)
+    {
+        qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
+
+        va_start(args, aname);
+
+        while (*fmask)
+        {
+            switch (*fmask++)
+            {
+                case 'n':
+                    nv = va_arg(args, nvoid_t*);
+                    qargs[i].val.nval = nv;
+                    qargs[i].type = NVOID_TYPE;
+                    break;
+                case 's':
+                    qargs[i].val.sval = strdup(va_arg(args, char *));
+                    qargs[i].type = STRING_TYPE;
+                    break;
+                case 'i':
+                    qargs[i].val.ival = va_arg(args, int);
+                    qargs[i].type = INT_TYPE;
+                    break;
+                case 'd':
+                case 'f':
+                    qargs[i].val.dval = va_arg(args, double);
+                    qargs[i].type = DOUBLE_TYPE;
+                    break;
+                default:
+                    break;
+            }
+            i++;
+        }
+        va_end(args);
+    }
+
+    command_t *cmd = command_new_using_arg_only("LEXEC-ASY", "-", "-", 0, aname, jact->actid, "-", qargs, i);
+    activity_thread_t *athr = athread_getbyindx(js->atable, jact->jindx);
+    pqueue_enq(athr->inq, cmd, sizeof(command_t));
+
+    // activity is deallocated after the run has completed...
+}
+
+// The jactivity structure needs to be defined outside the function.
 // The memory is held until freed by an explicit activity_free()
 //
 //
@@ -19,16 +76,30 @@ jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, i
     int i = 0;
     arg_t *qargs;
 
+    if (jact == NULL)
+        return NULL;
+
     assert(fmask != NULL);
 
-    // printf("Time 1: %ld\n", activity_getuseconds());
-
+    // wait for 250 milliseconds before failing.
+    if (wait_for_machine(js, requested_level(condvec), 1000) < 0)
+    {
+        int lv = requested_level(condvec);
+        if (lv == 3)
+            printf("ERROR! Cloud required by the program - unable to connect to Cloud\n");
+        else if (lv == 2)
+            printf("ERROR! Fog required by the program - unable to connect to Fog\n");
+        else
+            printf("ERROR! Unable to connect to J node\n");
+        return NULL;
+    }
 
     if (strlen(fmask) > 0)
         qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
     else
         qargs = NULL;
 
+    jact->type = ASYNC;
     cbor_item_t *arr = cbor_new_indefinite_array();
     cbor_item_t *elem;
     struct alloc_memory_list *list = init_list_();
@@ -38,7 +109,7 @@ jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, i
     while (*fmask)
     {
         elem = NULL;
-        switch(*fmask++)
+        switch (*fmask++)
         {
             case 'n':
                 nv = va_arg(args, nvoid_t*);
@@ -75,155 +146,70 @@ jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, i
     }
     va_end(args);
 
-  //  printf("Time 2: %ld\n", activity_getuseconds());
-
     if (jact != NULL)
     {
         command_t *cmd = command_new_using_cbor("REXEC-ASY", "-", condstr, condvec, aname, jact->actid, js->cstate->device_id, arr, qargs, i);
         cmd->cbor_item_list = list;
-
-  //      printf("Time 3: %ld\n", activity_getuseconds());
-
-        jam_async_runner(js, jact, cmd);
-
-  //      printf("Time 4: %ld\n", activity_getuseconds());
-                
-        return jact;
-    } 
+        return jam_async_runner(js, jact, cmd);
+    }
     else
         return NULL;
 }
 
 
-void jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
+jactivity_t *jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
 {
-    command_t *rcmd;
-    int error_count = 0;
+    int timeout = 150;
+    bool valid_acks = false;
+    int results;
 
-    // TODO: Why should we use a runtable? Long term tracking 
-    // of activities we have run? When are the entries deleted?
-    // Can we just use the activity table?
-    // May be we can't because the activity table is tied to the 
-    // socket (queue) and we need to reuse them sooner?
-    //
+    #ifdef DEBUG_LVL1
+        printf("Starting JAM ASYNC exec runner... \n");
+    #endif
 
-//    printf("Time 3.1: %ld\n", activity_getuseconds());
-    
-    int exp_replies = cloud_tree_height(js);
     runtable_insert(js, cmd->actid, cmd);
     runtableentry_t *act_entry = runtable_find(js->rtable, cmd->actid);
+    // No need to release act_entry - it is part of the runtable
 
     if (act_entry == NULL)
     {
-        printf("Cannot find activity ... \n");
-        jact->state = FATAL_ERROR;
+        printf("FATAL ERROR!! Cannot find activity ... \n");
         exit(0);
     }
 
-  //  printf("Time 3.2: %ld\n", activity_getuseconds());
+    activity_thread_t *athr = athread_getbyindx(js->atable, jact->jindx);
 
-    // Send the command to the remote side  
-    // The send is executed via the worker thread..
-    queue_enq(jact->thread->outq, cmd, sizeof(command_t));
+    // Repeat for three times ... under failure..
+    //for (int i = 0; i < 3 && !valid_acks; i++)
+    //{
+        command_hold(cmd);
+        // Send the command to the remote side
+        // The send is executed via the worker thread..
+        queue_enq(athr->outq, cmd, sizeof(command_t));
 
-    // We expect act_entry->num_replies from the remote side 
-    for (int i = 0; i < exp_replies; i++)
-    {
-    
-   //     printf("Time 3.3: %ld\n", activity_getuseconds());
-        
-        // TODO: Fix the constant 300 milliseconds here..   
-        jam_set_timer(js, jact->actid, 10);
-        nvoid_t *nv = pqueue_deq(jact->thread->inq);
-    
-    //    printf("Time 3.4: %ld\n", activity_getuseconds());
+        jam_set_timer(js, jact->actid, timeout);
+        nvoid_t *nv = pqueue_deq(athr->resultq);
+        jam_clear_timer(js, jact->actid);
 
-        rcmd = NULL;
-        if (nv != NULL) 
+        if (nv != NULL)
         {
-            rcmd = (command_t *)nv->data;
+            switch (nv->len) {
+                case sizeof(int):
+                    memcpy(&results, nv->data, sizeof(int));
+                    if (results)
+                        valid_acks = true;
+                    break;
+
+                default:
+                    break;
+            }
             free(nv);
-
-            if (strcmp(rcmd->cmd, "TIMEOUT") == 0 ||
-                strcmp(rcmd->cmd, "REXEC-ACK") == 0)
-            {
-                error_count++;
-                printf("----- TIMEOUT-----------\n\n");
-            }
-            else
-            {
-                jam_clear_timer(js, jact->actid);        
-                jact->replies[i - error_count] = rcmd;
-            }
-        } 
-    }
-
- //   printf("Time 3.5: %ld\n", activity_getuseconds());
-
-    if (error_count > 0) {
-        jact->state = PARTIAL;
-        // We have some missing replies.. see what we are missing
-        process_missing_replies(jact, exp_replies, error_count);
-    }
-    else
-    {
-        // Examine the replies to form the status code 
-        // We have all the replies.. so no missing nodes
-        //
-        set_jactivity_state(jact, exp_replies);
-    }
-
-//    printf("Time 3.6: %ld\n", activity_getuseconds());
-
-    // Set the access time
-    jact->accesstime = activity_getseconds();
-
+        }
+    //    jact = activity_renew(js->atable, jact);
+    //}
     // Delete the runtable entry.
     runtable_del(js->rtable, act_entry->actid);
+    command_free(cmd);
 
-}
-
-
-void set_jactivity_state(jactivity_t *jact, int nreplies)
-{
-    for (int i = 0; i < nreplies; i++)
-    {
-        if (strcmp(jact->replies[i]->cmd, "REXEC-ACK") == 0)
-            jact->state = MAX(jact->state, STARTED);
-        else
-        if ((strcmp(jact->replies[i]->cmd, "REXEC-NAK") == 0) &&
-            (strcmp(jact->replies[i]->args[0].val.sval, "ILLEGAL-PARAMS") == 0))
-            jact->state = MAX(jact->state, PARAMETER_ERROR);
-        else
-        if ((strcmp(jact->replies[i]->cmd, "REXEC-NAK") == 0) &&
-            (strcmp(jact->replies[i]->args[0].val.sval, "NOT-FOUND") == 0))
-            jact->state = MAX(jact->state, FATAL_ERROR);
-        else
-        if ((strcmp(jact->replies[i]->cmd, "REXEC-NAK") == 0) &&
-            (strcmp(jact->replies[i]->args[0].val.sval, "CONDITION-FALSE") == 0))
-            jact->state = MAX(jact->state, NEGATIVE_COND);
-    }
-}
-
-void process_missing_replies(jactivity_t *jact, int nreplies, int ecount)
-{
-    bool devicefound = false;
-
-    for (int i = 0; i < (nreplies - ecount); i++)
-        if (strcmp(jact->replies[i]->opt, "DEVICE") == 0)
-            devicefound = true;
-    if (devicefound)
-    {
-        // Send missing recomputing tasks to DEVICE. 
-        if (strcmp(jact->replies[0]->cmd, "REXEC-ACK") == 0)
-        {
-            command_t *scmd = jact->replies[0];
-            free(scmd->cmd);
-            scmd->cmd = strdup("REXEC-ASY2");
-            scmd = command_rebuild(scmd);
-            queue_enq(jact->thread->outq, scmd, sizeof(command_t));
-        }
-    }
-    else
-        jact->state = FATAL_ERROR;
+    return jact;
 }

@@ -24,7 +24,11 @@ In addition, Flow is used with Datastreams and Loggers in JAMScript.
 var array = [1, 2, 3, 4, 5];
 
 //For a very simple example. Let us count the number of even numbers in the array
+<<<<<<< HEAD
 var count = Flow.from(array).where((elem) => elem % 2 == 0).count();
+=======
+var count = Flow.from(array).where(elem => elem % 2 == 0).count();
+>>>>>>> JAMScript-beta/master
 
 //create a data window and return a new array
 var range = Flow.from(array).skip(1).limit(3).collect(Flow.toArray);
@@ -33,6 +37,7 @@ var range = Flow.from(array).range(1, 4).collect(Flow.toArray);
 
 //a few more possibilities
 var anotherArray = [6, 7, 8, 9];
+<<<<<<< HEAD
 var average = Flow.from(array).merge(anotherArray).select((elem) => elem * 5).average();
 
 //check if all students passed
@@ -41,6 +46,16 @@ var allPassed = Flow.from(studentScores).allMatch((score) => score >= 50);
 
 //an example of selectExpand: prints ["my","name","is","richboy"]
 console.log(Flow.from("my name is richboy").selectExpand((input) => input.split(" ")).collect(Flow.toArray()));
+=======
+var average = Flow.from(array).merge(anotherArray).select(elem => elem * 5).average();
+
+//check if all students passed
+var studentScores = [71, 90, 55, 50, 88, 67];
+var allPassed = Flow.from(studentScores).allMatch(score => score >= 50);
+
+//an example of selectExpand: prints ["my","name","is","richboy"]
+console.log(Flow.from("my name is richboy").selectExpand(input => input.split(" ")).collect(Flow.toArray()));
+>>>>>>> JAMScript-beta/master
 
 //an example of selectFlatten: prints [1,2,3,4,5,6,7,8,9]
 console.log(Flow.from([[1,2,3],[4,5,6],[7,8,9]]).selectFlatten().collect(Flow.toArray()));

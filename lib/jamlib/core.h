@@ -25,38 +25,55 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <time.h>
 #include <stdbool.h>
-#include <MQTTClient.h>
+#include <MQTTAsync.h>
+
+#include "command.h"
+#include "comboptr.h"
+#include "MQTTAsync.h"
 
 #define MAX_SERVERS             3
+#define MAX_PENDING_CNT         500
 
 typedef struct _corestate_t
 {
     char *device_id;
+    int port;
+    bool cf_pending;
+    int serial_num;
 
-    // TODO: May be unused? Can we remove this one??
-    int timeout;
-
-    MQTTClient mqttserv[3];
+    MQTTAsync mqttserv[3];
     bool mqttenabled[3];
+    bool mqttpending[3];
+    int pendingcount;
+    char *mqtthost[3];
+    char *hid[3];           // This points to the endpoint that is connected through MQTT broker
+
+    char *redserver;
+    int redport;
 
 } corestate_t;
 
-typedef struct  _corecontext_t
-{
-    int xx;
 
-} corecontext_t;
+extern int mheight;
+
 
 // ------------------------------
 // Function prototypes..
 // ------------------------------
 
 // Initialize the core.. the first thing we need to call
-corestate_t *core_init(int port, int timeout);
-void core_setup(corestate_t *cs, int timeout);
-void core_reinit(corestate_t *cs);
-
-void core_disconnect(corestate_t *cs);
-void core_reconnect(corestate_t *cs);
-
+corestate_t *core_init(int port, int serialnum);
+void core_setup(corestate_t *cs, int port);
+void core_set_redis(corestate_t *cs, char *server, int port);
+void core_createserver(corestate_t *cs, int indx, char *url);
+void core_reconnect_i(corestate_t *cs, int indx);
+void core_connect(corestate_t *cs, int indx, void (*onconnect)(void *, MQTTAsync_successData *), char *hid);
+void core_sethost(corestate_t *cs, int indx, char *hid);
+bool core_disconnect(corestate_t *cs, int indx, char *hid);
+void core_setcallbacks(corestate_t *cs, comboptr_t *ctx,
+        MQTTAsync_connectionLost *cl,
+        MQTTAsync_messageArrived *ma,
+        MQTTAsync_deliveryComplete *dc);
+void core_set_subscription(corestate_t *cs, int level);
+void core_check_pending(corestate_t *cs);
 #endif

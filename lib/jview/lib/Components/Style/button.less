@@ -1,0 +1,221 @@
+.btn {
+  display: inline-block;
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  padding: 7px 8px;
+  font-size: 13px;
+  border-radius: 4px;
+  min-width: 100px;
+  margin-right: 10px;
+  box-shadow:none !important;
+  text-decoration: none;
+  outline:0 !important;
+  &.btn-auto-style{
+    padding:0;
+    min-width:auto;
+    margin-right:0;
+  }
+  &[disabled] {
+    cursor: not-allowed;
+    opacity: .5;
+    &:hover{
+      color:fade(#373c56, 50%);
+    }
+  }
+  &:hover,
+  &:active {
+    text-decoration: none;
+  }
+  &:active {
+    outline: 0;
+    box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
+  }
+  &.btn-primary,&.btn-primary-auto,&.btn-primary-big {
+    color: #fff;
+    background-color: @primeColor;
+    border-color: @primeColor;
+    &:active,
+    &:hover,
+    &:focus {
+      color: #fff;
+      background-color: #2795e9;
+      border-color: #2795e9;
+    }
+    &[disabled]{
+      &:hover{
+        background-color: @primeColor;
+        border-color: @primeColor;
+      }
+    }
+  }
+  &.btn-empty-line,&.btn-empty-active{
+    color:@blackFontColor;
+    border-color:#aaa;
+    &:hover{
+      color:@primeColor;
+    }
+  }
+  &.btn-primary-big ,&.btn-empty-line,&.btn-empty-active{
+    width:178px;
+    font-size:20px;
+    padding-top:9px;
+    padding-bottom:10px;
+  }
+  &.btn-default,&.btn-auto {
+    color: @blackFontColor;
+    background-color: #f6f6f6;
+    border-color: #d3d3d3;
+    &:active,
+    &:hover,
+    &:focus {
+      color: @primeColor;
+    }
+  }
+  &.btn-auto,&.btn-primary-auto{
+    min-width:auto;
+    &.btn-padding-sm{
+      padding:2px;
+    }
+  }
+  &.btn-link {
+    color: @primeColor;
+    border-color: transparent;
+    background-color: transparent;
+    min-width: inherit;
+    margin: 0;
+    font-size: 12px;
+    padding-left: 0;
+    &:hover,
+    &:focus,
+    &:active {
+      text-decoration: underline;
+    }
+    &.arrow,&.arrow-no {
+      width:auto;
+      height:auto;
+      padding:0;
+      background-color:transparent;
+    }
+    &.arrow{
+      &:before,
+      &:after{
+        position:absolute;
+        content:"";
+        border-width:6px;
+        border-style:solid;
+        border-color:transparent;
+      }
+      &:before {
+        right:-18px;
+        top:5px;
+        border-top-color: @primeColor;
+      }
+      &:after {
+        right:-18px;
+        top:4px;
+        border-width:5px;
+        border-top-color: #fff;
+      }
+      &+div.droplist{
+        min-width:80px;
+      }
+    }
+  }
+  &.btn-green{
+    color: #fff;
+    background-color: #50c14e;
+    border-color: #50c14e;
+    &:active,
+    &:hover,
+    &:focus {
+      color: #fff;
+      background-color: #50c14e;
+      border-color: #50c14e;
+    }
+    &.btn-sm {
+      font-size:12px;
+    }
+  }
+  &.undefined {
+    color: #838894;
+    background-color: #f6f6f6;
+    border-color: #ccc;
+    width: inherit;
+    padding: 1px 12px;
+    margin-right: 8px;
+    min-width: 0;
+    font-size: 12px;
+    &:active,
+    &:hover,
+    &:focus {
+      color: #838894;
+      background-color: #cbcbcb;
+      border-color: #cbcbcb
+    }
+  }
+  &.btn-toggle {
+    background-color:transparent;
+    outline:0 !important;
+    &:hover,
+    &:focus {
+      color: @primeColor;
+      background-color: transparent;
+    }
+  }
+  &.btn-sm {
+    height:26px;
+    padding-top:0;
+    padding-bottom:0;
+    line-height:24px;
+  }
+  &.tab-btn {
+    background-color:transparent;
+    border:none;
+    height:40px;
+    margin-top:-11px;
+  }
+  &.tab-btn-active {
+    position:relative;
+    border-left: 1px solid @borderColor1;
+    border-right: 1px solid @borderColor1;
+    border-radius:0;
+    &:after {
+      display:inline-block;
+      content:'';
+      position:absolute;
+      top:0;
+      right:0;
+      margin-left:-1px;
+      width:100%;
+      height:3px;
+      background-color:@primeColor;
+    }
+  }
+  &.btn-no-style{
+    padding:0;
+    min-width:auto;
+    margin-right:0;
+  }
+}
+.fix-btn-panel{
+  position:fixed;
+  left:0;
+  bottom:0;
+  width:100%;
+  background-color:#77787d;
+  .talign(center);
+  z-index:999;
+  &.formset{
+    padding-bottom:0;
+  }
+  .form-group{
+    .btn{
+      padding-top:8px;
+      padding-bottom:8px;
+      font-size:16px;
+    }
+  }
+}

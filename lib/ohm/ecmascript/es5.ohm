@@ -387,7 +387,7 @@ ES5 {
 
   // §A.4 Statements -- http://ecma-international.org/ecma-262/5.1/#sec-A.4
 
-  Statement
+  Statement (a statement)
     = Block
     | AssignmentStatement
     | VariableStatement
@@ -472,7 +472,7 @@ ES5 {
 
   // §A.5 Functions and Programs -- http://ecma-international.org/ecma-262/5.1/#sec-A.5
 
-  FunctionDeclaration
+  FunctionDeclaration (a function declaration)
     = function identifier "(" FormalParameterList ")" "{" FunctionBody "}"
 
   FunctionExpression
@@ -485,7 +485,7 @@ ES5 {
 
   FunctionBody = Directive* SourceElement*
 
-  SourceElement = Declaration | Statement
+  SourceElement (a declaration or a statement) = Declaration | Statement
 
   // Broken out so es6 can override to include ConstDecl and LetDecl
   Declaration = FunctionDeclaration

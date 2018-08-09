@@ -1,6 +1,7 @@
 {
   "name": "flows.js",
   "description": "A framework for distributed javascript data processing and data sharing.",
+<<<<<<< HEAD
   "version": "0.0.3",
   "license": "MIT",
   "repository": {
@@ -9,6 +10,17 @@
   },
   "dependencies": {
     "n-readlines": "= 0.2.7"
+=======
+  "version": "0.1.1",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anrl/JAMScript-beta.git/lib/flow"
+  },
+  "dependencies": {
+    "n-readlines": "~0.2.7",
+    "json-fn": ">=1.1.1"
+>>>>>>> JAMScript-beta/master
   },
   "engines": {
     "node": ">= 7.0.0"

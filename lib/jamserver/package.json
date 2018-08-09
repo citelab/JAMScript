@@ -1,24 +1,26 @@
 {
   "name": "jamserver",
   "description": "JServer for JAMScript environment",
-  "version": "0.0.3",
+  "version": "0.1.1",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/anrl/JAM.git/lib/jserver"
   },
   "dependencies": {
-    "cbor": "^3.0.0",
+    "bunyan": "^1.8.10",
+    "cbor": ">=3.0.0",
     "command-line-args": ">= 3.0.5",
     "deasync": ">=0.1.9",
+    "lockfile": "^1.0.3",
     "mime": ">=1.3.4",
     "mqtt": ">=2.6.2",
     "nanomsg": ">=3.1.2",
     "nedb": ">=1.7.4",
     "node-localstorage": ">= 1.3.0",
     "random-js": ">=1.0.8",
-    "redis-fast-driver": "^1.0.5",
-    "sync-exec": ">= 0.6.2"
+    "redis-fast-driver": "file:redis-fast-driver",
+    "sync-exec": "^0.6.2"
   },
   "engines": {
     "node": ">= 7.0.0"
@@ -29,6 +31,7 @@
   ],
   "preferGlobal": true,
   "files": [
-    "*.js"
+    "*.js",
+    "redis-fast-driver"
   ]
 }

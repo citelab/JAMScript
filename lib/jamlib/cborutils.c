@@ -26,6 +26,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <cbor.h>
 #include <string.h>
+#include <math.h>
 
 #include "cborutils.h"
 
@@ -47,38 +48,61 @@ char *cbor_get_string(cbor_item_t *item)
     return buf;
 }
 
+
+float cbor_get_float(cbor_item_t *item)
+{
+    int t = cbor_typeof(item);
+    if (t == CBOR_TYPE_NEGINT || t == CBOR_TYPE_UINT) {
+        printf("WARNING! Int value in the stream.. \n");
+        int i = cbor_get_integer(item);
+        return (float)i;
+    } else {
+        return cbor_float_get_float8(item);
+    }
+}
+
+
 int cbor_get_integer(cbor_item_t *item)
 {
-    switch (cbor_int_get_width(item)) {
-        case CBOR_INT_8:
-        if (cbor_typeof(item) == CBOR_TYPE_NEGINT)
-            return -1 * cbor_get_uint8(item);
-        else
-            return cbor_get_uint8(item);
-        break;
+    // Check if the other side is sending a float.. if so
+    // print a warning and convert to integer
+    if (cbor_typeof(item) == CBOR_TYPE_FLOAT_CTRL) {
+        printf("WARNING! Float value in the stream..\n");
+        float f = cbor_get_float(item);
+        return (int)lround(f);
+    } else {
 
-        case CBOR_INT_16:
-        if (cbor_typeof(item) == CBOR_TYPE_NEGINT)
-            return -1 * cbor_get_uint16(item);
-        else
-            return cbor_get_uint16(item);
-        break;
+        switch (cbor_int_get_width(item)) {
+            case CBOR_INT_8:
+            if (cbor_typeof(item) == CBOR_TYPE_NEGINT)
+                return -1 * cbor_get_uint8(item);
+            else
+                return cbor_get_uint8(item);
+            break;
 
-        case CBOR_INT_32:
-        if (cbor_typeof(item) == CBOR_TYPE_NEGINT)
-            return -1 * cbor_get_uint32(item);
-        else
-            return cbor_get_uint32(item);
-        break;
+            case CBOR_INT_16:
+            if (cbor_typeof(item) == CBOR_TYPE_NEGINT)
+                return -1 * cbor_get_uint16(item);
+            else
+                return cbor_get_uint16(item);
+            break;
 
-        case CBOR_INT_64:
-        if (cbor_typeof(item) == CBOR_TYPE_NEGINT)
-            return -1 * cbor_get_uint64(item);
-        else
-            return cbor_get_uint64(item);
-        break;
+            case CBOR_INT_32:
+            if (cbor_typeof(item) == CBOR_TYPE_NEGINT)
+                return -1 * cbor_get_uint32(item);
+            else
+                return cbor_get_uint32(item);
+            break;
 
+            case CBOR_INT_64:
+            if (cbor_typeof(item) == CBOR_TYPE_NEGINT)
+                return -1 * cbor_get_uint64(item);
+            else
+                return cbor_get_uint64(item);
+            break;
+
+        }
+        // error condition
+        return -1;
     }
-    // error condition
-    return -1;
 }

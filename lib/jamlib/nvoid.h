@@ -35,6 +35,7 @@ typedef struct _nvoid_t
 //
 
 nvoid_t *nvoid_new(void *data, int len);
+nvoid_t *nvoid_null();
 
 void nvoid_free(nvoid_t *n);
 nvoid_t *nvoid_append(nvoid_t *n, void *data, int len);

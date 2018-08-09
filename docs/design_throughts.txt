@@ -1,0 +1,41 @@
+
+Design Thoughts
+
+J2J Async Exception Processing
+
+Async processing in JAMScript does not support reliability. So if a node is initiating a
+J2J call it could not ensure that the call is actually completed. The call is at-most-once
+executed.
+
+Now, with exceptions we have an issue. Consider a J node initiating a J2J call. Remember in
+JAMScript, the call is a downcast. All nodes underneath the initiating J node will execute the call.
+If there are none, we should execute the exception. The problem comes in if we have a disconnection
+almost coinciding with the execution call.
+
+Caller -----------------------------> Callee
+
+Caller <----------------------------- Callee
+
+This is a simple protocol. We repeat this until the caller get ACK or times out.
+On timeout, the caller will execute the exception. The callee is expected to start
+execution soon after it receives the initial call. So we can have a situation where the
+callee has already started the execution but the ACK is not getting through to the caller
+and it executes the exception. That means we have both execution of the function and
+the exception occur. However, such a problem happens only if there is a long disconnection
+until at least the timeout duration.
+
+So we end up with the execution and the exception at the same time - creating a
+false positive. Actually, during the partition, it is not a false positive. It becomes
+a false positive when the system heals the connection.
+
+Caller -----------------------------> Callee
+
+Caller <----------------------------- Callee
+
+Caller -----------------------------> Callee
+
+Caller <----------------------------- Callee
+
+If we use a four way protocol, we could end up with another problem. We have no exception and
+and no execution. We could avoid this with a durable log replay at the callee, but that would
+complicate the protocol and we choose not to go that way.

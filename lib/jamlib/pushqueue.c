@@ -44,7 +44,7 @@ bool pqueue_delete(pushqueue_t *pq)
         return true;
     }
 
-    return false;    
+    return false;
 }
 
 
@@ -76,6 +76,7 @@ push2queue_t *p2queue_new(bool ownedbyq)
     pq->hqueue = queue_new(ownedbyq);
     pq->lqueue = queue_new(ownedbyq);
     pq->sem = threadsem_new();
+    pq->goSem = threadsem_new();
 
     pq->fds[0].fd = pq->hqueue->pullsock;
     pq->fds[0].events = NN_POLLIN;
@@ -94,7 +95,7 @@ bool p2queue_delete(push2queue_t *pq)
         return true;
     }
 
-    return false;    
+    return false;
 }
 
 
@@ -111,7 +112,7 @@ bool p2queue_enq_low(push2queue_t *queue, void *data, int len)
 bool p2queue_enq_high(push2queue_t *queue, void *data, int len)
 {
     queue_enq(queue->hqueue, data, len);
-    thread_signal(queue->sem);
+    thread_signal(queue->goSem);
 
     // TODO: Fix the return value..
     return true;
@@ -128,22 +129,22 @@ nvoid_t *p2queue_deq(push2queue_t *queue)
         return NULL;
     if (queue->fds[0].revents & NN_POLLIN)
         return queue_deq(queue->hqueue);
-    else 
+    else
         return queue_deq(queue->lqueue);
 }
 
 
 nvoid_t *p2queue_deq_high(push2queue_t *queue)
 {
-    while (1) {
-        task_wait(queue->sem);
+    task_wait(queue->goSem);
 
-        int rc = nn_poll(queue->fds, 2, 20000);
+    int rc = nn_poll(queue->fds, 2, 20000);
 
-        if (rc == 0)
-            return NULL;
+    if (rc == 0)
+        return NULL;
 
-        if (queue->fds[0].revents & NN_POLLIN)
-            return queue_deq(queue->hqueue);
-    }
+    if (queue->fds[0].revents & NN_POLLIN)
+        return queue_deq(queue->hqueue);
+    else
+        return NULL;
 }

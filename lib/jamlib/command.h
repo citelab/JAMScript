@@ -33,6 +33,7 @@ extern "C" {
 
 #include <cbor.h>
 #include <stdint.h>
+#include <pthread.h>
 #include "nvoid.h"
 
 /*
@@ -86,18 +87,26 @@ typedef struct _command_t
     arg_t *args;                            // List of args
     int nargs;                              // length of args array
     struct alloc_memory_list * cbor_item_list;
+
+    // Deallocation control
+    int refcount;
+    pthread_mutex_t lock;
+
 } command_t;
 
 
 command_t *command_rebuild(command_t *cmd);
 command_t *command_new_using_cbor(const char *cmd, char *opt, char *cond, int condvec, char *actname, char *actid, char *actarg, cbor_item_t *arr, arg_t *args, int nargs);
-command_t *command_new_using_arg(char *cmd, char *opt, char *cond, int condvec, 
+command_t *command_new_using_arg(char *cmd, char *opt, char *cond, int condvec,
                     char *actname, char *actid, char *actarg, arg_t *args, int nargs);
+command_t *command_new_using_arg_only(const char *cmd, char *opt, char *cond, int condvec, char *actname, char *actid, char *actarg,
+                    arg_t *args, int nargs);
 command_t *command_new(const char *cmd, char *opt, char *cond, int condvec, char *actname, char *actid, char *actarg, const char *fmt, ...);
 command_t *command_from_data(char *fmt, nvoid_t *data);
 
+void command_hold(command_t *cmd);
 void command_free(command_t *cmd);
-void command_print_arg(arg_t *arg);
+void command_arg_print(arg_t *arg);
 void command_print(command_t *cmd);
 
 /*

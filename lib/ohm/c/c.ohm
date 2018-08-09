@@ -111,7 +111,7 @@ C {
 
     //
     Prefix_expr     = ( "++" | "--" ) spacesNoNl Unary_expr                             -- Unary
-                    | Cast_expr                                     
+                    | Cast_expr
                     | Unary_expr
 
     //
@@ -127,7 +127,7 @@ C {
                     | Left_expr spacesNoNl "--"                                         -- Decrement
                     | Left_expr
 
-    Left_expr       = Left_expr Call_expr                                               -- Call                
+    Left_expr       = Left_expr Call_expr                                               -- Call
                     | Left_expr Member_expr                                             -- Member
                     | Primary_expr
 
@@ -150,12 +150,12 @@ C {
     Prototype       = extern Pointer_list? id "(" Param_type_lst? ")" Gcc_attribute? ";"
                     | Decl_specs Pointer_list? id "(" Param_type_lst? ")" Gcc_attribute? ";"
 
-    Decl            = Decl_specs Init_decl_lst ";"          
+    Decl            = Decl_specs Init_decl_lst ";"
 
-    Decl_specs      = (Store_cl_spec | Func_spec | type_qualifier | Gcc_decl_spec)* 
-                        Type_spec 
+    Decl_specs      = (Store_cl_spec | Func_spec | type_qualifier | Gcc_decl_spec)*
+                        Type_spec
                         (Store_cl_spec | Func_spec | type_qualifier | Gcc_decl_spec)*
-    
+
     Init_decl_lst   = ListOf<Init_decl, ",">
 
     Init_decl       = Declarator "=" Initializer                                        -- Init
@@ -163,16 +163,16 @@ C {
 
     Type_name       = Spec_qual_list Abs_declarator?
 
-    Store_cl_spec   = typedef 
-                    | extern 
-                    | static 
-                    | auto 
+    Store_cl_spec   = typedef
+                    | extern
+                    | static
+                    | auto
                     | register
 
     Type_modifier   = (long | short | signed | unsigned)+
 
     Type_spec       = Type_modifier (int | char | double)?                              -- Modified
-                    | (id | void | bool | float | int | char | double) 
+                    | (id | void | bool | float | int | char | double)
                     | Enum_spec                                                         -- Enum
                     | Struct_spec                                                       -- Sturct
                     | Union_spec                                                        -- Union
@@ -184,11 +184,11 @@ C {
     Union_spec      = union Gcc_attribute* id "{" Struct_decl+ "}"                      -- Full
                     | union Gcc_attribute* id                                           -- Empty
                     | union Gcc_attribute* "{" Struct_decl+ "}"                         -- Anonymous
-        
+
     Struct_decl     = Preprocess_line? Spec_qual_list ListOf<Sdeclarator, ","> ";"      -- Full
                     | Preprocess_line                                                   -- Preprocess
 
-    Spec_qual_list  = (type_qualifier | Gcc_decl_spec)* Type_spec
+    Spec_qual_list  = (type_qualifier | Gcc_decl_spec)* Type_spec type_qualifier*
 
     Sdeclarator     = Declarator ":" Const_expr Gcc_attribute*                          -- DeclExpr
                     | Declarator                                                        -- Decl
@@ -230,7 +230,7 @@ C {
     Pcall_decl      = "(" Param_type_lst ")"                                            -- ParamTypeList
                     | "(" Ident_list ")"                                                -- IdentList
                     | "(" ")"                                                           -- Empty
-    
+
     Pointer         = "*" type_qualifier*
 
     Pointer_list    = Pointer+
@@ -249,12 +249,12 @@ C {
     Initializer     = "{" ListOf<Initializer, ","> ","? "}"                             -- InitializerList
                     | "{" ListOf<Designator, ","> ","? "}"                              -- DesignatorList
                     | Assign_expr
-    
+
     Designator      = "." Assign_expr
 
     // GCC Statements
     //
-    
+
     Gcc_decl_spec   = Gcc_attribute
                     | gcc_ext_spec
 
@@ -264,7 +264,7 @@ C {
     Attribute_param = Gcc_any_word?
                     | Gcc_any_word "(" (Assign_expr ("," Assign_expr)* )? ")"           -- Assign
 
-    Gcc_any_word    = id 
+    Gcc_any_word    = id
                     | Store_cl_spec
                     | Type_spec
                     | type_qualifier
@@ -282,9 +282,9 @@ C {
 
     Gcc_asm_stmt    = Gcc_asm_expr ";"
 
-    // gcc_asm_expr = ("__asm__" | "__asm") type_qualifier? "(" expr 
-    //                  (":" ( gcc_asm_operand ("," gcc_asm_operand)* )? 
-    //                      (":" (gcc_asm_operand ("," gcc_asm_operand)*)? 
+    // gcc_asm_expr = ("__asm__" | "__asm") type_qualifier? "(" expr
+    //                  (":" ( gcc_asm_operand ("," gcc_asm_operand)* )?
+    //                      (":" (gcc_asm_operand ("," gcc_asm_operand)*)?
     //                          (":" string ("," string)*)?)?)? ")",
 
     // gcc_asm_operand = ("[" ("Id"|"Typename") "]")? string "(" expr ")",
@@ -321,7 +321,7 @@ C {
                     | case Const_expr ":" Stmt                                          -- CaseStmt
                     | default ":" Stmt                                                  -- DefaultStmt
 
-    Compound_stmt   =  "{" (Decl|Stmt)* "}"
+    Compound_stmt   =  "{" (Stmt|Decl)* "}"
 
     Selection_stmt  = if "(" Expr ")" Stmt (else Stmt)?                                 -- IfStmt
                     | switch "(" Expr ")" Stmt                                          -- SwitchStmt
@@ -342,12 +342,12 @@ C {
 
     Function_def    = Decl_specs Declarator Compound_stmt
 
-    keyword         =  attribute__ | asm | auto | based | bool | break | case 
-                    | cdecl | char | const | continue | default | do | double 
-                    | else | enum | extension | extern | fascall | float | for 
-                    | forceinline | goto | if | inline | inline__ | int | long 
-                    | restrict | register | return | short | signed | sizeof 
-                    | static | stdcall | struct | switch | typedef | union 
+    keyword         =  attribute__ | asm | auto | based | bool | break | case
+                    | cdecl | char | const | continue | default | do | double
+                    | else | enum | extension | extern | fascall | float | for
+                    | forceinline | goto | if | inline | inline__ | int | long
+                    | restrict | register | return | short | signed | sizeof
+                    | static | stdcall | struct | switch | typedef | union
                     | unsigned | void | volatile | while
 
     // Convenience rules for parsing keyword tokens.
@@ -396,4 +396,3 @@ C {
     volatile = "volatile" ~identPart
     while = "while" ~identPart
 }
-  
