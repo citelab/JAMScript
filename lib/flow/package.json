@@ -5,7 +5,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/anrl/JAMScript-beta.git/lib/flow"
+    "url": "https://github.com/anrl/JAMScript.git/lib/flow"
   },
   "dependencies": {
     "n-readlines": "~0.2.7",
