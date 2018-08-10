@@ -58,7 +58,7 @@ if [ $runJSprogram == true ]
 then 
     docker exec -t JSnode /bin/bash -c "mosquitto &"
     sleep 2
-    docker exec -t JSnode /bin/bash -c "node /JAMScript-beta/samples/jamout.js --app=ret"
+    docker exec -t JSnode /bin/bash -c "node /JAMScript/samples/jamout.js --app=ret"
 fi
 
 sleep 3
@@ -66,7 +66,7 @@ sleep 3
 if [ $runCprogram == true ]
 then 
     for i in `seq 1 $numberOfCprograms`; do
-        docker exec -t test$i /bin/bash -c "./JAMScripts-beta/samples/a.out" &
+        docker exec -t test$i /bin/bash -c "./JAMScripts/samples/a.out" &
         sleep 1
     done
 fi

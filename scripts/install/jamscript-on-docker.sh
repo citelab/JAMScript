@@ -37,6 +37,6 @@ sudo chmod o-w /usr/local/share
 sudo chmod o-w /usr/local/lib
 
 # This is a hack!
-cd /JAMScript-beta/lib/jamserver
+cd /JAMScript/lib/jamserver
 # There should not be a node_modules directory here
 rm -rf node_modules

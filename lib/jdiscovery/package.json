@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/anrl/JAMScript-beta/lib/jdiscovery"
+    "url": "https://github.com/anrl/JAMScript/lib/jdiscovery"
   },
   "keywords": [
     "JAMScript",

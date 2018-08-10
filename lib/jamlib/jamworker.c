@@ -195,48 +195,6 @@ void *jwork_bgthread(void *arg)
 }
 
 
-<<<<<<< HEAD
-void jwork_set_subscriptions(jamstate_t *js)
-{
-    // the /admin/announce/all subscription is already set.. 
-
-    for (int i = 0; i < 3; i++) 
-    {
-        if (js->cstate->mqttenabled[i]) 
-        {
-            mqtt_subscribe(js->cstate->mqttserv[i], "/level/func/reply/#");
-            mqtt_subscribe(js->cstate->mqttserv[i], "/mach/func/request");
-            // Subscribe to the "go" topic for sync purpose.
-            mqtt_subscribe(js->cstate->mqttserv[i], "admin/request/Go");
-        }
-    }
-}
-
-
-/* 
- * Set all the callback handlers
- * 
- */
-void jwork_set_callbacks(jamstate_t *js)
-{
-    if (js->cstate->mqttenabled[0] == true)
-        MQTTClient_setCallbacks(js->cstate->mqttserv[0], js->deviceinq, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
-    
-    if (js->cstate->mqttenabled[1] == true)
-        MQTTClient_setCallbacks(js->cstate->mqttserv[1], js->foginq, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
-
-    if (js->cstate->mqttenabled[2] == true)
-        MQTTClient_setCallbacks(js->cstate->mqttserv[2], js->cloudinq, jwork_connect_lost, jwork_msg_arrived, jwork_msg_delivered);
-}
-
-
-void jwork_msg_delivered(void *ctx, MQTTClient_deliveryToken dt)
-{
-    // TODO: What to do here?
-}
-
-=======
->>>>>>> JAMScript-beta/master
 /*
  * The most important callback handler. This is executed in another anonymous thread
  * by the MQTT (Paho) Client library. We are not explicitly spawning the thread.
@@ -506,11 +464,6 @@ void jwork_process_device(jamstate_t *js)
         else
         if (strcmp(rcmd->cmd, "REGISTER-ACK") == 0)
         {
-<<<<<<< HEAD
-            printf("Sync....1\n");
-            
-            if (jwork_check_args(js, rcmd))
-=======
             js->registered = true;
             command_t *scmd = command_new("GET-CF-INFO", "-", "-", 0, "-", "-", js->cstate->device_id, "");
             mqtt_publish(js->cstate->mqttserv[0], "/admin/request/all", scmd);
@@ -536,17 +489,9 @@ void jwork_process_device(jamstate_t *js)
             // Handle mqttpending[] - decrement the counter. if the counter hits
             // zero, turn off mqttpending[].. this should be done only if mqttpending[] is true
             if (js->cstate->mqttpending[1])
->>>>>>> JAMScript-beta/master
             {
                 if (js->cstate->pendingcount-- < 0)
                 {
-<<<<<<< HEAD
-                    printf("Sync....3\n");
-                    // We have a valid request that should be executed by the node
-                    if (jcond_synchronized(rcmd))
-                    {
-                        // A request that needs a quorum: a group for execution
-=======
                     js->cstate->pendingcount = 0;
                     js->cstate->mqttpending[1] = false;
                 }
@@ -572,7 +517,6 @@ void jwork_process_device(jamstate_t *js)
             if (strcmp(rcmd->actarg, "fog") == 0)
             {
                 printf("Information about a fog %s, %s, %d %d\n", rcmd->opt, rcmd->args[0].val.sval, js->cstate->mqttenabled[1], js->cstate->mqttpending[1]);
->>>>>>> JAMScript-beta/master
 
                 if  (strcmp(rcmd->opt, "ADD") == 0)
                 {
@@ -592,21 +536,8 @@ void jwork_process_device(jamstate_t *js)
                 {
                     if (core_disconnect(js->cstate, 1, rcmd->actid))
                     {
-<<<<<<< HEAD
-                        printf("Adding unsynchronized task... \n");
-
-                        // This is a standalone SYN request.. blocking call
-                        // Because it is a blocking call.. we are going to go ahead and schedule it 
-                        int count = runtable_synctask_count(js->rtable);
-                        if (count == 0)
-                            // Sync tasks go into the high priority queue
-                            p2queue_enq_high(js->atable->globalinq, rcmd, sizeof(command_t));
-                        else 
-                            runtable_insert_synctask(js, rcmd, quorum); 
-=======
                         printf("==>>>>>>>>>>=== FOG deleted ----------------->>>>>>>>>\n");
                         js->cstate->mqttpending[1] = false;
->>>>>>> JAMScript-beta/master
                     }
                     else
                         printf("==>>>>>>>>>>=== FOG delete  IGNORED ----------------->>>>>>>>>\n");
@@ -694,13 +625,8 @@ void jwork_process_device(jamstate_t *js)
             if (athr != NULL)
                 pqueue_enq(athr->inq, rcmd, sizeof(command_t));
         }
-<<<<<<< HEAD
-        
-        else if (strcmp(rcmd->cmd, "GOGOGO") == 0) {
-=======
         else
         if (strcmp(rcmd->cmd, "GOGOGO") == 0) {
->>>>>>> JAMScript-beta/master
 			// Received the "go" from J nodes, we put the go command into the high queue
             p2queue_enq_high(js->atable->globalinq, rcmd, sizeof(command_t));
         }

@@ -4,15 +4,9 @@ JAMJS <: ES6 {
                     | Activity_def
                     | Jview_decl
 
-<<<<<<< HEAD
-    jdata_type      = broadcaster 
-                    | logger 
-    
-=======
     jdata_type      = broadcaster
                     | logger
 
->>>>>>> JAMScript-beta/master
     C_type          = "struct" identifier "{" Struct_entry* "}"     -- struct
                     | "char" "*"                                    -- pointer
                     | "char"

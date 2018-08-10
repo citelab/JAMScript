@@ -312,9 +312,5 @@ double getcurtime()
     struct timeval tp;
 
     gettimeofday(&tp, NULL);
-<<<<<<< HEAD
-    return tp.tv_sec * 1.0 + tp.tv_usec / 1.0e6;    
-=======
     return tp.tv_sec * 1.0 +  tp.tv_usec / 1.0e6;
->>>>>>> JAMScript-beta/master
 }

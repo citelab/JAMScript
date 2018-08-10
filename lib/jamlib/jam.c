@@ -177,10 +177,6 @@ void jam_event_loop(void *arg)
             free(nv);
         } else
             cmd = NULL;
-<<<<<<< HEAD
-        printf("command TYPE: %s\n", cmd->cmd);
-=======
->>>>>>> JAMScript-beta/master
 
         if (cmd != NULL)
         {
@@ -203,30 +199,6 @@ void jam_event_loop(void *arg)
             }
             else if (strcmp(cmd->cmd, "REXEC-SYN") == 0) {
 
-<<<<<<< HEAD
-				// Make a new command which signals to the J node that it's ready
-				// device ID is put in the cmd->actid because I don't know where else to put it.
-                command_t *readycmd = command_new("READY", "READY", "-", 0, "GLOBAL_INQUEUE", deviceid, "_", "");
-                mqtt_publish(mcl, "admin/request/syncTimer", readycmd);
-                int sTime;
-				// Wait for the GO command from the J node.
-                while (1) {
-                    nvoid_t *nv = p2queue_deq_high(js->atable->globalinq);
-                    command_t *cmd_1;
-                    if (nv != NULL) {
-                        cmd_1 = (command_t *)nv->data;
-                        free(nv);
-                    }
-                    else cmd_1 = NULL;
-                    // printf("Waiting command TYPE: %s\n", cmd_1->cmd);
-                    if (cmd_1 != NULL) {
-                        if (strcmp(cmd_1->cmd, "GOGOGO") == 0) {
-							// Get the start time from the Go command.
-                            sTime = atoi(cmd_1->opt);
-                            break;
-                        }
-                    }
-=======
                 if (strcmp(cmd->opt, "CLOUD") == 0)
                     mcl = js->cstate->mqttserv[2];
                 else
@@ -255,7 +227,6 @@ void jam_event_loop(void *arg)
                         sTime = atof(cmd_1->opt);
                     else
                         sTime = 0.0;
->>>>>>> JAMScript-beta/master
                 }
                 // Remote requests go through here.. local requests don't go through here
 
@@ -269,13 +240,8 @@ void jam_event_loop(void *arg)
                 while (getcurtime() < (double) sTime) {}
 
                 // printf("after a hwile: %f\n", getcurtime());
-<<<<<<< HEAD
-                if (jact != NULL) 
-                    pqueue_enq(jact->thread->inq, cmd, sizeof(command_t));
-=======
                 if (jact != NULL)
                     pqueue_enq(athr->inq, cmd, sizeof(command_t));
->>>>>>> JAMScript-beta/master
                 else
                     printf("ERROR! Unable to find a free Activity handler to start %s", cmd->actname);
 

@@ -66,7 +66,7 @@ We can also add a variance to the delay, for example to have a normal distributi
 ```
 In practice for JAMScript, we only need to add the network delay to the container that's running the JS program.
 
-After you are done with the test, or if something wrong happened during the run, we have to stop all the C programs in order to to restart the test; unless you are running JAMScript-beta in which case exiting the JS program should automatically stop all the C programs. To close all C programs on test1, ..., test400
+After you are done with the test, or if something wrong happened during the run, we have to stop all the C programs in order to to restart the test; unless you are running JAMScript in which case exiting the JS program should automatically stop all the C programs. To close all C programs on test1, ..., test400
 ```
 #!/bin/bash
 for i in `seq 1 400`; do
