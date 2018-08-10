@@ -17,7 +17,7 @@ and take remedial actions.
 Include JAMTools in the path. If you are using BASH (default in MacOS) as the shell, include the following in `.bash_profile`.
 
 ```shell
-export JAMHOME=$HOME/JAMScript-beta
+export JAMHOME=$HOME/JAMScript
 # This is assuming you have downloaded JAMScript in your home directory
 export PATH=$JAMHOME/tools:$PATH
 # Assumes you did not download JAMTools into a separate folder

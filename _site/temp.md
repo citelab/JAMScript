@@ -40,7 +40,7 @@ Copy depend-rpi.sh and jamscript-on-ubuntu.sh from scripts/install into the root
 ```
 
 
-## Build a docker image of JAMScript-beta
+## Build a docker image of JAMScript
 
 Get the Dockerfile from /scripts/install.
 Then run the following command from where the Dockerfile is located

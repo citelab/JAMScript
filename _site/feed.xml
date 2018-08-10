@@ -3,8 +3,8 @@
   <channel>
     <title>JAMScript</title>
     <description>A Language and Middleware for Cloud of Moving Things</description>
-    <link>http://anrl.github.io/JAMScript-beta</link>
-    <atom:link href="http://anrl.github.io/JAMScript-beta/feed.xml" rel="self" type="application/rss+xml" />
+    <link>http://anrl.github.io/JAMScript</link>
+    <atom:link href="http://anrl.github.io/JAMScript/feed.xml" rel="self" type="application/rss+xml" />
     
   </channel>
 </rss>

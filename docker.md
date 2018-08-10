@@ -46,7 +46,7 @@ image repository.
 The JAMScript source package has a `Dockerfile` necessary for rebuilding the docker image.
 `cd $JAMHOME/scripts/install` to see the `Dockerfile`. You can edit it if you want to make changes.
 Run the following command from there to rebuild a container image. The `Dockerfile` is
-configured to use the files from the repository at [https://github.com/anrl/JAMScript-beta](https://github.com/anrl/JAMScript-beta). Therefore, if you
+configured to use the files from the repository at [https://github.com/anrl/JAMScript](https://github.com/anrl/JAMScript). Therefore, if you
 need any additions to the rebuilt image, those additions should be committed to the above repository or
 the `Dockerfile` needs to be edited to use another location for the source files.
 ```shell
