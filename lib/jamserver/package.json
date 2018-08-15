@@ -30,7 +30,6 @@
   ],
   "preferGlobal": true,
   "files": [
-    "*.js",
-    "redis-fast-driver"
+    "*.js"
   ]
 }
