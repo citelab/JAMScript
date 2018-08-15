@@ -29,7 +29,7 @@
     "url": "https://github.com/gazcn007/treeflow/issues"
   },
   "dependencies": {
-    "babel-core": "^6.26.0",
+    "babel-core": "^6.26.3",
     "babel-loader": "^6.4.1",
     "babel-plugin-transform-class-properties": "^6.10.2",
     "babel-plugin-transform-decorators-legacy": "^1.3.4",
@@ -41,7 +41,7 @@
     "echarts": "^3.6.1",
     "element-resize-event": "^2.0.9",
     "express": "^4.15.3",
-    "fs-path": "0.0.23",
+    "fs-path": "0.0.24",
     "image-webpack-loader": "^3.0.0",
     "js-beautify": "^1.6.14",
     "less": "^2.7.1",

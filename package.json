@@ -17,7 +17,7 @@
         "element-resize-event": "^2.0.9",
         "express": "^4.16.2",
         "flows.js": "file:lib/flow",
-        "fs-path": "0.0.23",
+        "fs-path": "0.0.24",
         "gaussian": "^1.1.0",
         "graceful-fs": "^4.1.11",
         "jamserver": "file:lib/jamserver",
