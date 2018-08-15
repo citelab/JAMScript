@@ -1,10 +1,10 @@
 [submodule "tools"]
 	path = tools
-	url = https://github.com/anrl/JAMTools
+	url = https://github.com/citelab/JAMTools
 	branch = master
 [submodule "deps/paho"]
 	path = deps/paho
 	url = https://github.com/anrl/paho.mqtt.c.git
 [submodule "samples"]
 	path = samples
-	url = https://github.com/anrl/JAMSamples
+	url = https://github.com/citelab/JAMSamples

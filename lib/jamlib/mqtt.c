@@ -44,8 +44,8 @@ void mqtt_onpublish(void* context, MQTTAsync_successData* response)
 //
 void mqtt_publish(MQTTAsync mcl, char *topic, command_t *cmd)
 {
-    if (MQTTAsync_isConnected(mcl) == false)
-        printf("WARNING! The handle.. is offline..\n");
+//    if (MQTTAsync_isConnected(mcl) == false)
+//        printf("WARNING! The handle.. is offline..\n");
 
     char fulltopic[128];
     sprintf(fulltopic, "/%s%s", app_id, topic);
