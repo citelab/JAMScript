@@ -49,6 +49,7 @@ npm install cbor
 npm install deasync
 npm install json-fn
 npm install mime
+npm install redis
 
 cd $scriptdir
 # install the following here..
@@ -61,5 +62,3 @@ echo "All done!"
 echo "Remember to erase the temp_install_src folder!"
 echo
 echo
-
-

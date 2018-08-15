@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Store the script home.. where the "depend-install-ubuntu.sh was located
-scriptdir=$(dirname -- $(readlink -fn -- "$0"))   
+scriptdir=$(dirname -- $(readlink -fn -- "$0"))
 
 
 # Create a temp directory
@@ -53,7 +53,7 @@ fi
 if (command -v tmux > /dev/null); then
     echo "terminal multiplexor already installed.."
 else
-    sudo apt-get install -y tmux    
+    sudo apt-get install -y tmux
 fi
 
 # Install latest Node
@@ -96,7 +96,7 @@ cd ../..
 qres=$(dpkg -s libcbor 2>/dev/null | grep "Status" | tr -d ' ')
 if [ -z $qres ]; then
     wget https://github.com/PJK/libcbor/archive/v0.5.0.zip
-    unzip v0.5.0.zip 
+    unzip v0.5.0.zip
     cd libcbor-0.5.0
     cmake CMakeLists.txt
     make
@@ -143,6 +143,7 @@ npm install cbor
 npm install deasync
 npm install json-fn
 npm install mime
+npm install redis
 
 cd $scriptdir
 # install the following here..
@@ -154,8 +155,5 @@ echo
 echo
 echo "All done!"
 echo "Remember to erase the temp_install_src folder!"
-echo 
 echo
-
-
-
+echo
