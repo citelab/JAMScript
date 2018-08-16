@@ -142,7 +142,6 @@ npm install lockfile
 npm install cbor
 npm install deasync
 npm install json-fn
-npm install mime
 npm install redis
 
 cd $scriptdir
