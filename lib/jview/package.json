@@ -41,7 +41,6 @@
     "echarts": "^3.6.1",
     "element-resize-event": "^2.0.9",
     "express": "^4.15.3",
-    "fs-path": "0.0.24",
     "image-webpack-loader": "^3.0.0",
     "js-beautify": "^1.6.14",
     "less": "^2.7.1",

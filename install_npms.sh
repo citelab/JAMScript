@@ -4,7 +4,6 @@ npm install less@2.7.1
 npm install less-loader@2.2.3
 npm install css-loader@0.26.0
 npm install body-parser@1.17.2
-npm install fs-path@0.0.23
 
 npm install  babel-core@6.26.0
 npm install  babel-loader@6.4.1
