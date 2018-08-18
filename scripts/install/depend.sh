@@ -17,12 +17,41 @@ if [[ "$OSTYPE" == "linux-gnu" ]]; then
     sudo apt-get install -y libbsd-dev
     sudo apt-get install -y libavahi-compat-libdnssd-dev
     sudo apt-get install -y libssl-dev
-    sudo apt install -y clang
-    sudo apt-get install -y g++
-    sudo apt-get install -y cmake
-    sudo apt-get install -y mosquitto
-    sudo apt-get install -y mosquitto-clients
-    sudo apt-get install -y tmux
+    if (command -v clang > /dev/null); then
+        echo "clang already installed.. skipping install"
+    else
+        sudo apt install -y clang
+    fi
+
+    if (command -v g++ > /dev/null); then
+        echo "g++ already installed.."
+    else
+        sudo apt-get install -y g++
+    fi
+
+    if (command -v cmake > /dev/null); then
+        echo "cmake already installed.."
+    else
+        sudo apt-get install -y cmake
+    fi
+
+    if (command -v mosquitto > /dev/null); then
+        echo "mosquitto already installed.."
+    else
+        sudo apt-get install -y mosquitto
+    fi
+
+    if (command -v mosquitto_pub > /dev/null); then
+        echo "mosquitto_pub already installed.."
+    else
+        sudo apt-get install -y mosquitto-clients
+    fi
+
+    if (command -v tmux > /dev/null); then
+        echo "terminal multiplexor already installed.."
+    else
+        sudo apt-get install -y tmux
+    fi
 
     # NANOMSG
     if (command -v nanocat > /dev/null); then
@@ -65,8 +94,17 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     brew install mosquitto
     brew install cmake
     brew install tmux
-    brew install nanomsg
-    brew install redis
+    if (command -v nanocat > /dev/null); then
+        echo "Nano message already installed"
+    else
+        brew install nanomsg
+    fi
+
+    if (command -v redis-server > /dev/null); then
+        echo "Redis already installed"
+    else
+        brew install redis
+    fi
     brew tap pjk/libcbor
     brew install libcbor
 else
@@ -74,7 +112,7 @@ else
         exit
 fi
 
-
+cd $scriptdir/../../
 cd deps/libtask
 make clean
 make

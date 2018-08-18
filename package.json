@@ -8,6 +8,8 @@
         "url": "https://github.com/citelab/JAM.git"
     },
     "scripts": {
+        "preinstall": "scripts/install/depend.sh",
+        "install": "node-gyp rebuild",
         "depend": "scripts/install/depend.sh"
     },
     "dependencies": {
