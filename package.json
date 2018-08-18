@@ -10,36 +10,15 @@
     "scripts": {
         "preinstall": "scripts/install/depend.sh",
         "install": "node-gyp rebuild",
+        "postinstall": "npm install --prefix ~/__jamruns lib/jamserver && npm install --prefix ~/__jamruns lib/jdiscovery && npm install --prefix ~/__jamruns lib/flow",
         "depend": "scripts/install/depend.sh"
     },
     "dependencies": {
-        "bindings": "^1.3.0",
-        "body-parser": "^1.17.2",
-        "cbor": "^3.0.3",
         "chance": "^1.0.16",
-        "command-line-args": "^5.0.2",
-        "deasync": "^0.1.13",
-        "element-resize-event": "^2.0.9",
-        "express": "^4.16.2",
-        "flows.js": "file:lib/flow",
-        "gaussian": "^1.1.0",
-        "graceful-fs": "^4.1.11",
-        "jamserver": "file:lib/jamserver",
-        "jdiscovery": "file:lib/jdiscovery",
-        "js-beautify": "^1.6.14",
         "jszip": "^3.1.5",
-        "mqtt": "^2.18.3",
-        "ncp": "^2.0.0",
-        "node-localstorage": "^1.3.0",
         "ohm-js": "^0.13.1",
-        "posix-clock": "^1.0.0",
-        "ps-node": "^0.1.6",
         "random-js": "^1.0.8",
-        "redis": "^2.8.0",
-        "socket.io": "^2.1.1",
-        "socket.io-client": "^2.0.4",
-        "vorpal": "^1.12.0",
-        "yargs": "^10.0.3"
+        "vorpal": "^1.12.0"
     },
     "bin": "./index.js",
     "engines": {
