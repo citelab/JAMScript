@@ -10,7 +10,7 @@
     "scripts": {
         "preinstall": "scripts/install/depend.sh",
         "install": "node-gyp rebuild",
-        "postinstall": "npm install --prefix ~/__jamruns lib/jamserver && npm install --prefix ~/__jamruns lib/jdiscovery && npm install --prefix ~/__jamruns lib/flow",
+        "postinstall": "scripts/install/runtime.sh",
         "depend": "scripts/install/depend.sh"
     },
     "dependencies": {

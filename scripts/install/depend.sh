@@ -123,27 +123,7 @@ sudo make install
 cd ../paho
 make
 sudo make install
-cd ../..
 
-
-
-echo "Setting up the NPM modules in the user directory..."
-echo
-cd $HOME
-npm install mqtt
-npm install command-line-args
-npm install random-js
-npm install node-localstorage
-npm install bunyan
-npm install lockfile
-npm install cbor
-npm install deasync
-npm install json-fn
-npm install redis
 
 cd $scriptdir
-# install the following here..
-npm install ohm-js
-
-
 rm -rf temp_install_src
