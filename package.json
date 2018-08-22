@@ -1,11 +1,12 @@
 {
     "name": "jamc",
     "description": "Compiler for the JAMScript language",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "license": "MIT",
+    "homepage": "https://citelab.github.io/JAMScript/",
     "repository": {
         "type": "git",
-        "url": "https://github.com/citelab/JAM.git"
+        "url": "https://github.com/citelab/JAMScript.git"
     },
     "scripts": {
         "preinstall": "scripts/install/depend.sh",
