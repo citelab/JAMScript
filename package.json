@@ -10,11 +10,13 @@
     "scripts": {
         "preinstall": "scripts/install/depend.sh",
         "install": "node-gyp rebuild",
-        "postinstall": "scripts/install/runtime.sh",
-        "depend": "scripts/install/depend.sh"
+        "postinstall": "scripts/install/runtime.sh"
     },
     "dependencies": {
         "chance": "^1.0.16",
+        "flow.js": "^0.1.1",
+        "jamserver": "^0.1.1",
+        "jdiscovery": "^0.0.7", 
         "jszip": "^3.1.5",
         "ohm-js": "^0.13.1",
         "random-js": "^1.0.8",
@@ -30,7 +32,12 @@
     ],
     "preferGlobal": true,
     "files": [
+        "deps",
+        "lib/jamlib",
         "lib/ohm",
+        "scripts/install/depend.sh",
+        "scripts/install/runtime.sh",
+        "tools",
         "index.js"
     ]
 }
