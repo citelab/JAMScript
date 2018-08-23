@@ -17,6 +17,7 @@ if [[ "$OSTYPE" == "linux-gnu" ]]; then
     sudo apt-get install -y libbsd-dev
     sudo apt-get install -y libavahi-compat-libdnssd-dev
     sudo apt-get install -y libssl-dev
+    sudo apt-get install -y unzip
     if (command -v clang > /dev/null); then
         echo "clang already installed.. skipping install"
     else
