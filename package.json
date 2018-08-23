@@ -1,17 +1,17 @@
 {
     "name": "jamscript",
     "description": "Compiler for the JAMScript language",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "license": "MIT",
     "keywords": [
-    	"c",
-    	"javascript",
-    	"cloud-computing",
-    	"iot-framework",
-    	"iot",
-    	"programming-language",
-    	"iot-middleware",
-    	"fog-computing"
+        "c",
+        "javascript",
+        "cloud-computing",
+        "iot-framework",
+        "iot",
+        "programming-language",
+        "iot-middleware",
+        "fog-computing"
     ],
     "homepage": "https://citelab.github.io/JAMScript/",
     "repository": {
@@ -24,7 +24,9 @@
         "install": "node-gyp rebuild",
         "postinstall": "scripts/install/runtime.sh"
     },
-    "bin": { "jamc" : "./index.js" },
+    "bin": {
+        "jamc": "./index.js"
+    },
     "dependencies": {
         "chance": "^1.0.16",
         "jszip": "^3.1.5",
