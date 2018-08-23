@@ -22,7 +22,8 @@
     "scripts": {
         "preinstall": "scripts/install/depend.sh",
         "install": "node-gyp rebuild",
-        "postinstall": "scripts/install/runtime.sh"
+        "postinstall": "scripts/install/runtime.sh",
+        "postversion": "git push && git push --tags && npm publish"
     },
     "bin": {
         "jamc": "./index.js"
