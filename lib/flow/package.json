@@ -24,7 +24,8 @@
   ],
   "main": "flow.js",
   "scripts": {
-    "test": "console.log(Flow.from([1,2,3,4,5]).count());"
+    "test": "console.log(Flow.from([1,2,3,4,5]).count());",
+    "postversion": "npm publish && git add package.json package-lock.json && git commit -m 'Update flow version' && git push"
   },
   "keywords": [
     "data stream processing",
