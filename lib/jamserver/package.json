@@ -7,6 +7,9 @@
     "type": "git",
     "url": "https://github.com/citelab/JAM.git/lib/jamserver"
   },
+  "scripts": {
+    "postversion": "npm publish && git add package.json package-lock.json && git commit -m 'Update jamserver version' && git push"
+  },
   "dependencies": {
     "bunyan": "^1.8.10",
     "cbor": ">=3.0.0",
