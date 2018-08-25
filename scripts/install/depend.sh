@@ -113,10 +113,6 @@ else
         exit
 fi
 
-cd $scriptdir/../../
-cd deps/libtask
-make clean
-make
 sudo make install
 cd ../mujs2
 make
