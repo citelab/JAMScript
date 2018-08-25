@@ -113,8 +113,8 @@ else
         exit
 fi
 
-sudo make install
-cd ../mujs2
+cd $scriptdir/../../
+cd deps/mujs2
 make
 sudo make install
 cd ../paho
