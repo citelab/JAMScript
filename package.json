@@ -20,9 +20,9 @@
     },
     "bugs": "https://github.com/citelab/JAMScript/issues",
     "scripts": {
-        "preinstall": "scripts/install/depend.sh",
+        "preinstall": "scripts/install/preinstall.sh",
         "install": "node-gyp rebuild",
-        "postinstall": "scripts/install/runtime.sh",
+        "postinstall": "scripts/install/postinstall.sh",
         "postversion": "git push && git push --tags && npm publish"
     },
     "bin": {
@@ -51,8 +51,8 @@
         "deps",
         "lib/jamlib",
         "lib/ohm",
-        "scripts/install/depend.sh",
-        "scripts/install/runtime.sh",
+        "scripts/install/preinstall.sh",
+        "scripts/install/postinstall.sh",
         "tools",
         "index.js",
         "binding.gyp"

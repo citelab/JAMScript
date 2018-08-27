@@ -134,8 +134,12 @@
           ]
         },
         {
-          "destination": "/usr/local/share/jam/deps/libtask/",
+          "destination": "/usr/local/lib",
           "files": [ "<(PRODUCT_DIR)/libtask.a" ]
+        },
+        {
+          "destination": "/usr/local/include/",
+          "files": [ "deps/libtask/task.h" ]
         }
       ]
     }
