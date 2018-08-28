@@ -12,7 +12,7 @@ sudo chmod o+w temp_install_src
 cd temp_install_src
 
 
-if [[ "$OSTYPE" == "linux-gnu" ]]; then
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     sudo apt-get update
     sudo apt-get install -y xz-utils
     sudo apt-get install -y texinfo
