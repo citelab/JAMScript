@@ -7,7 +7,8 @@ then
 fi
 
 # Create a temp directory
-mkdir temp_install_src
+sudo mkdir temp_install_src
+sudo chmod o+w temp_install_src
 cd temp_install_src
 
 
@@ -128,4 +129,4 @@ make
 sudo make install
 cd ..
 
-rm -rf temp_install_src
+sudo rm -rf temp_install_src
