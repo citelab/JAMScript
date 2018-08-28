@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 
-# Store the script home.. where the "depend.sh was located
-scriptdir=$(dirname -- $(readlink -fn -- "$0"))
+if [  $(npm -v | cut -d. -f1) -lt "6" ]
+then
+        echo "npm version older than 6.0.0"
+        exit 1
+fi
 
 # Create a temp directory
 mkdir temp_install_src
 cd temp_install_src
+
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
     sudo apt-get update
@@ -68,9 +72,8 @@ if [[ "$OSTYPE" == "linux-gnu" ]]; then
         ctest -G Debug
         sudo cmake --build . --target install
         sudo ldconfig
+        cd ../..
     fi
-
-    cd ../..
 
     # CBOR
     qres=$(dpkg -s libcbor 2>/dev/null | grep "Status" | tr -d ' ')
@@ -90,6 +93,7 @@ if [[ "$OSTYPE" == "linux-gnu" ]]; then
         cd redis-stable
         make
         sudo make install
+        cd ..
     fi
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     brew install mosquitto
@@ -110,17 +114,18 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     brew install libcbor
 else
     echo "Unsupported OS"
-        exit
+    exit 1
 fi
 
-cd $scriptdir/../../
+cd ..
+
+
 cd deps/mujs2
 make
 sudo make install
 cd ../paho
 make
 sudo make install
+cd ..
 
-
-cd $scriptdir
 rm -rf temp_install_src

@@ -20,9 +20,9 @@
     },
     "bugs": "https://github.com/citelab/JAMScript/issues",
     "scripts": {
-        "preinstall": "scripts/install/preinstall.sh",
+        "preinstall": "sudo -u ${SUDO_USER:-${USER}} bash scripts/install/preinstall.sh",
         "install": "node-gyp rebuild",
-        "postinstall": "scripts/install/postinstall.sh",
+        "postinstall": "sudo -u ${SUDO_USER:-${USER}} bash scripts/install/postinstall.sh",
         "postversion": "git push && git push --tags && npm publish"
     },
     "bin": {
@@ -39,7 +39,8 @@
         "jamserver": "^1.0.0"
     },
     "engines": {
-        "node": ">= 7.0.0"
+        "node": ">= 7.0.0",
+        "npm": ">= 6.0.0"
     },
     "os": [
         "darwin",
