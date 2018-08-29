@@ -79,8 +79,13 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     # CBOR
     qres=$(dpkg -s libcbor 2>/dev/null | grep "Status" | tr -d ' ')
     if [ -z $qres ]; then
-        wget https://github.com/PJK/libcbor/releases/download/v0.4.0/libcbor-0.4.0-Linux.deb
-        sudo dpkg -i libcbor-0.4.0-Linux.deb
+        wget https://github.com/PJK/libcbor/archive/v0.5.0.zip
+        unzip v0.5.0.zip
+        cd libcbor-0.5.0
+        cmake CMakeLists.txt
+        make
+        sudo make install
+        cd ..
     else
         echo "libcbor already installed..."
     fi
