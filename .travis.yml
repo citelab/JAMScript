@@ -4,6 +4,9 @@ notifications:
 language: node_js
 node_js:
   - "node"
+node_js:
+  - linux
+  - osx
 before_install:
   - export CC=`which clang`
   - export CXX=`which clang++`
