@@ -4,14 +4,18 @@ notifications:
 language: node_js
 node_js:
   - "node"
-os:
-  - linux
-  - osx
-before_install:
-  - export CC=`which clang`
-  - export CXX=`which clang++`
-  - sudo ln -s `which clang++` /usr/bin/clang++
-  - sudo ln -s `which clang` /usr/bin/clang
-  - sudo ln -s `which node` /usr/bin/node
-  - sudo ln -s `which npm` /usr/bin/npm
+
+matrix:
+  include:
+    - os: linux
+      before_install:
+        - export CC=`which clang`
+        - export CXX=`which clang++`
+        - sudo ln -s `which clang++` /usr/bin/clang++
+        - sudo ln -s `which clang` /usr/bin/clang
+        - sudo ln -s `which node` /usr/bin/node
+        - sudo ln -s `which npm` /usr/bin/npm
+    - os: osx
+    
+    
 install: sudo npm install -g --unsafe-perm
