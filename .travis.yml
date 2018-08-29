@@ -16,6 +16,10 @@ matrix:
         - sudo ln -s `which node` /usr/bin/node
         - sudo ln -s `which npm` /usr/bin/npm
         - PATH=$PATH:/usr/local/cmake/bin
+        - echo $PATH
+        - cmake --version
+        - ls /usr/local/cmake/bin
+        - ls /usr/local/cmake
     - os: osx
     
     
