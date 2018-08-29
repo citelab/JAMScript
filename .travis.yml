@@ -4,7 +4,7 @@ notifications:
 language: node_js
 node_js:
   - "node"
-node_js:
+os:
   - linux
   - osx
 before_install:
