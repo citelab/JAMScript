@@ -34,7 +34,23 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     else
         sudo apt-get install -y g++
     fi
+    whoami
+    echo $PATH
+    command -v cmake
+    cmake --version
+    type cmake
+    if hash cmake 2>/dev/null; then
+        echo "cmake good"
+    else
+        echo "cmake bad"
+    fi
+    if ! [ -x "$(command -v cmake)" ]; then
+       echo 'Error: cmake is not installed.' >&2
+    fi
+    
+    command -v cmake >/dev/null 2>&1 || { echo "I require cmake but it's not installed.  Aborting." >&2; }
 
+    
     if (command -v cmake > /dev/null); then
         echo "cmake already installed.."
     else
