@@ -105,6 +105,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     brew install mosquitto
     brew install cmake
     brew install tmux
+    brew install hiredis
     if (command -v nanocat > /dev/null); then
         echo "Nano message already installed"
     else
