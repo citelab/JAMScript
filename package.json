@@ -55,6 +55,7 @@
         "lib/ohm",
         "scripts/install/preinstall.sh",
         "scripts/install/postinstall.sh",
+        "scripts/install/global-fix.sh",
         "tools",
         "index.js",
         "binding.gyp"
