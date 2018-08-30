@@ -20,10 +20,11 @@
     },
     "bugs": "https://github.com/citelab/JAMScript/issues",
     "scripts": {
-        "preinstall": "sudo -u ${SUDO_USER} bash scripts/install/preinstall.sh",
+        "preinstall": "scripts/install/preinstall.sh",
         "install": "node-gyp rebuild",
-        "postinstall": "sudo -u ${SUDO_USER} bash scripts/install/postinstall.sh",
-        "postversion": "git push && git push --tags && npm publish"
+        "postinstall": "scripts/install/postinstall.sh",
+        "postversion": "git push && git push --tags && npm publish",
+        "global-fix": "scripts/install/global-fix.sh"
     },
     "bin": {
         "jamc": "./index.js"

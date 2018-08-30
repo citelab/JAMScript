@@ -15,10 +15,7 @@ matrix:
         - sudo ln -s `which clang` /usr/bin/clang
         - sudo ln -s `which node` /usr/bin/node
         - sudo ln -s `which npm` /usr/bin/npm
-        - ./scripts/install/preinstall.sh
-      before_script:
-        - ./scripts/install/postinstall.sh
     # - os: osx
     
     
-install: sudo npm install -g --unsafe-perm --ignore-scripts
+install: npm install -g

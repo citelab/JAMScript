@@ -136,3 +136,8 @@ sudo make install
 cd ..
 
 sudo rm -rf temp_install_src
+
+sudo mkdir -p /usr/local/share/jam
+sudo chmod o+w /usr/local/share/jam
+sudo chmod o+w /usr/local/include
+sudo chmod o+w /usr/local/lib
