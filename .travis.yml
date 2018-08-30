@@ -15,12 +15,10 @@ matrix:
         - sudo ln -s `which clang` /usr/bin/clang
         - sudo ln -s `which node` /usr/bin/node
         - sudo ln -s `which npm` /usr/bin/npm
-        - PATH=$PATH:/usr/local/cmake/bin
-        - echo $PATH
-        - cmake --version
-        - ls /usr/local/cmake/bin
-        - ls /usr/local/cmake
-    - os: osx
+        - ./scripts/install/preinstall.sh
+      before_script:
+        - ./scripts/install/postinstall.sh
+    # - os: osx
     
     
-install: sudo npm install -g --unsafe-perm
+install: sudo npm install -g --unsafe-perm --ignore-scripts
