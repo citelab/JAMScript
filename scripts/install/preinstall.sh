@@ -6,6 +6,18 @@ then
         exit 1
 fi
 
+
+if [ -w "$(npm prefix -g)/lib" ]
+then 
+    echo "Global directory is writable"
+else
+    echo "Global directory is not writable"
+    mkdir ~/.npm-global
+    npm config set prefix ~/.npm-global
+    export PATH=~/.npm-global/bin:$PATH
+    source ~/.profile
+fi
+
 # Create a temp directory
 sudo mkdir temp_install_src
 sudo chmod o+w temp_install_src
