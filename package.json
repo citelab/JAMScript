@@ -30,11 +30,8 @@
         "jamc": "./index.js"
     },
     "dependencies": {
-        "chance": "^1.0.16",
         "jszip": "^3.1.5",
         "ohm-js": "^0.13.1",
-        "random-js": "^1.0.8",
-        "vorpal": "^1.12.0",
         "flows.js": "^1.0.0",
         "jdiscovery": "^1.0.0",
         "jamserver": "^1.0.0"
