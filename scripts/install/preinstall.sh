@@ -83,7 +83,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         cmake ..
         cmake --build .
         ctest -G Debug
-        sudo cmake --build . --target install
+        sudo env "PATH=$PATH" cmake --build . --target install
         sudo ldconfig
         cd ../..
     fi
