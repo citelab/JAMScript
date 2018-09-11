@@ -11,7 +11,7 @@ one package or as three separate packages.
 Run the following command from the folder where you want JAMScript downloaded.
 
 ```shell
-git clone --recursive https://github.com/anrl/JAMScript
+git clone --recursive https://github.com/citelab/JAMScript
 ```  
 This should create a *JAMScript* folder there.
 
@@ -30,11 +30,11 @@ You should have the most up-to-date JAMScript source package in the JAMScript fo
 If you want to download the JAMTools as a separate package, run the following command.
 
 ```shell
-git clone https://github.com/anrl/JAMTools
+git clone https://github.com/citelab/JAMTools
 ```
 
 Same way if you want to download the JAMSamples as a separate package, run the following command.
 
 ```shell
-git clone https://github.com/anrl/JAMSamples
+git clone https://github.com/citelab/JAMSamples
 ```

@@ -8,7 +8,7 @@ subtitle: Compiling and running a JAMScript program
 
 JAMScript can be compiled and run without a local installation. This is the simplest way to try out JAMScript. You need a local installation only if you want to debug or develop JAMScript itself! The following are the preparatory steps to get Docker JAM tools working in your system.
 
-1. Download **JAMTools** into a local directory called `tools` like `git clone https://github.com/anrl/JAMTools tools`.
+1. Download **JAMTools** into a local directory called `tools` like `git clone https://github.com/citelab/JAMTools tools`.
 2. Add the `tools` directory to your execution path. This way `djam` and `jam` tools are available for you.
 3. Make `docker` run without `sudo`.
 4. Test that you actually completed Step 3 successfully. Use a command like `docker ps` and see whether it runs.
@@ -17,7 +17,7 @@ JAMScript can be compiled and run without a local installation. This is the simp
 Everything should be setup at this point. Type `djam` or `jam` and you should see a menu of sub commands available under each of them.
 
 To compile a JAMScript program, do the following.
-1. Write or get a JAMScript program. The easiest is to download the **JAMSamples**. Run `git clone https://github.com/anrl/JAMSamples samples` to download many example programs into a `samples` folder.
+1. Write or get a JAMScript program. The easiest is to download the **JAMSamples**. Run `git clone https://github.com/citelab/JAMSamples samples` to download many example programs into a `samples` folder.
 2. Change to a folder containing a valid JAMScript program. `cd samples/JData/String_Log` will change to the folder containing the string logging example.
 3. To compile this program: `djam compile stringlog.*`.
 4. After a successful compile, you should see `stringlog.jxe` in the folder. If not, the compilation did not succeed. You should have seen some error messages in the console to that effect.

@@ -19,7 +19,7 @@ If everything is setup properly, you should be able to type
 
 To compile a JAMScript program, do the following.
 
-1. Write or get a JAMScript program. The easiest is to download the **JAMSamples**. Run `git clone https://github.com/anrl/JAMSamples samples` to download many example programs into a `samples` folder.
+1. Write or get a JAMScript program. The easiest is to download the **JAMSamples**. Run `git clone https://github.com/citelab/JAMSamples samples` to download many example programs into a `samples` folder.
 2. Change to a folder containing a valid JAMScript program. `cd samples/JData/String_Log` will change to the folder containing the string logging example.
 3. To compile this program: `djam compile stringlog.*`.
 4. After a successful compile, you should see `stringlog.jxe` in the folder. If not, the compilation did not succeed. You should have seen some error messages in the console to that effect.
