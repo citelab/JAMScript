@@ -6,15 +6,13 @@ subtitle: Installing JAMScript on Linux
 
 ## Preliminary Setup
 
-This step assumes you have already downloaded the JAMScript source following the instructions [here](../get-src).
-
 Ensure you have the latest Node.js (> 8.0.0) and npm (> 5.0.0) installed on your system.
 If you have an older versions, you need to remove them.
 We recommend using NVM for installing Node:
 
 ```shell
 touch ~/.bash_profile
-wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash 
+wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
 source ~/.nvm/nvm.sh
 nvm install node
 ```
