@@ -14,7 +14,7 @@ We recommend using NVM for installing Node:
 
 ```shell
 touch ~/.bash_profile
-wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash && 
+wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash 
 source ~/.nvm/nvm.sh
 nvm install node
 ```
