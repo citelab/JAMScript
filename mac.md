@@ -12,7 +12,7 @@ Homebrew is required for installating JAMScript:
 ```
 
 Ensure you have the latest Node.js (> 8.0.0) and npm (> 5.0.0) installed on your system.
-We recommend using brew for installing the latest version of Node:
+We recommend using Homebrew for installing the latest version of Node:
 ```shell
 brew install node
 ```
