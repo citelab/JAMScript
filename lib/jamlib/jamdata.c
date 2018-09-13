@@ -137,7 +137,7 @@ void *jamdata_init(void *jsp)
 
 
     char *key = jamdata_makekey("test", "s");
-    __jamdata_logto_server(js->redctx, key, "dummy_value", jamdata_logger_cb, 0);
+    __jamdata_logto_server(js->redctx, key, "dummy_value", jamdata_logger_cb);
 
     event_base_dispatch(js->eloop);
 
@@ -163,24 +163,15 @@ char *jamdata_makekey(char *ns, char *lname)
  * This is strictly an internal function. Use this function to
  * send data to the Redis..
  */
-void __jamdata_logto_server(redisAsyncContext *c, char *key, char *val, msg_rcv_callback_f callback, int iscbor)
+void __jamdata_logto_server(redisAsyncContext *c, char *key, char *val, msg_rcv_callback_f callback)
 {
     if (val != NULL)
     {
-        if (iscbor)
-            redisAsyncCommand(c, callback, val, "EVAL %s 1 %s %s", "redis.replicate_commands(); \
-                                                local timeArray = redis.call('TIME'); \
-                                                local t = tonumber(string.format('%d%06d', timeArray[1], timeArray[2])); \
-                                                local insert_order =  redis.call('ZCARD', KEYS[1]) + 1; \
-                                                redis.call('ZADD', KEYS[1], t, ARGV[1] .. \"$$$\" .. insert_order .. \"$$$\" .. t .. \"$$$\" .. \"cbor\"); \
-                                                return {t}", key, val);
-        else
-            redisAsyncCommand(c, callback, val, "EVAL %s 1 %s %s", "redis.replicate_commands(); \
-                                                local timeArray = redis.call('TIME'); \
-                                                local t = tonumber(string.format('%d%06d', timeArray[1], timeArray[2])); \
-                                                local insert_order =  redis.call('ZCARD', KEYS[1]) + 1; \
-                                                redis.call('ZADD', KEYS[1], t, ARGV[1] .. \"$$$\" .. insert_order .. \"$$$\" .. t); \
-                                                return {t}", key, val);
+        redisAsyncCommand(c, callback, val, "EVAL %s 1 %s", "redis.replicate_commands(); \
+                                            local timeArray = redis.call('TIME'); \
+                                            local t = tonumber(string.format('%d%06d', timeArray[1], timeArray[2])); \
+                                            redis.call('ZADD', KEYS[1], t, ARGV[1]); \
+                                            return {t}", key, val);
     }
 }
 
@@ -239,11 +230,12 @@ void jamdata_logger_cb(redisAsyncContext *c, void *r, void *privdata)
             comboptr_t *cptr = (comboptr_t *)nv->data;
             char *key = cptr->arg1;
             char *value = cptr->arg2;
-            int iscbor = cptr->iarg;
+            /* TODO */
+            // int iscbor = cptr->iarg;
             // TODO: Free nv
             // TODO: Free memory contained in nv
 
-            __jamdata_logto_server(js->redctx, key, value, jamdata_logger_cb, iscbor);
+            __jamdata_logto_server(js->redctx, key, value, jamdata_logger_cb);
             break;
         }
     }
@@ -328,8 +320,9 @@ char *jamdata_encode(char *fmt, ...)
 
 
 
-void jamdata_log_to_server(char *ns, char *lname, char *value, int iscbor)
+void jamdata_log_to_server(char *ns, char *lname, char *value)
 {
+    int iscbor = 0;
     if(value != NULL)
     {
         char *lvalue = strdup(value);
