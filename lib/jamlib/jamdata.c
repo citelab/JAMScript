@@ -167,11 +167,13 @@ void __jamdata_logto_server(redisAsyncContext *c, char *key, char *val, msg_rcv_
 {
     if (val != NULL)
     {
-        redisAsyncCommand(c, callback, val, "EVAL %s 1 %s", "redis.replicate_commands(); \
-                                            local timeArray = redis.call('TIME'); \
-                                            local t = tonumber(string.format('%d%06d', timeArray[1], timeArray[2])); \
-                                            redis.call('ZADD', KEYS[1], t, ARGV[1]); \
-                                            return {t}", key, val);
+        struct timeval  tv;
+        gettimeofday(&tv, NULL);
+
+        // convert tv_sec & tv_usec to millisecond
+        double time_in_mill = (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000 ; 
+        
+        redisAsyncCommand(c, callback, val, "ZADD %s %f %s", key, time_in_mill, val);
     }
 }
 

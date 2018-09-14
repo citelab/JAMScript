@@ -9,6 +9,7 @@
 
 #include <semaphore.h>
 #include <cbor.h>
+#include <time.h>
 
 #include "jam.h"
 #include "activity.h"
