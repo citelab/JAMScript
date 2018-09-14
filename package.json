@@ -34,7 +34,7 @@
         "ohm-js": "^0.13.1",
         "flows.js": "^1.0.0",
         "jdiscovery": "^1.0.0",
-        "jamserver": "^1.0.0"
+        "jamserver": "^1.1.0"
     },
     "engines": {
         "node": ">= 7.0.0",
