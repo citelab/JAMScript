@@ -9,6 +9,7 @@
 
 #include <semaphore.h>
 #include <cbor.h>
+#include <time.h>
 
 #include "jam.h"
 #include "activity.h"
@@ -25,7 +26,6 @@
 
 #include "cborutils.h"
 
-#define DELIM "$$$"
 #define DEFAULT_APP_NAME "APP"
 #define DEFAULT_SERV_IP "127.0.0.1"
 #define DEFAULT_SERV_PORT 6379
@@ -68,11 +68,11 @@ void jamdata_def_connect(const redisAsyncContext *c, int status);
 void jamdata_def_disconnect(const redisAsyncContext *c, int status);
 void *jamdata_init(void *jsp);
 char *jamdata_makekey(char *ns, char *lname);
-void __jamdata_logto_server(redisAsyncContext *c, char *key, char *val, msg_rcv_callback_f callback, int iscbor);
+void __jamdata_logto_server(redisAsyncContext *c, char *key, char *val, msg_rcv_callback_f callback);
 void jamdata_logger_cb(redisAsyncContext *c, void *reply, void *privdata);
 char *jamdata_encode(char *fmt, ...);
 void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...);
-void jamdata_log_to_server(char *ns, char *lname, char *value, int iscbor);
+void jamdata_log_to_server(char *ns, char *lname, char *value);
 
 jambroadcaster_t *jambroadcaster_init(int mode, char *ns, char *varname);
 jambroadcaster_t *create_jambroadcaster(int mode, char *ns, char *varname);
