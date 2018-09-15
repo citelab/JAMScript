@@ -33,6 +33,6 @@ NPM can be configured to use a folder inside of your home folder for global inst
 ```shell
 mkdir ~/.npm-global
 npm config set prefix '~/.npm-global'
-export PATH=~/.npm-global/bin:$PATH
+echo "export PATH=~/.npm-global/bin:$PATH" >> ~/.profile
 source ~/.profile
 ```
