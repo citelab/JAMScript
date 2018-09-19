@@ -137,7 +137,7 @@ void *jamdata_init(void *jsp)
 
 
     char *key = jamdata_makekey("test", "s");
-    __jamdata_logto_server(js->redctx, key, "dummy_value", jamdata_logger_cb);
+    __jamdata_logto_server(js->redctx, key, "dummy_value", 0, jamdata_logger_cb);
 
     event_base_dispatch(js->eloop);
 
@@ -163,17 +163,11 @@ char *jamdata_makekey(char *ns, char *lname)
  * This is strictly an internal function. Use this function to
  * send data to the Redis..
  */
-void __jamdata_logto_server(redisAsyncContext *c, char *key, char *val, msg_rcv_callback_f callback)
+void __jamdata_logto_server(redisAsyncContext *c, char *key, char *val, unsigned long long time_stamp, msg_rcv_callback_f callback)
 {
     if (val != NULL)
-    {
-        struct timeval  tv;
-        gettimeofday(&tv, NULL);
-
-        // convert tv_sec & tv_usec to millisecond
-        double time_in_mill = (tv.tv_sec) * 1000 + (tv.tv_usec) / 1000 ; 
-        
-        redisAsyncCommand(c, callback, val, "ZADD %s %f %s", key, time_in_mill, val);
+    {   
+        redisAsyncCommand(c, callback, val, "ZADD %s %llu %s", key, time_stamp, val);
     }
 }
 
@@ -232,12 +226,13 @@ void jamdata_logger_cb(redisAsyncContext *c, void *r, void *privdata)
             comboptr_t *cptr = (comboptr_t *)nv->data;
             char *key = cptr->arg1;
             char *value = cptr->arg2;
+            unsigned long long time_stamp = cptr->lluarg;
             /* TODO */
             // int iscbor = cptr->iarg;
             // TODO: Free nv
             // TODO: Free memory contained in nv
 
-            __jamdata_logto_server(js->redctx, key, value, jamdata_logger_cb);
+            __jamdata_logto_server(js->redctx, key, value, time_stamp, jamdata_logger_cb);
             break;
         }
     }
@@ -248,7 +243,7 @@ void jamdata_logger_cb(redisAsyncContext *c, void *r, void *privdata)
 //args followed fmt will be paired up. For example,
 //parseCmd("%s%d", "person", "Lilly", "age", 19) indicates the variable named "person"
 //is expected to have a string type value followed, which is "Lilly" in this case
-char *jamdata_encode(char *fmt, ...)
+char *jamdata_encode(unsigned long long timestamp, char *fmt, va_list args)
 {
     uint8_t *buffer;
     size_t len;
@@ -261,9 +256,6 @@ char *jamdata_encode(char *fmt, ...)
     //key    - encoded string: argument's name
     cbor_item_t *root = cbor_new_indefinite_map();
 
-    //initialize args to be used by va_end and va_arg
-    va_list args;
-    va_start(args, fmt);
 
     char *name, *s;
     int t;
@@ -309,7 +301,13 @@ char *jamdata_encode(char *fmt, ...)
             return NULL;
         }
     }
-    va_end(args);
+
+    // Add the timestamp
+    cbor_map_add(root, (struct cbor_pair)
+    {
+        .key = cbor_move(cbor_build_string("timestamp")),
+        .value = cbor_move(cbor_build_uint64(timestamp))
+    });
 
     cbor_serialize_alloc(root, &buffer, &len);
     char *obuf = calloc(len * 1.5, sizeof(char));
@@ -322,17 +320,29 @@ char *jamdata_encode(char *fmt, ...)
 
 
 
-void jamdata_log_to_server(char *ns, char *lname, char *value)
+void jamdata_log_to_server(char *ns, char *lname, char *fmt, ...)
 {
     int iscbor = 0;
-    if(value != NULL)
+    if(fmt != NULL)
     {
-        char *lvalue = strdup(value);
+
+        struct timeval  tv;
+        gettimeofday(&tv, NULL);
+
+        // convert tv_sec & tv_usec to millisecond
+        unsigned long long milliseconds = tv.tv_sec*1000LL + tv.tv_usec/1000; 
+
+        // char *lvalue = strdup(value);
         // Create the key
         char *key = jamdata_makekey(ns, lname);
 
+        va_list argptr;
+        va_start(argptr,fmt);
+
         // Create a comboptr_t using the key and value
-        comboptr_t *cptr = create_combo3i_ptr(key, lvalue, NULL, iscbor);
+        comboptr_t *cptr = create_combo2llu_ptr(key, jamdata_encode(milliseconds, fmt, argptr), milliseconds);
+
+        va_end(argptr);
 
         // Stick the value into the queue..
         semqueue_enq(js->dataoutq, cptr, sizeof(comboptr_t));

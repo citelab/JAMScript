@@ -68,11 +68,11 @@ void jamdata_def_connect(const redisAsyncContext *c, int status);
 void jamdata_def_disconnect(const redisAsyncContext *c, int status);
 void *jamdata_init(void *jsp);
 char *jamdata_makekey(char *ns, char *lname);
-void __jamdata_logto_server(redisAsyncContext *c, char *key, char *val, msg_rcv_callback_f callback);
+void __jamdata_logto_server(redisAsyncContext *c, char *key, char *val, unsigned long long time_stamp, msg_rcv_callback_f callback);
 void jamdata_logger_cb(redisAsyncContext *c, void *reply, void *privdata);
-char *jamdata_encode(char *fmt, ...);
+char *jamdata_encode(unsigned long long timestamp, char *fmt, va_list argptr);
 void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...);
-void jamdata_log_to_server(char *ns, char *lname, char *value);
+void jamdata_log_to_server(char *ns, char *lname, char *fmt, ...);
 
 jambroadcaster_t *jambroadcaster_init(int mode, char *ns, char *varname);
 jambroadcaster_t *create_jambroadcaster(int mode, char *ns, char *varname);
