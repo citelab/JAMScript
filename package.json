@@ -32,9 +32,9 @@
     "dependencies": {
         "jszip": "^3.1.5",
         "ohm-js": "^0.13.1",
-        "flows.js": "^1.0.0",
-        "jdiscovery": "^1.0.0",
-        "jamserver": "^1.2.1"
+        "flows.js": "latest",
+        "jdiscovery": "latest",
+        "jamserver": "latest"
     },
     "engines": {
         "node": ">= 7.0.0",
