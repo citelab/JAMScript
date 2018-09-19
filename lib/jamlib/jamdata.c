@@ -249,57 +249,92 @@ char *jamdata_encode(unsigned long long timestamp, char *fmt, va_list args)
     size_t len;
     int i, num = strlen(fmt);
 
-    if (num==0) return NULL;
-
-    //root   - cbor map: object contains encoded info about input args
-    //content- encoded primitive type: argument's content
-    //key    - encoded string: argument's name
-    cbor_item_t *root = cbor_new_indefinite_map();
-
-
     char *name, *s;
     int t;
     double f;
 
-    //fmt_str is in the format such as sdf
-    for (i=0; i < num; i++)
-    {
-        //name of the value
-        name = va_arg(args, char *);
+    cbor_item_t *root = cbor_new_indefinite_map();
 
-        if (fmt[i]=='s')
-        {
+    if (num == 0) {
+        return NULL;
+    } else if(num == 1) {
+        if (fmt[0] == 's') {
             s = va_arg(args, char *);
             cbor_map_add(root, (struct cbor_pair)
             {
-                .key = cbor_move(cbor_build_string(name)),
+                .key = cbor_move(cbor_build_string("value")),
                 .value = cbor_move(cbor_build_string(s))
             }); // end of cbor_map
-        }
-        else
-        if(fmt[i]=='i' || fmt[i]=='d')
-        {
+        } else if (fmt[0] == 'i' || fmt[0] == 'd') {
             t = abs(va_arg(args, int));
             cbor_map_add(root, (struct cbor_pair)
             {
-                .key = cbor_move(cbor_build_string(name)),
+                .key = cbor_move(cbor_build_string("value")),
                 .value = cbor_move(cbor_build_uint32(t))
             });
-        }
-        else if(fmt[i]=='f')
-        {
+        } else if (fmt[0] == 'f') {
             f = va_arg(args, double);
             cbor_map_add(root, (struct cbor_pair)
             {
-                .key = cbor_move(cbor_build_string(name)),
+                .key = cbor_move(cbor_build_string("value")),
                 .value = cbor_move(cbor_build_float8(f))
             });
-        }
-        else
-        {
+        } else {
             printf("Invalid format string\n");
             return NULL;
         }
+    } else {
+        //root   - cbor map: object contains encoded info about input args
+        //content- encoded primitive type: argument's content
+        //key    - encoded string: argument's name
+        
+        cbor_item_t *iroot = cbor_new_indefinite_map();
+
+        //fmt_str is in the format such as sdf
+        for (i=0; i < num; i++)
+        {
+            //name of the value
+            name = va_arg(args, char *);
+
+            if (fmt[i]=='s')
+            {
+                s = va_arg(args, char *);
+                cbor_map_add(iroot, (struct cbor_pair)
+                {
+                    .key = cbor_move(cbor_build_string(name)),
+                    .value = cbor_move(cbor_build_string(s))
+                }); // end of cbor_map
+            }
+            else
+            if(fmt[i]=='i' || fmt[i]=='d')
+            {
+                t = abs(va_arg(args, int));
+                cbor_map_add(iroot, (struct cbor_pair)
+                {
+                    .key = cbor_move(cbor_build_string(name)),
+                    .value = cbor_move(cbor_build_uint32(t))
+                });
+            }
+            else if(fmt[i]=='f')
+            {
+                f = va_arg(args, double);
+                cbor_map_add(iroot, (struct cbor_pair)
+                {
+                    .key = cbor_move(cbor_build_string(name)),
+                    .value = cbor_move(cbor_build_float8(f))
+                });
+            }
+            else
+            {
+                printf("Invalid format string\n");
+                return NULL;
+            }
+        }
+
+        cbor_map_add(root, (struct cbor_pair) {
+            .key = cbor_move(cbor_build_string("value")),
+            .value = cbor_move(iroot)
+        });
     }
 
     // Add the timestamp
