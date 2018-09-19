@@ -6,18 +6,6 @@ then
         exit 1
 fi
 
-
-if [ -w "$(npm prefix -g)/lib" ]
-then 
-    echo "Global directory is writable"
-else
-    echo "Global directory is not writable"
-    mkdir ~/.npm-global
-    npm config set prefix ~/.npm-global
-    export PATH=~/.npm-global/bin:$PATH
-    source ~/.profile
-fi
-
 # Create a temp directory
 sudo mkdir temp_install_src
 sudo chmod o+w temp_install_src
@@ -114,10 +102,26 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         cd ..
     fi
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-    brew install mosquitto
-    brew install cmake
-    brew install tmux
+    if (command -v mosquitto > /dev/null); then
+        echo "mosquitto already installed"
+    else
+        brew install mosquitto
+    fi
+
+    if (command -v cmake > /dev/null); then
+        echo "cmake already installed"
+    else
+        brew install cmake
+    fi
+
+    if (command -v tmux > /dev/null); then
+        echo "tmux already installed"
+    else
+        brew install tmux
+    fi
+
     brew install hiredis
+
     if (command -v nanocat > /dev/null); then
         echo "Nano message already installed"
     else
@@ -129,6 +133,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     else
         brew install redis
     fi
+
     brew tap pjk/libcbor
     brew install libcbor
 else
