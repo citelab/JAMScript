@@ -135,7 +135,6 @@ void *jamdata_init(void *jsp)
     // There is no significance to this data.
     // The actual data transfer takes place in the callback entered afterwards
 
-
     char *key = jamdata_makekey("test", "s");
     __jamdata_logto_server(js->redctx, key, "dummy_value", 0, jamdata_logger_cb);
 
@@ -245,7 +244,7 @@ void jamdata_logger_cb(redisAsyncContext *c, void *r, void *privdata)
 //is expected to have a string type value followed, which is "Lilly" in this case
 char *jamdata_encode(unsigned long long timestamp, char *fmt, va_list args)
 {
-    uint8_t *buffer;
+    unsigned char *buffer;
     size_t len;
     int i, num = strlen(fmt);
 
@@ -264,7 +263,7 @@ char *jamdata_encode(unsigned long long timestamp, char *fmt, va_list args)
             {
                 .key = cbor_move(cbor_build_string("value")),
                 .value = cbor_move(cbor_build_string(s))
-            }); // end of cbor_map
+            });
         } else if (fmt[0] == 'i' || fmt[0] == 'd') {
             t = abs(va_arg(args, int));
             cbor_map_add(root, (struct cbor_pair)
@@ -333,7 +332,7 @@ char *jamdata_encode(unsigned long long timestamp, char *fmt, va_list args)
 
         cbor_map_add(root, (struct cbor_pair) {
             .key = cbor_move(cbor_build_string("value")),
-            .value = cbor_move(iroot)
+            .value = cbor_copy(iroot)
         });
     }
 
@@ -341,16 +340,16 @@ char *jamdata_encode(unsigned long long timestamp, char *fmt, va_list args)
     cbor_map_add(root, (struct cbor_pair)
     {
         .key = cbor_move(cbor_build_string("timestamp")),
-        .value = cbor_move(cbor_build_uint64(timestamp))
+        .value = cbor_move(cbor_build_uint32(timestamp))
     });
 
     cbor_serialize_alloc(root, &buffer, &len);
-    char *obuf = calloc(len * 1.5, sizeof(char));
-    Base64encode(obuf, (const char *)buffer, len);
+    //char *obuf = calloc(len * 1.5, sizeof(char));
+    //Base64encode(obuf, (const char *)buffer, len);
 
     // The cbor object itself is deallocated.
     cbor_decref(&root);
-    return obuf;
+    return buffer;
 }
 
 
