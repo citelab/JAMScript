@@ -31,28 +31,32 @@ var jviewPort;
 
 for (var i = 0; i < args.length; i++) {
     if (args[i].charAt(0) === "-") {
-        if (args[i] === "-D" || args[i] === "-d") { // Debug mode
+        if (args[i] === "-D" || args[i] === "-d") {             // Debug mode
             debug = true;
-        } else if (args[i] === "-h") { // help
+        } else if (args[i] === "-h" || args[i] === "--help") {  // Help
             printHelp();
-        } else if (args[i] === "-N") { // Don't compile
+            process.exit(0);
+        } else if (args[i] === "-N") {                          // Don't compile
             noCompile = true;
-        } else if (args[i] === "-o") { // Output name
+        } else if (args[i] === "-o") {                          // Set output name
             outPath = args[i + 1];
             i = i + 1;
-        } else if (args[i] === "--jview") {
+        } else if (args[i] === "--jview") {                     // Enabled jview
             jviewPort = args[i+1];
             i = i + 1;
-        } else if (args[i] === "-P") { // Preprocessor only
+        } else if (args[i] === "-P") {                          // Preprocessor only
             preprocessOnly = true;
-        } else if (args[i] === "-V") { // Verbose
+        } else if (args[i] === "-v") {                          // Print version
+            console.log(require('./package.json').version);
+            process.exit(0);
+        } else if (args[i] === "-V") {                          // Verbose
             verbose = true;
-        } else if (args[i] === "--analyze") { // Generate call graph files
+        } else if (args[i] === "--analyze") {                   // Generate call graph files
             callGraphFlag = true;
         }
-        // } else if(args[i] === "-T") { // Translator only
+        // } else if(args[i] === "-T") {                        // Translator only
         //   translateOnly = true;
-        // } else if(args[i] === "-A") { // Parser only
+        // } else if(args[i] === "-A") {                        // Parser only
         //   parseOnly = true;
         // }
     } else {

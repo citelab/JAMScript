@@ -334,6 +334,7 @@ char *jamdata_encode(unsigned long long timestamp, char *fmt, va_list args)
             .key = cbor_move(cbor_build_string("value")),
             .value = cbor_copy(iroot)
         });
+        cbor_decref(&iroot);
     }
 
     // Add the timestamp
