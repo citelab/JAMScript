@@ -242,7 +242,7 @@ void jamdata_logger_cb(redisAsyncContext *c, void *r, void *privdata)
 //args followed fmt will be paired up. For example,
 //parseCmd("%s%d", "person", "Lilly", "age", 19) indicates the variable named "person"
 //is expected to have a string type value followed, which is "Lilly" in this case
-char *jamdata_encode(unsigned long long timestamp, char *fmt, va_list args)
+unsigned char *jamdata_encode(unsigned long long timestamp, char *fmt, va_list args)
 {
     unsigned char *buffer;
     size_t len;
@@ -252,90 +252,63 @@ char *jamdata_encode(unsigned long long timestamp, char *fmt, va_list args)
     int t;
     double f;
 
+    //root   - cbor map: object contains encoded info about input args
+    //content- encoded primitive type: argument's content
+    //key    - encoded string: argument's name
     cbor_item_t *root = cbor_new_indefinite_map();
+    cbor_item_t *iroot = cbor_new_indefinite_map();
 
     if (num == 0) {
         return NULL;
-    } else if(num == 1) {
-        if (fmt[0] == 's') {
+    } 
+
+    //fmt_str is in the format such as sdf
+    for (i=0; i < num; i++)
+    {
+        //name of the value
+        name = va_arg(args, char *);
+
+        if (fmt[i]=='s')
+        {
             s = va_arg(args, char *);
-            cbor_map_add(root, (struct cbor_pair)
+            cbor_map_add(iroot, (struct cbor_pair)
             {
-                .key = cbor_move(cbor_build_string("value")),
+                .key = cbor_move(cbor_build_string(name)),
                 .value = cbor_move(cbor_build_string(s))
-            });
-        } else if (fmt[0] == 'i' || fmt[0] == 'd') {
+            }); // end of cbor_map
+        }
+        else
+        if(fmt[i]=='i' || fmt[i]=='d')
+        {
             t = abs(va_arg(args, int));
-            cbor_map_add(root, (struct cbor_pair)
+            cbor_map_add(iroot, (struct cbor_pair)
             {
-                .key = cbor_move(cbor_build_string("value")),
+                .key = cbor_move(cbor_build_string(name)),
                 .value = cbor_move(cbor_build_uint32(t))
             });
-        } else if (fmt[0] == 'f') {
+        }
+        else if(fmt[i]=='f')
+        {
             f = va_arg(args, double);
-            cbor_map_add(root, (struct cbor_pair)
+            cbor_map_add(iroot, (struct cbor_pair)
             {
-                .key = cbor_move(cbor_build_string("value")),
+                .key = cbor_move(cbor_build_string(name)),
                 .value = cbor_move(cbor_build_float8(f))
             });
-        } else {
+        }
+        else
+        {
             printf("Invalid format string\n");
             return NULL;
         }
-    } else {
-        //root   - cbor map: object contains encoded info about input args
-        //content- encoded primitive type: argument's content
-        //key    - encoded string: argument's name
-        
-        cbor_item_t *iroot = cbor_new_indefinite_map();
-
-        //fmt_str is in the format such as sdf
-        for (i=0; i < num; i++)
-        {
-            //name of the value
-            name = va_arg(args, char *);
-
-            if (fmt[i]=='s')
-            {
-                s = va_arg(args, char *);
-                cbor_map_add(iroot, (struct cbor_pair)
-                {
-                    .key = cbor_move(cbor_build_string(name)),
-                    .value = cbor_move(cbor_build_string(s))
-                }); // end of cbor_map
-            }
-            else
-            if(fmt[i]=='i' || fmt[i]=='d')
-            {
-                t = abs(va_arg(args, int));
-                cbor_map_add(iroot, (struct cbor_pair)
-                {
-                    .key = cbor_move(cbor_build_string(name)),
-                    .value = cbor_move(cbor_build_uint32(t))
-                });
-            }
-            else if(fmt[i]=='f')
-            {
-                f = va_arg(args, double);
-                cbor_map_add(iroot, (struct cbor_pair)
-                {
-                    .key = cbor_move(cbor_build_string(name)),
-                    .value = cbor_move(cbor_build_float8(f))
-                });
-            }
-            else
-            {
-                printf("Invalid format string\n");
-                return NULL;
-            }
-        }
-
-        cbor_map_add(root, (struct cbor_pair) {
-            .key = cbor_move(cbor_build_string("value")),
-            .value = cbor_copy(iroot)
-        });
-        cbor_decref(&iroot);
     }
+
+    cbor_map_add(root, (struct cbor_pair) {
+        .key = cbor_move(cbor_build_string("value")),
+        .value = cbor_copy(iroot)
+    });
+
+    cbor_decref(&iroot);
 
     // Add the timestamp
     cbor_map_add(root, (struct cbor_pair)
@@ -345,19 +318,77 @@ char *jamdata_encode(unsigned long long timestamp, char *fmt, va_list args)
     });
 
     cbor_serialize_alloc(root, &buffer, &len);
-    //char *obuf = calloc(len * 1.5, sizeof(char));
-    //Base64encode(obuf, (const char *)buffer, len);
 
     // The cbor object itself is deallocated.
     cbor_decref(&root);
+    
+    return buffer;
+}
+
+unsigned long long ms_time() {
+    struct timeval  tv;
+    gettimeofday(&tv, NULL);
+
+    // convert tv_sec & tv_usec to millisecond
+    return tv.tv_sec*1000LL + tv.tv_usec/1000; 
+}
+
+unsigned char *jamdata_simple_encode(unsigned long long timestamp, cbor_item_t *value) {
+    unsigned char *buffer;
+    size_t len;
+    cbor_item_t *root = cbor_new_definite_map(2);
+
+    cbor_map_add(root, (struct cbor_pair)
+    {
+        .key = cbor_move(cbor_build_string("value")),
+        .value = cbor_move(value)
+    });
+
+    cbor_map_add(root, (struct cbor_pair)
+    {
+        .key = cbor_move(cbor_build_string("timestamp")),
+        .value = cbor_move(cbor_build_uint32(timestamp))
+    });
+
+    cbor_serialize_alloc(root, &buffer, &len);
+    cbor_decref(&root);
+
     return buffer;
 }
 
 
+void jamdata_log_to_server_string(char *ns, char *lname, char *value) {
+    unsigned long long timestamp = ms_time();
+    char *key = jamdata_makekey(ns, lname);
+    unsigned char *buffer = jamdata_simple_encode(timestamp, cbor_build_string(value));
+    
+    comboptr_t *cptr = create_combo2llu_ptr(key, buffer, timestamp);
+
+    semqueue_enq(js->dataoutq, cptr, sizeof(comboptr_t));
+}
+
+void jamdata_log_to_server_float(char *ns, char *lname, float value) {
+    unsigned long long timestamp = ms_time();
+    char *key = jamdata_makekey(ns, lname);
+    unsigned char *buffer = jamdata_simple_encode(timestamp, cbor_build_float8(value));
+    
+    comboptr_t *cptr = create_combo2llu_ptr(key, buffer, timestamp);
+
+    semqueue_enq(js->dataoutq, cptr, sizeof(comboptr_t));
+}
+
+void jamdata_log_to_server_int(char *ns, char *lname, int value) {
+    unsigned long long timestamp = ms_time();
+    char *key = jamdata_makekey(ns, lname);
+    unsigned char *buffer = jamdata_simple_encode(timestamp, cbor_build_uint32(value));
+    
+    comboptr_t *cptr = create_combo2llu_ptr(key, buffer, timestamp);
+
+    semqueue_enq(js->dataoutq, cptr, sizeof(comboptr_t));
+}
 
 void jamdata_log_to_server(char *ns, char *lname, char *fmt, ...)
 {
-    int iscbor = 0;
     if(fmt != NULL)
     {
 
