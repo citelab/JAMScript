@@ -101,6 +101,18 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         sudo make install
         cd ..
     fi
+
+    # MQTT
+    qres=$(ldconfig -p | grep mqtt3a | tr -d ' ')
+    if [ -z $qres ]; then
+        wget -O mqtt.tar.gz https://github.com/eclipse/paho.mqtt.c/archive/v1.3.0.tar.gz
+        tar xvzf mqtt.tar.gz
+        cd paho.mqtt.c-1.3.0
+        make
+        sudo make install
+        cd ..
+    fi
+
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     if (command -v mosquitto > /dev/null); then
         echo "mosquitto already installed"
