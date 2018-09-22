@@ -252,6 +252,9 @@ unsigned char *jamdata_encode(unsigned long long timestamp, char *fmt, va_list a
     int t;
     double f;
 
+    char str[256];
+    sprintf(str, "%llu", timestamp);
+
     //root   - cbor map: object contains encoded info about input args
     //content- encoded primitive type: argument's content
     //key    - encoded string: argument's name
@@ -314,7 +317,7 @@ unsigned char *jamdata_encode(unsigned long long timestamp, char *fmt, va_list a
     cbor_map_add(root, (struct cbor_pair)
     {
         .key = cbor_move(cbor_build_string("timestamp")),
-        .value = cbor_move(cbor_build_uint32(timestamp))
+        .value = cbor_move(cbor_build_string(str))
     });
 
     cbor_serialize_alloc(root, &buffer, &len);
@@ -336,6 +339,9 @@ unsigned long long ms_time() {
 unsigned char *jamdata_simple_encode(unsigned long long timestamp, cbor_item_t *value) {
     unsigned char *buffer;
     size_t len;
+    char str[256];
+    sprintf(str, "%llu", timestamp);
+
     cbor_item_t *root = cbor_new_definite_map(2);
 
     cbor_map_add(root, (struct cbor_pair)
@@ -347,7 +353,7 @@ unsigned char *jamdata_simple_encode(unsigned long long timestamp, cbor_item_t *
     cbor_map_add(root, (struct cbor_pair)
     {
         .key = cbor_move(cbor_build_string("timestamp")),
-        .value = cbor_move(cbor_build_uint32(timestamp))
+        .value = cbor_move(cbor_build_string(str))
     });
 
     cbor_serialize_alloc(root, &buffer, &len);
@@ -391,12 +397,7 @@ void jamdata_log_to_server(char *ns, char *lname, char *fmt, ...)
 {
     if(fmt != NULL)
     {
-
-        struct timeval  tv;
-        gettimeofday(&tv, NULL);
-
-        // convert tv_sec & tv_usec to millisecond
-        unsigned long long milliseconds = tv.tv_sec*1000LL + tv.tv_usec/1000; 
+        unsigned long long milliseconds = ms_time(); 
 
         // char *lvalue = strdup(value);
         // Create the key
