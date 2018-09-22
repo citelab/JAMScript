@@ -1,7 +1,7 @@
 {
     "name": "jamscript",
     "description": "Compiler for the JAMScript language",
-    "version": "0.4.5",
+    "version": "0.4.6",
     "license": "MIT",
     "keywords": [
         "c",
