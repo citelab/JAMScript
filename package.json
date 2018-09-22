@@ -24,7 +24,8 @@
         "install": "node-gyp rebuild",
         "postinstall": "scripts/install/postinstall.sh",
         "postversion": "git push && git push --tags && npm publish",
-        "prepublishOnly": "scripts/install/prepublishOnly.sh"
+        "prepublishOnly": "scripts/install/prepublishOnly.sh",
+        "link": "scripts/install/link.sh"
     },
     "bin": {
         "jamc": "./index.js"
