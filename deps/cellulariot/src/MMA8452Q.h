@@ -10,6 +10,8 @@ typedef struct {
     //TODO
 } MMA8452Q;
 
-int MMA8452Q_init(MMA8452Q *handle);
+int MMA8452Q_open();
 
-int readAcc(MMA8452Q *handle, int *data);
+int MMA8452Q_read(int *data, int file);
+
+int MMA8452Q_close();
