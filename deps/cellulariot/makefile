@@ -6,6 +6,7 @@
 # Date                  Author                  Modification
 # -----------------------------------------------------------------
 # 23-Oct-2018           Matthew L-K             Created the file
+# 31-Oct-2018           Samuel G                Added cellulariot-related tasks. Removed other tasks
 #
 #==================================================================#
 
@@ -18,17 +19,29 @@ CFLAG = -Wall
 LIBS = -pthread -lpigpio -lrt
 
 # Define targets here
-all: test_temperature.o test_gpio.o
+cellulariot-deploy:
+	clean
+	cellulariot
+	clean_intermediate
 
-test_temperature.o : src/test_temperature.c
-	${CC} ${CFLAG} ${LIBS} $? -o ${DIR_TARGET}$@
+cellulariot: cellulariot.o SDL_Pi_HDC1000.o MMA8452Q.o Adafruit_ADS1x15.o
+	${CC} ${CFLAG} $? -o ${DIR_TARGET}$@
 
-test_light.o : src/test_light.c
-	${CC} ${CFLAG} ${LIBS} $? -o ${DIR_TARGET}$@
+cellulariot.o : ${DIR_SRC}cellulariot.c SDL_Pi_HDC1000.h MMA8452Q.h Adafruit_ADS1x15.h
+	${CC} -c ${CFLAG} $? -o ${DIR_TARGET}$@
 
-test_gpio.o : src/test_gpio.c
-	${CC} ${CFLAG} ${LIBS} $? -o ${DIR_TARGET}$@
+SDL_Pi_HDC1000.o : ${DIR_SRC}SDL_Pi_HDC1000.c
+	${CC} -c ${CFLAG} ${LIBS} $? -o ${DIR_TARGET}$@
+
+MMA8452Q.o : ${DIR_SRC}MMA8452Q.c MMA8452Q.h
+	${CC} -c ${CFLAG} ${LIBS} $? -o ${DIR_TARGET}$@
+
+Adafruit_ADS1x15.o : ${DIR_SRC}Adafruit_ADS1x15.c Adafruit_ADS1x15.h
+	${CC} -c ${CFLAG} ${LIBS} $? -o ${DIR_TARGET}$@
+
+clean_intermediate :
+	rm -f ${DIR_TARGET}*.o
 
 clean : 
-	 rm -f ${DIR_TARGET}*.o
+	 rm -f ${DIR_TARGET}*
 
