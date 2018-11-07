@@ -3,7 +3,10 @@
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
-
+/*
+link for useful github:
+https://github.com/ControlEverythingCommunity/MMA8452Q/blob/master/C/MMA8452Q.c?fbclid=IwAR0RG6YDHjiqvNI1Pp9EbsheDBY5C6qh4-MXTSwRZFIAHxqa4Hr_z9wOstA
+*/
 int MMA8452Q_open(){
     int file;
     // Create I2C bus

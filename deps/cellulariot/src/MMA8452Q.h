@@ -4,6 +4,7 @@ Modification Log:
 Date                  Author                  Modification
 -----------------------------------------------------------------
 31-Oct-2018           Samuel G                Created the file
+07-Nov-2018        Julien Courbebaisse        Updated to reflect new model
 ==================================================================*/
 
 typedef struct {
