@@ -10,14 +10,6 @@ Date                  Author                  Modification
 #define HDC1000_CONFIG_TEMPERATURE_RESOLUTION_14BIT 0x0000
 #define HDC1000_CONFIG_HUMIDITY_RESOLUTION_14BIT 0x0000
 
-int HDC1000_temp_open();
-
-int HDC1000_humid_open();
-
 int read_temperature(int *data);
 
 int read_humidity(int *data);
-
-int HDC1000_temp_close();
-
-int HDC1000_humid_close();
