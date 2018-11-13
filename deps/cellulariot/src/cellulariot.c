@@ -4,6 +4,7 @@ Modification Log:
 Date                  Author                  Modification
 -----------------------------------------------------------------
 31-Oct-2018           Samuel G                Created the file
+12-Nov-2018           Samuel G                Updated to reflect new model
 ==================================================================*/
 
 #include "SDL_Pi_HDC1000.h"
@@ -14,64 +15,41 @@ Date                  Author                  Modification
 #define NULL 0
 #endif
 
-typedef struct {
-    MMA8452Q *acc;
-    ADS1015 *adc;
-    HDC1000 *temph;
-} CellularIoT;
+#define LUX_CHANNEL 3
 
-int CellularIoT_init(CellularIoT *ciot) {
-    
-    //*ciot = Get memory
-    ciot->acc = NULL;
-    ciot->adc = NULL;
-    ciot->temph = NULL; 
 
-    return -1;
+
+int read_accel(int *data) {
+
+    return read_acc(data);
 }
 
-int readAccel(CellularIoT *ciot, int *data) {
+int read_adc(int *data, int channel) {
 
-    if (ciot->acc == NULL)
-        if (MMA8452Q_init(ciot->acc) != 0)
-            return -1;
-
-    return readAcc(ciot->acc, data);
+    return _read_adc(data, channel, 1f);
 }
 
-int readAdc (CellularIoT *ciot, int *data, int channelNumber) {
+int read_lux(int *data) {
 
-    if (ciot->adc == NULL)
-        if (ADS1015_init(ciot->adc, 0x49, 1) != 0)
-            return -1;
+    int succ = readAdc(data, LUX_CHANNEL);
 
-    if (channelNumber < 0 | channelNumber > 3)
-        return -1;
-    return read_adc(ciot->adc, data, channelNumber, 1);
+    if (succ == 0)
+        *data = (*data * 100) / 1580;
+
+    return succ;
 }
 
-int readTemp (CellularIoT *ciot, int *data) {
+int read_temp (int *data) {
 
-    if (ciot->temph == NULL) {
-        if (HDC1000_init(ciot->temph) == 0) {
-            setTemperatureResolution(HDC1000_CONFIG_TEMPERATURE_RESOLUTION_14BIT);
-        }
-        else
-            return -1;
-    }
-
-	return  readTemperature(ciot->temph, data);
+	return  read_temperature(data);
 }
 
-int readHum (CellularIoT *ciot, int *data) {
+int read_hum (int *data) {
 
-    if (ciot->temph == NULL) {
-        if (HDC1000_init(ciot->temph) == 0) {
-            setHumidityResolution(HDC1000_CONFIG_HUMIDITY_RESOLUTION_14BIT);
-        }
-        else
-            return -1;
-    }
+	return  read_humidity(data);
+}
 
-	return  readHumidity(ciot->temph, data);
+int read_gps (int *data) {
+
+    return _read_gps(data);
 }
