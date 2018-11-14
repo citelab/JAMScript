@@ -1,5 +1,5 @@
 #==================================================================#
-# @description: makefile for compiling pigpio programs
+# @description: makefile for compiling sensor modules
 # @author: Matthew L-K matthew.lesko-krlez@mail.mcgill.ca
 # 
 # Modification Log:
@@ -25,23 +25,23 @@ cellulariot-deploy:
 	clean_intermediate
 
 cellulariot: cellulariot.o SDL_Pi_HDC1000.o MMA8452Q.o Adafruit_ADS1x15.o
-	${CC} ${CFLAG} $? -o ${DIR_TARGET}$@
+	${CC} ${CFLAG}
 
-cellulariot.o : ${DIR_SRC}cellulariot.c SDL_Pi_HDC1000.h MMA8452Q.h Adafruit_ADS1x15.h
-	${CC} -c ${CFLAG} $? -o ${DIR_TARGET}$@
+cellulariot.o : ${DIR_SRC}cellulariot.c
+	${CC} ${CFLAG} $?
 
-SDL_Pi_HDC1000.o : ${DIR_SRC}SDL_Pi_HDC1000.c
-	${CC} -c ${CFLAG} ${LIBS} $? -o ${DIR_TARGET}$@
+SDL_Pi_HDC1000.o : ${DIR_SRC}SDL_Pi_HDC1000.c ${DIR_SRC}SDL_Pi_HDC1000.h
+	${CC} -c ${CFLAG} $<
 
-MMA8452Q.o : ${DIR_SRC}MMA8452Q.c MMA8452Q.h
-	${CC} -c ${CFLAG} ${LIBS} $? -o ${DIR_TARGET}$@
+MMA8452Q.o : ${DIR_SRC}MMA8452Q.c ${DIR_SRC}MMA8452Q.h
+	${CC} -c ${CFLAG} $<
 
-Adafruit_ADS1x15.o : ${DIR_SRC}Adafruit_ADS1x15.c Adafruit_ADS1x15.h
-	${CC} -c ${CFLAG} ${LIBS} $? -o ${DIR_TARGET}$@
+Adafruit_ADS1x15.o : ${DIR_SRC}Adafruit_ADS1x15.c ${DIR_SRC}Adafruit_ADS1x15.h
+	${CC} -c ${CFLAG} $<
 
 clean_intermediate :
 	rm -f ${DIR_TARGET}*.o
 
 clean : 
-	 rm -f ${DIR_TARGET}*
+	rm -f ${DIR_TARGET}*
 

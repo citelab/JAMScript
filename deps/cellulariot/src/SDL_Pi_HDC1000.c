@@ -5,9 +5,11 @@ Modification Log
 Date		    Author		    Modification
 07-Nov-2018	    Matthew L-K	    Created the file
 ==================================================================*/
-#include <i2c-dev.h>
-#include <i2c/smbus.h>
+
+#include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <fcntl.h>
 
 #define I2C_BUS 1
@@ -64,7 +66,7 @@ int read_temperature(int *data)
     else
     {
         short temp = (buff[1] << 8) | buff[0];
-        &data = (temp / 65536) * 165 - 40;
+        data = (temp / 65536) * 165 - 40;
         close(fd);
         return 0;
     }
@@ -92,7 +94,7 @@ int read_humidity(int *data)
     else
     {
         short humid = (buff[1] << 8) | buff[0];
-        &data = (humid / 65536) * 100;
+        data = (humid / 65536) * 100;
         close(fd);
         return 0;
     }
