@@ -7,7 +7,7 @@
 # -----------------------------------------------------------------
 # 23-Oct-2018           Matthew L-K             Created the file
 # 31-Oct-2018           Samuel G                Added cellulariot-related tasks. Removed other tasks
-#
+# 12-Nov-2018           Samuel G                Added GPS
 #==================================================================#
 
 # Define required macros here
@@ -24,8 +24,8 @@ cellulariot-deploy:
 	cellulariot
 	clean_intermediate
 
-cellulariot: cellulariot.o SDL_Pi_HDC1000.o MMA8452Q.o Adafruit_ADS1x15.o
-	${CC} ${CFLAG}
+cellulariot: cellulariot.o SDL_Pi_HDC1000.o MMA8452Q.o Adafruit_ADS1x15.o GPS.o
+	${CC} ${CFLAG} $? -o ${DIR_TARGET}$@
 
 cellulariot.o : ${DIR_SRC}cellulariot.c
 	${CC} ${CFLAG} $?
@@ -38,6 +38,9 @@ MMA8452Q.o : ${DIR_SRC}MMA8452Q.c ${DIR_SRC}MMA8452Q.h
 
 Adafruit_ADS1x15.o : ${DIR_SRC}Adafruit_ADS1x15.c ${DIR_SRC}Adafruit_ADS1x15.h
 	${CC} -c ${CFLAG} $<
+
+GPS.o : ${DIR_SRC}GPS.c GPS.h
+	${CC} -c ${CFLAG} ${LIBS} $? -o ${DIR_TARGET}$@
 
 clean_intermediate :
 	rm -f ${DIR_TARGET}*.o
