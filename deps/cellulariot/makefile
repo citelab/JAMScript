@@ -1,5 +1,5 @@
 #==================================================================#
-# @description: makefile for compiling pigpio programs
+# @description: makefile for compiling sensor modules
 # @author: Matthew L-K matthew.lesko-krlez@mail.mcgill.ca
 # 
 # Modification Log:
