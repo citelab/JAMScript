@@ -14,7 +14,7 @@ int MMA8452Q_open(){
 	if((file = open(bus, O_RDWR)) < 0) 
 	{
 		printf("Failed to open the bus. \n");
-		exit(1);
+		return -1;
 	}
 	// Get I2C device, MMA8452Q I2C address is 0x1C(28)
 	ioctl(file, I2C_SLAVE, 0x1C);
@@ -77,4 +77,19 @@ int MMA8452Q_read(int *result,int file){
 		printf("Acceleration in Y-Axis : %d \n", yAccl);
 		printf("Acceleration in Z-Axis : %d \n", zAccl);
 	}
+}
+
+int FILE = -1;
+
+_read_acc(int *data) {
+
+	if (FILE == -1) {
+
+		FILE = MMA8452Q_read();
+
+        if (FILE == -1)
+            return -1;
+	}
+
+	return MMA8452Q_read(data, FILE);
 }

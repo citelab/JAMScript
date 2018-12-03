@@ -6,7 +6,7 @@ Date                  Author                  Modification
 03-Dec-2018           Samuel G                Created the file
 ==================================================================*/
 
-int read_accel(int *data);
+int read_acc(int *data);
 
 int read_adc(int *data, int channel);
 

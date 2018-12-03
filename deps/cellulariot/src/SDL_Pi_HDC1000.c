@@ -4,6 +4,7 @@ Modification Log
 --------------------------------------------------------------------
 Date		    Author		    Modification
 07-Nov-2018	    Matthew L-K	    Created the file
+03-Dec-2018     Samuel G        Standardized interface
 ==================================================================*/
 
 #include <linux/i2c-dev.h>
@@ -50,7 +51,7 @@ int HDC1080_open()
 @author: Matthew L-K
 @return: int: 0 No Error, -1 Error
 */
-int read_temperature(int *data)
+int _read_temperature(int *data)
 {
     int fd = HDC1080_open();
     char reg[1] = {TEMPERATURE_MEASUREMENT_ADDRESS};
@@ -78,7 +79,7 @@ int read_temperature(int *data)
 @author: Matthew L-K
 @return: int: 0 No Error, -1 Error
 */
-int read_humidity(int *data)
+int _read_humidity(int *data)
 {
     int fd = HDC1080_open();
     char reg[1] = {HUMIDITY_MEASUREMENT_ADDRESS};

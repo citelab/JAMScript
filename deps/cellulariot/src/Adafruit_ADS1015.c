@@ -3,7 +3,7 @@
 Modification Log:
 Date                  Author                  Modification
 -----------------------------------------------------------------
-12-Nov-2018           Samuel G                Created the file
+12-Nov-2018           Samuel G                Created the FILE
 ==================================================================*/
 
 #include <stdio.h>
@@ -37,19 +37,18 @@ Date                  Author                  Modification
 
 #define ADS1015_CONFIG_COMP_PARAM = 0x03
 
-int file = 0;
+int FILE = -1;
 
 int _init () {
     
-	int file;
 	char *bus = "/dev/i2c-1";
 
-	if((file = open(bus, O_RDWR)) < 0) {
+	if((FILE = open(bus, O_RDWR)) < 0) {
         printf("Adafruit_ADS1015: Failed to open bus");
         return -1;
     }
 	
-	ioctl(file, I2C_SLAVE, ADS1015_ADDRESS);
+	ioctl(FILE, I2C_SLAVE, ADS1015_ADDRESS);
 
     char config[] = char[3];
 
@@ -91,17 +90,19 @@ int _init () {
                 ADS1015_CONFIG_COMPARATOR_PARAM |
                 ADS1015_CONFIG_DR_1600;
     
-	write(file, config, 3);
+	write(FILE, config, 3);
+
+    return 0;
 }
 
 int _read_adc(int *data, int channel, float gain) {
 
-    if (file == 0)
+    if (FILE == -1)
         if (_init() != 0)
             return -1;
 
 	char buf[2] = {0};
-	if(read(file, buf, 2) != 2) {
+	if(read(FILE, buf, 2) != 2) {
         printf("Adafruit_ADS1015: Failed to read data");
         return -1;
     }

@@ -1,3 +1,11 @@
+/* @author: Samuel G samuel.genois@mail.mcgill.ca
+
+Modification Log:
+Date                  Author                  Modification
+-----------------------------------------------------------------
+03-Dec-2018           Samuel G                Created the file
+==================================================================*/
+
 #include <stdio.h>
 #include "cellulariot.h"
 
@@ -6,7 +14,7 @@ int main() {
     int *data;
 
     prinf("Accelerometer:\n")
-    if (read_accel(int *data) == 0)
+    if (read_acc(int *data) == 0)
         printf("\tRead successful. Data received: %i\n\n", *data);
     else
         printf("\tRead failed\n\n");

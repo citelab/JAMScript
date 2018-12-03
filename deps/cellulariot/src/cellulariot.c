@@ -5,6 +5,7 @@ Date                  Author                  Modification
 -----------------------------------------------------------------
 31-Oct-2018           Samuel G                Created the file
 12-Nov-2018           Samuel G                Updated to reflect new model
+03-Dec-2018           Samuel G                Standardized interface
 ==================================================================*/
 
 #include "SDL_Pi_HDC1000.h"
@@ -19,9 +20,9 @@ Date                  Author                  Modification
 
 
 
-int read_accel(int *data) {
+int read_acc(int *data) {
 
-    return read_acc(data);
+    return _read_acc(data);
 }
 
 int read_adc(int *data, int channel) {
@@ -31,7 +32,7 @@ int read_adc(int *data, int channel) {
 
 int read_lux(int *data) {
 
-    int succ = readAdc(data, LUX_CHANNEL);
+    int succ = _read_adc(data, LUX_CHANNEL);
 
     if (succ == 0)
         *data = (*data * 100) / 1580;
@@ -41,12 +42,12 @@ int read_lux(int *data) {
 
 int read_temp (int *data) {
 
-	return  read_temperature(data);
+	return  _read_temperature(data);
 }
 
 int read_hum (int *data) {
 
-	return  read_humidity(data);
+	return  _read_humidity(data);
 }
 
 int read_gps (int *data) {
