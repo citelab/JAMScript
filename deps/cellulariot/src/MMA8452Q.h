@@ -8,4 +8,4 @@ Date                  Author                  Modification
 03-Dec-2018           Samuel G                Standardized interface
 ==================================================================*/
 
-_read_acc(int *data);
+int _read_acc(int *data);

@@ -14,43 +14,43 @@ Date                  Author                  Modification
 #include <unistd.h>
 
 //Register and other configuration values:
-#define ADS1015_ADDRESS                 0x49
-#define ADS1015_POINTER_CONFIG          0x01
-#define ADS1015_POINTER_CONVERSION      0x00
-#define ADS1015_CONFIG_OS_CONTINUOUS    0x00
+#define ADS1015_ADDRESS                 (char)0x49
+#define ADS1015_POINTER_CONFIG          (char)0x01
+#define ADS1015_POINTER_CONVERSION      (char)0x00
+#define ADS1015_CONFIG_OS_CONTINUOUS    (char)0x00
 
-#define ADS1015_CONFIG_CHANNEL_0        0x40
-#define ADS1015_CONFIG_CHANNEL_1        0x50
-#define ADS1015_CONFIG_CHANNEL_2        0x60
-#define ADS1015_CONFIG_CHANNEL_3        0x70
+#define ADS1015_CONFIG_CHANNEL_0        (char)0x40
+#define ADS1015_CONFIG_CHANNEL_1        (char)0x50
+#define ADS1015_CONFIG_CHANNEL_2        (char)0x60
+#define ADS1015_CONFIG_CHANNEL_3        (char)0x70
 
-#define ADS1015_CONFIG_GAIN_2_OVER_3    0x00
-#define ADS1015_CONFIG_GAIN_1           0x02
-#define ADS1015_CONFIG_GAIN_2           0x04
-#define ADS1015_CONFIG_GAIN_4           0x06
-#define ADS1015_CONFIG_GAIN_8           0x08
-#define ADS1015_CONFIG_GAIN_16          0x0A
+#define ADS1015_CONFIG_GAIN_2_OVER_3    (char)0x00
+#define ADS1015_CONFIG_GAIN_1           (char)0x02
+#define ADS1015_CONFIG_GAIN_2           (char)0x04
+#define ADS1015_CONFIG_GAIN_4           (char)0x06
+#define ADS1015_CONFIG_GAIN_8           (char)0x08
+#define ADS1015_CONFIG_GAIN_16          (char)0x0A
 
-#define ADS1015_CONFIG_MODE_CONTINUOUS 0x00
+#define ADS1015_CONFIG_MODE_CONTINUOUS  (char)0x00
 
-#define ADS1015_CONFIG_DR_1600  0x80
+#define ADS1015_CONFIG_DR_1600          (char)0x80
 
-#define ADS1015_CONFIG_COMP_PARAM = 0x03
+#define ADS1015_CONFIG_COMP_PARAM       (char)0x03
 
-int FILE = -1;
+int file = -1;
 
-int _init () {
+int _init (int channel, float gain) {
     
 	char *bus = "/dev/i2c-1";
 
-	if((FILE = open(bus, O_RDWR)) < 0) {
+	if((file = open(bus, O_RDWR)) < 0) {
         printf("Adafruit_ADS1015: Failed to open bus");
         return -1;
     }
 	
-	ioctl(FILE, I2C_SLAVE, ADS1015_ADDRESS);
+	ioctl(file, I2C_SLAVE, ADS1015_ADDRESS);
 
-    char config[] = char[3];
+    char config[3];
 
     config[0] = ADS1015_POINTER_CONFIG;
     config[1] = ADS1015_CONFIG_OS_CONTINUOUS;
@@ -69,17 +69,17 @@ int _init () {
                     return -1;
     }
 
-    if (gain == 2f/3f)
+    if (gain == 2.0f/3.0f)
         config[1] = config[1] | ADS1015_CONFIG_GAIN_2_OVER_3;
-    else if (gain == 1f)
+    else if (gain == 1.0f)
         config[1] = config[1] | ADS1015_CONFIG_GAIN_1;
-    else if (gain == 2f)
+    else if (gain == 2.0f)
         config[1] = config[1] | ADS1015_CONFIG_GAIN_2;
-    else if (gain == 4f)
+    else if (gain == 4.0f)
         config[1] = config[1] | ADS1015_CONFIG_GAIN_4;
-    else if (gain == 8f)
+    else if (gain == 8.0f)
         config[1] = config[1] | ADS1015_CONFIG_GAIN_8;
-    else if (gain == 16f)
+    else if (gain == 16.0f)
         config[1] = config[1] | ADS1015_CONFIG_GAIN_16;
     else {
         printf("Adafruit_ADS1015: Invalid gain");
@@ -87,28 +87,29 @@ int _init () {
     }
 
     config[2] = ADS1015_CONFIG_MODE_CONTINUOUS |
-                ADS1015_CONFIG_COMPARATOR_PARAM |
+                ADS1015_CONFIG_COMP_PARAM |
                 ADS1015_CONFIG_DR_1600;
     
-	write(FILE, config, 3);
+	write(file, config, 3);
 
     return 0;
 }
 
 int _read_adc(int *data, int channel, float gain) {
 
-    if (FILE == -1)
-        if (_init() != 0)
+    if (file == -1) {
+        if (_init(channel, gain) != 0)
             return -1;
-
-	char buf[2] = {0};
-	if(read(FILE, buf, 2) != 2) {
+    }
+    
+    char buf[2] = {0};
+    if(read(file, buf, 2) != 2) {
         printf("Adafruit_ADS1015: Failed to read data");
         return -1;
     }
 
-    *data = int(buf[0])<<4 | int(buf[1]>>4);
-    if (*data & 0x800 != 0)
+    *data = ((int)buf[0])<<4 | ((int)buf[1])>>4;
+    if ((*data & 0x800) != 0)
         *data = (*data || 0x7FF);
 
     return 0;

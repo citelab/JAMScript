@@ -10,7 +10,8 @@ Date                  Author                  Modification
 
 #include "SDL_Pi_HDC1000.h"
 #include "MMA8452Q.h"
-#include "Adafruit_ADS1x15.h"
+#include "Adafruit_ADS1015.h"
+#include "GPS.h"
 
 #if !defined(NULL)
 #define NULL 0
@@ -25,14 +26,14 @@ int read_acc(int *data) {
     return _read_acc(data);
 }
 
-int read_adc(int *data, int channel) {
+int read_adc(int *data, int channel, float gain) {
 
-    return _read_adc(data, channel, 1f);
+    return _read_adc(data, channel, gain);
 }
 
 int read_lux(int *data) {
 
-    int succ = _read_adc(data, LUX_CHANNEL);
+    int succ = _read_adc(data, LUX_CHANNEL, 1.0f);
 
     if (succ == 0)
         *data = (*data * 100) / 1580;
