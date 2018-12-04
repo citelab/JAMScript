@@ -39,7 +39,7 @@ Date                  Author                  Modification
 
 int file = -1;
 
-int _init (int channel, float gain) {
+int _ADS1015_init (int channel, float gain) {
     
 	char *bus = "/dev/i2c-1";
 
@@ -98,7 +98,7 @@ int _init (int channel, float gain) {
 int _read_adc(int *data, int channel, float gain) {
 
     if (file == -1) {
-        if (_init(channel, gain) != 0)
+        if (_ADS1015_init(channel, gain) != 0)
             return -1;
     }
     

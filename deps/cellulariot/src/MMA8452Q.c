@@ -79,15 +79,11 @@ int MMA8452Q_read(int *result,int file){
 	}
 }
 
-int file = -1;
+int _read_acc(int *data) {	
 
-_read_acc(int *data) {
+	int file = MMA8452Q_open();
 
-	if (file == -1) {
-
-		file = MMA8452Q_open();
-
-        if (file == -1)
+        if (file == -1) {
             return -1;
 	}
 

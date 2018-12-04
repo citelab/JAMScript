@@ -8,7 +8,7 @@ Date                  Author                  Modification
 
 int read_acc(int *data);
 
-int read_adc(int *data, int channel);
+int read_adc(int *data, int channel, float gain);
 
 int read_lux(int *data);
 
