@@ -10,8 +10,6 @@ if !([ -e /etc/lsb-release ] &&
 # Store the script home.. where the "depend-install-ubuntu.sh was located
 scriptdir=$(dirname -- $(readlink -fn -- "$0"))
 
-sudo apt-get update
-sudo apt-get install -y curl
 # Install latest Node
 # Using Ubuntu
 curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -
