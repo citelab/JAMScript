@@ -1,5 +1,5 @@
 FROM ubuntu
-RUN apt-get update && apt-get install -y wget \
+RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && apt-get install -y wget \
         build-essential \
         python \
         unzip \
