@@ -13,6 +13,7 @@ cd temp_install_src
 
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    echo "-------- Linux detected -----------"
     sudo apt-get update
     sudo apt-get install -y xz-utils
     sudo apt-get install -y texinfo
@@ -34,7 +35,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     else
         sudo apt-get install -y g++
     fi
-    
+
     if (command -v cmake > /dev/null); then
         echo "cmake already installed.."
     else
