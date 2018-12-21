@@ -18,7 +18,7 @@ curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -
 sudo apt-get install -y nodejs
 
 cd
-echo "export NODE_PATH=\$HOME/node_modules:/usr/local/lib/node_modules:\$NODE_PATH" >> .bashrc
+echo "export NODE_PATH=\$HOME/node_modules:/usr/lib/node_modules:\$NODE_PATH" >> .bashrc
 source .bashrc
 cd $scriptdir
 

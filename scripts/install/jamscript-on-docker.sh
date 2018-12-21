@@ -2,17 +2,17 @@
 
 # Make /usr/lib/node_modules writeable
 
-sudo chmod o+w  /usr/local/lib/node_modules
+sudo chmod o+w  /usr/lib/node_modules
 sudo chmod o+w /usr/bin
-sudo chmod o+w /usr/local/share
-sudo chmod o+w /usr/local/lib
+sudo chmod o+w /usr/share
+sudo chmod o+w /usr/lib
 
 
 # Install JAMScript compiler
 npm -g install jamscript
 
 
-sudo chmod o-w /usr/local/lib/node_modules
+sudo chmod o-w /usr/lib/node_modules
 sudo chmod o-w /usr/bin
-sudo chmod o-w /usr/local/share
-sudo chmod o-w /usr/local/lib
+sudo chmod o-w /usr/share
+sudo chmod o-w /usr/lib
