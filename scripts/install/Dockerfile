@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && \
 RUN useradd -m admin && echo "admin:admin" | chpasswd && adduser admin sudo
 USER admin
 WORKDIR /home/admin
-RUN wget https://deb.nodesource.com/setup_11.x && echo admin | sudo -S ./setup_11.x && \
+RUN wget https://deb.nodesource.com/setup_11.x && chmod +x ./setup_11.x && echo admin | sudo -S ./setup_11.x && \
         sudo apt-get install -y nodejs
 RUN mkdir ~/.npm-global && npm config set prefix '~/.npm-global' && \
     cat /home/admin/JAMScript/scripts/install/profile_addition.txt > /home/admin/.profile && \
