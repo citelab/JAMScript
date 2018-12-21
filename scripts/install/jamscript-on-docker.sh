@@ -8,6 +8,7 @@ sudo chmod o+w /usr/share
 sudo chmod o+w /usr/lib
 
 
+echo "========= Installing JAMScript ======"
 # Install JAMScript compiler
 sudo npm -g install jamscript
 
