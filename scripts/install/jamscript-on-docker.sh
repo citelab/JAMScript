@@ -9,7 +9,7 @@ sudo chmod o+w /usr/lib
 
 
 # Install JAMScript compiler
-npm -g install jamscript
+sudo npm -g install jamscript
 
 
 sudo chmod o-w /usr/lib/node_modules
