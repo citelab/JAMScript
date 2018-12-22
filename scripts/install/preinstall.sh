@@ -156,6 +156,8 @@ fi
 
 cd ..
 
+echo "========================================"
+echo "Completed the preinstall setup .. $PWD" 
 
 cd deps/mujs2
 make
