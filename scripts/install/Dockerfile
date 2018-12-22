@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils && \
         sudo \
         vim \
         curl \
+        libssl-dev \
         iproute2 \
         net-tools \
         iputils-ping \
