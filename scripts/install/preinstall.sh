@@ -6,6 +6,14 @@ then
         exit 1
 fi
 
+cd deps/mujs2
+make
+sudo make install
+cd ../paho
+make
+sudo make install
+cd ../..
+
 mkdir temp_install_src
 chmod o+w temp_install_src
 cd temp_install_src
@@ -154,13 +162,7 @@ cd ..
 echo "========================================"
 echo "Completed the preinstall setup .. $PWD"
 
-cd deps/mujs2
-make
-sudo make install
-cd ../paho
-make
-sudo make install
-cd ..
+
 
 sudo rm -rf temp_install_src
 
