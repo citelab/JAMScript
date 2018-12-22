@@ -20,8 +20,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     sudo apt-get install -y -q libhiredis-dev
     sudo apt-get install -y -q libevent-dev
     sudo apt-get install -y -q libbsd-dev
-    sudo apt-get install -y -q libavahi-compat-libdnssd-dev
-    sudo apt-get install -y -q libssl-dev
+    sudo apt-get install -y -q avahi-daemon avahi-discover libnss-mdns libavahi-compat-libdnssd-dev
     sudo apt-get install -y -q unzip
     if (command -v clang > /dev/null); then
         echo "clang already installed.. skipping install"
