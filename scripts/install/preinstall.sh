@@ -157,9 +157,10 @@ fi
 cd ..
 
 echo "========================================"
-echo "Completed the preinstall setup .. $PWD" 
+echo "Completed the preinstall setup .. $PWD"
 
-cd deps/mujs2
+cd deps/mujs3
+#cd deps/mujs2
 make
 sudo make install
 cd ../paho
