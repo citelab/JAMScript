@@ -19,13 +19,16 @@ USER admin
 WORKDIR /home/admin
 RUN wget https://deb.nodesource.com/setup_11.x && chmod +x ./setup_11.x && echo admin | sudo -S ./setup_11.x && \
         sudo apt-get install -y nodejs
-RUN mkdir ~/.npm-global && npm config set prefix '~/.npm-global' && \
-    cat /home/admin/JAMScript/scripts/install/profile_addition.txt > /home/admin/.profile && \
-    source /home/admin/.profile
 
 RUN git clone --recursive https://github.com/citelab/JAMScript && \
         cd JAMScript/tools && git checkout master && git pull && \
         cd ../samples && git checkout master && git pull
+
+RUN mkdir ~/.npm-global && npm config set prefix '~/.npm-global' && \
+    cat /home/admin/JAMScript/scripts/install/profile_addition.txt > /home/admin/.profile && \
+    source /home/admin/.profile
+
+
 
 
 WORKDIR /home/admin/JAMScript
