@@ -6,58 +6,51 @@ then
         exit 1
 fi
 
-# Create a temp directory
-sudo mkdir temp_install_src
-sudo chmod o+w temp_install_src
+mkdir temp_install_src
+chmod o+w temp_install_src
 cd temp_install_src
 
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     echo "-------- Linux detected -----------"
     sudo apt-get update
-    sudo apt-get install -y xz-utils
-    sudo apt-get install -y texinfo
-    sudo apt-get install -y libc-dev
-    sudo apt-get install -y libhiredis-dev
-    sudo apt-get install -y libevent-dev
-    sudo apt-get install -y libbsd-dev
-    sudo apt-get install -y libavahi-compat-libdnssd-dev
-    sudo apt-get install -y libssl-dev
-    sudo apt-get install -y unzip
+    sudo apt-get install -y -q xz-utils
+    sudo apt-get install -y -q texinfo
+    sudo apt-get install -y -q libc-dev
+    sudo apt-get install -y -q libhiredis-dev
+    sudo apt-get install -y -q libevent-dev
+    sudo apt-get install -y -q libbsd-dev
+    sudo apt-get install -y -q libavahi-compat-libdnssd-dev
+    sudo apt-get install -y -q libssl-dev
+    sudo apt-get install -y -q unzip
     if (command -v clang > /dev/null); then
         echo "clang already installed.. skipping install"
     else
-        sudo apt install -y clang
+        sudo apt install -y -q clang
     fi
 
     if (command -v g++ > /dev/null); then
         echo "g++ already installed.."
     else
-        sudo apt-get install -y g++
-    fi
-
-    if (command -v cmake > /dev/null); then
-        echo "cmake already installed.."
-    else
-        sudo apt-get install -y cmake
+        sudo apt-get install -y -q g++
     fi
 
     if (command -v mosquitto > /dev/null); then
         echo "mosquitto already installed.."
     else
-        sudo apt-get install -y mosquitto
+        sudo apt-get install -y -q mosquitto
     fi
 
     if (command -v mosquitto_pub > /dev/null); then
         echo "mosquitto_pub already installed.."
     else
-        sudo apt-get install -y mosquitto-clients
+        sudo apt-get install -y -q mosquitto-clients
     fi
 
     if (command -v tmux > /dev/null); then
         echo "terminal multiplexor already installed.."
     else
-        sudo apt-get install -y tmux
+        sudo apt-get install -y -q tmux
     fi
 
     # NANOMSG
@@ -77,6 +70,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         cd ../..
     fi
 
+    echo "Installing.. Cbor... "
     # CBOR
     qres=$(dpkg -s libcbor 2>/dev/null | grep "Status" | tr -d ' ')
     if [ -z $qres ]; then
@@ -91,6 +85,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         echo "libcbor already installed..."
     fi
 
+    echo "Installing.. Redis... "
     # Redis
     if (command -v redis-server > /dev/null); then
         echo "Redis already installed"
@@ -103,6 +98,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         cd ..
     fi
 
+    echo "Installing.. MQTT... "
     # MQTT
     qres=$(ldconfig -p | grep mqtt3a | tr -d ' ')
     if [ -z $qres ]; then
@@ -159,8 +155,7 @@ cd ..
 echo "========================================"
 echo "Completed the preinstall setup .. $PWD"
 
-cd deps/mujs3
-#cd deps/mujs2
+cd deps/mujs2
 make
 sudo make install
 cd ../paho
