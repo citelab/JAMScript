@@ -28,9 +28,9 @@ RUN git clone --recursive https://github.com/citelab/JAMScript && \
         cd ../samples && git checkout master && git pull
 
 RUN mkdir ~/.npm-global && npm config set prefix '~/.npm-global' && \
-    cat /home/admin/JAMScript/scripts/install/profile_addition.txt > /home/admin/.profile
+    cat /home/admin/JAMScript/scripts/install/profile_addition.txt > /home/admin/.bashrc
 
 WORKDIR /home/admin/JAMScript
 RUN npm -g install jamscript
 
-CMD chmod -R a+Xr /etc/avahi && sed -i "s|rlimit-nproc=3|#rlimit-nproc=3 |g" /etc/avahi/avahi-daemon.conf && cd /var/run/ && rm -rf dbus && mkdir dbus && dbus-daemon --system &&  avahi-daemon && source /home/admin/.profile
+CMD chmod -R a+Xr /etc/avahi && sed -i "s|rlimit-nproc=3|#rlimit-nproc=3 |g" /etc/avahi/avahi-daemon.conf && cd /var/run/ && rm -rf dbus && mkdir dbus && dbus-daemon --system &&  avahi-daemon
