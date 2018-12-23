@@ -165,7 +165,7 @@ char *jamdata_makekey(char *ns, char *lname)
 void __jamdata_logto_server(redisAsyncContext *c, char *key, char *val, size_t size, unsigned long long time_stamp, msg_rcv_callback_f callback)
 {
     if (val != NULL)
-    {   
+    {
         redisAsyncCommand(c, callback, val, "ZADD %s %llu %b", key, time_stamp, val, size);
     }
 }
@@ -261,7 +261,7 @@ comboptr_t *jamdata_encode(char *redis_key, unsigned long long timestamp, char *
 
     if (num == 0) {
         return NULL;
-    } 
+    }
 
     //fmt_str is in the format such as sdf
     for (i=0; i < num; i++)
@@ -322,7 +322,7 @@ comboptr_t *jamdata_encode(char *redis_key, unsigned long long timestamp, char *
 
     // The cbor object itself is deallocated.
     cbor_decref(&root);
-    
+
     return create_combo2llu_ptr(redis_key, buffer, len, timestamp);
 }
 
@@ -331,7 +331,7 @@ unsigned long long ms_time() {
     gettimeofday(&tv, NULL);
 
     // convert tv_sec & tv_usec to millisecond
-    return tv.tv_sec*1000LL + tv.tv_usec/1000; 
+    return tv.tv_sec*1000LL + tv.tv_usec/1000;
 }
 
 comboptr_t *jamdata_simple_encode(char *redis_key, unsigned long long timestamp, cbor_item_t *value) {
@@ -362,7 +362,7 @@ comboptr_t *jamdata_simple_encode(char *redis_key, unsigned long long timestamp,
 void jamdata_log_to_server_string(char *ns, char *lname, char *value) {
     unsigned long long timestamp = ms_time();
     char *key = jamdata_makekey(ns, lname);
-    
+
     comboptr_t *cptr = jamdata_simple_encode(key, timestamp, cbor_build_string(value));
 
     semqueue_enq(js->dataoutq, cptr, sizeof(comboptr_t));
@@ -380,7 +380,7 @@ void jamdata_log_to_server_float(char *ns, char *lname, float value) {
 void jamdata_log_to_server_int(char *ns, char *lname, int value) {
     unsigned long long timestamp = ms_time();
     char *key = jamdata_makekey(ns, lname);
-    
+
     comboptr_t *cptr = jamdata_simple_encode(key, timestamp, cbor_build_uint32(value));
 
     semqueue_enq(js->dataoutq, cptr, sizeof(comboptr_t));
@@ -390,7 +390,7 @@ void jamdata_log_to_server(char *ns, char *lname, char *fmt, ...)
 {
     if(fmt != NULL)
     {
-        unsigned long long milliseconds = ms_time(); 
+        unsigned long long milliseconds = ms_time();
 
         // char *lvalue = strdup(value);
         // Create the key
