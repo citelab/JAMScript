@@ -1,6 +1,6 @@
 {
   "name": "jdiscovery",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "For testing registration/discovery in JAM",
   "main": "jregistrar.js",
   "author": "Keith Strickling",
