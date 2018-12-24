@@ -1,14 +1,14 @@
 {
   "name": "jamserver",
   "description": "JServer for JAMScript environment",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/citelab/JAM.git/lib/jamserver"
   },
   "scripts": {
-    "postversion": "npm publish && git add package.json package-lock.json && git commit -m 'Update jamserver version' && git push"
+    "postversion": "npm publish && git add package.json && git commit -m 'Update jamserver version' && git push"
   },
   "dependencies": {
     "bunyan": "^1.8.10",
