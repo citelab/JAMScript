@@ -35,4 +35,4 @@ ENV PATH="/home/admin/.npm-global/bin:$PATH"
 RUN mkdir /home/admin/temp
 WORKDIR /home/admin/temp
 
-CMD  sudo chmod -R a+Xrw /etc/avahi && sed -i "s|rlimit-nproc=3|#rlimit-nproc=3 |g" /etc/avahi/avahi-daemon.conf && sudo cd /var/run/ && sudo rm -rf dbus && sudo mkdir dbus && sudo dbus-daemon --system &&  sudo avahi-daemon
+CMD  sudo su chmod -R a+Xrw /etc/avahi && sed -i "s|rlimit-nproc=3|#rlimit-nproc=3 |g" /etc/avahi/avahi-daemon.conf &&  cd /var/run/ &&  rm -rf dbus &&  mkdir dbus && dbus-daemon --system && exit &&  sudo avahi-daemon
