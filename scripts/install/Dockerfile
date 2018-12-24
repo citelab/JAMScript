@@ -32,6 +32,7 @@ RUN mkdir ~/.npm-global && npm config set prefix '~/.npm-global'
 WORKDIR /home/admin/JAMScript
 RUN npm -g install jamscript
 ENV PATH="/home/admin/.npm-global/bin:$PATH"
-WORKDIR /
+RUN mkdir /home/admin/temp
+WORKDIR /home/admin/temp
 
 CMD sudo su && chmod -R a+Xr /etc/avahi && sed -i "s|rlimit-nproc=3|#rlimit-nproc=3 |g" /etc/avahi/avahi-daemon.conf && cd /var/run/ && rm -rf dbus && mkdir dbus && dbus-daemon --system &&  avahi-daemon
