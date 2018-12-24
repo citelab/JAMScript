@@ -1,13 +1,12 @@
 {
   "name": "jdiscovery",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "For testing registration/discovery in JAM",
   "main": "jregistrar.js",
   "author": "Keith Strickling",
   "license": "MIT",
   "dependencies": {
     "lockfile": "^1.0.4",
-    "mdns": "file:mdns",
     "mqtt": "^2.18.4",
     "node-localstorage": "^1.3.1"
   },

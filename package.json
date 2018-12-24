@@ -1,7 +1,7 @@
 {
     "name": "jamscript",
     "description": "Compiler for the JAMScript language",
-    "version": "0.6.4",
+    "version": "0.8.2",
     "license": "MIT",
     "keywords": [
         "c",
@@ -34,8 +34,8 @@
         "jszip": "^3.1.5",
         "ohm-js": "^0.13.1",
         "flows.js": "latest",
-        "jdiscovery": "file:lib/jdiscovery",
-        "jamserver": "file:lib/jamserver"
+        "jdiscovery": "latest",
+        "jamserver": "latest"
     },
     "engines": {
         "node": ">= 7.0.0",
