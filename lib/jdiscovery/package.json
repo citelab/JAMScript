@@ -1,6 +1,6 @@
 {
   "name": "jdiscovery",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "For testing registration/discovery in JAM",
   "main": "jregistrar.js",
   "author": "Keith Strickling",
@@ -13,7 +13,7 @@
   },
   "scripts": {
     "postinstall": "npm install ./mdns",
-    "postversion": "npm publish && git add package.json package-lock.json && git commit -m 'Update jdiscovery version' && git push"
+    "postversion": "npm publish && git add package.json && git commit -m 'Update jdiscovery version' && git push"
   },
   "repository": {
     "type": "git",
