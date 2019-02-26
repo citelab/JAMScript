@@ -12,6 +12,7 @@ Date		    Author		    Modification
 #include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #define I2C_BUS 1
 #define HDC1080_I2C_ADDRESS 0x40
@@ -23,30 +24,29 @@ Date		    Author		    Modification
 /*
 @description: 	Opens and returns a file descriptor for reading temperature and humidity data
 @author: 	Matthew L-K
-@return:	int: File descriptor for sensor
+@return:	int: 0 No Error, -1 Error
 */
-int HDC1080_open()
+int HDC1080_open(int *fd)
 {
-    int fd;
     char *bus = "/dev/i2c-1";
-    if ((fd = open(bus, O_RDWR)) < 0)
+    *fd = open(bus, O_RDWR);
+    if (*fd < 0) 
     {
         printf("Failure HDC1080: Failed to open the bus.\n");
         return -1;
     }
-
-    ioctl(fd, I2C_SLAVE, HDC1080_I2C_ADDRESS);
+    ioctl(*fd, I2C_SLAVE, HDC1080_I2C_ADDRESS);
 
     // Set acquisition mode to independently measure temperature and humidity
     // with 14 bit resolutions
     char config[3] = {0};
-    config[0] = ACQUISITION_CONFIGURATION_REGISTER_ADDRESS;
-    config[1] = 0x00;
+    config[0] = HDC1080_I2C_ADDRESS;
+    config[1] = ACQUISITION_CONFIGURATION_REGISTER_ADDRESS;
     config[2] = 0x00;
-    write(fd, config, 3);
+    write(*fd, config, 3);
     sleep(0.015); // Time from data sheet
 
-    return fd;
+    return 0;
 }
 
 /*
@@ -57,9 +57,12 @@ int HDC1080_open()
 */
 int _read_temperature(int *data)
 {
-    int fd = HDC1080_open();
-    char reg[1] = {TEMPERATURE_MEASUREMENT_ADDRESS};
-    write(fd, reg, 1);
+    int fd;
+    HDC1080_open(&fd);
+    char reg[2] = {0};
+    reg[0] = HDC1080_I2C_ADDRESS + 1; // Last bit must be set high for a read
+    reg[1] = TEMPERATURE_MEASUREMENT_ADDRESS;
+    write(fd, reg, 2);
     sleep(0.0625); // Time from data sheet
 
     // Temperature register is a 16-bit result register (the 2 LSBs are always 0)
@@ -85,10 +88,13 @@ int _read_temperature(int *data)
 */
 int _read_humidity(int *data)
 {
-    int fd = HDC1080_open();
-    char reg[1] = {HUMIDITY_MEASUREMENT_ADDRESS};
-    write(fd, reg, 1);
-    sleep(0.015); // Time from data sheet
+    int fd;
+    HDC1080_open(&fd);
+    char reg[2] = {0};
+    reg[0] = HDC1080_I2C_ADDRESS + 1; // Last bit must be set high for a read
+    reg[1] = HUMIDITY_MEASUREMENT_ADDRESS;
+    write(fd, reg, 2);
+    sleep(0.0625);
 
     // Humidity register is a 16-bit result register (the 2 LSBs are always 0)
     char buff[2] = {0};
