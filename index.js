@@ -179,7 +179,9 @@ function compile(code, verbose) {
         var includes = '#include "jam.h"\n';
         includes = '#include "command.h"\n' + includes;
         includes = '#include "jamdata.h"\n' + includes;
+        includes = '#include "jamdevices.h"\n' + includes;        
         includes = '#include <unistd.h>\n' + includes;
+
 
         fs.writeFileSync("jamout.c", includes + preprocessDecls.join("\n") + "\n" + code);
         fs.writeFileSync(`${tmpDir}/jamout.c`, includes + preprocessDecls.join("\n") + "\n" + code);

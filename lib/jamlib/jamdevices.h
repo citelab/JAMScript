@@ -4,12 +4,15 @@
 #include "pushqueue.h"
 #include <pthread.h>
 
-typedef void* (*jdcallback_f)(void *arg);
+typedef int (*jdcallbacki_f)(void *arg);
+typedef int (*jdcallbackii_f)(int iarg);
+
 
 typedef struct _jamdeventry_t
 {
     int type;
     char *name;
+    int fd;
     int mode;
     pushqueue_t *dataq;
     pthread_t tid;
@@ -28,9 +31,9 @@ typedef struct _jamtypeentry_t
 {
     int type;
 
-    jdcallback_f opencb;
+    jdcallbacki_f opencb;
     void *oarg;
-    jdcallback_f readcb;
+    jdcallbackii_f readcb;
     void *rarg;
 
 } jamtypeentry_t;
@@ -43,10 +46,14 @@ typedef struct _jamdevtypes_t
 } jamdevtypes_t;
 
 
-void jamdev_reg_callbacks(int type, jdcallback_f opencb, void *oarg, jdcallback_f readcb, void *rarg);
+void jamdev_init();
+int jopen(int type, char *name, int mode);
+int jread(int id, char *buf, int *len);
+
+void jamdev_reg_callbacks(int type, jdcallbacki_f opencb, void *oarg, jdcallbackii_f readcb, void *rarg);
 void insert_jtypeentry(jamdevtypes_t *jdtypes, jamtypeentry_t *jtype);
 bool check4open(int type, char *name);
-void insert_jdeventry(jamdevtable_t *jdtable, jamdeventry_t *jdev);
+int insert_jdeventry(jamdevtable_t *jdtable, jamdeventry_t *jdev);
 jamdeventry_t *get_jdeventry(jamdevtable_t *jdtable, int id);
 jamtypeentry_t *get_jtypeentry(int type);
 

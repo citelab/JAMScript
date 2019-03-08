@@ -56,7 +56,7 @@ void jamdev_init()
 // the entry with the new specification. With a new entry, we will increment type entry
 // size..
 //
-void jamdev_reg_callbacks(int type, jdcallback_f opencb, void *oarg, jdcallback_f readcb, void *rarg)
+void jamdev_reg_callbacks(int type, jdcallbacki_f opencb, void *oarg, jdcallbackii_f readcb, void *rarg)
 {
     // TODO: hash table badly needed here!
 
@@ -68,6 +68,20 @@ void jamdev_reg_callbacks(int type, jdcallback_f opencb, void *oarg, jdcallback_
     jtype->rarg = rarg;
 
     insert_jtypeentry(jdtypes, jtype);
+}
+
+void *bgreader(void *arg)
+{
+    int oldtype;
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldtype);
+
+    jamdeventry_t *jde = (jamdeventry_t *)arg;
+    jamtypeentry_t *jtype = get_jtypeentry(jde->type);
+
+    while(1) {
+        int x = jtype->readcb(jde->fd);
+        pqueue_enq(jde->dataq, &x, sizeof(x));
+    }
 }
 
 
@@ -85,6 +99,7 @@ int jopen(int type, char *name, int mode)
     if (check4open(type, name))
         return -1;
 
+    jamtypeentry_t *jtype = get_jtypeentry(type);
     jamdeventry_t *jdev = (jamdeventry_t *)calloc(1, sizeof(jamdeventry_t));
     // fill up the entry
     jdev->type = type;
@@ -92,15 +107,22 @@ int jopen(int type, char *name, int mode)
     jdev->mode = mode;
     jdev->dataq = pqueue_new(true);   // TODO: check again.. should it be true?
 
-    // insert the entry
-    insert_jdeventry(jdtable, jdev);
-
-    jamtypeentry_t *jtype = get_jtypeentry(jdev->type);
-    // create the thread for handling the request
-
-    pthread_create(&(jdev->tid), NULL, jtype->readcb, (void *)jdev);
-
-    return 0;
+    // open the device...
+    int rval = jtype->opencb((void *)name);
+    if (rval >= 0)
+    {
+        jdev->fd = rval;
+        // insert the entry
+        int fid = insert_jdeventry(jdtable, jdev);
+        // create the thread for handling the request
+        pthread_create(&(jdev->tid), NULL, bgreader, (void *)jdev);
+        return fid;
+    } else
+    {
+        pqueue_delete(jdev->dataq);
+        free(jdev);
+        return -1;
+    }
 }
 
 
@@ -188,7 +210,9 @@ bool check4open(int type, char *name)
     return false;
 }
 
-void insert_jdeventry(jamdevtable_t *jdtable, jamdeventry_t *jdev)
+// Return the slot occupied by the new entry..
+//
+int insert_jdeventry(jamdevtable_t *jdtable, jamdeventry_t *jdev)
 {
     int i;
     // insert in a blank spot if there is one..
@@ -198,13 +222,13 @@ void insert_jdeventry(jamdevtable_t *jdtable, jamdeventry_t *jdev)
         {
             // insert it here and return ..
             jdtable->entries[i] = jdev;
-            return;
+            return i;
         }
     }
     // make a new entry and return...
     i = jdtable->size++;
     jdtable->entries[i] = jdev;
-    return;
+    return i;
 }
 
 
