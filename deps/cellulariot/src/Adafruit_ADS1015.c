@@ -4,6 +4,7 @@ Modification Log:
 Date                  Author                  Modification
 -----------------------------------------------------------------
 12-Nov-2018           Samuel G                Created the FILE
+19-Mar-2019           Samuel G                Adapted for file abstraction layer
 ==================================================================*/
 
 #include <stdio.h>
@@ -37,18 +38,18 @@ Date                  Author                  Modification
 
 #define ADS1015_CONFIG_COMP_PARAM       (char)0x03
 
-int file = -1;
-
-int _ADS1015_init (int channel, float gain) {
+int ADS1015_open (int channel, float gain) {
     
 	char *bus = "/dev/i2c-1";
 
-	if((file = open(bus, O_RDWR)) < 0) {
+    int fd = open(bus, O_RDWR);
+
+	if(fd < 0) {
         printf("Adafruit_ADS1015: Failed to open bus");
         return -1;
     }
 	
-	ioctl(file, I2C_SLAVE, ADS1015_ADDRESS);
+	ioctl(fd, I2C_SLAVE, ADS1015_ADDRESS);
 
     char config[3];
 
@@ -90,20 +91,15 @@ int _ADS1015_init (int channel, float gain) {
                 ADS1015_CONFIG_COMP_PARAM |
                 ADS1015_CONFIG_DR_1600;
     
-	write(file, config, 3);
+	write(fd, config, 3);
 
-    return 0;
+    return fd;
 }
 
-int _read_adc(int *data, int channel, float gain) {
-
-    if (file == -1) {
-        if (_ADS1015_init(channel, gain) != 0)
-            return -1;
-    }
+int read_adc(int fd, int *data) {
     
     char buf[2] = {0};
-    if(read(file, buf, 2) != 2) {
+    if(read(fd, buf, 2) != 2) {
         printf("Adafruit_ADS1015: Failed to read data");
         return -1;
     }
