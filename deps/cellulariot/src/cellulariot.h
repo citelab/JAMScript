@@ -4,16 +4,18 @@ Modification Log:
 Date                  Author                  Modification
 -----------------------------------------------------------------
 03-Dec-2018           Samuel G                Created the file
+19-Mar-2019           Samuel G                Adapted for file abstraction layer
+19-Mar-2019           Samuel G                Adapted for file abstraction layer
 ==================================================================*/
 
-int read_acc(int *data);
+#define TEMP 1
+#define HUM 2
+#define ACC 3
+#define LUX 4
+#define ADC 5
 
-int read_adc(int *data, int channel, float gain);
+int sopen(char sensorType);
 
-int read_lux(int *data);
+int sread(int fd, int *data);
 
-int read_temp (int *data);
-
-int read_hum (int *data);
-
-int read_gps (int *data);
+int sclose(int fd);

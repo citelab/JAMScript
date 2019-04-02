@@ -41,7 +41,7 @@ int MMA8452Q_open(){
     return file;
 }
 // TODO : format the output into char int[3] with x y z axis acceleration
-int MMA8452Q_read(int *result,int file){
+int read_acc(int file, int *result) {
     // Read 7 bytes of data(0x00)
 	// staus, xAccl msb, xAccl lsb, yAccl msb, yAccl lsb, zAccl msb, zAccl lsb
 	char reg[1] = {0x00};
@@ -50,6 +50,7 @@ int MMA8452Q_read(int *result,int file){
 	if(read(file, data, 7) != 7)
 	{
 		printf("Error : Input/Output error \n");
+		return -1;
 	}
 	else
 	{
@@ -72,20 +73,7 @@ int MMA8452Q_read(int *result,int file){
 			zAccl -= 4096;
 		}
 
-		// Output data to screen
-		printf("Acceleration in X-Axis : %d \n", xAccl);
-		printf("Acceleration in Y-Axis : %d \n", yAccl);
-		printf("Acceleration in Z-Axis : %d \n", zAccl);
+		*result = xAccl + yAccl<<8 + zAccl<<16;
+		return 1;
 	}
-}
-
-int _read_acc(int *data) {	
-
-	int file = MMA8452Q_open();
-
-        if (file == -1) {
-            return -1;
-	}
-
-	return MMA8452Q_read(data, file);
 }

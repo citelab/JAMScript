@@ -5,6 +5,7 @@ Modification Log
 Date		    Author		    Modification
 07-Nov-2018	    Matthew L-K	    Created the file
 03-Dec-2018     Samuel G        Standardized interface
+19-Mar-2019           Samuel G                Adapted for file abstraction layer
 ==================================================================*/
 
 #include <linux/i2c-dev.h>
@@ -55,10 +56,8 @@ int HDC1080_open(int *fd)
 @arguments: 	&data address for buffer
 @return: 	int: 0 No Error, -1 Error
 */
-int _read_temperature(int *data)
+int read_temperature(int fd, int *data)
 {
-    int fd;
-    HDC1080_open(&fd);
     char reg[2] = {0};
     reg[0] = HDC1080_I2C_ADDRESS + 1; // Last bit must be set high for a read
     reg[1] = TEMPERATURE_MEASUREMENT_ADDRESS;
@@ -86,10 +85,8 @@ int _read_temperature(int *data)
 @arguments:	&data address for buffer
 @return: 	int: 0 No Error, -1 Error
 */
-int _read_humidity(int *data)
+int read_humidity(int fd, int *data)
 {
-    int fd;
-    HDC1080_open(&fd);
     char reg[2] = {0};
     reg[0] = HDC1080_I2C_ADDRESS + 1; // Last bit must be set high for a read
     reg[1] = HUMIDITY_MEASUREMENT_ADDRESS;
