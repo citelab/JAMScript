@@ -27,16 +27,16 @@ Date		    Author		    Modification
 @author: 	Matthew L-K
 @return:	int: 0 No Error, -1 Error
 */
-int HDC1080_open(int *fd)
+int HDC1080_open()
 {
     char *bus = "/dev/i2c-1";
-    *fd = open(bus, O_RDWR);
-    if (*fd < 0) 
+    int fd = open(bus, O_RDWR);
+    if (fd < 0) 
     {
         printf("Failure HDC1080: Failed to open the bus.\n");
         return -1;
     }
-    ioctl(*fd, I2C_SLAVE, HDC1080_I2C_ADDRESS);
+    ioctl(fd, I2C_SLAVE, HDC1080_I2C_ADDRESS);
 
     // Set acquisition mode to independently measure temperature and humidity
     // with 14 bit resolutions
@@ -44,10 +44,10 @@ int HDC1080_open(int *fd)
     config[0] = HDC1080_I2C_ADDRESS;
     config[1] = ACQUISITION_CONFIGURATION_REGISTER_ADDRESS;
     config[2] = 0x00;
-    write(*fd, config, 3);
+    write(fd, config, 3);
     sleep(0.015); // Time from data sheet
 
-    return 0;
+    return fd;
 }
 
 /*

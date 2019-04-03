@@ -56,10 +56,7 @@ int sopen(int sensorType) {
 	}
 	else if (sensorType == ADC)
 	{
-		int channel = sensorType & 24;
-		int gainCode = sensorType & 7;
-		float gain = gainCode > 0 ? (float) (2^(gainCode - 1)) : 2.0f/3.0f;
-		fd = ADS1015_open(channel, gain);
+		fd = ADS1015_open(0, 1.0f);
 	}
 	else 
 	{

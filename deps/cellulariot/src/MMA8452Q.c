@@ -74,6 +74,6 @@ int read_acc(int file, int *result) {
 		}
 
 		*result = xAccl + yAccl<<8 + zAccl<<16;
-		return 1;
+		return 0;
 	}
 }
