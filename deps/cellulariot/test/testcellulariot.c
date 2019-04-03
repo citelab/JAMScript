@@ -12,72 +12,73 @@ Date                  Author                  Modification
 
 int main() {
 
-    int data;
+    int data[3];
 	int sfd = -1;
 
     printf("Accelerometer:\n");
     sfd = sopen(ACC);    
-    if (sread(sfd, &data) == 0) 
+    if (sread(sfd, data) == 0) 
 	{
-        printf("\tRead successful. Data received: %i\n\n", data);
+        printf("\tRead successful. Data received: %i, %i and %i\n\n", data[0], data[1], data[2]);
     }
     else
     {
         printf("\tRead failed\n\n");
     }
 	sclose(sfd);
-    data = 0;
+    data[0] = 0;
+    data[1] = 0;
+    data[2] = 0;
 
     printf("ADC:\n");
 	sfd = sopen(ADC);
-    if (sread(sfd, &data) == 0)
+    if (sread(sfd, data) == 0)
     {
-        printf("\tRead successful. Data received: %i\n\n", data);
+        printf("\tRead successful. Data received: %i\n\n", data[0]);
     }
     else
 	{
         printf("\tRead failed\n\n");
 	}
 	sclose(sfd);
-    data = 0;
+    data[0] = 0;
 
     printf("Ambient light:\n");
 	sfd = sopen(LUX);
-    if (sread(sfd, &data) == 0) 
+    if (sread(sfd, data) == 0) 
 	{
-        printf("\tRead successful. Data received: %i\n\n", data);
+        printf("\tRead successful. Data received: %i\n\n", data[0]);
 	}
     else
 	{
         printf("\tRead failed\n\n");
 	}
 	sclose(sfd);
-    data = 0;
+    data[0] = 0;
 
     printf("Temperature:\n");
 	sfd = sopen(TEMP);
-    if (sread(sfd, &data) == 0)
+    if (sread(sfd, data) == 0)
 	{
-        printf("\tRead successful. Data received: %i\n\n", data);
+        printf("\tRead successful. Data received: %i\n\n", data[0]);
 	}
     else
 	{
         printf("\tRead failed\n\n");
 	}
 	sclose(sfd);
-    data = 0;
+    data[0] = 0;
 
     printf("Humidity:\n");
 	sfd = sopen(HUM);
-    if (sread(sfd, &data) == 0)
+    if (sread(sfd, data) == 0)
 	{
-        printf("\tRead successful. Data received: %i\n\n", data);
+        printf("\tRead successful. Data received: %i\n\n", data[0]);
 	}
     else
 	{
         printf("\tRead failed\n\n");
 	}
 	sclose(sfd);
-    data = 0;
 }
 
