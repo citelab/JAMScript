@@ -32,8 +32,8 @@ test : testcellulariot.c cellulariot.a cellulariot.h
 	$(CC) $(CFLAG) $(DIR_TEST)testcellulariot.c $(DIR_TARGET)cellulariot.a $(DIR_SRC)cellulariot.h -o $(DIR_TARGET)$@
 	chmod 777 $(DIR_TARGET)$@
 
-cellulariot.a : cellulariot.o SDL_Pi_HDC1000.o MMA8452Q.o Adafruit_ADS1015.o GPS.o
-	$(AR) $(DIR_TARGET)$@ $(DIR_TARGET)cellulariot.o $(DIR_TARGET)SDL_Pi_HDC1000.o $(DIR_TARGET)MMA8452Q.o $(DIR_TARGET)Adafruit_ADS1015.o $(DIR_TARGET)GPS.o
+cellulariot.a : cellulariot.o SDL_Pi_HDC1000.o MMA8452Q.o Adafruit_ADS1015.o 
+	$(AR) $(DIR_TARGET)$@ $(DIR_TARGET)cellulariot.o $(DIR_TARGET)SDL_Pi_HDC1000.o $(DIR_TARGET)MMA8452Q.o $(DIR_TARGET)Adafruit_ADS1015.o
 
 cellulariot.o : cellulariot.c SDL_Pi_HDC1000.h MMA8452Q.h Adafruit_ADS1015.h
 	$(CC) -c $(CFLAG) $< -o $(DIR_TARGET)$@

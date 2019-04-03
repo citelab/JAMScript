@@ -14,7 +14,7 @@ Date                  Author                  Modification
 #define LUX 4
 #define ADC 5
 
-int sopen(char sensorType);
+int sopen(int sensorType);
 
 int sread(int fd, int *data);
 

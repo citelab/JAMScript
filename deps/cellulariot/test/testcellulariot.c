@@ -13,46 +13,71 @@ Date                  Author                  Modification
 int main() {
 
     int data;
+	int sfd = -1;
 
     printf("Accelerometer:\n");
-    if (read_acc(&data) == 0)
+    sfd = sopen(ACC);    
+    if (sread(sfd, &data) == 0) 
+	{
         printf("\tRead successful. Data received: %i\n\n", data);
+    }
     else
+    {
         printf("\tRead failed\n\n");
+    }
+	sclose(sfd);
     data = 0;
 
     printf("ADC:\n");
-    if (read_adc(&data, 1, 1.0f) == 0)
+	sfd = sopen(ADC);
+    if (sread(sfd, &data) == 0)
+    {
         printf("\tRead successful. Data received: %i\n\n", data);
+    }
     else
+	{
         printf("\tRead failed\n\n");
+	}
+	sclose(sfd);
     data = 0;
 
     printf("Ambient light:\n");
-    if (read_lux(&data) == 0)
+	sfd = sopen(LUX);
+    if (sread(sfd, &data) == 0) 
+	{
         printf("\tRead successful. Data received: %i\n\n", data);
+	}
     else
+	{
         printf("\tRead failed\n\n");
+	}
+	sclose(sfd);
     data = 0;
 
     printf("Temperature:\n");
-    if (read_temp(&data) == 0)
+	sfd = sopen(TEMP);
+    if (sread(sfd, &data) == 0)
+	{
         printf("\tRead successful. Data received: %i\n\n", data);
+	}
     else
+	{
         printf("\tRead failed\n\n");
+	}
+	sclose(sfd);
     data = 0;
 
     printf("Humidity:\n");
-    if (read_hum(&data) == 0)
+	sfd = sopen(HUM);
+    if (sread(sfd, &data) == 0)
+	{
         printf("\tRead successful. Data received: %i\n\n", data);
+	}
     else
+	{
         printf("\tRead failed\n\n");
-    data = 0;
-
-    printf("GPS:\n");
-    if (read_gps(&data) == 0)
-        printf("\tRead successful. Data received: %i\n\n", data);
-    else
-        printf("\tRead failed\n\n");
+	}
+	sclose(sfd);
     data = 0;
 }
+
