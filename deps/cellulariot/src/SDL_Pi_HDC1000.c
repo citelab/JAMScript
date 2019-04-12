@@ -77,7 +77,6 @@ int read_temperature(int fd, int *data)
 	
 	short temp = buff[0] * 256 + buff[1];
     *data = (temp / 65536) * 165 + 25;
-    close(fd);
 
     return 0;
 }
@@ -105,7 +104,6 @@ int read_humidity(int fd, int *data)
     }
     short humid = (buff[1] << 8) | buff[0];
     *data = (humid / 65536) * 100;
-    close(fd);
 
     return 0;
 }
