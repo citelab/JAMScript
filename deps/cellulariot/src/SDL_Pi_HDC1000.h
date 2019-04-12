@@ -9,9 +9,6 @@ Date                  Author                  Modification
 19-Mar-2019           Samuel G                Adapted for file abstraction layer
 ==================================================================*/
 
-#define HDC1000_CONFIG_TEMPERATURE_RESOLUTION_14BIT 0x0000
-#define HDC1000_CONFIG_HUMIDITY_RESOLUTION_14BIT 0x0000
-
 int HDC1080_open();
 
 int read_temperature(int fd, int *data);
