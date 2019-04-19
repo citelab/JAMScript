@@ -18,6 +18,9 @@ cloud level depending on the system configuration. The controller-worker relatio
 *symmetric* in that a worker that is underneath a controller also sees that controller as its
 parent.  
 
+<p align="center">
+<img src="{{ site.baseurl }}/images/lang/fig4.png" width="450" />
+</p>
 
 
 
