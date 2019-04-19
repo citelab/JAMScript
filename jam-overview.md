@@ -6,7 +6,30 @@ subtitle: A High-Level Description of the JAMScript Concepts
 
 ## Anatomy of a JAMScript Program
 
-JAMScript is based on a **controller-worker** model similar to the one that
+JAMScript is based on a **controller-worker** model. The controllers
+can be at different levels: cloud, fog, and device levels. The workers can
+*only* be in the device level. A controller at the device level can have one or
+more workers underneath it. Similarly, a controller at the cloud or fog levels can have
+more or sub controllers in the lower levels underneath it. Those sub controllers can have
+workers provided the sub controller is in the device level.
+A worker has exactly one parent controller that is located in the device level.
+In addition, the worker would be optionally connected to a controller at the fog level and
+cloud level depending on the system configuration. The controller-worker relationship is
+*symmetric* in that a worker that is underneath a controller also sees that controller as its
+parent.  
+
+
+
+
+ and workers
+
+
+situated in different levels.
+A **controller** can have one
+or more **workers** underneath it.
+
+
+ similar to the one that
 underpins popular paradigms such as [Software Defined
 Networking](https://en.wikipedia.org/wiki/Software-defined_networking). The
 *controller* and *worker* are co-programmed. That is, a single program is
