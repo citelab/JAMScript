@@ -45,7 +45,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 extern char app_id[64];
 char dev_id[256] = { 0 };
 
-int count = 0;
+int _count_ = 0;
 
 //jamstate variable to be kept in reference
 jamstate_t *js;
@@ -176,15 +176,15 @@ void __jamdata_logto_server(redisAsyncContext *c, char *key, char *val, size_t s
 void time_operation() {
 
     static struct timespec start;
-    static int count = 0;
+    static int _count = 0;
 
 
-    if (count == 0)
+    if (_count == 0)
         clock_gettime(CLOCK_MONOTONIC, &start);
 
-    count++;
+    _count++;
 
-    if (count == 500)
+    if (_count == 500)
     {
         struct timespec stop;
         clock_gettime(CLOCK_MONOTONIC, &stop);
@@ -446,7 +446,6 @@ jambroadcaster_t *jambroadcaster_init(int mode, char *ns, char *varname)
 jambroadcaster_t *create_jambroadcaster(int mode, char *ns, char *varname)
 {
     jambroadcaster_t *jval;
-    char semname[256];
 
     // Allocate the object..
     jval = (jambroadcaster_t *)calloc(1, sizeof(jambroadcaster_t));

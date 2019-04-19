@@ -18,9 +18,12 @@
 arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, char *fmask, ...)
 {
     va_list args;
-    nvoid_t *nv;
-    int i = 0;
-    arg_t *qargs, *qargs2;
+    rvalue_t *rval;
+    rvalue_t *rval2;
+    arg_t *qargs = NULL, *qargs2 = NULL;
+    cbor_item_t *arr, *arr2;
+    struct alloc_memory_list *list, *list2;
+
     arg_t *rargs;
 
     // Check whether the mask specified..
@@ -34,74 +37,28 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
     }
 
     // Put the parameters into a command structure
-    if (strlen(fmask) > 0) {
-        qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
-        qargs2 = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
-    }
-    else
+    if (strlen(fmask) > 0)
     {
-        qargs = NULL;
-        qargs2 = NULL;
+        va_start(args, fmask);
+        rval = command_qargs_alloc(1, fmask, args);
+        rval2 = command_qargs_alloc(1, fmask, args);
+        va_end(args);
+
+        qargs = rval->qargs;
+        list = rval->list;
+        arr = rval->arr;
+        free(rval);
+        qargs2 = rval2->qargs;
+        list2 = rval2->list;
+        arr2 = rval2->arr;
+        free(rval2);
+    } else {
+        arr = cbor_new_indefinite_array();
+        arr2 = cbor_new_indefinite_array();
+        list = init_list_();
+        list2 = init_list_();
     }
 
-    cbor_item_t *arr = cbor_new_indefinite_array();
-    cbor_item_t *arr2 = cbor_new_indefinite_array();
-    cbor_item_t *elem, *elem2;
-    struct alloc_memory_list *list = init_list_();
-    struct alloc_memory_list *list2 = init_list_();
-
-    va_start(args, fmask);
-
-    while(*fmask)
-    {
-        switch(*fmask++)
-        {
-            case 'n':
-                nv = va_arg(args, nvoid_t*);
-                elem = cbor_build_bytestring(nv->data, nv->len);
-                elem2 = cbor_build_bytestring(nv->data, nv->len);
-                qargs[i].val.nval = nv;
-                qargs[i].type = NVOID_TYPE;
-                break;
-            case 's':
-                qargs[i].val.sval = strdup(va_arg(args, char *));
-                qargs[i].type = STRING_TYPE;
-                elem = cbor_build_string(qargs[i].val.sval);
-                elem2 = cbor_build_string(qargs[i].val.sval);
-                break;
-            case 'i':
-                qargs[i].val.ival = va_arg(args, int);
-                qargs[i].type = INT_TYPE;
-                elem = cbor_build_uint32(abs(qargs[i].val.ival));
-                elem2 = cbor_build_uint32(abs(qargs[i].val.ival));
-                if (qargs[i].val.ival < 0)
-                {
-                    cbor_mark_negint(elem);
-                    cbor_mark_negint(elem2);
-                }
-                break;
-            case 'd':
-            case 'f':
-                qargs[i].val.dval = va_arg(args, double);
-                qargs[i].type = DOUBLE_TYPE;
-                elem = cbor_build_float8(qargs[i].val.dval);
-                elem2 = cbor_build_float8(qargs[i].val.dval);
-                break;
-            default:
-                break;
-            qargs2[i] = qargs[i];
-        }
-
-        i++;
-        if (elem)
-        {
-            assert(cbor_array_push(arr, elem) == true);
-            assert(cbor_array_push(arr2, elem2) == true);
-            add_to_list(elem, list);
-            add_to_list(elem2, list2);
-        }
-    }
-    va_end(args);
     // Get the activity ID.. based on time and device_id - so this should be unique
     // because the same device is not generating multiple activities at the same time with
     // high resolution timer!
@@ -112,8 +69,9 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
     if (jact != NULL)
     {
         command_t *cmd = command_new_using_cbor("REXEC-SYN", "RTE", condstr, condvec, aname, jact->actid,
-            js->cstate->device_id, arr, qargs, i);
+            js->cstate->device_id, arr, qargs, strlen(fmask));
         cmd->cbor_item_list = list;
+
         if (machine_height(js) > 1)
         {
             jact->type = SYNC_RTE;
@@ -128,7 +86,7 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
             return rargs;
 
             command_t *bcmd = command_new_using_cbor("REXEC-SYN", "NRT", condstr, condvec, aname, jact->actid,
-                js->cstate->device_id, arr2, qargs2, i);
+                js->cstate->device_id, arr2, qargs2, strlen(fmask));
             bcmd->cbor_item_list = list2;
 
             jact = activity_renew(js->atable, jact);

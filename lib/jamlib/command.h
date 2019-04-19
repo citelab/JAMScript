@@ -63,6 +63,16 @@ typedef struct _arg_t
 } arg_t;
 
 
+typedef struct _rvalue_t
+{
+    arg_t *qargs;
+    cbor_item_t *arr;
+    struct alloc_memory_list *list;
+
+} rvalue_t;
+
+
+
 /*
  * A structure to hold the outgoing and incoming command.
  * An outgoing command is parsed into a CBOR formatted byte array and similarly
@@ -102,6 +112,7 @@ command_t *command_new_using_arg(char *cmd, char *opt, char *cond, int condvec,
 command_t *command_new_using_arg_only(const char *cmd, char *opt, char *cond, int condvec, char *actname, char *actid, char *actarg,
                     arg_t *args, int nargs);
 command_t *command_new(const char *cmd, char *opt, char *cond, int condvec, char *actname, char *actid, char *actarg, const char *fmt, ...);
+rvalue_t *command_qargs_alloc(int remote, char *fmt, va_list args);
 command_t *command_from_data(char *fmt, nvoid_t *data);
 
 void command_hold(command_t *cmd);

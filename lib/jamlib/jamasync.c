@@ -13,8 +13,7 @@
 void jam_lexec_async(jamstate_t *js, char *aname, ...)
 {
     va_list args;
-    nvoid_t *nv;
-    int i = 0;
+    rvalue_t *rval;
     arg_t *qargs = NULL;
 
     jactivity_t *jact = jam_create_activity(js);
@@ -24,41 +23,14 @@ void jam_lexec_async(jamstate_t *js, char *aname, ...)
     char *fmask = creg->signature;
     if (strlen(fmask) > 0)
     {
-        qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
-
         va_start(args, aname);
-
-        while (*fmask)
-        {
-            switch (*fmask++)
-            {
-                case 'n':
-                    nv = va_arg(args, nvoid_t*);
-                    qargs[i].val.nval = nv;
-                    qargs[i].type = NVOID_TYPE;
-                    break;
-                case 's':
-                    qargs[i].val.sval = strdup(va_arg(args, char *));
-                    qargs[i].type = STRING_TYPE;
-                    break;
-                case 'i':
-                    qargs[i].val.ival = va_arg(args, int);
-                    qargs[i].type = INT_TYPE;
-                    break;
-                case 'd':
-                case 'f':
-                    qargs[i].val.dval = va_arg(args, double);
-                    qargs[i].type = DOUBLE_TYPE;
-                    break;
-                default:
-                    break;
-            }
-            i++;
-        }
+        rval = command_qargs_alloc(0, fmask, args);
         va_end(args);
+        qargs = rval->qargs;
+        free(rval);
     }
 
-    command_t *cmd = command_new_using_arg_only("LEXEC-ASY", "-", "-", 0, aname, jact->actid, "-", qargs, i);
+    command_t *cmd = command_new_using_arg_only("LEXEC-ASY", "-", "-", 0, aname, jact->actid, "-", qargs, strlen(fmask));
     activity_thread_t *athr = athread_getbyindx(js->atable, jact->jindx);
     pqueue_enq(athr->inq, cmd, sizeof(command_t));
 
@@ -72,9 +44,10 @@ void jam_lexec_async(jamstate_t *js, char *aname, ...)
 jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, int condvec, char *aname, char *fmask, ...)
 {
     va_list args;
-    nvoid_t *nv;
-    int i = 0;
-    arg_t *qargs;
+    rvalue_t *rval;
+    arg_t *qargs = NULL;
+    cbor_item_t *arr = NULL;
+    struct alloc_memory_list *list = NULL;
 
     if (jact == NULL)
         return NULL;
@@ -94,61 +67,22 @@ jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, i
         return NULL;
     }
 
-    if (strlen(fmask) > 0)
-        qargs = (arg_t *)calloc(strlen(fmask), sizeof(arg_t));
-    else
-        qargs = NULL;
-
     jact->type = ASYNC;
-    cbor_item_t *arr = cbor_new_indefinite_array();
-    cbor_item_t *elem;
-    struct alloc_memory_list *list = init_list_();
 
-    va_start(args, fmask);
-
-    while (*fmask)
+    if (strlen(fmask) > 0)
     {
-        elem = NULL;
-        switch (*fmask++)
-        {
-            case 'n':
-                nv = va_arg(args, nvoid_t*);
-                elem = cbor_build_bytestring(nv->data, nv->len);
-                qargs[i].val.nval = nv;
-                qargs[i].type = NVOID_TYPE;
-                break;
-            case 's':
-                qargs[i].val.sval = strdup(va_arg(args, char *));
-                qargs[i].type = STRING_TYPE;
-                elem = cbor_build_string(qargs[i].val.sval);
-                break;
-            case 'i':
-                qargs[i].val.ival = va_arg(args, int);
-                qargs[i].type = INT_TYPE;
-                elem = cbor_build_uint32(abs(qargs[i].val.ival));
-                if (qargs[i].val.ival < 0)
-                    cbor_mark_negint(elem);
-                break;
-            case 'd':
-            case 'f':
-                qargs[i].val.dval = va_arg(args, double);
-                qargs[i].type = DOUBLE_TYPE;
-                elem = cbor_build_float8(qargs[i].val.dval);
-                break;
-            default:
-                break;
-        }
-        i++;
-        if (elem != NULL){
-            assert(cbor_array_push(arr, elem) == true);
-            add_to_list(elem, list);
-          }
+        va_start(args, fmask);
+        rval = command_qargs_alloc(1, fmask, args);
+        va_end(args);
+        qargs = rval->qargs;
+        list = rval->list;
+        arr = rval->arr;
+        free(rval);
     }
-    va_end(args);
 
     if (jact != NULL)
     {
-        command_t *cmd = command_new_using_cbor("REXEC-ASY", "-", condstr, condvec, aname, jact->actid, js->cstate->device_id, arr, qargs, i);
+        command_t *cmd = command_new_using_cbor("REXEC-ASY", "-", condstr, condvec, aname, jact->actid, js->cstate->device_id, arr, qargs, strlen(fmask));
         cmd->cbor_item_list = list;
         return jam_async_runner(js, jact, cmd);
     }

@@ -497,6 +497,91 @@ command_t *command_new(const char *cmd, char *opt, char *cond, int condvec,
 }
 
 
+rvalue_t *command_qargs_alloc(int remote, char *fmt, va_list args)
+{
+    nvoid_t *nv;
+    int i = 0;
+    arg_t *qargs;
+
+    cbor_item_t *arr = NULL;
+    cbor_item_t *elem = NULL;
+    struct alloc_memory_list * list = NULL;
+
+    rvalue_t *rval = (rvalue_t *)calloc(1, sizeof(rvalue_t));
+
+    if (strlen(fmt) > 0)
+        qargs = (arg_t *)calloc(strlen(fmt), sizeof(arg_t));
+    else
+        qargs = NULL;
+
+    if (remote)
+    {
+        arr = cbor_new_indefinite_array();
+        list = init_list_();
+    }
+
+    while(*fmt)
+    {
+        switch(*fmt++)
+        {
+            case 'n':
+                nv = va_arg(args, nvoid_t*);
+                if (remote)
+                    elem = cbor_build_bytestring(nv->data, nv->len);
+                qargs[i].val.nval = nv;
+                qargs[i].type = NVOID_TYPE;
+                break;
+            case 's':
+                qargs[i].val.sval = strdup(va_arg(args, char *));
+                qargs[i].type = STRING_TYPE;
+                if (remote)
+                    elem = cbor_build_string(qargs[i].val.sval);
+                break;
+            case 'i':
+                qargs[i].val.ival = va_arg(args, int);
+                qargs[i].type = INT_TYPE;
+                if (remote)
+                {
+                    elem = cbor_build_uint32(abs(qargs[i].val.ival));
+                    if (qargs[i].val.ival < 0)
+                        cbor_mark_negint(elem);
+                }
+                break;
+            case 'p':
+                qargs[i].val.nval = va_arg(args, void *);
+                qargs[i].type = NVOID_TYPE;
+                if (remote)
+                    elem = cbor_build_bytestring(qargs[i].val.nval->data, qargs[i].val.nval->len);
+                break;
+            case 'd':
+            case 'f':
+                qargs[i].val.dval = va_arg(args, double);
+                qargs[i].type = DOUBLE_TYPE;
+                if (remote)
+                    elem = cbor_build_float8(qargs[i].val.dval);
+                break;
+            default:
+                break;
+        }
+        i++;
+
+        // this would not be triggered for local.. because elem == NULL
+        if (elem)
+        {
+            assert(cbor_array_push(arr, elem) == true);
+            add_to_list(elem, list);
+        }
+    }
+
+    rval->qargs = qargs;
+    rval->list = list;
+    rval->arr = arr;
+
+    return rval;
+}
+
+
+
 
 /*
  * Command from CBOR data. If the fmt is non NULL, then we use
