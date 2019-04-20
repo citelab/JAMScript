@@ -135,35 +135,34 @@ is started with the following command line.
 ```shell
 jamrun stringlog.jxe --app=test1 --fog --data=127.0.0.1:8000
 ```
-
 The `stringlog.jxe` is the JAMScript executable that is obtained by compiling the source file using `jamc`.
 The program is run under the `test1` name. The JAMScript runtime connects all the program components
 with the same name and executable filename (there is no authorization checking
-step while connecting the program components).
-
-
-
-The program
-running in the components can initiate a call from the controller to worker
-or from the worker to the controller.
+step while connecting the program components). The `--data` option specifies the data store URL. Because
+all three components (fog and the two devices) are run in the same machine, we need to
+specify URLs with different port numbers.
 <p align="center">
 <img src="{{ site.baseurl }}/images/lang/fig7.png" width="550" />
 </p>
 
+The JAMScript program components can be started in any order. Once they are all
+started,  the configuration as shown above should be formed. We should be able
+to kill a component and restart it. The configuration will reform after the
+program components are started and they have discovered each other.
+
+The listing below shows the output at **fog-1**. You can note that it shows the
+streams from both controllers and workers. There are three workers in total and the
+output from the worker look like `XX-name` while the output from the controller looks
+like `fred@X-Y`.
 <p align="center">
-<img src="{{ site.baseurl }}/images/lang/seg5.png" width="550" />
+<img src="{{ site.baseurl }}/images/lang/seg5.png" width="350" />
 </p>
 
+The listing below shows the output at **dev-2**. You can note that it shows the
+streams from the two workers and the values from the controller.
 <p align="center">
-<img src="{{ site.baseurl }}/images/lang/seg6.png" width="550" />
+<img src="{{ site.baseurl }}/images/lang/seg6.png" width="350" />
 </p>
-
-
-
-
-A little bit more complex
-
-
 
 
 The program
