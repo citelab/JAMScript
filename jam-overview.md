@@ -46,13 +46,20 @@ vehicular networks.
 
 ## Anatomy of a JAMScript Program
 
+A JAMScript program needs to have a C file and a JavaScript file. The JavaScript (J)
+file of a toy JAMScript program is shown below. The J side of the
+program is calling a function *testme()* every 300 milliseconds. You will notice that
+*testme()* is not defined in the J side. So, it must be defined in the C side of the
+JAMScript program as a *remote* function (that is, as a function that can be called
+from the J side).
 <p align="center">
-<img src="{{ site.baseurl }}/images/lang/seg1.png" width="250" />
+<img src="{{ site.baseurl }}/images/lang/seg1.png" width="350" />
 </p>
 
 
+
 <p align="center">
-<img src="{{ site.baseurl }}/images/lang/seg2.png" width="350" />
+<img src="{{ site.baseurl }}/images/lang/seg2.png" width="450" />
 </p>
 
 
