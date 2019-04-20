@@ -108,7 +108,7 @@ controller is displaying the logged values.
 <img src="{{ site.baseurl }}/images/lang/seg3.png" width="650" />
 </p>
 
-
+FFFF
 To enable the auto discovery feature, all the JAMScript program instances must be
 using the same name.
 
