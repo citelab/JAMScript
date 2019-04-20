@@ -57,21 +57,32 @@ from the J side).
 </p>
 
 
-A JAMScript program needs to have a C file and a JavaScript file. The JavaScript (J)
-file of a toy JAMScript program is shown below. The J side of the
-program is calling a function *testme()* every 300 milliseconds. You will notice that
-*testme()* is not defined in the J side. So, it must be defined in the C side of the
-JAMScript program as a *remote* function (that is, as a function that can be called
-from the J side).
+The C file of the toy JAMScript program is shown below.
+The *testme()* function is defined in the file along with two other functions.
+The *testme()* function is prepended with the **jasync** keyword, which indicates
+that the function is an asynchronous JAMScript task. An asynchronous JAMScript task
+can be invoked from either side: J side or C side. In this case, the *testme()*
+is called from the J side.
+
+The *localme()* and *localyou()* are also asynchronous JAMScript tasks, but
+they are not called from the J side. Instead they are called from the C side itself.
+Once a JAMScript task is defined it could be called from the local worker or the controller.
+
+Asynchronous JAMScript tasks are run using user-level threads. So, they cannot include
+any blocking calls like *sleep()*. You will notice that *jsleep()* is used to delay
+the execution of the JAMScript task by the given amount of time.
 <p align="center">
 <img src="{{ site.baseurl }}/images/lang/seg2.png" width="450" />
 </p>
 
-
+The *main()* function launches both JAMScript (local) tasks. The local tasks run concurrently.
+Because we are using user-level threading in JAMScript, the *jsleep()* is essential for
+yielding the execution context to the other concurrently running threads.
 
 ## Auto Discovery in JAMScript Programs
 
-
+One of the interesting aspects of JAMScript is the auto discovery of JAMScript program
+components. 
 
 
 
