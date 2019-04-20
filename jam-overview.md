@@ -19,12 +19,23 @@ cloud level depending on the system configuration. The controller-worker relatio
 parent.  
 
 The figure below shows a configuration in a single device that runs three workers and one
-controller. All the workers are under the controller running in the device. The controller
-and worker shown here belong to a single application. So, a device could have multiple
-controllers with each belonging to a different application.
+controller. All the workers are under the controller running in the device.
+By mapping the controllers and workers into a device, the device would have all the components
+to fully execute the JAMScript program. That is, the JAMScript program would be disconnection
+tolerant.
 <p align="center">
 <img src="{{ site.baseurl }}/images/lang/fig4.png" width="350" />
 </p>
+
+<!---
+    Explain the multi-level configurations
+-->
+
+<p align="center">
+<img src="{{ site.baseurl }}/images/lang/fig5.png" width="650" />
+</p>
+
+
 
 
 
