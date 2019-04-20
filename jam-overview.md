@@ -79,7 +79,7 @@ Asynchronous JAMScript tasks are run using user-level threads. So, they cannot i
 any blocking calls like *sleep()*. You will notice that *jsleep()* is used to delay
 the execution of the JAMScript task by the given amount of time.
 <p align="center">
-<img src="{{ site.baseurl }}/images/lang/seg2.png" width="450" />
+<img src="{{ site.baseurl }}/images/lang/seg2.png" width="550" />
 </p>
 
 The *main()* function launches both JAMScript (local) tasks. The local tasks run concurrently.
@@ -89,26 +89,27 @@ yielding the execution context to the other concurrently running threads.
 ## Auto Discovery in JAMScript Programs
 
 One of the interesting aspects of JAMScript is the auto discovery of JAMScript program
-components. Suppose we write a program in JAMScript, that program can be instantiated in
+components. A JAMScript executable can be run in
 different ways: (a) only in a single device, (b) in a single fog and many devices, and
 (c) cloud, fog, and devices. There is no special configuration file to indicate which
 configuration is used at any invocation.
 
 Suppose we start a JAMScript program in a device and then in another device.
-The JAMScript programs in the two devices would run independent of each other -- without
+The JAMScript programs in the two devices would run independent of each other -- that is, without
 connecting with one another.
 Now, if we start a fog instance, all three instances would get connected -- automatically!
-
 To enable the auto discovery feature, all the JAMScript program instances must be
 using the same name.
 
-Consider the following JAMScript program where the worker is logging data and the
+Consider an example JAMScript program where the worker is creating some data and pushing it towards
+the controllers. We could have one to three controllers depending on the configuration we use.
+
+logging data and the
 controller is displaying the logged values.
 <p align="center">
 <img src="{{ site.baseurl }}/images/lang/seg3.png" width="650" />
 </p>
 
-FFFF
 To enable the auto discovery feature, all the JAMScript program instances must be
 using the same name.
 
