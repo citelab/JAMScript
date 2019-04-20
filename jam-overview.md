@@ -47,12 +47,12 @@ vehicular networks.
 ## Anatomy of a JAMScript Program
 
 <p align="center">
-<img src="{{ site.baseurl }}/images/lang/code1.png" width="250" />
+<img src="{{ site.baseurl }}/images/lang/seg1.png" width="250" />
 </p>
 
 
 <p align="center">
-<img src="{{ site.baseurl }}/images/lang/code2.png" width="350" />
+<img src="{{ site.baseurl }}/images/lang/seg2.png" width="350" />
 </p>
 
 
