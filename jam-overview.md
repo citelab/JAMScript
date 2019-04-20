@@ -118,11 +118,25 @@ responsible for pushing one data item every 1000 milliseconds.
 </p>
 
 The J side of the JAMScript application is shown below. The first thing you will note is the
-*jdata* section. It defines *name* as a string *logger*. 
+*jdata* section. It defines *name* as a string *logger*. The logger is a stream of time series
+data. That is, as the worker logs data we will create a new data item in the stream. The number
+of streams would correspond to the number of workers (each worker has its own stream).
+The controllers can also write to the logger.
 
+The J program is doing two things: it is writing to the logger and printing the stream
+contents. To write to the logger, the controller needs to get access to its own stream
+and then push the data item to that stream.
 <p align="center">
 <img src="{{ site.baseurl }}/images/lang/seg4.png" width="550" />
 </p>
+
+The program
+running in the components can initiate a call from the controller to worker
+or from the worker to the controller.
+<p align="center">
+<img src="{{ site.baseurl }}/images/lang/fig7.png" width="550" />
+</p>
+
 
 
 
