@@ -32,7 +32,7 @@ tolerant.
 -->
 
 <p align="center">
-<img src="{{ site.baseurl }}/images/lang/fig5.png" width="650" />
+<img src="{{ site.baseurl }}/images/lang/fig5.png" width="550" />
 </p>
 
 
