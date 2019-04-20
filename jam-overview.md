@@ -101,20 +101,25 @@ Now, if we start a fog instance, all three instances would get connected -- auto
 To enable the auto discovery feature, all the JAMScript program instances must be
 using the same name.
 
-Consider an example JAMScript program where the worker is creating some data and pushing it towards
-the controllers. We could have one to three controllers depending on the configuration we use.
+Consider an example JAMScript program where the worker is creating some data and
+pushing it towards the controllers. A worker could have one to three parent
+controllers depending on the configuration we use. That is, a worker could have
+a device level, device and fog level, or device, fog, and cloud level
+controllers.
 
-logging data and the
-controller is displaying the logged values.
+The program shown below is the C side of the JAMScript application for logging data.
+It selects a data string from the 10 available names and logs it to the controller. To
+*log* it essentially assigns the local variable (in this case it is *buf*) to *name*.
+You can note that *name* is not defined in the C side.
+The *main()* function of the program just starts the *logdata()* local task, which is
+responsible for pushing one data item every 1000 milliseconds.
 <p align="center">
 <img src="{{ site.baseurl }}/images/lang/seg3.png" width="650" />
 </p>
 
-To enable the auto discovery feature, all the JAMScript program instances must be
-using the same name.
+The J side of the JAMScript application is shown below. The first thing you will note is the
+*jdata* section. It defines *name* as a string *logger*. 
 
-Consider the following JAMScript program where the worker is logging data and the
-controller is displaying the logged values.
 <p align="center">
 <img src="{{ site.baseurl }}/images/lang/seg4.png" width="550" />
 </p>
