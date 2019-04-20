@@ -18,11 +18,10 @@ cloud level depending on the system configuration. The controller-worker relatio
 *symmetric* in that a worker that is underneath a controller also sees that controller as its
 parent.  
 
-The figure below shows a configuration in a single device that runs three workers and one
-controller. All the workers are under the controller running in the device.
-By mapping the controllers and workers into a device, the device would have all the components
-to fully execute the JAMScript program. That is, the JAMScript program would be disconnection
-tolerant.
+The figure below shows how a controller and three workers would be organized
+in a single device. In this example, all workers are under the controller in the device.
+The device is self-contained -- that is, the JAMScript program loaded into the device
+can run even if the device is offline.
 <p align="center">
 <img src="{{ site.baseurl }}/images/lang/fig4.png" width="350" />
 </p>
@@ -31,12 +30,19 @@ tolerant.
     Explain the multi-level configurations
 -->
 
+The following figure shows a larger configuration with controllers at the cloud, fog, and
+device levels. The workers are at the device level.
+A JAMScript program creates a hierarchical configuration when it is run across multiple
+devices as shown here.
 <p align="center">
-<img src="{{ site.baseurl }}/images/lang/fig5.png" width="550" />
+<img src="{{ site.baseurl }}/images/lang/fig5.png" width="650" />
 </p>
 
-
-
+The JAMScript runtime is responsible for creating the hierarchical configuration
+among the controllers and workers and different levels. Therefore, JAMScript is highly
+suitable for creating and maintaining computing structures across collection of
+nodes that are constantly changing in proximity to one another -- for example,
+vehicular networks.
 
 
 ## Auto Discovery in JAMScript Programs
