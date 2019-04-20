@@ -105,7 +105,7 @@ using the same name.
 Consider the following JAMScript program where the worker is logging data and the
 controller is displaying the logged values.
 <p align="center">
-<img src="{{ site.baseurl }}/images/lang/seg3.png" width="350" />
+<img src="{{ site.baseurl }}/images/lang/seg3.png" width="650" />
 </p>
 
 
@@ -115,7 +115,7 @@ using the same name.
 Consider the following JAMScript program where the worker is logging data and the
 controller is displaying the logged values.
 <p align="center">
-<img src="{{ site.baseurl }}/images/lang/seg4.png" width="450" />
+<img src="{{ site.baseurl }}/images/lang/seg4.png" width="550" />
 </p>
 
 
