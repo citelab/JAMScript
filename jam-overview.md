@@ -155,56 +155,11 @@ streams from both controllers and workers. There are three workers in total and 
 output from the worker look like `XX-name` while the output from the controller looks
 like `fred@X-Y`.
 <p align="center">
-<img src="{{ site.baseurl }}/images/lang/seg5.png" width="350" />
+<img src="{{ site.baseurl }}/images/lang/seg5.png" width="270" />
 </p>
 
 The listing below shows the output at **dev-2**. You can note that it shows the
 streams from the two workers and the values from the controller.
 <p align="center">
-<img src="{{ site.baseurl }}/images/lang/seg6.png" width="350" />
+<img src="{{ site.baseurl }}/images/lang/seg6.png" width="270" />
 </p>
-
-
-The program
-running in the components can initiate a call from the controller to worker
-or from the worker to the controller.
-
-
-
-
-
-
-The JAMScript language itself is a polyglot
-language that incorporates the
-
-
-  with two different languages. We use JavaScript (J) to write
-the controller part and C to write the worker part.
-
-is written for the controller and
-worker. The compiler is responsible for splitting the program
-
-
-## Different Ways of Running JAMScript
-
-
-## A Peek Under the Hood
-
-
-
-<p align="center">
-<img src="{{ site.baseurl }}/images/lang/fig1.jpeg" width="500" />
-</p>
-
-
-<p align="center">
-<img src="{{ site.baseurl }}/images/lang/fig2.jpeg" width="450" />
-</p>
-
-
-
-<p align="center">
-<img src="{{ site.baseurl }}/images/lang/fig3.jpeg" width="550" />
-</p>
-
-##
