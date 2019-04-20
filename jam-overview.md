@@ -130,6 +130,19 @@ and then push the data item to that stream.
 <img src="{{ site.baseurl }}/images/lang/seg4.png" width="550" />
 </p>
 
+The figure below shows one fog and two devices running the above program. The **fog-1**
+is started with the following command line.
+```shell
+jamrun stringlog.jxe --app=test1 --fog --data=127.0.0.1:8000
+```
+
+The `stringlog.jxe` is the JAMScript executable that is obtained by compiling the source file using `jamc`.
+The program is run under the `test1` name. The JAMScript runtime connects all the program components
+with the same name and executable filename (there is no authorization checking
+step while connecting the program components).
+
+
+
 The program
 running in the components can initiate a call from the controller to worker
 or from the worker to the controller.
@@ -137,6 +150,13 @@ or from the worker to the controller.
 <img src="{{ site.baseurl }}/images/lang/fig7.png" width="550" />
 </p>
 
+<p align="center">
+<img src="{{ site.baseurl }}/images/lang/seg5.png" width="550" />
+</p>
+
+<p align="center">
+<img src="{{ site.baseurl }}/images/lang/seg6.png" width="550" />
+</p>
 
 
 
