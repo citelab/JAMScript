@@ -4,7 +4,7 @@ title: Overview
 subtitle: A High-Level Description of the JAMScript Concepts
 ---
 
-## Anatomy of a JAMScript Program
+## The Controller-Worker Model
 
 JAMScript is based on a **controller-worker** model. The controllers
 can be at different levels: cloud, fog, and device levels. The workers can
@@ -27,6 +27,11 @@ controllers with each belonging to a different application.
 </p>
 
 
+
+## Auto Discovery in JAMScript Programs
+
+
+## Anatomy of a JAMScript Program
 
 
  and workers
