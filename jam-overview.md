@@ -44,11 +44,23 @@ suitable for creating and maintaining computing structures across collection of
 nodes that are constantly changing in proximity to one another -- for example,
 vehicular networks.
 
+## Anatomy of a JAMScript Program
+
+<p align="center">
+<img src="{{ site.baseurl }}/images/lang/code1.png" width="250" />
+</p>
+
+
+<p align="center">
+<img src="{{ site.baseurl }}/images/lang/code2.png" width="350" />
+</p>
+
+
 
 ## Auto Discovery in JAMScript Programs
 
 
-## Anatomy of a JAMScript Program
+
 
 
  and workers
