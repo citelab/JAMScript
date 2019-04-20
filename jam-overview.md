@@ -44,6 +44,13 @@ suitable for creating and maintaining computing structures across collection of
 nodes that are constantly changing in proximity to one another -- for example,
 vehicular networks.
 
+In JAMScript, the controller is implemented in JavaScript with few JAMScript specific
+extensions. The worker is implemented in C with few JAMScript specific extensions.
+The JAMScript specific extensions allow the JAMScript compiler to related both sides
+and make the necessary connections between the controller and worker so that both sides
+would work as a whole.
+
+
 ## Anatomy of a JAMScript Program
 
 A JAMScript program needs to have a C file and a JavaScript file. The JavaScript (J)
@@ -82,31 +89,36 @@ yielding the execution context to the other concurrently running threads.
 ## Auto Discovery in JAMScript Programs
 
 One of the interesting aspects of JAMScript is the auto discovery of JAMScript program
-components. 
+components. Suppose we write a program in JAMScript, that program can be instantiated in
+different ways: (a) only in a single device, (b) in a single fog and many devices, and
+(c) cloud, fog, and devices. There is no special configuration file to indicate which
+configuration is used at any invocation.
+
+Suppose we start a JAMScript program in a device and then in another device.
+The JAMScript programs in the two devices would run independent of each other -- without
+connecting with one another.
+Now, if we start a fog instance, all three instances would get connected -- automatically!
+
+To enable the auto discovery feature, all the JAMScript program instances must be
+using the same name.
+
+Consider the following JAMScript program where the worker is logging data and the
+controller is displaying the logged values.
+<p align="center">
+<img src="{{ site.baseurl }}/images/lang/seg3.png" width="350" />
+</p>
 
 
+To enable the auto discovery feature, all the JAMScript program instances must be
+using the same name.
 
- and workers
+Consider the following JAMScript program where the worker is logging data and the
+controller is displaying the logged values.
+<p align="center">
+<img src="{{ site.baseurl }}/images/lang/seg4.png" width="450" />
+</p>
 
 
-situated in different levels.
-A **controller** can have one
-or more **workers** underneath it.
-
-
- similar to the one that
-underpins popular paradigms such as [Software Defined
-Networking](https://en.wikipedia.org/wiki/Software-defined_networking). The
-*controller* and *worker* are co-programmed. That is, a single program is
-developed for the controller and worker combination. In JAMScript, the
-controller portion of the program is written in JavaScript and the worker
-portion of the program is written in C.
-
-In the simplest scenario, we can have a single controller and a single worker.
-To run a JAMScript program we need to instantiate both components: controller
-worker. The controller can call the worker or the worker can initiate calls on
-the controller. Quite easily, we can generalize this setup to include multiple
-workers.
 
 
 A little bit more complex
