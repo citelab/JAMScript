@@ -164,7 +164,7 @@ streams from the two workers and the values from the controller.
 <img src="{{ site.baseurl }}/images/lang/seg6.png" width="270" />
 </p>
 
-## Fog Computing Support for Mobile Internet of Things in JAMScript
+## Fog Computing + Mobile IoT in JAMScript
 
 JAMScript has special support for interfacing fog computing with mobile IoT.
 Using a simple example scenario we illustrate some ways JAMScript can help the
@@ -188,7 +188,7 @@ different actions at the fog and device levels. At the fog level, the controller
 print stream that is logged by the devices while at the device level it would
 setup the movement of the device.
 <p align="center">
-<img src="{{ site.baseurl }}/images/lang/seg9.png" width="270" />
+<img src="{{ site.baseurl }}/images/lang/seg9.png" width="550" />
 </p>
 
 The overall setup is shown in the figure below. The fogs are started using the commands given
@@ -197,13 +197,13 @@ fog specifies the geographical location of the fogs. The command line for starti
 device specifies that nearest fog should be used by the device. This means as the device moves
 the fog association would change.
 <p align="center">
-<img src="{{ site.baseurl }}/images/lang/fig8.png" width="270" />
+<img src="{{ site.baseurl }}/images/lang/fig8.png" width="450" />
 </p>
 
 The output of one of the fog servers is shown in the figure below. As we can see
 the output from the device is reaching one fog and it switches over to another fog.
 <p align="center">
-<img src="{{ site.baseurl }}/images/lang/fig8.png" width="270" />
+<img src="{{ site.baseurl }}/images/lang/seg10.png" width="270" />
 </p>
 
 
