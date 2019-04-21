@@ -41,6 +41,9 @@ cellulariot.o : cellulariot.c SDL_Pi_HDC1000.h MMA8452Q.h Adafruit_ADS1015.h
 %.o : $(DIR_SRC)%.c
 	$(CC) -c $(CFLAG) $< -o $(DIR_TARGET)$@
 
+cellulariot.so : cellulariot.o SDL_Pi_HDC1000.o MMA8452Q.o Adafruit_ADS1015.o
+	$(CC) -shared -o $(DIR_TARGET)cellulariot.so $(DIR_TARGET)cellulariot.o $(DIR_TARGET)Adafruit_ADS1015.o $(DIR_TARGET)MMA8452Q.o $(DIR_TARGET)SDL_Pi_HDC1000.o
+
 clean-obj :
 	rm -f $(DIR_TARGET)*.o
 
