@@ -197,25 +197,11 @@ fog specifies the geographical location of the fogs. The command line for starti
 device specifies that nearest fog should be used by the device. This means as the device moves
 the fog association would change.
 <p align="center">
-<img src="{{ site.baseurl }}/images/lang/fig8.png" width="450" />
+<img src="{{ site.baseurl }}/images/lang/fig8.png" width="550" />
 </p>
 
 The output of one of the fog servers is shown in the figure below. As we can see
 the output from the device is reaching one fog and it switches over to another fog.
 <p align="center">
-<img src="{{ site.baseurl }}/images/lang/seg10.png" width="270" />
+<img src="{{ site.baseurl }}/images/lang/seg10.png" width="400" />
 </p>
-
-
-
-
-Mobile IoT can immensely benefit from fog computing. One of the well-known
-ways of leveraging fog computing is by offloading computations from mobiles to
-the fog. There are many other possible ways of using fog computing: data and
-computation staging
-
-
-Although offloading
-computing tasks is a well known use case, there are
-JAMScript is designed to make mobile IoT programming lot easier. The idea
-is to make
