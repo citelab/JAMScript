@@ -203,5 +203,5 @@ the fog association would change.
 The output of one of the fog servers is shown in the figure below. As we can see
 the output from the device is reaching one fog and it switches over to another fog.
 <p align="center">
-<img src="{{ site.baseurl }}/images/lang/seg10.png" width="400" />
+<img src="{{ site.baseurl }}/images/lang/seg10.png" width="500" />
 </p>
