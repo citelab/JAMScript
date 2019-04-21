@@ -20,7 +20,7 @@ I/O. The server that performs the calculations is implemented as a J node while 
 implements the CLI. We can run multiple
 CLI (C) nodes with a single calculating server as shown in the figure below.
 <p align="center">
-<img src="{{ site.baseurl }}/images/calc.png" width="350" />
+<img src="{{ site.baseurl }}/images/calc.png" width="300" />
 </p>
 
 The listing below shows the JAMScript enhanced C code that implements the C
