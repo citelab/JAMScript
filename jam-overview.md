@@ -163,3 +163,59 @@ streams from the two workers and the values from the controller.
 <p align="center">
 <img src="{{ site.baseurl }}/images/lang/seg6.png" width="270" />
 </p>
+
+## Fog Computing Support for Mobile Internet of Things in JAMScript
+
+JAMScript has special support for interfacing fog computing with mobile IoT.
+Using a simple example scenario we illustrate some ways JAMScript can help the
+use of fog computing in mobile IoT. Let us consider a scenario where two fogs
+are located in a straight line (e.g.,  road segment). A vehicle is going back
+and forth on the road segment and we want  it to be associated with the closest
+fog at any given time.  The tasks launched by the vehicle must get executed at
+the closest fog. Also,  when the fogs execute remote tasks the vehicles in their
+zones would execute those calls and not the vehicles in other fog zones.
+The same goes to data streams created by the loggers.
+
+The C side of the JAMScript program is shown below. It is a very simple program with
+a local task that is logging a value every 90 milliseconds.
+<p align="center">
+<img src="{{ site.baseurl }}/images/lang/seg8.png" width="350" />
+</p>
+
+The J side of the JAMScript program shown below
+defines what the controller would do. In this application, the controller performs
+different actions at the fog and device levels. At the fog level, the controller would
+print stream that is logged by the devices while at the device level it would
+setup the movement of the device.
+<p align="center">
+<img src="{{ site.baseurl }}/images/lang/seg9.png" width="270" />
+</p>
+
+The overall setup is shown in the figure below. The fogs are started using the commands given
+in the figure and the device is started as shown. The command line for starting the
+fog specifies the geographical location of the fogs. The command line for starting the
+device specifies that nearest fog should be used by the device. This means as the device moves
+the fog association would change.
+<p align="center">
+<img src="{{ site.baseurl }}/images/lang/fig8.png" width="270" />
+</p>
+
+The output of one of the fog servers is shown in the figure below. As we can see
+the output from the device is reaching one fog and it switches over to another fog.
+<p align="center">
+<img src="{{ site.baseurl }}/images/lang/fig8.png" width="270" />
+</p>
+
+
+
+
+Mobile IoT can immensely benefit from fog computing. One of the well-known
+ways of leveraging fog computing is by offloading computations from mobiles to
+the fog. There are many other possible ways of using fog computing: data and
+computation staging
+
+
+Although offloading
+computing tasks is a well known use case, there are
+JAMScript is designed to make mobile IoT programming lot easier. The idea
+is to make
