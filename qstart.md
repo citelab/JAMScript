@@ -82,6 +82,9 @@ int main() {
 }
 ```
 
+<a href="files/calc.c" download> Click to download - calc.c</a>
+
+
 Now, lets looks at the J side. The J side introduces a JAMScript keyword - **jsync**. Simply by putting this keyword
 in front of a function we have asked the compiler to export the function to the C side. Of course, proper matching
 C prototypes in the C side (as shown in the above code block) are necessary to complete the export.
