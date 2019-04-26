@@ -1,26 +1,11 @@
 # Cellulariot SIXFAB sensor interface
 
 ## APIs
-The following APIs are made available for the Raspberry Pi3 SIXFAB shield sensors:<br>
-A buffer is passed to the function to store data measurements. These calls are asynchronous.
+int sopen(SENSOR_TYPE)
 
-For reading accelerometer measurements<br>
-int read_acc(int *data) <br>
+int sread(int fd)
 
-For reading ADC measurements<br>
-int read_adc(int *data, int channel, float gain)<br>
-
-For reading light measurements<br>
-int read_lux(int *data)<br>
-
-For reading temperature measurements<br>
-int read_temp (int *data)<br>
-
-For reading humidity measurements<br>
-int read_hum (int *data)<br>
-
-For reading GPS measurements<br>
-int read_gps (int *data)<br>
+int sclose(int fd)
 
 ## Building and Testing
 The makefile contains the implementation for compiling, linking, and testing files.<br>
