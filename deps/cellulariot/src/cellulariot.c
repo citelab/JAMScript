@@ -34,6 +34,10 @@ int open_lux() {
     ADS1015_open(LUX_CHANNEL, 1.0f);
 }
 
+/*
+    Available channels are 0, 1, 2, or 3 (Topmost to bottommost are 0, 1, 2, 3)
+    Available gain values are 1, 2/3, 2, 4, 8, or 16
+*/
 int sopen_adc(int channel, float gain)
 {
 	int fd = -1;
