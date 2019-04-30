@@ -19,3 +19,5 @@ int sopen(int sensorType);
 int sread(int fd, int *data);
 
 int sclose(int fd);
+
+int sopen_adc(int channel, float gain);

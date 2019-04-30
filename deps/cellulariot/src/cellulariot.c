@@ -34,6 +34,28 @@ int open_lux() {
     ADS1015_open(LUX_CHANNEL, 1.0f);
 }
 
+int sopen_adc(int channel, float gain)
+{
+	int fd = -1;
+	fd = ADS1015_open(channel, gain);
+	
+	if (fd < 0) 
+	{
+		return -1;
+	}	
+
+	for (int index=0; index < MAX_NUM_FILE; index++) {
+        if(sensor_files[index].sensor_type == NULL) {
+            sensor_files[index].sensor_type = ADC;
+            sensor_files[index].fd = fd;
+            return index;
+        }
+    }
+
+    printf("The maximum number of sensors file descriptors has already been reached");
+    return -1;
+}
+
 int sopen(int sensorType) {
 
     int fd = -1;
@@ -56,7 +78,7 @@ int sopen(int sensorType) {
 	}
 	else if (sensorType == ADC)
 	{
-		fd = ADS1015_open(0, 1.0f);
+		printf("Invalid! Use sopen_adc to open the ADC");
 	}
 	else 
 	{
