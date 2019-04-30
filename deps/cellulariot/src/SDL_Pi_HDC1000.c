@@ -62,10 +62,10 @@ int HDC1080_open()
 int read_temperature(int fd, int *data)
 {
 	char config[2] = {0};
-	config[0] = HDC1080_CONFIGURATION_REGISTER;
-	config[1] = HDC1080_TEMPERATURE_REGISTER;
+	config[0] = HDC1080_TEMPERATURE_REGISTER;
+	config[1] = 0x30;
 	write(fd, config, 2);
-	sleep(0.625);
+	sleep(1);
 	
     // Temperature register is a 16-bit result register (the 2 LSBs are always 0)
     char buff[2] = {0};
@@ -74,9 +74,9 @@ int read_temperature(int fd, int *data)
         printf("Failure HDC1080: Input/Output error. \n");
         return -1;
     }
-	
+		
 	short temp = buff[0] * 256 + buff[1];
-    *data = (temp / 65536) * 165 + 25;
+    *data = (temp / 65536.0) * 165 - 40;
 
     return 0;
 }
@@ -89,11 +89,11 @@ int read_temperature(int fd, int *data)
 */
 int read_humidity(int fd, int *data)
 {
-    char reg[2] = {0};
-    reg[0] = HDC1080_I2C_ADDRESS + 1; // Last bit must be set high for a read
-    reg[1] = HDC1080_HUMIDITY_REGISTER;
-    write(fd, reg, 2);
-    sleep(0.0625);
+    char config[2] = {0};
+	config[0] = HDC1080_HUMIDITY_REGISTER;
+    config[1] = 0x30;
+    write(fd, config, 2);
+    sleep(1);
 
     // Humidity register is a 16-bit result register (the 2 LSBs are always 0)
     char buff[2] = {0};
@@ -102,8 +102,8 @@ int read_humidity(int fd, int *data)
         printf("Failure HDC1080: Input/Output error. \n");
         return -1;
     }
-    short humid = (buff[1] << 8) | buff[0];
-    *data = (humid / 65536) * 100;
+    short humid = buff[0] * 256 + buff[1];
+    *data = (humid / 65536.0) * 100;
 
     return 0;
 }
