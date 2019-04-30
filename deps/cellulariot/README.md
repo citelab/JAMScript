@@ -3,6 +3,8 @@
 ## APIs
 int sopen(SENSOR_TYPE)
 
+int sopen_adc(int channel, float gain)
+
 int sread(int fd, int *buffer)
 
 int sclose(int fd)
