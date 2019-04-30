@@ -31,7 +31,7 @@ int main() {
     data[2] = 0;
 
     printf("ADC:\n");
-	sfd = sopen(ADC);
+	sfd = sopen_adc(0, 1.0f);
     if (sread(sfd, data) == 0)
     {
         printf("\tRead successful. Data received: %i\n\n", data[0]);
