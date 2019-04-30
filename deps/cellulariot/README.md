@@ -3,7 +3,7 @@
 ## APIs
 int sopen(SENSOR_TYPE)
 
-int sread(int fd)
+int sread(int fd, int *buffer)
 
 int sclose(int fd)
 
