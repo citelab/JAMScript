@@ -1,4 +1,4 @@
-# Cellulariot SIXFAB sensor interface
+# Libhat SIXFAB sensor interface
 
 ## APIs
 int sopen(SENSOR_TYPE)
