@@ -6,7 +6,7 @@
 # Date                  Author                  Modification
 # -----------------------------------------------------------------
 # 23-Oct-2018           Matthew L-K             Created the file
-# 31-Oct-2018           Samuel G                Added cellulariot-related tasks. Removed other tasks
+# 31-Oct-2018           Samuel G                Added libhat-related tasks. Removed other tasks
 # 12-Nov-2018           Samuel G                Added GPS
 # 03-Dec-2018			Samuel G				Added test
 #==================================================================#
@@ -23,26 +23,26 @@ CFLAG = -Wall -I$(DIR_SRC) -I$(DIR_TEST) -I$(DIR_TARGET)
 .PHONY : all run-test clean-obj clean-test clean-all
 
 # Define targets here
-all : clean-all cellulariot.a test run-test clean-obj clean-test
+all : clean-all libhat.a test run-test clean-obj clean-test
 
 run-test : test
 	$(DIR_TARGET)test
 
-test : testcellulariot.c cellulariot.a cellulariot.h
-	$(CC) $(CFLAG) $(DIR_TEST)testcellulariot.c $(DIR_TARGET)cellulariot.a $(DIR_SRC)cellulariot.h -o $(DIR_TARGET)$@
+test : testlibhat.c libhat.a libhat.h
+	$(CC) $(CFLAG) $(DIR_TEST)testlibhat.c $(DIR_TARGET)libhat.a $(DIR_SRC)libhat.h -o $(DIR_TARGET)$@
 	chmod 777 $(DIR_TARGET)$@
 
-cellulariot.a : cellulariot.o SDL_Pi_HDC1000.o MMA8452Q.o Adafruit_ADS1015.o 
-	$(AR) $(DIR_TARGET)$@ $(DIR_TARGET)cellulariot.o $(DIR_TARGET)SDL_Pi_HDC1000.o $(DIR_TARGET)MMA8452Q.o $(DIR_TARGET)Adafruit_ADS1015.o
+libhat.a : libhat.o SDL_Pi_HDC1000.o MMA8452Q.o Adafruit_ADS1015.o 
+	$(AR) $(DIR_TARGET)$@ $(DIR_TARGET)libhat.o $(DIR_TARGET)SDL_Pi_HDC1000.o $(DIR_TARGET)MMA8452Q.o $(DIR_TARGET)Adafruit_ADS1015.o
 
-cellulariot.o : cellulariot.c SDL_Pi_HDC1000.h MMA8452Q.h Adafruit_ADS1015.h
+libhat.o : libhat.c SDL_Pi_HDC1000.h MMA8452Q.h Adafruit_ADS1015.h
 	$(CC) -c $(CFLAG) $< -o $(DIR_TARGET)$@
 
 %.o : $(DIR_SRC)%.c
 	$(CC) -c $(CFLAG) $< -o $(DIR_TARGET)$@
 
-cellulariot.so : cellulariot.o SDL_Pi_HDC1000.o MMA8452Q.o Adafruit_ADS1015.o
-	$(CC) -shared -o $(DIR_TARGET)cellulariot.so $(DIR_TARGET)cellulariot.o $(DIR_TARGET)Adafruit_ADS1015.o $(DIR_TARGET)MMA8452Q.o $(DIR_TARGET)SDL_Pi_HDC1000.o
+libhat.so : libhat.o SDL_Pi_HDC1000.o MMA8452Q.o Adafruit_ADS1015.o
+	$(CC) -shared -o $(DIR_TARGET)libhat.so $(DIR_TARGET)libhat.o $(DIR_TARGET)Adafruit_ADS1015.o $(DIR_TARGET)MMA8452Q.o $(DIR_TARGET)SDL_Pi_HDC1000.o
 
 clean-obj :
 	rm -f $(DIR_TARGET)*.o

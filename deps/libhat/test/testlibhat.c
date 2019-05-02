@@ -8,7 +8,7 @@ Date                  Author                  Modification
 ==================================================================*/
 
 #include <stdio.h>
-#include "../src/cellulariot.h"
+#include "../src/libhat.h"
 
 int main() {
 
