@@ -1,0 +1,70 @@
+#!/bin/bash
+
+IDIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$IDIR" ]]; then IDIR="$PWD"; fi
+source "$IDIR/inc/misc_tools.sh"
+
+
+# Spin up the build container if it is not there.
+# No need to spin up if the container is already there
+
+# Copy the files into the container
+# Run the jamc compiler in the container using 'docker exec..'
+# Get the results back - copy the .jxe file back to the original folder
+#
+
+
+show_usage() {
+    cat << EOF
+
+djamcompile or djamcompile -h or djamcompile --help prints this help
+information.
+
+djamcompile f1.jxe f2.c
+compiles f1.js and f2.c to obtain f1.jxe. Here, the source files are
+copied into the docker container and the compiler is run in the container.
+The resulting file f1.jxe is copied back to the host.
+
+EOF
+}
+
+make_container() {
+    local type=$1
+    local contname=$2
+
+    local dockerImage=`cat $jamfolder/dockerImage`
+
+    create_missingdir $jamfolder/type
+    create_missingdir $jamfolder/type/contname
+
+    # Just kill the older container and recreate a new one.
+    docker kill $contname
+    docker rm $contname
+
+    local dockerSer=`docker run -it -d --privileged --name $contname $dockerImage`
+    local dockerSer=${dockerSer:0:12}
+    echo $dockerSer > $jamfolder/type/contname/dockerId
+    echo "1" > $jamfolder/type/contname/refCount
+}
+
+jamfolder=$HOME"/__jamruns"
+exit_missingdir $jamfolder "JAMScript not setup in the system."
+exit_missingfile $jamfolder/dockerImage "Run djam pull repository"
+
+dbuildc="dbuildctnr-"$UID
+make_container test $dbuildc
+
+efile=
+for f in $@; do
+    if [ $f != "-d" ]; then
+        docker cp $f $dbuildc:/home/admin/temp/$f
+        efile+=" /home/admin/temp/$f"
+    else
+        efile+=" -d"
+    fi
+done
+
+docker exec -it $dbuildc jamc $efile
+filename=$1
+jxefile="${filename%.*}.jxe"
+docker cp $dbuildc:/home/admin/temp/$jxefile $jxefile

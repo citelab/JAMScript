@@ -1,0 +1,121 @@
+#!/bin/bash
+
+IDIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$IDIR" ]]; then IDIR="$PWD"; fi
+source "$IDIR/inc/pumba_tools.sh"
+source "$IDIR/inc/mach_tools.sh"
+source "$IDIR/inc/misc_tools.sh"
+
+
+# No need to edit below this line unless you find a bug!
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+show_usage() {
+    cat << EOF
+
+djam test
+Creates a test configuration of containers. Does not run JAMScript. One cloud node
+(u-UID-test-cloud), two fog nodes (u-UID-test-fog-1) and (u-UID-test-fog-2). The fog
+nodes are in different zones. It also creates two device nodes (u-UID-test-dev-1) and
+(u-UID-test-dev-2).
+
+You can login into the different nodes and ping each other to test the inter-container
+latency.
+
+All machines are detached. You need to attach to them again using:
+
+docker attach node-name
+
+To stop the test, run
+
+djam test stop
+
+EOF
+}
+
+jamfolder=$HOME"/__jamruns"
+exit_missingdir $jamfolder "JAMScript emulation is not yet initialized. Run djaminit first."
+
+
+if [ ! -z $1 ]; then
+    if [ $1 == "-h" ] || [ $1 == "--help" ]; then
+        show_usage
+        exit
+    fi
+fi
+
+if [ -z $1 ]; then
+
+    exit_missingfile $jamfolder/dockerImage "Run djam pull to setup the docker image"
+
+    exit_missingfile $jamfolder/pumba/cloud_cmd "Run 'djam init' before running the 'djam test'. "
+    exit_missingfile $jamfolder/pumba/infog_cmd "Run 'djam init' before running the 'djam test'. "
+    exit_missingfile $jamfolder/pumba/outfog_cmd "Run 'djam init' before running the 'djam test'. "
+
+    # Image
+    dockerImage=`cat $jamfolder/dockerImage`
+
+    createnetwork jamtest 54
+
+    # These containers are not created in the proper way
+    # This is for testing purposes.. so this is OK.
+
+    # Start a cloud machine
+    startglobalmach "u-$UID-cloud-test" jamtest 54
+
+    startzonerouter 1 "u-$UID-router-test-1" jamtest 54
+    startzonerouter 2 "u-$UID-router-test-2" jamtest 54
+
+    # Start two fog machines
+
+    startzonemach 1 "u-$UID-fog-test-1" jamtest 54
+    startzonemach 1 "u-$UID-dev-test-1" jamtest 54
+
+
+    startzonemach 2 "u-$UID-fog-test-2" jamtest 54
+    startzonemach 2 "u-$UID-dev-test-2" jamtest 54
+
+    restartcloudpumba "u-$UID-cloud-test"
+    restartrouterpumba "u-$UID-router-test-1"
+    restartrouterpumba "u-$UID-router-test-2"
+    restartfogpumba "u-$UID-fog-test-1"
+    restartfogpumba "u-$UID-fog-test-2"
+
+    # Print a message
+    echo "Done. Configured the test topology."
+
+elif [ $1 == "stop" ]; then
+
+    killfogpumba "test"
+    killrouterpumba "test"
+    killcloudpumba "test"
+
+    resarr=$(docker ps -a -q --filter name=cloud-test)
+    for res in $resarr; do
+        docker kill $res
+        docker rm $res
+    done
+
+    resarr=$(docker ps -a -q --filter name=fog-test)
+    for res in $resarr; do
+        docker kill $res
+        docker rm $res
+    done
+
+    resarr=$(docker ps -a -q --filter name=dev-test)
+    for res in $resarr; do
+        docker kill $res
+        docker rm $res
+    done
+
+    resarr=$(docker ps -a -q --filter name=router-test)
+    for res in $resarr; do
+        docker kill $res
+        docker rm $res
+    done
+
+fi

@@ -1,0 +1,57 @@
+#!/bin/bash
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+show_usage() {
+    cat << EOF
+
+Runs a collection of jam machine commands.
+
+jam help    - prints this help
+jam clean   - clean the setup left behind by old runs
+jam close   - close all terminaled opened by the 'term' command
+jam install - install the JAMScript from source.
+jam kill    - kill a node
+jam list    - lists all the JAMScript programs running in the system
+jam run     - start a device, fog, or cloud
+jam term    - show the tmux terminals of the running nodes
+
+
+Type 'jam cmd --help' for more help on the specific command.
+
+EOF
+}
+
+if [ -z $1 ] || [ $1 == "help" ]; then
+    show_usage
+    exit 0
+fi
+
+jcmd=$1
+shift 1
+params=$@
+
+
+case $jcmd in
+    list)
+        jamlist $params
+        ;;
+    term)
+        jamterm $params
+        ;;
+    kill)
+        jamkill $params
+        ;;
+    clean)
+        jamclean $params
+        ;;
+    run)
+        jamrun $params
+        ;;
+    install)
+        jaminstall $params
+        ;;
+esac

@@ -1,0 +1,162 @@
+#!/bin/bash
+
+IDIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$IDIR" ]]; then IDIR="$PWD"; fi
+source "$IDIR/inc/misc_tools.sh"
+
+# Edit the following locations to provide the
+TMUX=`which tmux`
+if [ -z $TMUX ]; then
+    TMUX=/usr/local/bin/tmux
+fi
+
+# No need to edit below this line unless you find a bug!
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+show_usage() {
+    cat << EOF
+Kill running instances of the application.
+
+Usage: jamkill [--all|app-id|--help]
+
+jamkill
+kill the program started last among the currently running ones
+
+jamkill --help
+displays this help messages
+
+jamkill --all
+kills all running instances
+
+jamkill app-id
+kills all running instances that were started under app-id
+
+EOF
+}
+
+
+killtmux() {
+
+    for q in `tmux ls | grep $1 | cut -d ':' -f 1`; do
+        tmux kill-session -t $q
+    done
+}
+
+# called with two args..
+# dir port
+killprocess() {
+
+    if [ -e $1/shellpid ]; then
+        local pid=`cat $1/shellpid`
+        local present=`ps -p $pid | grep jamrun | wc -l | tr -d '[:space:]'`
+        if [ $present == "1" ]; then
+            echo "Killing process $pid"
+            kill $pid
+        fi
+    fi
+
+    if [ -e $1/processId ]; then
+        local pid=`cat $1/processId`
+        local present=`ps -p $pid | grep node | wc -l | tr -d '[:space:]'`
+        if [ $present == "1" ]; then
+            echo "Killing process $pid"
+            kill -9 $pid
+        fi
+
+        if [ `uname` == "Linux" ]; then
+            local spid=`ps ax | grep node | grep $2 | cut -d ' ' -f 2 | tr -d '[:space:]'`
+            if [ ! -z $spid ]; then
+                echo "Killing process $pid"
+                kill -9 $spid
+            fi
+        fi
+
+    elif [ -e $1/dockerId ]; then
+        local didp=`cat $1/dockerId`
+        local present=`docker ps --filter id=$didp | grep $didp | wc -l | tr -d '[:space:]'`
+        if [ $present == "1" ]; then
+            docker exec -it $didp jamkill `cat $1/appid`
+            echo "-" > $1/dockerId
+            local count=`docker exec -it $didp jamlist | wc -l | tr -d '[:space:]'`
+            if (( $count <= 2 )); then
+                echo "Killing docker $didp"
+                docker kill $didp
+                docker rm $didp
+            fi
+        fi
+    fi
+}
+
+
+killjob() {
+    local jobid=$1
+
+    for jruns in */; do
+        if [ $jruns != "*/" ]; then
+            for jexs in `ls $appsfolder/$jruns`; do
+                dir=$appsfolder/$jruns$jexs
+                if [ -d $dir ]; then
+                    if [ -e $dir/appid ]; then
+                        local appid=`cat $dir/appid`
+
+                        if [ $appid == $jobid ]; then
+                            killprocess $dir $jexs
+                            if [ -e $dir/tmuxid ]; then
+                                killtmux `cat $dir/tmuxid`
+                            fi
+                        fi
+                    fi
+                fi
+            done
+        fi
+    done
+}
+
+killalljobs() {
+
+    for jruns in */; do
+        if [ $jruns != "*/" ]; then
+            for jexs in `ls $appsfolder/$jruns`; do
+                dir=$appsfolder/$jruns$jexs
+                if [ -d $dir ]; then
+                    killprocess $dir $jexs
+                    if [ -e $dir/tmuxid ]; then
+                        killtmux `cat $dir/tmuxid`
+                    fi
+                fi
+            done
+        fi
+    done
+
+}
+
+jamfolder=$HOME"/__jamruns"
+exit_missingdir $jamfolder "__jamruns folder missing. JAMScript tools not setup?"
+
+appsfolder=$jamfolder/apps
+exit_missingdir $appsfolder "__jamruns/apps folder missing. JAMScript tools not setup?"
+
+cd $appsfolder
+
+if [ -z $1 ]; then
+    # kill the job that is under the file 'appid'
+    # this is the job that was started last
+    if [ -e appid ]; then
+        appid=`cat appid`
+        killjob $appid
+    fi
+else
+    # Show help
+    if [ $1 == "-h" ] || [ $1 == "--help" ]; then
+        show_usage
+        exit
+    elif [ $1 == "--all" ]; then
+        killalljobs
+    else
+        killjob $1
+    fi
+fi

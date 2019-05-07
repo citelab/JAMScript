@@ -1,0 +1,125 @@
+#!/bin/bash
+
+IDIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$IDIR" ]]; then IDIR="$PWD"; fi
+source "$IDIR/inc/misc_tools.sh"
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+show_usage() {
+    cat << EOF
+Extracts the logs written by the C nodes and displays them in the terminal.
+
+Usage: jamlog [--program=pgm --app=app_name] [--msg] [--j]
+
+jamlog
+Extracts the logs from the last program that was run or is running.
+
+jamlog --program=stringlog --app=q5
+Extracts the logs from the execution of stringlog under the application ID q5
+if logs from such a run exists.
+
+jamlog --msg
+Puts a message line in the log file to indicate that the log was displayed
+up to that point.
+
+jamlog --j
+Extracts the logs created by the J node.
+
+EOF
+}
+
+
+###
+# Main script execution begins here...
+#
+
+jamfolder=$HOME"/__jamruns"
+exit_missingdir $jamfolder "__jamruns folder missing. JAMScript tools not setup?"
+
+appsfolder=$jamfolder/apps
+exit_missingdir $appsfolder "No logs to show!"
+
+cd $appsfolder
+
+j=
+
+while :; do
+    case $1 in
+        -h|-\?|--help)
+            show_usage      # Display a usage synopsis.
+            exit
+            ;;
+        -a|--app)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                app=$2
+                shift
+            else
+                die 'ERROR: "--app" requires a non-empty option argument.'
+            fi
+            ;;
+        --app=?*)
+            app=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --app=)            # Handle the case of an empty
+            die 'ERROR: "--app" requires a non-empty option argument.'
+            ;;
+
+        -p|--program)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                program=$2
+                shift
+            else
+                die 'ERROR: "--program" requires a non-empty option argument.'
+            fi
+            ;;
+        --program=?*)
+            program=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --program=)            # Handle the case of an empty
+            die 'ERROR: "--program" requires a non-empty option argument.'
+            ;;
+        -m|--msg)
+            msg=1
+            ;;
+        -j|--j)
+            j=1
+            ;;
+
+            *)               # Default case: No more options, so break out of the loop.
+        break
+    esac
+    shift
+done
+
+
+if [ -z $app ] && [ -z $program ]; then
+    # no args specified.. get it from previous runs
+    program=`cat $appsfolder/program`
+    app=`cat $appsfolder/app`
+fi
+
+echo $appsfolder/$program"_"$app
+
+if [ -e $appsfolder/$program"_"$app/log ]; then
+    if [ -z $j ]; then
+        cat $appsfolder/$program"_"$app/log
+
+        if [ ! -z $msg ]; then
+            echo >> $appsfolder/$program"_"$app/log
+            echo "========================= >> log displayed >> " `date` >> $appsfolder/$program"_"$app/log
+            echo >> $appsfolder/$program"_"$app/log
+        fi
+    else
+        cat $appsfolder/$program"_"$app/log.j
+
+        if [ ! -z $msg ]; then
+            echo >> $appsfolder/$program"_"$app/log.j
+            echo "========================= >> log displayed >> " `date` >> $appsfolder/$program"_"$app/log.j
+            echo >> $appsfolder/$program"_"$app/log.j
+        fi
+    fi
+fi

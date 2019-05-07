@@ -1,0 +1,220 @@
+#!/bin/bash
+
+IDIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$IDIR" ]]; then IDIR="$PWD"; fi
+source "$IDIR/inc/misc_tools.sh"
+
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+show_usage() {
+    cat << EOF
+This command executes the given command in the docker containers that are
+already executing the target program under the given application ID.
+
+If the program and application ID are not specified, we use the containers
+executing the last launched (active) program.
+
+Usage: djamexec [--program=program --app=appl_name --type=node_type] command
+
+NOTE: djamexec differs from the rest because the command is at the end.
+
+The "command" could be JAMScript executable (file.jxe) or some
+arbitrary Linux command (e.g., ls) with arguments.
+
+If no running instance is found, an error message will be printed.
+
+EOF
+}
+
+if [ -z $1 ]; then
+    show_usage
+    exit 0
+fi
+
+
+checkdocker() {
+
+    if [ -e $1/dockerId ]; then
+        local didp=`cat $1/dockerId`
+        local present=`docker ps --filter id=$didp | grep $didp | wc -l | tr -d '[:space:]'`
+        if [ $present == "1" ]; then
+            running="docker"
+        else
+            running="none"
+        fi
+    fi
+}
+
+
+app=
+program=
+type=device
+xapp=
+
+while :; do
+    case $1 in
+        -h|-\?|--help)
+            show_usage      # Display a usage synopsis.
+            exit
+            ;;
+        -a|--app)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                app=$2
+                shift
+            else
+                die 'ERROR: "--app" requires a non-empty option argument.'
+            fi
+            ;;
+        --app=?*)
+            app=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --app=)             # Handle the case of an empty
+            die 'ERROR: "--app" requires a non-empty option argument.'
+            ;;
+        -x|--xapp)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                xapp=$2
+                shift
+            else
+                die 'ERROR: "--xapp" requires a non-empty option argument.'
+            fi
+            ;;
+        --xapp=?*)
+            xapp=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --xapp=)             # Handle the case of an empty
+            die 'ERROR: "--xapp" requires a non-empty option argument.'
+            ;;
+        -p|--program)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                program=$2
+                shift
+            else
+                die 'ERROR: "--program" requires a non-empty option argument.'
+            fi
+            ;;
+        --program=?*)
+            program=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --program=)             # Handle the case of an empty
+            die 'ERROR: "--program" requires a non-empty option argument.'
+            ;;
+        -t|--type)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                type=$2
+                shift
+            else
+                die 'ERROR: "--type" requires a non-empty option argument.'
+            fi
+            ;;
+        --type=?*)
+            type=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --type=)             # Handle the case of an empty
+            die 'ERROR: "--type" requires a non-empty option argument.'
+            ;;
+        --)                 # End of all options.
+            shift
+            break
+            ;;
+        -?*)
+            printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+            ;;
+        *)               # Default case: No more options, so break out of the loop.
+            break
+    esac
+
+    shift
+done
+
+file=$1
+shift
+rest=$*
+
+# Check folder
+appsfolder=$HOME"/__jamruns/apps"
+exit_missingdir $appsfolder "ERROR! No running instance found. "
+
+if [ -z $program ]; then
+    if [ -e $appsfolder/program ]; then
+        program=`cat $appsfolder/program`
+    else
+        die "Cannot execute with empty program name"
+    fi
+fi
+
+if [ -z $app ]; then
+    if [ -e $appsfolder/app ]; then
+        app=`cat $appsfolder/app`
+    else
+        die "Cannot execute with empty application ID"
+    fi
+fi
+
+
+tname="${program%.*}"
+tname=$tname"_"$app
+fext="${file##*.}"
+
+xyapp=$xapp
+if [ ! -z $xapp ]; then
+    xapp="--app=$xapp"
+fi
+
+
+if [ "$(ls -A $appsfolder)" ]; then
+
+    olddir=`pwd`
+    cd $appsfolder
+
+    if [ ! -d $tname ]; then
+        die "No folder $tname found."
+    fi
+
+    for jruns in `ls $appsfolder/$tname`; do
+        dir=$appsfolder/$tname/$jruns
+        echo "Directory: " $dir
+        if [ -d $dir ]; then
+            checkdocker $dir
+            if [ $running == "docker" ]; then
+                mtype=`cat $dir/machType`
+                if [ -z $type ] || [ $type == $mtype ]; then
+                    data=`cat $dir/dataStore`
+                    runon=`cat $dir/dockerId`
+                    present=`docker exec -it $runon jamlist |  wc -l | tr -d '[:space:]'`
+                    if [ $present != "0" ]; then
+                        # go back to the old directory and run these command otherwise $file won't be found
+                        cd $olddir
+                        case $mtype in
+                            cloud)
+                                if [ $fext == "jxe" ]; then
+                                    djamrun $file "$xapp" --cloud --data=$data --runon=$runon --bg
+                                else
+                                    docker exec -it $runon $file $rest
+                                fi
+                            ;;
+                            fog)
+                                if [ $fext == "jxe" ]; then
+                                    djamrun $file "$xapp" --fog --data=$data --runon=$runon --bg
+                                else
+                                    docker exec -it $runon $file $rest
+                                fi
+                            ;;
+                            device)
+                                if [ $fext == "jxe" ]; then
+                                    djamrun $file "$xapp" --data=$data --runon=$runon --num=`cat $dir/cdevs` --bg
+                                else
+                                    docker exec -it $runon $file $rest
+                                fi
+                            ;;
+                        esac
+                    fi
+                fi
+            fi
+        fi
+    done
+fi

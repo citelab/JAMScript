@@ -1,0 +1,212 @@
+#!/bin/bash
+
+IDIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$IDIR" ]]; then IDIR="$PWD"; fi
+source "$IDIR/inc/misc_tools.sh"
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+show_usage() {
+    cat << EOF
+Usage: runc file.jxe -a appl_name -n number -g group_name
+
+The runc command runs the C component of the file.jxe (JAM executable).
+The -g group_name needs to specified to connect the C node to the proper
+group (J node). Otherwise, it will connect the C node to the 'default'
+group.
+EOF
+}
+
+
+getappid() {
+    local mainf=$1
+    local localf=$2
+    local appid=$3
+
+    if [ -e $mainf/counter ]; then
+        local count=`cat $mainf/counter`
+        ((count++))
+        echo $count > $mainf/counter
+    else
+        local count=1
+        echo $count > $mainf/counter
+    fi
+
+    if [[ $appid == app-* ]]; then
+        if [ ! -e $localf/appid ]; then
+            echo "app-"$count > $localf/appid
+        fi
+    else
+        echo $appid > $localf/appid
+    fi
+
+    jappid=`cat $localf/appid`
+}
+
+
+# Initialize all the option variables.
+app=testapp
+num=1
+group="default"
+port=
+tags=
+
+file=$1
+shift
+fext="${file##*.}"
+
+if [ -z $file ] || [ $file = "-h" ]; then
+    show_usage
+    exit 1
+fi
+
+if [ "$fext" != "jxe" ]; then
+    die "file extension is not .jxe"
+fi
+
+# Set the global variable 'port' based on the
+# group name.
+getgroupport() {
+    local gname=$1
+    if [ $gname == "default" ]; then
+        port=1883
+    fi
+
+    for dir in */; do
+        if [ -e $dir/group ]; then
+            local grp=`cat $dir/group`
+            if [ $grp == $gname ]; then
+                port=$dir
+                break;
+            fi
+        fi
+    done
+}
+
+while :; do
+    case $1 in
+        -h|-\?|--help)
+            show_usage      # Display a usage synopsis.
+            exit
+            ;;
+        -a|--app)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                app=$2
+                shift
+            else
+                die 'ERROR: "--app" requires a non-empty option argument.'
+            fi
+            ;;
+        --app=?*)
+            app=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --app=)            # Handle the case of an empty
+            die 'ERROR: "--app" requires a non-empty option argument.'
+            ;;
+        -n|--num)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                num=$2
+                shift
+            else
+                die 'ERROR: "--num" requires a non-empty option argument.'
+            fi
+            ;;
+        --num=?*)
+            num=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --num=)            # Handle the case of an empty
+            die 'ERROR: "--num" requires a non-empty option argument.'
+            ;;
+        -g|--group)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                group=$2
+                shift
+            else
+                die 'ERROR: "--group" requires a non-empty option argument.'
+            fi
+            ;;
+        --group=?*)
+            group=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --group=)            # Handle the case of an empty
+            die 'ERROR: "--group" requires a non-empty option argument.'
+            ;;
+        -t|--tags)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                tags=$2
+                shift
+            else
+                die 'ERROR: "--tags" requires a non-empty option argument.'
+            fi
+            ;;
+        --tags=?*)
+            tags=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --tags=)            # Handle the case of an empty
+            die 'ERROR: "--tags" requires a non-empty option argument.'
+            ;;
+        --)              # End of all options.
+            shift
+            break
+        ;;
+        -?*)
+            printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+            ;;
+        *)               # Default case: No more options, so break out of the loop.
+            break
+    esac
+
+    shift
+done
+
+
+echo "Don't use jrun and crun! Use jamrun instead of them."
+echo "Exiting."
+exit
+
+
+if [ -e "$file" ]; then
+
+    # Check whether the global __jamruns folder is there
+    jamfolder="$HOME/__jamruns"
+    wait_missingdir $HOME $jamfolder
+
+    appfolder=$jamfolder/apps
+    wait_missingdir $jamfolder $appfolder
+
+    # Get the folder
+    filenoext="${file%.*}"
+    folder=$HOME"/__jamruns/apps/"$filenoext"_"$app
+    wait_missingdir $appfolder $folder
+
+    cd $folder
+    while :; do
+        getgroupport $group
+        if [ -n $port ]; then break; fi
+        inotifywait -r -e create $folder
+    done
+
+    # Note: you need to use --num=value to point to the correct
+    # device sequence number.
+    # with two devices; 1, 2 are the numbers
+    #
+
+    if [ -e a.out ]; then
+
+        # execute the program.. we are in the folder..
+        chmod +x a.out
+        if [ -z $tags ]; then
+            ./a.out -a $app -n $num -p $port
+        else
+            ./a.out -a $app -n $num -t $tags -p $port
+        fi
+    else
+        die "$file is not a valid JAMScript executable"
+    fi
+
+else
+    die "JAMScript executable: $file not found"
+fi

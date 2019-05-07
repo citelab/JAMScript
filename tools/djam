@@ -1,0 +1,98 @@
+#!/bin/bash
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+show_usage() {
+    cat << EOF
+
+Runs JAMScript instances in docker containers.
+The docker version of the normal 'jam' commands
+
+djam help   - Prints this help.
+djam build  - Rebuilds another docker image.
+djam clean  - Cleans up the mess left behind by old runs.
+              Use this command if errors occur due to incomplete runs.
+djam close  - Close all tmux terminals opened by the 'term' command.
+djam comp   - Compile the JAMScript program in the container.
+              Executable file is copied back to the original folder.
+djam exec   - Execute the given program in an existing (running) configuration.
+djam init   - Initializes the delay values for the docker topology.
+              Saves zones information and starts pumba (net emulator).
+djam kill   - Kill a particular application or all active applications.
+djam list   - Lists all the JAMScript programs running in the system.
+djam load   - Loads the given file into each node in the current topology.
+              New file goes into the /jamfiles folder.
+djam log    - Shows the logs written by the C nodes. A good way to
+              see the debug messages from the C side.
+djam pull   - Pull the given docker image and make it the default
+djam run    - Start a device, fog, or cloud
+djam term   - Reattach to a tmux terminal of a running JAMScript instance
+              Use the 'list' command to find out the ID to connect.
+djam test   - Configures a test topology based on the parameter provided in 'init'.
+djam stat   - Get the configuration status of djam installation.
+
+Type 'djam cmd --help' for more help on the specific command.
+
+EOF
+}
+
+if [ -z $1 ] || [ $1 == "help" ]; then
+    show_usage
+    exit 0
+fi
+
+jcmd=$1
+shift 1
+params=$@
+
+
+case $jcmd in
+    list)
+        jamlist $params
+        ;;
+    build)
+        djambuild $params
+        ;;
+    init)
+        djaminit $params
+        ;;
+    term)
+        djamterm $params
+        ;;
+    test)
+        djamtest $params
+        ;;
+    kill)
+        jamkill $params
+        ;;
+    clean)
+        jamclean $params
+        ;;
+    log)
+        djamlog $params
+        ;;
+    run)
+        djamrun $params
+        ;;
+    close)
+        jamclose $params
+        ;;
+    pull)
+        djampull $params
+        ;;
+    comp)
+        djamcompile $params
+        ;;
+    compile)
+        djamcompile $params
+        ;;
+    exec)
+        djamexec $params
+        ;;
+    stat)
+        djamstat $params
+        ;;
+esac

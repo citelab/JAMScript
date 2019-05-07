@@ -1,0 +1,42 @@
+#!/bin/bash
+
+
+# No need to edit below this line unless you find a bug!
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+show_usage() {
+    cat << EOF
+
+djampull [repository]
+Pulls the latest image from the repository. If no repository is provided,
+it pulls the last one.
+
+EOF
+}
+
+jamfolder=$HOME"/__jamruns"
+if [ ! -d $jamfolder ]; then
+    mkdir $jamfolder
+fi
+
+if [ -z $1 ]; then
+    if [ -e $jamfolder/dockerImage ]; then
+        docker pull `cat $jamfolder/dockerImage`
+    else
+        echo "ERROR! Need to provide for the first use"
+    fi
+    exit
+fi
+
+if [ $1 == "-h" ] || [ $1 == "--help" ]; then
+    show_usage
+    exit
+fi
+
+# Now we pull a given image
+echo $1 > $jamfolder/dockerImage
+docker pull $1

@@ -1,0 +1,97 @@
+#!/bin/bash
+
+IDIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$IDIR" ]]; then IDIR="$PWD"; fi
+source "$IDIR/inc/misc_tools.sh"
+
+# Edit the following locations to provide the
+TMUX=`which tmux`
+if [ -z $TMUX ]; then
+    TMUX=/usr/local/bin/tmux
+fi
+
+# No need to edit below this line unless you find a bug!
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+show_usage() {
+    cat << EOF
+Shows the background terminals with the given tmux-id and terminal-num.
+
+Usage: jamterm [tmux-id] [-t terminal-num]
+
+jamterm
+Shows the first C terminal of the program that was last started.
+
+jamterm -t 2
+
+
+jamterm u-600-dev-2331 -t 2
+Shows the second C terminal of the program running under u-600-dev-2331.
+
+jamterm u-600-dev-2331
+Shows the first C terminal of the program running under u-600-dev-2331.
+
+EOF
+}
+
+localtmux() {
+    local tmuxapp=$1
+    local termno=$2
+
+    $TMUX has-session -t $tmuxapp-$termno 2>/dev/null
+    res=$?
+    if [ $res == "0" ]; then
+        if [ -z $termno ]; then
+            $TMUX attach -t $tmuxapp
+        else
+            $TMUX attach -t $tmuxapp-$termno
+        fi
+    fi
+}
+
+
+###
+# Main script execution begins here...
+#
+
+jamfolder=$HOME"/__jamruns"
+exit_missingdir $jamfolder "__jamruns folder missing. JAMScript tools not setup?"
+
+appsfolder=$jamfolder/apps
+exit_missingdir $appsfolder "__jamruns/apps folder missing. JAMScript tools not setup?"
+
+cd $appsfolder
+
+if [ -z $1 ]; then
+    if [ -e tmuxid ]; then
+        tmuxid=`cat tmuxid`
+        localtmux $tmuxid 1
+        exit
+    fi
+else
+    # Show help
+    if [ $1 == "-h" ] || [ $1 == "--help" ]; then
+        show_usage
+        exit
+    elif [ $1 == "-t" ]; then
+        if [ -e tmuxid ]; then
+            tmuxid=`cat tmuxid`
+            localtmux $tmuxid $2
+            exit
+        fi
+        exit
+    else
+        if [ -z $2 ]; then
+            termid=1
+        else
+            if [ -n $3 ] && [ $2 == "-t" ]; then
+                termid=$3
+            fi
+        fi
+        localtmux $1 $termid
+    fi
+fi
