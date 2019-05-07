@@ -9,10 +9,8 @@ fi
 cd deps/mujs2
 make
 sudo make install
-cd ../paho
-make
-sudo make install
 cd ../..
+
 
 mkdir temp_install_src
 chmod o+w temp_install_src
@@ -20,6 +18,7 @@ cd temp_install_src
 
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+
     echo "-------- Linux detected -----------"
     sudo apt-get update
     sudo apt-get install -y -q xz-utils
@@ -31,6 +30,12 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     sudo apt-get install -y -q libssl-dev
     sudo apt-get install -y -q avahi-daemon avahi-discover libnss-mdns libavahi-compat-libdnssd-dev
     sudo apt-get install -y -q unzip
+    
+    cd deps/paho
+    make
+    sudo make install
+    cd ../..
+
     if (command -v clang > /dev/null); then
         echo "clang already installed.. skipping install"
     else
@@ -125,6 +130,18 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     fi
 
 elif [[ "$OSTYPE" == "darwin"* ]]; then
+    if (command -v ninja > /dev/null); then
+        echo "ninja already installed"
+    else
+        brew install ninja
+    fi
+    cd deps/paho
+    cmake -GNinja
+    ninja
+    sudo ninja install
+    cd ../..
+
+
     if (command -v mosquitto > /dev/null); then
         echo "mosquitto already installed"
     else
