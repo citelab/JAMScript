@@ -127,13 +127,6 @@ try {
     // }
 
 
-    // fs.writeFileSync("/usr/local/share/jam/lib/jamlib/c_core/jamlib.c", output.C);
-    // child_process.execSync("make -C /usr/local/share/jam/lib/jamlib/c_core");
-    // fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/testjam').pipe(fs.createWriteStream('jamout'));
-    // fs.createReadStream('/usr/local/share/jam/lib/jamlib/c_core/jamconf.dat').pipe(fs.createWriteStream('jamconf.dat'));
-
-    // fs.writeFileSync("jamout.js", results.JS);
-
     if (!noCompile) {
         var tasks = [
             flowCheck(results.annotated_JS, verbose),
@@ -307,40 +300,6 @@ function createManifest(outName, level) {
 
     return mout;
 }
-
-// function createTOML() {
-//   var toml = "";
-//   toml += "# Description of the JXE structure\n";
-//   toml += "title = \"JAMScript Executable Description\"\n";
-//
-//   toml += "# global identification and requirements are specified next\n";
-//   toml += "[jxe]\n";
-//   toml += "version = 1.0\n";
-//   toml += "checksum = \"XXXDFDFDFDFDF\"\n";
-//   toml += "requirements = \"none\"\n";
-//
-//   toml += "# javascript portion is in one file for now\n";
-//   toml += "[jsfile]\n";
-//   toml += "# any or a particular version can be specified for nodeversion\n";
-//   toml += "nodeversion = 0\n";
-//   toml += "# list of modules that should be pre-loaded into Node\n";
-//   toml += "requires = []\n";
-//   toml += "# file name for the javascript code\n";
-//   toml += "file = \"jamout.js\"\n";
-//
-//   toml += "# c portion could be in multiple files (in shared lib format)\n";
-//   toml += "[cfile]\n";
-//   toml += "portions = 1\n";
-//   toml += "# definition of a C portion\n";
-//   toml += "[cfile.1]\n";
-//   toml += "# architecture for which the shared library is genereated\n";
-//   toml += "arch = \"x86\"\n";
-//   toml += "# requirements of the shared library; these are tags that indicate the requirements\n";
-//   toml += "requires = []\n";
-//   toml += "# filename of the shared library\n";
-//   toml += "file = \"libjamout.so\"\n";
-//   return toml;
-// }
 
 function randomValueHex(len) {
     return crypto.randomBytes(Math.ceil(len / 2))

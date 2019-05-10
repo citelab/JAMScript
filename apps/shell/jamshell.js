@@ -60,6 +60,11 @@ var jobList = [];
 
 /**----------------JAMSCRIPT FUNCTIONS-----------------------------**/
 jasync
+function cb(m) {
+    console.log("unique:", m);
+}
+
+jasync
 function changeDirectory(path) {
     process.chdir(path);
 }
@@ -204,9 +209,7 @@ function peek(raw) {
     console.log(raw.data);
 }
 
-function q(m) {
-    console.log("unique:", m);
-}
+
 
 /**----------------SPECIAL COMMANDS-------------------------------**/
 shell
@@ -260,7 +263,7 @@ shell
         }
         if (args.location == 'all') {
             console.log("Displaying global node info....");
-            getGlobalNodeInfo("", q);
+            getGlobalNodeInfo("");
         }
         callback();
     });

@@ -32,7 +32,7 @@ npm run sample-6
 node app/index.js
 
 // run socket data-mocker, for sample 3, 4, 5, 6
-node app/Data-Mocker.js
+node app/Data-mocker.js
 
 ------------------
 // to read beautified code, run this after compilation and generation of the app folder

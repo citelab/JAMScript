@@ -73,7 +73,7 @@ jasync forwardHealthCommand(char* node) {
     getHealth(node);
 }
 
-jasync getGlobalNodeInfo(char *m, jcallback cb) {
+jasync getGlobalNodeInfo(char *m) {
     printf("Global node info requested...\n");
     char* res = getAllNodes();
     int i = 1;

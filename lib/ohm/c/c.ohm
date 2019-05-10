@@ -306,8 +306,6 @@ C {
                     | Expr_stmt
                     | Gcc_asm_stmt
 
-    // jcallback_stmt  = "Typename":jc ?(jcallbacks.has(jc.value())) "(" listOf(#assign_expr, ","):as ")" ";"  -> __.JCallbackStmt(jc.value(), as),
-
     //JAM Addition
     struct_id       = ("." id)+
     Struct_access   = struct_id ":" Expr

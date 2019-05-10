@@ -3,7 +3,7 @@ JAMC <: C {
 
     Namespace_spec  = in id
 
-    Type_spec       += jcallback
+    Type_spec       += jamtask
 
     Jcond_specifier = "{" Jcond_expr "}"
 
@@ -31,5 +31,5 @@ JAMC <: C {
     jasync = "jasync" ~identPart
     jsync = "jsync" ~identPart
     in = "in" ~identPart
-    jcallback = "jcallback" ~identPart
+    jamtask = "jamtask" ~identPart
 }
