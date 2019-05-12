@@ -91,7 +91,7 @@ startmqtt() {
     if [ $? -ne 0 ]; then
         echo "MQTT is not running at $port"
         echo "Attempting to start MQTT at $port"
-        nohup $MOSQUITTO -p $port &
+        $MOSQUITTO -p $port &
     fi
 }
 
