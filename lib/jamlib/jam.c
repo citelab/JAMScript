@@ -376,6 +376,7 @@ void jsleep(int ms)
     {
         jactivity_t *jact = activity_getbyindx(js->atable, athr->jindx);
 
+        printf("In sleep....\n");
         jam_set_timer(js, jact->actid, ms);
         nvoid_t *nv = pqueue_deq(athr->inq);
         jam_clear_timer(js, jact->actid);

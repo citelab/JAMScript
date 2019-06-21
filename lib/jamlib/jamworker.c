@@ -273,6 +273,7 @@ void jwork_connect_lost(void *ctx, char *cause)
     }
     else
     {
+        js->cstate->mqttenabled[indx] = false;
         printf("Connection lost at %d.. reconnecting.. \n", indx);
         core_reconnect_i(js->cstate, indx);
     }
@@ -337,6 +338,7 @@ void jwork_processor(jamstate_t *js)
         #endif
         jwork_process_device(js);
     }
+
     if (js->pollfds[2].revents & NN_POLLIN)
     {
         #ifdef DEBUG_LVL1
@@ -351,7 +353,6 @@ void jwork_processor(jamstate_t *js)
         #endif
         jwork_process_cloud(js);
     }
-
     for (int i = 0; i < MAX_ACT_THREADS; i++)
     {
         if (js->pollfds[i + 4].revents & NN_POLLIN)
@@ -412,16 +413,15 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
 
     command_t *rcmd = (command_t *)nv->data;
     free(nv);
-    #ifdef DEBUG_LVL1
+    //#ifdef DEBUG_LVL1
         printf("\n\nACTOUTQ[%d]::  %s, opt: %s actarg: %s actid: %s\n\n\n", indx, rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
-    #endif
+//    #endif
     // Don't use nvoid_free() .. it is not deep enough
 
     if (rcmd != NULL)
     {
         // TODO: What else goes here..???
         // TODO: Revise this part...
-
         // Increment the hold on rcmd.. so that memory deallocation happens after all use
         for (i = 1; i < 3; i++)
             if (js->cstate->mqttenabled[i] == true)
@@ -882,6 +882,8 @@ void tcallback(void *arg)
     #ifdef DEBUG_LVL1
         printf("Callback Occuring... \n");
     #endif
+
+    printf("Timer callback firing........\n");
 }
 
 
@@ -896,6 +898,7 @@ void stcallback(void *arg)
 
 void jam_set_timer(jamstate_t *js, char *actid, int tval)
 {
+    printf("Setting timer %s\n", actid);
 
     activity_thread_t *athr = athread_getbyid(js->atable, actid);
     if (athr != NULL)
@@ -907,7 +910,7 @@ void jam_set_timer(jamstate_t *js, char *actid, int tval)
 
 void jam_clear_timer(jamstate_t *js, char *actid)
 {
- //   printf("JAM-clear-timer %s\n", actid);
+    printf("JAM-clear-timer %s\n", actid);
 
     timer_del_event(js->maintimer, actid);
 }
