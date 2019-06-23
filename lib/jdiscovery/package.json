@@ -11,7 +11,7 @@
     "node-localstorage": "^1.3.1"
   },
   "scripts": {
-    "postinstall": "sudo npm install ./mdns",
+    "postinstall": "sudo npm install ./mdns --unsafe-perm",
     "postversion": "npm publish && git add package.json && git commit -m 'Update jdiscovery version' && git push"
   },
   "repository": {
