@@ -21,7 +21,7 @@
     "bugs": "https://github.com/citelab/JAMScript/issues",
     "scripts": {
         "preinstall": "scripts/install/preinstall.sh",
-        "install": "sudo node-gyp rebuild",
+        "install": "sudo  node-gyp rebuild",
         "postinstall": "scripts/install/postinstall.sh",
         "postversion": "git push && git push --tags && npm publish",
         "prepublishOnly": "scripts/install/prepublishOnly.sh",
