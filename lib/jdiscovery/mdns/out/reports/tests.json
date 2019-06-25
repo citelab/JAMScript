@@ -1126,6 +1126,30 @@
       },
       {
         "test": "strictEqual"
+      },
+      {
+        "test": "ok"
+      },
+      {
+        "test": "strictEqual"
+      },
+      {
+        "test": "ok"
+      },
+      {
+        "test": "strictEqual"
+      },
+      {
+        "test": "ok"
+      },
+      {
+        "test": "strictEqual"
+      },
+      {
+        "test": "ok"
+      },
+      {
+        "test": "strictEqual"
       }
     ],
     "interfaceIndex": [

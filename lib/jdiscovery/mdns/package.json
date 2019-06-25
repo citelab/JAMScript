@@ -1,6 +1,6 @@
 {
   "name": "mdns",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "multicast DNS service discovery",
   "main": "./lib/mdns.js",
   "scripts": {
@@ -14,14 +14,14 @@
   ],
   "devDependencies": {
     "ejs": "*",
-    "less": "*",
-    "mkdirp": "*",
-    "nopt": "*",
-    "slide": "*",
     "glob": "*",
-    "ncp": "*",
+    "less": "*",
     "minimatch": "*",
-    "proxyquire": "^1.7.3"
+    "mkdirp": "*",
+    "ncp": "*",
+    "nopt": "*",
+    "proxyquire": "^2.0.0",
+    "slide": "*"
   },
   "repository": {
     "type": "git",
@@ -79,7 +79,7 @@
   ],
   "dependencies": {
     "bindings": "~1.2.1",
-    "nan": "^2.10.0"
+    "nan": "^2.14.0"
   },
   "gypfile": true
 }

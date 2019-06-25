@@ -31,11 +31,6 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     sudo apt-get install -y -q avahi-daemon avahi-discover libnss-mdns libavahi-compat-libdnssd-dev
     sudo apt-get install -y -q unzip
     
-    cd deps/paho
-    make
-    sudo make install
-    cd ../..
-
     if (command -v clang > /dev/null); then
         echo "clang already installed.. skipping install"
     else
@@ -135,12 +130,6 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     else
         brew install ninja
     fi
-    cd deps/paho
-    cmake -GNinja
-    ninja
-    sudo ninja install
-    cd ../..
-
 
     if (command -v mosquitto > /dev/null); then
         echo "mosquitto already installed"
@@ -176,6 +165,14 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 
     brew tap pjk/libcbor
     brew install libcbor
+
+    git clone https://github.com/eclipse/paho.mqtt.c.git
+    cd org.eclipse.paho.mqtt.c.git
+    cmake -GNinja
+    ninja
+    sudo ninja install
+    cd ..
+
 else
     echo "Unsupported OS"
     exit 1

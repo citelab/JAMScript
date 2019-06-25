@@ -304,6 +304,7 @@ void run_activity(void *arg)
                 {
                     // We received the acknowledgement for the SYNC.. now proceed to the next stage.
                     int timeout = 900;
+                    printf("----------~~~~~~~~~~~~~~~~~~111 ~~~~~\n");
                     jam_set_timer(js, jact->actid, timeout);
                     nv = pqueue_deq(athread->inq);
                     jam_clear_timer(js, jact->actid);
@@ -344,6 +345,7 @@ void run_activity(void *arg)
                     if (i < machine_height(js) -2)
                     {
                         int timeout = 300;
+                        printf("----------~~~~~~~~~~~~~~~~~~222 ~~~~~\n");
                         jam_set_timer(js, jact->actid, timeout);
                         nv = pqueue_deq(athread->inq);
                         jam_clear_timer(js, jact->actid);
@@ -377,6 +379,7 @@ void run_activity(void *arg)
                     if (i < machine_height(js) -2)
                     {
                         int timeout = 300;
+                        printf("----------~~~~~~~~~~~~~~~~~~333 ~~~~~\n");                        
                         jam_set_timer(js, jact->actid, timeout);
                         nv = pqueue_deq(athread->inq);
                         jam_clear_timer(js, jact->actid);
