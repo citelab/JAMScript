@@ -167,7 +167,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     brew install libcbor
 
     git clone https://github.com/eclipse/paho.mqtt.c.git
-    cd paho.mqtt.c.
+    cd paho.mqtt.c
     cmake -GNinja
     ninja
     sudo ninja install
