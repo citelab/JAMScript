@@ -21,7 +21,7 @@
     "bugs": "https://github.com/citelab/JAMScript/issues",
     "scripts": {
         "preinstall": "scripts/install/preinstall.sh",
-        "install": "sudo  node-gyp rebuild",
+        "install": "node-gyp rebuild",
         "postinstall": "scripts/install/postinstall.sh",
         "postversion": "git push && git push --tags && npm publish",
         "prepublishOnly": "scripts/install/prepublishOnly.sh",
@@ -31,11 +31,12 @@
         "jamc": "./index.js"
     },
     "dependencies": {
-        "jszip": "^3.1.5",
-        "ohm-js": "^0.13.1",
         "flows.js": "latest",
+        "jamserver": "latest",
         "jdiscovery": "latest",
-        "jamserver": "latest"
+        "jszip": "^3.1.5",
+        "node-gyp": "^5.0.1",
+        "ohm-js": "^0.13.1"
     },
     "engines": {
         "node": ">= 7.0.0",
