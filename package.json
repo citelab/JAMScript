@@ -31,9 +31,6 @@
         "jamc": "./index.js"
     },
     "dependencies": {
-        "flows.js": "latest",
-        "jamserver": "latest",
-        "jdiscovery": "latest",
         "jszip": "^3.1.5",
         "node-gyp": "^5.0.1",
         "ohm-js": "^0.13.1"
