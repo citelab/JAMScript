@@ -6,6 +6,14 @@ then
         exit 1
 fi
 
+sudo chmod -R o+w /usr/local/share
+sudo chmod o+w /usr/local/include
+sudo chmod -R o+w /usr/local/lib
+sudo chmod o+w /usr/local/bin
+
+sudo mkdir -p /usr/local/share/jam
+sudo chmod o+w /usr/local/share/jam
+
 cd deps/mujs2
 make
 sudo make install
@@ -30,7 +38,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     sudo apt-get install -y -q libssl-dev
     sudo apt-get install -y -q avahi-daemon avahi-discover libnss-mdns libavahi-compat-libdnssd-dev
     sudo apt-get install -y -q unzip
-    
+
     if (command -v clang > /dev/null); then
         echo "clang already installed.. skipping install"
     else
@@ -187,9 +195,3 @@ echo "Completed the preinstall setup .. $PWD"
 
 
 sudo rm -rf temp_install_src
-
-sudo mkdir -p /usr/local/share/jam
-sudo chmod o+w /usr/local/share/jam
-sudo chmod o+w /usr/local/include
-sudo chmod o+w /usr/local/lib
-sudo chmod o+w /usr/local/bin
