@@ -6,24 +6,23 @@ then
         exit 1
 fi
 
-sudo chmod -R o+w /usr/local/share
-sudo chmod o+w /usr/local/include
-sudo chmod -R o+w /usr/local/lib
-sudo chmod o+w /usr/local/bin
-
-sudo mkdir -p /usr/local/share/jam
-sudo chmod o+w /usr/local/share/jam
 
 cd deps/mujs2
 make
 sudo make install
 cd ../..
 
+sudo chmod -R go+wx /usr/local/share
+sudo chmod go+wx /usr/local/include
+sudo chmod -R go+wx /usr/local/lib
+sudo chmod go+wx /usr/local/bin
+
+sudo mkdir -p /usr/local/share/jam
+sudo chmod go+wx /usr/local/share/jam
 
 mkdir temp_install_src
 chmod o+w temp_install_src
 cd temp_install_src
-
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 
@@ -191,7 +190,6 @@ cd ..
 
 echo "========================================"
 echo "Completed the preinstall setup .. $PWD"
-
 
 
 sudo rm -rf temp_install_src
