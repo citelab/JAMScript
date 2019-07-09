@@ -314,7 +314,7 @@ waitforredis() {
     local port=$1
 
     while : ; do
-        local present=`ps ax | grep redis-server | grep $port | wc -l | tr -d '[:space:]'`
+        local present=`ps auw | grep redis-server | grep $port | wc -l | tr -d '[:space:]'`
         if [ $present == "1" ]; then
             break
         fi
