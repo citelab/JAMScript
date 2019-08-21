@@ -200,6 +200,9 @@ bool overflow_detect();
 void jwork_send_error(jamstate_t *js, command_t *cmd, char *estr);
 void jwork_send_results(jamstate_t *js, char *opt, char *actname, char *actid, arg_t *args);
 void jwork_send_nak(jamstate_t *js, command_t *cmd, char *estr);
+void jwork_send_ack(jamstate_t *js, char *type, command_t *cmd);
+void jwork_send_ack_1(jamstate_t *js, char *type, command_t *cmd);
+void jwork_send_ack_2(jamstate_t *js, char *type, command_t *cmd);
 
 command_t *jwork_runid_status(jamstate_t *js, char *runid);
 command_t *jwork_device_status(jamstate_t *js);

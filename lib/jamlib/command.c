@@ -600,6 +600,10 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
     cmd->cdata = cbor_load(cmd->buffer, data->len, &result);
     cmd->length = data->len;
 
+    #ifdef DEBUG_LVL1
+        cbor_describe(cmd->cdata, stdout);
+    #endif
+
     cmd->refcount = 1;
     pthread_mutex_init(&cmd->lock, NULL);
 

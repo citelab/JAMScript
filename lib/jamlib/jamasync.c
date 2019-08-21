@@ -121,7 +121,6 @@ jactivity_t *jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         // The send is executed via the worker thread..
         queue_enq(athr->outq, cmd, sizeof(command_t));
 
-        printf("hdfdsfdsfsdfsdfs df \n");
         jam_set_timer(js, jact->actid, timeout);
         nvoid_t *nv = pqueue_deq(athr->resultq);
         jam_clear_timer(js, jact->actid);

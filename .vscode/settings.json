@@ -21,5 +21,7 @@
         "type_traits": "c",
         "vector": "c",
         "utility": "c"
-    }
+    },
+    "touchbarCommandPalette.sidebar": true,
+    "editor.cursorStyle": "block"
 }

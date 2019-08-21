@@ -139,11 +139,11 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
             queue_enq(athr->outq, cmd, sizeof(command_t));
 
             printf("Hi...i = %d\n", i);
-            jam_set_timer(js, jact->actid, timeout);
+          //  jam_set_timer(js, jact->actid, timeout);
             printf("Hi 2 \n");
             nvoid_t *nv = pqueue_deq(athr->resultq);
-                        printf("Hi 3 \n");
-            jam_clear_timer(js, jact->actid);
+            printf("Hi 3 \n");
+         //   jam_clear_timer(js, jact->actid);
             printf("Hi 4 i = %d\n", i);
             if (nv != NULL)
             {

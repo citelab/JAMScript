@@ -1,0 +1,53 @@
+Testing Schedule
+================
+
+J2C bug
+-------
+* There is a synchronization bug in J2C. After sometime the C side is stopping 
+  responding to calls from the J side. There are few problems. The send from the 
+  C side is failing. We need to buffer the writes to the network. The writes from 
+  the queue are emptied after the network interface becomes available. This way 
+  we can avoid the write error to an invalid interface.
+
+  Also, check whether a write failure can lead to hanging thread. That is a user-level
+  thread that is not released. This way after certain number of failures we run out 
+  of threads. We could keep counting the number of errors and see where we end of 
+  losing the responses. 
+
+
+Urgent bugs
+-----------
+* There is a bug in J2J. When a device is crashed, there is an exception.
+  We need to capture that exception and handle it.
+
+
+Mobility Facility
+----------------
+* Function call sync versions  - J2C
+* Async versions of - J2C
+
+JData Stale Data
+----------------
+* How do we define stale data?
+* What impact this has in tensorflow integration?
+* Check flow integration - use that as a stepping stone into TensorFlow
+
+Interlock for Broadcasts
+------------------------
+* JData and JCond working together. 
+* Interlock is only needed with JData and JCond interplay
+* Check broadcast and J2J call or J2C call.
+
+Adaptive machine height (New Feature)
+-----------------------
+* We need to select the best height for the machine. How to do that? 
+* What is the height selection function?
+
+C-side Threading Latency
+------------------------
+* Why the delays in the C side. What impact in the thread creation?
+* Can we resolve this problem?
+
+Applications in JAMScript 
+-------------------------
+* Dust up the vehicular networking applications 

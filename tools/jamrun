@@ -151,26 +151,26 @@ dojamout_p2_fg() {
     local args=$results
     case $type in
         cloud)
-            node jamout.js $args
+            node --experimental-worker jstart.js $args
             ;;
         fog)
-            node jamout.js $args
+            node --experimental-worker jstart.js $args
             ;;
         device)
             check_jamhome
             (
                 if [ -e jview.json ]; then
-                    node $JAMHOME/lib/jview/Compiler.js jview.json
+                    node --experimental-worker $JAMHOME/lib/jview/Compiler.js jview.json
                     cp -R $JAMHOME/lib/jview/templates/electron electron
                     cd app
-                    node index.js &
+                    node --experimental-worker index.js &
                     sleep 2
                     cd ../electron
                     electron .
                 fi
             ) &
             echo $! > $floc/$pnum/jviewshell
-            node jamout.js $args
+            node --experimental-worker jstart.js $args
             vpid=`cat $floc/$pnum/jviewshell`
             local pid=`ps -o pid= -p $vpid`
             if [ ! -z $pid ]; then
@@ -190,9 +190,9 @@ dojamout_p2_bg() {
     local args=$results
 
     if [ `uname` == "Linux" ]; then
-        script -a -c "node jamout.js $args" -f log.j > /dev/null &
+        script -a -c "node --experimental-worker jstart.js $args" -f log.j > /dev/null &
     else
-        script -a -t 1 log.j node jamout.js $args > /dev/null &
+        script -a -t 1 log.j node --experimental-worker jstart.js $args > /dev/null &
     fi
 
     echo ">>> Started the J node in background"
@@ -314,7 +314,7 @@ waitforredis() {
     local port=$1
 
     while : ; do
-        local present=`ps auw | grep redis-server | grep $port | wc -l | tr -d '[:space:]'`
+        local present=`ps auwwx | grep redis-server | grep $port | wc -l | tr -d '[:space:]'`
         if [ $present == "1" ]; then
             break
         fi
@@ -638,7 +638,7 @@ if [ -e "$file" ]; then
 
     resolvedata $data
 
-    if [ -e jamout.js ]; then
+    if [ -e jstart.js ]; then
         # save the current program information for short cut use
         save "$filenoext" $appfolder/program
         save "$app" $appfolder/app

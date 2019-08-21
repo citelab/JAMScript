@@ -54,6 +54,7 @@ jamstate_t *jam_init(int serialnum)
 
     #ifdef DEBUG_LVL1
         printf("JAM Library initialization... \t\t[started]\n");
+//         %llu\n", mach_absolute_time());
     #endif
 
     jamstate_t *js = (jamstate_t *)calloc(1, sizeof(jamstate_t));
@@ -199,10 +200,10 @@ void jam_event_loop(void *arg)
             }
             else if (strcmp(cmd->cmd, "REXEC-SYN") == 0) {
 
-                if (strcmp(cmd->opt, "CLOUD") == 0)
+                if (strcmp(cmd->opt, "cloud") == 0)
                     mcl = js->cstate->mqttserv[2];
                 else
-                if (strcmp(cmd->opt, "FOG") == 0)
+                if (strcmp(cmd->opt, "fog") == 0)
                     mcl = js->cstate->mqttserv[1];
                 else
                     mcl = js->cstate->mqttserv[0];
@@ -210,9 +211,9 @@ void jam_event_loop(void *arg)
 				// Make a new command which signals to the J node that it's ready
 				// device ID is put in the cmd->actid because I don't know where else to put it.
                 command_t *readycmd = command_new("READY", "READY", "-", 0, "GLOBAL_INQUEUE", deviceid, "_", "");
-                mqtt_publish(mcl, "/admin/request/synctimer", readycmd);
+                mqtt_publish(mcl, "/mach/func/syncrequest", readycmd);
                 double sTime = 0.0;
-				// Wait for the GO command from the J node.
+				// Wait for the SYNCSTART signal from the J node.
                 nvoid_t *nv = p2queue_deq_high(js->atable->globalinq);
                 command_t *cmd_1;
                 if (nv != NULL) {
@@ -222,7 +223,7 @@ void jam_event_loop(void *arg)
                 else cmd_1 = NULL;
                 // printf("Waiting command TYPE: %s\n", cmd_1->cmd);
                 if (cmd_1 != NULL) {
-                    if (strcmp(cmd_1->cmd, "GOGOGO") == 0)
+                    if (strcmp(cmd_1->cmd, "SYNCSTART") == 0)
                         // Get the start time from the Go command.
                         sTime = atof(cmd_1->opt);
                     else
@@ -247,7 +248,7 @@ void jam_event_loop(void *arg)
 
             }
             else {
-                printf("===========================SYNC.. TIMEOUT????\n");
+                printf("===========================SYNC.. TIMEOUT???? %s\n", cmd->cmd);
             }
         }
         //taskyield();
@@ -376,7 +377,6 @@ void jsleep(int ms)
     {
         jactivity_t *jact = activity_getbyindx(js->atable, athr->jindx);
 
-        printf("In sleep....\n");
         jam_set_timer(js, jact->actid, ms);
         nvoid_t *nv = pqueue_deq(athr->inq);
         jam_clear_timer(js, jact->actid);

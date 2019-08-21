@@ -138,7 +138,8 @@ try {
         // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
         Promise.all(tasks).then(function(value) {
             results.manifest = createManifest(outPath, results.maxLevel);
-            createZip(results.JS, results.jView, results.manifest, tmpDir, outPath);
+            results.jstart = createJStart(results.hasJdata);
+            createZip(results.JS, results.jView, results.manifest, results.jstart, tmpDir, outPath);
             if (!debug) {
                 for (var i = 0; i < value.length; i++) {
                     console.log(value[i]);
@@ -172,7 +173,7 @@ function compile(code, verbose) {
         var includes = '#include "jam.h"\n';
         includes = '#include "command.h"\n' + includes;
         includes = '#include "jamdata.h"\n' + includes;
-        includes = '#include "jamdevices.h"\n' + includes;        
+        includes = '#include "jamdevices.h"\n' + includes;
         includes = '#include <unistd.h>\n' + includes;
 
 
@@ -257,10 +258,11 @@ function flowCheck(input, verbose) {
     });
 }
 
-function createZip(jsout, jview, mout, tmpDir, outputName) {
+function createZip(jsout, jview, mout, jstart, tmpDir, outputName) {
     var zip = new JSZip();
     zip.file("MANIFEST.txt", mout);
     zip.file("jamout.js", jsout);
+    zip.file("jstart.js", jstart);
 
     if (jview.length !== 0)
         zip.file("jview.json", JSON.stringify(jview));
@@ -300,6 +302,26 @@ function createManifest(outName, level) {
 
     return mout;
 }
+
+// This is to create launcher start script - jstart.js
+//
+function createJStart(hasj) {
+    var mout;
+
+    if (hasj)
+        mout = "var jserver = require('jamserver')(true);\n";
+    else
+        mout = "var jserver = require('jamserver')(false);\n";
+
+    mout += "const {Flow, ParallelFlow, PFlow} = require('flows.js')();\n";
+    mout += "var jamlib = jserver.jamlib;\n";
+    mout += "jamlib.run(function() { console.log('JAMLib 1.0beta Initialized.');});\n";
+    mout += "\n\n";
+
+    return mout;
+
+}
+
 
 function randomValueHex(len) {
     return crypto.randomBytes(Math.ceil(len / 2))

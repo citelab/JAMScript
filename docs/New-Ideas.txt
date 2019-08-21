@@ -1,0 +1,64 @@
+New Ideas
+=========
+
+Multi-Fog Ideas
+---------------
+
+Hookup multiple fogs - this is easy. We could just make multi-fog 
+to device association through the broker. We don't need to worry about 
+single point broker problem because brokers don't fail as fog servers.
+But, brokers could introduce a "triangular routing" issue. We could be 
+going to distant broker to connect to a close by fog server. 
+
+We need to modify the code to talk to multiple Redis servers. 
+
+The "fog set" is like a moveable set - we add some and delete some
+as the device keeps moving. 
+
+So.. we need an intelligent fog set allocation algorithm?
+
+Clock Pulse Distribution
+------------------------
+
+Create a clock pulse distribution protocol. The main purpose is to make a clock that is 
+independent of the data store. This way the data ordering does not depend on replication. 
+
+Do we need to wait for the clock pulse to join? Yes, we need to wait for the 
+beginning of the clock pulse to join the system. However, we can join sub-machines 
+at any given time. Because we still have a logical clock even if we are momentarily 
+out-of-the system. 
+
+JCond or Jtask improvements
+---------------------------
+* A way to specify default behaviour such as combining etc. 
+
+Tensorflow integration
+----------------------
+
+Function for Rent (Edge Functions)
+----------------------------------
+
+Controlled way of crowdsourcing functionality in edge-oriented IoT.
+
+Like serverless functions - the difference is that the functions are rented at edge.
+
+(a) Edge would ask for functions and get functions from the devices that are closeby.
+(b) Edge could lend that function to another device passing by.
+    The two devices can use the function to collaborate. Collaboration is carefully 
+    restricted. Almost like a capability-based design.
+        Device -> device (through the edge) pattern
+
+Edge functions vs jamtask -- what are the differences?
+
+        jamtask is a handle given out for an executing task. It is not a way 
+        to run the function again - at least the way we thought earlier. 
+
+        Edge function is a function returned by a device. Like values, but functions. 
+
+        jamtask is not going to allow us to run the function (again) or get the 
+        return value - in fact, there is no return value for an asynchronous function.
+
+        So, we can use jamtask to jwait(jamtask) to wait for a task's execution. 
+        To find out how many instances of the task were run. We can use this to 
+        stream the results. Of course, result streaming must use the logger. 
+

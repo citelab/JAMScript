@@ -282,6 +282,8 @@ void run_activity(void *arg)
         } else
             cmd = NULL;
 
+        printf("DEQUEUED %s \n", cmd->cmd);
+
         if (cmd != NULL)
         {
             jact = activity_getbyindx(at, jindx);
@@ -304,7 +306,6 @@ void run_activity(void *arg)
                 {
                     // We received the acknowledgement for the SYNC.. now proceed to the next stage.
                     int timeout = 900;
-                    printf("----------~~~~~~~~~~~~~~~~~~111 ~~~~~\n");
                     jam_set_timer(js, jact->actid, timeout);
                     nv = pqueue_deq(athread->inq);
                     jam_clear_timer(js, jact->actid);
@@ -320,10 +321,14 @@ void run_activity(void *arg)
                             // We create a structure to hold the result returned by the root
                             repcode = (arg_t *)calloc(1, sizeof(arg_t));
                             command_arg_copy(repcode, &(cmd->args[0]));
-                        }
-                    }
-                    // Push the reply.. into the reply queue..
-                    pqueue_enq(athread->resultq, repcode, sizeof(arg_t));
+
+                            // Push the reply.. into the reply queue..
+                            pqueue_enq(athread->resultq, repcode, sizeof(arg_t));
+                        } else 
+                            pqueue_enq(athread->resultq, NULL, 0);
+                    } else 
+                        pqueue_enq(athread->resultq, NULL, 0);
+
                 }
                 else
                 {
@@ -345,7 +350,6 @@ void run_activity(void *arg)
                     if (i < machine_height(js) -2)
                     {
                         int timeout = 300;
-                        printf("----------~~~~~~~~~~~~~~~~~~222 ~~~~~\n");
                         jam_set_timer(js, jact->actid, timeout);
                         nv = pqueue_deq(athread->inq);
                         jam_clear_timer(js, jact->actid);
@@ -379,7 +383,6 @@ void run_activity(void *arg)
                     if (i < machine_height(js) -2)
                     {
                         int timeout = 300;
-                        printf("----------~~~~~~~~~~~~~~~~~~333 ~~~~~\n");                        
                         jam_set_timer(js, jact->actid, timeout);
                         nv = pqueue_deq(athread->inq);
                         jam_clear_timer(js, jact->actid);
@@ -410,11 +413,11 @@ void run_activity(void *arg)
                     else
                     {
                         #ifdef DEBUG_LVL1
-                        printf("Command actname = %s %s %s\n", cmd->actname, cmd->cmd, cmd->opt);
+                            printf("Command actname = %s %s %s\n", cmd->actname, cmd->cmd, cmd->opt);
                         #endif
                         jrun_arun_callback(jact, cmd, areg);
                         #ifdef DEBUG_LVL1
-                        printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
+                            printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
                         #endif
                         // Delete the runtable entry..
                         // TODO: Do we ever need a runtable entry (even the deleted one) at a later point in time?
@@ -424,6 +427,7 @@ void run_activity(void *arg)
                 else
                 if (strcmp(cmd->cmd, "REXEC-SYN") == 0)
                 {
+                    printf("In REXEC-SYN processing... \n");
                     // TODO: There is no difference at this point.. what will be the difference?
                     areg = activity_findcallback(at, cmd->actname);
                     if (areg == NULL)
@@ -431,12 +435,14 @@ void run_activity(void *arg)
                     else
                     {
                         #ifdef DEBUG_LVL1
-                        printf("Command actname = %s %s %s\n", cmd->actname, cmd->cmd, cmd->opt);
+                            printf("Command actname = %s %s %s\n", cmd->actname, cmd->cmd, cmd->opt);
                         #endif
+
+                        printf("Callback called.. \n");
 
                         jrun_arun_callback(jact, cmd, areg);
                         #ifdef DEBUG_LVL1
-                        printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
+                            printf(">>>>>>> After task create...cmd->actname %s\n", cmd->actname);
                         #endif
                         // Delete the runtable entry..
                         // TODO: Do we ever need a runtable entry (even the deleted one) at a later point in time?
@@ -446,6 +452,7 @@ void run_activity(void *arg)
             }
             command_free(cmd);
         }
+        printf("Releasing the thread \n");
         // jindx = 0 means there is no active activity on the thread..
         athread->jindx = 0;
         taskyield();

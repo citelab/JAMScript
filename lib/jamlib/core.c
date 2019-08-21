@@ -53,7 +53,8 @@ void core_setup(corestate_t *cs, int port)
     for (int i = 0; (i < 60 && dir == NULL); i++)
     {
         dir = opendir(portstr);
-        sleep(1);
+        if (dir == NULL)
+            usleep(100000);
     }
 
     if (dir == NULL)
@@ -67,7 +68,8 @@ void core_setup(corestate_t *cs, int port)
     for (int i = 0; (i < 10 && fp == NULL); i++)
     {
         fp = fopen(fname, "r");
-        sleep(1);
+        if (fp == NULL)
+            usleep(100000);
     }
 
     if (fp == NULL)
@@ -93,6 +95,7 @@ void core_setup(corestate_t *cs, int port)
         char devid[UUID4_LEN+1];
         // Get the device ID from the file... check for consistency..
         fp = fopen(fname, "r");
+
         if (fp == NULL)
         {
             printf("ERROR! Opening the file %s\n", fname);
@@ -110,6 +113,7 @@ void core_setup(corestate_t *cs, int port)
     }
     else
     {
+
         // Create the deviceId and store it..
         char buf[UUID4_LEN];
         uuid4_generate(buf);
@@ -126,6 +130,7 @@ void core_setup(corestate_t *cs, int port)
         fprintf(fp, "%s", cs->device_id);
         fclose(fp);
     }
+
     sprintf(fname, "./%d/cdevProcessId.%d", port, cs->serial_num);
     fp = fopen(fname, "w");
     if (fp == NULL)
@@ -136,6 +141,7 @@ void core_setup(corestate_t *cs, int port)
     }
     fprintf(fp, "%d", getpid());
     fclose(fp);
+
 }
 
 
@@ -284,8 +290,8 @@ void core_set_subscription(corestate_t *cs, int level)
     mqtt_subscribe(cs->mqttserv[level], "/admin/announce/all");
     mqtt_subscribe(cs->mqttserv[level], "/level/func/reply/#");
     mqtt_subscribe(cs->mqttserv[level], "/mach/func/request");
-            // Subscribe to the "go" topic for sync purpose.
-    mqtt_subscribe(cs->mqttserv[level], "/admin/request/go");
+    // Subscribe to the "syncstart" topic for sync purpose.
+    mqtt_subscribe(cs->mqttserv[level], "/mach/func/syncstart");
 }
 
 

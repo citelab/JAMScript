@@ -1,0 +1,10 @@
+JAMScript Application Ideas
+===========================
+
+= Distributed computing approach for self-driving
+
+= Vehicular network programming
+
+= Self-organizing small cell programming 
+
+= Self-organizing edge cloud orchestration
