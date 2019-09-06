@@ -42,6 +42,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "cborutils.h"
 #include "free_list.h"
 
+static long id = 1;
+
 //Copy the arguments pointed to by darg to sarg
 //@param *darg: a pointer to the destination argument
 //@param *sarg: a pointer to the source argument
@@ -279,6 +281,7 @@ command_t *command_new_using_cbor(const char *cmd, char *opt, char *cond, int co
     cmdo->args = args;
     cmdo->nargs = nargs;
 
+    cmdo->id = id++;
     cmdo->refcount = 1;
     pthread_mutex_init(&cmdo->lock, NULL);
 
@@ -417,6 +420,7 @@ command_t *command_new_using_arg_only(const char *cmd, char *opt, char *cond, in
     cmdo->nargs = nargs;
 
     cmdo->refcount = 1;
+    cmdo->id = id++;
 
     return cmdo;
 }
@@ -434,7 +438,7 @@ command_t *command_new(const char *cmd, char *opt, char *cond, int condvec,
     va_list args;
     nvoid_t *nv;
     arg_t *qargs;
-    int i = 0;
+    int i = 0;    
 
     if (strlen(fmt) > 0)
         qargs = (arg_t *)calloc(strlen(fmt), sizeof(arg_t));
@@ -696,6 +700,8 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
 
     }
 
+    cmd->id = id++;
+
     return cmd;
 }
 
@@ -746,6 +752,8 @@ void command_free(command_t *cmd)
             default: break;
         }
     }
+
+    free(cmd->args);
 
     if (cmd->cmd != NULL) free(cmd->cmd);
     if (cmd->opt != NULL) free(cmd->opt);

@@ -315,7 +315,7 @@ function createJStart(hasj) {
 
     mout += "const {Flow, ParallelFlow, PFlow} = require('flows.js')();\n";
     mout += "var jamlib = jserver.jamlib;\n";
-    mout += "jamlib.run(function() { console.log('JAMLib 1.0beta Initialized.');});\n";
+    mout += "jamlib.run(function() {});\n";
     mout += "\n\n";
 
     return mout;

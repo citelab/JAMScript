@@ -538,7 +538,7 @@ void jwork_process_device(jamstate_t *js)
                         comboptr_t *ctx = create_combo3i_ptr(js, js->foginq, NULL, 1);
                         core_setcallbacks(js->cstate, ctx, jwork_connect_lost, jwork_msg_arrived, NULL);
                         core_connect(js->cstate, 1, on_fog_connect, rcmd->actid);
-                        printf("Machine height %d\n", machine_height(js));
+            //            printf("Machine height %d\n", machine_height(js));
                     }
                 }
                 else
@@ -613,20 +613,6 @@ void jwork_process_device(jamstate_t *js)
             }
             else
                 jwork_send_nak(js, rcmd, "CONDITION FALSE");
-        }
-        else
-        if (strcmp(rcmd->cmd, "REXEC-ASY-CBK") == 0)
-        {
-            if (duplicate_detect(rcmd))
-                return;
-
-            if (runtable_find(js->rtable, rcmd->actarg) != NULL)
-            {
-                if (jwork_evaluate_cond(rcmd->cond))
-                    p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
-                else
-                    jwork_send_nak(js->cstate->mqttserv[0], rcmd, "CONDITION FALSE");
-            }
         }
         else
         if ((strcmp(rcmd->cmd, "REXEC-ACK") == 0) ||
@@ -800,7 +786,7 @@ void jwork_process_fog(jamstate_t *js)
 
             if (jwork_evaluate_cond(rcmd->cond))
             {
-                printf("Machine height ----- %d\n", machine_height(js));
+            //    printf("Machine height ----- %d\n", machine_height(js));
                 p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
             }
             else
@@ -814,26 +800,12 @@ void jwork_process_fog(jamstate_t *js)
 
             if (jwork_evaluate_cond(rcmd->cond))
             {
-                printf("SYN..Machine height ----- %d\n", machine_height(js));
+           //     printf("SYN..Machine height ----- %d\n", machine_height(js));
                 jwork_send_ack_1(js, "SYN", rcmd);
                 p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
             }
             else
                 jwork_send_nak(js, rcmd, "CONDITION FALSE");
-        }
-        else
-        if (strcmp(rcmd->cmd, "REXEC-ASY-CBK") == 0)
-        {
-            if (duplicate_detect(rcmd))
-                return;
-
-            if (runtable_find(js->rtable, rcmd->actarg) != NULL)
-            {
-                if (jwork_evaluate_cond(rcmd->cond))
-                    p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
-                else
-                    jwork_send_nak(js->cstate->mqttserv[0], rcmd, "CONDITION FALSE");
-            }
         }
         else
         if ((strcmp(rcmd->cmd, "REXEC-ACK") == 0) ||
@@ -908,20 +880,6 @@ void jwork_process_cloud(jamstate_t *js)
                 jwork_send_nak(js, rcmd, "CONDITION FALSE");
         }        
         else
-        if (strcmp(rcmd->cmd, "REXEC-ASY-CBK") == 0)
-        {
-            if (duplicate_detect(rcmd))
-                return;
-
-            if (runtable_find(js->rtable, rcmd->actarg) != NULL)
-            {
-                if (jwork_evaluate_cond(rcmd->cond))
-                    p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
-                else
-                    jwork_send_nak(js->cstate->mqttserv[0], rcmd, "CONDITION FALSE");
-            }
-        }
-        else
         if ((strcmp(rcmd->cmd, "REXEC-ACK") == 0) ||
             (strcmp(rcmd->cmd, "REXEC-NAK") == 0) ||
             (strcmp(rcmd->cmd, "REXEC-RES") == 0))
@@ -984,7 +942,7 @@ void jam_set_timer(jamstate_t *js, char *actid, int tval)
     if (athr != NULL)
         timer_add_event(js->maintimer, tval, 0, actid, tcallback, athr);
     else
-        printf("ERROR! Unable to find the activity to trigger at timer event.\n");
+        printf("ERROR! Unable to find the activity to trigger at timer event - %s.\n", actid);
 }
 
 

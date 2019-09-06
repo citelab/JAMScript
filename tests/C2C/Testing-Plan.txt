@@ -1,0 +1,10 @@
+Testing plan for C2C
+====================
+
+WORKING:
+    local tasks - C2C calls. Async calls are the ONLY ones we have here.
+        TESTED USING: localonly.*
+
+
+local tasks that are conditional - jconditions attached to the functions.
+Do we have them working in JAMScript?

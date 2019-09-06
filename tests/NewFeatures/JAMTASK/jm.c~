@@ -1,0 +1,16 @@
+jasync test(int a, jamtask q)
+{
+
+}
+
+jasync ftest()
+{
+
+}
+
+
+int main(int argc, char *argv[])
+{
+    
+
+}

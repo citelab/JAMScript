@@ -1,0 +1,29 @@
+jdata {
+    struct sensor_data {
+	float sd_val;
+	char *name;
+	int index;
+    } sensor_data as logger;
+
+    struct announce {
+	int index;
+	char *name;
+    } announce as broadcaster;
+
+    struct measure {
+	float reading;
+	int index;
+	char *field;
+    } measure as logger;
+}
+
+jcond {
+    isFog: jsys.type == "fog";
+    isDev: jsys.type == "device";
+}
+
+console.log(">>>>>>>>>>>> sense_data", sense_data);
+
+sense_data.subscribe (function(x, y, z) {
+    console.log(x, y, z);
+});

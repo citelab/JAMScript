@@ -138,7 +138,7 @@ bool queue_enq(simplequeue_t *sq, void *data, int size)
         dw->data = NULL;
 
 	int dwsize = sizeof(nvoid_t);
-	int bytes = nn_send (sq->pushsock, dw, dwsize, 0);
+	int bytes = nn_send(sq->pushsock, dw, dwsize, 0);
 	free(dw);
 
 	if (bytes == dwsize)
@@ -150,7 +150,7 @@ bool queue_enq(simplequeue_t *sq, void *data, int size)
 nvoid_t *queue_deq(simplequeue_t *sq)
 {
 	char *buf = NULL;
-	int bytes = nn_recv (sq->pullsock, &buf, NN_MSG, 0);
+	int bytes = nn_recv(sq->pullsock, &buf, NN_MSG, 0);
 
 	if (bytes < 0) return NULL;
 
@@ -163,7 +163,6 @@ nvoid_t *queue_deq(simplequeue_t *sq)
 		nvoid_t *data = (nvoid_t *)calloc(1, sizeof(nvoid_t));
 		memcpy(data, buf, sizeof(nvoid_t));
 		nn_freemsg(buf);
-		// why? I don't know. May be I could have just returned buf without releasing it.
 		return data;
 	}
 }
@@ -197,5 +196,3 @@ void queue_print(simplequeue_t *sq)
 	printf("Pushsock = %d, pullsock = %d\n", sq->pushsock, sq->pullsock);
 }
 
-
-// See the testers folder for testing routine for the simple queue module.
