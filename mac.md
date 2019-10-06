@@ -36,3 +36,14 @@ npm config set prefix '~/.npm-global'
 echo "export PATH=~/.npm-global/bin:$PATH" >> ~/.profile
 source ~/.profile
 ```
+
+## Some Common Installation Issues and Fixes
+
+If you have problems installing `libcbor`, you can install it from source as follows.
+
+```shell
+git clone https://github.com/PJK/libcbor
+cmake -DCMAKE_BUILD_TYPE=Release -DCBOR_CUSTOM_ALLOC=ON libcbor
+make
+make install
+```
