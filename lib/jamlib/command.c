@@ -739,11 +739,18 @@ void command_free(command_t *cmd)
         cbor_decref(&cmd->cdata);
     }
 
+    if (cmd->easy_arr)
+    {
+        cbor_decref(&(cmd->easy_arr));
+    }
+
     for(int i = 0; i < cmd->nargs && cmd->args != NULL; i++)
     {
+        printf("ENT Loop, argid=%d, type=%d \n", i, cmd->args[i].type);
         switch(cmd->args[i].type)
         {
-            case STRING_TYPE: free(cmd->args[i].val.sval);
+            case STRING_TYPE: 
+                free(cmd->args[i].val.sval);
                 break;
             case NVOID_TYPE:
                 if(cmd->args[i].val.nval != NULL && strcmp(cmd->cmd, "REXEC-JDATA") != 0)

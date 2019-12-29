@@ -482,6 +482,7 @@ void jwork_process_device(jamstate_t *js)
             core_sethost(js->cstate, 0, rcmd->actid);
             // We are done with registration...
             thread_signal(js->bgsem);
+            command_free(rcmd);
         }
         else
         if (strcmp(rcmd->cmd, "PING") == 0)
@@ -506,6 +507,7 @@ void jwork_process_device(jamstate_t *js)
                     js->cstate->mqttpending[1] = false;
                 }
             }
+            command_free(rcmd);
         }
         else
         if (strcmp(rcmd->cmd, "PUT-CF-INFO") == 0)

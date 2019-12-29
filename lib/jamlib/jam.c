@@ -373,6 +373,8 @@ void jsleep(int ms)
         jam_set_timer(js, jact->actid, ms);
         nvoid_t *nv = pqueue_deq(athr->inq);
         jam_clear_timer(js, jact->actid);
+        command_free(nv->data);
+        free(nv);
     }
 
 }
