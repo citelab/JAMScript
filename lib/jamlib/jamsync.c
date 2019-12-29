@@ -29,8 +29,8 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
     // Check whether the mask specified..
     assert(fmask != NULL);
 
-    // wait for 100 seconds before failing.
-    if (wait_for_machine(js, requested_level(condvec), 1000000) < 0)
+    // wait for 1 seconds before failing.
+    if (wait_for_machine(js, requested_level(condvec), 1000) < 0)
     {
         printf("ERROR! Unable to connect cloud, fog, or device J node \n");
         return NULL;
@@ -138,16 +138,12 @@ arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
         {
             queue_enq(athr->outq, cmd, sizeof(command_t));
 
-            printf("Hi...i = %d\n", i);
-          //  jam_set_timer(js, jact->actid, timeout);
-            printf("Hi 2 \n");
+            jam_set_timer(js, jact->actid, timeout);
             nvoid_t *nv = pqueue_deq(athr->resultq);
-            printf("Hi 3 \n");
-         //   jam_clear_timer(js, jact->actid);
-            printf("Hi 4 i = %d\n", i);
+            jam_clear_timer(js, jact->actid);
+
             if (nv != NULL)
             {
-                            printf("Hi...5\n");
                 switch (nv->len) {
                     case sizeof(arg_t):
                         repcode = (arg_t *)nv->data;

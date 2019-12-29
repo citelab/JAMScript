@@ -166,8 +166,9 @@ fdread(int fd, void *buf, int n)
 {
 	int m;
 
-	while((m=read(fd, buf, n)) < 0 && errno == EAGAIN)
+	while((m=read(fd, buf, n)) < 0 && errno == EAGAIN) {		
 		fdwait(fd, 'r');
+	}
 	return m;
 }
 

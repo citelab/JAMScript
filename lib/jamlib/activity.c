@@ -282,8 +282,6 @@ void run_activity(void *arg)
         } else
             cmd = NULL;
 
-        printf("DEQUEUED %s \n", cmd->cmd);
-
         if (cmd != NULL)
         {
             jact = activity_getbyindx(at, jindx);
@@ -306,6 +304,7 @@ void run_activity(void *arg)
                 {
                     // We received the acknowledgement for the SYNC.. now proceed to the next stage.
                     int timeout = 900;
+                    printf("------------------1--------\n");
                     jam_set_timer(js, jact->actid, timeout);
                     nv = pqueue_deq(athread->inq);
                     jam_clear_timer(js, jact->actid);
@@ -350,6 +349,7 @@ void run_activity(void *arg)
                     if (i < machine_height(js) -2)
                     {
                         int timeout = 300;
+                        printf("------------------2--------\n");
                         jam_set_timer(js, jact->actid, timeout);
                         nv = pqueue_deq(athread->inq);
                         jam_clear_timer(js, jact->actid);
@@ -383,6 +383,7 @@ void run_activity(void *arg)
                     if (i < machine_height(js) -2)
                     {
                         int timeout = 300;
+                        printf("------------------3--------\n");                        
                         jam_set_timer(js, jact->actid, timeout);
                         nv = pqueue_deq(athread->inq);
                         jam_clear_timer(js, jact->actid);
@@ -404,8 +405,7 @@ void run_activity(void *arg)
             }
             else
             {
-                if ((strcmp(cmd->cmd, "REXEC-ASY") == 0) ||
-                    (strcmp(cmd->cmd, "REXEC-ASY-CBK") == 0))
+                if (strcmp(cmd->cmd, "REXEC-ASY") == 0) 
                 {
                     areg = activity_findcallback(at, cmd->actname);
                     if (areg == NULL)
@@ -427,7 +427,6 @@ void run_activity(void *arg)
                 else
                 if (strcmp(cmd->cmd, "REXEC-SYN") == 0)
                 {
-                    printf("In REXEC-SYN processing... \n");
                     // TODO: There is no difference at this point.. what will be the difference?
                     areg = activity_findcallback(at, cmd->actname);
                     if (areg == NULL)
@@ -437,8 +436,6 @@ void run_activity(void *arg)
                         #ifdef DEBUG_LVL1
                             printf("Command actname = %s %s %s\n", cmd->actname, cmd->cmd, cmd->opt);
                         #endif
-
-                        printf("Callback called.. \n");
 
                         jrun_arun_callback(jact, cmd, areg);
                         #ifdef DEBUG_LVL1
@@ -452,7 +449,7 @@ void run_activity(void *arg)
             }
             command_free(cmd);
         }
-        printf("Releasing the thread \n");
+
         // jindx = 0 means there is no active activity on the thread..
         athread->jindx = 0;
         taskyield();
@@ -551,7 +548,6 @@ jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote)
         jact->remote = remote;
         while ((athr = athread_get(at, jact->jindx)) == NULL)
         {
-
             taskdelay(10);
             count--;
             if (count <= 0)

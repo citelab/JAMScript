@@ -103,7 +103,6 @@
 				          '-c',
 				          '-O1',
 				          '-g',
-                  '-DDEBUG_LVL1',
 				          '-fsanitize=address',
 				          '-fno-omit-frame-pointer'
 				        ]

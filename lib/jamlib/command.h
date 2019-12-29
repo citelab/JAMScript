@@ -102,6 +102,8 @@ typedef struct _command_t
     int refcount;
     pthread_mutex_t lock;
 
+    long id;
+
 } command_t;
 
 

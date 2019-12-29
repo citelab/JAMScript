@@ -1,0 +1,5 @@
+VERSION = 1.0
+DESCRIPTION = JAMScript executable file
+NAME = logstruct
+CREATE-TIME = 1565525372699
+MAX-HEIGHT = 1

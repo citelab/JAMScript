@@ -1,13 +1,14 @@
 Testing Schedule
 ================
 
-J2C bug
--------
+J2C (Sync calls) bug
+--------------------
 * There is a synchronization bug in J2C. After sometime the C side is stopping 
-  responding to calls from the J side. There are few problems. The send from the 
-  C side is failing. We need to buffer the writes to the network. The writes from 
-  the queue are emptied after the network interface becomes available. This way 
-  we can avoid the write error to an invalid interface.
+  responding to calls from the J side. This bug get activated in the mobility scenario.
+  Does not get activated in the static scenario. There are few issues that contribute 
+  to this bug. The send from the C side is failing. We need to buffer the writes to the 
+  network. The writes from the queue are emptied after the network interface becomes 
+  available. This way we can avoid the write error to an invalid interface.
 
   Also, check whether a write failure can lead to hanging thread. That is a user-level
   thread that is not released. This way after certain number of failures we run out 
@@ -15,14 +16,8 @@ J2C bug
   losing the responses. 
 
 
-Urgent bugs
------------
-* There is a bug in J2J. When a device is crashed, there is an exception.
-  We need to capture that exception and handle it.
-
-
 Mobility Facility
-----------------
+-----------------
 * Function call sync versions  - J2C
 * Async versions of - J2C
 
@@ -51,3 +46,21 @@ C-side Threading Latency
 Applications in JAMScript 
 -------------------------
 * Dust up the vehicular networking applications 
+
+
+Duplicate Detection Mechanism
+-----------------------------
+* In the J side, we have a naive duplicate detection mechansim in place. 
+  Can we improve on this mechanism? In particular can we garbage collect so that 
+  the cache does not keep building up? How to do this efficiently?
+
+* In the C side, things are not working? How do we get an efficient cache going 
+  in the C side? We can use the lwan code.. can we?
+
+
+  C2J bug
+  -------
+
+  calling a J side function with no argument from C is not working.
+  We get a segmentation fault when calling a J function with no argument.
+  
