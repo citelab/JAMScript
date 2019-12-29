@@ -746,7 +746,6 @@ void command_free(command_t *cmd)
 
     for(int i = 0; i < cmd->nargs && cmd->args != NULL; i++)
     {
-        printf("ENT Loop, argid=%d, type=%d \n", i, cmd->args[i].type);
         switch(cmd->args[i].type)
         {
             case STRING_TYPE: 
