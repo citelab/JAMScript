@@ -263,6 +263,7 @@ int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTAsync_messag
         stime[msg->payloadlen] = 0;
         command_t *cmd = command_new("SYNCSTART", stime, "-", 0, "GLOBAL_INQUEUE", "__", "__", "");
         queue_enq(queue, cmd, sizeof(command_t));
+        free(stime);
     }
 
     MQTTAsync_freeMessage(&msg);
