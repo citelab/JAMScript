@@ -674,7 +674,7 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
                     return NULL;
                 }
                 cmd->args[i].type = STRING_TYPE;
-                cmd->args[i].val.sval = strdup(cbor_get_string(arrl[i]));
+                cmd->args[i].val.sval = cbor_get_string(arrl[i]);
                 break;
 
             case CBOR_TYPE_FLOAT_CTRL:
