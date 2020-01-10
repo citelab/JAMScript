@@ -78,6 +78,7 @@ int free_combo_ptr(comboptr_t *cptr) {
         if (cptr->arg3 != NULL)
             free(cptr->arg3);
         free(cptr);
+        return 0;
     } else {
         return -1;
     }
