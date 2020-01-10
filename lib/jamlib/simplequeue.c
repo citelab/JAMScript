@@ -139,7 +139,7 @@ bool queue_enq(simplequeue_t *sq, void *data, int size)
 
 	int dwsize = sizeof(nvoid_t);
 	int bytes = nn_send(sq->pushsock, dw, dwsize, 0);
-	free(dw);
+    free(dw);
 
 	if (bytes == dwsize)
 		return true;

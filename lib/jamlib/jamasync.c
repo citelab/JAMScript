@@ -136,7 +136,7 @@ jactivity_t *jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
                 default:
                     break;
             }
-            free(nv);
+            nvoid_free(nv);
         } else 
             taskdelay(300);
     //    jact = activity_renew(js->atable, jact);
