@@ -221,6 +221,7 @@ void jam_event_loop(void *arg)
                             else
                                 sTime = 0.0;
                         }
+                        command_free(cmd_1);
                         // Remote requests go through here.. local requests don't go through here
 
                         jactivity_t *jact = activity_new(js->atable, cmd->actid, true);

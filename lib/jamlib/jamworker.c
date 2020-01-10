@@ -199,6 +199,7 @@ void *jwork_bgthread(void *arg)
         jwork_processor(js);
     }
 
+    free_combo_ptr(ctx);
     return NULL;
 }
 

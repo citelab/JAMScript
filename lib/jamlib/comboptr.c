@@ -68,3 +68,17 @@ comboptr_t *create_combo3ip_ptr(void *arg1, void *arg2, void *arg3, int iarg, vo
     else
         return NULL;
 }
+
+int free_combo_ptr(comboptr_t *cptr) {
+    if (cptr != NULL) {
+        if (cptr->arg1 != NULL)
+            free(cptr->arg1);
+        if (cptr->arg2 != NULL)
+            free(cptr->arg2);
+        if (cptr->arg3 != NULL)
+            free(cptr->arg3);
+        free(cptr);
+    } else {
+        return -1;
+    }
+}
