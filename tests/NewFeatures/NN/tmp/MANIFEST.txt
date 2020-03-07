@@ -1,0 +1,5 @@
+VERSION = 1.0
+DESCRIPTION = JAMScript executable file
+NAME = ntest
+CREATE-TIME = 1583595078360
+MAX-HEIGHT = 1

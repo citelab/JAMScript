@@ -17,7 +17,6 @@ comboptr_t *create_combo2llu_ptr(void *arg1, void *arg2, size_t size, unsigned l
         cptr->size = size;
         cptr->lluarg = lluarg;
 
-
         return cptr;
     }
 

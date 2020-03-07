@@ -738,8 +738,6 @@ void jwork_send_results(jamstate_t *js, char *opt, char *actname, char *actid, a
 {
     MQTTAsync mcl;
 
-    printf("Sending the results... %s\n", opt);
-
     if (strcmp(opt, "cloud") == 0)
         mcl = js->cstate->mqttserv[2];
     else
@@ -749,7 +747,7 @@ void jwork_send_results(jamstate_t *js, char *opt, char *actname, char *actid, a
         mcl = js->cstate->mqttserv[0];
     char *deviceid = js->cstate->device_id;
 
-    // Create a new command to send as error..
+    // Create a new command to send the results in args.
     command_t *scmd = command_new_using_arg("REXEC-RES", "SYN", "-", 0, actname, actid, deviceid, args, 1);
 
     // send the command over

@@ -1,0 +1,5 @@
+VERSION = 1.0
+DESCRIPTION = JAMScript executable file
+NAME = localonly
+CREATE-TIME = 1576706857294
+MAX-HEIGHT = 1

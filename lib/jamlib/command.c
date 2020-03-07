@@ -706,7 +706,6 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
 }
 
 
-
 void command_hold(command_t *cmd)
 {
     pthread_mutex_lock(&cmd->lock);
@@ -714,11 +713,8 @@ void command_hold(command_t *cmd)
     pthread_mutex_unlock(&cmd->lock);
 }
 
-
-
 void command_free(command_t *cmd)
 {
-
     int rc;
     pthread_mutex_lock(&cmd->lock);
     rc = --cmd->refcount;

@@ -1,0 +1,4 @@
+echo hello
+touch qq
+rm qq
+ls

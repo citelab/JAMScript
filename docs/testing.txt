@@ -33,10 +33,17 @@ Interlock for Broadcasts
 * Interlock is only needed with JData and JCond interplay
 * Check broadcast and J2J call or J2C call.
 
-Adaptive machine height (New Feature)
------------------------
+Adaptive Machine Height (New Feature)
+-------------------------------------
 * We need to select the best height for the machine. How to do that? 
 * What is the height selection function?
+
+Related to the Above
+--------------------
+* Do we need to execute things in the submachine? That too after the 
+  apex of the machine has executed the operation? This is the way the 
+  semantics is setup now. 
+
 
 C-side Threading Latency
 ------------------------
@@ -58,9 +65,14 @@ Duplicate Detection Mechanism
   in the C side? We can use the lwan code.. can we?
 
 
-  C2J bug
-  -------
-
-  calling a J side function with no argument from C is not working.
+C2J Bug
+-------
+* calling a J side function with no argument from C is not working.
   We get a segmentation fault when calling a J function with no argument.
-  
+
+
+Reorganize the Sync Processing at C
+-----------------------------------
+* Looks like there is a problem if the messages could be dropped.
+  We need to be resilient to message dropping. 
+

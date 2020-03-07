@@ -8,3 +8,19 @@ JAMScript Application Ideas
 = Self-organizing small cell programming 
 
 = Self-organizing edge cloud orchestration
+
+
+Software Defined Networks Using JAMScript (3D Networking?)
+----------------------------------------------------------
+* A merger of application-level load balancing and network-level packet processing?
+* How does it work?
+
+Socket is opened using a primitive function offered by a JAMScript program. 
+What does this give? 
+
+
+
+Socket open request is propagated to the cloud or fog. it could trigger a 
+massive reverse call. 
+
+
