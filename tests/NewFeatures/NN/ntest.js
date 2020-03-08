@@ -16,9 +16,7 @@ setInterval(function() {
 
     if (jsys.type == "cloud") {
 	x.broadcast(count++);
-    } else if (jsys.type == "fog") {
-	x.log("hello");
     }
 
-}, 1000);
+}, 6000);
 

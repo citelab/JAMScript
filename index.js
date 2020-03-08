@@ -336,6 +336,7 @@ function createJLearn() {
     mout += "var jsys;\n";
     mout += "var jman;\n";
     mout += "var jbcast;\n";
+    mout += "var jlog;\n";    
 
     mout += "function learncback() {\n";
     mout += "\tjsys = jmachlib.getjsys();\n"; 
