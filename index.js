@@ -139,7 +139,8 @@ try {
         Promise.all(tasks).then(function(value) {
             results.manifest = createManifest(outPath, results.maxLevel);
             results.jstart = createJStart(results.hasJdata);
-            createZip(results.JS, results.jView, results.manifest, results.jstart, tmpDir, outPath);
+            results.jlearn = createJLearn();
+            createZip(results.JS, results.jView, results.manifest, results.jstart, results.jlearn, tmpDir, outPath);            
             if (!debug) {
                 for (var i = 0; i < value.length; i++) {
                     console.log(value[i]);
@@ -258,11 +259,12 @@ function flowCheck(input, verbose) {
     });
 }
 
-function createZip(jsout, jview, mout, jstart, tmpDir, outputName) {
+function createZip(jsout, jview, mout, jstart, jlearn, tmpDir, outputName) {
     var zip = new JSZip();
     zip.file("MANIFEST.txt", mout);
     zip.file("jamout.js", jsout);
     zip.file("jstart.js", jstart);
+    zip.file("jlearn.js", jlearn);    
 
     if (jview.length !== 0)
         zip.file("jview.json", JSON.stringify(jview));
@@ -319,8 +321,34 @@ function createJStart(hasj) {
     mout += "\n\n";
 
     return mout;
-
 }
+
+// Create the jlearn.js - the bootstrap script for the internal machine learning module
+//
+function createJLearn() {
+    var mout;
+
+    mout = "const Worker = require('tiny-worker');\n";
+    mout += "const jmachlib = require('jamserver/jmachlib');\n";
+    mout += "const JAMManager = require('jamserver/jammanager');\n";
+    mout += "const JAMLogger = require('jamserver/jamlogger');\n";
+    mout += "const JAMBroadcaster = require('jamserver/jambroadcaster');\n";
+    mout += "var jsys;\n";
+    mout += "var jman;\n";
+    mout += "var jbcast;\n";
+
+    mout += "function learncback() {\n";
+    mout += "\tjsys = jmachlib.getjsys();\n"; 
+    mout += "\tjman = new JAMManager(jmachlib.getcmdopts(), jsys);\n";
+    mout += "\tjbcast = new JAMBroadcaster('__nn_model', jman);\n";
+    mout += "\tjlog = new JAMLogger(jman, '__nn_data');\n";    
+    mout += "\tjmachlib.loop(jman, jbcast, jlog);\n";
+    mout += "}\n"
+    mout += "jmachlib.run(function() { learncback(); });\n\n";
+
+    return mout;
+}
+
 
 
 function randomValueHex(len) {

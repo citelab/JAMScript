@@ -1,15 +1,24 @@
 jdata {
     int x as broadcaster;
+    int q as logger;
 }
 
 var count = 10;
 
-setInterval(function () {
+if (jsys.type == "fog") {
+    x.addHook(function(z) {
+	console.log("Value ", z);
+    });
+}
 
-    if (jsys.type == "cloud")
+
+setInterval(function() {
+
+    if (jsys.type == "cloud") {
 	x.broadcast(count++);
-    else
-	x.addHook(function(z) {
-	    console.log("Value broadcasted ", z);
-	});
-}, 200);
+    } else if (jsys.type == "fog") {
+	x.log("hello");
+    }
+
+}, 1000);
+
