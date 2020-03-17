@@ -315,9 +315,10 @@ function createJStart(hasj) {
     else
         mout = "var jserver = require('jamserver')(false);\n";
 
+    // TODO: Flow should be removed...?
     mout += "const {Flow, ParallelFlow, PFlow} = require('flows.js')();\n";
     mout += "var jamlib = jserver.jamlib;\n";
-    mout += "jamlib.run(function() {});\n";
+    mout += "jamlib.run();\n";
     mout += "\n\n";
 
     return mout;
