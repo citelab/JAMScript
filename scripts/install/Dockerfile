@@ -20,17 +20,15 @@ RUN useradd -m admin && echo "admin:admin" | chpasswd && adduser admin sudo
 RUN echo "admin ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers
 USER admin
 WORKDIR /home/admin
-RUN wget https://deb.nodesource.com/setup_11.x && chmod +x ./setup_11.x && echo admin | sudo -S ./setup_11.x && \
+RUN wget https://deb.nodesource.com/setup_13.x && chmod +x ./setup_13.x && echo admin | sudo -S ./setup_13.x && \
         sudo apt-get install -y -q nodejs
 
-RUN git clone --recursive https://github.com/citelab/JAMScript && \
-        cd JAMScript/tools && git checkout master && git pull && \
-        cd ../samples && git checkout master && git pull
+RUN git clone https://github.com/citelab/JAMScript 
 
 RUN mkdir ~/.npm-global && npm config set prefix '~/.npm-global'
 
 WORKDIR /home/admin/JAMScript
-RUN npm -g install jamscript
+RUN npm run link
 ENV PATH="/home/admin/.npm-global/bin:$PATH"
 RUN mkdir /home/admin/temp
 WORKDIR /home/admin/temp
