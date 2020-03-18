@@ -82,6 +82,7 @@
             "tools/djampull",
             "tools/djamrun",
             "tools/djamtest",
+            "tools/djamterm",
             "tools/inc"
            ]
         }
