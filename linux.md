@@ -35,8 +35,15 @@ source ~/.profile
 
 ## Installing JAMScript
 
-Download the JAMScript source code using the instructions in the ``Get Source'' link. Go to the main 
-source folder and  execute the following command to do a local install. If you are going to do explore 
+The JAMScript source is in a single repository.
+The tools and samples are inside the main repository under the `tools/` and `tests/` folders, respectively. 
+To get the full source, run the following command from the folder where you want JAMScript downloaded.
+
+```shell
+git clone https://github.com/citelab/JAMScript
+```  
+This should create a *JAMScript* folder. 
+Go into that folder and  execute the following command to do a local install. If you are going to study
 JAMScript, this is the best way to install it. You can change the source and modify various components 
 of the compiler and language runtime.
 ```shell
@@ -45,3 +52,11 @@ npm run link
 
 After successful installation, you should see the JAMScript compiler in your path: run `which jamc` to see it.
 The `tests/` folder has many example files. You can compile them and run them. 
+
+## Environment Setup
+
+The current JAMScript runtime needs many file handlers to function. You need to set a high limit for the
+number of allowed file handles before running a JAMScript executable. 
+```shell
+ulimit -n 3000
+```
