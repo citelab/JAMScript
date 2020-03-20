@@ -21,7 +21,10 @@
     "ps-node": "^0.1.6",
     "random-js": "1.0.8",
     "redis": "^2.8.0",
-    "gaussian": "^1.1.0"
+    "gaussian": "^1.1.0",
+    "@tensorflow/tfjs-node": "^1.5.1",
+    "fast-csv": "^4.0.2",
+    "fs": "0.0.1-security"
   },
   "engines": {
     "node": ">= 7.0.0"
