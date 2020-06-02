@@ -1,0 +1,4892 @@
+typedef int va_list;
+
+
+
+typedef int size_t;
+typedef int __builtin_va_list;
+typedef int __gnuc_va_list;
+typedef int __int8_t;
+typedef int __uint8_t;
+typedef int __int16_t;
+typedef int __uint16_t;
+typedef int __int_least16_t;
+typedef int __uint_least16_t;
+typedef int __int32_t;
+typedef int __uint32_t;
+typedef int __int64_t;
+typedef int __uint64_t;
+typedef int __int_least32_t;
+typedef int __uint_least32_t;
+typedef int __s8;
+typedef int __u8;
+typedef int __s16;
+typedef int __u16;
+typedef int __s32;
+typedef int __u32;
+typedef int __s64;
+typedef int __u64;
+typedef int _LOCK_T;
+typedef int _LOCK_RECURSIVE_T;
+typedef int _off_t;
+typedef int __dev_t;
+typedef int __uid_t;
+typedef int __gid_t;
+typedef int _off64_t;
+typedef int _fpos_t;
+typedef int _ssize_t;
+typedef int wint_t;
+typedef int _mbstate_t;
+typedef int _flock_t;
+typedef int _iconv_t;
+typedef int __ULong;
+typedef int __FILE;
+typedef int ptrdiff_t;
+typedef int wchar_t;
+typedef int __off_t;
+typedef int __pid_t;
+typedef int __loff_t;
+typedef int u_char;
+typedef int u_short;
+typedef int u_int;
+typedef int u_long;
+typedef int ushort;
+typedef int uint;
+typedef int clock_t;
+typedef int time_t;
+typedef int daddr_t;
+typedef int caddr_t;
+typedef int ino_t;
+typedef int off_t;
+typedef int dev_t;
+typedef int uid_t;
+typedef int gid_t;
+typedef int pid_t;
+typedef int key_t;
+typedef int ssize_t;
+typedef int mode_t;
+typedef int nlink_t;
+typedef int fd_mask;
+typedef int _types_fd_set;
+typedef int clockid_t;
+typedef int timer_t;
+typedef int useconds_t;
+typedef int suseconds_t;
+typedef int FILE;
+typedef int fpos_t;
+typedef int cookie_read_function_t;
+typedef int cookie_write_function_t;
+typedef int cookie_seek_function_t;
+typedef int cookie_close_function_t;
+typedef int cookie_io_functions_t;
+typedef int div_t;
+typedef int ldiv_t;
+typedef int lldiv_t;
+typedef int sigset_t;
+typedef int __sigset_t;
+typedef int _sig_func_ptr;
+typedef int sig_atomic_t;
+typedef int __tzrule_type;
+typedef int __tzinfo_type;
+typedef int mbstate_t;
+typedef int sem_t;
+typedef int pthread_t;
+typedef int pthread_attr_t;
+typedef int pthread_mutex_t;
+typedef int pthread_mutexattr_t;
+typedef int pthread_cond_t;
+typedef int pthread_condattr_t;
+typedef int pthread_key_t;
+typedef int pthread_once_t;
+typedef int pthread_rwlock_t;
+typedef int pthread_rwlockattr_t;
+typedef int pthread_spinlock_t;
+typedef int pthread_barrier_t;
+typedef int pthread_barrierattr_t;
+typedef int jmp_buf;
+typedef int rlim_t;
+typedef int sa_family_t;
+typedef int sigjmp_buf;
+typedef int stack_t;
+typedef int siginfo_t;
+typedef int z_stream;
+
+
+typedef int int8_t;
+typedef int uint8_t;
+typedef int int16_t;
+typedef int uint16_t;
+typedef int int32_t;
+typedef int uint32_t;
+typedef int int64_t;
+typedef int uint64_t;
+
+
+typedef int int_least8_t;
+typedef int uint_least8_t;
+typedef int int_least16_t;
+typedef int uint_least16_t;
+typedef int int_least32_t;
+typedef int uint_least32_t;
+typedef int int_least64_t;
+typedef int uint_least64_t;
+
+
+typedef int int_fast8_t;
+typedef int uint_fast8_t;
+typedef int int_fast16_t;
+typedef int uint_fast16_t;
+typedef int int_fast32_t;
+typedef int uint_fast32_t;
+typedef int int_fast64_t;
+typedef int uint_fast64_t;
+
+
+typedef int intptr_t;
+typedef int uintptr_t;
+
+
+typedef int intmax_t;
+typedef int uintmax_t;
+
+
+typedef _Bool bool;
+
+typedef int va_list;
+
+
+
+
+
+enum MQTTPropertyCodes {
+  MQTTPROPERTY_CODE_PAYLOAD_FORMAT_INDICATOR = 1,
+  MQTTPROPERTY_CODE_MESSAGE_EXPIRY_INTERVAL = 2,
+  MQTTPROPERTY_CODE_CONTENT_TYPE = 3,
+  MQTTPROPERTY_CODE_RESPONSE_TOPIC = 8,
+  MQTTPROPERTY_CODE_CORRELATION_DATA = 9,
+  MQTTPROPERTY_CODE_SUBSCRIPTION_IDENTIFIER = 11,
+  MQTTPROPERTY_CODE_SESSION_EXPIRY_INTERVAL = 17,
+  MQTTPROPERTY_CODE_ASSIGNED_CLIENT_IDENTIFER = 18,
+  MQTTPROPERTY_CODE_SERVER_KEEP_ALIVE = 19,
+  MQTTPROPERTY_CODE_AUTHENTICATION_METHOD = 21,
+  MQTTPROPERTY_CODE_AUTHENTICATION_DATA = 22,
+  MQTTPROPERTY_CODE_REQUEST_PROBLEM_INFORMATION = 23,
+  MQTTPROPERTY_CODE_WILL_DELAY_INTERVAL = 24,
+  MQTTPROPERTY_CODE_REQUEST_RESPONSE_INFORMATION = 25,
+  MQTTPROPERTY_CODE_RESPONSE_INFORMATION = 26,
+  MQTTPROPERTY_CODE_SERVER_REFERENCE = 28,
+  MQTTPROPERTY_CODE_REASON_STRING = 31,
+  MQTTPROPERTY_CODE_RECEIVE_MAXIMUM = 33,
+  MQTTPROPERTY_CODE_TOPIC_ALIAS_MAXIMUM = 34,
+  MQTTPROPERTY_CODE_TOPIC_ALIAS = 35,
+  MQTTPROPERTY_CODE_MAXIMUM_QOS = 36,
+  MQTTPROPERTY_CODE_RETAIN_AVAILABLE = 37,
+  MQTTPROPERTY_CODE_USER_PROPERTY = 38,
+  MQTTPROPERTY_CODE_MAXIMUM_PACKET_SIZE = 39,
+  MQTTPROPERTY_CODE_WILDCARD_SUBSCRIPTION_AVAILABLE = 40,
+  MQTTPROPERTY_CODE_SUBSCRIPTION_IDENTIFIERS_AVAILABLE = 41,
+  MQTTPROPERTY_CODE_SHARED_SUBSCRIPTION_AVAILABLE = 42
+};
+
+
+
+
+
+
+
+extern const char* MQTTPropertyName(enum MQTTPropertyCodes value);
+
+
+enum MQTTPropertyTypes {
+  MQTTPROPERTY_TYPE_BYTE,
+  MQTTPROPERTY_TYPE_TWO_BYTE_INTEGER,
+  MQTTPROPERTY_TYPE_FOUR_BYTE_INTEGER,
+  MQTTPROPERTY_TYPE_VARIABLE_BYTE_INTEGER,
+  MQTTPROPERTY_TYPE_BINARY_DATA,
+  MQTTPROPERTY_TYPE_UTF_8_ENCODED_STRING,
+  MQTTPROPERTY_TYPE_UTF_8_STRING_PAIR
+};
+
+
+
+
+
+
+extern int MQTTProperty_getType(enum MQTTPropertyCodes value);
+
+
+
+
+typedef struct
+{
+ int len;
+ char* data;
+} MQTTLenString;
+
+
+
+
+
+typedef struct
+{
+  enum MQTTPropertyCodes identifier;
+
+  union {
+    unsigned char byte;
+    unsigned short integer2;
+    unsigned int integer4;
+    struct {
+      MQTTLenString data;
+      MQTTLenString value;
+    };
+  } value;
+} MQTTProperty;
+
+
+
+
+typedef struct MQTTProperties
+{
+  int count;
+  int max_count;
+  int length;
+  MQTTProperty *array;
+} MQTTProperties;
+int MQTTProperties_len(MQTTProperties* props);
+
+
+
+
+
+
+
+extern int MQTTProperties_add(MQTTProperties* props, const MQTTProperty* prop);
+
+
+
+
+
+
+
+int MQTTProperties_write(char** pptr, const MQTTProperties* properties);
+int MQTTProperties_read(MQTTProperties* properties, char** pptr, char* enddata);
+
+
+
+
+
+extern void MQTTProperties_free(MQTTProperties* properties);
+
+
+
+
+
+
+extern MQTTProperties MQTTProperties_copy(const MQTTProperties* props);
+
+
+
+
+
+
+
+extern int MQTTProperties_hasProperty(MQTTProperties *props, enum MQTTPropertyCodes propid);
+extern int MQTTProperties_propertyCount(MQTTProperties *props, enum MQTTPropertyCodes propid);
+
+
+
+
+
+
+
+extern int MQTTProperties_getNumericValue(MQTTProperties *props, enum MQTTPropertyCodes propid);
+extern int MQTTProperties_getNumericValueAt(MQTTProperties *props, enum MQTTPropertyCodes propid, int index);
+
+
+
+
+
+
+
+extern MQTTProperty* MQTTProperties_getProperty(MQTTProperties *props, enum MQTTPropertyCodes propid);
+extern MQTTProperty* MQTTProperties_getPropertyAt(MQTTProperties *props, enum MQTTPropertyCodes propid, int index);
+enum MQTTReasonCodes {
+  MQTTREASONCODE_SUCCESS = 0,
+  MQTTREASONCODE_NORMAL_DISCONNECTION = 0,
+  MQTTREASONCODE_GRANTED_QOS_0 = 0,
+  MQTTREASONCODE_GRANTED_QOS_1 = 1,
+  MQTTREASONCODE_GRANTED_QOS_2 = 2,
+  MQTTREASONCODE_DISCONNECT_WITH_WILL_MESSAGE = 4,
+  MQTTREASONCODE_NO_MATCHING_SUBSCRIBERS = 16,
+  MQTTREASONCODE_NO_SUBSCRIPTION_FOUND = 17,
+  MQTTREASONCODE_CONTINUE_AUTHENTICATION = 24,
+  MQTTREASONCODE_RE_AUTHENTICATE = 25,
+  MQTTREASONCODE_UNSPECIFIED_ERROR = 128,
+  MQTTREASONCODE_MALFORMED_PACKET = 129,
+  MQTTREASONCODE_PROTOCOL_ERROR = 130,
+  MQTTREASONCODE_IMPLEMENTATION_SPECIFIC_ERROR = 131,
+  MQTTREASONCODE_UNSUPPORTED_PROTOCOL_VERSION = 132,
+  MQTTREASONCODE_CLIENT_IDENTIFIER_NOT_VALID = 133,
+  MQTTREASONCODE_BAD_USER_NAME_OR_PASSWORD = 134,
+  MQTTREASONCODE_NOT_AUTHORIZED = 135,
+  MQTTREASONCODE_SERVER_UNAVAILABLE = 136,
+  MQTTREASONCODE_SERVER_BUSY = 137,
+  MQTTREASONCODE_BANNED = 138,
+  MQTTREASONCODE_SERVER_SHUTTING_DOWN = 139,
+  MQTTREASONCODE_BAD_AUTHENTICATION_METHOD = 140,
+  MQTTREASONCODE_KEEP_ALIVE_TIMEOUT = 141,
+  MQTTREASONCODE_SESSION_TAKEN_OVER = 142,
+  MQTTREASONCODE_TOPIC_FILTER_INVALID = 143,
+  MQTTREASONCODE_TOPIC_NAME_INVALID = 144,
+  MQTTREASONCODE_PACKET_IDENTIFIER_IN_USE = 145,
+  MQTTREASONCODE_PACKET_IDENTIFIER_NOT_FOUND = 146,
+  MQTTREASONCODE_RECEIVE_MAXIMUM_EXCEEDED = 147,
+  MQTTREASONCODE_TOPIC_ALIAS_INVALID = 148,
+  MQTTREASONCODE_PACKET_TOO_LARGE = 149,
+  MQTTREASONCODE_MESSAGE_RATE_TOO_HIGH = 150,
+  MQTTREASONCODE_QUOTA_EXCEEDED = 151,
+  MQTTREASONCODE_ADMINISTRATIVE_ACTION = 152,
+  MQTTREASONCODE_PAYLOAD_FORMAT_INVALID = 153,
+  MQTTREASONCODE_RETAIN_NOT_SUPPORTED = 154,
+  MQTTREASONCODE_QOS_NOT_SUPPORTED = 155,
+  MQTTREASONCODE_USE_ANOTHER_SERVER = 156,
+  MQTTREASONCODE_SERVER_MOVED = 157,
+  MQTTREASONCODE_SHARED_SUBSCRIPTIONS_NOT_SUPPORTED = 158,
+  MQTTREASONCODE_CONNECTION_RATE_EXCEEDED = 159,
+  MQTTREASONCODE_MAXIMUM_CONNECT_TIME = 160,
+  MQTTREASONCODE_SUBSCRIPTION_IDENTIFIERS_NOT_SUPPORTED = 161,
+  MQTTREASONCODE_WILDCARD_SUBSCRIPTIONS_NOT_SUPPORTED = 162
+};
+
+
+
+
+
+
+
+extern const char* MQTTReasonCode_toString(enum MQTTReasonCodes value);
+typedef struct MQTTSubscribe_options
+{
+
+ char struct_id[4];
+
+
+ int struct_version;
+
+
+
+ unsigned char noLocal;
+
+
+
+
+ unsigned char retainAsPublished;
+
+
+
+
+ unsigned char retainHandling;
+} MQTTSubscribe_options;
+
+typedef int (*Persistence_open)(void** handle, const char* clientID, const char* serverURI, void* context);
+typedef int (*Persistence_close)(void* handle);
+typedef int (*Persistence_put)(void* handle, char* key, int bufcount, char* buffers[], int buflens[]);
+typedef int (*Persistence_get)(void* handle, char* key, char** buffer, int* buflen);
+typedef int (*Persistence_remove)(void* handle, char* key);
+typedef int (*Persistence_keys)(void* handle, char*** keys, int* nkeys);
+typedef int (*Persistence_clear)(void* handle);
+typedef int (*Persistence_containskey)(void* handle, char* key);
+
+
+
+
+
+
+typedef struct {
+
+
+
+ void* context;
+
+
+
+ Persistence_open popen;
+
+
+
+ Persistence_close pclose;
+
+
+
+ Persistence_put pput;
+
+
+
+ Persistence_get pget;
+
+
+
+ Persistence_remove premove;
+
+
+
+ Persistence_keys pkeys;
+
+
+
+ Persistence_clear pclear;
+
+
+
+ Persistence_containskey pcontainskey;
+} MQTTClient_persistence;
+typedef struct
+{
+
+ char struct_id[4];
+
+ int struct_version;
+
+ int do_openssl_init;
+} MQTTAsync_init_options;
+
+
+
+
+
+
+
+extern void MQTTAsync_global_init(MQTTAsync_init_options* inits);
+
+
+
+
+
+typedef void* MQTTAsync;
+typedef int MQTTAsync_token;
+
+
+
+
+
+
+
+typedef struct
+{
+
+ char struct_id[4];
+
+
+ int struct_version;
+
+ int payloadlen;
+
+ void* payload;
+ int qos;
+ int retained;
+
+
+
+
+
+
+ int dup;
+
+
+
+ int msgid;
+
+
+
+ MQTTProperties properties;
+} MQTTAsync_message;
+typedef int MQTTAsync_messageArrived(void* context, char* topicName, int topicLen, MQTTAsync_message* message);
+typedef void MQTTAsync_deliveryComplete(void* context, MQTTAsync_token token);
+typedef void MQTTAsync_connectionLost(void* context, char* cause);
+typedef void MQTTAsync_connected(void* context, char* cause);
+typedef void MQTTAsync_disconnected(void* context, MQTTProperties* properties,
+  enum MQTTReasonCodes reasonCode);
+extern int MQTTAsync_setDisconnected(MQTTAsync handle, void* context, MQTTAsync_disconnected* co);
+
+
+
+typedef struct
+{
+
+ MQTTAsync_token token;
+
+ int code;
+
+ const char *message;
+} MQTTAsync_failureData;
+
+
+
+typedef struct
+{
+
+ char struct_id[4];
+
+ int struct_version;
+
+ MQTTAsync_token token;
+
+ enum MQTTReasonCodes reasonCode;
+
+ MQTTProperties properties;
+
+ int code;
+
+ const char *message;
+
+ int packet_type;
+} MQTTAsync_failureData5;
+
+
+
+
+typedef struct
+{
+
+ MQTTAsync_token token;
+
+ union
+ {
+
+
+  int qos;
+
+
+  int* qosList;
+
+  struct
+  {
+   MQTTAsync_message message;
+   char* destinationName;
+  } pub;
+
+  struct
+  {
+   char* serverURI;
+   int MQTTVersion;
+   int sessionPresent;
+  } connect;
+ } alt;
+} MQTTAsync_successData;
+
+
+
+typedef struct
+{
+ char struct_id[4];
+ int struct_version;
+
+ MQTTAsync_token token;
+ enum MQTTReasonCodes reasonCode;
+ MQTTProperties properties;
+
+ union
+ {
+
+  struct
+  {
+   int reasonCodeCount;
+   enum MQTTReasonCodes* reasonCodes;
+  } sub;
+
+  struct
+  {
+   MQTTAsync_message message;
+   char* destinationName;
+  } pub;
+
+  struct
+  {
+   char* serverURI;
+   int MQTTVersion;
+   int sessionPresent;
+  } connect;
+
+  struct
+  {
+   int reasonCodeCount;
+   enum MQTTReasonCodes* reasonCodes;
+  } unsub;
+ } alt;
+} MQTTAsync_successData5;
+typedef void MQTTAsync_onSuccess(void* context, MQTTAsync_successData* response);
+typedef void MQTTAsync_onSuccess5(void* context, MQTTAsync_successData5* response);
+typedef void MQTTAsync_onFailure(void* context, MQTTAsync_failureData* response);
+typedef void MQTTAsync_onFailure5(void* context, MQTTAsync_failureData5* response);
+
+
+
+
+
+
+typedef struct MQTTAsync_responseOptions
+{
+
+ char struct_id[4];
+
+
+ int struct_version;
+
+
+
+
+
+ MQTTAsync_onSuccess* onSuccess;
+
+
+
+
+
+ MQTTAsync_onFailure* onFailure;
+
+
+
+
+
+ void* context;
+
+
+
+
+
+ MQTTAsync_token token;
+
+
+
+
+
+ MQTTAsync_onSuccess5* onSuccess5;
+
+
+
+
+
+ MQTTAsync_onFailure5* onFailure5;
+
+
+
+ MQTTProperties properties;
+
+
+
+ MQTTSubscribe_options subscribeOptions;
+
+
+
+
+ int subscribeOptionsCount;
+
+
+
+ MQTTSubscribe_options* subscribeOptionsList;
+} MQTTAsync_responseOptions;
+
+
+
+
+typedef struct MQTTAsync_responseOptions MQTTAsync_callOptions;
+extern int MQTTAsync_setCallbacks(MQTTAsync handle, void* context, MQTTAsync_connectionLost* cl,
+          MQTTAsync_messageArrived* ma, MQTTAsync_deliveryComplete* dc);
+extern int MQTTAsync_setConnectionLostCallback(MQTTAsync handle, void* context,
+              MQTTAsync_connectionLost* cl);
+extern int MQTTAsync_setMessageArrivedCallback(MQTTAsync handle, void* context,
+              MQTTAsync_messageArrived* ma);
+extern int MQTTAsync_setDeliveryCompleteCallback(MQTTAsync handle, void* context,
+             MQTTAsync_deliveryComplete* dc);
+extern int MQTTAsync_setConnected(MQTTAsync handle, void* context, MQTTAsync_connected* co);
+extern int MQTTAsync_reconnect(MQTTAsync handle);
+extern int MQTTAsync_create(MQTTAsync* handle, const char* serverURI, const char* clientId,
+  int persistence_type, void* persistence_context);
+
+
+typedef struct
+{
+
+ char struct_id[4];
+
+
+
+ int struct_version;
+
+ int sendWhileDisconnected;
+
+ int maxBufferedMessages;
+
+
+
+
+
+ int MQTTVersion;
+} MQTTAsync_createOptions;
+
+
+
+
+
+
+extern int MQTTAsync_createWithOptions(MQTTAsync* handle, const char* serverURI, const char* clientId,
+  int persistence_type, void* persistence_context, MQTTAsync_createOptions* options);
+typedef struct
+{
+
+ char struct_id[4];
+
+
+
+ int struct_version;
+
+ const char* topicName;
+
+ const char* message;
+
+
+
+ int retained;
+
+
+
+
+ int qos;
+
+ struct
+ {
+   int len;
+  const void* data;
+ } payload;
+} MQTTAsync_willOptions;
+typedef struct
+{
+
+ char struct_id[4];
+
+ int struct_version;
+
+
+ const char* trustStore;
+
+
+
+
+ const char* keyStore;
+
+
+
+
+ const char* privateKey;
+
+ const char* privateKeyPassword;
+ const char* enabledCipherSuites;
+
+
+    int enableServerCertAuth;
+
+
+
+
+
+    int sslVersion;
+
+
+
+
+
+
+    int verify;
+
+
+
+
+
+
+ const char* CApath;
+
+
+
+
+
+    int (*ssl_error_cb) (const char *str, size_t len, void *u);
+
+
+
+
+
+    void* ssl_error_context;
+
+
+
+
+
+
+ unsigned int (*ssl_psk_cb) (const char *hint, char *identity, unsigned int max_identity_len, unsigned char *psk, unsigned int max_psk_len, void *u);
+
+
+
+
+
+ void* ssl_psk_context;
+
+
+
+
+
+
+ int disableDefaultTrustStore;
+
+} MQTTAsync_SSLOptions;
+
+
+
+
+typedef struct
+{
+ const char* name;
+ const char* value;
+} MQTTAsync_nameValue;
+
+
+
+
+
+
+typedef struct
+{
+
+ char struct_id[4];
+ int struct_version;
+ int keepAliveInterval;
+ int cleansession;
+
+
+
+ int maxInflight;
+
+
+
+
+
+ MQTTAsync_willOptions* will;
+
+
+
+
+
+ const char* username;
+
+
+
+
+
+ const char* password;
+
+
+
+ int connectTimeout;
+
+
+
+
+
+
+
+ int retryInterval;
+
+
+
+
+ MQTTAsync_SSLOptions* ssl;
+
+
+
+
+
+ MQTTAsync_onSuccess* onSuccess;
+
+
+
+
+
+ MQTTAsync_onFailure* onFailure;
+
+
+
+
+
+ void* context;
+
+
+
+ int serverURIcount;
+ char* const* serverURIs;
+
+
+
+
+
+
+ int MQTTVersion;
+
+
+
+ int automaticReconnect;
+
+
+
+ int minRetryInterval;
+
+
+
+ int maxRetryInterval;
+
+
+
+ struct {
+  int len;
+  const void* data;
+ } binarypwd;
+
+
+
+ const MQTTAsync_nameValue* httpHeaders;
+
+
+
+ int cleanstart;
+
+
+
+ MQTTProperties *connectProperties;
+
+
+
+ MQTTProperties *willProperties;
+
+
+
+
+
+ MQTTAsync_onSuccess5* onSuccess5;
+
+
+
+
+
+ MQTTAsync_onFailure5* onFailure5;
+} MQTTAsync_connectOptions;
+extern int MQTTAsync_connect(MQTTAsync handle, const MQTTAsync_connectOptions* options);
+
+
+typedef struct
+{
+
+ char struct_id[4];
+
+ int struct_version;
+
+
+
+
+ int timeout;
+
+
+
+
+
+ MQTTAsync_onSuccess* onSuccess;
+
+
+
+
+
+ MQTTAsync_onFailure* onFailure;
+
+
+
+
+
+ void* context;
+
+
+
+ MQTTProperties properties;
+
+
+
+ enum MQTTReasonCodes reasonCode;
+
+
+
+
+
+ MQTTAsync_onSuccess5* onSuccess5;
+
+
+
+
+
+ MQTTAsync_onFailure5* onFailure5;
+} MQTTAsync_disconnectOptions;
+extern int MQTTAsync_disconnect(MQTTAsync handle, const MQTTAsync_disconnectOptions* options);
+extern int MQTTAsync_isConnected(MQTTAsync handle);
+extern int MQTTAsync_subscribe(MQTTAsync handle, const char* topic, int qos, MQTTAsync_responseOptions* response);
+extern int MQTTAsync_subscribeMany(MQTTAsync handle, int count, char* const* topic, int* qos, MQTTAsync_responseOptions* response);
+extern int MQTTAsync_unsubscribe(MQTTAsync handle, const char* topic, MQTTAsync_responseOptions* response);
+extern int MQTTAsync_unsubscribeMany(MQTTAsync handle, int count, char* const* topic, MQTTAsync_responseOptions* response);
+extern int MQTTAsync_send(MQTTAsync handle, const char* destinationName, int payloadlen, const void* payload, int qos,
+  int retained, MQTTAsync_responseOptions* response);
+extern int MQTTAsync_sendMessage(MQTTAsync handle, const char* destinationName, const MQTTAsync_message* msg, MQTTAsync_responseOptions* response);
+extern int MQTTAsync_getPendingTokens(MQTTAsync handle, MQTTAsync_token **tokens);
+extern int MQTTAsync_isComplete(MQTTAsync handle, MQTTAsync_token token);
+extern int MQTTAsync_waitForCompletion(MQTTAsync handle, MQTTAsync_token token, unsigned long timeout);
+extern void MQTTAsync_freeMessage(MQTTAsync_message** msg);
+extern void MQTTAsync_free(void* ptr);
+extern void MQTTAsync_destroy(MQTTAsync* handle);
+
+
+
+enum MQTTASYNC_TRACE_LEVELS
+{
+ MQTTASYNC_TRACE_MAXIMUM = 1,
+ MQTTASYNC_TRACE_MEDIUM,
+ MQTTASYNC_TRACE_MINIMUM,
+ MQTTASYNC_TRACE_PROTOCOL,
+ MQTTASYNC_TRACE_ERROR,
+ MQTTASYNC_TRACE_SEVERE,
+ MQTTASYNC_TRACE_FATAL,
+};
+
+
+
+
+
+
+
+extern void MQTTAsync_setTraceLevel(enum MQTTASYNC_TRACE_LEVELS level);
+typedef void MQTTAsync_traceCallback(enum MQTTASYNC_TRACE_LEVELS level, char* message);
+
+
+
+
+
+
+
+extern void MQTTAsync_setTraceCallback(MQTTAsync_traceCallback* callback);
+
+
+
+
+
+
+
+extern MQTTAsync_nameValue* MQTTAsync_getVersionInfo(void);
+
+
+
+
+
+
+
+extern const char* MQTTAsync_strerror(int code);
+
+
+
+
+
+
+typedef const unsigned char* cbor_data;
+typedef unsigned char* cbor_mutable_data;
+
+
+typedef enum cbor_type {
+  CBOR_TYPE_UINT
+  ,
+  CBOR_TYPE_NEGINT
+  ,
+  CBOR_TYPE_BYTESTRING
+  ,
+  CBOR_TYPE_STRING
+  ,
+  CBOR_TYPE_ARRAY
+  ,
+  CBOR_TYPE_MAP
+  ,
+  CBOR_TYPE_TAG
+  ,
+  CBOR_TYPE_FLOAT_CTRL
+
+} cbor_type;
+
+
+typedef enum {
+  CBOR_ERR_NONE,
+  CBOR_ERR_NOTENOUGHDATA,
+  CBOR_ERR_NODATA,
+  CBOR_ERR_MALFORMATED,
+  CBOR_ERR_MEMERROR
+
+  ,
+  CBOR_ERR_SYNTAXERROR
+} cbor_error_code;
+
+
+typedef enum {
+  CBOR_INT_8,
+  CBOR_INT_16,
+  CBOR_INT_32,
+  CBOR_INT_64
+} cbor_int_width;
+
+
+typedef enum {
+  CBOR_FLOAT_0
+  ,
+  CBOR_FLOAT_16
+  ,
+  CBOR_FLOAT_32
+  ,
+  CBOR_FLOAT_64
+} cbor_float_width;
+
+
+typedef enum {
+  _CBOR_METADATA_DEFINITE,
+  _CBOR_METADATA_INDEFINITE
+} _cbor_dst_metadata;
+
+
+typedef enum {
+  CBOR_CTRL_NONE = 0,
+  CBOR_CTRL_FALSE = 20,
+  CBOR_CTRL_TRUE = 21,
+  CBOR_CTRL_NULL = 22,
+  CBOR_CTRL_UNDEF = 23
+} _cbor_ctrl;
+
+
+struct _cbor_int_metadata {
+  cbor_int_width width;
+};
+
+
+struct _cbor_bytestring_metadata {
+  size_t length;
+  _cbor_dst_metadata type;
+};
+
+
+struct _cbor_string_metadata {
+  size_t length;
+  size_t codepoint_count;
+
+  _cbor_dst_metadata type;
+};
+
+
+struct _cbor_array_metadata {
+  size_t allocated;
+  size_t end_ptr;
+  _cbor_dst_metadata type;
+};
+
+
+struct _cbor_map_metadata {
+  size_t allocated;
+  size_t end_ptr;
+  _cbor_dst_metadata type;
+};
+
+
+
+
+
+
+
+struct _cbor_tag_metadata {
+  struct cbor_item_t* tagged_item;
+  uint64_t value;
+};
+
+
+struct _cbor_float_ctrl_metadata {
+  cbor_float_width width;
+  uint8_t ctrl;
+};
+
+
+union _cbor_float_helper {
+  float as_float;
+  uint32_t as_uint;
+};
+
+
+union _cbor_double_helper {
+  double as_double;
+  uint64_t as_uint;
+};
+
+
+
+union cbor_item_metadata {
+  struct _cbor_int_metadata int_metadata;
+  struct _cbor_bytestring_metadata bytestring_metadata;
+  struct _cbor_string_metadata string_metadata;
+  struct _cbor_array_metadata array_metadata;
+  struct _cbor_map_metadata map_metadata;
+  struct _cbor_tag_metadata tag_metadata;
+  struct _cbor_float_ctrl_metadata float_ctrl_metadata;
+};
+
+
+typedef struct cbor_item_t {
+
+  union cbor_item_metadata metadata;
+
+  size_t refcount;
+
+  cbor_type type;
+
+  unsigned char* data;
+} cbor_item_t;
+
+
+
+
+
+struct cbor_indefinite_string_data {
+  size_t chunk_count;
+  size_t chunk_capacity;
+  cbor_item_t** chunks;
+};
+
+
+struct cbor_error {
+
+  size_t position;
+
+  cbor_error_code code;
+};
+
+
+struct cbor_pair {
+  cbor_item_t *key, *value;
+};
+
+
+struct cbor_load_result {
+
+  struct cbor_error error;
+
+  size_t read;
+};
+
+
+enum cbor_decoder_status {
+  CBOR_DECODER_FINISHED
+  ,
+  CBOR_DECODER_NEDATA
+  ,
+  CBOR_DECODER_EBUFFER
+  ,
+  CBOR_DECODER_ERROR
+};
+
+
+struct cbor_decoder_result {
+
+  size_t read;
+
+  enum cbor_decoder_status status;
+
+
+  size_t required;
+};
+static const uint8_t cbor_major_version = 0;
+static const uint8_t cbor_minor_version = 7;
+static const uint8_t cbor_patch_version = 0;
+cbor_type cbor_typeof(
+    const cbor_item_t *item);
+
+
+
+
+
+
+
+bool cbor_isa_uint(const cbor_item_t *item);
+
+
+
+
+
+bool cbor_isa_negint(const cbor_item_t *item);
+
+
+
+
+
+bool cbor_isa_bytestring(const cbor_item_t *item);
+
+
+
+
+
+bool cbor_isa_string(const cbor_item_t *item);
+
+
+
+
+
+bool cbor_isa_array(const cbor_item_t *item);
+
+
+
+
+
+bool cbor_isa_map(const cbor_item_t *item);
+
+
+
+
+
+bool cbor_isa_tag(const cbor_item_t *item);
+
+
+
+
+
+bool cbor_isa_float_ctrl(const cbor_item_t *item);
+
+
+
+
+
+
+
+bool cbor_is_int(const cbor_item_t *item);
+
+
+
+
+
+bool cbor_is_float(const cbor_item_t *item);
+
+
+
+
+
+bool cbor_is_bool(const cbor_item_t *item);
+bool cbor_is_null(const cbor_item_t *item);
+bool cbor_is_undef(const cbor_item_t *item);
+cbor_item_t *cbor_incref(cbor_item_t *item);
+void cbor_decref(cbor_item_t **item);
+void cbor_intermediate_decref(cbor_item_t *item);
+size_t cbor_refcount(const cbor_item_t *item);
+cbor_item_t *cbor_move(cbor_item_t *item);
+
+
+size_t cbor_array_size(const cbor_item_t* item);
+
+
+
+
+
+
+size_t cbor_array_allocated(const cbor_item_t* item);
+
+
+
+
+
+
+
+cbor_item_t* cbor_array_get(const cbor_item_t* item, size_t index);
+bool cbor_array_set(cbor_item_t* item, size_t index, cbor_item_t* value);
+bool cbor_array_replace(cbor_item_t* item, size_t index, cbor_item_t* value);
+
+
+
+
+
+
+bool cbor_array_is_definite(const cbor_item_t* item);
+
+
+
+
+
+
+bool cbor_array_is_indefinite(const cbor_item_t* item);
+cbor_item_t** cbor_array_handle(const cbor_item_t* item);
+
+
+
+
+
+
+cbor_item_t* cbor_new_definite_array(size_t size);
+
+
+
+
+
+cbor_item_t* cbor_new_indefinite_array();
+bool cbor_array_push(cbor_item_t* array, cbor_item_t* pushee);
+size_t cbor_bytestring_length(const cbor_item_t *item);
+
+
+
+
+
+
+bool cbor_bytestring_is_definite(const cbor_item_t *item);
+
+
+
+
+
+
+bool cbor_bytestring_is_indefinite(const cbor_item_t *item);
+cbor_mutable_data cbor_bytestring_handle(const cbor_item_t *item);
+void cbor_bytestring_set_handle(cbor_item_t *item,
+                                cbor_mutable_data restrict data,
+                                size_t length);
+cbor_item_t **cbor_bytestring_chunks_handle(const cbor_item_t *item);
+
+
+
+
+
+
+size_t cbor_bytestring_chunk_count(const cbor_item_t *item);
+bool cbor_bytestring_add_chunk(cbor_item_t *item, cbor_item_t *chunk);
+
+
+
+
+
+
+
+cbor_item_t *cbor_new_definite_bytestring();
+
+
+
+
+
+
+
+cbor_item_t *cbor_new_indefinite_bytestring();
+cbor_item_t *cbor_build_bytestring(cbor_data handle, size_t length);
+bool cbor_float_ctrl_is_ctrl(const cbor_item_t *item);
+
+
+
+
+
+
+cbor_float_width cbor_float_get_width(const cbor_item_t *item);
+float cbor_float_get_float2(const cbor_item_t *item);
+float cbor_float_get_float4(const cbor_item_t *item);
+double cbor_float_get_float8(const cbor_item_t *item);
+double cbor_float_get_float(const cbor_item_t *item);
+
+
+
+
+
+
+bool cbor_get_bool(const cbor_item_t *item);
+
+
+
+
+
+
+
+cbor_item_t *cbor_new_ctrl();
+
+
+
+
+
+
+
+cbor_item_t *cbor_new_float2();
+
+
+
+
+
+
+
+cbor_item_t *cbor_new_float4();
+
+
+
+
+
+
+
+cbor_item_t *cbor_new_float8();
+
+
+
+
+
+cbor_item_t *cbor_new_null();
+
+
+
+
+
+cbor_item_t *cbor_new_undef();
+
+
+
+
+
+
+cbor_item_t *cbor_build_bool(bool value);
+void cbor_set_ctrl(cbor_item_t *item, uint8_t value);
+
+
+
+
+
+
+void cbor_set_bool(cbor_item_t *item, bool value);
+
+
+
+
+
+
+void cbor_set_float2(cbor_item_t *item, float value);
+
+
+
+
+
+
+void cbor_set_float4(cbor_item_t *item, float value);
+
+
+
+
+
+
+void cbor_set_float8(cbor_item_t *item, double value);
+
+
+
+
+
+
+uint8_t cbor_ctrl_value(const cbor_item_t *item);
+
+
+
+
+
+
+cbor_item_t *cbor_build_float2(float value);
+
+
+
+
+
+
+cbor_item_t *cbor_build_float4(float value);
+
+
+
+
+
+
+cbor_item_t *cbor_build_float8(double value);
+
+
+
+
+
+
+cbor_item_t *cbor_build_ctrl(uint8_t value);
+uint8_t cbor_get_uint8(const cbor_item_t *item);
+
+
+
+
+
+
+uint16_t cbor_get_uint16(const cbor_item_t *item);
+
+
+
+
+
+
+uint32_t cbor_get_uint32(const cbor_item_t *item);
+
+
+
+
+
+
+uint64_t cbor_get_uint64(const cbor_item_t *item);
+
+
+
+
+
+
+uint64_t cbor_get_int(const cbor_item_t *item);
+
+
+
+
+
+
+
+void cbor_set_uint8(cbor_item_t *item, uint8_t value);
+
+
+
+
+
+
+
+void cbor_set_uint16(cbor_item_t *item, uint16_t value);
+
+
+
+
+
+
+
+void cbor_set_uint32(cbor_item_t *item, uint32_t value);
+
+
+
+
+
+
+
+void cbor_set_uint64(cbor_item_t *item, uint64_t value);
+
+
+
+
+
+
+cbor_int_width cbor_int_get_width(const cbor_item_t *item);
+
+
+
+
+
+
+
+void cbor_mark_uint(cbor_item_t *item);
+
+
+
+
+
+
+
+void cbor_mark_negint(cbor_item_t *item);
+cbor_item_t *cbor_new_int8();
+cbor_item_t *cbor_new_int16();
+cbor_item_t *cbor_new_int32();
+cbor_item_t *cbor_new_int64();
+
+
+
+
+
+
+cbor_item_t *cbor_build_uint8(uint8_t value);
+
+
+
+
+
+
+cbor_item_t *cbor_build_uint16(uint16_t value);
+
+
+
+
+
+
+cbor_item_t *cbor_build_uint32(uint32_t value);
+
+
+
+
+
+
+cbor_item_t *cbor_build_uint64(uint64_t value);
+
+
+
+
+
+
+cbor_item_t *cbor_build_negint8(uint8_t value);
+
+
+
+
+
+
+cbor_item_t *cbor_build_negint16(uint16_t value);
+
+
+
+
+
+
+cbor_item_t *cbor_build_negint32(uint32_t value);
+
+
+
+
+
+
+cbor_item_t *cbor_build_negint64(uint64_t value);
+size_t cbor_map_size(const cbor_item_t *item);
+
+
+
+
+
+
+size_t cbor_map_allocated(const cbor_item_t *item);
+
+
+
+
+
+
+cbor_item_t *cbor_new_definite_map(size_t size);
+
+
+
+
+
+
+cbor_item_t *cbor_new_indefinite_map();
+bool cbor_map_add(cbor_item_t *item, struct cbor_pair pair);
+bool _cbor_map_add_key(cbor_item_t *item, cbor_item_t *key);
+bool _cbor_map_add_value(cbor_item_t *item, cbor_item_t *value);
+
+
+
+
+
+
+bool cbor_map_is_definite(const cbor_item_t *item);
+
+
+
+
+
+
+bool cbor_map_is_indefinite(const cbor_item_t *item);
+
+
+
+
+
+
+
+struct cbor_pair *cbor_map_handle(const cbor_item_t *item);
+size_t cbor_string_length(const cbor_item_t *item);
+size_t cbor_string_codepoint_count(const cbor_item_t *item);
+
+
+
+
+
+
+bool cbor_string_is_definite(const cbor_item_t *item);
+
+
+
+
+
+
+bool cbor_string_is_indefinite(const cbor_item_t *item);
+cbor_mutable_data cbor_string_handle(const cbor_item_t *item);
+void cbor_string_set_handle(cbor_item_t *item,
+                            cbor_mutable_data restrict data,
+                            size_t length);
+cbor_item_t **cbor_string_chunks_handle(const cbor_item_t *item);
+
+
+
+
+
+
+size_t cbor_string_chunk_count(const cbor_item_t *item);
+bool cbor_string_add_chunk(cbor_item_t *item, cbor_item_t *chunk);
+
+
+
+
+
+
+
+cbor_item_t *cbor_new_definite_string();
+
+
+
+
+
+
+
+cbor_item_t *cbor_new_indefinite_string();
+cbor_item_t *cbor_build_string(const char *val);
+cbor_item_t *cbor_build_stringn(const char *val, size_t length);
+cbor_item_t *cbor_new_tag(uint64_t value);
+
+
+
+
+
+
+cbor_item_t *cbor_tag_item(const cbor_item_t *item);
+
+
+
+
+
+
+uint64_t cbor_tag_value(const cbor_item_t *item);
+
+
+
+
+
+
+void cbor_tag_set_item(cbor_item_t *item, cbor_item_t *tagged_item);
+
+
+
+
+
+
+
+cbor_item_t *cbor_build_tag(uint64_t value, cbor_item_t *item);
+
+typedef void (*cbor_int8_callback)(void *, uint8_t);
+
+
+typedef void (*cbor_int16_callback)(void *, uint16_t);
+
+
+typedef void (*cbor_int32_callback)(void *, uint32_t);
+
+
+typedef void (*cbor_int64_callback)(void *, uint64_t);
+
+
+typedef void (*cbor_simple_callback)(void *);
+
+
+typedef void (*cbor_string_callback)(void *, cbor_data, size_t);
+
+
+typedef void (*cbor_collection_callback)(void *, size_t);
+
+
+typedef void (*cbor_float_callback)(void *, float);
+
+
+typedef void (*cbor_double_callback)(void *, double);
+
+
+typedef void (*cbor_bool_callback)(void *, bool);
+
+
+struct cbor_callbacks {
+
+  cbor_int8_callback uint8;
+
+  cbor_int16_callback uint16;
+
+  cbor_int32_callback uint32;
+
+  cbor_int64_callback uint64;
+
+
+  cbor_int64_callback negint64;
+
+  cbor_int32_callback negint32;
+
+  cbor_int16_callback negint16;
+
+  cbor_int8_callback negint8;
+
+
+  cbor_simple_callback byte_string_start;
+
+  cbor_string_callback byte_string;
+
+
+  cbor_string_callback string;
+
+  cbor_simple_callback string_start;
+
+
+  cbor_simple_callback indef_array_start;
+
+  cbor_collection_callback array_start;
+
+
+  cbor_simple_callback indef_map_start;
+
+  cbor_collection_callback map_start;
+
+
+  cbor_int64_callback tag;
+
+
+  cbor_float_callback float2;
+
+  cbor_float_callback float4;
+
+  cbor_double_callback float8;
+
+  cbor_simple_callback undefined;
+
+  cbor_simple_callback null;
+
+  cbor_bool_callback boolean;
+
+
+  cbor_simple_callback indef_break;
+};
+
+
+void cbor_null_uint8_callback(void *, uint8_t);
+
+
+void cbor_null_uint16_callback(void *, uint16_t);
+
+
+void cbor_null_uint32_callback(void *, uint32_t);
+
+
+void cbor_null_uint64_callback(void *, uint64_t);
+
+
+void cbor_null_negint8_callback(void *, uint8_t);
+
+
+void cbor_null_negint16_callback(void *, uint16_t);
+
+
+void cbor_null_negint32_callback(void *, uint32_t);
+
+
+void cbor_null_negint64_callback(void *, uint64_t);
+
+
+void cbor_null_string_callback(void *, cbor_data, size_t);
+
+
+void cbor_null_string_start_callback(void *);
+
+
+void cbor_null_byte_string_callback(void *, cbor_data, size_t);
+
+
+void cbor_null_byte_string_start_callback(void *);
+
+
+void cbor_null_array_start_callback(void *, size_t);
+
+
+void cbor_null_indef_array_start_callback(void *);
+
+
+void cbor_null_map_start_callback(void *, size_t);
+
+
+void cbor_null_indef_map_start_callback(void *);
+
+
+void cbor_null_tag_callback(void *, uint64_t);
+
+
+void cbor_null_float2_callback(void *, float);
+
+
+void cbor_null_float4_callback(void *, float);
+
+
+void cbor_null_float8_callback(void *, double);
+
+
+void cbor_null_null_callback(void *);
+
+
+void cbor_null_undefined_callback(void *);
+
+
+void cbor_null_boolean_callback(void *, bool);
+
+
+void cbor_null_indef_break_callback(void *);
+
+
+extern const struct cbor_callbacks cbor_empty_callbacks;
+size_t cbor_encode_uint8(uint8_t, unsigned char *, size_t);
+
+size_t cbor_encode_uint16(uint16_t, unsigned char *, size_t);
+
+size_t cbor_encode_uint32(uint32_t, unsigned char *, size_t);
+
+size_t cbor_encode_uint64(uint64_t, unsigned char *, size_t);
+
+size_t cbor_encode_uint(uint64_t, unsigned char *, size_t);
+
+size_t cbor_encode_negint8(uint8_t, unsigned char *, size_t);
+
+size_t cbor_encode_negint16(uint16_t, unsigned char *, size_t);
+
+size_t cbor_encode_negint32(uint32_t, unsigned char *, size_t);
+
+size_t cbor_encode_negint64(uint64_t, unsigned char *, size_t);
+
+size_t cbor_encode_negint(uint64_t, unsigned char *, size_t);
+
+size_t cbor_encode_bytestring_start(size_t, unsigned char *, size_t);
+
+size_t cbor_encode_indef_bytestring_start(unsigned char *, size_t);
+
+size_t cbor_encode_string_start(size_t, unsigned char *, size_t);
+
+size_t cbor_encode_indef_string_start(unsigned char *, size_t);
+
+size_t cbor_encode_array_start(size_t, unsigned char *, size_t);
+
+size_t cbor_encode_indef_array_start(unsigned char *, size_t);
+
+size_t cbor_encode_map_start(size_t, unsigned char *, size_t);
+
+size_t cbor_encode_indef_map_start(unsigned char *, size_t);
+
+size_t cbor_encode_tag(uint64_t, unsigned char *, size_t);
+
+size_t cbor_encode_bool(bool, unsigned char *, size_t);
+
+size_t cbor_encode_null(unsigned char *, size_t);
+
+size_t cbor_encode_undef(unsigned char *, size_t);
+size_t cbor_encode_half(float, unsigned char *, size_t);
+
+size_t cbor_encode_single(float, unsigned char *, size_t);
+
+size_t cbor_encode_double(double, unsigned char *, size_t);
+
+size_t cbor_encode_break(unsigned char *, size_t);
+
+size_t cbor_encode_ctrl(uint8_t, unsigned char *, size_t);
+size_t cbor_serialize(const cbor_item_t *item, cbor_mutable_data buffer,
+                      size_t buffer_size);
+size_t cbor_serialize_alloc(const cbor_item_t *item, cbor_mutable_data *buffer,
+                            size_t *buffer_size);
+size_t cbor_serialize_uint(const cbor_item_t *, cbor_mutable_data, size_t);
+size_t cbor_serialize_negint(const cbor_item_t *, cbor_mutable_data, size_t);
+size_t cbor_serialize_bytestring(const cbor_item_t *, cbor_mutable_data,
+                                 size_t);
+size_t cbor_serialize_string(const cbor_item_t *, cbor_mutable_data, size_t);
+size_t cbor_serialize_array(const cbor_item_t *, cbor_mutable_data, size_t);
+size_t cbor_serialize_map(const cbor_item_t *, cbor_mutable_data, size_t);
+size_t cbor_serialize_tag(const cbor_item_t *, cbor_mutable_data, size_t);
+size_t cbor_serialize_float_ctrl(const cbor_item_t *, cbor_mutable_data,
+                                 size_t);
+struct cbor_decoder_result cbor_stream_decode(
+    cbor_data buffer, size_t buffer_size,
+    const struct cbor_callbacks* callbacks, void* context);
+cbor_item_t* cbor_load(cbor_data source, size_t source_size,
+                       struct cbor_load_result* result);
+cbor_item_t* cbor_copy(cbor_item_t* item);
+
+
+
+
+void cbor_describe(cbor_item_t* item, FILE* out);
+typedef struct _nvoid_t
+{
+    void *data;
+    int len;
+} nvoid_t;
+
+
+
+
+
+
+nvoid_t *nvoid_new(void *data, int len);
+nvoid_t *nvoid_null();
+
+void nvoid_free(nvoid_t *n);
+nvoid_t *nvoid_append(nvoid_t *n, void *data, int len);
+nvoid_t *nvoid_concat(nvoid_t *f, nvoid_t *s);
+
+void nvoid_print(nvoid_t *n);
+void nvoid_print_ascii(nvoid_t *n);
+
+
+
+
+
+
+
+enum argtype_t {
+    NULL_TYPE,
+    STRING_TYPE,
+    INT_TYPE,
+    DOUBLE_TYPE,
+    NVOID_TYPE
+};
+
+typedef struct _arg_t
+{
+    enum argtype_t type;
+    union _argvalue_t
+    {
+        int ival;
+        char *sval;
+        double dval;
+        nvoid_t *nval;
+    } val;
+} arg_t;
+
+
+typedef struct _rvalue_t
+{
+    arg_t *qargs;
+    cbor_item_t *arr;
+    struct alloc_memory_list *list;
+
+} rvalue_t;
+typedef struct _command_t
+{
+    char *cmd;
+    char *opt;
+    char *cond;
+    int condvec;
+    char *actname;
+    char *actid;
+    char *actarg;
+    unsigned char *buffer;
+    int length;
+    cbor_item_t *cdata;
+    cbor_item_t *easy_arr;
+    arg_t *args;
+    int nargs;
+    struct alloc_memory_list * cbor_item_list;
+
+
+    int refcount;
+    pthread_mutex_t lock;
+
+    long id;
+
+} command_t;
+
+
+command_t *command_rebuild(command_t *cmd);
+command_t *command_new_using_cbor(const char *cmd, char *opt, char *cond, int condvec, char *actname, char *actid, char *actarg, cbor_item_t *arr, arg_t *args, int nargs);
+command_t *command_new_using_arg(char *cmd, char *opt, char *cond, int condvec,
+                    char *actname, char *actid, char *actarg, arg_t *args, int nargs);
+command_t *command_new_using_arg_only(const char *cmd, char *opt, char *cond, int condvec, char *actname, char *actid, char *actarg,
+                    arg_t *args, int nargs);
+command_t *command_new(const char *cmd, char *opt, char *cond, int condvec, char *actname, char *actid, char *actarg, const char *fmt, ...);
+rvalue_t *command_qargs_alloc(int remote, char *fmt, va_list args);
+command_t *command_from_data(char *fmt, nvoid_t *data);
+
+void command_hold(command_t *cmd);
+void command_free(command_t *cmd);
+void command_arg_print(arg_t *arg);
+void command_print(command_t *cmd);
+
+
+
+
+void command_arg_copy(arg_t *darg, arg_t *sarg);
+arg_t *command_arg_clone(arg_t *arg);
+void command_arg_free(arg_t *arg);
+void command_arg_print(arg_t *arg);
+
+
+
+
+
+
+
+
+
+typedef struct _comboptr_t
+{
+    void *arg1;
+    void *arg2;
+    void *arg3;
+    int iarg;
+    void **argv;
+    unsigned long long lluarg;
+    size_t size;
+} comboptr_t;
+
+
+comboptr_t *create_combo2llu_ptr(void *arg1, void *arg2, size_t size, unsigned long long lluarg);
+comboptr_t *create_combo3_ptr(void *arg1, void *arg2, void *arg3);
+comboptr_t *create_combo3i_ptr(void *arg1, void *arg2, void *arg3, int iarg);
+comboptr_t *create_combo3ip_ptr(void *arg1, void *arg2, void *arg3, int iarg, void **argv);
+
+
+
+
+
+typedef struct _corestate_t
+{
+    char *device_id;
+    int port;
+    bool cf_pending;
+    int serial_num;
+
+    MQTTAsync mqttserv[3];
+    bool mqttenabled[3];
+    bool mqttpending[3];
+    int pendingcount;
+    char *mqtthost[3];
+    char *hid[3];
+
+    char *redserver;
+    int redport;
+
+} corestate_t;
+
+
+extern int mheight;
+
+
+
+
+
+
+
+corestate_t *core_init(int port, int serialnum);
+void core_setup(corestate_t *cs, int port);
+void core_set_redis(corestate_t *cs, char *server, int port);
+void core_createserver(corestate_t *cs, int indx, char *url);
+void core_reconnect_i(corestate_t *cs, int indx);
+void core_connect(corestate_t *cs, int indx, void (*onconnect)(void *, MQTTAsync_successData *), char *hid);
+void core_sethost(corestate_t *cs, int indx, char *hid);
+bool core_disconnect(corestate_t *cs, int indx, char *hid);
+void core_setcallbacks(corestate_t *cs, comboptr_t *ctx,
+        MQTTAsync_connectionLost *cl,
+        MQTTAsync_messageArrived *ma,
+        MQTTAsync_deliveryComplete *dc);
+void core_set_subscription(corestate_t *cs, int level);
+void core_check_pending(corestate_t *cs);
+extern int nn_errno (void);
+
+
+extern const char *nn_strerror (int errnum);
+
+
+
+
+
+extern const char *nn_symbol (int i, int *value);
+struct nn_symbol_properties {
+
+
+    int value;
+
+
+    const char* name;
+
+
+    int ns;
+
+
+    int type;
+
+
+    int unit;
+};
+
+
+
+
+extern int nn_symbol_info (int i,
+    struct nn_symbol_properties *buf, int buflen);
+
+
+
+
+
+extern void nn_term (void);
+
+
+
+
+
+
+
+extern void *nn_allocmsg (size_t size, int type);
+extern void *nn_reallocmsg (void *msg, size_t size);
+extern int nn_freemsg (void *msg);
+
+
+
+
+
+struct nn_iovec {
+    void *iov_base;
+    size_t iov_len;
+};
+
+struct nn_msghdr {
+    struct nn_iovec *msg_iov;
+    int msg_iovlen;
+    void *msg_control;
+    size_t msg_controllen;
+};
+
+struct nn_cmsghdr {
+    size_t cmsg_len;
+    int cmsg_level;
+    int cmsg_type;
+};
+
+
+extern struct nn_cmsghdr *nn_cmsg_nxthdr_ (
+    const struct nn_msghdr *mhdr,
+    const struct nn_cmsghdr *cmsg);
+extern int nn_socket (int domain, int protocol);
+extern int nn_close (int s);
+extern int nn_setsockopt (int s, int level, int option, const void *optval,
+    size_t optvallen);
+extern int nn_getsockopt (int s, int level, int option, void *optval,
+    size_t *optvallen);
+extern int nn_bind (int s, const char *addr);
+extern int nn_connect (int s, const char *addr);
+extern int nn_shutdown (int s, int how);
+extern int nn_send (int s, const void *buf, size_t len, int flags);
+extern int nn_recv (int s, void *buf, size_t len, int flags);
+extern int nn_sendmsg (int s, const struct nn_msghdr *msghdr, int flags);
+extern int nn_recvmsg (int s, struct nn_msghdr *msghdr, int flags);
+struct nn_pollfd {
+    int fd;
+    short events;
+    short revents;
+};
+
+extern int nn_poll (struct nn_pollfd *fds, int nfds, int timeout);
+
+
+
+
+
+extern int nn_device (int s1, int s2);
+extern uint64_t nn_get_statistic (int s, int stat);
+typedef struct _simplequeue_t
+{
+ char *name;
+ int pushsock, pullsock;
+ bool ownedbyq;
+
+} simplequeue_t;
+
+
+
+
+
+
+simplequeue_t *queue_new(bool ownedbyq);
+bool queue_delete(simplequeue_t *queue);
+
+bool queue_enq(simplequeue_t *queue, void *data, int len);
+nvoid_t *queue_deq(simplequeue_t *queue);
+nvoid_t *queue_deq_timeout(simplequeue_t *sq, int timeout);
+void queue_print(simplequeue_t *sq);
+
+
+
+
+
+
+
+
+typedef struct _semqueue_t
+{
+ simplequeue_t *queue;
+
+
+
+    sem_t *lock;
+
+
+} semqueue_t;
+
+
+
+
+
+
+semqueue_t *semqueue_new(bool ownedbyq);
+bool semqueue_enq(semqueue_t *queue, void *data, int len);
+nvoid_t *semqueue_deq(semqueue_t *queue);
+
+
+
+
+
+typedef struct Task Task;
+typedef struct Tasklist Tasklist;
+
+int anyready(void);
+int taskcreate(void (*f)(void *arg), void *arg, unsigned int stacksize);
+void taskexit(int);
+void taskexitall(int);
+void taskmain(int argc, char *argv[]);
+int taskyield(void);
+void** taskdata(void);
+void needstack(int);
+void taskname(char*, ...);
+void taskstate(char*, ...);
+char* taskgetname(void);
+char* taskgetstate(void);
+void tasksystem(void);
+unsigned int taskdelay(unsigned int);
+unsigned int taskid(void);
+
+struct Tasklist
+{
+ Task *head;
+ Task *tail;
+};
+
+
+
+
+typedef struct QLock QLock;
+struct QLock
+{
+ Task *owner;
+ Tasklist waiting;
+};
+
+void qlock(QLock*);
+int canqlock(QLock*);
+void qunlock(QLock*);
+
+
+
+
+typedef struct RWLock RWLock;
+struct RWLock
+{
+ int readers;
+ Task *writer;
+ Tasklist rwaiting;
+ Tasklist wwaiting;
+};
+
+void rlock(RWLock*);
+int canrlock(RWLock*);
+void runlock(RWLock*);
+
+void wlock(RWLock*);
+int canwlock(RWLock*);
+void wunlock(RWLock*);
+
+
+
+
+typedef struct Rendez Rendez;
+
+struct Rendez
+{
+ QLock *l;
+ Tasklist waiting;
+};
+
+void tasksleep(Rendez*);
+int taskwakeup(Rendez*);
+int taskwakeupall(Rendez*);
+
+
+
+
+typedef struct Alt Alt;
+typedef struct Altarray Altarray;
+typedef struct Channel Channel;
+
+enum
+{
+ CHANEND,
+ CHANSND,
+ CHANRCV,
+ CHANNOP,
+ CHANNOBLK,
+};
+
+struct Alt
+{
+ Channel *c;
+ void *v;
+ unsigned int op;
+ Task *task;
+ Alt *xalt;
+};
+
+struct Altarray
+{
+ Alt **a;
+ unsigned int n;
+ unsigned int m;
+};
+
+struct Channel
+{
+ unsigned int bufsize;
+ unsigned int elemsize;
+ unsigned char *buf;
+ unsigned int nbuf;
+ unsigned int off;
+ Altarray asend;
+ Altarray arecv;
+ char *name;
+};
+
+int chanalt(Alt *alts);
+Channel* chancreate(int elemsize, int elemcnt);
+void chanfree(Channel *c);
+int chaninit(Channel *c, int elemsize, int elemcnt);
+int channbrecv(Channel *c, void *v);
+void* channbrecvp(Channel *c);
+unsigned long channbrecvul(Channel *c);
+int channbsend(Channel *c, void *v);
+int channbsendp(Channel *c, void *v);
+int channbsendul(Channel *c, unsigned long v);
+int chanrecv(Channel *c, void *v);
+void* chanrecvp(Channel *c);
+unsigned long chanrecvul(Channel *c);
+int chansend(Channel *c, void *v);
+int chansendp(Channel *c, void *v);
+int chansendul(Channel *c, unsigned long v);
+
+
+
+
+int fdread(int, void*, int);
+int fdread1(int, void*, int);
+int fdwrite(int, void*, int);
+void fdwait(int, int);
+int fdnoblock(int);
+
+void fdtask(void*);
+
+
+
+
+enum
+{
+ UDP = 0,
+ TCP = 1,
+};
+
+int netannounce(int, char*, int);
+int netaccept(int, char*, int*);
+int netdial(int, char*, int);
+int netlookup(char*, uint32_t*);
+int netdial(int, char*, int);
+
+
+
+
+
+
+
+
+
+
+
+typedef struct _list_elem_t
+{
+    void *data;
+    int datalen;
+    struct _list_elem_t *next;
+    struct _list_elem_t *prev;
+
+
+    int count;
+
+} list_elem_t;
+
+typedef int (*search_method_f)(void *elem, void *arg);
+
+list_elem_t *create_list();
+
+int list_length(list_elem_t *lst);
+nvoid_t *get_list_head(list_elem_t *lst);
+int put_list_tail(list_elem_t *lst, void *data, int len);
+void print_list(list_elem_t *head);
+
+
+void del_list_item(list_elem_t *head, void *e);
+void del_list_tail(list_elem_t *lst);
+bool find_list_item(list_elem_t *lst, char *elem);
+void *search_item(list_elem_t *lst, char *key, search_method_f sfunc);
+
+
+
+
+
+
+
+
+typedef struct _threadsem_t
+{
+    int fildes[2];
+
+} threadsem_t;
+
+
+threadsem_t *threadsem_new();
+void task_wait(threadsem_t *sem);
+void thread_signal(threadsem_t *sem);
+void threadsem_free(threadsem_t *sem);
+
+
+
+
+
+
+
+typedef struct _pushqueue_t
+{
+ simplequeue_t *queue;
+    threadsem_t *sem;
+
+} pushqueue_t;
+
+
+typedef struct _push2queue_t
+{
+ struct nn_pollfd fds[2];
+
+ simplequeue_t *hqueue;
+ simplequeue_t *lqueue;
+    threadsem_t *sem;
+    threadsem_t *goSem;
+
+} push2queue_t;
+
+
+
+
+
+
+pushqueue_t *pqueue_new(bool ownedbyq);
+bool pqueue_delete(pushqueue_t *queue);
+
+bool pqueue_enq(pushqueue_t *queue, void *data, int len);
+nvoid_t *pqueue_deq(pushqueue_t *queue);
+
+push2queue_t *p2queue_new(bool ownedbyq);
+bool p2queue_delete(push2queue_t *queue);
+
+bool p2queue_enq_low(push2queue_t *queue, void *data, int len);
+bool p2queue_enq_high(push2queue_t *queue, void *data, int len);
+nvoid_t *p2queue_deq(push2queue_t *queue);
+nvoid_t *p2queue_deq_high(push2queue_t *queue);
+
+
+
+
+
+
+
+
+typedef void (*activitycallback_f)(void *ten, void *arg);
+
+enum activity_state_t
+{
+    EMPTY,
+    DELETED,
+    COMPLETED,
+    NEW,
+    STARTED,
+    NEGATIVE_COND,
+    PARAMETER_ERROR,
+    TIMEDOUT,
+    PARTIAL,
+    FATAL_ERROR,
+    ABORTED
+};
+
+
+enum activity_type_t
+{
+    SYNC,
+    ASYNC,
+    SYNC_RTE,
+    SYNC_NRT
+};
+
+typedef struct _activity_thread_t
+{
+    int jindx;
+
+
+    int threadid;
+    int taskid;
+
+    pushqueue_t *inq;
+    simplequeue_t *outq;
+    pushqueue_t *resultq;
+
+} activity_thread_t;
+
+
+typedef struct _activity_callback_reg_t
+{
+    char name[64];
+    char signature[64];
+    activitycallback_f cback;
+
+    enum activity_type_t type;
+
+} activity_callback_reg_t;
+
+
+typedef struct _activity_table_t
+{
+
+
+    void *jarg;
+
+    int jcounter;
+    int numcbackregs;
+
+    activity_callback_reg_t *callbackregs[16];
+
+
+    activity_thread_t *athreads[32];
+
+    simplequeue_t *globaloutq;
+    push2queue_t *globalinq;
+
+    list_elem_t *alist;
+
+    pthread_mutex_t lock;
+
+} activity_table_t;
+
+
+typedef struct _jactivity_t
+{
+    enum activity_type_t type;
+
+    char actid[64];
+    int jindx;
+
+    long long accesstime;
+    bool remote;
+    activity_table_t *atable;
+
+} jactivity_t;
+
+
+
+
+
+
+
+char *activity_gettime(char *prefix);
+long long activity_getseconds();
+long activity_getuseconds();
+
+activity_table_t *activity_table_new(void *arg);
+void activity_table_print(activity_table_t *at);
+void activity_callbackreg_print(activity_callback_reg_t *areg);
+void activity_printthread(activity_thread_t *ja);
+
+bool activity_regcallback(activity_table_t *at, char *name, int type, char *sig, activitycallback_f cback);
+activity_callback_reg_t *activity_findcallback(activity_table_t *at, char *name);
+
+void run_activity(void *arg);
+
+activity_thread_t *athread_init(activity_table_t *atbl);
+
+activity_thread_t *athread_getmine(activity_table_t *at);
+activity_thread_t *athread_get(activity_table_t *at, int jindx);
+
+jactivity_t *activity_new(activity_table_t *at, char *actid, bool remote);
+jactivity_t *activity_renew(activity_table_t *at, jactivity_t *jact);
+
+void activity_free(jactivity_t *jact);
+activity_thread_t *athread_getbyindx(activity_table_t *at, int jindx);
+activity_thread_t *athread_getbyid(activity_table_t *at, char *actid);
+jactivity_t *activity_getbyid(activity_table_t *at, char *actid);
+jactivity_t *activity_getbyindx(activity_table_t *at, int jindx);
+void activity_complete(activity_table_t *at, char *opt, char *actid, char *fmt, ...);
+
+
+
+typedef void (*timercallback_f)(void *arg);
+
+typedef struct _timerevent_t
+{
+ int timeoutval;
+ bool repeated;
+ int timeleft;
+ char *tag;
+ timercallback_f cback;
+ void *arg;
+
+} timerevent_t;
+
+
+typedef struct _timertype_t
+{
+ char *name;
+ int numevents;
+ timerevent_t *events[256];
+ simplequeue_t *timerqueue;
+ pthread_t tmrthread;
+
+} timertype_t;
+
+
+timertype_t *timer_init(char *name);
+bool timer_free(timertype_t *tmr);
+
+bool timer_add_event(timertype_t *tmr, int timerval, bool repeat, char *tag, timercallback_f cback, void *arg);
+bool timer_del_event(timertype_t *tmr, char *tag);
+bool timer_cancel_next(timertype_t *tmr, char *tag);
+
+double getcurtime();
+
+
+
+void *timer_loop(void *arg);
+timerevent_t *timer_create_event(int timerval, bool repeated, char *tag, timercallback_f cback, void *arg);
+void timer_decrement_and_fire_events(timertype_t *tmr);
+void timer_insert_event_record(timertype_t *tmr, timerevent_t *tev);
+void timer_delete_records_with_tag(timertype_t *tmr, char *tag);
+void timer_cancel_next_match_event(timertype_t *tmr, char *tag);
+
+
+
+
+
+
+typedef struct js_State js_State;
+
+typedef void *(*js_Alloc)(void *memctx, void *ptr, int size);
+typedef void (*js_Panic)(js_State *J);
+typedef void (*js_CFunction)(js_State *J);
+typedef void (*js_Finalize)(js_State *J, void *p);
+typedef int (*js_HasProperty)(js_State *J, void *p, const char *name);
+typedef int (*js_Put)(js_State *J, void *p, const char *name);
+typedef int (*js_Delete)(js_State *J, void *p, const char *name);
+typedef void (*js_Report)(js_State *J, const char *message);
+
+
+js_State *js_newstate(js_Alloc alloc, void *actx, int flags);
+void js_setcontext(js_State *J, void *uctx);
+void *js_getcontext(js_State *J);
+void js_setreport(js_State *J, js_Report report);
+js_Panic js_atpanic(js_State *J, js_Panic panic);
+void js_freestate(js_State *J);
+void js_gc(js_State *J, int report);
+
+int js_dostring(js_State *J, const char *source);
+int js_dofile(js_State *J, const char *filename);
+int js_ploadstring(js_State *J, const char *filename, const char *source);
+int js_ploadfile(js_State *J, const char *filename);
+int js_pcall(js_State *J, int n);
+int js_pconstruct(js_State *J, int n);
+
+
+
+void *js_savetry(js_State *J);
+
+
+
+
+void js_endtry(js_State *J);
+
+
+enum {
+ JS_STRICT = 1,
+};
+
+
+enum {
+ JS_REGEXP_G = 1,
+ JS_REGEXP_I = 2,
+ JS_REGEXP_M = 4,
+};
+
+
+enum {
+ JS_READONLY = 1,
+ JS_DONTENUM = 2,
+ JS_DONTCONF = 4,
+};
+
+void js_report(js_State *J, const char *message);
+
+void js_newerror(js_State *J, const char *message);
+void js_newevalerror(js_State *J, const char *message);
+void js_newrangeerror(js_State *J, const char *message);
+void js_newreferenceerror(js_State *J, const char *message);
+void js_newsyntaxerror(js_State *J, const char *message);
+void js_newtypeerror(js_State *J, const char *message);
+void js_newurierror(js_State *J, const char *message);
+
+__attribute__((noreturn)) void js_error(js_State *J, const char *fmt, ...) __attribute__((__format__ (__printf__, 2, 3)));
+__attribute__((noreturn)) void js_evalerror(js_State *J, const char *fmt, ...) __attribute__((__format__ (__printf__, 2, 3)));
+__attribute__((noreturn)) void js_rangeerror(js_State *J, const char *fmt, ...) __attribute__((__format__ (__printf__, 2, 3)));
+__attribute__((noreturn)) void js_referenceerror(js_State *J, const char *fmt, ...) __attribute__((__format__ (__printf__, 2, 3)));
+__attribute__((noreturn)) void js_syntaxerror(js_State *J, const char *fmt, ...) __attribute__((__format__ (__printf__, 2, 3)));
+__attribute__((noreturn)) void js_typeerror(js_State *J, const char *fmt, ...) __attribute__((__format__ (__printf__, 2, 3)));
+__attribute__((noreturn)) void js_urierror(js_State *J, const char *fmt, ...) __attribute__((__format__ (__printf__, 2, 3)));
+__attribute__((noreturn)) void js_throw(js_State *J);
+
+void js_loadstring(js_State *J, const char *filename, const char *source);
+void js_loadfile(js_State *J, const char *filename);
+
+void js_eval(js_State *J);
+void js_call(js_State *J, int n);
+void js_construct(js_State *J, int n);
+
+const char *js_ref(js_State *J);
+void js_unref(js_State *J, const char *ref);
+
+void js_getregistry(js_State *J, const char *name);
+void js_setregistry(js_State *J, const char *name);
+void js_delregistry(js_State *J, const char *name);
+
+void js_getglobal(js_State *J, const char *name);
+void js_setglobal(js_State *J, const char *name);
+void js_defglobal(js_State *J, const char *name, int atts);
+
+int js_hasproperty(js_State *J, int idx, const char *name);
+void js_getproperty(js_State *J, int idx, const char *name);
+void js_setproperty(js_State *J, int idx, const char *name);
+void js_defproperty(js_State *J, int idx, const char *name, int atts);
+void js_delproperty(js_State *J, int idx, const char *name);
+void js_defaccessor(js_State *J, int idx, const char *name, int atts);
+
+int js_getlength(js_State *J, int idx);
+void js_setlength(js_State *J, int idx, int len);
+int js_hasindex(js_State *J, int idx, int i);
+void js_getindex(js_State *J, int idx, int i);
+void js_setindex(js_State *J, int idx, int i);
+void js_delindex(js_State *J, int idx, int i);
+
+void js_currentfunction(js_State *J);
+void js_pushglobal(js_State *J);
+void js_pushundefined(js_State *J);
+void js_pushnull(js_State *J);
+void js_pushboolean(js_State *J, int v);
+void js_pushnumber(js_State *J, double v);
+void js_pushstring(js_State *J, const char *v);
+void js_pushlstring(js_State *J, const char *v, int n);
+void js_pushliteral(js_State *J, const char *v);
+
+void js_newobjectx(js_State *J);
+void js_newobject(js_State *J);
+void js_newarray(js_State *J);
+void js_newboolean(js_State *J, int v);
+void js_newnumber(js_State *J, double v);
+void js_newstring(js_State *J, const char *v);
+void js_newcfunction(js_State *J, js_CFunction fun, const char *name, int length);
+void js_newcconstructor(js_State *J, js_CFunction fun, js_CFunction con, const char *name, int length);
+void js_newuserdata(js_State *J, const char *tag, void *data, js_Finalize finalize);
+void js_newuserdatax(js_State *J, const char *tag, void *data, js_HasProperty has, js_Put put, js_Delete del, js_Finalize finalize);
+void js_newregexp(js_State *J, const char *pattern, int flags);
+
+void js_pushiterator(js_State *J, int idx, int own);
+const char *js_nextiterator(js_State *J, int idx);
+
+int js_isdefined(js_State *J, int idx);
+int js_isundefined(js_State *J, int idx);
+int js_isnull(js_State *J, int idx);
+int js_isboolean(js_State *J, int idx);
+int js_isnumber(js_State *J, int idx);
+int js_isstring(js_State *J, int idx);
+int js_isprimitive(js_State *J, int idx);
+int js_isobject(js_State *J, int idx);
+int js_isarray(js_State *J, int idx);
+int js_isregexp(js_State *J, int idx);
+int js_iscoercible(js_State *J, int idx);
+int js_iscallable(js_State *J, int idx);
+int js_isuserdata(js_State *J, int idx, const char *tag);
+
+int js_toboolean(js_State *J, int idx);
+double js_tonumber(js_State *J, int idx);
+const char *js_tostring(js_State *J, int idx);
+void *js_touserdata(js_State *J, int idx, const char *tag);
+
+const char *js_trystring(js_State *J, int idx, const char *error);
+
+int js_tointeger(js_State *J, int idx);
+int js_toint32(js_State *J, int idx);
+unsigned int js_touint32(js_State *J, int idx);
+short js_toint16(js_State *J, int idx);
+unsigned short js_touint16(js_State *J, int idx);
+
+int js_gettop(js_State *J);
+void js_settop(js_State *J, int idx);
+void js_pop(js_State *J, int n);
+void js_rot(js_State *J, int n);
+void js_copy(js_State *J, int idx);
+void js_remove(js_State *J, int idx);
+void js_insert(js_State *J, int idx);
+void js_replace(js_State* J, int idx);
+
+void js_dup(js_State *J);
+void js_dup2(js_State *J);
+void js_rot2(js_State *J);
+void js_rot3(js_State *J);
+void js_rot4(js_State *J);
+void js_rot2pop1(js_State *J);
+void js_rot3pop2(js_State *J);
+
+void js_concat(js_State *J);
+int js_compare(js_State *J, int *okay);
+int js_equal(js_State *J);
+int js_strictequal(js_State *J);
+int js_instanceof(js_State *J);
+void print(js_State *J);
+
+void jcond_init();
+void jcond_eval_str(char *s);
+char *jcond_eval_str_str(char *s);
+int jcond_eval_bool(char *s);
+int jcond_eval_int(char *s);
+double jcond_eval_double(char *s);
+void jcond_free();
+
+
+
+
+
+
+typedef struct redisReadTask {
+    int type;
+    int elements;
+    int idx;
+    void *obj;
+    struct redisReadTask *parent;
+    void *privdata;
+} redisReadTask;
+
+typedef struct redisReplyObjectFunctions {
+    void *(*createString)(const redisReadTask*, char*, size_t);
+    void *(*createArray)(const redisReadTask*, int);
+    void *(*createInteger)(const redisReadTask*, long long);
+    void *(*createNil)(const redisReadTask*);
+    void (*freeObject)(void*);
+} redisReplyObjectFunctions;
+
+typedef struct redisReader {
+    int err;
+    char errstr[128];
+
+    char *buf;
+    size_t pos;
+    size_t len;
+    size_t maxbuf;
+
+    redisReadTask rstack[9];
+    int ridx;
+    void *reply;
+
+    redisReplyObjectFunctions *fn;
+    void *privdata;
+} redisReader;
+
+
+redisReader *redisReaderCreateWithFunctions(redisReplyObjectFunctions *fn);
+void redisReaderFree(redisReader *r);
+int redisReaderFeed(redisReader *r, const char *buf, size_t len);
+int redisReaderGetReply(redisReader *r, void **reply);
+
+typedef char *sds;
+
+
+
+struct __attribute__ ((__packed__)) sdshdr5 {
+    unsigned char flags;
+    char buf[];
+};
+struct __attribute__ ((__packed__)) sdshdr8 {
+    uint8_t len;
+    uint8_t alloc;
+    unsigned char flags;
+    char buf[];
+};
+struct __attribute__ ((__packed__)) sdshdr16 {
+    uint16_t len;
+    uint16_t alloc;
+    unsigned char flags;
+    char buf[];
+};
+struct __attribute__ ((__packed__)) sdshdr32 {
+    uint32_t len;
+    uint32_t alloc;
+    unsigned char flags;
+    char buf[];
+};
+struct __attribute__ ((__packed__)) sdshdr64 {
+    uint64_t len;
+    uint64_t alloc;
+    unsigned char flags;
+    char buf[];
+};
+static inline size_t sdslen(const sds s) {
+    unsigned char flags = s[-1];
+    switch(flags&7) {
+        case 0:
+            return ((flags)>>3);
+        case 1:
+            return ((struct sdshdr8 *)((s)-(sizeof(struct sdshdr8))))->len;
+        case 2:
+            return ((struct sdshdr16 *)((s)-(sizeof(struct sdshdr16))))->len;
+        case 3:
+            return ((struct sdshdr32 *)((s)-(sizeof(struct sdshdr32))))->len;
+        case 4:
+            return ((struct sdshdr64 *)((s)-(sizeof(struct sdshdr64))))->len;
+    }
+    return 0;
+}
+
+static inline size_t sdsavail(const sds s) {
+    unsigned char flags = s[-1];
+    switch(flags&7) {
+        case 0: {
+            return 0;
+        }
+        case 1: {
+            struct sdshdr8 *sh = (struct sdshdr8 *)((s)-(sizeof(struct sdshdr8)));;
+            return sh->alloc - sh->len;
+        }
+        case 2: {
+            struct sdshdr16 *sh = (struct sdshdr16 *)((s)-(sizeof(struct sdshdr16)));;
+            return sh->alloc - sh->len;
+        }
+        case 3: {
+            struct sdshdr32 *sh = (struct sdshdr32 *)((s)-(sizeof(struct sdshdr32)));;
+            return sh->alloc - sh->len;
+        }
+        case 4: {
+            struct sdshdr64 *sh = (struct sdshdr64 *)((s)-(sizeof(struct sdshdr64)));;
+            return sh->alloc - sh->len;
+        }
+    }
+    return 0;
+}
+
+static inline void sdssetlen(sds s, size_t newlen) {
+    unsigned char flags = s[-1];
+    switch(flags&7) {
+        case 0:
+            {
+                unsigned char *fp = ((unsigned char*)s)-1;
+                *fp = 0 | (newlen << 3);
+            }
+            break;
+        case 1:
+            ((struct sdshdr8 *)((s)-(sizeof(struct sdshdr8))))->len = newlen;
+            break;
+        case 2:
+            ((struct sdshdr16 *)((s)-(sizeof(struct sdshdr16))))->len = newlen;
+            break;
+        case 3:
+            ((struct sdshdr32 *)((s)-(sizeof(struct sdshdr32))))->len = newlen;
+            break;
+        case 4:
+            ((struct sdshdr64 *)((s)-(sizeof(struct sdshdr64))))->len = newlen;
+            break;
+    }
+}
+
+static inline void sdsinclen(sds s, size_t inc) {
+    unsigned char flags = s[-1];
+    switch(flags&7) {
+        case 0:
+            {
+                unsigned char *fp = ((unsigned char*)s)-1;
+                unsigned char newlen = ((flags)>>3)+inc;
+                *fp = 0 | (newlen << 3);
+            }
+            break;
+        case 1:
+            ((struct sdshdr8 *)((s)-(sizeof(struct sdshdr8))))->len += inc;
+            break;
+        case 2:
+            ((struct sdshdr16 *)((s)-(sizeof(struct sdshdr16))))->len += inc;
+            break;
+        case 3:
+            ((struct sdshdr32 *)((s)-(sizeof(struct sdshdr32))))->len += inc;
+            break;
+        case 4:
+            ((struct sdshdr64 *)((s)-(sizeof(struct sdshdr64))))->len += inc;
+            break;
+    }
+}
+
+
+static inline size_t sdsalloc(const sds s) {
+    unsigned char flags = s[-1];
+    switch(flags&7) {
+        case 0:
+            return ((flags)>>3);
+        case 1:
+            return ((struct sdshdr8 *)((s)-(sizeof(struct sdshdr8))))->alloc;
+        case 2:
+            return ((struct sdshdr16 *)((s)-(sizeof(struct sdshdr16))))->alloc;
+        case 3:
+            return ((struct sdshdr32 *)((s)-(sizeof(struct sdshdr32))))->alloc;
+        case 4:
+            return ((struct sdshdr64 *)((s)-(sizeof(struct sdshdr64))))->alloc;
+    }
+    return 0;
+}
+
+static inline void sdssetalloc(sds s, size_t newlen) {
+    unsigned char flags = s[-1];
+    switch(flags&7) {
+        case 0:
+
+            break;
+        case 1:
+            ((struct sdshdr8 *)((s)-(sizeof(struct sdshdr8))))->alloc = newlen;
+            break;
+        case 2:
+            ((struct sdshdr16 *)((s)-(sizeof(struct sdshdr16))))->alloc = newlen;
+            break;
+        case 3:
+            ((struct sdshdr32 *)((s)-(sizeof(struct sdshdr32))))->alloc = newlen;
+            break;
+        case 4:
+            ((struct sdshdr64 *)((s)-(sizeof(struct sdshdr64))))->alloc = newlen;
+            break;
+    }
+}
+
+sds sdsnewlen(const void *init, size_t initlen);
+sds sdsnew(const char *init);
+sds sdsempty(void);
+sds sdsdup(const sds s);
+void sdsfree(sds s);
+sds sdsgrowzero(sds s, size_t len);
+sds sdscatlen(sds s, const void *t, size_t len);
+sds sdscat(sds s, const char *t);
+sds sdscatsds(sds s, const sds t);
+sds sdscpylen(sds s, const char *t, size_t len);
+sds sdscpy(sds s, const char *t);
+
+sds sdscatvprintf(sds s, const char *fmt, va_list ap);
+
+sds sdscatprintf(sds s, const char *fmt, ...)
+    __attribute__((format(printf, 2, 3)));
+
+
+
+
+sds sdscatfmt(sds s, char const *fmt, ...);
+sds sdstrim(sds s, const char *cset);
+void sdsrange(sds s, int start, int end);
+void sdsupdatelen(sds s);
+void sdsclear(sds s);
+int sdscmp(const sds s1, const sds s2);
+sds *sdssplitlen(const char *s, int len, const char *sep, int seplen, int *count);
+void sdsfreesplitres(sds *tokens, int count);
+void sdstolower(sds s);
+void sdstoupper(sds s);
+sds sdsfromlonglong(long long value);
+sds sdscatrepr(sds s, const char *p, size_t len);
+sds *sdssplitargs(const char *line, int *argc);
+sds sdsmapchars(sds s, const char *from, const char *to, size_t setlen);
+sds sdsjoin(char **argv, int argc, char *sep);
+sds sdsjoinsds(sds *argv, int argc, const char *sep, size_t seplen);
+
+
+sds sdsMakeRoomFor(sds s, size_t addlen);
+void sdsIncrLen(sds s, int incr);
+sds sdsRemoveFreeSpace(sds s);
+size_t sdsAllocSize(sds s);
+void *sdsAllocPtr(sds s);
+
+
+
+
+
+void *sds_malloc(size_t size);
+void *sds_realloc(void *ptr, size_t size);
+void sds_free(void *ptr);
+void *hi_malloc(size_t size);
+void *hi_calloc(size_t nmemb, size_t size);
+void *hi_realloc(void *ptr, size_t size);
+char *hi_strdup(const char *str);
+typedef struct redisReply {
+    int type;
+    long long integer;
+    size_t len;
+    char *str;
+    size_t elements;
+    struct redisReply **element;
+} redisReply;
+
+redisReader *redisReaderCreate(void);
+
+
+void freeReplyObject(void *reply);
+
+
+int redisvFormatCommand(char **target, const char *format, va_list ap);
+int redisFormatCommand(char **target, const char *format, ...);
+int redisFormatCommandArgv(char **target, int argc, const char **argv, const size_t *argvlen);
+int redisFormatSdsCommandArgv(sds *target, int argc, const char ** argv, const size_t *argvlen);
+void redisFreeCommand(char *cmd);
+void redisFreeSdsCommand(sds cmd);
+
+enum redisConnectionType {
+    REDIS_CONN_TCP,
+    REDIS_CONN_UNIX
+};
+
+
+typedef struct redisContext {
+    int err;
+    char errstr[128];
+    int fd;
+    int flags;
+    char *obuf;
+    redisReader *reader;
+
+    enum redisConnectionType connection_type;
+    struct timeval *timeout;
+
+    struct {
+        char *host;
+        char *source_addr;
+        int port;
+    } tcp;
+
+    struct {
+        char *path;
+    } unix_sock;
+
+} redisContext;
+
+redisContext *redisConnect(const char *ip, int port);
+redisContext *redisConnectWithTimeout(const char *ip, int port, const struct timeval tv);
+redisContext *redisConnectNonBlock(const char *ip, int port);
+redisContext *redisConnectBindNonBlock(const char *ip, int port,
+                                       const char *source_addr);
+redisContext *redisConnectBindNonBlockWithReuse(const char *ip, int port,
+                                                const char *source_addr);
+redisContext *redisConnectUnix(const char *path);
+redisContext *redisConnectUnixWithTimeout(const char *path, const struct timeval tv);
+redisContext *redisConnectUnixNonBlock(const char *path);
+redisContext *redisConnectFd(int fd);
+int redisReconnect(redisContext *c);
+
+int redisSetTimeout(redisContext *c, const struct timeval tv);
+int redisEnableKeepAlive(redisContext *c);
+void redisFree(redisContext *c);
+int redisFreeKeepFd(redisContext *c);
+int redisBufferRead(redisContext *c);
+int redisBufferWrite(redisContext *c, int *done);
+
+
+
+
+
+int redisGetReply(redisContext *c, void **reply);
+int redisGetReplyFromReader(redisContext *c, void **reply);
+
+
+
+int redisAppendFormattedCommand(redisContext *c, const char *cmd, size_t len);
+
+
+
+int redisvAppendCommand(redisContext *c, const char *format, va_list ap);
+int redisAppendCommand(redisContext *c, const char *format, ...);
+int redisAppendCommandArgv(redisContext *c, int argc, const char **argv, const size_t *argvlen);
+
+
+
+
+
+
+void *redisvCommand(redisContext *c, const char *format, va_list ap);
+void *redisCommand(redisContext *c, const char *format, ...);
+void *redisCommandArgv(redisContext *c, int argc, const char **argv, const size_t *argvlen);
+struct redisAsyncContext;
+struct dict;
+
+
+typedef void (redisCallbackFn)(struct redisAsyncContext*, void*, void*);
+typedef struct redisCallback {
+    struct redisCallback *next;
+    redisCallbackFn *fn;
+    int pending_subs;
+    void *privdata;
+} redisCallback;
+
+
+typedef struct redisCallbackList {
+    redisCallback *head, *tail;
+} redisCallbackList;
+
+
+typedef void (redisDisconnectCallback)(const struct redisAsyncContext*, int status);
+typedef void (redisConnectCallback)(const struct redisAsyncContext*, int status);
+
+
+typedef struct redisAsyncContext {
+
+    redisContext c;
+
+
+    int err;
+    char *errstr;
+
+
+    void *data;
+
+
+    struct {
+        void *data;
+
+
+
+        void (*addRead)(void *privdata);
+        void (*delRead)(void *privdata);
+        void (*addWrite)(void *privdata);
+        void (*delWrite)(void *privdata);
+        void (*cleanup)(void *privdata);
+    } ev;
+
+
+
+    redisDisconnectCallback *onDisconnect;
+
+
+    redisConnectCallback *onConnect;
+
+
+    redisCallbackList replies;
+
+
+    struct {
+        redisCallbackList invalid;
+        struct dict *channels;
+        struct dict *patterns;
+    } sub;
+} redisAsyncContext;
+
+
+redisAsyncContext *redisAsyncConnect(const char *ip, int port);
+redisAsyncContext *redisAsyncConnectBind(const char *ip, int port, const char *source_addr);
+redisAsyncContext *redisAsyncConnectBindWithReuse(const char *ip, int port,
+                                                  const char *source_addr);
+redisAsyncContext *redisAsyncConnectUnix(const char *path);
+int redisAsyncSetConnectCallback(redisAsyncContext *ac, redisConnectCallback *fn);
+int redisAsyncSetDisconnectCallback(redisAsyncContext *ac, redisDisconnectCallback *fn);
+void redisAsyncDisconnect(redisAsyncContext *ac);
+void redisAsyncFree(redisAsyncContext *ac);
+
+
+void redisAsyncHandleRead(redisAsyncContext *ac);
+void redisAsyncHandleWrite(redisAsyncContext *ac);
+
+
+
+int redisvAsyncCommand(redisAsyncContext *ac, redisCallbackFn *fn, void *privdata, const char *format, va_list ap);
+int redisAsyncCommand(redisAsyncContext *ac, redisCallbackFn *fn, void *privdata, const char *format, ...);
+int redisAsyncCommandArgv(redisAsyncContext *ac, redisCallbackFn *fn, void *privdata, int argc, const char **argv, const size_t *argvlen);
+int redisAsyncFormattedCommand(redisAsyncContext *ac, redisCallbackFn *fn, void *privdata, const char *cmd, size_t len);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+struct evutil_monotonic_timer
+
+
+
+;
+                     int
+evutil_date_rfc1123(char *date, const size_t datelen, const struct tm *tm);
+
+
+
+
+
+
+
+struct evutil_monotonic_timer * evutil_monotonic_timer_new(void);
+
+
+
+
+
+void evutil_monotonic_timer_free(struct evutil_monotonic_timer *timer);
+
+
+
+
+
+int evutil_configure_monotonic_time(struct evutil_monotonic_timer *timer,
+                                    int flags);
+int evutil_gettime_monotonic(struct evutil_monotonic_timer *timer,
+                             struct timeval *tp);
+int evutil_socketpair(int d, int type, int protocol, int sv[2]);
+
+
+
+
+
+
+int evutil_make_socket_nonblocking(int sock);
+int evutil_make_listen_socket_reuseable(int sock);
+int evutil_make_listen_socket_reuseable_port(int sock);
+int evutil_make_listen_socket_ipv6only(int sock);
+int evutil_make_socket_closeonexec(int sock);
+int evutil_closesocket(int sock);
+int evutil_make_tcp_listen_socket_deferred(int sock);
+int64_t evutil_strtoll(const char *s, char **endptr, int base);
+int evutil_snprintf(char *buf, size_t buflen, const char *format, ...)
+
+ __attribute__((format(printf, 3, 4)))
+
+;
+
+
+
+
+int evutil_vsnprintf(char *buf, size_t buflen, const char *format, va_list ap)
+
+ __attribute__((format(printf, 3, 0)))
+
+;
+
+
+
+const char *evutil_inet_ntop(int af, const void *src, char *dst, size_t len);
+
+
+int evutil_inet_pton(int af, const char *src, void *dst);
+struct sockaddr;
+int evutil_parse_sockaddr_port(const char *str, struct sockaddr *out, int *outlen);
+
+
+
+
+
+
+
+int evutil_sockaddr_cmp(const struct sockaddr *sa1, const struct sockaddr *sa2,
+    int include_port);
+
+
+
+
+
+int evutil_ascii_strcasecmp(const char *str1, const char *str2);
+
+
+
+
+int evutil_ascii_strncasecmp(const char *str1, const char *str2, size_t n);
+struct addrinfo;
+int evutil_getaddrinfo(const char *nodename, const char *servname,
+    const struct addrinfo *hints_in, struct addrinfo **res);
+
+
+
+void evutil_freeaddrinfo(struct addrinfo *ai);
+
+
+const char *evutil_gai_strerror(int err);
+void evutil_secure_rng_get_bytes(void *buf, size_t n);
+int evutil_secure_rng_init(void);
+int evutil_secure_rng_set_urandom_device_file(char *fname);
+void evutil_secure_rng_add_bytes(const char *dat, size_t datlen);
+struct event_base
+
+
+
+;
+struct event
+
+
+
+;
+struct event_config
+
+
+
+;
+void event_enable_debug_mode(void);
+void event_debug_unassign(struct event *);
+struct event_base *event_base_new(void);
+int event_reinit(struct event_base *base);
+int event_base_dispatch(struct event_base *);
+const char *event_base_get_method(const struct event_base *);
+const char **event_get_supported_methods(void);
+
+
+
+
+
+int event_gettime_monotonic(struct event_base *base, struct timeval *tp);
+int event_base_get_num_events(struct event_base *, unsigned int);
+int event_base_get_max_events(struct event_base *, unsigned int, int);
+struct event_config *event_config_new(void);
+
+
+
+
+
+
+
+void event_config_free(struct event_config *cfg);
+int event_config_avoid_method(struct event_config *cfg, const char *method);
+enum event_method_feature {
+
+    EV_FEATURE_ET = 0x01,
+
+
+
+
+    EV_FEATURE_O1 = 0x02,
+
+
+    EV_FEATURE_FDS = 0x04,
+
+
+
+
+
+
+    EV_FEATURE_EARLY_CLOSE = 0x08
+};
+enum event_base_config_flag {
+
+
+
+
+
+
+ EVENT_BASE_FLAG_NOLOCK = 0x01,
+
+
+ EVENT_BASE_FLAG_IGNORE_ENV = 0x02,
+
+
+
+
+
+
+ EVENT_BASE_FLAG_STARTUP_IOCP = 0x04,
+
+
+
+ EVENT_BASE_FLAG_NO_CACHE_TIME = 0x08,
+ EVENT_BASE_FLAG_EPOLL_USE_CHANGELIST = 0x10,
+
+
+
+
+
+
+ EVENT_BASE_FLAG_PRECISE_TIMER = 0x20
+};
+int event_base_get_features(const struct event_base *base);
+int event_config_require_features(struct event_config *cfg, int feature);
+int event_config_set_flag(struct event_config *cfg, int flag);
+int event_config_set_num_cpus_hint(struct event_config *cfg, int cpus);
+int event_config_set_max_dispatch_interval(struct event_config *cfg,
+    const struct timeval *max_interval, int max_callbacks,
+    int min_priority);
+struct event_base *event_base_new_with_config(const struct event_config *);
+void event_base_free(struct event_base *);
+
+
+
+
+
+void event_base_free_nofinalize(struct event_base *);
+typedef void (*event_log_cb)(int severity, const char *msg);
+void event_set_log_callback(event_log_cb cb);
+
+
+
+
+
+
+typedef void (*event_fatal_cb)(int err);
+void event_set_fatal_callback(event_fatal_cb cb);
+void event_enable_debug_logging(uint32_t which);
+int event_base_set(struct event_base *, struct event *);
+int event_base_loop(struct event_base *, int);
+int event_base_loopexit(struct event_base *, const struct timeval *);
+int event_base_loopbreak(struct event_base *);
+int event_base_loopcontinue(struct event_base *);
+int event_base_got_exit(struct event_base *);
+int event_base_got_break(struct event_base *);
+typedef void (*event_callback_fn)(int, short, void *);
+void *event_self_cbarg(void);
+struct event *event_new(struct event_base *, int, short, event_callback_fn, void *);
+int event_assign(struct event *, struct event_base *, int, short, event_callback_fn, void *);
+void event_free(struct event *);
+
+
+
+
+typedef void (*event_finalize_callback_fn)(struct event *, void *);
+int event_finalize(unsigned, struct event *, event_finalize_callback_fn);
+
+int event_free_finalize(unsigned, struct event *, event_finalize_callback_fn);
+int event_base_once(struct event_base *, int, short, event_callback_fn, void *, const struct timeval *);
+int event_add(struct event *ev, const struct timeval *timeout);
+int event_remove_timer(struct event *ev);
+int event_del(struct event *);
+
+
+
+
+
+
+
+int event_del_noblock(struct event *ev);
+
+
+
+
+
+
+int event_del_block(struct event *ev);
+void event_active(struct event *ev, int res, short ncalls);
+int event_pending(const struct event *ev, short events, struct timeval *tv);
+struct event *event_base_get_running_event(struct event_base *base);
+int event_initialized(const struct event *ev);
+int event_get_fd(const struct event *ev);
+
+
+
+
+
+struct event_base *event_get_base(const struct event *ev);
+
+
+
+
+
+short event_get_events(const struct event *ev);
+
+
+
+
+
+event_callback_fn event_get_callback(const struct event *ev);
+
+
+
+
+
+void *event_get_callback_arg(const struct event *ev);
+
+
+
+
+
+
+int event_get_priority(const struct event *ev);
+void event_get_assignment(const struct event *event,
+    struct event_base **base_out, int *fd_out, short *events_out,
+    event_callback_fn *callback_out, void **arg_out);
+size_t event_get_struct_event_size(void);
+const char *event_get_version(void);
+uint32_t event_get_version_number(void);
+int event_base_priority_init(struct event_base *, int);
+int event_base_get_npriorities(struct event_base *eb);
+int event_priority_set(struct event *, int);
+const struct timeval *event_base_init_common_timeout(struct event_base *base,
+    const struct timeval *duration);
+void event_set_mem_functions(
+ void *(*malloc_fn)(size_t sz),
+ void *(*realloc_fn)(void *ptr, size_t sz),
+ void (*free_fn)(void *ptr));
+void event_base_dump_events(struct event_base *, FILE *);
+void event_base_active_by_fd(struct event_base *base, int fd, short events);
+void event_base_active_by_signal(struct event_base *base, int sig);
+
+
+
+
+typedef int (*event_base_foreach_event_cb)(const struct event_base *, const struct event *, void *);
+int event_base_foreach_event(struct event_base *base, event_base_foreach_event_cb fn, void *arg);
+int event_base_gettimeofday_cached(struct event_base *base,
+    struct timeval *tv);
+int event_base_update_cache_time(struct event_base *base);
+void libevent_global_shutdown(void);
+
+
+
+typedef struct redisLibeventEvents {
+    redisAsyncContext *context;
+    struct event *rev, *wev;
+} redisLibeventEvents;
+
+static void redisLibeventReadEvent(int fd, short event, void *arg) {
+    ((void)fd); ((void)event);
+    redisLibeventEvents *e = (redisLibeventEvents*)arg;
+    redisAsyncHandleRead(e->context);
+}
+
+static void redisLibeventWriteEvent(int fd, short event, void *arg) {
+    ((void)fd); ((void)event);
+    redisLibeventEvents *e = (redisLibeventEvents*)arg;
+    redisAsyncHandleWrite(e->context);
+}
+
+static void redisLibeventAddRead(void *privdata) {
+    redisLibeventEvents *e = (redisLibeventEvents*)privdata;
+    event_add(e->rev,0);
+}
+
+static void redisLibeventDelRead(void *privdata) {
+    redisLibeventEvents *e = (redisLibeventEvents*)privdata;
+    event_del(e->rev);
+}
+
+static void redisLibeventAddWrite(void *privdata) {
+    redisLibeventEvents *e = (redisLibeventEvents*)privdata;
+    event_add(e->wev,0);
+}
+
+static void redisLibeventDelWrite(void *privdata) {
+    redisLibeventEvents *e = (redisLibeventEvents*)privdata;
+    event_del(e->wev);
+}
+
+static void redisLibeventCleanup(void *privdata) {
+    redisLibeventEvents *e = (redisLibeventEvents*)privdata;
+    event_free(e->rev);
+    event_free(e->wev);
+    free(e);
+}
+
+static int redisLibeventAttach(redisAsyncContext *ac, struct event_base *base) {
+    redisContext *c = &(ac->c);
+    redisLibeventEvents *e;
+
+
+    if (ac->ev.data != 0)
+        return -1;
+
+
+    e = (redisLibeventEvents*)hi_calloc(1, sizeof(*e));
+    e->context = ac;
+
+
+    ac->ev.addRead = redisLibeventAddRead;
+    ac->ev.delRead = redisLibeventDelRead;
+    ac->ev.addWrite = redisLibeventAddWrite;
+    ac->ev.delWrite = redisLibeventDelWrite;
+    ac->ev.cleanup = redisLibeventCleanup;
+    ac->ev.data = e;
+
+
+    e->rev = event_new(base, c->fd, 0x02, redisLibeventReadEvent, e);
+    e->wev = event_new(base, c->fd, 0x04, redisLibeventWriteEvent, e);
+    event_add(e->rev, 0);
+    event_add(e->wev, 0);
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+void cbor_assert_field_string(cbor_item_t *item, char *str);
+char *cbor_get_string(cbor_item_t *item);
+int cbor_get_integer(cbor_item_t *item);
+float cbor_get_float(cbor_item_t *item);
+typedef void (*connection_callback_f)(const redisAsyncContext *c, int status);
+typedef void (*msg_rcv_callback_f)(redisAsyncContext *c, void *reply, void *privdata);
+
+typedef struct _jambroadcaster_t
+{
+    int mode;
+    char *key;
+
+    pushqueue_t *dataq;
+
+    list_elem_t *data;
+
+
+
+    sem_t *lock;
+
+
+
+
+    sem_t *icount;
+
+
+    threadsem_t *readysem;
+
+    pthread_t thread;
+    redisAsyncContext *redctx;
+
+} jambroadcaster_t;
+
+
+void jamdata_def_connect(const redisAsyncContext *c, int status);
+void jamdata_def_disconnect(const redisAsyncContext *c, int status);
+void *jamdata_init(void *jsp);
+char *jamdata_makekey(char *ns, char *lname);
+void __jamdata_logto_server(redisAsyncContext *c, char *key, char *val, size_t size, unsigned long long time_stamp, msg_rcv_callback_f callback);
+void jamdata_logger_cb(redisAsyncContext *c, void *reply, void *privdata);
+comboptr_t *jamdata_encode(char *redis_key, unsigned long long timestamp, char *fmt, va_list argptr);
+void* jamdata_decode(char *fmt, char *data, int num, void *buffer, ...);
+void jamdata_log_to_server(char *ns, char *lname, char *fmt, ...);
+void jamdata_log_to_server_int(char *ns, char *lname, int value);
+void jamdata_log_to_server_float(char *ns, char *lname, float value);
+void jamdata_log_to_server_string(char *ns, char *lname, char *value);
+comboptr_t *jamdata_simple_encode(char *redis_key, unsigned long long timestamp, cbor_item_t *value);
+unsigned long long ms_time();
+
+
+jambroadcaster_t *jambroadcaster_init(int mode, char *ns, char *varname);
+jambroadcaster_t *create_jambroadcaster(int mode, char *ns, char *varname);
+char *get_bcast_value(jambroadcaster_t *bcast);
+char *get_bcast_next_value(jambroadcaster_t *bcast);
+char *get_bcast_last_value(jambroadcaster_t *bcast);
+int get_bcast_int(char *msg);
+float get_bcast_float(char *msg);
+char *get_bcast_char(char *msg);
+int get_bcast_count(jambroadcaster_t *bcast);
+void *jambcast_runner(void *arg);
+void jambcast_recv_callback(redisAsyncContext *c, void *r, void *privdata);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+struct evkeyval {
+ struct { struct evkeyval *tqe_next; struct evkeyval **tqe_prev; } next;
+
+ char *key;
+ char *value;
+};
+
+struct evkeyvalq { struct evkeyval *tqh_first; struct evkeyval **tqh_last; };
+struct event;
+
+struct event_callback {
+ struct { struct event_callback *tqe_next; struct event_callback **tqe_prev; } evcb_active_next;
+ short evcb_flags;
+ uint8_t evcb_pri;
+ uint8_t evcb_closure;
+
+        union {
+  void (*evcb_callback)(int, short, void *);
+  void (*evcb_selfcb)(struct event_callback *, void *);
+  void (*evcb_evfinalize)(struct event *, void *);
+  void (*evcb_cbfinalize)(struct event_callback *, void *);
+ } evcb_cb_union;
+ void *evcb_arg;
+};
+
+struct event_base;
+struct event {
+ struct event_callback ev_evcallback;
+
+
+ union {
+  struct { struct event *tqe_next; struct event **tqe_prev; } ev_next_with_common_timeout;
+  int min_heap_idx;
+ } ev_timeout_pos;
+ int ev_fd;
+
+ struct event_base *ev_base;
+
+ union {
+
+  struct {
+   struct { struct event *le_next; struct event **le_prev; } ev_io_next;
+   struct timeval ev_timeout;
+  } ev_io;
+
+
+  struct {
+   struct { struct event *le_next; struct event **le_prev; } ev_signal_next;
+   short ev_ncalls;
+
+   short *ev_pncalls;
+  } ev_signal;
+ } ev_;
+
+ short ev_events;
+ short ev_res;
+ struct timeval ev_timeout;
+};
+
+struct event_list { struct event *tqh_first; struct event **tqh_last; };
+struct event_dlist { struct event *lh_first; };
+
+
+
+struct event_base *event_init(void);
+int event_dispatch(void);
+int event_loop(int);
+int event_loopexit(const struct timeval *);
+int event_loopbreak(void);
+int event_once(int , short,
+    void (*)(int, short, void *), void *, const struct timeval *);
+const char *event_get_method(void);
+int event_priority_init(int);
+void event_set(struct event *, int, short, void (*)(int, short, void *), void *);
+
+
+
+struct evbuffer
+
+
+
+;
+struct evbuffer_ptr {
+ ssize_t pos;
+
+
+
+ struct {
+  void *chain;
+  size_t pos_in_chain;
+ } internal_;
+};
+struct evbuffer *evbuffer_new(void);
+
+
+
+
+
+
+void evbuffer_free(struct evbuffer *buf);
+int evbuffer_enable_locking(struct evbuffer *buf, void *lock);
+
+
+
+
+
+
+void evbuffer_lock(struct evbuffer *buf);
+
+
+
+
+
+
+void evbuffer_unlock(struct evbuffer *buf);
+int evbuffer_set_flags(struct evbuffer *buf, uint64_t flags);
+int evbuffer_clear_flags(struct evbuffer *buf, uint64_t flags);
+size_t evbuffer_get_length(const struct evbuffer *buf);
+size_t evbuffer_get_contiguous_space(const struct evbuffer *buf);
+int evbuffer_expand(struct evbuffer *buf, size_t datlen);
+int
+evbuffer_reserve_space(struct evbuffer *buf, ssize_t size,
+    struct iovec *vec, int n_vec);
+int evbuffer_commit_space(struct evbuffer *buf,
+    struct iovec *vec, int n_vecs);
+int evbuffer_add(struct evbuffer *buf, const void *data, size_t datlen);
+int evbuffer_remove(struct evbuffer *buf, void *data, size_t datlen);
+ssize_t evbuffer_copyout(struct evbuffer *buf, void *data_out, size_t datlen);
+ssize_t evbuffer_copyout_from(struct evbuffer *buf, const struct evbuffer_ptr *pos, void *data_out, size_t datlen);
+int evbuffer_remove_buffer(struct evbuffer *src, struct evbuffer *dst,
+    size_t datlen);
+
+
+
+enum evbuffer_eol_style {
+ EVBUFFER_EOL_ANY,
+
+
+ EVBUFFER_EOL_CRLF,
+
+ EVBUFFER_EOL_CRLF_STRICT,
+
+ EVBUFFER_EOL_LF,
+
+ EVBUFFER_EOL_NUL
+};
+char *evbuffer_readln(struct evbuffer *buffer, size_t *n_read_out,
+    enum evbuffer_eol_style eol_style);
+int evbuffer_add_buffer(struct evbuffer *outbuf, struct evbuffer *inbuf);
+int evbuffer_add_buffer_reference(struct evbuffer *outbuf,
+    struct evbuffer *inbuf);
+
+
+
+
+
+
+
+typedef void (*evbuffer_ref_cleanup_cb)(const void *data,
+    size_t datalen, void *extra);
+int evbuffer_add_reference(struct evbuffer *outbuf,
+    const void *data, size_t datlen,
+    evbuffer_ref_cleanup_cb cleanupfn, void *cleanupfn_arg);
+int evbuffer_add_file(struct evbuffer *outbuf, int fd, int64_t offset,
+    int64_t length);
+struct evbuffer_file_segment;
+typedef void (*evbuffer_file_segment_cleanup_cb)(
+    struct evbuffer_file_segment const* seg, int flags, void* arg);
+struct evbuffer_file_segment *evbuffer_file_segment_new(
+ int fd, int64_t offset, int64_t length, unsigned flags);
+void evbuffer_file_segment_free(struct evbuffer_file_segment *seg);
+void evbuffer_file_segment_add_cleanup_cb(struct evbuffer_file_segment *seg,
+ evbuffer_file_segment_cleanup_cb cb, void* arg);
+int evbuffer_add_file_segment(struct evbuffer *buf,
+    struct evbuffer_file_segment *seg, int64_t offset, int64_t length);
+int evbuffer_add_printf(struct evbuffer *buf, const char *fmt, ...)
+
+  __attribute__((format(printf, 2, 3)))
+
+;
+int evbuffer_add_vprintf(struct evbuffer *buf, const char *fmt, va_list ap)
+
+ __attribute__((format(printf, 2, 0)))
+
+;
+int evbuffer_drain(struct evbuffer *buf, size_t len);
+int evbuffer_write(struct evbuffer *buffer, int fd);
+int evbuffer_write_atmost(struct evbuffer *buffer, int fd,
+        ssize_t howmuch);
+int evbuffer_read(struct evbuffer *buffer, int fd, int howmuch);
+struct evbuffer_ptr evbuffer_search(struct evbuffer *buffer, const char *what, size_t len, const struct evbuffer_ptr *start);
+struct evbuffer_ptr evbuffer_search_range(struct evbuffer *buffer, const char *what, size_t len, const struct evbuffer_ptr *start, const struct evbuffer_ptr *end);
+
+
+
+
+
+enum evbuffer_ptr_how {
+
+
+ EVBUFFER_PTR_SET,
+
+ EVBUFFER_PTR_ADD
+};
+int
+evbuffer_ptr_set(struct evbuffer *buffer, struct evbuffer_ptr *ptr,
+    size_t position, enum evbuffer_ptr_how how);
+struct evbuffer_ptr evbuffer_search_eol(struct evbuffer *buffer,
+    struct evbuffer_ptr *start, size_t *eol_len_out,
+    enum evbuffer_eol_style eol_style);
+int evbuffer_peek(struct evbuffer *buffer, ssize_t len,
+    struct evbuffer_ptr *start_at,
+    struct iovec *vec_out, int n_vec);
+
+
+
+
+
+
+struct evbuffer_cb_info {
+
+
+ size_t orig_size;
+
+ size_t n_added;
+
+ size_t n_deleted;
+};
+typedef void (*evbuffer_cb_func)(struct evbuffer *buffer, const struct evbuffer_cb_info *info, void *arg);
+
+struct evbuffer_cb_entry;
+struct evbuffer_cb_entry *evbuffer_add_cb(struct evbuffer *buffer, evbuffer_cb_func cb, void *cbarg);
+int evbuffer_remove_cb_entry(struct evbuffer *buffer,
+        struct evbuffer_cb_entry *ent);
+int evbuffer_remove_cb(struct evbuffer *buffer, evbuffer_cb_func cb, void *cbarg);
+int evbuffer_cb_set_flags(struct evbuffer *buffer,
+     struct evbuffer_cb_entry *cb, uint32_t flags);
+int evbuffer_cb_clear_flags(struct evbuffer *buffer,
+     struct evbuffer_cb_entry *cb, uint32_t flags);
+unsigned char *evbuffer_pullup(struct evbuffer *buf, ssize_t size);
+int evbuffer_prepend(struct evbuffer *buf, const void *data, size_t size);
+int evbuffer_prepend_buffer(struct evbuffer *dst, struct evbuffer* src);
+int evbuffer_freeze(struct evbuffer *buf, int at_front);
+int evbuffer_unfreeze(struct evbuffer *buf, int at_front);
+
+struct event_base;
+int evbuffer_defer_callbacks(struct evbuffer *buffer, struct event_base *base);
+size_t evbuffer_add_iovec(struct evbuffer * buffer, struct iovec * vec, int n_vec);
+char *evbuffer_readline(struct evbuffer *buffer);
+typedef void (*evbuffer_cb)(struct evbuffer *buffer, size_t old_len, size_t new_len, void *arg);
+int evbuffer_setcb(struct evbuffer *buffer, evbuffer_cb cb, void *cbarg);
+unsigned char *evbuffer_find(struct evbuffer *buffer, const unsigned char *what, size_t len);
+
+
+struct bufferevent
+
+
+
+;
+struct event_base;
+struct evbuffer;
+struct sockaddr;
+typedef void (*bufferevent_data_cb)(struct bufferevent *bev, void *ctx);
+typedef void (*bufferevent_event_cb)(struct bufferevent *bev, short what, void *ctx);
+
+
+enum bufferevent_options {
+
+
+ BEV_OPT_CLOSE_ON_FREE = (1<<0),
+
+
+
+ BEV_OPT_THREADSAFE = (1<<1),
+
+
+ BEV_OPT_DEFER_CALLBACKS = (1<<2),
+
+
+
+
+
+ BEV_OPT_UNLOCK_CALLBACKS = (1<<3)
+};
+struct bufferevent *bufferevent_socket_new(struct event_base *base, int fd, int options);
+int bufferevent_socket_connect(struct bufferevent *, const struct sockaddr *, int);
+
+struct evdns_base;
+int bufferevent_socket_connect_hostname(struct bufferevent *,
+    struct evdns_base *, int, const char *, int);
+int bufferevent_socket_get_dns_error(struct bufferevent *bev);
+int bufferevent_base_set(struct event_base *base, struct bufferevent *bufev);
+
+
+
+
+
+struct event_base *bufferevent_get_base(struct bufferevent *bev);
+int bufferevent_priority_set(struct bufferevent *bufev, int pri);
+
+
+
+
+
+
+
+int bufferevent_get_priority(const struct bufferevent *bufev);
+void bufferevent_free(struct bufferevent *bufev);
+void bufferevent_setcb(struct bufferevent *bufev,
+    bufferevent_data_cb readcb, bufferevent_data_cb writecb,
+    bufferevent_event_cb eventcb, void *cbarg);
+void bufferevent_getcb(struct bufferevent *bufev,
+    bufferevent_data_cb *readcb_ptr,
+    bufferevent_data_cb *writecb_ptr,
+    bufferevent_event_cb *eventcb_ptr,
+    void **cbarg_ptr);
+int bufferevent_setfd(struct bufferevent *bufev, int fd);
+
+
+
+
+
+
+int bufferevent_getfd(struct bufferevent *bufev);
+
+
+
+
+
+
+struct bufferevent *bufferevent_get_underlying(struct bufferevent *bufev);
+int bufferevent_write(struct bufferevent *bufev,
+    const void *data, size_t size);
+int bufferevent_write_buffer(struct bufferevent *bufev, struct evbuffer *buf);
+size_t bufferevent_read(struct bufferevent *bufev, void *data, size_t size);
+int bufferevent_read_buffer(struct bufferevent *bufev, struct evbuffer *buf);
+struct evbuffer *bufferevent_get_input(struct bufferevent *bufev);
+struct evbuffer *bufferevent_get_output(struct bufferevent *bufev);
+int bufferevent_enable(struct bufferevent *bufev, short event);
+int bufferevent_disable(struct bufferevent *bufev, short event);
+short bufferevent_get_enabled(struct bufferevent *bufev);
+int bufferevent_set_timeouts(struct bufferevent *bufev,
+    const struct timeval *timeout_read, const struct timeval *timeout_write);
+void bufferevent_setwatermark(struct bufferevent *bufev, short events,
+    size_t lowmark, size_t highmark);
+int bufferevent_getwatermark(struct bufferevent *bufev, short events,
+    size_t *lowmark, size_t *highmark);
+
+
+
+
+
+
+void bufferevent_lock(struct bufferevent *bufev);
+
+
+
+
+
+
+void bufferevent_unlock(struct bufferevent *bufev);
+void bufferevent_incref(struct bufferevent *bufev);
+int bufferevent_decref(struct bufferevent *bufev);
+
+
+
+
+
+enum bufferevent_flush_mode {
+
+ BEV_NORMAL = 0,
+
+
+ BEV_FLUSH = 1,
+
+
+ BEV_FINISHED = 2
+};
+int bufferevent_flush(struct bufferevent *bufev,
+    short iotype,
+    enum bufferevent_flush_mode mode);
+
+
+
+
+
+enum bufferevent_trigger_options {
+
+ BEV_TRIG_IGNORE_WATERMARKS = (1<<16),
+
+
+ BEV_TRIG_DEFER_CALLBACKS = BEV_OPT_DEFER_CALLBACKS
+
+
+
+};
+void bufferevent_trigger(struct bufferevent *bufev, short iotype,
+    int options);
+void bufferevent_trigger_event(struct bufferevent *bufev, short what,
+    int options);
+enum bufferevent_filter_result {
+
+ BEV_OK = 0,
+
+
+ BEV_NEED_MORE = 1,
+
+
+
+ BEV_ERROR = 2
+};
+typedef enum bufferevent_filter_result (*bufferevent_filter_cb)(
+    struct evbuffer *src, struct evbuffer *dst, ssize_t dst_limit,
+    enum bufferevent_flush_mode mode, void *ctx);
+struct bufferevent *
+bufferevent_filter_new(struct bufferevent *underlying,
+         bufferevent_filter_cb input_filter,
+         bufferevent_filter_cb output_filter,
+         int options,
+         void (*free_context)(void *),
+         void *ctx);
+int bufferevent_pair_new(struct event_base *base, int options,
+    struct bufferevent *pair[2]);
+
+
+
+
+
+
+struct bufferevent *bufferevent_pair_get_partner(struct bufferevent *bev);
+
+
+
+
+
+struct ev_token_bucket_cfg;
+
+
+
+
+
+struct bufferevent_rate_limit_group;
+struct ev_token_bucket_cfg *ev_token_bucket_cfg_new(
+ size_t read_rate, size_t read_burst,
+ size_t write_rate, size_t write_burst,
+ const struct timeval *tick_len);
+
+
+
+
+
+
+
+void ev_token_bucket_cfg_free(struct ev_token_bucket_cfg *cfg);
+int bufferevent_set_rate_limit(struct bufferevent *bev,
+    struct ev_token_bucket_cfg *cfg);
+struct bufferevent_rate_limit_group *bufferevent_rate_limit_group_new(
+ struct event_base *base,
+ const struct ev_token_bucket_cfg *cfg);
+
+
+
+
+
+
+int bufferevent_rate_limit_group_set_cfg(
+ struct bufferevent_rate_limit_group *,
+ const struct ev_token_bucket_cfg *);
+int bufferevent_rate_limit_group_set_min_share(
+ struct bufferevent_rate_limit_group *, size_t);
+
+
+
+
+
+
+void bufferevent_rate_limit_group_free(struct bufferevent_rate_limit_group *);
+int bufferevent_add_to_rate_limit_group(struct bufferevent *bev,
+    struct bufferevent_rate_limit_group *g);
+
+
+
+int bufferevent_remove_from_rate_limit_group(struct bufferevent *bev);
+int bufferevent_set_max_single_read(struct bufferevent *bev, size_t size);
+int bufferevent_set_max_single_write(struct bufferevent *bev, size_t size);
+
+
+
+ssize_t bufferevent_get_max_single_read(struct bufferevent *bev);
+
+
+
+ssize_t bufferevent_get_max_single_write(struct bufferevent *bev);
+ssize_t bufferevent_get_read_limit(struct bufferevent *bev);
+
+ssize_t bufferevent_get_write_limit(struct bufferevent *bev);
+
+
+
+ssize_t bufferevent_get_max_to_read(struct bufferevent *bev);
+
+ssize_t bufferevent_get_max_to_write(struct bufferevent *bev);
+
+
+const struct ev_token_bucket_cfg *bufferevent_get_token_bucket_cfg(const struct bufferevent * bev);
+ssize_t bufferevent_rate_limit_group_get_read_limit(
+ struct bufferevent_rate_limit_group *);
+
+ssize_t bufferevent_rate_limit_group_get_write_limit(
+ struct bufferevent_rate_limit_group *);
+int bufferevent_decrement_read_limit(struct bufferevent *bev, ssize_t decr);
+
+int bufferevent_decrement_write_limit(struct bufferevent *bev, ssize_t decr);
+int bufferevent_rate_limit_group_decrement_read(
+ struct bufferevent_rate_limit_group *, ssize_t);
+
+int bufferevent_rate_limit_group_decrement_write(
+ struct bufferevent_rate_limit_group *, ssize_t);
+void bufferevent_rate_limit_group_get_totals(
+    struct bufferevent_rate_limit_group *grp,
+    uint64_t *total_read_out, uint64_t *total_written_out);
+
+
+
+
+
+
+
+void
+bufferevent_rate_limit_group_reset_totals(
+ struct bufferevent_rate_limit_group *grp);
+
+
+
+
+
+
+
+
+
+struct event_watermark {
+ size_t low;
+ size_t high;
+};
+struct bufferevent {
+
+ struct event_base *ev_base;
+
+
+ const struct bufferevent_ops *be_ops;
+
+
+
+
+ struct event ev_read;
+
+
+
+ struct event ev_write;
+
+
+
+ struct evbuffer *input;
+
+
+
+ struct evbuffer *output;
+
+ struct event_watermark wm_read;
+ struct event_watermark wm_write;
+
+ bufferevent_data_cb readcb;
+ bufferevent_data_cb writecb;
+
+
+ bufferevent_event_cb errorcb;
+ void *cbarg;
+
+ struct timeval timeout_read;
+ struct timeval timeout_write;
+
+
+
+ short enabled;
+};
+struct bufferevent *bufferevent_new(int fd,
+    bufferevent_data_cb readcb, bufferevent_data_cb writecb, bufferevent_event_cb errorcb, void *cbarg);
+void bufferevent_settimeout(struct bufferevent *bufev,
+    int timeout_read, int timeout_write);
+
+
+
+
+
+
+
+struct evbuffer;
+void evtag_init(void);
+int evtag_unmarshal_header(struct evbuffer *evbuf, uint32_t *ptag);
+
+
+void evtag_marshal(struct evbuffer *evbuf, uint32_t tag, const void *data,
+    uint32_t len);
+
+void evtag_marshal_buffer(struct evbuffer *evbuf, uint32_t tag,
+    struct evbuffer *data);
+void evtag_encode_int(struct evbuffer *evbuf, uint32_t number);
+
+void evtag_encode_int64(struct evbuffer *evbuf, uint64_t number);
+
+
+void evtag_marshal_int(struct evbuffer *evbuf, uint32_t tag,
+    uint32_t integer);
+
+void evtag_marshal_int64(struct evbuffer *evbuf, uint32_t tag,
+    uint64_t integer);
+
+
+void evtag_marshal_string(struct evbuffer *buf, uint32_t tag,
+    const char *string);
+
+
+void evtag_marshal_timeval(struct evbuffer *evbuf, uint32_t tag,
+    struct timeval *tv);
+
+
+int evtag_unmarshal(struct evbuffer *src, uint32_t *ptag,
+    struct evbuffer *dst);
+
+int evtag_peek(struct evbuffer *evbuf, uint32_t *ptag);
+
+int evtag_peek_length(struct evbuffer *evbuf, uint32_t *plength);
+
+int evtag_payload_length(struct evbuffer *evbuf, uint32_t *plength);
+
+int evtag_consume(struct evbuffer *evbuf);
+
+
+int evtag_unmarshal_int(struct evbuffer *evbuf, uint32_t need_tag,
+    uint32_t *pinteger);
+
+int evtag_unmarshal_int64(struct evbuffer *evbuf, uint32_t need_tag,
+    uint64_t *pinteger);
+
+
+int evtag_unmarshal_fixed(struct evbuffer *src, uint32_t need_tag,
+    void *data, size_t len);
+
+
+int evtag_unmarshal_string(struct evbuffer *evbuf, uint32_t need_tag,
+    char **pstring);
+
+
+int evtag_unmarshal_timeval(struct evbuffer *evbuf, uint32_t need_tag,
+    struct timeval *ptv);
+typedef struct _runtableentry_t
+{
+    char actid[64];
+    char actname[64];
+    int status;
+    long long accesstime;
+    enum activity_type_t type;
+
+} runtableentry_t;
+
+
+typedef struct _runtable_t
+{
+    void *jarg;
+
+    runtableentry_t *entries;
+    int rcount;
+    pthread_mutex_t lock;
+
+} runtable_t;
+
+
+
+typedef struct _jamstate_t
+{
+    struct event_base *eloop;
+
+    struct event_base *bloop;
+
+
+
+    redisAsyncContext *redctx;
+
+    timertype_t *maintimer;
+    timertype_t *synctimer;
+
+    corestate_t *cstate;
+    activity_table_t *atable;
+    runtable_t *rtable;
+
+
+
+
+    simplequeue_t *deviceinq;
+    simplequeue_t *foginq;
+    simplequeue_t *cloudinq;
+
+
+
+
+
+
+    semqueue_t *dataoutq;
+
+    struct nn_pollfd *pollfds;
+    int numpollfds;
+
+    pthread_t bgthread;
+    pthread_t jdthread;
+
+    threadsem_t *bgsem;
+
+
+
+    sem_t *jdsem;
+
+
+    int registered;
+
+} jamstate_t;
+
+
+
+extern int odcount;
+
+
+extern char dev_tag[32];
+
+jamstate_t *jam_init(int serialnum);
+
+void jam_run_app(void *arg);
+void jam_event_loop(void *js);
+jactivity_t *jam_create_activity(jamstate_t *js);
+int machine_height(jamstate_t *js);
+int requested_level(int cvec);
+int wait_for_machine(jamstate_t *js, int level, int maxtime);
+int jamargs(int argc, char **argv, char *appid, char *tag, int *num);
+
+
+
+
+
+arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, char *fmask, ...);
+arg_t *jam_sync_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd);
+int get_sleep_time(jactivity_t *jact);
+char *get_root_condition(jamstate_t *js);
+
+
+
+
+
+void jam_lexec_async(jamstate_t *js, char *aname, ...);
+jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, int condvec, char *aname, char *fmask, ...);
+void jam_rexec_run_wrapper(void *arg);
+jactivity_t *jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd);
+void set_jactivity_state(jactivity_t *jact, int nreplies);
+void process_missing_replies(jactivity_t *jact, int nreplies, int ecount);
+
+
+
+
+
+
+void send_register(corestate_t *cs, int level);
+void send_infoquery(corestate_t *cs);
+void jam_set_redis(jamstate_t *js, char *server, int port);
+void *jwork_bgthread(void *arg);
+void jwork_set_subscriptions(jamstate_t *js);
+
+void jwork_msg_delivered(void *ctx, MQTTAsync_deliveryComplete dt);
+int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTAsync_message *msg);
+void jwork_connect_lost(void *context, char *cause);
+
+void jwork_assemble_fds(jamstate_t *js);
+int jwork_wait_fds(jamstate_t *js);
+void jwork_processor(jamstate_t *js);
+void jwork_process_globaloutq(jamstate_t *js);
+void jwork_process_actoutq(jamstate_t *js, int indx);
+
+void jwork_process_device(jamstate_t *js);
+void jwork_process_fog(jamstate_t *js);
+void jwork_process_cloud(jamstate_t *js);
+
+bool duplicate_detect(command_t *rcmd);
+bool overflow_detect();
+
+void jwork_send_error(jamstate_t *js, command_t *cmd, char *estr);
+void jwork_send_results(jamstate_t *js, char *opt, char *actname, char *actid, arg_t *args);
+void jwork_send_nak(jamstate_t *js, command_t *cmd, char *estr);
+void jwork_send_ack(jamstate_t *js, char *type, command_t *cmd);
+void jwork_send_ack_1(jamstate_t *js, char *type, command_t *cmd);
+void jwork_send_ack_2(jamstate_t *js, char *type, command_t *cmd);
+
+command_t *jwork_runid_status(jamstate_t *js, char *runid);
+command_t *jwork_device_status(jamstate_t *js);
+
+command_t *jwork_runid_kill(jamstate_t *js, char *runid);
+
+void jam_set_timer(jamstate_t *js, char *actarg, int tval);
+void jam_clear_timer(jamstate_t *js, char *actid);
+
+
+
+
+
+runtable_t *runtable_new(void *arg);
+runtableentry_t *runtable_find(runtable_t *table, char *actid);
+runtableentry_t *runtable_getfree(runtable_t *table);
+bool runtable_insert(jamstate_t * js, char *actid, command_t *cmd);
+bool runtable_del(runtable_t *tbl, char *actid);
+bool runtable_store_results(runtable_t *tbl, char *actid, arg_t *results);
+void runtable_insert_synctask(jamstate_t *js, command_t *rcmd, int quorum);
+int runtable_synctask_count(runtable_t *rtbl);
+
+command_t *get_actid_results(jamstate_t *js, char *actid);
+
+bool jrun_check_signature(activity_callback_reg_t *creg, command_t *cmd);
+void jrun_arun_callback(jactivity_t *jact, command_t *cmd, activity_callback_reg_t *creg);
+
+bool jwork_evaluate_cond(char *cond);
+
+
+
+
+void jsleep(int ms);
+int main();
+
+jasync logdata() {
+    char *names[10] = {"david", "mayer", "justin", "richard", "lekan", "ben", "owen", "nicholas", "karu", "clark"};
+    int i;
+    char buf[32];
+
+    for (i = 0; i < 1000; i++) {
+ sprintf(buf, "%d-%s", i, names[i % 10]);
+ name = buf;
+ printf("Wrote .. name: %s\n", buf);
+ jsleep(1000);
+    }
+}
+
+
+int main()
+{
+    logdata()
+}

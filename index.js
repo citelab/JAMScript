@@ -219,9 +219,6 @@ function preprocess(file, verbose) {
         console.log(command);
     }
     return child_process.execSync(command).toString();
-
-    // return child_process.execSync(`clang -E -P -std=iso9899:199409 ${file}`).toString();
-
 }
 
 function flowCheck(input, verbose) {
