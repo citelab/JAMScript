@@ -6,7 +6,7 @@ for dir in programs/c/*/
 do
 	for subDir in $dir*
 	do
-		allFiles=`find $subDir -maxdepth 1 -type f`
+		allFiles=`find $subDir -maxdepth 2 -type f`
 		for file in $allFiles 
 		do
 			let "totalNum++"
@@ -14,10 +14,19 @@ do
 			output=$(eval $cmd)
 			echo $file
 			if [[ $output == *"Compilation finished"* ]]; then
-				echo -e "\033[33;31mTest case failed: " $file
-				tput sgr0
+				if [[ $file == *"invalid"* ]]; then 
+					echo -e "\033[33;31mTest case failed: " $file
+					tput sgr0
+				else 
+					let "passNum++"
+				fi
   			else 
-  				let "passNum++"
+  				if [[ $file == *"invalid"* ]]; then 
+					let "passNum++"
+				else 
+					echo -e "\033[33;31mTest case failed: " $file
+					tput sgr0
+				fi
 			fi
 		done
 	done
