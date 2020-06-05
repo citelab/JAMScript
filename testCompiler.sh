@@ -1,19 +1,34 @@
-# TODO: Generalize this for all test cases...
-# TODO: Specify file extension like *.c, *.js when running 
+#!/bin/bash/
+function runTest() {
+	echo "Start running " $1 "tests..."
+	ext=" "
+	otherFile=""
+	cmd=""
+	totalNum=0
+	passNum=0
 
-echo "Start running C test cases..."
-jsFile=programs/c/empty.js
-totalNum=0
-passNum=0
-for dir in programs/jamscript/*/ 
-do
-	for subDir in $dir*
+	if [ $1 == "c" ] || [ $1 == "jamc" ]
+	then 
+		ext=".c"
+		otherFile=programs/c/empty.js
+	elif [ $1 == "js" ] || [ $1 == "jamjs" ] 
+	then
+		ext=".js"
+		otherFile=programs/js/empty.c
+	fi
+
+	for dir in programs/$1/*
 	do
-		allFiles=`find $subDir -maxdepth 2 -type f`
-		for file in $allFiles 
+		allFiles=`find $dir -maxdepth 3 -name "*"$ext`
+		for file in $allFiles
 		do
 			let "totalNum++"
-			cmd="node index.js $file $jsFile"
+			if [ $1 == "c" ] || [ $1 == "jamc" ]
+			then
+				cmd="node index.js $file $otherFile"
+			else
+				cmd="node index.js $otherFile $file"
+			fi
 			output=$(eval $cmd)
 			echo $file
 			if [[ $output == *"Compilation finished"* ]]; then
@@ -33,11 +48,18 @@ do
 			fi
 		done
 	done
-done
-echo "Done"
-if [ $passNum -eq $totalNum ] 
-then
-	echo -e "\033[33;32mAll tests passed!"
-else
-	echo -e "\033[33;31mSome test cases failed. Result:" $passNum/$totalNum
-fi
+
+	echo $1 "tests done"
+	if [ $passNum -eq $totalNum ] 
+	then
+		echo -e "\033[33;32mAll tests passed!"
+	else
+		echo -e "\033[33;31mSome test cases failed. Result:" $passNum/$totalNum
+	fi
+}
+
+echo "Start running tests"
+runTest c
+# runTest jamc
+# runTest js
+# runTest jamjs
