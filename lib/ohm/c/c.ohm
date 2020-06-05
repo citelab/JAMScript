@@ -258,17 +258,7 @@ C {
     Gcc_decl_spec   = Gcc_attribute
                     | gcc_ext_spec
 
-    // Gcc_attribute   = "__attribute__" "(" "(" attribute_param ("," attribute_param)* ")" ")",
     Gcc_attribute   = attribute__ "(" "(" (~(")" ")") any)* ")" ")"+
-
-    Attribute_param = Gcc_any_word?
-                    | Gcc_any_word "(" (Assign_expr ("," Assign_expr)* )? ")"           -- Assign
-
-    Gcc_any_word    = id
-                    | Store_cl_spec
-                    | Type_spec
-                    | type_qualifier
-                    | Func_spec
 
     gcc_ext_spec    = extension
 
@@ -282,17 +272,7 @@ C {
 
     Gcc_asm_stmt    = Gcc_asm_expr ";"
 
-    // gcc_asm_expr = ("__asm__" | "__asm") type_qualifier? "(" expr
-    //                  (":" ( gcc_asm_operand ("," gcc_asm_operand)* )?
-    //                      (":" (gcc_asm_operand ("," gcc_asm_operand)*)?
-    //                          (":" string ("," string)*)?)?)? ")",
-
-    // gcc_asm_operand = ("[" ("Id"|"Typename") "]")? string "(" expr ")",
-
-
     Gcc_asm_expr    = asm type_qualifier? "(" (~")" any)* ")"+
-
-    Gcc_asm_expr_string = "\"" (~"\"" any)* "\""
 
     // C Statements
     //
