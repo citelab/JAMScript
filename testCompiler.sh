@@ -19,7 +19,7 @@ function runTest() {
 
 	for dir in programs/$1/*
 	do
-		allFiles=`find $dir -maxdepth 3 -name "*"$ext`
+		allFiles=`find $dir -maxdepth 3 -name "*"$ext | sort`
 		for file in $allFiles
 		do
 			let "totalNum++"
@@ -53,12 +53,15 @@ function runTest() {
 	if [ $passNum -eq $totalNum ] 
 	then
 		echo -e "\033[33;32mAll tests passed!"
+		tput sgr0
 	else
 		echo -e "\033[33;31mSome test cases failed. Result:" $passNum/$totalNum
+		tput sgr0
 	fi
 }
 
 echo "Start running tests"
+runTest jamc
 runTest c
 # runTest jamc
 # runTest js
