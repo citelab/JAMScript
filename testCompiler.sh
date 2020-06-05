@@ -1,8 +1,11 @@
+# TODO: Generalize this for all test cases...
+# TODO: Specify file extension like *.c, *.js when running 
+
 echo "Start running C test cases..."
 jsFile=programs/c/empty.js
 totalNum=0
 passNum=0
-for dir in programs/c/*/ 
+for dir in programs/jamscript/*/ 
 do
 	for subDir in $dir*
 	do
@@ -38,5 +41,3 @@ then
 else
 	echo -e "\033[33;31mSome test cases failed. Result:" $passNum/$totalNum
 fi
-
-# cFile=programs/js/empty.c
