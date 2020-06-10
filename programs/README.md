@@ -1,3 +1,21 @@
+# Test cases
+
+What is tested: 
+- Scanning phase of any JAMScript program
+- Parsing phase of any JAMScript program
+- Symbol table creation of any JAMScript program (containing JAMScript-specific features)
+- Type checking phase of any JAMScript program (containing JAMScript-specific features)
+
+What is not tested:
+- Symbol table creation of any program without JAMScript-specific features
+- Type checking phase of any program without JAMScript-specific features
+  
+**NOTE**
+We do not need to create a comprehensive test suite to validate the symbol table creation and type checking phase when parsing programs written in pure C or Javascript, because they are managed by external components (e.g. clang and flow) which we assume to be reliable.    
+
+
+# How to run
+
 To run the test suite for compiler, run the command `bash path/to/testCompiler.sh`
 
 The test suite folder has the following structure:
