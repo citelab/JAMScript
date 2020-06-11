@@ -14,10 +14,21 @@ What is not tested:
 We do not need to create a comprehensive test suite to validate the symbol table creation and type checking phase when parsing programs written in pure C or Javascript, because they are managed by external components (e.g. clang and flow) which we assume to be reliable.    
 
 
-# How to run
+What is tested: 
+- Scanning phase of any JAMScript program
+- Parsing phase of any JAMScript program
+- Symbol table creation of any JAMScript program (containing JAMScript-specific features)
+- Type checking phase of any JAMScript program (containing JAMScript-specific features)
 
-To run the test suite for compiler, run the command `bash path/to/testCompiler.sh`
+What is not tested:
+- Symbol table creation of any program without JAMScript-specific features
+- Type checking phase of any program without JAMScript-specific features
+  
+**NOTE**
+We do not need to create a comprehensive test suite to validate the symbol table creation and type checking phase when parsing programs written in pure C or Javascript, because they are managed by external components (e.g. clang and flow) which we assume to be reliable.    
 
+
+# Test case placement
 The test suite folder has the following structure:
 ```
 ├── c
@@ -55,3 +66,8 @@ If a test case is expected to pass compilation, it should be placed in the `vali
 e.g. A valid program written in C with JAMScript addition should be placed in `programs/jamc/valid`.
 
 Note that the placement of the test cases must follow the rules above for the test script `testCompiler.sh` to work properly.
+
+
+# How to run
+
+To run the test suite for compiler, run the command `bash path/to/testCompiler.sh`

@@ -102,7 +102,9 @@ if (inputError) {
 try {
     fs.mkdirSync(tmpDir);
     try {
-        var preprocessed = preprocess(cPath, verbose);
+        var preprocessedOutput = preprocess(cPath, verbose);
+        var preprocessed = preprocessedOutput.program;
+        var lineNumber = preprocessedOutput.lineNumber;
     } catch (e) {
         console.log("Exiting with preprocessor error");
         process.exit();
@@ -115,7 +117,7 @@ try {
     //   printAndExit(cTree + jsTree);
     // }
 
-    var results = jam.compile(preprocessed, fs.readFileSync(jsPath).toString(), jviewPort);
+    var results = jam.compile(preprocessed, fs.readFileSync(jsPath).toString(), jviewPort, lineNumber);
 
     if (callGraphFlag) {
         fs.writeFileSync("callgraph.html", callGraph.createWebpage());
@@ -211,6 +213,8 @@ function preprocess(file, verbose) {
     }
     var includes = '#include "jam.h"\n';
 
+    var originalProgram = contents
+
     contents = includes + "int main();\n" + contents;
 
     fs.writeFileSync(`${tmpDir}/pre.c`, contents);
@@ -218,7 +222,15 @@ function preprocess(file, verbose) {
     if (verbose) {
         console.log(command);
     }
-    return child_process.execSync(command).toString();
+    
+    var preprocessedProg = child_process.execSync(command).toString();
+    var index = preprocessedProg.indexOf("int main();\n");
+    var tmp = preprocessedProg.substring(0, index);
+    var lineNumber = tmp.split('\n').length;
+    return {
+        program: preprocessedProg,
+        lineNumber: lineNumber
+    };
 }
 
 function flowCheck(input, verbose) {
