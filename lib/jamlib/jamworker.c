@@ -199,6 +199,7 @@ void *jwork_bgthread(void *arg)
         jwork_processor(js);
     }
 
+    free_combo_ptr(ctx);
     return NULL;
 }
 
@@ -263,6 +264,7 @@ int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTAsync_messag
         stime[msg->payloadlen] = 0;
         command_t *cmd = command_new("SYNCSTART", stime, "-", 0, "GLOBAL_INQUEUE", "__", "__", "");
         queue_enq(queue, cmd, sizeof(command_t));
+        free(stime);
     }
 
     MQTTAsync_freeMessage(&msg);
@@ -482,6 +484,7 @@ void jwork_process_device(jamstate_t *js)
             core_sethost(js->cstate, 0, rcmd->actid);
             // We are done with registration...
             thread_signal(js->bgsem);
+            command_free(rcmd);
         }
         else
         if (strcmp(rcmd->cmd, "PING") == 0)
@@ -506,6 +509,7 @@ void jwork_process_device(jamstate_t *js)
                     js->cstate->mqttpending[1] = false;
                 }
             }
+            command_free(rcmd);
         }
         else
         if (strcmp(rcmd->cmd, "PUT-CF-INFO") == 0)

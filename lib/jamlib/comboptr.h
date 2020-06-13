@@ -24,5 +24,6 @@ comboptr_t *create_combo2llu_ptr(void *arg1, void *arg2, size_t size, unsigned l
 comboptr_t *create_combo3_ptr(void *arg1, void *arg2, void *arg3);
 comboptr_t *create_combo3i_ptr(void *arg1, void *arg2, void *arg3, int iarg);
 comboptr_t *create_combo3ip_ptr(void *arg1, void *arg2, void *arg3, int iarg, void **argv);
+int free_combo_ptr(comboptr_t *cptr);
 
 #endif

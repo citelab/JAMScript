@@ -140,6 +140,7 @@ void core_setup(corestate_t *cs, int port)
         exit(1);
     }
     fprintf(fp, "%d", getpid());
+    closedir(dir);
     fclose(fp);
 
 }

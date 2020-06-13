@@ -221,6 +221,7 @@ void jam_event_loop(void *arg)
                             else
                                 sTime = 0.0;
                         }
+                        command_free(cmd_1);
                         // Remote requests go through here.. local requests don't go through here
 
                         jactivity_t *jact = activity_new(js->atable, cmd->actid, true);
@@ -373,6 +374,8 @@ void jsleep(int ms)
         jam_set_timer(js, jact->actid, ms);
         nvoid_t *nv = pqueue_deq(athr->inq);
         jam_clear_timer(js, jact->actid);
+        command_free(nv->data);
+        free(nv);
     }
 
 }
