@@ -27,7 +27,6 @@ var cPath;
 var jsPath;
 var outPath;
 var supFiles = [];
-var jviewPort;
 
 for (var i = 0; i < args.length; i++) {
     if (args[i].charAt(0) === "-") {
@@ -40,9 +39,6 @@ for (var i = 0; i < args.length; i++) {
             noCompile = true;
         } else if (args[i] === "-o") {                          // Set output name
             outPath = args[i + 1];
-            i = i + 1;
-        } else if (args[i] === "--jview") {                     // Enabled jview
-            jviewPort = args[i+1];
             i = i + 1;
         } else if (args[i] === "-P") {                          // Preprocessor only
             preprocessOnly = true;
@@ -117,7 +113,7 @@ try {
     //   printAndExit(cTree + jsTree);
     // }
 
-    var results = jam.compile(preprocessed, fs.readFileSync(jsPath).toString(), jviewPort, lineNumber);
+    var results = jam.compile(preprocessed, fs.readFileSync(jsPath).toString(), lineNumber);
 
     if (callGraphFlag) {
         fs.writeFileSync("callgraph.html", callGraph.createWebpage());
@@ -141,7 +137,8 @@ try {
         Promise.all(tasks).then(function(value) {
             results.manifest = createManifest(outPath, results.maxLevel);
             results.jstart = createJStart(results.hasJdata);
-            createZip(results.JS, results.jView, results.manifest, results.jstart, tmpDir, outPath);
+            // TODO here
+            createZip(results.JS, results.manifest, results.jstart, tmpDir, outPath);
             if (!debug) {
                 for (var i = 0; i < value.length; i++) {
                     console.log(value[i]);
@@ -267,14 +264,12 @@ function flowCheck(input, verbose) {
     });
 }
 
-function createZip(jsout, jview, mout, jstart, tmpDir, outputName) {
+function createZip(jsout, mout, jstart, tmpDir, outputName) {
     var zip = new JSZip();
     zip.file("MANIFEST.txt", mout);
     zip.file("jamout.js", jsout);
     zip.file("jstart.js", jstart);
 
-    if (jview.length !== 0)
-        zip.file("jview.json", JSON.stringify(jview));
     zip.file("a.out", fs.readFileSync(`${tmpDir}/a.out`));
 
     if (supFiles.length > 0)
