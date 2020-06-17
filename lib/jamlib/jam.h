@@ -60,7 +60,6 @@ extern "C" {
 #define ODCOUNT_DOWNVAL             20
 #define ODCOUNT_UPVAL               2
 
-
 typedef struct _runtableentry_t
 {
     char actid[MAX_FIELD_LEN];
@@ -71,7 +70,6 @@ typedef struct _runtableentry_t
 
 } runtableentry_t;
 
-
 typedef struct _runtable_t
 {
     void *jarg;
@@ -81,8 +79,6 @@ typedef struct _runtable_t
     pthread_mutex_t lock;
 
 } runtable_t;
-
-
 
 typedef struct _jamstate_t
 {
@@ -139,12 +135,11 @@ extern int odcount;
 // Global defined in the jamout.c (compiler generated)
 extern char dev_tag[32];
 
-jamstate_t *jam_init(int serialnum);
+jamstate_t *jam_init(int serialnum, char *app_id);
 
 void jam_run_app(void *arg);
 void jam_event_loop(void *js);
 jactivity_t *jam_create_activity(jamstate_t *js);
-int machine_height(jamstate_t *js);
 int requested_level(int cvec);
 int wait_for_machine(jamstate_t *js, int level, int maxtime);
 int jamargs(int argc, char **argv, char *appid, char *tag, int *num);
@@ -181,7 +176,7 @@ void *jwork_bgthread(void *arg);
 void jwork_set_subscriptions(jamstate_t *js);
 
 void jwork_msg_delivered(void *ctx, MQTTAsync_deliveryComplete dt);
-int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTAsync_message *msg);
+int dev_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTAsync_message *msg);
 void jwork_connect_lost(void *context, char *cause);
 
 void jwork_assemble_fds(jamstate_t *js);

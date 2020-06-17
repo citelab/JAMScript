@@ -32,7 +32,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "threadsem.h"
 #include "jamdata.h"
 #include "nvoid.h"
-#include "mqtt.h"
+#include "mqtt_adapter.h"
 #include "activity.h"
 
 

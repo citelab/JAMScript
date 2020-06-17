@@ -32,7 +32,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "threadsem.h"
 #include "jamdata.h"
 #include "nvoid.h"
-#include "mqtt.h"
+#include "mqtt_adapter.h"
 #include "activity.h"
 #include "simplelist.h"
 
@@ -41,8 +41,9 @@ extern int cachesize;
 extern char app_id[64];
 
 
-// Helper functions..
-
+/*
+ * Helper functions..
+ */
 void send_register(corestate_t *cs, int level)
 {
     command_t *cmd;
@@ -52,7 +53,17 @@ void send_register(corestate_t *cs, int level)
     #endif
 
     cmd = command_new("REGISTER", "DEVICE", "-", 0, "-", "-", cs->device_id, "");
-    mqtt_publish(cs->mqttserv[level], "/admin/request/all", cmd);
+    nvoid_t *nv = nvoid_new(cmd->buffer, cmd->length);
+    mqtt_publish(cs->mqtt[level], "/admin/request/all", nv);
+    command_free(cmd);
+}
+
+void set_subscriptions(corestate_t *cs, int level)
+{  
+    mqtt_set_subscription(cs->mqtt[level], "/admin/announce/all");
+    mqtt_set_subscription(cs->mqtt[level], "/level/func/reply/#");
+    mqtt_set_subscription(cs->mqtt[level], "/mach/func/request");
+    mqtt_set_subscription(cs->mqtt[level], "/mach/func/syncstart"); 
 }
 
 void send_infoquery(corestate_t *cs)
@@ -64,16 +75,19 @@ void send_infoquery(corestate_t *cs)
     #endif
 
     cmd = command_new("REF-CF-INFO", "-", "-", 0, "-", "-", cs->device_id, "");
-    mqtt_publish(cs->mqttserv[0], "/admin/request/all", cmd);
+    nvoid_t *nv = nvoid_new(cmd->buffer, cmd->length);    
+    mqtt_publish(cs->mqtt[0], "/admin/request/all", nv);
+    command_free(cmd);
 }
-
 
 void jam_set_redis(jamstate_t *js, char *server, int port)
 {
     js->cstate->redserver = strdup(server);
     js->cstate->redport = port;
 
-    // signal the waiting threads...
+    /*
+     * signal the waiting threads...
+     */
 #ifdef linux
     sem_post(&js->jdsem);
 #elif __APPLE__
@@ -81,65 +95,29 @@ void jam_set_redis(jamstate_t *js, char *server, int port)
 #endif
 }
 
-
-void on_dev_connect(void* context, MQTTAsync_successData* response)
+void on_dev_connect(void* context)
 {
     corestate_t *cs = (corestate_t *)context;
 
-    cs->mqttenabled[0] = true;
-    // Set the subscriptions
-    core_set_subscription(cs, 0);
-    // This may not work.. because the REGISTER is going to the MQTT broker!
+    core_register_sent(cs, 0);
     send_register(cs, 0);
-
-    // NOTE: For now, I am putting the mqttenabled flag setting here.
-    // This is for the device.
-    // A better alternative is to get the REGISTER-ACK and set the flag
-    #ifdef DEBUG_LVL1
-        printf("Device. Core.. finally... connected... %s\n", cs->mqtthost[0]);
-    #endif
-    core_check_pending(cs);
-
 }
 
-void on_fog_connect(void* context, MQTTAsync_successData* response)
+void on_fog_connect(void* context)
 {
     corestate_t *cs = (corestate_t *)context;
 
-    cs->mqttenabled[1] = true;
-    // Set the subscriptions
-    core_set_subscription(cs, 1);
+    core_register_sent(cs, 1);
     send_register(cs, 1);
-
-    // NOTE: For now, I am putting the mqttenabled flag setting here.
-    // This is for the fog.
-    // A better alternative is to get the REGISTER-ACK and set the flag
-    #ifdef DEBUG_LVL1
-        printf("Fog. Core.. finally... connected... %s\n", cs->mqtthost[1]);
-    #endif    
-    core_check_pending(cs);
 }
 
-
-void on_cloud_connect(void* context, MQTTAsync_successData* response)
+void on_cloud_connect(void* context)
 {
     corestate_t *cs = (corestate_t *)context;
 
-    cs->mqttenabled[2] = true;
-    // Set the subscriptions
-    core_set_subscription(cs, 2);
+    core_register_sent(cs, 2);
     send_register(cs, 2);
-
-    // NOTE: For now, I am putting the mqttenabled flag setting here.
-    // This is for the cloud.
-    // A better alternative is to get the REGISTER-ACK and set the flag
-    #ifdef DEBUG_LVL1
-        printf("Cloud. Core.. finally... connected... %s\n", cs->mqtthost[2]);
-    #endif
-    core_check_pending(cs);
 }
-
-
 
 // The JAM bgthread is run in another worker (pthread). It shares all
 // the memory with the master that runs the cooperative multi-threaded application
@@ -162,14 +140,16 @@ void *jwork_bgthread(void *arg)
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldtype);
 
     char localhost[64];
-    sprintf(localhost, "tcp://localhost:%d", js->cstate->port);
-    core_createserver(js->cstate, 0, localhost);
-    comboptr_t *ctx = create_combo3i_ptr(js, js->deviceinq, NULL, 0);
-    // Set the callback handlers .. this is necessary befor the actual connection
-    core_setcallbacks(js->cstate, ctx, jwork_connect_lost, jwork_msg_arrived, NULL);
-
+    sprintf(localhost, "tcp://localhost:%d", js->cstate->mqtt_port);
+    js->cstate->mqtt[0] = mqtt_createserver(localhost, 0, js->cstate->app_id, js->cstate->device_id, 
+                                                on_dev_connect, js->cstate);
+    set_subscriptions(js->cstate, 0);
+       
+    // Set the callback handlers .. this is necessary before the actual connection
+    mqtt_setmsgarrived(js->cstate->mqtt[0], js, dev_msg_arrived);
+    mqtt_setconnlost(js->cstate->mqtt[0], js, jwork_connect_lost);
     // Now do the connection to the local server
-    core_connect(js->cstate, 0, on_dev_connect, NULL);
+    mqtt_connect(js->cstate->mqtt[0]);
 
     // assemble the poller.. insert the FDs that should go into the poller
     jwork_assemble_fds(js);
@@ -199,18 +179,15 @@ void *jwork_bgthread(void *arg)
         jwork_processor(js);
     }
 
-    free_combo_ptr(ctx);
     return NULL;
 }
-
 
 /*
  * The most important callback handler. This is executed in another anonymous thread
  * by the MQTT (Paho) Client library. We are not explicitly spawning the thread.
  *
  */
-
-int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTAsync_message *msg)
+int dev_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTAsync_message *msg)
 {
     char adminannouce[64];
     char levelreply[64];
@@ -227,69 +204,129 @@ int jwork_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTAsync_messag
     sprintf(admingo, "/%s/mach/func/syncstart", app_id);
 
     // the ctx pointer is used to recover original context.
-    comboptr_t *cptr = (comboptr_t *)ctx;
-    simplequeue_t *queue = (simplequeue_t *)(cptr->arg2);
+    jamstate_t *js = (jamstate_t *)ctx;
 
     // We need handle the message based on the topic..
-    if (strcmp(topicname, adminannouce) == 0)
-    {
-        nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
-        command_t *cmd = command_from_data(NULL, nv);
-
-        nvoid_free(nv);
-        queue_enq(queue, cmd, sizeof(command_t));
-    }
-    else
-    if (strncmp(topicname, levelreply, strlen(levelreply) -1) == 0)
+    if ((strcmp(topicname, adminannouce) == 0) || 
+        (strncmp(topicname, levelreply, strlen(levelreply) -1) == 0) ||
+        (strncmp(topicname, machrequest, strlen(machrequest) -1) == 0))
     {
         nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
         command_t *cmd = command_from_data(NULL, nv);
         nvoid_free(nv);
-        queue_enq(queue, cmd, sizeof(command_t));
-        // Don't free the command structure.. the queue is still carrying it
-    }
-    else
-    if (strncmp(topicname, machrequest, strlen(machrequest) -1) == 0)
+        queue_enq(js->deviceinq, cmd, sizeof(command_t));
+    } else if (strncmp(topicname, admingo, strlen(admingo) -1) == 0) 
     {
-        nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
-        command_t *cmd = command_from_data(NULL, nv);
-        nvoid_free(nv);
-        queue_enq(queue, cmd, sizeof(command_t));
-        // Don't free the command structure.. the queue is still carrying it
-    }
-    else
-    if (strncmp(topicname, admingo, strlen(admingo) -1) == 0) {
         char *stime = (char *)malloc(msg->payloadlen + 2);
         strncpy(stime, msg->payload, msg->payloadlen);
         stime[msg->payloadlen] = 0;
         command_t *cmd = command_new("SYNCSTART", stime, "-", 0, "GLOBAL_INQUEUE", "__", "__", "");
-        queue_enq(queue, cmd, sizeof(command_t));
+        queue_enq(js->deviceinq, cmd, sizeof(command_t));
         free(stime);
     }
-
     MQTTAsync_freeMessage(&msg);
     MQTTAsync_free(topicname);
     return 1;
 }
 
+/*
+ * The most important callback handler. This is executed in another anonymous thread
+ * by the MQTT (Paho) Client library. We are not explicitly spawning the thread.
+ *
+ */
+int fog_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTAsync_message *msg)
+{
+    char adminannouce[64];
+    char levelreply[64];
+    char machrequest[64];
+    char admingo[64];
+
+    #ifdef DEBUG_LVL1
+        printf("JWork message arrived on topic %s\n", topicname);
+    #endif
+
+    sprintf(adminannouce, "/%s/admin/announce/all", app_id);
+    sprintf(levelreply, "/%s/level/func/reply", app_id);
+    sprintf(machrequest, "/%s/mach/func/request", app_id);
+    sprintf(admingo, "/%s/mach/func/syncstart", app_id);
+
+    // the ctx pointer is used to recover original context.
+    jamstate_t *js = (jamstate_t *)ctx;
+
+    // We need handle the message based on the topic..
+    if ((strcmp(topicname, adminannouce) == 0) || 
+        (strncmp(topicname, levelreply, strlen(levelreply) -1) == 0) ||
+        (strncmp(topicname, machrequest, strlen(machrequest) -1) == 0))
+    {
+        nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
+        command_t *cmd = command_from_data(NULL, nv);
+        nvoid_free(nv);
+        queue_enq(js->foginq, cmd, sizeof(command_t));
+    } else if (strncmp(topicname, admingo, strlen(admingo) -1) == 0) 
+    {
+        char *stime = (char *)malloc(msg->payloadlen + 2);
+        strncpy(stime, msg->payload, msg->payloadlen);
+        stime[msg->payloadlen] = 0;
+        command_t *cmd = command_new("SYNCSTART", stime, "-", 0, "GLOBAL_INQUEUE", "__", "__", "");
+        queue_enq(js->foginq, cmd, sizeof(command_t));
+        free(stime);
+    }
+    MQTTAsync_freeMessage(&msg);
+    MQTTAsync_free(topicname);
+    return 1;
+}
+
+/*
+ * The most important callback handler. This is executed in another anonymous thread
+ * by the MQTT (Paho) Client library. We are not explicitly spawning the thread.
+ *
+ */
+int cloud_msg_arrived(void *ctx, char *topicname, int topiclen, MQTTAsync_message *msg)
+{
+    char adminannouce[64];
+    char levelreply[64];
+    char machrequest[64];
+    char admingo[64];
+
+    #ifdef DEBUG_LVL1
+        printf("JWork message arrived on topic %s\n", topicname);
+    #endif
+
+    sprintf(adminannouce, "/%s/admin/announce/all", app_id);
+    sprintf(levelreply, "/%s/level/func/reply", app_id);
+    sprintf(machrequest, "/%s/mach/func/request", app_id);
+    sprintf(admingo, "/%s/mach/func/syncstart", app_id);
+
+    // the ctx pointer is used to recover original context.
+    jamstate_t *js = (jamstate_t *)ctx;
+
+    // We need handle the message based on the topic..
+    if ((strcmp(topicname, adminannouce) == 0) || 
+        (strncmp(topicname, levelreply, strlen(levelreply) -1) == 0) ||
+        (strncmp(topicname, machrequest, strlen(machrequest) -1) == 0))
+    {
+        nvoid_t *nv = nvoid_new(msg->payload, msg->payloadlen);
+        command_t *cmd = command_from_data(NULL, nv);
+        nvoid_free(nv);
+        queue_enq(js->cloudinq, cmd, sizeof(command_t));
+    } else if (strncmp(topicname, admingo, strlen(admingo) -1) == 0) 
+    {
+        char *stime = (char *)malloc(msg->payloadlen + 2);
+        strncpy(stime, msg->payload, msg->payloadlen);
+        stime[msg->payloadlen] = 0;
+        command_t *cmd = command_new("SYNCSTART", stime, "-", 0, "GLOBAL_INQUEUE", "__", "__", "");
+        queue_enq(js->cloudinq, cmd, sizeof(command_t));
+        free(stime);
+    }
+    MQTTAsync_freeMessage(&msg);
+    MQTTAsync_free(topicname);
+    return 1;
+}
 
 void jwork_connect_lost(void *ctx, char *cause)
 {
-    comboptr_t *call = (comboptr_t *)ctx;
-    jamstate_t *js = (jamstate_t *)(call->arg1);
-    int indx = call->iarg;
-
-    if (indx == 0)
-    {
-        printf("ERROR! MQTT Broker at %s stopped. Exiting.\n", js->cstate->mqtthost[0]);
-        exit(1);
-    }
-    else
-    {
-        js->cstate->mqttenabled[indx] = false;
-        printf("Connection lost at %d.. reconnecting.. \n", indx);
-        core_reconnect_i(js->cstate, indx);
-    }
+    jamstate_t *js = (jamstate_t *)ctx;
+    printf("ERROR! MQTT Broker at %s connection lost. Cause %s\n", js->cstate->mqtt[0]->mqtthost, cause);
 }
 
 
@@ -386,8 +423,6 @@ void jwork_process_globaloutq(jamstate_t *js)
     if (nv == NULL) return;
 
     command_t *rcmd = (command_t *)nv->data;
-    free(nv);
-    // Don't use nvoid_free() .. it is not deep enough
 
     if (rcmd != NULL)
     {
@@ -395,18 +430,17 @@ void jwork_process_globaloutq(jamstate_t *js)
             printf("Processing cmd: from GlobalOutQ.. ..\n");
             printf("====================================== In global processing.. cmd: %s, opt: %s\n", rcmd->cmd, rcmd->opt);
         #endif
-        // increment the reference count..
-        for (i = 1; i < 3; i++)
-            if (js->cstate->mqttenabled[i] == true)
-                command_hold(rcmd);
 
         for (i = 0; i < 3; i++)
-            if (js->cstate->mqttenabled[i] == true)
-                mqtt_publish(js->cstate->mqttserv[i], "/level/func/request", rcmd);
+            if (js->cstate->mqtt[i]->state == MQTT_CONNECTED)
+            {
+                nvoid_t *nvp = nvoid_new(rcmd->buffer, rcmd->length);
+                mqtt_publish(js->cstate->mqtt[i], "/level/func/request", nvp);
+            }
     }
+    command_free(rcmd);
+    free(nv);
 }
-
-
 
 //
 // TODO: Do we have an inefficiency here? I am tracking an old comment that did not
@@ -417,36 +451,29 @@ void jwork_process_globaloutq(jamstate_t *js)
 // Pointer could be referring to the command structure that was created by the
 // activity in this case and the main thread in the above case..
 //
-
 void jwork_process_actoutq(jamstate_t *js, int indx)
 {
-    int i;
     nvoid_t *nv = queue_deq(js->atable->athreads[indx]->outq);
     if (nv == NULL) return;
 
     command_t *rcmd = (command_t *)nv->data;
-    free(nv);
     #ifdef DEBUG_LVL1
         printf("\n\nACTOUTQ[%d]::  %s, opt: %s actarg: %s actid: %s\n\n\n", indx, rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
     #endif
-    // Don't use nvoid_free() .. it is not deep enough
 
     if (rcmd != NULL)
     {
-        // TODO: What else goes here..???
-        // TODO: Revise this part...
-        // Increment the hold on rcmd.. so that memory deallocation happens after all use
-        for (i = 1; i < 3; i++)
-            if (js->cstate->mqttenabled[i] == true)
-                command_hold(rcmd);
-
         // relay the command to the remote servers..
         for (int i = 0; i < 3; i++)
-            if (js->cstate->mqttenabled[i] == true)
-                mqtt_publish(js->cstate->mqttserv[i], "/level/func/request", rcmd);
+            if (js->cstate->mqtt[i]->state == MQTT_CONNECTED) 
+            {
+                nvoid_t *nvp = nvoid_new(rcmd->buffer, rcmd->length);
+                mqtt_publish(js->cstate->mqtt[i], "/level/func/request", nvp);
+            }
     }
+    command_free(rcmd);
+    free(nv);
 }
-
 
 // We have an incoming message from the J at device
 // We need to process it here..
@@ -457,13 +484,11 @@ void jwork_process_device(jamstate_t *js)
     //
     nvoid_t *nv = queue_deq(js->deviceinq);
     if (nv == NULL) return;
-
     command_t *rcmd = (command_t *)nv->data;
     free(nv);
     #ifdef DEBUG_LVL1
         printf("Command from Device cmd: %s, opt: %s actarg: %s actid: %s\n", rcmd->cmd, rcmd->opt, rcmd->actarg, rcmd->actid);
     #endif
-    // Don't use nvoid_free() .. it is not deep enough
 
     if (rcmd != NULL)
     {
@@ -472,47 +497,30 @@ void jwork_process_device(jamstate_t *js)
             printf("ERROR! Kill message received from the J node.\n");
             printf("Exiting.\n");
             exit(1);
-        }
-        else
-        if (strcmp(rcmd->cmd, "REGISTER-ACK") == 0)
+        } else if (strcmp(rcmd->cmd, "REGISTER-ACK") == 0)
         {
-            js->registered = true;
+            core_set_registered(js->cstate, 0, rcmd->actid);
             command_t *scmd = command_new("GET-CF-INFO", "-", "-", 0, "-", "-", js->cstate->device_id, "");
-            mqtt_publish(js->cstate->mqttserv[0], "/admin/request/all", scmd);
-
-            // We know the host actid - in this case the device J. save it.
-            core_sethost(js->cstate, 0, rcmd->actid);
+            nvoid_t *nvp = nvoid_new(scmd->buffer, scmd->length);
+            mqtt_publish(js->cstate->mqtt[0], "/admin/request/all", nvp);
             // We are done with registration...
             thread_signal(js->bgsem);
+            command_free(scmd);
             command_free(rcmd);
-        }
-        else
-        if (strcmp(rcmd->cmd, "PING") == 0)
+        } else if (strcmp(rcmd->cmd, "PING") == 0)
         {
             // If registration is still not complete.. send another registration
             // Although this could be a very rare event.. (missing REGISTER message)
-            if (!js->registered)
+            if (!core_is_registered(js->cstate, 0))
                 send_register(js->cstate, 0);
 
             // If CF information is still pending.. send a REFRESH to get the
             // latest information... the callback is already there..
-            if (js->cstate->cf_pending)
+            if (core_pending_isset(js->cstate, 0))
                 send_infoquery(js->cstate);
 
-            // Handle mqttpending[] - decrement the counter. if the counter hits
-            // zero, turn off mqttpending[].. this should be done only if mqttpending[] is true
-            if (js->cstate->mqttpending[1])
-            {
-                if (js->cstate->pendingcount-- < 0)
-                {
-                    js->cstate->pendingcount = 0;
-                    js->cstate->mqttpending[1] = false;
-                }
-            }
             command_free(rcmd);
-        }
-        else
-        if (strcmp(rcmd->cmd, "PUT-CF-INFO") == 0)
+        } else if (strcmp(rcmd->cmd, "PUT-CF-INFO") == 0)
         {
             if (strcmp(rcmd->actarg, "redis") == 0)
             {
@@ -524,91 +532,70 @@ void jwork_process_device(jamstate_t *js)
                         port = rcmd->args[1].val.ival;
                     else
                         port = atoi(rcmd->args[1].val.sval);
-                    jam_set_redis(js, host, port);
+                    core_set_redis(js->cstate, host, port);
                 }
-            }
-            else
-            if (strcmp(rcmd->actarg, "fog") == 0)
+            } else if (strcmp(rcmd->actarg, "fog") == 0)
             {
-                printf("Information about a fog %s, %s, %d %d\n", rcmd->opt, rcmd->args[0].val.sval, js->cstate->mqttenabled[1], js->cstate->mqttpending[1]);
-
+                printf("Information about a fog %s, %s\n", rcmd->opt, rcmd->args[0].val.sval);
                 if  (strcmp(rcmd->opt, "ADD") == 0)
                 {
-                    if (!js->cstate->mqttenabled[1] && !js->cstate->mqttpending[1])
+                    if (!core_pending_isset(js->cstate, 1))
                     {
-                        js->cstate->mqttpending[1] = true;
-                        js->cstate->pendingcount = MAX_PENDING_CNT;
-                        core_createserver(js->cstate, 1, rcmd->args[0].val.sval);
-                        comboptr_t *ctx = create_combo3i_ptr(js, js->foginq, NULL, 1);
-                        core_setcallbacks(js->cstate, ctx, jwork_connect_lost, jwork_msg_arrived, NULL);
-                        core_connect(js->cstate, 1, on_fog_connect, rcmd->actid);
-            //            printf("Machine height %d\n", machine_height(js));
+                        core_set_pending(js->cstate, 1);
+                        js->cstate->mqtt[1] = mqtt_createserver(rcmd->args[0].val.sval, 1, js->cstate->app_id, js->cstate->device_id, 
+                                                on_fog_connect, js->cstate);
+                        set_subscriptions(js->cstate, 1);
+    
+                        mqtt_setmsgarrived(js->cstate->mqtt[1], js, fog_msg_arrived);
+                        mqtt_connect(js->cstate->mqtt[1]);
+                        core_set_registered(js->cstate, 1, rcmd->actid);
                     }
-                }
-                else
-                if (strcmp(rcmd->opt, "DEL") == 0)
+                } else if (strcmp(rcmd->opt, "DEL") == 0)
                 {
-                    if (core_disconnect(js->cstate, 1, rcmd->actid))
-                    {
-                        printf("==>>>>>>>>>>=== FOG deleted ----------------->>>>>>>>>\n");
-                        js->cstate->mqttpending[1] = false;
-                    }
-                    else
-                        printf("==>>>>>>>>>>=== FOG delete  IGNORED ----------------->>>>>>>>>\n");
+                    if (core_is_connected(js->cstate, 1, rcmd->actid))
+                        mqtt_disconnect(js->cstate->mqtt[1], MQTT_DISCONNECTING);
                 }
-            }
-            else
-            if (strcmp(rcmd->actarg, "cloud") == 0)
+            } else if (strcmp(rcmd->actarg, "cloud") == 0)
             {
                 if  (strcmp(rcmd->opt, "ADD") == 0)
                 {
-                    if (!js->cstate->mqttenabled[2] && !js->cstate->mqttpending[2])
+                    if (!core_pending_isset(js->cstate, 2))
                     {
-                        js->cstate->mqttpending[2] = true;
-                        js->cstate->pendingcount = MAX_PENDING_CNT;
-                        printf("================ Cloud connection...... at %s\n", rcmd->args[0].val.sval);
-                        core_createserver(js->cstate, 2, rcmd->args[0].val.sval);
-                        comboptr_t *ctx = create_combo3i_ptr(js, js->cloudinq, NULL, 2);
-                        core_setcallbacks(js->cstate, ctx, jwork_connect_lost, jwork_msg_arrived, NULL);
-                        core_connect(js->cstate, 2, on_cloud_connect, rcmd->actid);
+                        core_set_pending(js->cstate, 2);
+                        js->cstate->mqtt[2] = mqtt_createserver(rcmd->args[0].val.sval, 2, js->cstate->app_id, js->cstate->device_id, 
+                                                on_cloud_connect, js->cstate);
+                        set_subscriptions(js->cstate, 2);
+    
+                        mqtt_setmsgarrived(js->cstate->mqtt[2], js, cloud_msg_arrived);
+                        mqtt_connect(js->cstate->mqtt[2]);
+                        core_set_registered(js->cstate, 2, rcmd->actid);
                     }
-                }
-                else
-                if (strcmp(rcmd->opt, "DEL") == 0)
+                } else if (strcmp(rcmd->opt, "DEL") == 0)
                 {
-                    if (core_disconnect(js->cstate, 2, rcmd->actid))
-                        printf("==>>>>>>>>>>=== CLOUD deleted ----------------->>>>>>>>>\n");
-                    else
-                        printf("==>>>>>>>>>>=== CLOUD delete IGNORED ----------------->>>>>>>>>\n");
+                    if (core_is_connected(js->cstate, 2, rcmd->actid))
+                        mqtt_disconnect(js->cstate->mqtt[2], MQTT_DISCONNECTING);
                 }
             }
             command_free(rcmd);
-            core_check_pending(js->cstate);
-        }
-        else
-        if (strcmp(rcmd->cmd, "REXEC-ASY") == 0)
+        }  else if (strcmp(rcmd->cmd, "REXEC-ASY") == 0)
         {
-            if (overflow_detect())
+            if (overflow_detect() || (duplicate_detect(rcmd)))
             {
                 command_free(rcmd);
                 return;
             }
 
-            if (duplicate_detect(rcmd))
-                return;
-
             if (jwork_evaluate_cond(rcmd->cond))
-            {
                 p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
-            }
             else
                 jwork_send_nak(js, rcmd, "CONDITION FALSE");
-        }
-        else
-        if (strcmp(rcmd->cmd, "REXEC-SYN") == 0)
+        } else if (strcmp(rcmd->cmd, "REXEC-SYN") == 0)
         {
-            if (duplicate_detect(rcmd))
+            if (duplicate_detect(rcmd)) 
+            {
+                command_free(rcmd);
                 return;
+            }
 
             if (jwork_evaluate_cond(rcmd->cond))
             {
@@ -640,7 +627,6 @@ void jwork_process_device(jamstate_t *js)
     }
 }
 
-
 bool overflow_detect()
 {
     if (arc4random_uniform(100) <= odcount)
@@ -652,113 +638,104 @@ bool overflow_detect()
 bool duplicate_detect(command_t *rcmd)
 {
     if (find_list_item(cache, rcmd->actid))
-    {
-        command_free(rcmd);
         return true;
-    }
     else
     {
         put_list_tail(cache, strdup(rcmd->actid), strlen(rcmd->actid));
         if (list_length(cache) > cachesize)
             del_list_tail(cache);
     }
-
     return false;
 }
 
-
 void jwork_send_error(jamstate_t *js, command_t *cmd, char *estr)
 {
-    MQTTAsync mcl = js->cstate->mqttserv[0];
-    char *deviceid = js->cstate->device_id;
+    mqtt_adapter_t *mq = js->cstate->mqtt[0];
 
     // Create a new command to send as error..
-    command_t *scmd = command_new("REXEC-ERR", "ERR", "-", 0, cmd->actname, cmd->actid, deviceid, "s", estr);
-
-    // send the command over
-    mqtt_publish(mcl, "/mach/func/reply", scmd);
-
-    // deallocate the command string..
+    command_t *scmd = command_new("REXEC-ERR", "ERR", "-", 0, cmd->actname, cmd->actid, js->cstate->device_id, "s", estr);
+    mqtt_publish(mq, "/mach/func/reply", nvoid_new(scmd->buffer, scmd->length));
+    command_free(scmd);
     command_free(cmd);
 }
 
 
 void jwork_send_nak(jamstate_t *js, command_t *cmd, char *estr)
 {
-    MQTTAsync mcl = js->cstate->mqttserv[0];
-    char *deviceid = js->cstate->device_id;
+    mqtt_adapter_t *mq = js->cstate->mqtt[0];
 
     // Create a new command to send as error..
-    command_t *scmd = command_new("REXEC-NAK", "NAK", "-", 0, cmd->actname, cmd->actid, deviceid, "s", estr);
+    command_t *scmd = command_new("REXEC-NAK", "NAK", "-", 0, cmd->actname, cmd->actid, js->cstate->device_id, "s", estr);
 
     // send the command over
-    mqtt_publish(mcl, "/mach/func/reply", scmd);
-
-    // deallocate the command string..
+    mqtt_publish(mq, "/mach/func/reply", nvoid_new(scmd->buffer, scmd->length));
+    command_free(scmd);
     command_free(cmd);
 }
 
 
 void jwork_send_ack(jamstate_t *js, char *opt, command_t *cmd)
 {
-    MQTTAsync mcl = js->cstate->mqttserv[0];
-    char *deviceid = js->cstate->device_id;
+    mqtt_adapter_t *mq = js->cstate->mqtt[0];
 
     // Create a new command to send as error..
-    command_t *scmd = command_new("REXEC-ACK", opt, "-", 0, cmd->actname, cmd->actid, deviceid, "");    
+    command_t *scmd = command_new("REXEC-ACK", opt, "-", 0, cmd->actname, cmd->actid, js->cstate->device_id, "");    
 
     // send the command over
-    mqtt_publish(mcl, "/mach/func/reply", scmd);
+    mqtt_publish(mq, "/mach/func/reply", nvoid_new(scmd->buffer, scmd->length));
+    command_free(scmd);
+    command_free(cmd);
 }
 
 
 void jwork_send_ack_1(jamstate_t *js, char *opt, command_t *cmd)
 {
-    MQTTAsync mcl = js->cstate->mqttserv[1];
-    char *deviceid = js->cstate->device_id;
+    mqtt_adapter_t *mq = js->cstate->mqtt[1];
 
     // Create a new command to send as error..
-    command_t *scmd = command_new("REXEC-ACK", opt, "-", 0, cmd->actname, cmd->actid, deviceid, "");    
+    command_t *scmd = command_new("REXEC-ACK", opt, "-", 0, cmd->actname, cmd->actid, js->cstate->device_id, "");    
 
     // send the command over
-    mqtt_publish(mcl, "/mach/func/reply", scmd);
+    mqtt_publish(mq, "/mach/func/reply", nvoid_new(scmd->buffer, scmd->length));
+    command_free(scmd);
+    command_free(cmd);
 }
 
 
 void jwork_send_ack_2(jamstate_t *js, char *opt, command_t *cmd)
 {
-    MQTTAsync mcl = js->cstate->mqttserv[2];
-    char *deviceid = js->cstate->device_id;
+    mqtt_adapter_t *mq = js->cstate->mqtt[2];
 
     // Create a new command to send as error..
-    command_t *scmd = command_new("REXEC-ACK", opt, "-", 0, cmd->actname, cmd->actid, deviceid, "");    
+    command_t *scmd = command_new("REXEC-ACK", opt, "-", 0, cmd->actname, cmd->actid, js->cstate->device_id, "");    
 
     // send the command over
-    mqtt_publish(mcl, "/mach/func/reply", scmd);
+    mqtt_publish(mq, "/mach/func/reply", nvoid_new(scmd->buffer, scmd->length));
+    command_free(scmd);
+    command_free(cmd);
 }
 
 
 void jwork_send_results(jamstate_t *js, char *opt, char *actname, char *actid, arg_t *args)
 {
-    MQTTAsync mcl;
+    mqtt_adapter_t *mq;
 
     printf("Sending the results... %s\n", opt);
 
     if (strcmp(opt, "cloud") == 0)
-        mcl = js->cstate->mqttserv[2];
+        mq = js->cstate->mqtt[2];
     else
     if (strcmp(opt, "fog") == 0)
-        mcl = js->cstate->mqttserv[1];
+        mq = js->cstate->mqtt[1];
     else
-        mcl = js->cstate->mqttserv[0];
-    char *deviceid = js->cstate->device_id;
+        mq = js->cstate->mqtt[0];
 
     // Create a new command to send as error..
-    command_t *scmd = command_new_using_arg("REXEC-RES", "SYN", "-", 0, actname, actid, deviceid, args, 1);
+    command_t *scmd = command_new_using_arg("REXEC-RES", "SYN", "-", 0, actname, actid, js->cstate->device_id, args, 1);
 
     // send the command over
-    mqtt_publish(mcl, "/mach/func/reply", scmd);
-
+    mqtt_publish(mq, "/mach/func/reply", nvoid_new(scmd->buffer, scmd->length));
+    command_free(scmd);
 }
 
 
@@ -786,13 +763,13 @@ void jwork_process_fog(jamstate_t *js)
         if (strcmp(rcmd->cmd, "REXEC-ASY") == 0)
         {
             if (duplicate_detect(rcmd))
+            {
+                command_free(rcmd);
                 return;
+            }
 
             if (jwork_evaluate_cond(rcmd->cond))
-            {
-            //    printf("Machine height ----- %d\n", machine_height(js));
                 p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
-            }
             else
                 jwork_send_nak(js, rcmd, "CONDITION FALSE");
         } 
@@ -800,11 +777,13 @@ void jwork_process_fog(jamstate_t *js)
         if (strcmp(rcmd->cmd, "REXEC-SYN") == 0)
         {
             if (duplicate_detect(rcmd))
+            {
+                command_free(rcmd);
                 return;
+            }
 
             if (jwork_evaluate_cond(rcmd->cond))
             {
-           //     printf("SYN..Machine height ----- %d\n", machine_height(js));
                 jwork_send_ack_1(js, "SYN", rcmd);
                 p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
             }
@@ -859,8 +838,11 @@ void jwork_process_cloud(jamstate_t *js)
         // TODO: Can we detect unsolicited replies and discard them?
         if (strcmp(rcmd->cmd, "REXEC-ASY") == 0) 
         {
-            if (duplicate_detect(rcmd))
+            if (duplicate_detect(rcmd)) 
+            {
+                command_free(rcmd);
                 return;
+            }
 
             if (jwork_evaluate_cond(rcmd->cond))
             {
@@ -873,7 +855,10 @@ void jwork_process_cloud(jamstate_t *js)
         if (strcmp(rcmd->cmd, "REXEC-SYN") == 0)
         {
             if (duplicate_detect(rcmd))
+            {
+                command_free(rcmd);
                 return;
+            }
 
             if (jwork_evaluate_cond(rcmd->cond))
             {

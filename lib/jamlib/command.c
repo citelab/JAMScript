@@ -716,9 +716,8 @@ void command_hold(command_t *cmd)
 
 
 
-void command_free(command_t *cmd)
+void command_ifree(command_t *cmd)
 {
-
     int rc;
     pthread_mutex_lock(&cmd->lock);
     rc = --cmd->refcount;
@@ -779,7 +778,11 @@ void command_free(command_t *cmd)
         }
         list_free(cmd->cbor_item_list);
     }
+}
 
+void command_free(command_t *cmd) 
+{
+    command_ifree(cmd);
     free(cmd);
 }
 

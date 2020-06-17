@@ -28,7 +28,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "jam.h"
 #include "core.h"
 #include "activity.h"
-#include "mqtt.h"
+#include "mqtt_adapter.h"
 
 #ifdef linux
 #include <bsd/stdlib.h>
@@ -46,10 +46,10 @@ int cachesize;
 
 extern jamstate_t *js;
 
-// Initialize the JAM library.. nothing much done here.
-// We just initialize the Core ..
-//
-jamstate_t *jam_init(int serialnum)
+/*
+ * Initialize the JAMScript library 
+ */
+jamstate_t *jam_init(int serialnum, char *app_id)
 {
     char tagstr[256];
     jamstate_t *js = (jamstate_t *)calloc(1, sizeof(jamstate_t));
@@ -58,7 +58,7 @@ jamstate_t *jam_init(int serialnum)
         printf("JAM Library initialization... \t\t[started]\n");
     #endif
 
-    js->cstate = core_init(jamport, serialnum);
+    js->cstate = core_init(jamport, serialnum, app_id);
 
     if (js->cstate == NULL)
     {
@@ -160,7 +160,7 @@ void jam_event_loop(void *arg)
     jactivity_t *jact;
     char *deviceid = js->cstate->device_id;
 
-    MQTTAsync mcl;
+    mqtt_adapter_t *mq;
 
     while (1)
     {
@@ -193,17 +193,18 @@ void jam_event_loop(void *arg)
                     break;
                     case 'S': // 'REXEC-SYN' - checking 6th char of the string..
                         if (strcmp(cmd->opt, "cloud") == 0)
-                            mcl = js->cstate->mqttserv[2];
+                            mq = js->cstate->mqtt[2];
                         else
                         if (strcmp(cmd->opt, "fog") == 0)
-                            mcl = js->cstate->mqttserv[1];
+                            mq = js->cstate->mqtt[1];
                         else
-                            mcl = js->cstate->mqttserv[0];
+                            mq = js->cstate->mqtt[0];
 
                         // Make a new command which signals to the J node that it's ready
                         // device ID is put in the cmd->actid because I don't know where else to put it.
                         command_t *readycmd = command_new("READY", "READY", "-", 0, "GLOBAL_INQUEUE", deviceid, "_", "");
-                        mqtt_publish(mcl, "/mach/func/syncrequest", readycmd);
+                        mqtt_publish(mq, "/mach/func/syncrequest", nvoid_new(readycmd->buffer, readycmd->length));
+                        command_free(readycmd);
                         double sTime = 0.0;
                         // Wait for the SYNCSTART signal from the J node.
                         nvoid_t *nv = p2queue_deq_high(js->atable->globalinq);
@@ -261,27 +262,12 @@ bool have_fog_or_cloud(jamstate_t *js)
 {
     corestate_t *cs = js->cstate;
 
-    if (cs->mqttenabled[1] || cs->mqttenabled[2])
-        return true;
-    else
-        return false;
+    if ((cs->server[1] != NULL) &&
+        (cs->server[2] != NULL))
+        return ((cs->server[1]->state == SERVER_REGISTERED) ||
+                (cs->server[2]->state == SERVER_REGISTERED));
+    return false;
 }
-
-
-int machine_height(jamstate_t *js)
-{
-    corestate_t *cs = js->cstate;
-
-    if (cs->mqttenabled[1])
-    {
-        if (cs->mqttenabled[2])
-            return 3;
-        else
-            return 2;
-    }
-    return 1;
-}
-
 
 int requested_level(int cvec)
 {
@@ -297,15 +283,13 @@ int wait_for_machine(jamstate_t *js, int level, int maxtime)
 {
     for (int i = 0; i < maxtime; i++)
     {
-        if (machine_height(js) >= level)
+        if (core_mach_height(js->cstate) >= level)
             return 1;
         usleep(1000);
     }
 
     return -1;
 }
-
-
 
 int jamargs(int argc, char **argv, char *appid, char *tag, int *num)
 {

@@ -341,12 +341,12 @@ void run_activity(void *arg)
             {
                 jam_clear_timer(js, jact->actid);
                 bool ack_failed = false;
-                for (int i = 0; i < machine_height(js) -1; i++)
+                for (int i = 0; i < core_mach_height(js->cstate) -1; i++)
                 {
                     if ((strcmp(cmd->cmd, "TIMEOUT") == 0) || (strcmp(cmd->cmd, "REXEC-NAK") == 0))
                         ack_failed = true;
 
-                    if (i < machine_height(js) -2)
+                    if (i < core_mach_height(js->cstate) -2)
                     {
                         int timeout = 300;
                         printf("------------------2--------\n");
@@ -375,12 +375,12 @@ void run_activity(void *arg)
                 jam_clear_timer(js, jact->actid);
                 bool ack_failed = false;
 
-                for (int i = 0; i < machine_height(js) -1 ; i++)
+                for (int i = 0; i < core_mach_height(js->cstate) -1 ; i++)
                 {
                     if ((strcmp(cmd->cmd, "TIMEOUT") == 0) || (strcmp(cmd->cmd, "REXEC-NAK") == 0))
                         ack_failed = true;
 
-                    if (i < machine_height(js) -2)
+                    if (i < core_mach_height(js->cstate) -2)
                     {
                         int timeout = 300;
                         printf("------------------3--------\n");                        

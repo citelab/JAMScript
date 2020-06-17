@@ -27,16 +27,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <string.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <MQTTAsync.h>
 
 #include "core.h"
-#include "mqtt.h"
+#include "mqtt_adapter.h"
 #include "command.h"
 #include "comboptr.h"
 #include "uuid4.h"
-#include "MQTTAsync.h"
 
 
-void core_setup(corestate_t *cs, int port)
+void core_setup(corestate_t *cs)
 {
     DIR *dir = NULL;
     FILE *fp = NULL;
@@ -44,34 +44,30 @@ void core_setup(corestate_t *cs, int port)
     char machtype[64];
     char fname[64];
 
-    // Save the port..
-    cs->port = port;
-
     // Spin for at most 60 seconds for the directory to show up
     //
-    sprintf(portstr, "%d", port);
+    sprintf(portstr, "%d", cs->mqtt_port);
     for (int i = 0; (i < 60 && dir == NULL); i++)
     {
         dir = opendir(portstr);
-        if (dir == NULL)
-            usleep(100000);
-    }
+        if (dir == NULL) 
+            sleep(1);
 
+    }
     if (dir == NULL)
     {
-        printf("ERROR! Missing ./%d folder.\n", port);
+        printf("ERROR! Missing ./%d folder.\n", cs->mqtt_port);
         exit(1);
     }
 
-    sprintf(fname, "./%d/machType", port);
+    sprintf(fname, "./%d/machType", cs->mqtt_port);
     // Spin again if needed for the machType in the directory to show up
     for (int i = 0; (i < 10 && fp == NULL); i++)
     {
         fp = fopen(fname, "r");
         if (fp == NULL)
-            usleep(100000);
+            sleep(1);
     }
-
     if (fp == NULL)
     {
         printf("ERROR! Opening the file %s\n", fname);
@@ -89,7 +85,7 @@ void core_setup(corestate_t *cs, int port)
         exit(1);
     }
 
-    sprintf(fname, "./%d/cdevId.%d", port, cs->serial_num);
+    sprintf(fname, "./%d/cdevId.%d", cs->mqtt_port, cs->serial_num);
     if (access(fname, F_OK) != -1)
     {
         char devid[UUID4_LEN+1];
@@ -113,7 +109,6 @@ void core_setup(corestate_t *cs, int port)
     }
     else
     {
-
         // Create the deviceId and store it..
         char buf[UUID4_LEN];
         uuid4_generate(buf);
@@ -131,7 +126,7 @@ void core_setup(corestate_t *cs, int port)
         fclose(fp);
     }
 
-    sprintf(fname, "./%d/cdevProcessId.%d", port, cs->serial_num);
+    sprintf(fname, "./%d/cdevProcessId.%d", cs->mqtt_port, cs->serial_num);
     fp = fopen(fname, "w");
     if (fp == NULL)
     {
@@ -142,7 +137,6 @@ void core_setup(corestate_t *cs, int port)
     fprintf(fp, "%d", getpid());
     closedir(dir);
     fclose(fp);
-
 }
 
 
@@ -150,8 +144,7 @@ void core_setup(corestate_t *cs, int port)
 // in asynchronous mode - it uses a slightly restricted callback to listen to a subset
 // of messages. The restriction is lifted after the core_init() phase is over.
 //
-
-corestate_t *core_init(int port, int serialnum)
+corestate_t *core_init(int port, int serialnum, char *app_id)
 {
     #ifdef DEBUG_LVL1
         printf("Core initialization...");
@@ -159,150 +152,93 @@ corestate_t *core_init(int port, int serialnum)
 
     // create the core state structure..
     corestate_t *cs = (corestate_t *)calloc(1, sizeof(corestate_t));
-    // device_id set inside the following function
-    cs->cf_pending = true;
     cs->serial_num = serialnum;
-
-    // redserver and redport are already initialized to NULL and 0, respectively
-    //
-    core_setup(cs, port);
+    cs->app_id = strdup(app_id);
+    cs->mqtt_port = port;
+    core_setup(cs);    
     return cs;
 }
 
-
-
-void core_createserver(corestate_t *cs, int indx, char *url)
+void core_register_sent(corestate_t *cs, int indx)
 {
-    // If we are trying to create the previous server... just return!
-    // This happens because the server previously connected became available after
-    // a disconnection..
-    if (cs->mqtthost[indx] != NULL && strcmp(cs->mqtthost[indx], url) == 0)
-        return;
+    if (cs->server[indx] == NULL) 
+         cs->server[indx] = (server_t *)calloc(1, sizeof(server_t));
+     cs->server[indx]->state = SERVER_REG_SENT; 
+}
 
-    cs->mqtthost[indx] = strdup(url);
+void core_set_registered(corestate_t *cs, int indx, char *epoint)
+{
+    if (cs->server[indx] == NULL)
+        cs->server[indx] = (server_t *)calloc(1, sizeof(server_t));
 
-    // open an mqtt connection to localhost
-    cs->mqttserv[indx] = mqtt_create(cs->mqtthost[indx], indx, cs->device_id);
-
-    if (cs->mqttserv[indx] == NULL)
+    if (cs->server[indx]->state != SERVER_REGISTERED)
     {
-        printf("WARNING! Cannot create MQTT endpoint at %s\n", url);
-        printf("Could be an error in the endpoint discovered or configured at %s.\n", cs->mqtthost[0]);
+        cs->server[indx]->state = SERVER_REGISTERED;
+        cs->server[indx]->endpoint = strdup(epoint);
     }
-
-//    cs->mqttenabled[indx] = false;
 }
 
-void core_reconnect_i(corestate_t *cs, int indx)
+bool core_is_registered(corestate_t *cs, int indx)
 {
-    int rc;
+    if ((cs->server[indx] != NULL) &&
+        (cs->server[indx]->state == SERVER_REGISTERED))
+        return true;
+    else 
+        return false;
+}            
 
-    rc = MQTTAsync_reconnect(cs->mqttserv[indx]);
-    if (rc != MQTTASYNC_SUCCESS)
-        printf("WARNING!! Unable to reconnect to %d\n", indx);
-    else
-        printf("Reconnected...to %d\n", indx);
-}
-
-
-void core_connect(corestate_t *cs, int indx, void (*onconnect)(void *, MQTTAsync_successData *), char *hid)
+bool core_is_connected(corestate_t *cs, int indx, char *host)
 {
-    int rc;
-
-    MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
-    conn_opts.keepAliveInterval = 20;
-    conn_opts.cleansession = 1;
-    conn_opts.onSuccess = onconnect;
-    conn_opts.context = cs;
-    conn_opts.onFailure = NULL;
-
-    rc = MQTTAsync_connect(cs->mqttserv[indx], &conn_opts);
-
-    if ((rc != MQTTASYNC_SUCCESS) && (indx == 0))
-    {
-        printf("\nERROR! Unable to connect to the MQTT server at [%s].\n", cs->mqtthost[indx]);
-        printf("** Check whether an MQTT server is running at [%s] **\n\n", cs->mqtthost[indx]);
-        exit(1);
-    }
-    else if ((rc != MQTTASYNC_SUCCESS) && (indx != 0))
-    {
-        printf("\nWARNING! Unable to reconnect to the MQTT server at [%s].\n", cs->mqtthost[indx]);
-        printf("** Check whether an MQTT server is running at [%s] **\n\n", cs->mqtthost[indx]);
-        printf("Device could have moved away from the fog connection zone.\n");
-    }
-
-    // We are saving the eventual host that would be connected here.
-    // The connection won't be alive until the on-X-connect() handler is fired
-    //
-    if (hid != NULL)
-        cs->hid[indx] = strdup(hid);
+    if ((cs->server[indx] != NULL) &&
+        (cs->server[indx]->state == SERVER_REGISTERED) && 
+        (strcmp(cs->server[indx]->endpoint, host) == 0))
+        return true;
+    else 
+        return false;
 }
 
-void core_sethost(corestate_t *cs, int indx, char *hid)
-{
-    if (hid != NULL)
-        cs->hid[indx] = strdup(hid);
-}
-
-bool core_disconnect(corestate_t *cs, int indx, char *hid)
-{
-    int rc;
-
-    // If this is a stray disconnection request, we should just ignore it.
-    // Only valid request is the server (fog, cloud, device) we are connected to...
-    if ((cs->mqttenabled[indx]) &&
-        (cs->hid[indx] != NULL) &&
-        (strcmp(cs->hid[indx], hid) != 0))
-            return false;
-    // release the old one..
-    free(cs->hid[indx]);
-    cs->hid[indx] = NULL;
-
-    MQTTAsync_disconnectOptions dconn_opts = MQTTAsync_disconnectOptions_initializer;
-    dconn_opts.timeout = 0;
-    dconn_opts.onSuccess = NULL;
-    dconn_opts.context = cs;
-    dconn_opts.onFailure = NULL;
-
-    rc = MQTTAsync_disconnect(cs->mqttserv[indx], &dconn_opts);
-
-    printf("Core.. disconnected... %s\n", cs->mqtthost[indx]);
-    cs->mqttenabled[indx] = false;
-
-    return true;
-}
-
-
-void core_setcallbacks(corestate_t *cs, comboptr_t *ctx,
-        MQTTAsync_connectionLost *cl,
-        MQTTAsync_messageArrived *ma,
-        MQTTAsync_deliveryComplete *dc)
-{
-    MQTTAsync_setCallbacks(cs->mqttserv[ctx->iarg], ctx, cl, ma, dc);
-}
-
-
-
-void core_set_subscription(corestate_t *cs, int level)
-{
-    if (!cs->mqttenabled[level])
-        return;
-
-    mqtt_subscribe(cs->mqttserv[level], "/admin/announce/all");
-    mqtt_subscribe(cs->mqttserv[level], "/level/func/reply/#");
-    mqtt_subscribe(cs->mqttserv[level], "/mach/func/request");
-    // Subscribe to the "syncstart" topic for sync purpose.
-    mqtt_subscribe(cs->mqttserv[level], "/mach/func/syncstart");
-}
-
-
-void core_check_pending(corestate_t *cs)
+bool core_info_pending(corestate_t *cs)
 {
     bool flag = false;
-    for (int i = 0; i < mheight; i++)
-        if (!cs->mqttenabled[i])
+    for (int i = 0; cs->server[i] != NULL; i++)
+        if (cs->server[i]->info_pending)
             flag = true;
+    
+    return flag;
+}
 
-    // cf_pending is true if we are still seeking information.
-    cs->cf_pending = flag;
+bool core_pending_isset(corestate_t *cs, int indx)
+{
+    if ((cs->server[indx] != NULL) &&
+        (cs->server[indx]->state == SERVER_REGISTERED) &&
+        (cs->server[indx]->info_pending == true))
+        return true;
+    else 
+        return false;
+}
+
+void core_set_pending(corestate_t *cs, int indx)
+{
+    if ((cs->server[indx] != NULL) &&
+        (cs->server[indx]->state == SERVER_REGISTERED))
+        cs->server[indx]->info_pending = true;
+}
+
+void core_set_redis(corestate_t *cs, char *host, int port)
+{
+    cs->redport = port;
+    cs->redserver = strdup(host);
+}
+
+int core_mach_height(corestate_t *cs)
+{
+    int i = 0;
+
+    while ((i < 3) && 
+           (cs->server[i] != NULL))
+        if (cs->server[i]->state == SERVER_REGISTERED)
+            i++;
+        else 
+            break;
+    return i;
 }

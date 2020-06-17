@@ -118,6 +118,7 @@ rvalue_t *command_qargs_alloc(int remote, char *fmt, va_list args);
 command_t *command_from_data(char *fmt, nvoid_t *data);
 
 void command_hold(command_t *cmd);
+void command_ifree(command_t *cmd);
 void command_free(command_t *cmd);
 void command_arg_print(arg_t *arg);
 void command_print(command_t *cmd);

@@ -72,7 +72,7 @@ arg_t *jam_rexec_sync(jamstate_t *js, char *condstr, int condvec, char *aname, c
             js->cstate->device_id, arr, qargs, strlen(fmask));
         cmd->cbor_item_list = list;
 
-        if (machine_height(js) > 1)
+        if (core_mach_height(js->cstate) > 1)
         {
             jact->type = SYNC_RTE;
             rargs = jam_sync_runner(js, jact, cmd);

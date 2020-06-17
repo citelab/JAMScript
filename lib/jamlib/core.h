@@ -27,53 +27,61 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdbool.h>
 #include <MQTTAsync.h>
 
+#include "mqtt_adapter.h"
 #include "command.h"
 #include "comboptr.h"
-#include "MQTTAsync.h"
 
 #define MAX_SERVERS             3
 #define MAX_PENDING_CNT         500
 
+typedef enum 
+{
+    SERVER_NOT_REGISTERED,
+    SERVER_REG_SENT,
+    SERVER_REGISTERED,
+    SERVER_ERROR
+} server_state_t;
+
+typedef struct _server_t 
+{
+    server_state_t state;
+    char *endpoint;
+    bool info_pending;
+} server_t;
+
+/*
+ * Core data structure. This includes the parameters that are 
+ * required to make the basic connections with the J nodes. 
+ * MQTT broker information and redis server information go in here. 
+ * Also, node identifying information go in here. 
+ */
 typedef struct _corestate_t
 {
     char *device_id;
-    int port;
-    bool cf_pending;
-    int serial_num;
-
-    MQTTAsync mqttserv[3];
-    bool mqttenabled[3];
-    bool mqttpending[3];
-    int pendingcount;
-    char *mqtthost[3];
-    char *hid[3];           // This points to the endpoint that is connected through MQTT broker
-
+    char *app_id;
+    int serial_num;    
+    int mqtt_port;
+    server_t *server[MAX_SERVERS];
+    mqtt_adapter_t *mqtt[MAX_SERVERS];
     char *redserver;
     int redport;
-
 } corestate_t;
 
 
-extern int mheight;
+/*
+ * Function prototypes
+ */
 
+void core_setup(corestate_t *cs);
+corestate_t *core_init(int port, int serialnum, char *app_id);
+void core_register_sent(corestate_t *cs, int index);
+void core_set_registered(corestate_t *cs, int indx, char *epoint);
+bool core_is_registered(corestate_t *cs, int indx);
+bool core_is_connected(corestate_t *cs, int indx, char *host);
+bool core_info_pending(corestate_t *cs);
+bool core_pending_isset(corestate_t *cs, int indx);
+void core_set_pending(corestate_t *cs, int indx);
+void core_set_redis(corestate_t *cs, char *host, int port);
+int core_mach_height(corestate_t *cs);
 
-// ------------------------------
-// Function prototypes..
-// ------------------------------
-
-// Initialize the core.. the first thing we need to call
-corestate_t *core_init(int port, int serialnum);
-void core_setup(corestate_t *cs, int port);
-void core_set_redis(corestate_t *cs, char *server, int port);
-void core_createserver(corestate_t *cs, int indx, char *url);
-void core_reconnect_i(corestate_t *cs, int indx);
-void core_connect(corestate_t *cs, int indx, void (*onconnect)(void *, MQTTAsync_successData *), char *hid);
-void core_sethost(corestate_t *cs, int indx, char *hid);
-bool core_disconnect(corestate_t *cs, int indx, char *hid);
-void core_setcallbacks(corestate_t *cs, comboptr_t *ctx,
-        MQTTAsync_connectionLost *cl,
-        MQTTAsync_messageArrived *ma,
-        MQTTAsync_deliveryComplete *dc);
-void core_set_subscription(corestate_t *cs, int level);
-void core_check_pending(corestate_t *cs);
 #endif
