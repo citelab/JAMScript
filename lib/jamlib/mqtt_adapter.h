@@ -35,6 +35,7 @@ typedef enum
     MQTT_NOTCONNECTED = 0,
     MQTT_CONNECTED,
     MQTT_DISCONNECTING,
+    MQTT_CONNECTING,
     MQTT_ERROR
 } mqtt_state_t;
 

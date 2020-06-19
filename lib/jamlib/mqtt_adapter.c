@@ -33,7 +33,6 @@ void mqtt_default_conn_lost(void *ctx, char *cause)
 {
     mqtt_adapter_t *mq = (mqtt_adapter_t *)ctx;
     mq->state = MQTT_ERROR;
-    printf("Connection lost at %s reconnecting.. \n", mq->mqtthost);
     sleep(1);
     mqtt_connect(mq);
 }
@@ -76,28 +75,45 @@ void mqtt_onconnect(void* context, MQTTAsync_successData* response)
 {
     mqtt_adapter_t *mq = (mqtt_adapter_t *)context;
 
-    mq->state = MQTT_CONNECTED;
-    for (int i = 0; mq->subscriptions[i] != NULL; i++)
-        mqtt_subscribe(mq, mq->subscriptions[i]);
-    mq->onconnect(mq->args);
+    if (mq->state == MQTT_CONNECTING) 
+    {
+        mq->state = MQTT_CONNECTED;
+        for (int i = 0; mq->subscriptions[i] != NULL; i++)
+            mqtt_subscribe(mq, mq->subscriptions[i]);
+        mq->onconnect(mq->args);
+    } else if (mq->state == MQTT_DISCONNECTING) 
+        mqtt_disconnect(mq, MQTT_DISCONNECTING);
 }
 
 void mqtt_connect(mqtt_adapter_t *mq)
 {
     int rc;
 
-    MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
-    conn_opts.keepAliveInterval = 20;
-    conn_opts.cleansession = 1;
-    conn_opts.onSuccess = mqtt_onconnect;
-    conn_opts.context = mq;
-    conn_opts.onFailure = NULL;
-    rc = MQTTAsync_connect(mq->mqttserv, &conn_opts);
-    if (rc != MQTTASYNC_SUCCESS)
+    if ((mq->state == MQTT_NOTCONNECTED) ||
+        (mq->state == MQTT_ERROR))
     {
-        printf("\nERROR! Unable to connect to the MQTT server at %s.\n", mq->mqtthost);
-        exit(1);
-    }
+        mq->state = MQTT_CONNECTING;
+        MQTTAsync_connectOptions conn_opts = MQTTAsync_connectOptions_initializer;
+        conn_opts.keepAliveInterval = 20;
+        conn_opts.cleansession = 1;
+        conn_opts.onSuccess = mqtt_onconnect;
+        conn_opts.context = mq;
+        conn_opts.onFailure = NULL;
+        rc = MQTTAsync_connect(mq->mqttserv, &conn_opts);
+        if (rc != MQTTASYNC_SUCCESS)
+        {
+            printf("\nERROR! Unable to connect to the MQTT server at %s.\n", mq->mqtthost);
+            exit(1);
+        }
+    } else if (mq->state == MQTT_DISCONNECTING)
+        mq->state = MQTT_CONNECTING;
+    /*
+     * Adapter is in MQTT_DISCONNECTING if a disconnect request is 
+     * in flight. We are switching the state to MQTT_CONNECTING. This 
+     * allows is to change the connection state in the on_disconnect()
+     * handler. We do a similar change in course with the disconnection
+     * following an inflight connection.
+     */ 
 }
 
 void mqtt_ondisconnect(void* context, MQTTAsync_successData* response)
@@ -106,26 +122,31 @@ void mqtt_ondisconnect(void* context, MQTTAsync_successData* response)
     if (mq->state == MQTT_DISCONNECTING) {
         mq->state = MQTT_NOTCONNECTED;
         return;
-    } 
-    mqtt_connect(mq);
+    } else if (mq->state == MQTT_CONNECTING)
+        mqtt_connect(mq);
 }
 
 bool mqtt_disconnect(mqtt_adapter_t *mq, int state)
 {
     int rc;
+    if (mq->state == MQTT_CONNECTED) 
+    {
+        mq->state = state;
+        MQTTAsync_disconnectOptions dconn_opts = MQTTAsync_disconnectOptions_initializer;
+        dconn_opts.timeout = 0;    
+        dconn_opts.onSuccess = mqtt_ondisconnect;
+        dconn_opts.context = mq;
+        dconn_opts.onFailure = NULL;
 
-    if (mq->state != MQTT_CONNECTED) 
+        rc = MQTTAsync_disconnect(mq->mqttserv, &dconn_opts);
+        return true;
+    } else if (mq->state == MQTT_CONNECTING)
+    {
+        mq->state = MQTT_DISCONNECTING;
+        return true;
+    } else 
         return false;
 
-    mq->state = state;
-    MQTTAsync_disconnectOptions dconn_opts = MQTTAsync_disconnectOptions_initializer;
-    dconn_opts.timeout = 0;    
-    dconn_opts.onSuccess = mqtt_ondisconnect;
-    dconn_opts.context = mq;
-    dconn_opts.onFailure = NULL;
-
-    rc = MQTTAsync_disconnect(mq->mqttserv, &dconn_opts);
-    return true;
 }
 
 void mqtt_reconnect(mqtt_adapter_t *mq)

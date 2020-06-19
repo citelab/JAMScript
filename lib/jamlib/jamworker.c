@@ -547,11 +547,13 @@ void jwork_process_device(jamstate_t *js)
                         set_subscriptions(js->cstate, 1);
     
                         mqtt_setmsgarrived(js->cstate->mqtt[1], js, fog_msg_arrived);
+                        printf("Connect called... state %d\n", js->cstate->mqtt[1]->state);
                         mqtt_connect(js->cstate->mqtt[1]);
                         core_set_registered(js->cstate, 1, rcmd->actid);
                     }
                 } else if (strcmp(rcmd->opt, "DEL") == 0)
                 {
+                    printf("DisConnect called... state %d\n", js->cstate->mqtt[1]->state);
                     if (core_is_connected(js->cstate, 1, rcmd->actid))
                         mqtt_disconnect(js->cstate->mqtt[1], MQTT_DISCONNECTING);
                 }
