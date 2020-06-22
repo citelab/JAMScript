@@ -480,6 +480,8 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
 //
 void jwork_process_device(jamstate_t *js)
 {
+    static bool ignore_start = true;
+
     // Get the message from the device to process
     //
     nvoid_t *nv = queue_deq(js->deviceinq);
@@ -603,9 +605,13 @@ void jwork_process_device(jamstate_t *js)
             {
                 jwork_send_ack(js, "SYN", rcmd);
                 p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
+                ignore_start = false;
             }
             else
+            {
                 jwork_send_nak(js, rcmd, "CONDITION FALSE");
+                ignore_start = true;
+            }
         }
         else
         if ((strcmp(rcmd->cmd, "REXEC-ACK") == 0) ||
@@ -619,8 +625,16 @@ void jwork_process_device(jamstate_t *js)
         }
         else
         if (strcmp(rcmd->cmd, "SYNCSTART") == 0) {
-			// Received the "go" from J nodes, we put the go command into the high queue
-            p2queue_enq_high(js->atable->globalinq, rcmd, sizeof(command_t));
+            if (!ignore_start)
+            {
+                // Received the "go" from J nodes, we put the go command into the high queue
+                p2queue_enq_high(js->atable->globalinq, rcmd, sizeof(command_t));
+                ignore_start = true;
+            }
+            else
+            {
+                command_free(rcmd);
+            }
         }
         else
         {
@@ -743,6 +757,8 @@ void jwork_send_results(jamstate_t *js, char *opt, char *actname, char *actid, a
 //
 void jwork_process_fog(jamstate_t *js)
 {
+    static bool ignore_start = true;
+
     // Get the message from the fog to process
     //
     nvoid_t *nv = queue_deq(js->foginq);
@@ -785,9 +801,13 @@ void jwork_process_fog(jamstate_t *js)
             {
                 jwork_send_ack_1(js, "SYN", rcmd);
                 p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));
+                ignore_start = false;
             }
             else
+            {
                 jwork_send_nak(js, rcmd, "CONDITION FALSE");
+                ignore_start = true;
+            }
         }
         else
         if ((strcmp(rcmd->cmd, "REXEC-ACK") == 0) ||
@@ -801,8 +821,16 @@ void jwork_process_fog(jamstate_t *js)
         }
         else
         if (strcmp(rcmd->cmd, "SYNCSTART") == 0) {
-			// Received the "go" from J nodes, we put the go command into the high queue
-            p2queue_enq_high(js->atable->globalinq, rcmd, sizeof(command_t));
+            if (!ignore_start)
+            {
+                // Received the "go" from J nodes, we put the go command into the high queue
+                p2queue_enq_high(js->atable->globalinq, rcmd, sizeof(command_t));
+                ignore_start = true;
+            }
+            else
+            {
+                command_free(rcmd);
+            }
         }
         else
         {
@@ -817,6 +845,8 @@ void jwork_process_fog(jamstate_t *js)
 //
 void jwork_process_cloud(jamstate_t *js)
 {
+    static bool ignore_start = true;
+
     // Get the message from the cloud to process
     //
     nvoid_t *nv = queue_deq(js->cloudinq);
@@ -863,9 +893,13 @@ void jwork_process_cloud(jamstate_t *js)
             {
                 jwork_send_ack_2(js, "SYN", rcmd);
                 p2queue_enq_low(js->atable->globalinq, rcmd, sizeof(command_t));                
+                ignore_start = false;
             }
             else
+            {
                 jwork_send_nak(js, rcmd, "CONDITION FALSE");
+                ignore_start = true;
+            }
         }        
         else
         if ((strcmp(rcmd->cmd, "REXEC-ACK") == 0) ||
@@ -879,8 +913,16 @@ void jwork_process_cloud(jamstate_t *js)
         }
         else
         if (strcmp(rcmd->cmd, "SYNCSTART") == 0) {
-            // Received the "go" from J nodes, we put the go command into the high queue
-            p2queue_enq_high(js->atable->globalinq, rcmd, sizeof(command_t));
+            if (!ignore_start)
+            {
+                // Received the "go" from J nodes, we put the go command into the high queue
+                p2queue_enq_high(js->atable->globalinq, rcmd, sizeof(command_t));
+                ignore_start = true;
+            }
+            else
+            {
+                command_free(rcmd);
+            }
         }
         else
         {

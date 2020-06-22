@@ -75,7 +75,8 @@ Usage: jamrun file.jxe [--app=appl_name] [--fog|--cloud] [--num=num_c_devs]
                                     [--oflow=flow_name]
                                     [--log]
                                     [--loc=long,lat]
-                                    [--link=random|near|best]
+                                    [--link=random|near|best|zone]
+                                    [--zone=zone_name]
 
 
 The jamrun command creates a run state in the $HOME/__jamrun folder.
@@ -147,7 +148,7 @@ dojamout_p2_fg() {
     local pnum=$2
     local floc=$3
 
-    buildjargs "--app=$jappid" "--port=$pnum" "--data=$data" "--tags=$tags" "--iflow=$iflow" "--oflow=$oflow" "--link=$link" "--long=$long" "--lat=$lat"
+    buildjargs "--app=$jappid" "--port=$pnum" "--data=$data" "--tags=$tags" "--iflow=$iflow" "--oflow=$oflow" "--link=$link" "--zone=$zone" "--long=$long" "--lat=$lat"
     local args=$results
     case $type in
         cloud)
@@ -186,7 +187,7 @@ dojamout_p2_bg() {
     local pnum=$2
     local floc=$3
 
-    buildjargs "--app=$jappid" "--port=$pnum" "--data=$data" "--tags=$tags" "--iflow=$iflow" "--oflow=$oflow" "--link=$link" "--long=$long" "--lat=$lat"
+    buildjargs "--app=$jappid" "--port=$pnum" "--data=$data" "--tags=$tags" "--iflow=$iflow" "--oflow=$oflow" "--link=$link" "--zone=$zone" "--long=$long" "--lat=$lat"
     local args=$results
 
     if [ `uname` == "Linux" ]; then
@@ -412,6 +413,7 @@ log=
 iflow=
 oflow=
 link=random
+zone=
 
 # generate the random longitude and lattitude values
 # use the --loc option to override these values
@@ -550,6 +552,20 @@ while :; do
             ;;
         --link=)            # Handle the case of an empty
             die 'ERROR: "--link" requires a non-empty option argument.'
+            ;;
+        --zone)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                zone=$2
+                shift
+            else
+                die 'ERROR: "--zone" requires a non-empty option argument.'
+            fi
+            ;;
+        --zone=?*)
+            zone=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --zone=)            # Handle the case of an empty
+            die 'ERROR: "--zone" requires a non-empty option argument.'
             ;;
         --data)           # Takes an option argument; ensure it has been specified.
             if [ "$2" ]; then

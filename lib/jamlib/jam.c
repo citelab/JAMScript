@@ -200,7 +200,6 @@ void jam_event_loop(void *arg)
                         command_t *readycmd = command_new("READY", "READY", "-", 0, "GLOBAL_INQUEUE", deviceid, "_", "");
                         mqtt_publish(mq, "/mach/func/syncrequest", nvoid_new(readycmd->buffer, readycmd->length));
                         command_free(readycmd);
-                        double sTime = 0.0;
                         // Wait for the SYNCSTART signal from the J node.
                         nvoid_t *nv = p2queue_deq_high(js->atable->globalinq);
                         command_t *cmd_1;
@@ -211,29 +210,30 @@ void jam_event_loop(void *arg)
                         else cmd_1 = NULL;
                         // printf("Waiting command TYPE: %s\n", cmd_1->cmd);
                         if (cmd_1 != NULL) {
-                            if (strcmp(cmd_1->cmd, "SYNCSTART") == 0)
+                            if (strcmp(cmd_1->cmd, "SYNCSTART") == 0) {
                                 // Get the start time from the Go command.
-                                sTime = atof(cmd_1->opt);
-                            else
-                                sTime = 0.0;
+                                double sTime = atof(cmd_1->opt);
+                                if (sTime >= 0) {
+                                    // Remote requests go through here.. local requests don't go through here
+
+                                    jactivity_t *jact = activity_new(js->atable, cmd->actid, true);
+                                    // The activity creation should have setup the thread
+                                    // So we should have a thread to run...
+                                    activity_thread_t *athr = athread_getbyindx(js->atable, jact->jindx);
+                                    runtable_insert(js, cmd->actid, cmd);
+
+                                    // Busy waiting until the start time.
+                                    while (getcurtime() < (double) sTime) {}
+
+                                    // printf("after a hwile: %f\n", getcurtime());
+                                    if (jact != NULL)
+                                        pqueue_enq(athr->inq, cmd, sizeof(command_t));
+                                    else
+                                        printf("ERROR! Unable to find a free Activity handler to start %s", cmd->actname);
+                                }
+                            }
                         }
                         command_free(cmd_1);
-                        // Remote requests go through here.. local requests don't go through here
-
-                        jactivity_t *jact = activity_new(js->atable, cmd->actid, true);
-                        // The activity creation should have setup the thread
-                        // So we should have a thread to run...
-                        activity_thread_t *athr = athread_getbyindx(js->atable, jact->jindx);
-                        runtable_insert(js, cmd->actid, cmd);
-
-                        // Busy waiting until the start time.
-                        while (getcurtime() < (double) sTime) {}
-
-                        // printf("after a hwile: %f\n", getcurtime());
-                        if (jact != NULL)
-                            pqueue_enq(athr->inq, cmd, sizeof(command_t));
-                        else
-                            printf("ERROR! Unable to find a free Activity handler to start %s", cmd->actname);
                     break;
                     default:
                         printf("===========================SYNC.. TIMEOUT???? %s\n", cmd->cmd);

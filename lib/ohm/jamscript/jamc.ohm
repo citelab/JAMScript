@@ -19,7 +19,10 @@ JAMC <: C {
 
     Sync_activity   = jsync Decl_specs Jcond_specifier? Declarator Namespace_spec? Compound_stmt
 
+    Sync_ctx_activity = jsync_ctx Decl_specs Jcond_specifier? Declarator Namespace_spec? Compound_stmt
+
     Activity_def    = Sync_activity
+                    | Sync_ctx_activity
                     | Async_activity
 
     External_decl   := Activity_def
@@ -30,6 +33,7 @@ JAMC <: C {
 
     jasync = "jasync" ~identPart
     jsync = "jsync" ~identPart
+    jsync_ctx = "jsync_ctx" ~identPart
     in = "in" ~identPart
     jamtask = "jamtask" ~identPart
 }

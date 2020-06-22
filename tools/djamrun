@@ -47,7 +47,8 @@ Usage: djamrun file.jxe [--app=appl_name] [--fog|--cloud] [--num=num_c_devs]
                                     [--runon=container_to_run]
                                     [--log]
                                     [--loc]
-                                    [--link=random|near|best]
+                                    [--link=random|near|best|zone]
+                                    [--zone=zone_name]
                                     [--publish=dport:hport]
 
 
@@ -66,7 +67,7 @@ runatcloud() {
     local tags=$5
 
 
-    argstr=" --app=$appid --data=$data --num=$num --tmux=$dockid-c --tags=$tags --link=$link --loc=$loc "
+    argstr=" --app=$appid --data=$data --num=$num --tmux=$dockid-c --tags=$tags --link=$link --zone=$zone --loc=$loc "
     if [ ! -z $log ]; then
         argstr="$argstr --log"
     fi
@@ -91,7 +92,7 @@ runatfog() {
     local data=$4
     local tags=$5
 
-    argstr=" --app=$appid --data=$data --num=$num --tmux=$dockid-c --tags=$tags --link=$link --loc=$loc "
+    argstr=" --app=$appid --data=$data --num=$num --tmux=$dockid-c --tags=$tags --link=$link --zone=$zone --loc=$loc "
     if [ ! -z $log ]; then
         argstr="$argstr --log"
     fi
@@ -123,7 +124,7 @@ runatdevice() {
     # save for short cut use
     echo "$dockid-c" > $appfolder/tmuxid
 
-    argstr=" --app=$appid --data=$data --num=$num --tmux=$dockid-c --tags=$tags --link=$link --loc=$loc "
+    argstr=" --app=$appid --data=$data --num=$num --tmux=$dockid-c --tags=$tags --link=$link --zone=$zone --loc=$loc "
     if [ ! -z $log ]; then
         argstr="$argstr --log"
     fi
@@ -319,6 +320,7 @@ bg=
 log=
 runon=
 link=
+zone=
 loc=
 dport=
 hport=
@@ -441,6 +443,20 @@ while :; do
             ;;
         --link=)            # Handle the case of an empty
             die 'ERROR: "--link" requires a non-empty option argument.'
+            ;;
+        --zone)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                zone=$2
+                shift
+            else
+                die 'ERROR: "--zone" requires a non-empty option argument.'
+            fi
+            ;;
+        --zone=?*)
+            zone=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --zone=)            # Handle the case of an empty
+            die 'ERROR: "--zone" requires a non-empty option argument.'
             ;;
         --publish)           # Takes an option argument; ensure it has been specified.
             if [ "$2" ]; then
