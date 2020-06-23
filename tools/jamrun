@@ -357,7 +357,7 @@ unpack() {
             fi
         else
             # get new time - by just peaking into the ZIP file
-            ntime=`zipgrep CREATE $file | awk '{split($0,a, " "); print a[3]}'`
+            ntime=`zipgrep CREATE $file | awk 'NR==1{split($0,a, " "); print a[3]}'`
             # get the old one by reading the previous MANIFEST.txt
             otime=`grep CREATE MANIFEST.txt | awk '{split($0,a, " "); print a[3]}'`
             if (( $ntime > $otime )); then

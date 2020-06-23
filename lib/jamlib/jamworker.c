@@ -432,7 +432,7 @@ void jwork_process_globaloutq(jamstate_t *js)
         #endif
 
         for (i = 0; i < 3; i++)
-            if (js->cstate->mqtt[i]->state == MQTT_CONNECTED)
+            if ((js->cstate->mqtt[i] != NULL) &&  (js->cstate->mqtt[i]->state == MQTT_CONNECTED))
             {
                 nvoid_t *nvp = nvoid_new(rcmd->buffer, rcmd->length);
                 mqtt_publish(js->cstate->mqtt[i], "/level/func/request", nvp);
@@ -465,7 +465,7 @@ void jwork_process_actoutq(jamstate_t *js, int indx)
     {
         // relay the command to the remote servers..
         for (int i = 0; i < 3; i++)
-            if (js->cstate->mqtt[i]->state == MQTT_CONNECTED) 
+            if ((js->cstate->mqtt[i] != NULL) &&  (js->cstate->mqtt[i]->state == MQTT_CONNECTED)) 
             {
                 nvoid_t *nvp = nvoid_new(rcmd->buffer, rcmd->length);
                 mqtt_publish(js->cstate->mqtt[i], "/level/func/request", nvp);
@@ -686,7 +686,7 @@ void jwork_send_ack(jamstate_t *js, char *opt, command_t *cmd)
     // send the command over
     mqtt_publish(mq, "/mach/func/reply", nvoid_new(scmd->buffer, scmd->length));
     command_free(scmd);
-    command_free(cmd);
+    // we cannot release cmd - because it is used in the next enqueue.. 
 }
 
 
@@ -700,7 +700,7 @@ void jwork_send_ack_1(jamstate_t *js, char *opt, command_t *cmd)
     // send the command over
     mqtt_publish(mq, "/mach/func/reply", nvoid_new(scmd->buffer, scmd->length));
     command_free(scmd);
-    command_free(cmd);
+    // we cannot release cmd - because it is used in the next enqueue.. 
 }
 
 
@@ -714,7 +714,7 @@ void jwork_send_ack_2(jamstate_t *js, char *opt, command_t *cmd)
     // send the command over
     mqtt_publish(mq, "/mach/func/reply", nvoid_new(scmd->buffer, scmd->length));
     command_free(scmd);
-    command_free(cmd);
+    // we cannot release cmd - because it is used in the next enqueue.. 
 }
 
 
@@ -726,8 +726,7 @@ void jwork_send_results(jamstate_t *js, char *opt, char *actname, char *actid, a
 
     if (strcmp(opt, "cloud") == 0)
         mq = js->cstate->mqtt[2];
-    else
-    if (strcmp(opt, "fog") == 0)
+    else if (strcmp(opt, "fog") == 0)
         mq = js->cstate->mqtt[1];
     else
         mq = js->cstate->mqtt[0];
