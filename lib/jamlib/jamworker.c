@@ -374,6 +374,7 @@ void jwork_processor(jamstate_t *js)
     // fixed set of descriptors..
     //
 
+    printf("-------------------------\n");
     if (js->pollfds[0].revents & NN_POLLIN)
     {
         #ifdef DEBUG_LVL1
@@ -627,6 +628,7 @@ void jwork_process_device(jamstate_t *js)
             command_free(rcmd);
         }
     }
+    printf("Processing done..\n");
 }
 
 bool overflow_detect()
@@ -721,8 +723,6 @@ void jwork_send_ack_2(jamstate_t *js, char *opt, command_t *cmd)
 void jwork_send_results(jamstate_t *js, char *opt, char *actname, char *actid, arg_t *args)
 {
     mqtt_adapter_t *mq;
-
-    printf("Sending the results... %s\n", opt);
 
     if (strcmp(opt, "cloud") == 0)
         mq = js->cstate->mqtt[2];

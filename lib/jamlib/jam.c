@@ -57,9 +57,8 @@ jamstate_t *jam_init(int serialnum, char *app_id)
     #ifdef DEBUG_LVL1
         printf("JAM Library initialization... \t\t[started]\n");
     #endif
-
+    
     js->cstate = core_init(jamport, serialnum, app_id);
-
     if (js->cstate == NULL)
     {
         printf("ERROR!! Core Init Failed. Exiting.\n");
@@ -84,26 +83,22 @@ jamstate_t *jam_init(int serialnum, char *app_id)
         sprintf(tagstr, "sys.tag = '%s';", dev_tag);
         jcond_eval_str(tagstr);
     }
-
+    
     jcond_eval_str("function jcondContext(a) { return eval(a); }");
 
     // Initialization of the activity and task tables
     // This is kind of an hack. There should be a better way structuring the code
     // so that we don't need
-
     js->atable = activity_table_new(js);
     js->rtable = runtable_new(js);
-
     // Queue initialization
     // Input side: one for each source: device, fog, cloud
     js->deviceinq = queue_new(false);
     js->foginq = queue_new(false);
     js->cloudinq = queue_new(false);
-
     // Output queue.. we write to this queue.
     // The jamdata event loop serves from there.
     js->dataoutq = semqueue_new(false);
-
     js->maintimer = timer_init("maintimer");
     js->synctimer = timer_init("synctimer");
 

@@ -128,23 +128,18 @@ activity_table_t *activity_table_new(void *jarg)
     //
     // TODO: Is this back pointer necessary?
     atbl->jarg = jarg;
-
     atbl->jcounter = 1;
     atbl->numcbackregs = 0;
-
     for (i = 0; i < MAX_CALLBACKS; i++)
         atbl->callbackregs[i] = NULL;
-
     for (i = 0; i < MAX_ACT_THREADS; i++)
         atbl->athreads[i] = athread_init(atbl);
-
     // globalinq is used by the main thread for input purposes
     // globaloutq is used by the main thread for output purposes
     atbl->globalinq = p2queue_new(false);
     atbl->globaloutq = queue_new(false);
     // create the linked list to hold the activities
     atbl->alist = create_list();
-
     pthread_mutex_init(&(atbl->lock), NULL);
 
     return atbl;
