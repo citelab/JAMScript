@@ -159,7 +159,7 @@ C {
     Init_decl_lst   = ListOf<Init_decl, ",">
 
     Init_decl       = Declarator "=" Initializer                                        -- Init
-                    | Declarator
+                    | Declarator                                                        -- NonInit
 
     Type_name       = Spec_qual_list Abs_declarator?
 
