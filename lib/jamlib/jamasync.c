@@ -69,16 +69,13 @@ jactivity_t *jam_rexec_async(jamstate_t *js, jactivity_t *jact, char *condstr, i
 
     jact->type = ASYNC;
 
-    if (strlen(fmask) > 0)
-    {
-        va_start(args, fmask);
-        rval = command_qargs_alloc(1, fmask, args);
-        va_end(args);
-        qargs = rval->qargs;
-        list = rval->list;
-        arr = rval->arr;
-        free(rval);
-    }
+    va_start(args, fmask);
+    rval = command_qargs_alloc(1, fmask, args);
+    va_end(args);
+    qargs = rval->qargs;
+    list = rval->list;
+    arr = rval->arr;
+    free(rval);
 
     if (jact != NULL)
     {
@@ -112,10 +109,11 @@ jactivity_t *jam_async_runner(jamstate_t *js, jactivity_t *jact, command_t *cmd)
     }
 
     activity_thread_t *athr = athread_getbyindx(js->atable, jact->jindx);
-    command_hold(cmd);
+
     // Repeat for three times ... under failure..
     for (int i = 0; i < 3 && !valid_acks; i++)
     {
+        command_hold(cmd);          
         // Send the command to the remote side
         // The send is executed via the worker thread..
         queue_enq(athr->outq, cmd, sizeof(command_t));

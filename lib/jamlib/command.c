@@ -446,7 +446,7 @@ command_t *command_new(const char *cmd, char *opt, char *cond, int condvec,
         qargs = NULL;
 
     cbor_item_t *arr = cbor_new_indefinite_array();
-    cbor_item_t *elem;
+    cbor_item_t *elem = NULL;
 
     va_start(args, fmt);
     struct alloc_memory_list * list = init_list_();
