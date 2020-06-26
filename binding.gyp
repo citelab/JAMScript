@@ -102,8 +102,8 @@
       			 	'xcode_settings': {
 				        'OTHER_CFLAGS': [
 				          '-c',
-				          '-O1',
 				          '-g',
+					  '-DDEBUG_LVL1',
 				          '-fsanitize=address',
 				          '-fno-omit-frame-pointer'
 				        ]
@@ -111,10 +111,9 @@
       			 }],
       			 ['OS=="linux"', {
       			 	'cflags': [
-      			 		'-c',
-			          '-O1',
+      			          '-c',
 			          '-g',
-                '-DDEBUG_LVL1',
+			          '-DDEBUG_LVL1',
 			          '-fsanitize=address',
 			          '-fno-omit-frame-pointer'
       			 	]
