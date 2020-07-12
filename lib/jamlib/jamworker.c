@@ -84,7 +84,7 @@ void jam_set_redis(jamstate_t *js, char *server, int port)
 {
     js->cstate->redserver = strdup(server);
     js->cstate->redport = port;
-
+  
     /*
      * signal the waiting threads...
      */
@@ -373,8 +373,7 @@ void jwork_processor(jamstate_t *js)
     // Use if constructs for the first 4 descriptors.. note we have a
     // fixed set of descriptors..
     //
-
-    printf("-------------------------\n");
+    
     if (js->pollfds[0].revents & NN_POLLIN)
     {
         #ifdef DEBUG_LVL1
@@ -533,7 +532,7 @@ void jwork_process_device(jamstate_t *js)
                         port = rcmd->args[1].val.ival;
                     else
                         port = atoi(rcmd->args[1].val.sval);
-                    core_set_redis(js->cstate, host, port);
+                    jam_set_redis(js, host, port);
                 }
             } else if (strcmp(rcmd->actarg, "fog") == 0)
             {
@@ -628,7 +627,6 @@ void jwork_process_device(jamstate_t *js)
             command_free(rcmd);
         }
     }
-    printf("Processing done..\n");
 }
 
 bool overflow_detect()

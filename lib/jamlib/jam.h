@@ -128,7 +128,6 @@ typedef struct _jamstate_t
 
 } jamstate_t;
 
-#define DEBUG_LVL1          1
 
 // Globals defined in jam.c
 extern int odcount;
