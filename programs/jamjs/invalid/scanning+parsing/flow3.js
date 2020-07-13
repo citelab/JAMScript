@@ -1,0 +1,3 @@
+jdata {
+	test as flow;
+}
