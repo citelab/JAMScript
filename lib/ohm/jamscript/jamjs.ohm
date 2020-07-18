@@ -27,31 +27,6 @@ JAMJS <: ES6 {
 
     Jdata_decl (a jdata declaration) = jdata "{" Jdata_spec* "}"
 
-    Page_elem       = Display_elem
-                    | Control_elem
-                    | Page_name
-
-    Display_elem    = identifier is display "{" Disp_spec+ "}"
-
-    Control_elem    = identifier is controller "{" Ctrl_spec+ "}"
-
-    Page_name       = name ":" identifier ";"
-
-    Disp_spec       = type ":" display_type ";"
-                    | title ":" stringLiteral ";"
-                    | options ":" stringLiteral ";"
-                    | source ":" identifier ";"
-                    | refresh ":" decimalIntegerLiteral ";"
-
-    display_type    = graph | scatter | stackedgraph
-
-    Ctrl_spec       = type ":" control_type ";"
-                    | title ":" stringLiteral ";"
-                    | options ":" stringLiteral ";"
-                    | sink ":" identifier ";"
-
-    control_type    = slider | terminal | button
-
     Jconditional (a jconditional declaration) = jcond identifier? "{" Jcond_entry* "}"
 
     Jcond_entry     = identifier ":" NonemptyListOf<Jcond_rule, jcond_joiner> ";"
