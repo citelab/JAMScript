@@ -27,6 +27,8 @@ var cPath;
 var jsPath;
 var outPath;
 var supFiles = [];
+var cSideEffectTable = "None";
+var jsSideEffectTable = "None";
 
 for (var i = 0; i < args.length; i++) {
     if (args[i].charAt(0) === "-") {
@@ -113,7 +115,10 @@ try {
     //   printAndExit(cTree + jsTree);
     // }
 
-    var results = jam.compile(preprocessed, fs.readFileSync(jsPath).toString(), lineNumber);
+    // var results = jam.compile(preprocessed, fs.readFileSync(jsPath).toString(), lineNumber);
+    var results = jam.compile(fs.readFileSync(cPath), fs.readFileSync(jsPath).toString(), lineNumber);
+    cSideEffectTable = results.C_SideEffectTable;
+    jsSideEffectTable = results.JS_SideEffectTable;
 
     if (callGraphFlag) {
         fs.writeFileSync("callgraph.html", callGraph.createWebpage());
@@ -137,7 +142,6 @@ try {
         Promise.all(tasks).then(function(value) {
             results.manifest = createManifest(outPath, results.maxLevel);
             results.jstart = createJStart(results.hasJdata);
-            // TODO here
             createZip(results.JS, results.manifest, results.jstart, tmpDir, outPath);
             if (!debug) {
                 for (var i = 0; i < value.length; i++) {
@@ -234,7 +238,6 @@ function flowCheck(input, verbose) {
     return new Promise(function(resolve, reject) {
         // Returns empty buffer if flow installed
         var hasFlow = child_process.execSync("flow version >/dev/null 2>&1 || { echo 'not installed';}");
-
         if (hasFlow.length === 0) {
             fs.writeFileSync(`${tmpDir}/.flowconfig`, "");
             fs.writeFileSync(`${tmpDir}/annotated.js`, input);
@@ -250,14 +253,6 @@ function flowCheck(input, verbose) {
                     resolve("No Flow JavaScript errors found");
                 }
             });
-            // const child = child_process.exec('flow check-contents --color always', (error, stdout, stderr) => {
-            //     if (error !== null) {
-            //       console.log("JavaScript Type Checking Error:");
-            //       console.log(stdout.substring(stdout.indexOf("\n") + 1));
-            //     }
-            // });
-            // child.stdin.write(input);
-            // child.stdin.end();
         } else {
             resolve("Flow not installed, skipping JavaScript typechecking");
         }
@@ -303,7 +298,8 @@ function createManifest(outName, level) {
     mout += `NAME = ${outName}\n`;
     mout += `CREATE-TIME = ${ctime}\n`;
     mout += `MAX-HEIGHT = ${level}\n`;
-
+    mout += `C-SIDE-EFFECT = ${JSON.stringify(cSideEffectTable)}\n`;
+    mout += `JS-SIDE-EFFECT = ${JSON.stringify(jsSideEffectTable)}\n`;
     return mout;
 }
 
