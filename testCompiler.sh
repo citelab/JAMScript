@@ -25,9 +25,9 @@ function runTest() {
 			let "totalNum++"
 			if [ $1 == "c" ] || [ $1 == "jamc" ]
 			then
-				cmd="node index.js $file $otherFile"   # Update this to run only the compiler!!
+				cmd="node testCompiler.js $file $otherFile"   # Update this to run only the compiler!!
 			else
-				cmd="node index.js $otherFile $file"
+				cmd="node testCompiler.js $otherFile $file"
 			fi
 			output=$(eval $cmd)
 			echo $file
@@ -57,13 +57,12 @@ function runTest() {
 		echo -e "\033[33;31mSome" $1 "test cases failed. Result:" $passNum/$totalNum
 		tput sgr0
 	fi
-	echo "\n-----------------------------------------"
+	echo "-----------------------------------------"
 	echo $1 "tests done"
 }
 
 echo "Start running compiler tests"
-runTest jamc
-runTest c
+# runTest c
 # runTest jamc
 # runTest js
-# runTest jamjs
+runTest jamjs
