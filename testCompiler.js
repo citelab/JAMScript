@@ -66,6 +66,7 @@ try {
 	Promise.all(tasks).then(
 		function(value) {
 			deleteFolderRecursive(tmpDir);
+            console.log(value);
 		},
 		function(error) {
 			console.log(error);
