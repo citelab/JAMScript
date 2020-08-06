@@ -1,4 +1,4 @@
-int strlen(char *);
+int strlength(char *);
 
 int
 main()
@@ -6,5 +6,5 @@ main()
 	char *p;
 	
 	p = "hello";
-	return strlen(p) - 5;
+	return strlength(p) - 5;
 }

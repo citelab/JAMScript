@@ -13,7 +13,7 @@ f1(struct foo f, struct foo *p, int n, ...)
 }
 
 int
-main(void)
+main()
 {
 	struct foo f;
 

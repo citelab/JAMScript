@@ -4,7 +4,7 @@
 #define BAR bar
 
 int
-main(void)
+main()
 {
 	int foo, bar, foobar;
 

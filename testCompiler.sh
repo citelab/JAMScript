@@ -7,6 +7,9 @@ function runTest() {
 	totalNum=0
 	passNum=0
 
+	declare -a failedCases
+	i=1
+
 	if [ $1 == "c" ] || [ $1 == "jamc" ]
 	then 
 		ext=".c"
@@ -25,7 +28,7 @@ function runTest() {
 			let "totalNum++"
 			if [ $1 == "c" ] || [ $1 == "jamc" ]
 			then
-				cmd="node testCompiler.js $file $otherFile"   # Update this to run only the compiler!!
+				cmd="node testCompiler.js $file $otherFile"
 			else
 				cmd="node testCompiler.js $otherFile $file"
 			fi
@@ -34,6 +37,8 @@ function runTest() {
 			if [[ $output == *"Compilation finished"* ]]; then
 				if [[ $file == *"invalid"* ]]; then 
 					echo -e "\033[33;31mTest case failed: " $file
+					failedCases[i]=$file
+					let "i++"
 					tput sgr0
 				else 
 					let "passNum++"
@@ -43,6 +48,8 @@ function runTest() {
 					let "passNum++"
 				else 
 					echo -e "\033[33;31mTest case failed: " $file
+					failedCases[i]=$file
+					let "i++"
 					tput sgr0
 				fi
 			fi
@@ -54,15 +61,20 @@ function runTest() {
 		echo -e "\033[33;32mAll" $1 "tests passed!"
 		tput sgr0
 	else
-		echo -e "\033[33;31mSome" $1 "test cases failed. Result:" $passNum/$totalNum
+		echo -e "\033[33;31mSome" $1 "test cases failed. Passed:" $passNum/$totalNum
 		tput sgr0
+		echo "Failed test cases:"
+		for case in ${failedCases[@]}
+		do 
+			echo $case
+		done
 	fi
 	echo "-----------------------------------------"
 	echo $1 "tests done"
 }
 
 echo "Start running compiler tests"
-# runTest c
+runTest c
 # runTest jamc
 # runTest js
-runTest jamjs
+# runTest jamjs

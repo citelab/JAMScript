@@ -15,7 +15,7 @@ int f1int (void) {
     struct wint q = {"bugs"};
     return !s[0];
 }
-int main (void) {
+int main () {
    char s[9]="nonono";
    static struct wchar q = {"bugs", {'c'}};
    //printf ("tcc has %s %s\n", s, q.data);

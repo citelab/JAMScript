@@ -1,5 +1,5 @@
 int
-main(void)
+main()
 {
 	long i;
 	unsigned long u;

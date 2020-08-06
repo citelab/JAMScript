@@ -12,7 +12,7 @@ short j;
 unsigned short k;
 
 int
-main(void)
+main()
 {
 	a = b;
 	a = c;

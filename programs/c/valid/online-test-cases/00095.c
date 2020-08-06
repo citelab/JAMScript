@@ -2,14 +2,6 @@ int x;
 int x = 3;
 int x;
 
-int main();
-
-void *
-foo()
-{
-	return &main;
-}
-
 int
 main()
 {

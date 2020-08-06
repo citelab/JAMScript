@@ -12,7 +12,7 @@ struct s {
 #define s s
 
 int
-main(void)
+main()
 {
 #undef s
 	goto s;

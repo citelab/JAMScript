@@ -17,7 +17,8 @@ var callGraphFlag = false,
     // parseOnly = false,
     preprocessOnly = false,
     // translateOnly = false,
-    verbose = false;
+    verbose = false,
+    yieldPoint = false;
 
 // Process arguments
 
@@ -51,6 +52,8 @@ for (var i = 0; i < args.length; i++) {
             verbose = true;
         } else if (args[i] === "--analyze") {                   // Generate call graph files
             callGraphFlag = true;
+        } else if (args[i] === "-y") {
+            yieldPoint = true;
         }
         // } else if(args[i] === "-T") {                        // Translator only
         //   translateOnly = true;
@@ -115,8 +118,8 @@ try {
     //   printAndExit(cTree + jsTree);
     // }
 
-    // var results = jam.compile(preprocessed, fs.readFileSync(jsPath).toString(), lineNumber);
-    var results = jam.compile(fs.readFileSync(cPath), fs.readFileSync(jsPath).toString(), lineNumber);
+    var results = jam.compile(preprocessed, fs.readFileSync(jsPath).toString(), lineNumber, yieldPoint);
+    // var results = jam.compile(fs.readFileSync(cPath), fs.readFileSync(jsPath).toString(), lineNumber);
     cSideEffectTable = results.C_SideEffectTable;
     jsSideEffectTable = results.JS_SideEffectTable;
 
@@ -179,9 +182,9 @@ function compile(code, verbose) {
         includes = '#include "jamdevices.h"\n' + includes;
         includes = '#include <unistd.h>\n' + includes;
 
-
         fs.writeFileSync("jamout.c", includes + preprocessDecls.join("\n") + "\n" + code);
         fs.writeFileSync(`${tmpDir}/jamout.c`, includes + preprocessDecls.join("\n") + "\n" + code);
+        
         try {
             var command = `clang -g ${tmpDir}/jamout.c -o ${tmpDir}/a.out -I/usr/local/include -I/usr/local/share/jam/lib/ ${options} -pthread -lcbor -lnanomsg /usr/local/lib/libjam.a -ltask -levent -lhiredis -lmujs -L/usr/local/lib -lpaho-mqtt3a`;
             console.log("Compiling C code...");

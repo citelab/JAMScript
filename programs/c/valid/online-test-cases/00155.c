@@ -1,6 +1,6 @@
 
 int
-main(void)
+main()
 {
 	sizeof((int) 1);
 	return 0;

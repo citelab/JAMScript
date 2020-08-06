@@ -1,5 +1,5 @@
 int
-main(void)
+main()
 {
 	int i, *q;
 	void *p;

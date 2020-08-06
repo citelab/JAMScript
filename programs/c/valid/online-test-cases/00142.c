@@ -9,7 +9,7 @@ int d;
 #endif
 
 int
-main(void)
+main()
 {
 	return c;
 }

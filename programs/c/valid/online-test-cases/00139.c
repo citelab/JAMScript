@@ -7,7 +7,7 @@
 #define g f
 
 int
-main(void)
+main()
 {
         int f = 0;
 
