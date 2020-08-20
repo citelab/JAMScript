@@ -5,6 +5,10 @@ JAMC <: C {
 
     Type_spec       += jamtask
 
+    Jexport         = jexport id ";"
+
+    Jrequire        = jrequire id as id at ("fog" | "cloud" | "device") ";"
+
     Jcond_specifier = "{" Jcond_expr "}"
 
     Jcond_expr      = "(" Jcond_expr ")"                            -- paran
@@ -22,14 +26,20 @@ JAMC <: C {
     Activity_def    = Sync_activity
                     | Async_activity
 
-    External_decl   := Activity_def
+    External_decl   :=  Jexport 
+                    | Jrequire
+                    | Activity_def
                     | Prototype
                     | Function_def
                     | Decl
                     | Preprocess_line
 
+    as = "as" ~identPart
+    at = "at" ~identPart
     jasync = "jasync" ~identPart
     jsync = "jsync" ~identPart
     in = "in" ~identPart
     jamtask = "jamtask" ~identPart
+    jexport = "jexport" ~identPart
+    jrequire = "jrequire" ~identPart
 }

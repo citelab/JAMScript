@@ -119,7 +119,7 @@ try {
     // }
 
     var results = jam.compile(preprocessed, fs.readFileSync(jsPath).toString(), lineNumber, yieldPoint);
-    // var results = jam.compile(fs.readFileSync(cPath), fs.readFileSync(jsPath).toString(), lineNumber);
+    // var results = jam.compile(fs.readFileSync(cPath).toString(), fs.readFileSync(jsPath).toString(), lineNumber, yieldPoint);
     cSideEffectTable = results.C_SideEffectTable;
     jsSideEffectTable = results.JS_SideEffectTable;
 
@@ -138,7 +138,6 @@ try {
             flowCheck(results.annotated_JS, verbose),
             compile(results.C, verbose)
         ];
-
 
 
         // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);

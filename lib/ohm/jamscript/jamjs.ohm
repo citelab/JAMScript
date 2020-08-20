@@ -1,7 +1,14 @@
 JAMJS <: ES6 {
-    Declaration     += Jconditional
+    Declaration     += Jexport 
+                    | Jrequire
+                    | Jconditional
                     | Jdata_decl
                     | Activity_def
+
+    Jexport         = jexport identifier at ("device" | "fog" | "cloud") ";"        -- specified
+                    | jexport identifier ";"                                       -- default
+
+    Jrequire        = jrequire identifier as identifier at ("fog" | "cloud" | "device") ";"
 
     jdata_type      = broadcaster
                     | logger
@@ -60,6 +67,7 @@ JAMJS <: ES6 {
                                         | Async_activity
 
     as = "as" ~identifierPart
+    at = "at" ~identifierPart
     beat = "beat" ~identifierPart
     broadcaster = "broadcaster" ~identifierPart
     button = "button" ~identifierPart
@@ -74,6 +82,8 @@ JAMJS <: ES6 {
     jcond = "jcond" ~identifierPart
     jdata = "jdata" ~identifierPart
     jsync = "jsync" ~identifierPart
+    jexport = "jexport" ~identifierPart
+    jrequire = "jrequire" ~identifierPart
     linegraph = "linegraph" ~identifierPart
     logger = "logger" ~identifierPart
     name = "name" ~identifierPart
