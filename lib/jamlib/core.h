@@ -58,7 +58,6 @@ typedef struct _server_t
 typedef struct _corestate_t
 {
     char *device_id;
-    char *app_id;
     int serial_num;    
     int mqtt_port;
     server_t *server[MAX_SERVERS];
@@ -73,7 +72,7 @@ typedef struct _corestate_t
  */
 
 void core_setup(corestate_t *cs);
-corestate_t *core_init(int port, int serialnum, char *app_id);
+corestate_t *core_init(int port, int serialnum);
 void core_register_sent(corestate_t *cs, int index);
 void core_set_registered(corestate_t *cs, int indx, char *epoint);
 bool core_is_registered(corestate_t *cs, int indx);

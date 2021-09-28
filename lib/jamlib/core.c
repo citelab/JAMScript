@@ -144,7 +144,7 @@ void core_setup(corestate_t *cs)
 // in asynchronous mode - it uses a slightly restricted callback to listen to a subset
 // of messages. The restriction is lifted after the core_init() phase is over.
 //
-corestate_t *core_init(int port, int serialnum, char *app_id)
+corestate_t *core_init(int port, int serialnum)
 {
     #ifdef DEBUG_LVL1
         printf("Core initialization...");
@@ -153,7 +153,6 @@ corestate_t *core_init(int port, int serialnum, char *app_id)
     // create the core state structure..
     corestate_t *cs = (corestate_t *)calloc(1, sizeof(corestate_t));
     cs->serial_num = serialnum;
-    cs->app_id = strdup(app_id);
     cs->mqtt_port = port;
     core_setup(cs);    
     return cs;

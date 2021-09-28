@@ -40,7 +40,6 @@ extern list_elem_t *cache;
 extern int cachesize;
 extern char app_id[64];
 
-
 /*
  * Helper functions..
  */
@@ -141,7 +140,7 @@ void *jwork_bgthread(void *arg)
 
     char localhost[64];
     sprintf(localhost, "tcp://localhost:%d", js->cstate->mqtt_port);
-    js->cstate->mqtt[0] = mqtt_createserver(localhost, 0, js->cstate->app_id, js->cstate->device_id, 
+    js->cstate->mqtt[0] = mqtt_createserver(localhost, 0, app_id, js->cstate->device_id, 
                                                 on_dev_connect, js->cstate);
     set_subscriptions(js->cstate, 0);
        
@@ -542,7 +541,7 @@ void jwork_process_device(jamstate_t *js)
                     if (!core_pending_isset(js->cstate, 1))
                     {
                         core_set_pending(js->cstate, 1);
-                        js->cstate->mqtt[1] = mqtt_createserver(rcmd->args[0].val.sval, 1, js->cstate->app_id, js->cstate->device_id, 
+                        js->cstate->mqtt[1] = mqtt_createserver(rcmd->args[0].val.sval, 1, app_id, js->cstate->device_id, 
                                                 on_fog_connect, js->cstate);
                         set_subscriptions(js->cstate, 1);
     
@@ -564,7 +563,7 @@ void jwork_process_device(jamstate_t *js)
                     if (!core_pending_isset(js->cstate, 2))
                     {
                         core_set_pending(js->cstate, 2);
-                        js->cstate->mqtt[2] = mqtt_createserver(rcmd->args[0].val.sval, 2, js->cstate->app_id, js->cstate->device_id, 
+                        js->cstate->mqtt[2] = mqtt_createserver(rcmd->args[0].val.sval, 2, app_id, js->cstate->device_id, 
                                                 on_cloud_connect, js->cstate);
                         set_subscriptions(js->cstate, 2);
     

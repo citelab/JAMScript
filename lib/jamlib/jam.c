@@ -49,7 +49,7 @@ extern jamstate_t *js;
 /*
  * Initialize the JAMScript library 
  */
-jamstate_t *jam_init(int serialnum, char *app_id)
+jamstate_t *jam_init(int serialnum)
 {
     char tagstr[256];
     jamstate_t *js = (jamstate_t *)calloc(1, sizeof(jamstate_t));
@@ -58,7 +58,7 @@ jamstate_t *jam_init(int serialnum, char *app_id)
         printf("JAM Library initialization... \t\t[started]\n");
     #endif
     
-    js->cstate = core_init(jamport, serialnum, app_id);
+    js->cstate = core_init(jamport, serialnum);
     if (js->cstate == NULL)
     {
         printf("ERROR!! Core Init Failed. Exiting.\n");
