@@ -1,0 +1,3 @@
+jasync function test {
+	
+}

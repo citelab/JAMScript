@@ -1,8 +1,14 @@
 JAMJS <: ES6 {
-    Declaration     += Jconditional
+    Declaration     += Jexport 
+                    | Jrequire
+                    | Jconditional
                     | Jdata_decl
                     | Activity_def
-                    | Jview_decl
+
+    Jexport         = jexport identifier at ("device" | "fog" | "cloud") ";"        -- specified
+                    | jexport identifier ";"                                       -- default
+
+    Jrequire        = jrequire identifier as identifier at ("fog" | "cloud" | "device") ";"
 
     jdata_type      = broadcaster
                     | logger
@@ -27,39 +33,6 @@ JAMJS <: ES6 {
 
 
     Jdata_decl (a jdata declaration) = jdata "{" Jdata_spec* "}"
-
-    Jview_spec      = beat ":" identifier ";"                       -- beat
-                    | Jview_page
-
-    Jview_page      = identifier as page "{" Page_elem+ "}"
-
-    Page_elem       = Display_elem
-                    | Control_elem
-                    | Page_name
-
-    Display_elem    = identifier is display "{" Disp_spec+ "}"
-
-    Control_elem    = identifier is controller "{" Ctrl_spec+ "}"
-
-    Page_name       = name ":" identifier ";"
-
-    Disp_spec       = type ":" display_type ";"
-                    | title ":" stringLiteral ";"
-                    | options ":" stringLiteral ";"
-                    | source ":" identifier ";"
-                    | refresh ":" decimalIntegerLiteral ";"
-
-    display_type    = graph | scatter | stackedgraph
-
-    Ctrl_spec       = type ":" control_type ";"
-                    | title ":" stringLiteral ";"
-                    | options ":" stringLiteral ";"
-                    | sink ":" identifier ";"
-
-    control_type    = slider | terminal | button
-
-
-    Jview_decl (a jview declaration) = jview "{" Jview_spec* "}"
 
     Jconditional (a jconditional declaration) = jcond identifier? "{" Jcond_entry* "}"
 
@@ -94,6 +67,7 @@ JAMJS <: ES6 {
                                         | Async_activity
 
     as = "as" ~identifierPart
+    at = "at" ~identifierPart
     beat = "beat" ~identifierPart
     broadcaster = "broadcaster" ~identifierPart
     button = "button" ~identifierPart
@@ -107,8 +81,9 @@ JAMJS <: ES6 {
     jasync = "jasync" ~identifierPart
     jcond = "jcond" ~identifierPart
     jdata = "jdata" ~identifierPart
-    jview = "jview" ~identifierPart
     jsync = "jsync" ~identifierPart
+    jexport = "jexport" ~identifierPart
+    jrequire = "jrequire" ~identifierPart
     linegraph = "linegraph" ~identifierPart
     logger = "logger" ~identifierPart
     name = "name" ~identifierPart

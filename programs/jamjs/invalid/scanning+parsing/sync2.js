@@ -1,0 +1,3 @@
+jsync int function test(){
+	
+}
