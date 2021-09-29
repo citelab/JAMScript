@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-echo "--------------------11111 ----------------"
+echo "Starting JAMScript installation.. "
 
 npm link
 
