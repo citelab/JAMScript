@@ -98,7 +98,7 @@ while :; do
 done
 
 # Check folder
-jamfolder=$HOME"/__jamruns"
+jamfolder=$HOME"/.jamruns"
 if [ ! -d $jamfolder ]; then
     die "ERROR! No running instance found. "
 fi

@@ -37,7 +37,7 @@ djam test stop
 EOF
 }
 
-jamfolder=$HOME"/__jamruns"
+jamfolder=$HOME"/.jamruns"
 exit_missingdir $jamfolder "JAMScript emulation is not yet initialized. Run djaminit first."
 
 

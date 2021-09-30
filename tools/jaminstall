@@ -115,7 +115,7 @@ if [ -z $1 ] || [ $1 == "-h" ] || [ $1 == "--help" ]; then
 fi
 
 
-jamfolder=$HOME"/__jamruns"
+jamfolder=$HOME"/.jamruns"
 exit_missingdir $jamfolder "No running instances of JAMScript."
 
 appsfolder=$jamfolder/apps

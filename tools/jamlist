@@ -180,7 +180,7 @@ while :; do
 done
 
 
-appsfolder=$HOME"/__jamruns/apps"
+appsfolder=$HOME"/.jamruns/apps"
 if [ ! -d $appsfolder ]; then
     echo "No running instances of JAMScript."
     exit 0

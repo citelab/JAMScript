@@ -60,7 +60,7 @@ Closes all open terminal (tmux terminals showing running JAMScript devices).
 EOF
 }
 
-jamfolder=$HOME"/__jamruns"
+jamfolder=$HOME"/.jamruns"
 
 if [ -z $1 ]; then
     if [ ! -d $jamfolder ]; then

@@ -170,8 +170,8 @@ exit
 
 if [ -e "$file" ]; then
 
-    # Check whether the global __jamruns folder is there
-    jamfolder="$HOME/__jamruns"
+    # Check whether the global .jamruns folder is there
+    jamfolder="$HOME/.jamruns"
     wait_missingdir $HOME $jamfolder
 
     appfolder=$jamfolder/apps
@@ -179,7 +179,7 @@ if [ -e "$file" ]; then
 
     # Get the folder
     filenoext="${file%.*}"
-    folder=$HOME"/__jamruns/apps/"$filenoext"_"$app
+    folder=$HOME"/.jamruns/apps/"$filenoext"_"$app
     wait_missingdir $appfolder $folder
 
     cd $folder

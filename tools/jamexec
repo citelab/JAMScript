@@ -416,7 +416,7 @@ done
 
 if [ -e "$file" ]; then
 
-    jamfolder=$HOME"/__jamruns"
+    jamfolder=$HOME"/.jamruns"
     appfolder=$jamfolder/apps
 
     # Get the folder

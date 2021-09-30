@@ -57,7 +57,7 @@ jamrun program.jxe --tag="param1, param2"
 
 Use the --bg option to run a command in the backgroud.
 
-Use the --old option to run the previous version in __jamruns folder.
+Use the --old option to run the previous version in .jamruns folder.
 You can edit that version and rerun a custom version of a file.
 
 Use the --log option to turn on logging. This is useful for programs where
@@ -615,8 +615,8 @@ fi
 
 if [ -e "$file" ]; then
 
-    # Check whether the global __jamruns folder is there
-    jamfolder=$HOME"/__jamruns"
+    # Check whether the global .jamruns folder is there
+    jamfolder=$HOME"/.jamruns"
     create_missingdir $jamfolder
 
     # Check whether the app folder is there

@@ -55,7 +55,7 @@ if [ ! -z $1 ]; then
     fi
 fi
 
-jamfolder=$HOME"/__jamruns"
+jamfolder=$HOME"/.jamruns"
 if [ ! -d $jamfolder ]; then
     exit 0
 fi

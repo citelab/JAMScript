@@ -38,8 +38,8 @@ if [ -z $1 ]; then
 fi
 
 
-# Check the __jamruns folder
-jamfolder=$HOME"/__jamruns"
+# Check the .jamruns folder
+jamfolder=$HOME"/.jamruns"
 create_missingdir $jamfolder
 
 

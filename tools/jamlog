@@ -37,8 +37,8 @@ EOF
 # Main script execution begins here...
 #
 
-jamfolder=$HOME"/__jamruns"
-exit_missingdir $jamfolder "__jamruns folder missing. JAMScript tools not setup?"
+jamfolder=$HOME"/.jamruns"
+exit_missingdir $jamfolder ".jamruns folder missing. JAMScript tools not setup?"
 
 appsfolder=$jamfolder/apps
 exit_missingdir $appsfolder "No logs to show!"

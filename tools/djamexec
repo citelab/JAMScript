@@ -136,7 +136,7 @@ shift
 rest=$*
 
 # Check folder
-appsfolder=$HOME"/__jamruns/apps"
+appsfolder=$HOME"/.jamruns/apps"
 exit_missingdir $appsfolder "ERROR! No running instance found. "
 
 if [ -z $program ]; then

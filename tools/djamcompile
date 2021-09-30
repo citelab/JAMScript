@@ -47,7 +47,7 @@ make_container() {
     echo "1" > $jamfolder/type/contname/refCount
 }
 
-jamfolder=$HOME"/__jamruns"
+jamfolder=$HOME"/.jamruns"
 exit_missingdir $jamfolder "JAMScript not setup in the system."
 exit_missingfile $jamfolder/dockerImage "Run djam pull repository"
 
