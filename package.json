@@ -25,6 +25,7 @@
         "postinstall": "scripts/install/postinstall.sh",
         "postversion": "git push && git push --tags && npm publish",
         "prepublishOnly": "scripts/install/prepublishOnly.sh",
+	"prelink": "npm install",
         "link": "scripts/install/link.sh"
     },
     "bin": {
