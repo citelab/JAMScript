@@ -264,8 +264,6 @@ function createZip(jsout, jview, mout, jstart, tmpDir, outputName) {
     zip.file("jamout.js", jsout);
     zip.file("jstart.js", jstart);
 
-    if (jview.length !== 0)
-        zip.file("jview.json", JSON.stringify(jview));
     zip.file("a.out", fs.readFileSync(`${tmpDir}/a.out`));
 
     if (supFiles.length > 0)

@@ -20,16 +20,16 @@
     },
     "bugs": "https://github.com/citelab/JAMScript/issues",
     "scripts": {
-        "preinstall": "scripts/install/preinstall.sh",
+        "preinstall": "scripts/install/preinstall.sh && (cd ./lib/jdiscovery && npm install .)",
         "install": "node-gyp rebuild",
         "postinstall": "scripts/install/postinstall.sh",
         "postversion": "git push && git push --tags && npm publish",
         "prepublishOnly": "scripts/install/prepublishOnly.sh",
-	"prelink": "npm install",
+        "prelink": "npm install",
         "link": "scripts/install/link.sh"
     },
     "bin": {
-        "jamc": "./index.js"
+        "jamc": "./mainCompiler.js"
     },
     "dependencies": {
         "jszip": "^3.1.5",
