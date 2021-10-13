@@ -14,4 +14,5 @@ jasync loop() {
 
 int main() {
     loop();
+    return 0;
 }

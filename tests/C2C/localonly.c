@@ -22,4 +22,5 @@ int main(int argc, char *argv[])
   localme(10, "cxxxxxxxx");
   localyou(10, "cxxxxxxxx");
 
+  return 0;
 }

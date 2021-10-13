@@ -12,7 +12,6 @@ JAMJS <: ES6 {
 
     jdata_type      = broadcaster
                     | logger
-                    | shuffler
 
     C_type          = "struct" identifier "{" Struct_entry* "}"     -- struct
                     | "char" "*"                                    -- pointer
@@ -68,13 +67,9 @@ JAMJS <: ES6 {
 
     as = "as" ~identifierPart
     at = "at" ~identifierPart
-    beat = "beat" ~identifierPart
     broadcaster = "broadcaster" ~identifierPart
-    button = "button" ~identifierPart
     controller = "controller" ~identifierPart
-    display = "display" ~identifierPart
     flow = "flow" ~identifierPart
-    graph = "graph" ~identifierPart
     is = "is" ~identifierPart
     inflow = "inflow" ~identifierPart
     jamtask = "jamtask" ~identifierPart
@@ -84,21 +79,11 @@ JAMJS <: ES6 {
     jsync = "jsync" ~identifierPart
     jexport = "jexport" ~identifierPart
     jrequire = "jrequire" ~identifierPart
-    linegraph = "linegraph" ~identifierPart
     logger = "logger" ~identifierPart
     name = "name" ~identifierPart
     of = "of" ~identifierPart
-    options = "options" ~identifierPart
     outflow = "outflow" ~identifierPart
-    page = "page" ~identifierPart
-    refresh = "refresh" ~identifierPart
-    scatter = "scatter" ~identifierPart
-    sink = "sink" ~identifierPart
-    slider = "slider" ~identifierPart
-    shuffler = "shuffler" ~identifierPart
     source = "source" ~identifierPart
-    stackedgraph = "stackedgraph" ~identifierPart
     terminal = "terminal" ~identifierPart
-    title = "title" ~identifierPart
     type = "type" ~identifierPart
 }

@@ -19,5 +19,5 @@ jasync {deviceOnly} function f3() {
 }
 
 if (jsys.type == "device") {
-    setInterval(f3, 2000);
+    setInterval(f3, 500);
 }

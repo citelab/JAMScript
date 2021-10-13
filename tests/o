@@ -1,0 +1,3733 @@
+Preprocessing...
+Side effect checking enabled
+Parsing JS Files...
+Generating JavaScript Code...
+Parsing C Files...
+Generating C code...
+Child(1)  [
+  Wrapper {
+    _semantics: Semantics {
+      grammar: [Object],
+      checkedActionDicts: true,
+      Wrapper: [Function (anonymous)],
+      super: [Semantics],
+      operations: Object <Complex prototype> {},
+      attributes: [Object <Complex prototype>],
+      attributeKeys: [Object: null prototype]
+    },
+    _node: IterationNode {
+      grammar: [Object],
+      ctorName: '_iter',
+      matchLength: 0,
+      children: [],
+      childOffsets: [],
+      optional: true
+    },
+    source: {
+      sourceString: 'typedef int va_list;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef int size_t;\n' +
+        'typedef int __builtin_va_list;\n' +
+        'typedef int __gnuc_va_list;\n' +
+        'typedef int __int8_t;\n' +
+        'typedef int __uint8_t;\n' +
+        'typedef int __int16_t;\n' +
+        'typedef int __uint16_t;\n' +
+        'typedef int __int_least16_t;\n' +
+        'typedef int __uint_least16_t;\n' +
+        'typedef int __int32_t;\n' +
+        'typedef int __uint32_t;\n' +
+        'typedef int __int64_t;\n' +
+        'typedef int __uint64_t;\n' +
+        'typedef int __int_least32_t;\n' +
+        'typedef int __uint_least32_t;\n' +
+        'typedef int __s8;\n' +
+        'typedef int __u8;\n' +
+        'typedef int __s16;\n' +
+        'typedef int __u16;\n' +
+        'typedef int __s32;\n' +
+        'typedef int __u32;\n' +
+        'typedef int __s64;\n' +
+        'typedef int __u64;\n' +
+        'typedef int _LOCK_T;\n' +
+        'typedef int _LOCK_RECURSIVE_T;\n' +
+        'typedef int _off_t;\n' +
+        'typedef int __dev_t;\n' +
+        'typedef int __uid_t;\n' +
+        'typedef int __gid_t;\n' +
+        'typedef int _off64_t;\n' +
+        'typedef int _fpos_t;\n' +
+        'typedef int _ssize_t;\n' +
+        'typedef int wint_t;\n' +
+        'typedef int _mbstate_t;\n' +
+        'typedef int _flock_t;\n' +
+        'typedef int _iconv_t;\n' +
+        'typedef int __ULong;\n' +
+        'typedef int __FILE;\n' +
+        'typedef int ptrdiff_t;\n' +
+        'typedef int wchar_t;\n' +
+        'typedef int __off_t;\n' +
+        'typedef int __pid_t;\n' +
+        'typedef int __loff_t;\n' +
+        'typedef int u_char;\n' +
+        'typedef int u_short;\n' +
+        'typedef int u_int;\n' +
+        'typedef int u_long;\n' +
+        'typedef int ushort;\n' +
+        'typedef int uint;\n' +
+        'typedef int clock_t;\n' +
+        'typedef int time_t;\n' +
+        'typedef int daddr_t;\n' +
+        'typedef int caddr_t;\n' +
+        'typedef int ino_t;\n' +
+        'typedef int off_t;\n' +
+        'typedef int dev_t;\n' +
+        'typedef int uid_t;\n' +
+        'typedef int gid_t;\n' +
+        'typedef int pid_t;\n' +
+        'typedef int key_t;\n' +
+        'typedef int ssize_t;\n' +
+        'typedef int mode_t;\n' +
+        'typedef int nlink_t;\n' +
+        'typedef int fd_mask;\n' +
+        'typedef int _types_fd_set;\n' +
+        'typedef int clockid_t;\n' +
+        'typedef int timer_t;\n' +
+        'typedef int useconds_t;\n' +
+        'typedef int suseconds_t;\n' +
+        'typedef int FILE;\n' +
+        'typedef int fpos_t;\n' +
+        'typedef int cookie_read_function_t;\n' +
+        'typedef int cookie_write_function_t;\n' +
+        'typedef int cookie_seek_function_t;\n' +
+        'typedef int cookie_close_function_t;\n' +
+        'typedef int cookie_io_functions_t;\n' +
+        'typedef int div_t;\n' +
+        'typedef int ldiv_t;\n' +
+        'typedef int lldiv_t;\n' +
+        'typedef int sigset_t;\n' +
+        'typedef int __sigset_t;\n' +
+        'typedef int _sig_func_ptr;\n' +
+        'typedef int sig_atomic_t;\n' +
+        'typedef int __tzrule_type;\n' +
+        'typedef int __tzinfo_type;\n' +
+        'typedef int mbstate_t;\n' +
+        'typedef int sem_t;\n' +
+        'typedef int pthread_t;\n' +
+        'typedef int pthread_attr_t;\n' +
+        'typedef int pthread_mutex_t;\n' +
+        'typedef int pthread_mutexattr_t;\n' +
+        'typedef int pthread_cond_t;\n' +
+        'typedef int pthread_condattr_t;\n' +
+        'typedef int pthread_key_t;\n' +
+        'typedef int pthread_once_t;\n' +
+        'typedef int pthread_rwlock_t;\n' +
+        'typedef int pthread_rwlockattr_t;\n' +
+        'typedef int pthread_spinlock_t;\n' +
+        'typedef int pthread_barrier_t;\n' +
+        'typedef int pthread_barrierattr_t;\n' +
+        'typedef int jmp_buf;\n' +
+        'typedef int rlim_t;\n' +
+        'typedef int sa_family_t;\n' +
+        'typedef int sigjmp_buf;\n' +
+        'typedef int stack_t;\n' +
+        'typedef int siginfo_t;\n' +
+        'typedef int z_stream;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int8_t;\n' +
+        'typedef int uint8_t;\n' +
+        'typedef int int16_t;\n' +
+        'typedef int uint16_t;\n' +
+        'typedef int int32_t;\n' +
+        'typedef int uint32_t;\n' +
+        'typedef int int64_t;\n' +
+        'typedef int uint64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int_least8_t;\n' +
+        'typedef int uint_least8_t;\n' +
+        'typedef int int_least16_t;\n' +
+        'typedef int uint_least16_t;\n' +
+        'typedef int int_least32_t;\n' +
+        'typedef int uint_least32_t;\n' +
+        'typedef int int_least64_t;\n' +
+        'typedef int uint_least64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int_fast8_t;\n' +
+        'typedef int uint_fast8_t;\n' +
+        'typedef int int_fast16_t;\n' +
+        'typedef int uint_fast16_t;\n' +
+        'typedef int int_fast32_t;\n' +
+        'typedef int uint_fast32_t;\n' +
+        'typedef int int_fast64_t;\n' +
+        'typedef int uint_fast64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int intptr_t;\n' +
+        'typedef int uintptr_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int intmax_t;\n' +
+        'typedef int uintmax_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef _Bool bool;\n' +
+        '\n' +
+        'typedef int va_list;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'enum MQTTPropertyCodes {\n' +
+        '  MQTTPROPERTY_CODE_PAYLOAD_FORMAT_INDICATOR = 1,\n' +
+        '  MQTTPROPERTY_CODE_MESSAGE_EXPIRY_INTERVAL = 2,\n' +
+        '  MQTTPROPERTY_CODE_CONTENT_TYPE = 3,\n' +
+        '  MQTTPROPERTY_CODE_RESPONSE_TOPIC = 8,\n' +
+        '  MQTTPROPERTY_CODE_CORRELATION_DATA = 9,\n' +
+        '  MQTTPROPERTY_CODE_SUBSCRIPTION_IDENTIFIER = 11,\n' +
+        '  MQTTPROPERTY_CODE_SESSION_EXPIRY_INTERVAL = 17,\n' +
+        '  MQTTPROPERTY_CODE_ASSIGNED_CLIENT_IDENTIFER = 18,\n' +
+        '  MQTTPROPERTY_CODE_SERVER_KEEP_ALIVE = 19,\n' +
+        '  MQTTPROPERTY_CODE_AUTHENTICATION_METHOD = 21,\n' +
+        '  MQTTPROPERTY_CODE_AUTHENTICATION_DATA = 22,\n' +
+        '  MQTTPROPERTY_CODE_REQUEST_PROBLEM_INFORMATION = 23,\n' +
+        '  MQTTPROPERTY_CODE_WILL_DELAY_INTERVAL = 24,\n' +
+        '  MQTTPROPERTY_CODE_REQUEST_RESPONSE_INFORMATION = 25,\n' +
+        '  MQTTPROPERTY_CODE_RESPONSE_INFORMATION = 26,\n' +
+        '  MQTTPROPERTY_CODE_SERVER_REFERENCE = 28,\n' +
+        '  MQTTPROPERTY_CODE_REASON_STRING = 31,\n' +
+        '  MQTTPROPERTY_CODE_RECEIVE_MAXIMUM = 33,\n' +
+        '  MQTTPROPERTY_CODE_TOPIC_ALIAS_MAXIMUM = 34,\n' +
+        '  MQTTPROPERTY_CODE_TOPIC_ALIAS = 35,\n' +
+        '  MQTTPROPERTY_CODE_MAXIMUM_QOS = 36,\n' +
+        '  MQTTPROPERTY_CODE_RETAIN_AVAILABLE = 37,\n' +
+        '  MQTTPROPERTY_CODE_USER_PROPERTY = 38,\n' +
+        '  MQTTPROPERTY_CODE_MAXIMUM_PACKET_SIZE = 39,\n' +
+        '  MQTTPROPERTY_CODE_WILDCARD_SUBSCRIPTION_AVAILABLE = 40,\n' +
+        '  MQTTPROPERTY_CODE_SUBSCRIPTION_IDENTIFIERS_AVAILABLE = 41,\n' +
+        '  MQTTPROPERTY_CODE_SHARED_SUBSCRIPTION_AVAILABLE = 42\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern const char* MQTTPropertyName(enum MQTTPropertyCodes value);\n' +
+        '\n' +
+        '\n' +
+        'enum MQTTPropertyTypes {\n' +
+        '  MQTTPROPERTY_TYPE_BYTE,\n' +
+        '  MQTTPROPERTY_TYPE_TWO_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_FOUR_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_VARIABLE_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_BINARY_DATA,\n' +
+        '  MQTTPROPERTY_TYPE_UTF_8_ENCODED_STRING,\n' +
+        '  MQTTPROPERTY_TYPE_UTF_8_STRING_PAIR\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperty_getType(enum MQTTPropertyCodes value);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct\n' +
+        '{\n' +
+        ' int len;\n' +
+        ' char* data;\n' +
+        '} MQTTLenString;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct\n' +
+        '{\n' +
+        '  enum MQTTPropertyCodes identifier;\n' +
+        '\n' +
+        '  union {\n' +
+        '    unsigned char byte;\n' +
+        '    unsigned short integer2;\n' +
+        '    unsigned int integer4;\n' +
+        '    struct {\n' +
+        '      MQTTLenString data;\n' +
+        '      MQTTLenString value;\n' +
+        '    };\n' +
+        '  } value;\n' +
+        '} MQTTProperty;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct MQTTProperties\n' +
+        '{\n' +
+        '  int count;\n' +
+        '  int max_count;\n' +
+        '  int length;\n' +
+        '  MQTTProperty *array;\n' +
+        '} MQTTProperties;\n' +
+        'int MQTTProperties_len(MQTTProperties* props);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_add(MQTTProperties* props, const MQTTProperty* prop);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'int MQTTProperties_write(char** pptr, const MQTTProperties* properties);\n' +
+        'int MQTTProperties_read(MQTTProperties* properties, char** pptr, char* enddata);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern void MQTTProperties_free(MQTTProperties* properties);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern MQTTProperties MQTTProperties_copy(const MQTTProperties* props);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_hasProperty(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern int MQTTProperties_propertyCount(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_getNumericValue(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern int MQTTProperties_getNumericValueAt(MQTTProperties *props, enum MQTTPropertyCodes propid, int index);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern MQTTProperty* MQTTProperties_getProperty(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern MQTTProperty* MQTTProperties_getPropertyAt(MQTTProperties *props, enum MQTTPropertyCodes propid, int index);\n' +
+        'enum MQTTReasonCodes {\n' +
+        '  MQTTREASONCODE_SUCCESS = 0,\n' +
+        '  MQTTREASONCODE_NORMAL_DISCONNECTION = 0,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_0 = 0,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_1 = 1,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_2 = 2,\n' +
+        '  MQTTREASONCODE_DISCONNECT_WITH_WILL_MESSAGE = 4,\n' +
+        '  MQTTREASONCODE_NO_MATCHING_SUBSCRIBERS = 16,\n' +
+        '  MQTTREASONCODE_NO_SUBSCRIPTION_FOUND = 17,\n' +
+        '  MQTTREASONCODE_CONTINUE_AUTHENTICATION = 24,\n' +
+        '  MQTTREASONCODE_RE_AUTHENTICATE = 25,\n' +
+        '  MQTTREASONCODE_UNSPECIFIED_ERROR = 128,\n' +
+        '  MQTTREASONCODE_MALFORMED_PACKET = 129,\n' +
+        '  MQTTREASONCODE_PROTOCOL_ERROR = 130,\n' +
+        '  MQTTREASONCODE_IMPLEMENTATION_SPECIFIC_ERROR = 131,\n' +
+        '  MQTTREASONCODE_UNSUPPORTED_PROTOCOL_VERSION = 132,\n' +
+        '  MQTTREASONCODE_CLIENT_IDENTIFIER_NOT_VALID = 133,\n' +
+        '  MQTTREASONCODE_BAD_USER_NAME_OR_PASSWORD = 134,\n' +
+        '  MQTTREASONCODE_NOT_AUTHORIZED = 135,\n' +
+        '  MQTTREASONCODE_SERVER_UNAVAILABLE = 136,\n' +
+        '  MQTTREASONCODE_SERVER_BUSY = 137,\n' +
+        '  MQTTREASONCODE_BANNED = 138,\n' +
+        '  MQTTREASONCODE_SERVER_SHUTTING_DOWN = 139,\n' +
+        '  MQTTREASONCODE_BAD_AUTHENTICATION_METHOD = 140,\n' +
+        '  MQTTREASONCODE_KEEP_ALIVE_TIMEOUT = 141,\n' +
+        '  MQTTREASONCODE_SESSION_TAKEN_OVER = 142,\n' +
+        '  MQTTREASONCODE_TOPIC_FILTER_INVALID = 143,\n' +
+        '  MQTTREASONCODE_TOPIC_NAME_INVALID = 144,\n' +
+        '  MQTTREASONCODE_PACKET_IDENTIFIER_IN_USE = 145,\n' +
+        '  MQTTREASONCODE_PACKET_IDENTIFIER_NOT_FOUND = 146,\n' +
+        '  MQTTREASONCODE_RECEIVE_MAXIMUM_EXCEEDED = 147,\n' +
+        '  MQTTREASONCODE_TOPIC_ALIAS_INVALID = 148,\n' +
+        '  MQTTREASONCODE_PACKET_TOO_LARGE = 149,\n' +
+        '  MQTTREASONCODE_MESSAGE_RATE_TOO_HIGH = 150,\n' +
+        '  MQTTREASONCODE_QUOTA_EXCEEDED = 151,\n' +
+        '  MQTTREASONCODE_ADMINISTRATIVE_ACTION = 152,\n' +
+        '  MQTTREASONCODE_PAYLOAD_FORMAT_INVALID = 153,\n' +
+        '  MQTTREASONCODE_RETAIN_NOT_SUPPORTED = 154,\n' +
+        '  MQTTREASONCODE_QOS_NOT_SUPPORTED = 155,\n' +
+        '  MQTTREASONCODE_USE_ANOTHER_SERVER = 156,\n' +
+        '  MQTTREASONCODE_SERVER_MOVED = 157,\n' +
+        '  MQTTREASONCODE_SHARED_SUBSCRIPTIONS_NOT_SUPPORTED = 158,\n' +
+        '  MQTTREASONCODE_CONNECTION_RATE_EXCEEDED = 159,\n' +
+        '  MQTTREASONCODE_MAXIMUM_CONNECT_TIME = 160,\n' +
+        '  MQTTREASONCODE_SUBSCRIPTION_IDENTIFIERS_NOT_SUPPORTED = 161,\n' +
+        '  MQTTREASONCODE_WILDCARD_SUBSCRIPTIONS_NOT_SUPPORTED = 162\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern const char* MQTTReasonCode_toString(enum MQTTReasonCodes value);\n' +
+        'typedef struct MQTTSubscribe_options\n' +
+        '{\n' +
+        '\n' +
+        ' char struct_id[4];\n' +
+        '\n' +
+        '\n' +
+        ' int struct_version;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char noLocal;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char retainAsPublished;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char retainHandling;\n' +
+        '} MQTTSubscribe_options;\n' +
+        '\n' +
+        'typedef int (*Persistence_open)(void** handle, const char* clientID, const char* serverURI, void* context);\n' +
+        'typedef int (*Persistence_close)(void* handle);\n' +
+        'typedef int (*Persistence_put)(void* handle, char* key, int bufcount, char* buffers[], int buflens[]);\n' +
+        'typedef int (*Persistence_get)(void* handle, char* key, char** buffer, int* buflen);\n' +
+        'typedef int (*Persistence_remove)(void* handle, char* key);\n' +
+        'typedef int (*Persistence_keys)(void* handle, char*** keys, int* nkeys);\n' +
+        'typedef int (*Persistence_clear)(void* handle);\n' +
+        'typedef int (*Persistence_containskey)(void* handle, char* key);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct {\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' void* context;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_open popen;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_close pclose;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_put pput;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_get pget;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_remove premove;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_keys pkeys;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_clear pclear;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_containskey pcontainskey;\n' +
+        '} MQTTClient_persistence;\n' +
+        'typedef int MQTTPersistence_beforeWrite(void* context, int bufcount, char* buffers[], int buflens[]);\n' +
+        'typedef int MQTTPersistence_afterRead(void* context, char** buffer, int* buflen);\n' +
+        'typedef struct\n' +
+        '{\n' +
+        '\n' +
+        ' char struct_id[4];\n' +
+        '\n' +
+        ' int struct_version;\n' +
+        '\n' +
+        ' '... 103249 more characters,
+      startIdx: 113224,
+      endIdx: 113224
+    },
+    _baseInterval: {
+      sourceString: 'typedef int va_list;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef int size_t;\n' +
+        'typedef int __builtin_va_list;\n' +
+        'typedef int __gnuc_va_list;\n' +
+        'typedef int __int8_t;\n' +
+        'typedef int __uint8_t;\n' +
+        'typedef int __int16_t;\n' +
+        'typedef int __uint16_t;\n' +
+        'typedef int __int_least16_t;\n' +
+        'typedef int __uint_least16_t;\n' +
+        'typedef int __int32_t;\n' +
+        'typedef int __uint32_t;\n' +
+        'typedef int __int64_t;\n' +
+        'typedef int __uint64_t;\n' +
+        'typedef int __int_least32_t;\n' +
+        'typedef int __uint_least32_t;\n' +
+        'typedef int __s8;\n' +
+        'typedef int __u8;\n' +
+        'typedef int __s16;\n' +
+        'typedef int __u16;\n' +
+        'typedef int __s32;\n' +
+        'typedef int __u32;\n' +
+        'typedef int __s64;\n' +
+        'typedef int __u64;\n' +
+        'typedef int _LOCK_T;\n' +
+        'typedef int _LOCK_RECURSIVE_T;\n' +
+        'typedef int _off_t;\n' +
+        'typedef int __dev_t;\n' +
+        'typedef int __uid_t;\n' +
+        'typedef int __gid_t;\n' +
+        'typedef int _off64_t;\n' +
+        'typedef int _fpos_t;\n' +
+        'typedef int _ssize_t;\n' +
+        'typedef int wint_t;\n' +
+        'typedef int _mbstate_t;\n' +
+        'typedef int _flock_t;\n' +
+        'typedef int _iconv_t;\n' +
+        'typedef int __ULong;\n' +
+        'typedef int __FILE;\n' +
+        'typedef int ptrdiff_t;\n' +
+        'typedef int wchar_t;\n' +
+        'typedef int __off_t;\n' +
+        'typedef int __pid_t;\n' +
+        'typedef int __loff_t;\n' +
+        'typedef int u_char;\n' +
+        'typedef int u_short;\n' +
+        'typedef int u_int;\n' +
+        'typedef int u_long;\n' +
+        'typedef int ushort;\n' +
+        'typedef int uint;\n' +
+        'typedef int clock_t;\n' +
+        'typedef int time_t;\n' +
+        'typedef int daddr_t;\n' +
+        'typedef int caddr_t;\n' +
+        'typedef int ino_t;\n' +
+        'typedef int off_t;\n' +
+        'typedef int dev_t;\n' +
+        'typedef int uid_t;\n' +
+        'typedef int gid_t;\n' +
+        'typedef int pid_t;\n' +
+        'typedef int key_t;\n' +
+        'typedef int ssize_t;\n' +
+        'typedef int mode_t;\n' +
+        'typedef int nlink_t;\n' +
+        'typedef int fd_mask;\n' +
+        'typedef int _types_fd_set;\n' +
+        'typedef int clockid_t;\n' +
+        'typedef int timer_t;\n' +
+        'typedef int useconds_t;\n' +
+        'typedef int suseconds_t;\n' +
+        'typedef int FILE;\n' +
+        'typedef int fpos_t;\n' +
+        'typedef int cookie_read_function_t;\n' +
+        'typedef int cookie_write_function_t;\n' +
+        'typedef int cookie_seek_function_t;\n' +
+        'typedef int cookie_close_function_t;\n' +
+        'typedef int cookie_io_functions_t;\n' +
+        'typedef int div_t;\n' +
+        'typedef int ldiv_t;\n' +
+        'typedef int lldiv_t;\n' +
+        'typedef int sigset_t;\n' +
+        'typedef int __sigset_t;\n' +
+        'typedef int _sig_func_ptr;\n' +
+        'typedef int sig_atomic_t;\n' +
+        'typedef int __tzrule_type;\n' +
+        'typedef int __tzinfo_type;\n' +
+        'typedef int mbstate_t;\n' +
+        'typedef int sem_t;\n' +
+        'typedef int pthread_t;\n' +
+        'typedef int pthread_attr_t;\n' +
+        'typedef int pthread_mutex_t;\n' +
+        'typedef int pthread_mutexattr_t;\n' +
+        'typedef int pthread_cond_t;\n' +
+        'typedef int pthread_condattr_t;\n' +
+        'typedef int pthread_key_t;\n' +
+        'typedef int pthread_once_t;\n' +
+        'typedef int pthread_rwlock_t;\n' +
+        'typedef int pthread_rwlockattr_t;\n' +
+        'typedef int pthread_spinlock_t;\n' +
+        'typedef int pthread_barrier_t;\n' +
+        'typedef int pthread_barrierattr_t;\n' +
+        'typedef int jmp_buf;\n' +
+        'typedef int rlim_t;\n' +
+        'typedef int sa_family_t;\n' +
+        'typedef int sigjmp_buf;\n' +
+        'typedef int stack_t;\n' +
+        'typedef int siginfo_t;\n' +
+        'typedef int z_stream;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int8_t;\n' +
+        'typedef int uint8_t;\n' +
+        'typedef int int16_t;\n' +
+        'typedef int uint16_t;\n' +
+        'typedef int int32_t;\n' +
+        'typedef int uint32_t;\n' +
+        'typedef int int64_t;\n' +
+        'typedef int uint64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int_least8_t;\n' +
+        'typedef int uint_least8_t;\n' +
+        'typedef int int_least16_t;\n' +
+        'typedef int uint_least16_t;\n' +
+        'typedef int int_least32_t;\n' +
+        'typedef int uint_least32_t;\n' +
+        'typedef int int_least64_t;\n' +
+        'typedef int uint_least64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int_fast8_t;\n' +
+        'typedef int uint_fast8_t;\n' +
+        'typedef int int_fast16_t;\n' +
+        'typedef int uint_fast16_t;\n' +
+        'typedef int int_fast32_t;\n' +
+        'typedef int uint_fast32_t;\n' +
+        'typedef int int_fast64_t;\n' +
+        'typedef int uint_fast64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int intptr_t;\n' +
+        'typedef int uintptr_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int intmax_t;\n' +
+        'typedef int uintmax_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef _Bool bool;\n' +
+        '\n' +
+        'typedef int va_list;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'enum MQTTPropertyCodes {\n' +
+        '  MQTTPROPERTY_CODE_PAYLOAD_FORMAT_INDICATOR = 1,\n' +
+        '  MQTTPROPERTY_CODE_MESSAGE_EXPIRY_INTERVAL = 2,\n' +
+        '  MQTTPROPERTY_CODE_CONTENT_TYPE = 3,\n' +
+        '  MQTTPROPERTY_CODE_RESPONSE_TOPIC = 8,\n' +
+        '  MQTTPROPERTY_CODE_CORRELATION_DATA = 9,\n' +
+        '  MQTTPROPERTY_CODE_SUBSCRIPTION_IDENTIFIER = 11,\n' +
+        '  MQTTPROPERTY_CODE_SESSION_EXPIRY_INTERVAL = 17,\n' +
+        '  MQTTPROPERTY_CODE_ASSIGNED_CLIENT_IDENTIFER = 18,\n' +
+        '  MQTTPROPERTY_CODE_SERVER_KEEP_ALIVE = 19,\n' +
+        '  MQTTPROPERTY_CODE_AUTHENTICATION_METHOD = 21,\n' +
+        '  MQTTPROPERTY_CODE_AUTHENTICATION_DATA = 22,\n' +
+        '  MQTTPROPERTY_CODE_REQUEST_PROBLEM_INFORMATION = 23,\n' +
+        '  MQTTPROPERTY_CODE_WILL_DELAY_INTERVAL = 24,\n' +
+        '  MQTTPROPERTY_CODE_REQUEST_RESPONSE_INFORMATION = 25,\n' +
+        '  MQTTPROPERTY_CODE_RESPONSE_INFORMATION = 26,\n' +
+        '  MQTTPROPERTY_CODE_SERVER_REFERENCE = 28,\n' +
+        '  MQTTPROPERTY_CODE_REASON_STRING = 31,\n' +
+        '  MQTTPROPERTY_CODE_RECEIVE_MAXIMUM = 33,\n' +
+        '  MQTTPROPERTY_CODE_TOPIC_ALIAS_MAXIMUM = 34,\n' +
+        '  MQTTPROPERTY_CODE_TOPIC_ALIAS = 35,\n' +
+        '  MQTTPROPERTY_CODE_MAXIMUM_QOS = 36,\n' +
+        '  MQTTPROPERTY_CODE_RETAIN_AVAILABLE = 37,\n' +
+        '  MQTTPROPERTY_CODE_USER_PROPERTY = 38,\n' +
+        '  MQTTPROPERTY_CODE_MAXIMUM_PACKET_SIZE = 39,\n' +
+        '  MQTTPROPERTY_CODE_WILDCARD_SUBSCRIPTION_AVAILABLE = 40,\n' +
+        '  MQTTPROPERTY_CODE_SUBSCRIPTION_IDENTIFIERS_AVAILABLE = 41,\n' +
+        '  MQTTPROPERTY_CODE_SHARED_SUBSCRIPTION_AVAILABLE = 42\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern const char* MQTTPropertyName(enum MQTTPropertyCodes value);\n' +
+        '\n' +
+        '\n' +
+        'enum MQTTPropertyTypes {\n' +
+        '  MQTTPROPERTY_TYPE_BYTE,\n' +
+        '  MQTTPROPERTY_TYPE_TWO_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_FOUR_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_VARIABLE_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_BINARY_DATA,\n' +
+        '  MQTTPROPERTY_TYPE_UTF_8_ENCODED_STRING,\n' +
+        '  MQTTPROPERTY_TYPE_UTF_8_STRING_PAIR\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperty_getType(enum MQTTPropertyCodes value);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct\n' +
+        '{\n' +
+        ' int len;\n' +
+        ' char* data;\n' +
+        '} MQTTLenString;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct\n' +
+        '{\n' +
+        '  enum MQTTPropertyCodes identifier;\n' +
+        '\n' +
+        '  union {\n' +
+        '    unsigned char byte;\n' +
+        '    unsigned short integer2;\n' +
+        '    unsigned int integer4;\n' +
+        '    struct {\n' +
+        '      MQTTLenString data;\n' +
+        '      MQTTLenString value;\n' +
+        '    };\n' +
+        '  } value;\n' +
+        '} MQTTProperty;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct MQTTProperties\n' +
+        '{\n' +
+        '  int count;\n' +
+        '  int max_count;\n' +
+        '  int length;\n' +
+        '  MQTTProperty *array;\n' +
+        '} MQTTProperties;\n' +
+        'int MQTTProperties_len(MQTTProperties* props);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_add(MQTTProperties* props, const MQTTProperty* prop);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'int MQTTProperties_write(char** pptr, const MQTTProperties* properties);\n' +
+        'int MQTTProperties_read(MQTTProperties* properties, char** pptr, char* enddata);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern void MQTTProperties_free(MQTTProperties* properties);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern MQTTProperties MQTTProperties_copy(const MQTTProperties* props);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_hasProperty(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern int MQTTProperties_propertyCount(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_getNumericValue(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern int MQTTProperties_getNumericValueAt(MQTTProperties *props, enum MQTTPropertyCodes propid, int index);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern MQTTProperty* MQTTProperties_getProperty(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern MQTTProperty* MQTTProperties_getPropertyAt(MQTTProperties *props, enum MQTTPropertyCodes propid, int index);\n' +
+        'enum MQTTReasonCodes {\n' +
+        '  MQTTREASONCODE_SUCCESS = 0,\n' +
+        '  MQTTREASONCODE_NORMAL_DISCONNECTION = 0,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_0 = 0,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_1 = 1,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_2 = 2,\n' +
+        '  MQTTREASONCODE_DISCONNECT_WITH_WILL_MESSAGE = 4,\n' +
+        '  MQTTREASONCODE_NO_MATCHING_SUBSCRIBERS = 16,\n' +
+        '  MQTTREASONCODE_NO_SUBSCRIPTION_FOUND = 17,\n' +
+        '  MQTTREASONCODE_CONTINUE_AUTHENTICATION = 24,\n' +
+        '  MQTTREASONCODE_RE_AUTHENTICATE = 25,\n' +
+        '  MQTTREASONCODE_UNSPECIFIED_ERROR = 128,\n' +
+        '  MQTTREASONCODE_MALFORMED_PACKET = 129,\n' +
+        '  MQTTREASONCODE_PROTOCOL_ERROR = 130,\n' +
+        '  MQTTREASONCODE_IMPLEMENTATION_SPECIFIC_ERROR = 131,\n' +
+        '  MQTTREASONCODE_UNSUPPORTED_PROTOCOL_VERSION = 132,\n' +
+        '  MQTTREASONCODE_CLIENT_IDENTIFIER_NOT_VALID = 133,\n' +
+        '  MQTTREASONCODE_BAD_USER_NAME_OR_PASSWORD = 134,\n' +
+        '  MQTTREASONCODE_NOT_AUTHORIZED = 135,\n' +
+        '  MQTTREASONCODE_SERVER_UNAVAILABLE = 136,\n' +
+        '  MQTTREASONCODE_SERVER_BUSY = 137,\n' +
+        '  MQTTREASONCODE_BANNED = 138,\n' +
+        '  MQTTREASONCODE_SERVER_SHUTTING_DOWN = 139,\n' +
+        '  MQTTREASONCODE_BAD_AUTHENTICATION_METHOD = 140,\n' +
+        '  MQTTREASONCODE_KEEP_ALIVE_TIMEOUT = 141,\n' +
+        '  MQTTREASONCODE_SESSION_TAKEN_OVER = 142,\n' +
+        '  MQTTREASONCODE_TOPIC_FILTER_INVALID = 143,\n' +
+        '  MQTTREASONCODE_TOPIC_NAME_INVALID = 144,\n' +
+        '  MQTTREASONCODE_PACKET_IDENTIFIER_IN_USE = 145,\n' +
+        '  MQTTREASONCODE_PACKET_IDENTIFIER_NOT_FOUND = 146,\n' +
+        '  MQTTREASONCODE_RECEIVE_MAXIMUM_EXCEEDED = 147,\n' +
+        '  MQTTREASONCODE_TOPIC_ALIAS_INVALID = 148,\n' +
+        '  MQTTREASONCODE_PACKET_TOO_LARGE = 149,\n' +
+        '  MQTTREASONCODE_MESSAGE_RATE_TOO_HIGH = 150,\n' +
+        '  MQTTREASONCODE_QUOTA_EXCEEDED = 151,\n' +
+        '  MQTTREASONCODE_ADMINISTRATIVE_ACTION = 152,\n' +
+        '  MQTTREASONCODE_PAYLOAD_FORMAT_INVALID = 153,\n' +
+        '  MQTTREASONCODE_RETAIN_NOT_SUPPORTED = 154,\n' +
+        '  MQTTREASONCODE_QOS_NOT_SUPPORTED = 155,\n' +
+        '  MQTTREASONCODE_USE_ANOTHER_SERVER = 156,\n' +
+        '  MQTTREASONCODE_SERVER_MOVED = 157,\n' +
+        '  MQTTREASONCODE_SHARED_SUBSCRIPTIONS_NOT_SUPPORTED = 158,\n' +
+        '  MQTTREASONCODE_CONNECTION_RATE_EXCEEDED = 159,\n' +
+        '  MQTTREASONCODE_MAXIMUM_CONNECT_TIME = 160,\n' +
+        '  MQTTREASONCODE_SUBSCRIPTION_IDENTIFIERS_NOT_SUPPORTED = 161,\n' +
+        '  MQTTREASONCODE_WILDCARD_SUBSCRIPTIONS_NOT_SUPPORTED = 162\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern const char* MQTTReasonCode_toString(enum MQTTReasonCodes value);\n' +
+        'typedef struct MQTTSubscribe_options\n' +
+        '{\n' +
+        '\n' +
+        ' char struct_id[4];\n' +
+        '\n' +
+        '\n' +
+        ' int struct_version;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char noLocal;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char retainAsPublished;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char retainHandling;\n' +
+        '} MQTTSubscribe_options;\n' +
+        '\n' +
+        'typedef int (*Persistence_open)(void** handle, const char* clientID, const char* serverURI, void* context);\n' +
+        'typedef int (*Persistence_close)(void* handle);\n' +
+        'typedef int (*Persistence_put)(void* handle, char* key, int bufcount, char* buffers[], int buflens[]);\n' +
+        'typedef int (*Persistence_get)(void* handle, char* key, char** buffer, int* buflen);\n' +
+        'typedef int (*Persistence_remove)(void* handle, char* key);\n' +
+        'typedef int (*Persistence_keys)(void* handle, char*** keys, int* nkeys);\n' +
+        'typedef int (*Persistence_clear)(void* handle);\n' +
+        'typedef int (*Persistence_containskey)(void* handle, char* key);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct {\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' void* context;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_open popen;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_close pclose;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_put pput;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_get pget;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_remove premove;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_keys pkeys;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_clear pclear;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_containskey pcontainskey;\n' +
+        '} MQTTClient_persistence;\n' +
+        'typedef int MQTTPersistence_beforeWrite(void* context, int bufcount, char* buffers[], int buflens[]);\n' +
+        'typedef int MQTTPersistence_afterRead(void* context, char** buffer, int* buflen);\n' +
+        'typedef struct\n' +
+        '{\n' +
+        '\n' +
+        ' char struct_id[4];\n' +
+        '\n' +
+        ' int struct_version;\n' +
+        '\n' +
+        ' '... 103249 more characters,
+      startIdx: 113224,
+      endIdx: 113230
+    },
+    _childWrappers: []
+  },
+  Wrapper {
+    _semantics: Semantics {
+      grammar: [Object],
+      checkedActionDicts: true,
+      Wrapper: [Function (anonymous)],
+      super: [Semantics],
+      operations: Object <Complex prototype> {},
+      attributes: [Object <Complex prototype>],
+      attributeKeys: [Object: null prototype]
+    },
+    _node: NonterminalNode {
+      grammar: [Object],
+      ctorName: 'Dir_declarator',
+      matchLength: 6,
+      children: [Array],
+      childOffsets: [Array],
+      [Symbol()]: 'main()'
+    },
+    source: {
+      sourceString: 'typedef int va_list;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef int size_t;\n' +
+        'typedef int __builtin_va_list;\n' +
+        'typedef int __gnuc_va_list;\n' +
+        'typedef int __int8_t;\n' +
+        'typedef int __uint8_t;\n' +
+        'typedef int __int16_t;\n' +
+        'typedef int __uint16_t;\n' +
+        'typedef int __int_least16_t;\n' +
+        'typedef int __uint_least16_t;\n' +
+        'typedef int __int32_t;\n' +
+        'typedef int __uint32_t;\n' +
+        'typedef int __int64_t;\n' +
+        'typedef int __uint64_t;\n' +
+        'typedef int __int_least32_t;\n' +
+        'typedef int __uint_least32_t;\n' +
+        'typedef int __s8;\n' +
+        'typedef int __u8;\n' +
+        'typedef int __s16;\n' +
+        'typedef int __u16;\n' +
+        'typedef int __s32;\n' +
+        'typedef int __u32;\n' +
+        'typedef int __s64;\n' +
+        'typedef int __u64;\n' +
+        'typedef int _LOCK_T;\n' +
+        'typedef int _LOCK_RECURSIVE_T;\n' +
+        'typedef int _off_t;\n' +
+        'typedef int __dev_t;\n' +
+        'typedef int __uid_t;\n' +
+        'typedef int __gid_t;\n' +
+        'typedef int _off64_t;\n' +
+        'typedef int _fpos_t;\n' +
+        'typedef int _ssize_t;\n' +
+        'typedef int wint_t;\n' +
+        'typedef int _mbstate_t;\n' +
+        'typedef int _flock_t;\n' +
+        'typedef int _iconv_t;\n' +
+        'typedef int __ULong;\n' +
+        'typedef int __FILE;\n' +
+        'typedef int ptrdiff_t;\n' +
+        'typedef int wchar_t;\n' +
+        'typedef int __off_t;\n' +
+        'typedef int __pid_t;\n' +
+        'typedef int __loff_t;\n' +
+        'typedef int u_char;\n' +
+        'typedef int u_short;\n' +
+        'typedef int u_int;\n' +
+        'typedef int u_long;\n' +
+        'typedef int ushort;\n' +
+        'typedef int uint;\n' +
+        'typedef int clock_t;\n' +
+        'typedef int time_t;\n' +
+        'typedef int daddr_t;\n' +
+        'typedef int caddr_t;\n' +
+        'typedef int ino_t;\n' +
+        'typedef int off_t;\n' +
+        'typedef int dev_t;\n' +
+        'typedef int uid_t;\n' +
+        'typedef int gid_t;\n' +
+        'typedef int pid_t;\n' +
+        'typedef int key_t;\n' +
+        'typedef int ssize_t;\n' +
+        'typedef int mode_t;\n' +
+        'typedef int nlink_t;\n' +
+        'typedef int fd_mask;\n' +
+        'typedef int _types_fd_set;\n' +
+        'typedef int clockid_t;\n' +
+        'typedef int timer_t;\n' +
+        'typedef int useconds_t;\n' +
+        'typedef int suseconds_t;\n' +
+        'typedef int FILE;\n' +
+        'typedef int fpos_t;\n' +
+        'typedef int cookie_read_function_t;\n' +
+        'typedef int cookie_write_function_t;\n' +
+        'typedef int cookie_seek_function_t;\n' +
+        'typedef int cookie_close_function_t;\n' +
+        'typedef int cookie_io_functions_t;\n' +
+        'typedef int div_t;\n' +
+        'typedef int ldiv_t;\n' +
+        'typedef int lldiv_t;\n' +
+        'typedef int sigset_t;\n' +
+        'typedef int __sigset_t;\n' +
+        'typedef int _sig_func_ptr;\n' +
+        'typedef int sig_atomic_t;\n' +
+        'typedef int __tzrule_type;\n' +
+        'typedef int __tzinfo_type;\n' +
+        'typedef int mbstate_t;\n' +
+        'typedef int sem_t;\n' +
+        'typedef int pthread_t;\n' +
+        'typedef int pthread_attr_t;\n' +
+        'typedef int pthread_mutex_t;\n' +
+        'typedef int pthread_mutexattr_t;\n' +
+        'typedef int pthread_cond_t;\n' +
+        'typedef int pthread_condattr_t;\n' +
+        'typedef int pthread_key_t;\n' +
+        'typedef int pthread_once_t;\n' +
+        'typedef int pthread_rwlock_t;\n' +
+        'typedef int pthread_rwlockattr_t;\n' +
+        'typedef int pthread_spinlock_t;\n' +
+        'typedef int pthread_barrier_t;\n' +
+        'typedef int pthread_barrierattr_t;\n' +
+        'typedef int jmp_buf;\n' +
+        'typedef int rlim_t;\n' +
+        'typedef int sa_family_t;\n' +
+        'typedef int sigjmp_buf;\n' +
+        'typedef int stack_t;\n' +
+        'typedef int siginfo_t;\n' +
+        'typedef int z_stream;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int8_t;\n' +
+        'typedef int uint8_t;\n' +
+        'typedef int int16_t;\n' +
+        'typedef int uint16_t;\n' +
+        'typedef int int32_t;\n' +
+        'typedef int uint32_t;\n' +
+        'typedef int int64_t;\n' +
+        'typedef int uint64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int_least8_t;\n' +
+        'typedef int uint_least8_t;\n' +
+        'typedef int int_least16_t;\n' +
+        'typedef int uint_least16_t;\n' +
+        'typedef int int_least32_t;\n' +
+        'typedef int uint_least32_t;\n' +
+        'typedef int int_least64_t;\n' +
+        'typedef int uint_least64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int_fast8_t;\n' +
+        'typedef int uint_fast8_t;\n' +
+        'typedef int int_fast16_t;\n' +
+        'typedef int uint_fast16_t;\n' +
+        'typedef int int_fast32_t;\n' +
+        'typedef int uint_fast32_t;\n' +
+        'typedef int int_fast64_t;\n' +
+        'typedef int uint_fast64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int intptr_t;\n' +
+        'typedef int uintptr_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int intmax_t;\n' +
+        'typedef int uintmax_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef _Bool bool;\n' +
+        '\n' +
+        'typedef int va_list;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'enum MQTTPropertyCodes {\n' +
+        '  MQTTPROPERTY_CODE_PAYLOAD_FORMAT_INDICATOR = 1,\n' +
+        '  MQTTPROPERTY_CODE_MESSAGE_EXPIRY_INTERVAL = 2,\n' +
+        '  MQTTPROPERTY_CODE_CONTENT_TYPE = 3,\n' +
+        '  MQTTPROPERTY_CODE_RESPONSE_TOPIC = 8,\n' +
+        '  MQTTPROPERTY_CODE_CORRELATION_DATA = 9,\n' +
+        '  MQTTPROPERTY_CODE_SUBSCRIPTION_IDENTIFIER = 11,\n' +
+        '  MQTTPROPERTY_CODE_SESSION_EXPIRY_INTERVAL = 17,\n' +
+        '  MQTTPROPERTY_CODE_ASSIGNED_CLIENT_IDENTIFER = 18,\n' +
+        '  MQTTPROPERTY_CODE_SERVER_KEEP_ALIVE = 19,\n' +
+        '  MQTTPROPERTY_CODE_AUTHENTICATION_METHOD = 21,\n' +
+        '  MQTTPROPERTY_CODE_AUTHENTICATION_DATA = 22,\n' +
+        '  MQTTPROPERTY_CODE_REQUEST_PROBLEM_INFORMATION = 23,\n' +
+        '  MQTTPROPERTY_CODE_WILL_DELAY_INTERVAL = 24,\n' +
+        '  MQTTPROPERTY_CODE_REQUEST_RESPONSE_INFORMATION = 25,\n' +
+        '  MQTTPROPERTY_CODE_RESPONSE_INFORMATION = 26,\n' +
+        '  MQTTPROPERTY_CODE_SERVER_REFERENCE = 28,\n' +
+        '  MQTTPROPERTY_CODE_REASON_STRING = 31,\n' +
+        '  MQTTPROPERTY_CODE_RECEIVE_MAXIMUM = 33,\n' +
+        '  MQTTPROPERTY_CODE_TOPIC_ALIAS_MAXIMUM = 34,\n' +
+        '  MQTTPROPERTY_CODE_TOPIC_ALIAS = 35,\n' +
+        '  MQTTPROPERTY_CODE_MAXIMUM_QOS = 36,\n' +
+        '  MQTTPROPERTY_CODE_RETAIN_AVAILABLE = 37,\n' +
+        '  MQTTPROPERTY_CODE_USER_PROPERTY = 38,\n' +
+        '  MQTTPROPERTY_CODE_MAXIMUM_PACKET_SIZE = 39,\n' +
+        '  MQTTPROPERTY_CODE_WILDCARD_SUBSCRIPTION_AVAILABLE = 40,\n' +
+        '  MQTTPROPERTY_CODE_SUBSCRIPTION_IDENTIFIERS_AVAILABLE = 41,\n' +
+        '  MQTTPROPERTY_CODE_SHARED_SUBSCRIPTION_AVAILABLE = 42\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern const char* MQTTPropertyName(enum MQTTPropertyCodes value);\n' +
+        '\n' +
+        '\n' +
+        'enum MQTTPropertyTypes {\n' +
+        '  MQTTPROPERTY_TYPE_BYTE,\n' +
+        '  MQTTPROPERTY_TYPE_TWO_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_FOUR_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_VARIABLE_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_BINARY_DATA,\n' +
+        '  MQTTPROPERTY_TYPE_UTF_8_ENCODED_STRING,\n' +
+        '  MQTTPROPERTY_TYPE_UTF_8_STRING_PAIR\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperty_getType(enum MQTTPropertyCodes value);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct\n' +
+        '{\n' +
+        ' int len;\n' +
+        ' char* data;\n' +
+        '} MQTTLenString;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct\n' +
+        '{\n' +
+        '  enum MQTTPropertyCodes identifier;\n' +
+        '\n' +
+        '  union {\n' +
+        '    unsigned char byte;\n' +
+        '    unsigned short integer2;\n' +
+        '    unsigned int integer4;\n' +
+        '    struct {\n' +
+        '      MQTTLenString data;\n' +
+        '      MQTTLenString value;\n' +
+        '    };\n' +
+        '  } value;\n' +
+        '} MQTTProperty;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct MQTTProperties\n' +
+        '{\n' +
+        '  int count;\n' +
+        '  int max_count;\n' +
+        '  int length;\n' +
+        '  MQTTProperty *array;\n' +
+        '} MQTTProperties;\n' +
+        'int MQTTProperties_len(MQTTProperties* props);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_add(MQTTProperties* props, const MQTTProperty* prop);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'int MQTTProperties_write(char** pptr, const MQTTProperties* properties);\n' +
+        'int MQTTProperties_read(MQTTProperties* properties, char** pptr, char* enddata);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern void MQTTProperties_free(MQTTProperties* properties);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern MQTTProperties MQTTProperties_copy(const MQTTProperties* props);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_hasProperty(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern int MQTTProperties_propertyCount(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_getNumericValue(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern int MQTTProperties_getNumericValueAt(MQTTProperties *props, enum MQTTPropertyCodes propid, int index);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern MQTTProperty* MQTTProperties_getProperty(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern MQTTProperty* MQTTProperties_getPropertyAt(MQTTProperties *props, enum MQTTPropertyCodes propid, int index);\n' +
+        'enum MQTTReasonCodes {\n' +
+        '  MQTTREASONCODE_SUCCESS = 0,\n' +
+        '  MQTTREASONCODE_NORMAL_DISCONNECTION = 0,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_0 = 0,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_1 = 1,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_2 = 2,\n' +
+        '  MQTTREASONCODE_DISCONNECT_WITH_WILL_MESSAGE = 4,\n' +
+        '  MQTTREASONCODE_NO_MATCHING_SUBSCRIBERS = 16,\n' +
+        '  MQTTREASONCODE_NO_SUBSCRIPTION_FOUND = 17,\n' +
+        '  MQTTREASONCODE_CONTINUE_AUTHENTICATION = 24,\n' +
+        '  MQTTREASONCODE_RE_AUTHENTICATE = 25,\n' +
+        '  MQTTREASONCODE_UNSPECIFIED_ERROR = 128,\n' +
+        '  MQTTREASONCODE_MALFORMED_PACKET = 129,\n' +
+        '  MQTTREASONCODE_PROTOCOL_ERROR = 130,\n' +
+        '  MQTTREASONCODE_IMPLEMENTATION_SPECIFIC_ERROR = 131,\n' +
+        '  MQTTREASONCODE_UNSUPPORTED_PROTOCOL_VERSION = 132,\n' +
+        '  MQTTREASONCODE_CLIENT_IDENTIFIER_NOT_VALID = 133,\n' +
+        '  MQTTREASONCODE_BAD_USER_NAME_OR_PASSWORD = 134,\n' +
+        '  MQTTREASONCODE_NOT_AUTHORIZED = 135,\n' +
+        '  MQTTREASONCODE_SERVER_UNAVAILABLE = 136,\n' +
+        '  MQTTREASONCODE_SERVER_BUSY = 137,\n' +
+        '  MQTTREASONCODE_BANNED = 138,\n' +
+        '  MQTTREASONCODE_SERVER_SHUTTING_DOWN = 139,\n' +
+        '  MQTTREASONCODE_BAD_AUTHENTICATION_METHOD = 140,\n' +
+        '  MQTTREASONCODE_KEEP_ALIVE_TIMEOUT = 141,\n' +
+        '  MQTTREASONCODE_SESSION_TAKEN_OVER = 142,\n' +
+        '  MQTTREASONCODE_TOPIC_FILTER_INVALID = 143,\n' +
+        '  MQTTREASONCODE_TOPIC_NAME_INVALID = 144,\n' +
+        '  MQTTREASONCODE_PACKET_IDENTIFIER_IN_USE = 145,\n' +
+        '  MQTTREASONCODE_PACKET_IDENTIFIER_NOT_FOUND = 146,\n' +
+        '  MQTTREASONCODE_RECEIVE_MAXIMUM_EXCEEDED = 147,\n' +
+        '  MQTTREASONCODE_TOPIC_ALIAS_INVALID = 148,\n' +
+        '  MQTTREASONCODE_PACKET_TOO_LARGE = 149,\n' +
+        '  MQTTREASONCODE_MESSAGE_RATE_TOO_HIGH = 150,\n' +
+        '  MQTTREASONCODE_QUOTA_EXCEEDED = 151,\n' +
+        '  MQTTREASONCODE_ADMINISTRATIVE_ACTION = 152,\n' +
+        '  MQTTREASONCODE_PAYLOAD_FORMAT_INVALID = 153,\n' +
+        '  MQTTREASONCODE_RETAIN_NOT_SUPPORTED = 154,\n' +
+        '  MQTTREASONCODE_QOS_NOT_SUPPORTED = 155,\n' +
+        '  MQTTREASONCODE_USE_ANOTHER_SERVER = 156,\n' +
+        '  MQTTREASONCODE_SERVER_MOVED = 157,\n' +
+        '  MQTTREASONCODE_SHARED_SUBSCRIPTIONS_NOT_SUPPORTED = 158,\n' +
+        '  MQTTREASONCODE_CONNECTION_RATE_EXCEEDED = 159,\n' +
+        '  MQTTREASONCODE_MAXIMUM_CONNECT_TIME = 160,\n' +
+        '  MQTTREASONCODE_SUBSCRIPTION_IDENTIFIERS_NOT_SUPPORTED = 161,\n' +
+        '  MQTTREASONCODE_WILDCARD_SUBSCRIPTIONS_NOT_SUPPORTED = 162\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern const char* MQTTReasonCode_toString(enum MQTTReasonCodes value);\n' +
+        'typedef struct MQTTSubscribe_options\n' +
+        '{\n' +
+        '\n' +
+        ' char struct_id[4];\n' +
+        '\n' +
+        '\n' +
+        ' int struct_version;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char noLocal;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char retainAsPublished;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char retainHandling;\n' +
+        '} MQTTSubscribe_options;\n' +
+        '\n' +
+        'typedef int (*Persistence_open)(void** handle, const char* clientID, const char* serverURI, void* context);\n' +
+        'typedef int (*Persistence_close)(void* handle);\n' +
+        'typedef int (*Persistence_put)(void* handle, char* key, int bufcount, char* buffers[], int buflens[]);\n' +
+        'typedef int (*Persistence_get)(void* handle, char* key, char** buffer, int* buflen);\n' +
+        'typedef int (*Persistence_remove)(void* handle, char* key);\n' +
+        'typedef int (*Persistence_keys)(void* handle, char*** keys, int* nkeys);\n' +
+        'typedef int (*Persistence_clear)(void* handle);\n' +
+        'typedef int (*Persistence_containskey)(void* handle, char* key);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct {\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' void* context;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_open popen;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_close pclose;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_put pput;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_get pget;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_remove premove;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_keys pkeys;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_clear pclear;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_containskey pcontainskey;\n' +
+        '} MQTTClient_persistence;\n' +
+        'typedef int MQTTPersistence_beforeWrite(void* context, int bufcount, char* buffers[], int buflens[]);\n' +
+        'typedef int MQTTPersistence_afterRead(void* context, char** buffer, int* buflen);\n' +
+        'typedef struct\n' +
+        '{\n' +
+        '\n' +
+        ' char struct_id[4];\n' +
+        '\n' +
+        ' int struct_version;\n' +
+        '\n' +
+        ' '... 103249 more characters,
+      startIdx: 113224,
+      endIdx: 113230
+    },
+    _baseInterval: {
+      sourceString: 'typedef int va_list;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef int size_t;\n' +
+        'typedef int __builtin_va_list;\n' +
+        'typedef int __gnuc_va_list;\n' +
+        'typedef int __int8_t;\n' +
+        'typedef int __uint8_t;\n' +
+        'typedef int __int16_t;\n' +
+        'typedef int __uint16_t;\n' +
+        'typedef int __int_least16_t;\n' +
+        'typedef int __uint_least16_t;\n' +
+        'typedef int __int32_t;\n' +
+        'typedef int __uint32_t;\n' +
+        'typedef int __int64_t;\n' +
+        'typedef int __uint64_t;\n' +
+        'typedef int __int_least32_t;\n' +
+        'typedef int __uint_least32_t;\n' +
+        'typedef int __s8;\n' +
+        'typedef int __u8;\n' +
+        'typedef int __s16;\n' +
+        'typedef int __u16;\n' +
+        'typedef int __s32;\n' +
+        'typedef int __u32;\n' +
+        'typedef int __s64;\n' +
+        'typedef int __u64;\n' +
+        'typedef int _LOCK_T;\n' +
+        'typedef int _LOCK_RECURSIVE_T;\n' +
+        'typedef int _off_t;\n' +
+        'typedef int __dev_t;\n' +
+        'typedef int __uid_t;\n' +
+        'typedef int __gid_t;\n' +
+        'typedef int _off64_t;\n' +
+        'typedef int _fpos_t;\n' +
+        'typedef int _ssize_t;\n' +
+        'typedef int wint_t;\n' +
+        'typedef int _mbstate_t;\n' +
+        'typedef int _flock_t;\n' +
+        'typedef int _iconv_t;\n' +
+        'typedef int __ULong;\n' +
+        'typedef int __FILE;\n' +
+        'typedef int ptrdiff_t;\n' +
+        'typedef int wchar_t;\n' +
+        'typedef int __off_t;\n' +
+        'typedef int __pid_t;\n' +
+        'typedef int __loff_t;\n' +
+        'typedef int u_char;\n' +
+        'typedef int u_short;\n' +
+        'typedef int u_int;\n' +
+        'typedef int u_long;\n' +
+        'typedef int ushort;\n' +
+        'typedef int uint;\n' +
+        'typedef int clock_t;\n' +
+        'typedef int time_t;\n' +
+        'typedef int daddr_t;\n' +
+        'typedef int caddr_t;\n' +
+        'typedef int ino_t;\n' +
+        'typedef int off_t;\n' +
+        'typedef int dev_t;\n' +
+        'typedef int uid_t;\n' +
+        'typedef int gid_t;\n' +
+        'typedef int pid_t;\n' +
+        'typedef int key_t;\n' +
+        'typedef int ssize_t;\n' +
+        'typedef int mode_t;\n' +
+        'typedef int nlink_t;\n' +
+        'typedef int fd_mask;\n' +
+        'typedef int _types_fd_set;\n' +
+        'typedef int clockid_t;\n' +
+        'typedef int timer_t;\n' +
+        'typedef int useconds_t;\n' +
+        'typedef int suseconds_t;\n' +
+        'typedef int FILE;\n' +
+        'typedef int fpos_t;\n' +
+        'typedef int cookie_read_function_t;\n' +
+        'typedef int cookie_write_function_t;\n' +
+        'typedef int cookie_seek_function_t;\n' +
+        'typedef int cookie_close_function_t;\n' +
+        'typedef int cookie_io_functions_t;\n' +
+        'typedef int div_t;\n' +
+        'typedef int ldiv_t;\n' +
+        'typedef int lldiv_t;\n' +
+        'typedef int sigset_t;\n' +
+        'typedef int __sigset_t;\n' +
+        'typedef int _sig_func_ptr;\n' +
+        'typedef int sig_atomic_t;\n' +
+        'typedef int __tzrule_type;\n' +
+        'typedef int __tzinfo_type;\n' +
+        'typedef int mbstate_t;\n' +
+        'typedef int sem_t;\n' +
+        'typedef int pthread_t;\n' +
+        'typedef int pthread_attr_t;\n' +
+        'typedef int pthread_mutex_t;\n' +
+        'typedef int pthread_mutexattr_t;\n' +
+        'typedef int pthread_cond_t;\n' +
+        'typedef int pthread_condattr_t;\n' +
+        'typedef int pthread_key_t;\n' +
+        'typedef int pthread_once_t;\n' +
+        'typedef int pthread_rwlock_t;\n' +
+        'typedef int pthread_rwlockattr_t;\n' +
+        'typedef int pthread_spinlock_t;\n' +
+        'typedef int pthread_barrier_t;\n' +
+        'typedef int pthread_barrierattr_t;\n' +
+        'typedef int jmp_buf;\n' +
+        'typedef int rlim_t;\n' +
+        'typedef int sa_family_t;\n' +
+        'typedef int sigjmp_buf;\n' +
+        'typedef int stack_t;\n' +
+        'typedef int siginfo_t;\n' +
+        'typedef int z_stream;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int8_t;\n' +
+        'typedef int uint8_t;\n' +
+        'typedef int int16_t;\n' +
+        'typedef int uint16_t;\n' +
+        'typedef int int32_t;\n' +
+        'typedef int uint32_t;\n' +
+        'typedef int int64_t;\n' +
+        'typedef int uint64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int_least8_t;\n' +
+        'typedef int uint_least8_t;\n' +
+        'typedef int int_least16_t;\n' +
+        'typedef int uint_least16_t;\n' +
+        'typedef int int_least32_t;\n' +
+        'typedef int uint_least32_t;\n' +
+        'typedef int int_least64_t;\n' +
+        'typedef int uint_least64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int_fast8_t;\n' +
+        'typedef int uint_fast8_t;\n' +
+        'typedef int int_fast16_t;\n' +
+        'typedef int uint_fast16_t;\n' +
+        'typedef int int_fast32_t;\n' +
+        'typedef int uint_fast32_t;\n' +
+        'typedef int int_fast64_t;\n' +
+        'typedef int uint_fast64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int intptr_t;\n' +
+        'typedef int uintptr_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int intmax_t;\n' +
+        'typedef int uintmax_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef _Bool bool;\n' +
+        '\n' +
+        'typedef int va_list;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'enum MQTTPropertyCodes {\n' +
+        '  MQTTPROPERTY_CODE_PAYLOAD_FORMAT_INDICATOR = 1,\n' +
+        '  MQTTPROPERTY_CODE_MESSAGE_EXPIRY_INTERVAL = 2,\n' +
+        '  MQTTPROPERTY_CODE_CONTENT_TYPE = 3,\n' +
+        '  MQTTPROPERTY_CODE_RESPONSE_TOPIC = 8,\n' +
+        '  MQTTPROPERTY_CODE_CORRELATION_DATA = 9,\n' +
+        '  MQTTPROPERTY_CODE_SUBSCRIPTION_IDENTIFIER = 11,\n' +
+        '  MQTTPROPERTY_CODE_SESSION_EXPIRY_INTERVAL = 17,\n' +
+        '  MQTTPROPERTY_CODE_ASSIGNED_CLIENT_IDENTIFER = 18,\n' +
+        '  MQTTPROPERTY_CODE_SERVER_KEEP_ALIVE = 19,\n' +
+        '  MQTTPROPERTY_CODE_AUTHENTICATION_METHOD = 21,\n' +
+        '  MQTTPROPERTY_CODE_AUTHENTICATION_DATA = 22,\n' +
+        '  MQTTPROPERTY_CODE_REQUEST_PROBLEM_INFORMATION = 23,\n' +
+        '  MQTTPROPERTY_CODE_WILL_DELAY_INTERVAL = 24,\n' +
+        '  MQTTPROPERTY_CODE_REQUEST_RESPONSE_INFORMATION = 25,\n' +
+        '  MQTTPROPERTY_CODE_RESPONSE_INFORMATION = 26,\n' +
+        '  MQTTPROPERTY_CODE_SERVER_REFERENCE = 28,\n' +
+        '  MQTTPROPERTY_CODE_REASON_STRING = 31,\n' +
+        '  MQTTPROPERTY_CODE_RECEIVE_MAXIMUM = 33,\n' +
+        '  MQTTPROPERTY_CODE_TOPIC_ALIAS_MAXIMUM = 34,\n' +
+        '  MQTTPROPERTY_CODE_TOPIC_ALIAS = 35,\n' +
+        '  MQTTPROPERTY_CODE_MAXIMUM_QOS = 36,\n' +
+        '  MQTTPROPERTY_CODE_RETAIN_AVAILABLE = 37,\n' +
+        '  MQTTPROPERTY_CODE_USER_PROPERTY = 38,\n' +
+        '  MQTTPROPERTY_CODE_MAXIMUM_PACKET_SIZE = 39,\n' +
+        '  MQTTPROPERTY_CODE_WILDCARD_SUBSCRIPTION_AVAILABLE = 40,\n' +
+        '  MQTTPROPERTY_CODE_SUBSCRIPTION_IDENTIFIERS_AVAILABLE = 41,\n' +
+        '  MQTTPROPERTY_CODE_SHARED_SUBSCRIPTION_AVAILABLE = 42\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern const char* MQTTPropertyName(enum MQTTPropertyCodes value);\n' +
+        '\n' +
+        '\n' +
+        'enum MQTTPropertyTypes {\n' +
+        '  MQTTPROPERTY_TYPE_BYTE,\n' +
+        '  MQTTPROPERTY_TYPE_TWO_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_FOUR_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_VARIABLE_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_BINARY_DATA,\n' +
+        '  MQTTPROPERTY_TYPE_UTF_8_ENCODED_STRING,\n' +
+        '  MQTTPROPERTY_TYPE_UTF_8_STRING_PAIR\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperty_getType(enum MQTTPropertyCodes value);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct\n' +
+        '{\n' +
+        ' int len;\n' +
+        ' char* data;\n' +
+        '} MQTTLenString;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct\n' +
+        '{\n' +
+        '  enum MQTTPropertyCodes identifier;\n' +
+        '\n' +
+        '  union {\n' +
+        '    unsigned char byte;\n' +
+        '    unsigned short integer2;\n' +
+        '    unsigned int integer4;\n' +
+        '    struct {\n' +
+        '      MQTTLenString data;\n' +
+        '      MQTTLenString value;\n' +
+        '    };\n' +
+        '  } value;\n' +
+        '} MQTTProperty;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct MQTTProperties\n' +
+        '{\n' +
+        '  int count;\n' +
+        '  int max_count;\n' +
+        '  int length;\n' +
+        '  MQTTProperty *array;\n' +
+        '} MQTTProperties;\n' +
+        'int MQTTProperties_len(MQTTProperties* props);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_add(MQTTProperties* props, const MQTTProperty* prop);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'int MQTTProperties_write(char** pptr, const MQTTProperties* properties);\n' +
+        'int MQTTProperties_read(MQTTProperties* properties, char** pptr, char* enddata);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern void MQTTProperties_free(MQTTProperties* properties);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern MQTTProperties MQTTProperties_copy(const MQTTProperties* props);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_hasProperty(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern int MQTTProperties_propertyCount(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_getNumericValue(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern int MQTTProperties_getNumericValueAt(MQTTProperties *props, enum MQTTPropertyCodes propid, int index);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern MQTTProperty* MQTTProperties_getProperty(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern MQTTProperty* MQTTProperties_getPropertyAt(MQTTProperties *props, enum MQTTPropertyCodes propid, int index);\n' +
+        'enum MQTTReasonCodes {\n' +
+        '  MQTTREASONCODE_SUCCESS = 0,\n' +
+        '  MQTTREASONCODE_NORMAL_DISCONNECTION = 0,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_0 = 0,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_1 = 1,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_2 = 2,\n' +
+        '  MQTTREASONCODE_DISCONNECT_WITH_WILL_MESSAGE = 4,\n' +
+        '  MQTTREASONCODE_NO_MATCHING_SUBSCRIBERS = 16,\n' +
+        '  MQTTREASONCODE_NO_SUBSCRIPTION_FOUND = 17,\n' +
+        '  MQTTREASONCODE_CONTINUE_AUTHENTICATION = 24,\n' +
+        '  MQTTREASONCODE_RE_AUTHENTICATE = 25,\n' +
+        '  MQTTREASONCODE_UNSPECIFIED_ERROR = 128,\n' +
+        '  MQTTREASONCODE_MALFORMED_PACKET = 129,\n' +
+        '  MQTTREASONCODE_PROTOCOL_ERROR = 130,\n' +
+        '  MQTTREASONCODE_IMPLEMENTATION_SPECIFIC_ERROR = 131,\n' +
+        '  MQTTREASONCODE_UNSUPPORTED_PROTOCOL_VERSION = 132,\n' +
+        '  MQTTREASONCODE_CLIENT_IDENTIFIER_NOT_VALID = 133,\n' +
+        '  MQTTREASONCODE_BAD_USER_NAME_OR_PASSWORD = 134,\n' +
+        '  MQTTREASONCODE_NOT_AUTHORIZED = 135,\n' +
+        '  MQTTREASONCODE_SERVER_UNAVAILABLE = 136,\n' +
+        '  MQTTREASONCODE_SERVER_BUSY = 137,\n' +
+        '  MQTTREASONCODE_BANNED = 138,\n' +
+        '  MQTTREASONCODE_SERVER_SHUTTING_DOWN = 139,\n' +
+        '  MQTTREASONCODE_BAD_AUTHENTICATION_METHOD = 140,\n' +
+        '  MQTTREASONCODE_KEEP_ALIVE_TIMEOUT = 141,\n' +
+        '  MQTTREASONCODE_SESSION_TAKEN_OVER = 142,\n' +
+        '  MQTTREASONCODE_TOPIC_FILTER_INVALID = 143,\n' +
+        '  MQTTREASONCODE_TOPIC_NAME_INVALID = 144,\n' +
+        '  MQTTREASONCODE_PACKET_IDENTIFIER_IN_USE = 145,\n' +
+        '  MQTTREASONCODE_PACKET_IDENTIFIER_NOT_FOUND = 146,\n' +
+        '  MQTTREASONCODE_RECEIVE_MAXIMUM_EXCEEDED = 147,\n' +
+        '  MQTTREASONCODE_TOPIC_ALIAS_INVALID = 148,\n' +
+        '  MQTTREASONCODE_PACKET_TOO_LARGE = 149,\n' +
+        '  MQTTREASONCODE_MESSAGE_RATE_TOO_HIGH = 150,\n' +
+        '  MQTTREASONCODE_QUOTA_EXCEEDED = 151,\n' +
+        '  MQTTREASONCODE_ADMINISTRATIVE_ACTION = 152,\n' +
+        '  MQTTREASONCODE_PAYLOAD_FORMAT_INVALID = 153,\n' +
+        '  MQTTREASONCODE_RETAIN_NOT_SUPPORTED = 154,\n' +
+        '  MQTTREASONCODE_QOS_NOT_SUPPORTED = 155,\n' +
+        '  MQTTREASONCODE_USE_ANOTHER_SERVER = 156,\n' +
+        '  MQTTREASONCODE_SERVER_MOVED = 157,\n' +
+        '  MQTTREASONCODE_SHARED_SUBSCRIPTIONS_NOT_SUPPORTED = 158,\n' +
+        '  MQTTREASONCODE_CONNECTION_RATE_EXCEEDED = 159,\n' +
+        '  MQTTREASONCODE_MAXIMUM_CONNECT_TIME = 160,\n' +
+        '  MQTTREASONCODE_SUBSCRIPTION_IDENTIFIERS_NOT_SUPPORTED = 161,\n' +
+        '  MQTTREASONCODE_WILDCARD_SUBSCRIPTIONS_NOT_SUPPORTED = 162\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern const char* MQTTReasonCode_toString(enum MQTTReasonCodes value);\n' +
+        'typedef struct MQTTSubscribe_options\n' +
+        '{\n' +
+        '\n' +
+        ' char struct_id[4];\n' +
+        '\n' +
+        '\n' +
+        ' int struct_version;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char noLocal;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char retainAsPublished;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char retainHandling;\n' +
+        '} MQTTSubscribe_options;\n' +
+        '\n' +
+        'typedef int (*Persistence_open)(void** handle, const char* clientID, const char* serverURI, void* context);\n' +
+        'typedef int (*Persistence_close)(void* handle);\n' +
+        'typedef int (*Persistence_put)(void* handle, char* key, int bufcount, char* buffers[], int buflens[]);\n' +
+        'typedef int (*Persistence_get)(void* handle, char* key, char** buffer, int* buflen);\n' +
+        'typedef int (*Persistence_remove)(void* handle, char* key);\n' +
+        'typedef int (*Persistence_keys)(void* handle, char*** keys, int* nkeys);\n' +
+        'typedef int (*Persistence_clear)(void* handle);\n' +
+        'typedef int (*Persistence_containskey)(void* handle, char* key);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct {\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' void* context;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_open popen;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_close pclose;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_put pput;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_get pget;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_remove premove;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_keys pkeys;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_clear pclear;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_containskey pcontainskey;\n' +
+        '} MQTTClient_persistence;\n' +
+        'typedef int MQTTPersistence_beforeWrite(void* context, int bufcount, char* buffers[], int buflens[]);\n' +
+        'typedef int MQTTPersistence_afterRead(void* context, char** buffer, int* buflen);\n' +
+        'typedef struct\n' +
+        '{\n' +
+        '\n' +
+        ' char struct_id[4];\n' +
+        '\n' +
+        ' int struct_version;\n' +
+        '\n' +
+        ' '... 103249 more characters,
+      startIdx: 113224,
+      endIdx: 113230
+    },
+    _childWrappers: [ [Wrapper] ],
+    args: undefined
+  },
+  Wrapper {
+    _semantics: Semantics {
+      grammar: [Object],
+      checkedActionDicts: true,
+      Wrapper: [Function (anonymous)],
+      super: [Semantics],
+      operations: Object <Complex prototype> {},
+      attributes: [Object <Complex prototype>],
+      attributeKeys: [Object: null prototype]
+    },
+    _node: IterationNode {
+      grammar: [Object],
+      ctorName: '_iter',
+      matchLength: 0,
+      children: [],
+      childOffsets: [],
+      optional: true
+    },
+    source: {
+      sourceString: 'typedef int va_list;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef int size_t;\n' +
+        'typedef int __builtin_va_list;\n' +
+        'typedef int __gnuc_va_list;\n' +
+        'typedef int __int8_t;\n' +
+        'typedef int __uint8_t;\n' +
+        'typedef int __int16_t;\n' +
+        'typedef int __uint16_t;\n' +
+        'typedef int __int_least16_t;\n' +
+        'typedef int __uint_least16_t;\n' +
+        'typedef int __int32_t;\n' +
+        'typedef int __uint32_t;\n' +
+        'typedef int __int64_t;\n' +
+        'typedef int __uint64_t;\n' +
+        'typedef int __int_least32_t;\n' +
+        'typedef int __uint_least32_t;\n' +
+        'typedef int __s8;\n' +
+        'typedef int __u8;\n' +
+        'typedef int __s16;\n' +
+        'typedef int __u16;\n' +
+        'typedef int __s32;\n' +
+        'typedef int __u32;\n' +
+        'typedef int __s64;\n' +
+        'typedef int __u64;\n' +
+        'typedef int _LOCK_T;\n' +
+        'typedef int _LOCK_RECURSIVE_T;\n' +
+        'typedef int _off_t;\n' +
+        'typedef int __dev_t;\n' +
+        'typedef int __uid_t;\n' +
+        'typedef int __gid_t;\n' +
+        'typedef int _off64_t;\n' +
+        'typedef int _fpos_t;\n' +
+        'typedef int _ssize_t;\n' +
+        'typedef int wint_t;\n' +
+        'typedef int _mbstate_t;\n' +
+        'typedef int _flock_t;\n' +
+        'typedef int _iconv_t;\n' +
+        'typedef int __ULong;\n' +
+        'typedef int __FILE;\n' +
+        'typedef int ptrdiff_t;\n' +
+        'typedef int wchar_t;\n' +
+        'typedef int __off_t;\n' +
+        'typedef int __pid_t;\n' +
+        'typedef int __loff_t;\n' +
+        'typedef int u_char;\n' +
+        'typedef int u_short;\n' +
+        'typedef int u_int;\n' +
+        'typedef int u_long;\n' +
+        'typedef int ushort;\n' +
+        'typedef int uint;\n' +
+        'typedef int clock_t;\n' +
+        'typedef int time_t;\n' +
+        'typedef int daddr_t;\n' +
+        'typedef int caddr_t;\n' +
+        'typedef int ino_t;\n' +
+        'typedef int off_t;\n' +
+        'typedef int dev_t;\n' +
+        'typedef int uid_t;\n' +
+        'typedef int gid_t;\n' +
+        'typedef int pid_t;\n' +
+        'typedef int key_t;\n' +
+        'typedef int ssize_t;\n' +
+        'typedef int mode_t;\n' +
+        'typedef int nlink_t;\n' +
+        'typedef int fd_mask;\n' +
+        'typedef int _types_fd_set;\n' +
+        'typedef int clockid_t;\n' +
+        'typedef int timer_t;\n' +
+        'typedef int useconds_t;\n' +
+        'typedef int suseconds_t;\n' +
+        'typedef int FILE;\n' +
+        'typedef int fpos_t;\n' +
+        'typedef int cookie_read_function_t;\n' +
+        'typedef int cookie_write_function_t;\n' +
+        'typedef int cookie_seek_function_t;\n' +
+        'typedef int cookie_close_function_t;\n' +
+        'typedef int cookie_io_functions_t;\n' +
+        'typedef int div_t;\n' +
+        'typedef int ldiv_t;\n' +
+        'typedef int lldiv_t;\n' +
+        'typedef int sigset_t;\n' +
+        'typedef int __sigset_t;\n' +
+        'typedef int _sig_func_ptr;\n' +
+        'typedef int sig_atomic_t;\n' +
+        'typedef int __tzrule_type;\n' +
+        'typedef int __tzinfo_type;\n' +
+        'typedef int mbstate_t;\n' +
+        'typedef int sem_t;\n' +
+        'typedef int pthread_t;\n' +
+        'typedef int pthread_attr_t;\n' +
+        'typedef int pthread_mutex_t;\n' +
+        'typedef int pthread_mutexattr_t;\n' +
+        'typedef int pthread_cond_t;\n' +
+        'typedef int pthread_condattr_t;\n' +
+        'typedef int pthread_key_t;\n' +
+        'typedef int pthread_once_t;\n' +
+        'typedef int pthread_rwlock_t;\n' +
+        'typedef int pthread_rwlockattr_t;\n' +
+        'typedef int pthread_spinlock_t;\n' +
+        'typedef int pthread_barrier_t;\n' +
+        'typedef int pthread_barrierattr_t;\n' +
+        'typedef int jmp_buf;\n' +
+        'typedef int rlim_t;\n' +
+        'typedef int sa_family_t;\n' +
+        'typedef int sigjmp_buf;\n' +
+        'typedef int stack_t;\n' +
+        'typedef int siginfo_t;\n' +
+        'typedef int z_stream;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int8_t;\n' +
+        'typedef int uint8_t;\n' +
+        'typedef int int16_t;\n' +
+        'typedef int uint16_t;\n' +
+        'typedef int int32_t;\n' +
+        'typedef int uint32_t;\n' +
+        'typedef int int64_t;\n' +
+        'typedef int uint64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int_least8_t;\n' +
+        'typedef int uint_least8_t;\n' +
+        'typedef int int_least16_t;\n' +
+        'typedef int uint_least16_t;\n' +
+        'typedef int int_least32_t;\n' +
+        'typedef int uint_least32_t;\n' +
+        'typedef int int_least64_t;\n' +
+        'typedef int uint_least64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int_fast8_t;\n' +
+        'typedef int uint_fast8_t;\n' +
+        'typedef int int_fast16_t;\n' +
+        'typedef int uint_fast16_t;\n' +
+        'typedef int int_fast32_t;\n' +
+        'typedef int uint_fast32_t;\n' +
+        'typedef int int_fast64_t;\n' +
+        'typedef int uint_fast64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int intptr_t;\n' +
+        'typedef int uintptr_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int intmax_t;\n' +
+        'typedef int uintmax_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef _Bool bool;\n' +
+        '\n' +
+        'typedef int va_list;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'enum MQTTPropertyCodes {\n' +
+        '  MQTTPROPERTY_CODE_PAYLOAD_FORMAT_INDICATOR = 1,\n' +
+        '  MQTTPROPERTY_CODE_MESSAGE_EXPIRY_INTERVAL = 2,\n' +
+        '  MQTTPROPERTY_CODE_CONTENT_TYPE = 3,\n' +
+        '  MQTTPROPERTY_CODE_RESPONSE_TOPIC = 8,\n' +
+        '  MQTTPROPERTY_CODE_CORRELATION_DATA = 9,\n' +
+        '  MQTTPROPERTY_CODE_SUBSCRIPTION_IDENTIFIER = 11,\n' +
+        '  MQTTPROPERTY_CODE_SESSION_EXPIRY_INTERVAL = 17,\n' +
+        '  MQTTPROPERTY_CODE_ASSIGNED_CLIENT_IDENTIFER = 18,\n' +
+        '  MQTTPROPERTY_CODE_SERVER_KEEP_ALIVE = 19,\n' +
+        '  MQTTPROPERTY_CODE_AUTHENTICATION_METHOD = 21,\n' +
+        '  MQTTPROPERTY_CODE_AUTHENTICATION_DATA = 22,\n' +
+        '  MQTTPROPERTY_CODE_REQUEST_PROBLEM_INFORMATION = 23,\n' +
+        '  MQTTPROPERTY_CODE_WILL_DELAY_INTERVAL = 24,\n' +
+        '  MQTTPROPERTY_CODE_REQUEST_RESPONSE_INFORMATION = 25,\n' +
+        '  MQTTPROPERTY_CODE_RESPONSE_INFORMATION = 26,\n' +
+        '  MQTTPROPERTY_CODE_SERVER_REFERENCE = 28,\n' +
+        '  MQTTPROPERTY_CODE_REASON_STRING = 31,\n' +
+        '  MQTTPROPERTY_CODE_RECEIVE_MAXIMUM = 33,\n' +
+        '  MQTTPROPERTY_CODE_TOPIC_ALIAS_MAXIMUM = 34,\n' +
+        '  MQTTPROPERTY_CODE_TOPIC_ALIAS = 35,\n' +
+        '  MQTTPROPERTY_CODE_MAXIMUM_QOS = 36,\n' +
+        '  MQTTPROPERTY_CODE_RETAIN_AVAILABLE = 37,\n' +
+        '  MQTTPROPERTY_CODE_USER_PROPERTY = 38,\n' +
+        '  MQTTPROPERTY_CODE_MAXIMUM_PACKET_SIZE = 39,\n' +
+        '  MQTTPROPERTY_CODE_WILDCARD_SUBSCRIPTION_AVAILABLE = 40,\n' +
+        '  MQTTPROPERTY_CODE_SUBSCRIPTION_IDENTIFIERS_AVAILABLE = 41,\n' +
+        '  MQTTPROPERTY_CODE_SHARED_SUBSCRIPTION_AVAILABLE = 42\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern const char* MQTTPropertyName(enum MQTTPropertyCodes value);\n' +
+        '\n' +
+        '\n' +
+        'enum MQTTPropertyTypes {\n' +
+        '  MQTTPROPERTY_TYPE_BYTE,\n' +
+        '  MQTTPROPERTY_TYPE_TWO_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_FOUR_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_VARIABLE_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_BINARY_DATA,\n' +
+        '  MQTTPROPERTY_TYPE_UTF_8_ENCODED_STRING,\n' +
+        '  MQTTPROPERTY_TYPE_UTF_8_STRING_PAIR\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperty_getType(enum MQTTPropertyCodes value);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct\n' +
+        '{\n' +
+        ' int len;\n' +
+        ' char* data;\n' +
+        '} MQTTLenString;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct\n' +
+        '{\n' +
+        '  enum MQTTPropertyCodes identifier;\n' +
+        '\n' +
+        '  union {\n' +
+        '    unsigned char byte;\n' +
+        '    unsigned short integer2;\n' +
+        '    unsigned int integer4;\n' +
+        '    struct {\n' +
+        '      MQTTLenString data;\n' +
+        '      MQTTLenString value;\n' +
+        '    };\n' +
+        '  } value;\n' +
+        '} MQTTProperty;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct MQTTProperties\n' +
+        '{\n' +
+        '  int count;\n' +
+        '  int max_count;\n' +
+        '  int length;\n' +
+        '  MQTTProperty *array;\n' +
+        '} MQTTProperties;\n' +
+        'int MQTTProperties_len(MQTTProperties* props);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_add(MQTTProperties* props, const MQTTProperty* prop);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'int MQTTProperties_write(char** pptr, const MQTTProperties* properties);\n' +
+        'int MQTTProperties_read(MQTTProperties* properties, char** pptr, char* enddata);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern void MQTTProperties_free(MQTTProperties* properties);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern MQTTProperties MQTTProperties_copy(const MQTTProperties* props);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_hasProperty(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern int MQTTProperties_propertyCount(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_getNumericValue(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern int MQTTProperties_getNumericValueAt(MQTTProperties *props, enum MQTTPropertyCodes propid, int index);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern MQTTProperty* MQTTProperties_getProperty(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern MQTTProperty* MQTTProperties_getPropertyAt(MQTTProperties *props, enum MQTTPropertyCodes propid, int index);\n' +
+        'enum MQTTReasonCodes {\n' +
+        '  MQTTREASONCODE_SUCCESS = 0,\n' +
+        '  MQTTREASONCODE_NORMAL_DISCONNECTION = 0,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_0 = 0,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_1 = 1,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_2 = 2,\n' +
+        '  MQTTREASONCODE_DISCONNECT_WITH_WILL_MESSAGE = 4,\n' +
+        '  MQTTREASONCODE_NO_MATCHING_SUBSCRIBERS = 16,\n' +
+        '  MQTTREASONCODE_NO_SUBSCRIPTION_FOUND = 17,\n' +
+        '  MQTTREASONCODE_CONTINUE_AUTHENTICATION = 24,\n' +
+        '  MQTTREASONCODE_RE_AUTHENTICATE = 25,\n' +
+        '  MQTTREASONCODE_UNSPECIFIED_ERROR = 128,\n' +
+        '  MQTTREASONCODE_MALFORMED_PACKET = 129,\n' +
+        '  MQTTREASONCODE_PROTOCOL_ERROR = 130,\n' +
+        '  MQTTREASONCODE_IMPLEMENTATION_SPECIFIC_ERROR = 131,\n' +
+        '  MQTTREASONCODE_UNSUPPORTED_PROTOCOL_VERSION = 132,\n' +
+        '  MQTTREASONCODE_CLIENT_IDENTIFIER_NOT_VALID = 133,\n' +
+        '  MQTTREASONCODE_BAD_USER_NAME_OR_PASSWORD = 134,\n' +
+        '  MQTTREASONCODE_NOT_AUTHORIZED = 135,\n' +
+        '  MQTTREASONCODE_SERVER_UNAVAILABLE = 136,\n' +
+        '  MQTTREASONCODE_SERVER_BUSY = 137,\n' +
+        '  MQTTREASONCODE_BANNED = 138,\n' +
+        '  MQTTREASONCODE_SERVER_SHUTTING_DOWN = 139,\n' +
+        '  MQTTREASONCODE_BAD_AUTHENTICATION_METHOD = 140,\n' +
+        '  MQTTREASONCODE_KEEP_ALIVE_TIMEOUT = 141,\n' +
+        '  MQTTREASONCODE_SESSION_TAKEN_OVER = 142,\n' +
+        '  MQTTREASONCODE_TOPIC_FILTER_INVALID = 143,\n' +
+        '  MQTTREASONCODE_TOPIC_NAME_INVALID = 144,\n' +
+        '  MQTTREASONCODE_PACKET_IDENTIFIER_IN_USE = 145,\n' +
+        '  MQTTREASONCODE_PACKET_IDENTIFIER_NOT_FOUND = 146,\n' +
+        '  MQTTREASONCODE_RECEIVE_MAXIMUM_EXCEEDED = 147,\n' +
+        '  MQTTREASONCODE_TOPIC_ALIAS_INVALID = 148,\n' +
+        '  MQTTREASONCODE_PACKET_TOO_LARGE = 149,\n' +
+        '  MQTTREASONCODE_MESSAGE_RATE_TOO_HIGH = 150,\n' +
+        '  MQTTREASONCODE_QUOTA_EXCEEDED = 151,\n' +
+        '  MQTTREASONCODE_ADMINISTRATIVE_ACTION = 152,\n' +
+        '  MQTTREASONCODE_PAYLOAD_FORMAT_INVALID = 153,\n' +
+        '  MQTTREASONCODE_RETAIN_NOT_SUPPORTED = 154,\n' +
+        '  MQTTREASONCODE_QOS_NOT_SUPPORTED = 155,\n' +
+        '  MQTTREASONCODE_USE_ANOTHER_SERVER = 156,\n' +
+        '  MQTTREASONCODE_SERVER_MOVED = 157,\n' +
+        '  MQTTREASONCODE_SHARED_SUBSCRIPTIONS_NOT_SUPPORTED = 158,\n' +
+        '  MQTTREASONCODE_CONNECTION_RATE_EXCEEDED = 159,\n' +
+        '  MQTTREASONCODE_MAXIMUM_CONNECT_TIME = 160,\n' +
+        '  MQTTREASONCODE_SUBSCRIPTION_IDENTIFIERS_NOT_SUPPORTED = 161,\n' +
+        '  MQTTREASONCODE_WILDCARD_SUBSCRIPTIONS_NOT_SUPPORTED = 162\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern const char* MQTTReasonCode_toString(enum MQTTReasonCodes value);\n' +
+        'typedef struct MQTTSubscribe_options\n' +
+        '{\n' +
+        '\n' +
+        ' char struct_id[4];\n' +
+        '\n' +
+        '\n' +
+        ' int struct_version;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char noLocal;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char retainAsPublished;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char retainHandling;\n' +
+        '} MQTTSubscribe_options;\n' +
+        '\n' +
+        'typedef int (*Persistence_open)(void** handle, const char* clientID, const char* serverURI, void* context);\n' +
+        'typedef int (*Persistence_close)(void* handle);\n' +
+        'typedef int (*Persistence_put)(void* handle, char* key, int bufcount, char* buffers[], int buflens[]);\n' +
+        'typedef int (*Persistence_get)(void* handle, char* key, char** buffer, int* buflen);\n' +
+        'typedef int (*Persistence_remove)(void* handle, char* key);\n' +
+        'typedef int (*Persistence_keys)(void* handle, char*** keys, int* nkeys);\n' +
+        'typedef int (*Persistence_clear)(void* handle);\n' +
+        'typedef int (*Persistence_containskey)(void* handle, char* key);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct {\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' void* context;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_open popen;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_close pclose;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_put pput;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_get pget;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_remove premove;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_keys pkeys;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_clear pclear;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_containskey pcontainskey;\n' +
+        '} MQTTClient_persistence;\n' +
+        'typedef int MQTTPersistence_beforeWrite(void* context, int bufcount, char* buffers[], int buflens[]);\n' +
+        'typedef int MQTTPersistence_afterRead(void* context, char** buffer, int* buflen);\n' +
+        'typedef struct\n' +
+        '{\n' +
+        '\n' +
+        ' char struct_id[4];\n' +
+        '\n' +
+        ' int struct_version;\n' +
+        '\n' +
+        ' '... 103249 more characters,
+      startIdx: 113230,
+      endIdx: 113230
+    },
+    _baseInterval: {
+      sourceString: 'typedef int va_list;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef int size_t;\n' +
+        'typedef int __builtin_va_list;\n' +
+        'typedef int __gnuc_va_list;\n' +
+        'typedef int __int8_t;\n' +
+        'typedef int __uint8_t;\n' +
+        'typedef int __int16_t;\n' +
+        'typedef int __uint16_t;\n' +
+        'typedef int __int_least16_t;\n' +
+        'typedef int __uint_least16_t;\n' +
+        'typedef int __int32_t;\n' +
+        'typedef int __uint32_t;\n' +
+        'typedef int __int64_t;\n' +
+        'typedef int __uint64_t;\n' +
+        'typedef int __int_least32_t;\n' +
+        'typedef int __uint_least32_t;\n' +
+        'typedef int __s8;\n' +
+        'typedef int __u8;\n' +
+        'typedef int __s16;\n' +
+        'typedef int __u16;\n' +
+        'typedef int __s32;\n' +
+        'typedef int __u32;\n' +
+        'typedef int __s64;\n' +
+        'typedef int __u64;\n' +
+        'typedef int _LOCK_T;\n' +
+        'typedef int _LOCK_RECURSIVE_T;\n' +
+        'typedef int _off_t;\n' +
+        'typedef int __dev_t;\n' +
+        'typedef int __uid_t;\n' +
+        'typedef int __gid_t;\n' +
+        'typedef int _off64_t;\n' +
+        'typedef int _fpos_t;\n' +
+        'typedef int _ssize_t;\n' +
+        'typedef int wint_t;\n' +
+        'typedef int _mbstate_t;\n' +
+        'typedef int _flock_t;\n' +
+        'typedef int _iconv_t;\n' +
+        'typedef int __ULong;\n' +
+        'typedef int __FILE;\n' +
+        'typedef int ptrdiff_t;\n' +
+        'typedef int wchar_t;\n' +
+        'typedef int __off_t;\n' +
+        'typedef int __pid_t;\n' +
+        'typedef int __loff_t;\n' +
+        'typedef int u_char;\n' +
+        'typedef int u_short;\n' +
+        'typedef int u_int;\n' +
+        'typedef int u_long;\n' +
+        'typedef int ushort;\n' +
+        'typedef int uint;\n' +
+        'typedef int clock_t;\n' +
+        'typedef int time_t;\n' +
+        'typedef int daddr_t;\n' +
+        'typedef int caddr_t;\n' +
+        'typedef int ino_t;\n' +
+        'typedef int off_t;\n' +
+        'typedef int dev_t;\n' +
+        'typedef int uid_t;\n' +
+        'typedef int gid_t;\n' +
+        'typedef int pid_t;\n' +
+        'typedef int key_t;\n' +
+        'typedef int ssize_t;\n' +
+        'typedef int mode_t;\n' +
+        'typedef int nlink_t;\n' +
+        'typedef int fd_mask;\n' +
+        'typedef int _types_fd_set;\n' +
+        'typedef int clockid_t;\n' +
+        'typedef int timer_t;\n' +
+        'typedef int useconds_t;\n' +
+        'typedef int suseconds_t;\n' +
+        'typedef int FILE;\n' +
+        'typedef int fpos_t;\n' +
+        'typedef int cookie_read_function_t;\n' +
+        'typedef int cookie_write_function_t;\n' +
+        'typedef int cookie_seek_function_t;\n' +
+        'typedef int cookie_close_function_t;\n' +
+        'typedef int cookie_io_functions_t;\n' +
+        'typedef int div_t;\n' +
+        'typedef int ldiv_t;\n' +
+        'typedef int lldiv_t;\n' +
+        'typedef int sigset_t;\n' +
+        'typedef int __sigset_t;\n' +
+        'typedef int _sig_func_ptr;\n' +
+        'typedef int sig_atomic_t;\n' +
+        'typedef int __tzrule_type;\n' +
+        'typedef int __tzinfo_type;\n' +
+        'typedef int mbstate_t;\n' +
+        'typedef int sem_t;\n' +
+        'typedef int pthread_t;\n' +
+        'typedef int pthread_attr_t;\n' +
+        'typedef int pthread_mutex_t;\n' +
+        'typedef int pthread_mutexattr_t;\n' +
+        'typedef int pthread_cond_t;\n' +
+        'typedef int pthread_condattr_t;\n' +
+        'typedef int pthread_key_t;\n' +
+        'typedef int pthread_once_t;\n' +
+        'typedef int pthread_rwlock_t;\n' +
+        'typedef int pthread_rwlockattr_t;\n' +
+        'typedef int pthread_spinlock_t;\n' +
+        'typedef int pthread_barrier_t;\n' +
+        'typedef int pthread_barrierattr_t;\n' +
+        'typedef int jmp_buf;\n' +
+        'typedef int rlim_t;\n' +
+        'typedef int sa_family_t;\n' +
+        'typedef int sigjmp_buf;\n' +
+        'typedef int stack_t;\n' +
+        'typedef int siginfo_t;\n' +
+        'typedef int z_stream;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int8_t;\n' +
+        'typedef int uint8_t;\n' +
+        'typedef int int16_t;\n' +
+        'typedef int uint16_t;\n' +
+        'typedef int int32_t;\n' +
+        'typedef int uint32_t;\n' +
+        'typedef int int64_t;\n' +
+        'typedef int uint64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int_least8_t;\n' +
+        'typedef int uint_least8_t;\n' +
+        'typedef int int_least16_t;\n' +
+        'typedef int uint_least16_t;\n' +
+        'typedef int int_least32_t;\n' +
+        'typedef int uint_least32_t;\n' +
+        'typedef int int_least64_t;\n' +
+        'typedef int uint_least64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int_fast8_t;\n' +
+        'typedef int uint_fast8_t;\n' +
+        'typedef int int_fast16_t;\n' +
+        'typedef int uint_fast16_t;\n' +
+        'typedef int int_fast32_t;\n' +
+        'typedef int uint_fast32_t;\n' +
+        'typedef int int_fast64_t;\n' +
+        'typedef int uint_fast64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int intptr_t;\n' +
+        'typedef int uintptr_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int intmax_t;\n' +
+        'typedef int uintmax_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef _Bool bool;\n' +
+        '\n' +
+        'typedef int va_list;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'enum MQTTPropertyCodes {\n' +
+        '  MQTTPROPERTY_CODE_PAYLOAD_FORMAT_INDICATOR = 1,\n' +
+        '  MQTTPROPERTY_CODE_MESSAGE_EXPIRY_INTERVAL = 2,\n' +
+        '  MQTTPROPERTY_CODE_CONTENT_TYPE = 3,\n' +
+        '  MQTTPROPERTY_CODE_RESPONSE_TOPIC = 8,\n' +
+        '  MQTTPROPERTY_CODE_CORRELATION_DATA = 9,\n' +
+        '  MQTTPROPERTY_CODE_SUBSCRIPTION_IDENTIFIER = 11,\n' +
+        '  MQTTPROPERTY_CODE_SESSION_EXPIRY_INTERVAL = 17,\n' +
+        '  MQTTPROPERTY_CODE_ASSIGNED_CLIENT_IDENTIFER = 18,\n' +
+        '  MQTTPROPERTY_CODE_SERVER_KEEP_ALIVE = 19,\n' +
+        '  MQTTPROPERTY_CODE_AUTHENTICATION_METHOD = 21,\n' +
+        '  MQTTPROPERTY_CODE_AUTHENTICATION_DATA = 22,\n' +
+        '  MQTTPROPERTY_CODE_REQUEST_PROBLEM_INFORMATION = 23,\n' +
+        '  MQTTPROPERTY_CODE_WILL_DELAY_INTERVAL = 24,\n' +
+        '  MQTTPROPERTY_CODE_REQUEST_RESPONSE_INFORMATION = 25,\n' +
+        '  MQTTPROPERTY_CODE_RESPONSE_INFORMATION = 26,\n' +
+        '  MQTTPROPERTY_CODE_SERVER_REFERENCE = 28,\n' +
+        '  MQTTPROPERTY_CODE_REASON_STRING = 31,\n' +
+        '  MQTTPROPERTY_CODE_RECEIVE_MAXIMUM = 33,\n' +
+        '  MQTTPROPERTY_CODE_TOPIC_ALIAS_MAXIMUM = 34,\n' +
+        '  MQTTPROPERTY_CODE_TOPIC_ALIAS = 35,\n' +
+        '  MQTTPROPERTY_CODE_MAXIMUM_QOS = 36,\n' +
+        '  MQTTPROPERTY_CODE_RETAIN_AVAILABLE = 37,\n' +
+        '  MQTTPROPERTY_CODE_USER_PROPERTY = 38,\n' +
+        '  MQTTPROPERTY_CODE_MAXIMUM_PACKET_SIZE = 39,\n' +
+        '  MQTTPROPERTY_CODE_WILDCARD_SUBSCRIPTION_AVAILABLE = 40,\n' +
+        '  MQTTPROPERTY_CODE_SUBSCRIPTION_IDENTIFIERS_AVAILABLE = 41,\n' +
+        '  MQTTPROPERTY_CODE_SHARED_SUBSCRIPTION_AVAILABLE = 42\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern const char* MQTTPropertyName(enum MQTTPropertyCodes value);\n' +
+        '\n' +
+        '\n' +
+        'enum MQTTPropertyTypes {\n' +
+        '  MQTTPROPERTY_TYPE_BYTE,\n' +
+        '  MQTTPROPERTY_TYPE_TWO_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_FOUR_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_VARIABLE_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_BINARY_DATA,\n' +
+        '  MQTTPROPERTY_TYPE_UTF_8_ENCODED_STRING,\n' +
+        '  MQTTPROPERTY_TYPE_UTF_8_STRING_PAIR\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperty_getType(enum MQTTPropertyCodes value);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct\n' +
+        '{\n' +
+        ' int len;\n' +
+        ' char* data;\n' +
+        '} MQTTLenString;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct\n' +
+        '{\n' +
+        '  enum MQTTPropertyCodes identifier;\n' +
+        '\n' +
+        '  union {\n' +
+        '    unsigned char byte;\n' +
+        '    unsigned short integer2;\n' +
+        '    unsigned int integer4;\n' +
+        '    struct {\n' +
+        '      MQTTLenString data;\n' +
+        '      MQTTLenString value;\n' +
+        '    };\n' +
+        '  } value;\n' +
+        '} MQTTProperty;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct MQTTProperties\n' +
+        '{\n' +
+        '  int count;\n' +
+        '  int max_count;\n' +
+        '  int length;\n' +
+        '  MQTTProperty *array;\n' +
+        '} MQTTProperties;\n' +
+        'int MQTTProperties_len(MQTTProperties* props);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_add(MQTTProperties* props, const MQTTProperty* prop);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'int MQTTProperties_write(char** pptr, const MQTTProperties* properties);\n' +
+        'int MQTTProperties_read(MQTTProperties* properties, char** pptr, char* enddata);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern void MQTTProperties_free(MQTTProperties* properties);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern MQTTProperties MQTTProperties_copy(const MQTTProperties* props);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_hasProperty(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern int MQTTProperties_propertyCount(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_getNumericValue(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern int MQTTProperties_getNumericValueAt(MQTTProperties *props, enum MQTTPropertyCodes propid, int index);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern MQTTProperty* MQTTProperties_getProperty(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern MQTTProperty* MQTTProperties_getPropertyAt(MQTTProperties *props, enum MQTTPropertyCodes propid, int index);\n' +
+        'enum MQTTReasonCodes {\n' +
+        '  MQTTREASONCODE_SUCCESS = 0,\n' +
+        '  MQTTREASONCODE_NORMAL_DISCONNECTION = 0,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_0 = 0,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_1 = 1,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_2 = 2,\n' +
+        '  MQTTREASONCODE_DISCONNECT_WITH_WILL_MESSAGE = 4,\n' +
+        '  MQTTREASONCODE_NO_MATCHING_SUBSCRIBERS = 16,\n' +
+        '  MQTTREASONCODE_NO_SUBSCRIPTION_FOUND = 17,\n' +
+        '  MQTTREASONCODE_CONTINUE_AUTHENTICATION = 24,\n' +
+        '  MQTTREASONCODE_RE_AUTHENTICATE = 25,\n' +
+        '  MQTTREASONCODE_UNSPECIFIED_ERROR = 128,\n' +
+        '  MQTTREASONCODE_MALFORMED_PACKET = 129,\n' +
+        '  MQTTREASONCODE_PROTOCOL_ERROR = 130,\n' +
+        '  MQTTREASONCODE_IMPLEMENTATION_SPECIFIC_ERROR = 131,\n' +
+        '  MQTTREASONCODE_UNSUPPORTED_PROTOCOL_VERSION = 132,\n' +
+        '  MQTTREASONCODE_CLIENT_IDENTIFIER_NOT_VALID = 133,\n' +
+        '  MQTTREASONCODE_BAD_USER_NAME_OR_PASSWORD = 134,\n' +
+        '  MQTTREASONCODE_NOT_AUTHORIZED = 135,\n' +
+        '  MQTTREASONCODE_SERVER_UNAVAILABLE = 136,\n' +
+        '  MQTTREASONCODE_SERVER_BUSY = 137,\n' +
+        '  MQTTREASONCODE_BANNED = 138,\n' +
+        '  MQTTREASONCODE_SERVER_SHUTTING_DOWN = 139,\n' +
+        '  MQTTREASONCODE_BAD_AUTHENTICATION_METHOD = 140,\n' +
+        '  MQTTREASONCODE_KEEP_ALIVE_TIMEOUT = 141,\n' +
+        '  MQTTREASONCODE_SESSION_TAKEN_OVER = 142,\n' +
+        '  MQTTREASONCODE_TOPIC_FILTER_INVALID = 143,\n' +
+        '  MQTTREASONCODE_TOPIC_NAME_INVALID = 144,\n' +
+        '  MQTTREASONCODE_PACKET_IDENTIFIER_IN_USE = 145,\n' +
+        '  MQTTREASONCODE_PACKET_IDENTIFIER_NOT_FOUND = 146,\n' +
+        '  MQTTREASONCODE_RECEIVE_MAXIMUM_EXCEEDED = 147,\n' +
+        '  MQTTREASONCODE_TOPIC_ALIAS_INVALID = 148,\n' +
+        '  MQTTREASONCODE_PACKET_TOO_LARGE = 149,\n' +
+        '  MQTTREASONCODE_MESSAGE_RATE_TOO_HIGH = 150,\n' +
+        '  MQTTREASONCODE_QUOTA_EXCEEDED = 151,\n' +
+        '  MQTTREASONCODE_ADMINISTRATIVE_ACTION = 152,\n' +
+        '  MQTTREASONCODE_PAYLOAD_FORMAT_INVALID = 153,\n' +
+        '  MQTTREASONCODE_RETAIN_NOT_SUPPORTED = 154,\n' +
+        '  MQTTREASONCODE_QOS_NOT_SUPPORTED = 155,\n' +
+        '  MQTTREASONCODE_USE_ANOTHER_SERVER = 156,\n' +
+        '  MQTTREASONCODE_SERVER_MOVED = 157,\n' +
+        '  MQTTREASONCODE_SHARED_SUBSCRIPTIONS_NOT_SUPPORTED = 158,\n' +
+        '  MQTTREASONCODE_CONNECTION_RATE_EXCEEDED = 159,\n' +
+        '  MQTTREASONCODE_MAXIMUM_CONNECT_TIME = 160,\n' +
+        '  MQTTREASONCODE_SUBSCRIPTION_IDENTIFIERS_NOT_SUPPORTED = 161,\n' +
+        '  MQTTREASONCODE_WILDCARD_SUBSCRIPTIONS_NOT_SUPPORTED = 162\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern const char* MQTTReasonCode_toString(enum MQTTReasonCodes value);\n' +
+        'typedef struct MQTTSubscribe_options\n' +
+        '{\n' +
+        '\n' +
+        ' char struct_id[4];\n' +
+        '\n' +
+        '\n' +
+        ' int struct_version;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char noLocal;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char retainAsPublished;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char retainHandling;\n' +
+        '} MQTTSubscribe_options;\n' +
+        '\n' +
+        'typedef int (*Persistence_open)(void** handle, const char* clientID, const char* serverURI, void* context);\n' +
+        'typedef int (*Persistence_close)(void* handle);\n' +
+        'typedef int (*Persistence_put)(void* handle, char* key, int bufcount, char* buffers[], int buflens[]);\n' +
+        'typedef int (*Persistence_get)(void* handle, char* key, char** buffer, int* buflen);\n' +
+        'typedef int (*Persistence_remove)(void* handle, char* key);\n' +
+        'typedef int (*Persistence_keys)(void* handle, char*** keys, int* nkeys);\n' +
+        'typedef int (*Persistence_clear)(void* handle);\n' +
+        'typedef int (*Persistence_containskey)(void* handle, char* key);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct {\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' void* context;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_open popen;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_close pclose;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_put pput;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_get pget;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_remove premove;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_keys pkeys;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_clear pclear;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_containskey pcontainskey;\n' +
+        '} MQTTClient_persistence;\n' +
+        'typedef int MQTTPersistence_beforeWrite(void* context, int bufcount, char* buffers[], int buflens[]);\n' +
+        'typedef int MQTTPersistence_afterRead(void* context, char** buffer, int* buflen);\n' +
+        'typedef struct\n' +
+        '{\n' +
+        '\n' +
+        ' char struct_id[4];\n' +
+        '\n' +
+        ' int struct_version;\n' +
+        '\n' +
+        ' '... 103249 more characters,
+      startIdx: 113224,
+      endIdx: 113230
+    },
+    _childWrappers: []
+  },
+  Wrapper {
+    _semantics: Semantics {
+      grammar: [Object],
+      checkedActionDicts: true,
+      Wrapper: [Function (anonymous)],
+      super: [Semantics],
+      operations: Object <Complex prototype> {},
+      attributes: [Object <Complex prototype>],
+      attributeKeys: [Object: null prototype]
+    },
+    _node: IterationNode {
+      grammar: [Object],
+      ctorName: '_iter',
+      matchLength: 0,
+      children: [],
+      childOffsets: [],
+      optional: false
+    },
+    source: {
+      sourceString: 'typedef int va_list;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef int size_t;\n' +
+        'typedef int __builtin_va_list;\n' +
+        'typedef int __gnuc_va_list;\n' +
+        'typedef int __int8_t;\n' +
+        'typedef int __uint8_t;\n' +
+        'typedef int __int16_t;\n' +
+        'typedef int __uint16_t;\n' +
+        'typedef int __int_least16_t;\n' +
+        'typedef int __uint_least16_t;\n' +
+        'typedef int __int32_t;\n' +
+        'typedef int __uint32_t;\n' +
+        'typedef int __int64_t;\n' +
+        'typedef int __uint64_t;\n' +
+        'typedef int __int_least32_t;\n' +
+        'typedef int __uint_least32_t;\n' +
+        'typedef int __s8;\n' +
+        'typedef int __u8;\n' +
+        'typedef int __s16;\n' +
+        'typedef int __u16;\n' +
+        'typedef int __s32;\n' +
+        'typedef int __u32;\n' +
+        'typedef int __s64;\n' +
+        'typedef int __u64;\n' +
+        'typedef int _LOCK_T;\n' +
+        'typedef int _LOCK_RECURSIVE_T;\n' +
+        'typedef int _off_t;\n' +
+        'typedef int __dev_t;\n' +
+        'typedef int __uid_t;\n' +
+        'typedef int __gid_t;\n' +
+        'typedef int _off64_t;\n' +
+        'typedef int _fpos_t;\n' +
+        'typedef int _ssize_t;\n' +
+        'typedef int wint_t;\n' +
+        'typedef int _mbstate_t;\n' +
+        'typedef int _flock_t;\n' +
+        'typedef int _iconv_t;\n' +
+        'typedef int __ULong;\n' +
+        'typedef int __FILE;\n' +
+        'typedef int ptrdiff_t;\n' +
+        'typedef int wchar_t;\n' +
+        'typedef int __off_t;\n' +
+        'typedef int __pid_t;\n' +
+        'typedef int __loff_t;\n' +
+        'typedef int u_char;\n' +
+        'typedef int u_short;\n' +
+        'typedef int u_int;\n' +
+        'typedef int u_long;\n' +
+        'typedef int ushort;\n' +
+        'typedef int uint;\n' +
+        'typedef int clock_t;\n' +
+        'typedef int time_t;\n' +
+        'typedef int daddr_t;\n' +
+        'typedef int caddr_t;\n' +
+        'typedef int ino_t;\n' +
+        'typedef int off_t;\n' +
+        'typedef int dev_t;\n' +
+        'typedef int uid_t;\n' +
+        'typedef int gid_t;\n' +
+        'typedef int pid_t;\n' +
+        'typedef int key_t;\n' +
+        'typedef int ssize_t;\n' +
+        'typedef int mode_t;\n' +
+        'typedef int nlink_t;\n' +
+        'typedef int fd_mask;\n' +
+        'typedef int _types_fd_set;\n' +
+        'typedef int clockid_t;\n' +
+        'typedef int timer_t;\n' +
+        'typedef int useconds_t;\n' +
+        'typedef int suseconds_t;\n' +
+        'typedef int FILE;\n' +
+        'typedef int fpos_t;\n' +
+        'typedef int cookie_read_function_t;\n' +
+        'typedef int cookie_write_function_t;\n' +
+        'typedef int cookie_seek_function_t;\n' +
+        'typedef int cookie_close_function_t;\n' +
+        'typedef int cookie_io_functions_t;\n' +
+        'typedef int div_t;\n' +
+        'typedef int ldiv_t;\n' +
+        'typedef int lldiv_t;\n' +
+        'typedef int sigset_t;\n' +
+        'typedef int __sigset_t;\n' +
+        'typedef int _sig_func_ptr;\n' +
+        'typedef int sig_atomic_t;\n' +
+        'typedef int __tzrule_type;\n' +
+        'typedef int __tzinfo_type;\n' +
+        'typedef int mbstate_t;\n' +
+        'typedef int sem_t;\n' +
+        'typedef int pthread_t;\n' +
+        'typedef int pthread_attr_t;\n' +
+        'typedef int pthread_mutex_t;\n' +
+        'typedef int pthread_mutexattr_t;\n' +
+        'typedef int pthread_cond_t;\n' +
+        'typedef int pthread_condattr_t;\n' +
+        'typedef int pthread_key_t;\n' +
+        'typedef int pthread_once_t;\n' +
+        'typedef int pthread_rwlock_t;\n' +
+        'typedef int pthread_rwlockattr_t;\n' +
+        'typedef int pthread_spinlock_t;\n' +
+        'typedef int pthread_barrier_t;\n' +
+        'typedef int pthread_barrierattr_t;\n' +
+        'typedef int jmp_buf;\n' +
+        'typedef int rlim_t;\n' +
+        'typedef int sa_family_t;\n' +
+        'typedef int sigjmp_buf;\n' +
+        'typedef int stack_t;\n' +
+        'typedef int siginfo_t;\n' +
+        'typedef int z_stream;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int8_t;\n' +
+        'typedef int uint8_t;\n' +
+        'typedef int int16_t;\n' +
+        'typedef int uint16_t;\n' +
+        'typedef int int32_t;\n' +
+        'typedef int uint32_t;\n' +
+        'typedef int int64_t;\n' +
+        'typedef int uint64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int_least8_t;\n' +
+        'typedef int uint_least8_t;\n' +
+        'typedef int int_least16_t;\n' +
+        'typedef int uint_least16_t;\n' +
+        'typedef int int_least32_t;\n' +
+        'typedef int uint_least32_t;\n' +
+        'typedef int int_least64_t;\n' +
+        'typedef int uint_least64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int_fast8_t;\n' +
+        'typedef int uint_fast8_t;\n' +
+        'typedef int int_fast16_t;\n' +
+        'typedef int uint_fast16_t;\n' +
+        'typedef int int_fast32_t;\n' +
+        'typedef int uint_fast32_t;\n' +
+        'typedef int int_fast64_t;\n' +
+        'typedef int uint_fast64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int intptr_t;\n' +
+        'typedef int uintptr_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int intmax_t;\n' +
+        'typedef int uintmax_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef _Bool bool;\n' +
+        '\n' +
+        'typedef int va_list;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'enum MQTTPropertyCodes {\n' +
+        '  MQTTPROPERTY_CODE_PAYLOAD_FORMAT_INDICATOR = 1,\n' +
+        '  MQTTPROPERTY_CODE_MESSAGE_EXPIRY_INTERVAL = 2,\n' +
+        '  MQTTPROPERTY_CODE_CONTENT_TYPE = 3,\n' +
+        '  MQTTPROPERTY_CODE_RESPONSE_TOPIC = 8,\n' +
+        '  MQTTPROPERTY_CODE_CORRELATION_DATA = 9,\n' +
+        '  MQTTPROPERTY_CODE_SUBSCRIPTION_IDENTIFIER = 11,\n' +
+        '  MQTTPROPERTY_CODE_SESSION_EXPIRY_INTERVAL = 17,\n' +
+        '  MQTTPROPERTY_CODE_ASSIGNED_CLIENT_IDENTIFER = 18,\n' +
+        '  MQTTPROPERTY_CODE_SERVER_KEEP_ALIVE = 19,\n' +
+        '  MQTTPROPERTY_CODE_AUTHENTICATION_METHOD = 21,\n' +
+        '  MQTTPROPERTY_CODE_AUTHENTICATION_DATA = 22,\n' +
+        '  MQTTPROPERTY_CODE_REQUEST_PROBLEM_INFORMATION = 23,\n' +
+        '  MQTTPROPERTY_CODE_WILL_DELAY_INTERVAL = 24,\n' +
+        '  MQTTPROPERTY_CODE_REQUEST_RESPONSE_INFORMATION = 25,\n' +
+        '  MQTTPROPERTY_CODE_RESPONSE_INFORMATION = 26,\n' +
+        '  MQTTPROPERTY_CODE_SERVER_REFERENCE = 28,\n' +
+        '  MQTTPROPERTY_CODE_REASON_STRING = 31,\n' +
+        '  MQTTPROPERTY_CODE_RECEIVE_MAXIMUM = 33,\n' +
+        '  MQTTPROPERTY_CODE_TOPIC_ALIAS_MAXIMUM = 34,\n' +
+        '  MQTTPROPERTY_CODE_TOPIC_ALIAS = 35,\n' +
+        '  MQTTPROPERTY_CODE_MAXIMUM_QOS = 36,\n' +
+        '  MQTTPROPERTY_CODE_RETAIN_AVAILABLE = 37,\n' +
+        '  MQTTPROPERTY_CODE_USER_PROPERTY = 38,\n' +
+        '  MQTTPROPERTY_CODE_MAXIMUM_PACKET_SIZE = 39,\n' +
+        '  MQTTPROPERTY_CODE_WILDCARD_SUBSCRIPTION_AVAILABLE = 40,\n' +
+        '  MQTTPROPERTY_CODE_SUBSCRIPTION_IDENTIFIERS_AVAILABLE = 41,\n' +
+        '  MQTTPROPERTY_CODE_SHARED_SUBSCRIPTION_AVAILABLE = 42\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern const char* MQTTPropertyName(enum MQTTPropertyCodes value);\n' +
+        '\n' +
+        '\n' +
+        'enum MQTTPropertyTypes {\n' +
+        '  MQTTPROPERTY_TYPE_BYTE,\n' +
+        '  MQTTPROPERTY_TYPE_TWO_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_FOUR_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_VARIABLE_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_BINARY_DATA,\n' +
+        '  MQTTPROPERTY_TYPE_UTF_8_ENCODED_STRING,\n' +
+        '  MQTTPROPERTY_TYPE_UTF_8_STRING_PAIR\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperty_getType(enum MQTTPropertyCodes value);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct\n' +
+        '{\n' +
+        ' int len;\n' +
+        ' char* data;\n' +
+        '} MQTTLenString;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct\n' +
+        '{\n' +
+        '  enum MQTTPropertyCodes identifier;\n' +
+        '\n' +
+        '  union {\n' +
+        '    unsigned char byte;\n' +
+        '    unsigned short integer2;\n' +
+        '    unsigned int integer4;\n' +
+        '    struct {\n' +
+        '      MQTTLenString data;\n' +
+        '      MQTTLenString value;\n' +
+        '    };\n' +
+        '  } value;\n' +
+        '} MQTTProperty;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct MQTTProperties\n' +
+        '{\n' +
+        '  int count;\n' +
+        '  int max_count;\n' +
+        '  int length;\n' +
+        '  MQTTProperty *array;\n' +
+        '} MQTTProperties;\n' +
+        'int MQTTProperties_len(MQTTProperties* props);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_add(MQTTProperties* props, const MQTTProperty* prop);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'int MQTTProperties_write(char** pptr, const MQTTProperties* properties);\n' +
+        'int MQTTProperties_read(MQTTProperties* properties, char** pptr, char* enddata);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern void MQTTProperties_free(MQTTProperties* properties);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern MQTTProperties MQTTProperties_copy(const MQTTProperties* props);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_hasProperty(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern int MQTTProperties_propertyCount(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_getNumericValue(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern int MQTTProperties_getNumericValueAt(MQTTProperties *props, enum MQTTPropertyCodes propid, int index);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern MQTTProperty* MQTTProperties_getProperty(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern MQTTProperty* MQTTProperties_getPropertyAt(MQTTProperties *props, enum MQTTPropertyCodes propid, int index);\n' +
+        'enum MQTTReasonCodes {\n' +
+        '  MQTTREASONCODE_SUCCESS = 0,\n' +
+        '  MQTTREASONCODE_NORMAL_DISCONNECTION = 0,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_0 = 0,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_1 = 1,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_2 = 2,\n' +
+        '  MQTTREASONCODE_DISCONNECT_WITH_WILL_MESSAGE = 4,\n' +
+        '  MQTTREASONCODE_NO_MATCHING_SUBSCRIBERS = 16,\n' +
+        '  MQTTREASONCODE_NO_SUBSCRIPTION_FOUND = 17,\n' +
+        '  MQTTREASONCODE_CONTINUE_AUTHENTICATION = 24,\n' +
+        '  MQTTREASONCODE_RE_AUTHENTICATE = 25,\n' +
+        '  MQTTREASONCODE_UNSPECIFIED_ERROR = 128,\n' +
+        '  MQTTREASONCODE_MALFORMED_PACKET = 129,\n' +
+        '  MQTTREASONCODE_PROTOCOL_ERROR = 130,\n' +
+        '  MQTTREASONCODE_IMPLEMENTATION_SPECIFIC_ERROR = 131,\n' +
+        '  MQTTREASONCODE_UNSUPPORTED_PROTOCOL_VERSION = 132,\n' +
+        '  MQTTREASONCODE_CLIENT_IDENTIFIER_NOT_VALID = 133,\n' +
+        '  MQTTREASONCODE_BAD_USER_NAME_OR_PASSWORD = 134,\n' +
+        '  MQTTREASONCODE_NOT_AUTHORIZED = 135,\n' +
+        '  MQTTREASONCODE_SERVER_UNAVAILABLE = 136,\n' +
+        '  MQTTREASONCODE_SERVER_BUSY = 137,\n' +
+        '  MQTTREASONCODE_BANNED = 138,\n' +
+        '  MQTTREASONCODE_SERVER_SHUTTING_DOWN = 139,\n' +
+        '  MQTTREASONCODE_BAD_AUTHENTICATION_METHOD = 140,\n' +
+        '  MQTTREASONCODE_KEEP_ALIVE_TIMEOUT = 141,\n' +
+        '  MQTTREASONCODE_SESSION_TAKEN_OVER = 142,\n' +
+        '  MQTTREASONCODE_TOPIC_FILTER_INVALID = 143,\n' +
+        '  MQTTREASONCODE_TOPIC_NAME_INVALID = 144,\n' +
+        '  MQTTREASONCODE_PACKET_IDENTIFIER_IN_USE = 145,\n' +
+        '  MQTTREASONCODE_PACKET_IDENTIFIER_NOT_FOUND = 146,\n' +
+        '  MQTTREASONCODE_RECEIVE_MAXIMUM_EXCEEDED = 147,\n' +
+        '  MQTTREASONCODE_TOPIC_ALIAS_INVALID = 148,\n' +
+        '  MQTTREASONCODE_PACKET_TOO_LARGE = 149,\n' +
+        '  MQTTREASONCODE_MESSAGE_RATE_TOO_HIGH = 150,\n' +
+        '  MQTTREASONCODE_QUOTA_EXCEEDED = 151,\n' +
+        '  MQTTREASONCODE_ADMINISTRATIVE_ACTION = 152,\n' +
+        '  MQTTREASONCODE_PAYLOAD_FORMAT_INVALID = 153,\n' +
+        '  MQTTREASONCODE_RETAIN_NOT_SUPPORTED = 154,\n' +
+        '  MQTTREASONCODE_QOS_NOT_SUPPORTED = 155,\n' +
+        '  MQTTREASONCODE_USE_ANOTHER_SERVER = 156,\n' +
+        '  MQTTREASONCODE_SERVER_MOVED = 157,\n' +
+        '  MQTTREASONCODE_SHARED_SUBSCRIPTIONS_NOT_SUPPORTED = 158,\n' +
+        '  MQTTREASONCODE_CONNECTION_RATE_EXCEEDED = 159,\n' +
+        '  MQTTREASONCODE_MAXIMUM_CONNECT_TIME = 160,\n' +
+        '  MQTTREASONCODE_SUBSCRIPTION_IDENTIFIERS_NOT_SUPPORTED = 161,\n' +
+        '  MQTTREASONCODE_WILDCARD_SUBSCRIPTIONS_NOT_SUPPORTED = 162\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern const char* MQTTReasonCode_toString(enum MQTTReasonCodes value);\n' +
+        'typedef struct MQTTSubscribe_options\n' +
+        '{\n' +
+        '\n' +
+        ' char struct_id[4];\n' +
+        '\n' +
+        '\n' +
+        ' int struct_version;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char noLocal;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char retainAsPublished;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char retainHandling;\n' +
+        '} MQTTSubscribe_options;\n' +
+        '\n' +
+        'typedef int (*Persistence_open)(void** handle, const char* clientID, const char* serverURI, void* context);\n' +
+        'typedef int (*Persistence_close)(void* handle);\n' +
+        'typedef int (*Persistence_put)(void* handle, char* key, int bufcount, char* buffers[], int buflens[]);\n' +
+        'typedef int (*Persistence_get)(void* handle, char* key, char** buffer, int* buflen);\n' +
+        'typedef int (*Persistence_remove)(void* handle, char* key);\n' +
+        'typedef int (*Persistence_keys)(void* handle, char*** keys, int* nkeys);\n' +
+        'typedef int (*Persistence_clear)(void* handle);\n' +
+        'typedef int (*Persistence_containskey)(void* handle, char* key);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct {\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' void* context;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_open popen;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_close pclose;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_put pput;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_get pget;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_remove premove;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_keys pkeys;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_clear pclear;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_containskey pcontainskey;\n' +
+        '} MQTTClient_persistence;\n' +
+        'typedef int MQTTPersistence_beforeWrite(void* context, int bufcount, char* buffers[], int buflens[]);\n' +
+        'typedef int MQTTPersistence_afterRead(void* context, char** buffer, int* buflen);\n' +
+        'typedef struct\n' +
+        '{\n' +
+        '\n' +
+        ' char struct_id[4];\n' +
+        '\n' +
+        ' int struct_version;\n' +
+        '\n' +
+        ' '... 103249 more characters,
+      startIdx: 113230,
+      endIdx: 113230
+    },
+    _baseInterval: {
+      sourceString: 'typedef int va_list;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef int size_t;\n' +
+        'typedef int __builtin_va_list;\n' +
+        'typedef int __gnuc_va_list;\n' +
+        'typedef int __int8_t;\n' +
+        'typedef int __uint8_t;\n' +
+        'typedef int __int16_t;\n' +
+        'typedef int __uint16_t;\n' +
+        'typedef int __int_least16_t;\n' +
+        'typedef int __uint_least16_t;\n' +
+        'typedef int __int32_t;\n' +
+        'typedef int __uint32_t;\n' +
+        'typedef int __int64_t;\n' +
+        'typedef int __uint64_t;\n' +
+        'typedef int __int_least32_t;\n' +
+        'typedef int __uint_least32_t;\n' +
+        'typedef int __s8;\n' +
+        'typedef int __u8;\n' +
+        'typedef int __s16;\n' +
+        'typedef int __u16;\n' +
+        'typedef int __s32;\n' +
+        'typedef int __u32;\n' +
+        'typedef int __s64;\n' +
+        'typedef int __u64;\n' +
+        'typedef int _LOCK_T;\n' +
+        'typedef int _LOCK_RECURSIVE_T;\n' +
+        'typedef int _off_t;\n' +
+        'typedef int __dev_t;\n' +
+        'typedef int __uid_t;\n' +
+        'typedef int __gid_t;\n' +
+        'typedef int _off64_t;\n' +
+        'typedef int _fpos_t;\n' +
+        'typedef int _ssize_t;\n' +
+        'typedef int wint_t;\n' +
+        'typedef int _mbstate_t;\n' +
+        'typedef int _flock_t;\n' +
+        'typedef int _iconv_t;\n' +
+        'typedef int __ULong;\n' +
+        'typedef int __FILE;\n' +
+        'typedef int ptrdiff_t;\n' +
+        'typedef int wchar_t;\n' +
+        'typedef int __off_t;\n' +
+        'typedef int __pid_t;\n' +
+        'typedef int __loff_t;\n' +
+        'typedef int u_char;\n' +
+        'typedef int u_short;\n' +
+        'typedef int u_int;\n' +
+        'typedef int u_long;\n' +
+        'typedef int ushort;\n' +
+        'typedef int uint;\n' +
+        'typedef int clock_t;\n' +
+        'typedef int time_t;\n' +
+        'typedef int daddr_t;\n' +
+        'typedef int caddr_t;\n' +
+        'typedef int ino_t;\n' +
+        'typedef int off_t;\n' +
+        'typedef int dev_t;\n' +
+        'typedef int uid_t;\n' +
+        'typedef int gid_t;\n' +
+        'typedef int pid_t;\n' +
+        'typedef int key_t;\n' +
+        'typedef int ssize_t;\n' +
+        'typedef int mode_t;\n' +
+        'typedef int nlink_t;\n' +
+        'typedef int fd_mask;\n' +
+        'typedef int _types_fd_set;\n' +
+        'typedef int clockid_t;\n' +
+        'typedef int timer_t;\n' +
+        'typedef int useconds_t;\n' +
+        'typedef int suseconds_t;\n' +
+        'typedef int FILE;\n' +
+        'typedef int fpos_t;\n' +
+        'typedef int cookie_read_function_t;\n' +
+        'typedef int cookie_write_function_t;\n' +
+        'typedef int cookie_seek_function_t;\n' +
+        'typedef int cookie_close_function_t;\n' +
+        'typedef int cookie_io_functions_t;\n' +
+        'typedef int div_t;\n' +
+        'typedef int ldiv_t;\n' +
+        'typedef int lldiv_t;\n' +
+        'typedef int sigset_t;\n' +
+        'typedef int __sigset_t;\n' +
+        'typedef int _sig_func_ptr;\n' +
+        'typedef int sig_atomic_t;\n' +
+        'typedef int __tzrule_type;\n' +
+        'typedef int __tzinfo_type;\n' +
+        'typedef int mbstate_t;\n' +
+        'typedef int sem_t;\n' +
+        'typedef int pthread_t;\n' +
+        'typedef int pthread_attr_t;\n' +
+        'typedef int pthread_mutex_t;\n' +
+        'typedef int pthread_mutexattr_t;\n' +
+        'typedef int pthread_cond_t;\n' +
+        'typedef int pthread_condattr_t;\n' +
+        'typedef int pthread_key_t;\n' +
+        'typedef int pthread_once_t;\n' +
+        'typedef int pthread_rwlock_t;\n' +
+        'typedef int pthread_rwlockattr_t;\n' +
+        'typedef int pthread_spinlock_t;\n' +
+        'typedef int pthread_barrier_t;\n' +
+        'typedef int pthread_barrierattr_t;\n' +
+        'typedef int jmp_buf;\n' +
+        'typedef int rlim_t;\n' +
+        'typedef int sa_family_t;\n' +
+        'typedef int sigjmp_buf;\n' +
+        'typedef int stack_t;\n' +
+        'typedef int siginfo_t;\n' +
+        'typedef int z_stream;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int8_t;\n' +
+        'typedef int uint8_t;\n' +
+        'typedef int int16_t;\n' +
+        'typedef int uint16_t;\n' +
+        'typedef int int32_t;\n' +
+        'typedef int uint32_t;\n' +
+        'typedef int int64_t;\n' +
+        'typedef int uint64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int_least8_t;\n' +
+        'typedef int uint_least8_t;\n' +
+        'typedef int int_least16_t;\n' +
+        'typedef int uint_least16_t;\n' +
+        'typedef int int_least32_t;\n' +
+        'typedef int uint_least32_t;\n' +
+        'typedef int int_least64_t;\n' +
+        'typedef int uint_least64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int int_fast8_t;\n' +
+        'typedef int uint_fast8_t;\n' +
+        'typedef int int_fast16_t;\n' +
+        'typedef int uint_fast16_t;\n' +
+        'typedef int int_fast32_t;\n' +
+        'typedef int uint_fast32_t;\n' +
+        'typedef int int_fast64_t;\n' +
+        'typedef int uint_fast64_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int intptr_t;\n' +
+        'typedef int uintptr_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef int intmax_t;\n' +
+        'typedef int uintmax_t;\n' +
+        '\n' +
+        '\n' +
+        'typedef _Bool bool;\n' +
+        '\n' +
+        'typedef int va_list;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'enum MQTTPropertyCodes {\n' +
+        '  MQTTPROPERTY_CODE_PAYLOAD_FORMAT_INDICATOR = 1,\n' +
+        '  MQTTPROPERTY_CODE_MESSAGE_EXPIRY_INTERVAL = 2,\n' +
+        '  MQTTPROPERTY_CODE_CONTENT_TYPE = 3,\n' +
+        '  MQTTPROPERTY_CODE_RESPONSE_TOPIC = 8,\n' +
+        '  MQTTPROPERTY_CODE_CORRELATION_DATA = 9,\n' +
+        '  MQTTPROPERTY_CODE_SUBSCRIPTION_IDENTIFIER = 11,\n' +
+        '  MQTTPROPERTY_CODE_SESSION_EXPIRY_INTERVAL = 17,\n' +
+        '  MQTTPROPERTY_CODE_ASSIGNED_CLIENT_IDENTIFER = 18,\n' +
+        '  MQTTPROPERTY_CODE_SERVER_KEEP_ALIVE = 19,\n' +
+        '  MQTTPROPERTY_CODE_AUTHENTICATION_METHOD = 21,\n' +
+        '  MQTTPROPERTY_CODE_AUTHENTICATION_DATA = 22,\n' +
+        '  MQTTPROPERTY_CODE_REQUEST_PROBLEM_INFORMATION = 23,\n' +
+        '  MQTTPROPERTY_CODE_WILL_DELAY_INTERVAL = 24,\n' +
+        '  MQTTPROPERTY_CODE_REQUEST_RESPONSE_INFORMATION = 25,\n' +
+        '  MQTTPROPERTY_CODE_RESPONSE_INFORMATION = 26,\n' +
+        '  MQTTPROPERTY_CODE_SERVER_REFERENCE = 28,\n' +
+        '  MQTTPROPERTY_CODE_REASON_STRING = 31,\n' +
+        '  MQTTPROPERTY_CODE_RECEIVE_MAXIMUM = 33,\n' +
+        '  MQTTPROPERTY_CODE_TOPIC_ALIAS_MAXIMUM = 34,\n' +
+        '  MQTTPROPERTY_CODE_TOPIC_ALIAS = 35,\n' +
+        '  MQTTPROPERTY_CODE_MAXIMUM_QOS = 36,\n' +
+        '  MQTTPROPERTY_CODE_RETAIN_AVAILABLE = 37,\n' +
+        '  MQTTPROPERTY_CODE_USER_PROPERTY = 38,\n' +
+        '  MQTTPROPERTY_CODE_MAXIMUM_PACKET_SIZE = 39,\n' +
+        '  MQTTPROPERTY_CODE_WILDCARD_SUBSCRIPTION_AVAILABLE = 40,\n' +
+        '  MQTTPROPERTY_CODE_SUBSCRIPTION_IDENTIFIERS_AVAILABLE = 41,\n' +
+        '  MQTTPROPERTY_CODE_SHARED_SUBSCRIPTION_AVAILABLE = 42\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern const char* MQTTPropertyName(enum MQTTPropertyCodes value);\n' +
+        '\n' +
+        '\n' +
+        'enum MQTTPropertyTypes {\n' +
+        '  MQTTPROPERTY_TYPE_BYTE,\n' +
+        '  MQTTPROPERTY_TYPE_TWO_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_FOUR_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_VARIABLE_BYTE_INTEGER,\n' +
+        '  MQTTPROPERTY_TYPE_BINARY_DATA,\n' +
+        '  MQTTPROPERTY_TYPE_UTF_8_ENCODED_STRING,\n' +
+        '  MQTTPROPERTY_TYPE_UTF_8_STRING_PAIR\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperty_getType(enum MQTTPropertyCodes value);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct\n' +
+        '{\n' +
+        ' int len;\n' +
+        ' char* data;\n' +
+        '} MQTTLenString;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct\n' +
+        '{\n' +
+        '  enum MQTTPropertyCodes identifier;\n' +
+        '\n' +
+        '  union {\n' +
+        '    unsigned char byte;\n' +
+        '    unsigned short integer2;\n' +
+        '    unsigned int integer4;\n' +
+        '    struct {\n' +
+        '      MQTTLenString data;\n' +
+        '      MQTTLenString value;\n' +
+        '    };\n' +
+        '  } value;\n' +
+        '} MQTTProperty;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct MQTTProperties\n' +
+        '{\n' +
+        '  int count;\n' +
+        '  int max_count;\n' +
+        '  int length;\n' +
+        '  MQTTProperty *array;\n' +
+        '} MQTTProperties;\n' +
+        'int MQTTProperties_len(MQTTProperties* props);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_add(MQTTProperties* props, const MQTTProperty* prop);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'int MQTTProperties_write(char** pptr, const MQTTProperties* properties);\n' +
+        'int MQTTProperties_read(MQTTProperties* properties, char** pptr, char* enddata);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern void MQTTProperties_free(MQTTProperties* properties);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern MQTTProperties MQTTProperties_copy(const MQTTProperties* props);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_hasProperty(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern int MQTTProperties_propertyCount(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern int MQTTProperties_getNumericValue(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern int MQTTProperties_getNumericValueAt(MQTTProperties *props, enum MQTTPropertyCodes propid, int index);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern MQTTProperty* MQTTProperties_getProperty(MQTTProperties *props, enum MQTTPropertyCodes propid);\n' +
+        'extern MQTTProperty* MQTTProperties_getPropertyAt(MQTTProperties *props, enum MQTTPropertyCodes propid, int index);\n' +
+        'enum MQTTReasonCodes {\n' +
+        '  MQTTREASONCODE_SUCCESS = 0,\n' +
+        '  MQTTREASONCODE_NORMAL_DISCONNECTION = 0,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_0 = 0,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_1 = 1,\n' +
+        '  MQTTREASONCODE_GRANTED_QOS_2 = 2,\n' +
+        '  MQTTREASONCODE_DISCONNECT_WITH_WILL_MESSAGE = 4,\n' +
+        '  MQTTREASONCODE_NO_MATCHING_SUBSCRIBERS = 16,\n' +
+        '  MQTTREASONCODE_NO_SUBSCRIPTION_FOUND = 17,\n' +
+        '  MQTTREASONCODE_CONTINUE_AUTHENTICATION = 24,\n' +
+        '  MQTTREASONCODE_RE_AUTHENTICATE = 25,\n' +
+        '  MQTTREASONCODE_UNSPECIFIED_ERROR = 128,\n' +
+        '  MQTTREASONCODE_MALFORMED_PACKET = 129,\n' +
+        '  MQTTREASONCODE_PROTOCOL_ERROR = 130,\n' +
+        '  MQTTREASONCODE_IMPLEMENTATION_SPECIFIC_ERROR = 131,\n' +
+        '  MQTTREASONCODE_UNSUPPORTED_PROTOCOL_VERSION = 132,\n' +
+        '  MQTTREASONCODE_CLIENT_IDENTIFIER_NOT_VALID = 133,\n' +
+        '  MQTTREASONCODE_BAD_USER_NAME_OR_PASSWORD = 134,\n' +
+        '  MQTTREASONCODE_NOT_AUTHORIZED = 135,\n' +
+        '  MQTTREASONCODE_SERVER_UNAVAILABLE = 136,\n' +
+        '  MQTTREASONCODE_SERVER_BUSY = 137,\n' +
+        '  MQTTREASONCODE_BANNED = 138,\n' +
+        '  MQTTREASONCODE_SERVER_SHUTTING_DOWN = 139,\n' +
+        '  MQTTREASONCODE_BAD_AUTHENTICATION_METHOD = 140,\n' +
+        '  MQTTREASONCODE_KEEP_ALIVE_TIMEOUT = 141,\n' +
+        '  MQTTREASONCODE_SESSION_TAKEN_OVER = 142,\n' +
+        '  MQTTREASONCODE_TOPIC_FILTER_INVALID = 143,\n' +
+        '  MQTTREASONCODE_TOPIC_NAME_INVALID = 144,\n' +
+        '  MQTTREASONCODE_PACKET_IDENTIFIER_IN_USE = 145,\n' +
+        '  MQTTREASONCODE_PACKET_IDENTIFIER_NOT_FOUND = 146,\n' +
+        '  MQTTREASONCODE_RECEIVE_MAXIMUM_EXCEEDED = 147,\n' +
+        '  MQTTREASONCODE_TOPIC_ALIAS_INVALID = 148,\n' +
+        '  MQTTREASONCODE_PACKET_TOO_LARGE = 149,\n' +
+        '  MQTTREASONCODE_MESSAGE_RATE_TOO_HIGH = 150,\n' +
+        '  MQTTREASONCODE_QUOTA_EXCEEDED = 151,\n' +
+        '  MQTTREASONCODE_ADMINISTRATIVE_ACTION = 152,\n' +
+        '  MQTTREASONCODE_PAYLOAD_FORMAT_INVALID = 153,\n' +
+        '  MQTTREASONCODE_RETAIN_NOT_SUPPORTED = 154,\n' +
+        '  MQTTREASONCODE_QOS_NOT_SUPPORTED = 155,\n' +
+        '  MQTTREASONCODE_USE_ANOTHER_SERVER = 156,\n' +
+        '  MQTTREASONCODE_SERVER_MOVED = 157,\n' +
+        '  MQTTREASONCODE_SHARED_SUBSCRIPTIONS_NOT_SUPPORTED = 158,\n' +
+        '  MQTTREASONCODE_CONNECTION_RATE_EXCEEDED = 159,\n' +
+        '  MQTTREASONCODE_MAXIMUM_CONNECT_TIME = 160,\n' +
+        '  MQTTREASONCODE_SUBSCRIPTION_IDENTIFIERS_NOT_SUPPORTED = 161,\n' +
+        '  MQTTREASONCODE_WILDCARD_SUBSCRIPTIONS_NOT_SUPPORTED = 162\n' +
+        '};\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'extern const char* MQTTReasonCode_toString(enum MQTTReasonCodes value);\n' +
+        'typedef struct MQTTSubscribe_options\n' +
+        '{\n' +
+        '\n' +
+        ' char struct_id[4];\n' +
+        '\n' +
+        '\n' +
+        ' int struct_version;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char noLocal;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char retainAsPublished;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' unsigned char retainHandling;\n' +
+        '} MQTTSubscribe_options;\n' +
+        '\n' +
+        'typedef int (*Persistence_open)(void** handle, const char* clientID, const char* serverURI, void* context);\n' +
+        'typedef int (*Persistence_close)(void* handle);\n' +
+        'typedef int (*Persistence_put)(void* handle, char* key, int bufcount, char* buffers[], int buflens[]);\n' +
+        'typedef int (*Persistence_get)(void* handle, char* key, char** buffer, int* buflen);\n' +
+        'typedef int (*Persistence_remove)(void* handle, char* key);\n' +
+        'typedef int (*Persistence_keys)(void* handle, char*** keys, int* nkeys);\n' +
+        'typedef int (*Persistence_clear)(void* handle);\n' +
+        'typedef int (*Persistence_containskey)(void* handle, char* key);\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        'typedef struct {\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' void* context;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_open popen;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_close pclose;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_put pput;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_get pget;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_remove premove;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_keys pkeys;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_clear pclear;\n' +
+        '\n' +
+        '\n' +
+        '\n' +
+        ' Persistence_containskey pcontainskey;\n' +
+        '} MQTTClient_persistence;\n' +
+        'typedef int MQTTPersistence_beforeWrite(void* context, int bufcount, char* buffers[], int buflens[]);\n' +
+        'typedef int MQTTPersistence_afterRead(void* context, char** buffer, int* buflen);\n' +
+        'typedef struct\n' +
+        '{\n' +
+        '\n' +
+        ' char struct_id[4];\n' +
+        '\n' +
+        ' int struct_version;\n' +
+        '\n' +
+        ' '... 103249 more characters,
+      startIdx: 113224,
+      endIdx: 113230
+    },
+    _childWrappers: []
+  }
+]
+Function name...  main() main [ ')' ] 1
+Compiling C code...
+Flow not installed, skipping JavaScript typechecking
+Compilation finished
