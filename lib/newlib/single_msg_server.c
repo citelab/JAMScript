@@ -5,7 +5,7 @@
 #define THREAD_COUNT 4
 #define STACK_SIZE 4096
 #define MAX(_a, _b) ((_a) > (_b)) ? (_a) : (_b)
-
+static int port = 1883;
 static SchedulerManager chris;
 DeclBatchTask(taskConnect, 4096);
 
@@ -17,19 +17,23 @@ static void TimeReturn(void) {
     GetTaskData(&argAttr, ctask);
     Maintenant(&ts);
     argAttr->result = cbor_build_uint64(ConvertTimeSpecToNanoseconds(ts));
+    printf("ARRRR\n");
 }
 
 static void Connect(void) {
     BeginTask();
     TaskCommonHeader *task;
     printf("start to listen\n");
-    CreateMQTTTaskLaunchSubscriptionTask(&task, "127.0.0.1", 1883, "00000000000000000000000000000002");
+    CreateMQTTTaskLaunchSubscriptionTask(&task, "127.0.0.1", port, "00000000000000000000000000000002");
     EnableTaskOnCurrentExecutor(task);
     WaitForTaskUntilFinish(task);
     FinishTask();
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+    if (argc > 1) {
+        port = atoi(argv[1]);
+    }
     InitCallEnv("00000000000000000000000000000002");
     RegisterFunctionByName(TimeReturn, "TimeReturn", 4096 * 2, (struct timespec){0, 5000});
     CreateSchedulerManager(&chris);

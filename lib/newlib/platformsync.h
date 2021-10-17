@@ -1,5 +1,5 @@
 #pragma once
-#ifdef __unix__
+
 #include <errno.h>
 #include <pthread.h>
 #include <signal.h>
@@ -264,7 +264,6 @@ static inline int DestroyPlatformConditionVariable(
   return pthread_cond_destroy(&(platformCondVar->cv));
 }
 
-#ifdef __linux__
 #include <semaphore.h>
 typedef sem_t PlatformSemaphore;
 static inline int CreatePlatformSemaphore(PlatformSemaphore *platformSemaphore,
@@ -285,7 +284,7 @@ static inline int DestroyPlatformSemaphore(
     PlatformSemaphore *platformSemaphore) {
   return sem_destroy(platformSemaphore);
 }
-#else
+
 typedef struct __PlatformSemaphore {
   long int c;
   pthread_mutex_t m;
@@ -331,6 +330,3 @@ static inline int DestroyPlatformSemaphore(
   ret |= pthread_cond_destroy(&(platformSemaphore->cv));
   return ret;
 }
-#endif
-
-#endif

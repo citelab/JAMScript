@@ -203,15 +203,13 @@ static inline int ParseC2JDataRecv(cbor_item_t *item,
     if (!strncmp(cbor_string_handle(mitems[i].key), "res", 3)) {
       waitObject->data = mitems[i].value;
       mitems[i].value = cbor_new_definite_map(0);
-      return 0;
     }
     if (!strncmp("indx", cbor_string_handle(mitems[i].key), cbor_string_length(mitems[i].key))) {
       MQTTC2JAttr *attr = (MQTTC2JAttr *)(waitObject);
       attr->idx = cbor_get_uint32(mitems[i].value);
-      return 0;
     }
   }
-  return 1;
+  return 0;
 }
 
 static inline int ParseC2JAckRecv(cbor_item_t *item, MQTTWaitObject *waitObject) {
@@ -1137,7 +1135,6 @@ static void MQTTTaskLaunchSubscriberPooler(void) {
   DisablePreemptionSignal();
   TaskCommonHeader *currentTask;
   MQTTTaskLaunchSubscriber *subscriber;
-  void *rtsyExecutor = ((BatchTaskHeader *)subscriber->poolerTask)->header.executor->schedulerManager->rtsyExecutor;
   char topicNameBuf[JAMC_MQTT_RPC_MAX_FUNC_NAME_SIZE];
   GetActiveTask(&currentTask);
   GetTaskData(&subscriber, currentTask);
@@ -1176,6 +1173,7 @@ static void MQTTTaskLaunchSubscriberPooler(void) {
     CurrentTaskWaitFor(JAMC_MQTT_POOLER_SLEEP);
     ExpireDeduplicateEntries();
   }
+  printf("aaaaa\n");
   memset(topicNameBuf, 0, 42);
   sprintf(topicNameBuf, "/%s%s", subscriber->uuid, JAMC_MQTT_TASK_CHANNEL);
   mqtt_unsubscribe(&(subscriber->client), topicNameBuf);
@@ -1192,7 +1190,7 @@ static void MQTTTaskLaunchSubscriberPooler(void) {
   mqtt_unsubscribe(&(subscriber->client), topicNameBuf);
   mqtt_disconnect(&(subscriber->client));
   mqtt_sync(&(subscriber->client));
-  
+  void *rtsyExecutor = ((BatchTaskHeader *)subscriber->poolerTask)->header.executor->schedulerManager->rtsyExecutor;
   if (rtsyExecutor) {
     if (subscriber->subscribeSchedule) {
       memset(topicNameBuf, 0, JAMC_MQTT_RPC_MAX_FUNC_NAME_SIZE);

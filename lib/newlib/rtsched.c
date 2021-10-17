@@ -538,6 +538,13 @@ static inline int RefreshConnBuff() {
   ConnectPendings();
 }
 
+static inline int RefreshTimer(BaseTaskExecutor *bExec) {
+  struct timespec tc;
+  jamCall(Maintenant(&tc), 1);
+  timeouts_update(&(bExec->executorTimer), ConvertTimeSpecToNanoseconds(tc));
+  return 0;
+}
+
 static void *InstallRTSYExecutor(void *vArgs) {
   __AddRTSYExecutorArgType *args = vArgs;
   PlatformSemaphore *semBegin = args->semBegin;

@@ -10,7 +10,7 @@
 #include "sync.h"
 
 #define NUM_TASKS 1111111
-#define THREAD_COUNT 12
+#define THREAD_COUNT 6
 #define MAX_TASKS NUM_TASKS
 #define STACK_SIZE 4096
 #define SKYNET_INPUT 1000000

@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <time.h>
+#include <cbor.h>
 
 #include "funcreg.h"
 #include "rtsyched.h"
