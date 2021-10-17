@@ -31,12 +31,8 @@
         "jamc": "./mainCompiler.js"
     },
     "dependencies": {
-        "bunyan": "^1.8.15",
-        "command-line-args": "^5.2.0",
         "jszip": "^3.1.5",
-        "mqtt": "^4.2.8",
         "node-gyp": "^5.0.1",
-        "node-localstorage": "^2.2.1",
         "ohm-js": "^0.13.1",
         "ps-node": "^0.1.6",
         "random-js": "^2.1.0",
