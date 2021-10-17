@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
 echo "Installing JAMScript.."
-npm install lib/jamserver 
-npm install lib/jdiscovery
+cd lib/jamserver 
 npm install 
+cd ../..
+cd lib/jdiscovery
+npm install 
+cd ../..
 npm run link
