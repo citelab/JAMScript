@@ -7,4 +7,5 @@ cd ../..
 cd lib/jdiscovery
 npm install 
 cd ../..
+npm install
 npm run link
