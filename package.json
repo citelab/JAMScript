@@ -20,12 +20,11 @@
     },
     "bugs": "https://github.com/citelab/JAMScript/issues",
     "scripts": {
-        "preinstall": "scripts/install/preinstall.sh && (cd ./lib/jdiscovery && npm install .)",
+        "preinstall": "scripts/install/preinstall.sh",
         "install": "node-gyp rebuild",
         "postinstall": "scripts/install/postinstall.sh",
         "postversion": "git push && git push --tags && npm publish",
         "prepublishOnly": "scripts/install/prepublishOnly.sh",
-        "prelink": "npm install",
         "link": "scripts/install/link.sh"
     },
     "bin": {
