@@ -238,10 +238,9 @@ command_t *command_rebuild(command_t *cmd)
     });
 
     cmd->cdata = rmap;
-    cbor_serialize_alloc(rmap, &(cmd->buffer), (size_t *)&(cmd->length));
+    cmd->length = cbor_serialize(rmap, cmd->buffer, 1024);
     return cmd;
 }
-
 
 
 /*
@@ -341,7 +340,7 @@ command_t *command_new_using_cbor(const char *cmd, char *opt, char *cond, int co
     });
 
     cmdo->cdata = rmap;
-    cbor_serialize_alloc(rmap, &(cmdo->buffer), (size_t *)&(cmdo->length));
+    cmdo->length = cbor_serialize(rmap, cmdo->buffer, 1024);
     return cmdo;
 }
 
@@ -599,7 +598,6 @@ command_t *command_from_data(char *fmt, nvoid_t *data)
     struct cbor_load_result result;
 
     command_t *cmd = (command_t *)calloc(1, sizeof(command_t));
-    cmd->buffer = (unsigned char *)malloc(data->len);
     memcpy(cmd->buffer, data->data, data->len);
     cmd->cdata = cbor_load(cmd->buffer, data->len, &result);
     cmd->length = data->len;
@@ -766,7 +764,6 @@ void command_free(command_t *cmd)
     if (cmd->actname != NULL) free(cmd->actname);
     if (cmd->actid != NULL) free(cmd->actid);
     if (cmd->actarg != NULL) free(cmd->actarg);
-    if (cmd->buffer != NULL) free(cmd->buffer);
 
     if(cmd->cbor_item_list)
     {

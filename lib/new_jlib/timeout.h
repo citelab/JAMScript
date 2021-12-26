@@ -109,9 +109,9 @@ struct timeout_cb {
 
 #define TIMEOUT_INITIALIZER(flags) { (flags) }
 
-#define timeout_setcb(to, fn, arg) do { \
-	(to)->callback.fn = (fn);       \
-	(to)->callback.arg = (arg);     \
+#define timeout_setcb(to, cbfn, cbarg) do { \
+	(to)->callback.fn = (cbfn);       \
+	(to)->callback.arg = (cbarg);     \
 } while (0)
 
 struct timeout {
