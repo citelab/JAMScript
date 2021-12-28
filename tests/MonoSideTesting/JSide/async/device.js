@@ -1,6 +1,3 @@
-jcond {
-    fogonly: jsys.type == "fog";
-}
 
 var x = 100;
 
