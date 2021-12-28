@@ -4,6 +4,7 @@ jsync function getid() {
 
 //    loadme(25000000);    gives about 100 ms delay
 //  loadme(100000000); gives about 400 ms delay
+
     if ((ii < 10) || (ii > 20)) {
         console.log("Low delay...");
         loadme(25000000);
@@ -12,13 +13,14 @@ jsync function getid() {
         loadme(100000000);
     }
     ii++;
+
     return fogcnt++;
 }
 
 function loadme(len) {
     var i, x = 0;
     for (i = 0; i < len; i++) {
-	x += Math.tanh(i*1.5);
+	    x += Math.tanh(i*1.5);
     }
 }
 
