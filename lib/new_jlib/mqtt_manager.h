@@ -61,7 +61,7 @@ typedef struct __RemoteExecutionAttribute {
   uint32_t id, idx;       // from payload
   size_t resBufferSize, resLength;
   struct timespec dur;
-  unsigned char *resBuffer;
+  unsigned char resBuffer[1024];
   int port;
   DeclBatchTask(taskPointer, JAMC_MQTT_REMOTE_HANDLER_STACK_SIZE);
   union {

@@ -328,8 +328,7 @@ static inline int BuildJ2CResult(RemoteExecutionAttribute *attr) {
   TaskCommonHeader *ctask;
   GetActiveTask(&ctask);
   attr->resMap = cbor_new_definite_map(3);
-  attr->resBuffer = NULL;
-  attr->resBufferSize = 0;
+  attr->resBufferSize = 1024;
   if (!(attr->result)) {
     attr->result = cbor_new_definite_map(0);
   }
@@ -342,8 +341,8 @@ static inline int BuildJ2CResult(RemoteExecutionAttribute *attr) {
   cbor_map_add(attr->resMap,
                (struct cbor_pair){.key = cbor_move(cbor_build_string("res")),
                                   .value = cbor_move(attr->result)});
-  attr->resLength = cbor_serialize_alloc(attr->resMap, &(attr->resBuffer),
-                                         &(attr->resBufferSize));
+  attr->resLength = cbor_serialize(attr->resMap, attr->resBuffer,
+                                         attr->resBufferSize);
   cbor_decref(&(attr->resMap));
   return 0;
 }
@@ -352,8 +351,7 @@ static inline int BuildC2JArgs(MQTTC2JAttr *attr) {
   TaskCommonHeader *ctask;
   GetActiveTask(&ctask);
   cbor_item_t *argMap = cbor_new_definite_map(7);
-  attr->argBuffer = NULL;
-  attr->argBufLen = 0;
+  attr->argBufLen = 1024;
   if (!(attr->args)) {
     attr->args = cbor_new_definite_map(0);
   }
@@ -380,7 +378,7 @@ static inline int BuildC2JArgs(MQTTC2JAttr *attr) {
                            .key = cbor_move(cbor_build_string("uuid")),
                            .value = cbor_move(cbor_build_string(selfUUID))});
   attr->argActLen =
-      cbor_serialize_alloc(argMap, &(attr->argBuffer), &(attr->argBufLen));
+      cbor_serialize(argMap, attr->argBuffer, attr->argBufLen);
   cbor_decref(&argMap);
   return 0;
 }
@@ -398,15 +396,15 @@ BeginPublishError:
   jamCall(GetMQTTDataTransmitter(&transmitter, attr->ipAddr, attr->uuid, attr->port), 1);
   jamCall(SetTaskData(currentTask, transmitter), 1);
   cbor_item_t *errMap = cbor_new_definite_map(2);
-  unsigned char *errBuffer = NULL;
-  size_t errBufferSize = 0;
+  size_t errBufferSize = 1024;
+  unsigned char errBuffer[errBufferSize];
   cbor_map_add(errMap, (struct cbor_pair){
                            .key = cbor_move(cbor_build_string("id")),
                            .value = cbor_move(cbor_build_uint32(attr->id))});
   cbor_map_add(errMap, (struct cbor_pair){
                            .key = cbor_move(cbor_build_string("error")),
                            .value = cbor_move(cbor_build_string("error"))});
-  size_t argLength = cbor_serialize_alloc(errMap, &errBuffer, &errBufferSize);
+  size_t argLength = cbor_serialize(errMap, errBuffer, errBufferSize);
   memset(attr->sendBackTopicName, 0, JAMC_MQTT_RPC_DATA_CHANNEL_SIZE);
   sprintf(attr->sendBackTopicName, "/%s%s/%08x%s", attr->uuid,
           JAMC_MQTT_J2C_CHANNEL_PREFIX, attr->id,
@@ -443,8 +441,8 @@ BeginPublishJ2CCallAck:
   cbor_item_t *timeArray = cbor_new_definite_array(2);
   cbor_array_set(timeArray, 0, cbor_move(cbor_build_uint64(attr->dur.tv_sec)));
   cbor_array_set(timeArray, 1, cbor_move(cbor_build_uint64(attr->dur.tv_nsec)));
-  unsigned char *ackBuffer = NULL;
-  size_t ackBufferSize = 0;
+  size_t ackBufferSize = 1024;
+  unsigned char ackBuffer[ackBufferSize];
   cbor_map_add(ackMap, (struct cbor_pair){
                            .key = cbor_move(cbor_build_string("id")),
                            .value = cbor_move(cbor_build_uint32(attr->id))});
@@ -454,7 +452,7 @@ BeginPublishJ2CCallAck:
   cbor_map_add(ackMap, (struct cbor_pair){
                            .key = cbor_move(cbor_build_string("indx")),
                            .value = cbor_move(cbor_build_uint32(GetExecutorIndex(currentTask->executor, currentTask->executor->schedulerManager)))});
-  size_t ackLength = cbor_serialize_alloc(ackMap, &ackBuffer, &ackBufferSize);
+  size_t ackLength = cbor_serialize_alloc(ackMap, ackBuffer, ackBufferSize);
   memset(combinedTopic, 0, JAMC_MQTT_RPC_DATA_CHANNEL_SIZE);
   strcpy(combinedTopic, transmitter->topic[MQTT_PUB_J2C_CALL_ACK]);
   strcat(combinedTopic, idxCli);
@@ -484,15 +482,15 @@ BeginPublishC2JDataAck:
   jamCall(GetMQTTDataTransmitter(&transmitter, attr->ipAddr, attr->uuid, attr->port), 1);
   jamCall(SetTaskData(currentTask, transmitter), 1);
   cbor_item_t *ackMap = cbor_new_definite_map(2);
-  unsigned char *ackBuffer = NULL;
-  size_t ackBufferSize = 0;
+  size_t ackBufferSize = 1024;
+  unsigned char ackBuffer[ackBufferSize];
   cbor_map_add(ackMap, (struct cbor_pair){
                            .key = cbor_move(cbor_build_string("id")),
                            .value = cbor_move(cbor_build_uint32(attr->id))});
   cbor_map_add(
       ackMap, (struct cbor_pair){.key = cbor_move(cbor_build_string("ack")),
                                  .value = cbor_move(cbor_build_string("ack"))});
-  size_t ackLength = cbor_serialize_alloc(ackMap, &ackBuffer, &ackBufferSize);
+  size_t ackLength = cbor_serialize_alloc(ackMap, ackBuffer, ackBufferSize);
   memset(combinedTopic, 0, JAMC_MQTT_RPC_DATA_CHANNEL_SIZE);
   strcpy(combinedTopic, transmitter->topic[MQTT_PUB_C2J_DATA_ACK]);
   strcat(combinedTopic, idxCli);

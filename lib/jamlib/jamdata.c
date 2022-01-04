@@ -245,8 +245,8 @@ void jamdata_logger_cb(redisAsyncContext *c, void *r, void *privdata)
 //is expected to have a string type value followed, which is "Lilly" in this case
 comboptr_t *jamdata_encode(char *redis_key, unsigned long long timestamp, char *fmt, va_list args)
 {
-    unsigned char *buffer;
-    size_t len;
+    size_t len = 1024;
+    unsigned char buffer[len];
     int i, num = strlen(fmt);
 
     char *name, *s;
@@ -318,7 +318,7 @@ comboptr_t *jamdata_encode(char *redis_key, unsigned long long timestamp, char *
         .value = cbor_move(cbor_build_uint64(timestamp))
     });
 
-    cbor_serialize_alloc(root, &buffer, &len);
+    cbor_serialize(root, buffer, len);
 
     // The cbor object itself is deallocated.
     cbor_decref(&root);
@@ -335,8 +335,8 @@ unsigned long long ms_time() {
 }
 
 comboptr_t *jamdata_simple_encode(char *redis_key, unsigned long long timestamp, cbor_item_t *value) {
-    unsigned char *buffer;
-    size_t len;
+    size_t len = 1024;
+    unsigned char buffer[len];
 
     cbor_item_t *root = cbor_new_definite_map(2);
 
@@ -352,7 +352,7 @@ comboptr_t *jamdata_simple_encode(char *redis_key, unsigned long long timestamp,
         .value = cbor_move(cbor_build_uint64(timestamp))
     });
 
-    cbor_serialize_alloc(root, &buffer, &len);
+    cbor_serialize(root, buffer, len);
     cbor_decref(&root);
 
     return create_combo2llu_ptr(redis_key, buffer, len, timestamp);
