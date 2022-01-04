@@ -1,43 +1,43 @@
 jdata {
-    float zz as logger;
-    int qq as logger;
-	char * ss as logger;
+    float test_float as logger;
+    int test_int as logger;
+	char * test_string as logger;
 }
 
-var slogger = ss.getMyDataStream();
-var zlogger = zz.getMyDataStream();
-var qlogger = qq.getMyDataStream();
+var string_logger = test_string.getMyDataStream();
+var float_logger = test_float.getMyDataStream();
+var int_logger = test_int.getMyDataStream();
 
 var icount = 10,
 	fcount = 105.4;
 
 setInterval(function () {
 
-	console.log("Size of logger ", qq.size());
+	console.log("Size of logger ", test_int.size());
 
 	if (jsys.type === "cloud") {
-		slogger.log("fred@cloud");
-		qlogger.log(icount);
-		zlogger.log(fcount);
+		string_logger.log("fred@cloud");
+		int_logger.log(icount);
+		float_logger.log(fcount);
 	} else if (jsys.type === "fog") {
-		slogger.log("fred@fog");
-		qlogger.log(icount);
-		zlogger.log(fcount);
+		string_logger.log("fred@fog");
+		int_logger.log(icount);
+		float_logger.log(fcount);
 	} else {
-		slogger.log("fred@device");
-		qlogger.log(icount);
-		zlogger.log(fcount);
+		string_logger.log("fred@device");
+		int_logger.log(icount);
+		float_logger.log(fcount);
 	}
 
 	icount++;
 	fcount = fcount + Math.random() * 100;
 
-	for (i = 0; i < qq.size(); i++) {
+	for (i = 0; i < test_int.size(); i++) {
 		//    if (qq[i] !== undefined && qq[i].lastValue() != null) 
-		console.log('--i: ', i, 'value: ', qq[i].lastValue(), 'devID: ', qq[i].getDeviceId());
+		console.log('--i: ', i, 'value: ', test_int[i].lastValue(), 'devID: ', test_int[i].getDeviceId());
 		//	    if (zz[i] !== undefined && zz[i].lastValue() != null)
-		console.log('--i: ', i, 'value: ', zz[i].lastValue(), 'devID: ', zz[i].getDeviceId());
+		console.log('--i: ', i, 'value: ', test_float[i].lastValue(), 'devID: ', test_float[i].getDeviceId());
 		//	    if (ss[i] !== undefined && ss[i].lastValue() != null)
-		console.log('--i: ', i, 'value: ', ss[i].lastValue(), 'devID: ', ss[i].getDeviceId());
+		console.log('--i: ', i, 'value: ', test_string[i].lastValue(), 'devID: ', test_string[i].getDeviceId());
 	}
 }, 500);
