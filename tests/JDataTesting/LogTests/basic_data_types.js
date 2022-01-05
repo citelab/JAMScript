@@ -33,11 +33,11 @@ setInterval(function () {
 	fcount = fcount + Math.random() * 100;
 
 	for (i = 0; i < test_int.size(); i++) {
-		//    if (qq[i] !== undefined && qq[i].lastValue() != null) 
-		console.log('--i: ', i, 'value: ', test_int[i].lastValue(), 'devID: ', test_int[i].getDeviceId());
-		//	    if (zz[i] !== undefined && zz[i].lastValue() != null)
-		console.log('--i: ', i, 'value: ', test_float[i].lastValue(), 'devID: ', test_float[i].getDeviceId());
-		//	    if (ss[i] !== undefined && ss[i].lastValue() != null)
-		console.log('--i: ', i, 'value: ', test_string[i].lastValue(), 'devID: ', test_string[i].getDeviceId());
+		if (test_int[i] !== undefined && test_int[i].lastValue() != null) 
+			console.log('--i: ', i, 'value: ', test_int[i].lastValue(), 'devID: ', test_int[i].getDeviceId());
+		if (test_float[i] !== undefined && test_float[i].lastValue() != null)
+			console.log('--i: ', i, 'value: ', test_float[i].lastValue(), 'devID: ', test_float[i].getDeviceId());
+		if (test_string[i] !== undefined && test_string[i].lastValue() != null)
+			console.log('--i: ', i, 'value: ', test_string[i].lastValue(), 'devID: ', test_string[i].getDeviceId());
 	}
 }, 500);
