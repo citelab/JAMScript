@@ -452,7 +452,7 @@ BeginPublishJ2CCallAck:
   cbor_map_add(ackMap, (struct cbor_pair){
                            .key = cbor_move(cbor_build_string("indx")),
                            .value = cbor_move(cbor_build_uint32(GetExecutorIndex(currentTask->executor, currentTask->executor->schedulerManager)))});
-  size_t ackLength = cbor_serialize_alloc(ackMap, ackBuffer, ackBufferSize);
+  size_t ackLength = cbor_serialize(ackMap, ackBuffer, ackBufferSize);
   memset(combinedTopic, 0, JAMC_MQTT_RPC_DATA_CHANNEL_SIZE);
   strcpy(combinedTopic, transmitter->topic[MQTT_PUB_J2C_CALL_ACK]);
   strcat(combinedTopic, idxCli);
@@ -490,7 +490,7 @@ BeginPublishC2JDataAck:
   cbor_map_add(
       ackMap, (struct cbor_pair){.key = cbor_move(cbor_build_string("ack")),
                                  .value = cbor_move(cbor_build_string("ack"))});
-  size_t ackLength = cbor_serialize_alloc(ackMap, ackBuffer, ackBufferSize);
+  size_t ackLength = cbor_serialize(ackMap, ackBuffer, ackBufferSize);
   memset(combinedTopic, 0, JAMC_MQTT_RPC_DATA_CHANNEL_SIZE);
   strcpy(combinedTopic, transmitter->topic[MQTT_PUB_C2J_DATA_ACK]);
   strcat(combinedTopic, idxCli);
