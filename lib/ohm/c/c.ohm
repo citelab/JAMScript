@@ -152,9 +152,8 @@ C {
 
     Decl            = Decl_specs Init_decl_lst ";"
 
-    Decl_specs      = (Store_cl_spec | Func_spec | type_qualifier | Gcc_decl_spec)*
-                        Type_spec
-                        (Store_cl_spec | Func_spec | type_qualifier | Gcc_decl_spec)*
+    Decl_specs      = (Store_cl_spec | Func_spec | type_qualifier | Gcc_decl_spec)* Type_spec (Store_cl_spec | Func_spec | type_qualifier | Gcc_decl_spec)*
+                    | ("(" | Gcc_attribute)* Type_spec (")" | Gcc_attribute)*
 
     Init_decl_lst   = ListOf<Init_decl, ",">
 
