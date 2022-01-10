@@ -1,7 +1,8 @@
-int strlength(char *);
+int strlength(char * a){
+	return 1;
+};
 
-int
-main()
+int main()
 {
 	char *p;
 	
