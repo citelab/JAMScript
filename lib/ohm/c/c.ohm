@@ -62,7 +62,9 @@ C {
     //
     escapeChar      = "\\" letter
 
-    string          = "\"" (escapeChar | ~"\"" any)* "\""                               -- String
+    interStringQuotation = "\"" space* "\""
+
+    string          = "\"" (escapeChar | interStringQuotation | ~"\"" any)* "\""        -- String
                     | ("#" | "`") identName                                             -- Id
 
 
