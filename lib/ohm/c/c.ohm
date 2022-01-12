@@ -300,7 +300,7 @@ C {
                     | case Const_expr ":" Stmt                                          -- CaseStmt
                     | default ":" Stmt                                                  -- DefaultStmt
 
-    Compound_stmt   =  "{" (Stmt|Decl)* "}"
+    Compound_stmt   =  "{" (Stmt|Decl)* "}" ";"?
 
     Selection_stmt  = if "(" Expr ")" Stmt (else Stmt)?                                 -- IfStmt
                     | switch "(" Expr ")" Stmt                                          -- SwitchStmt
