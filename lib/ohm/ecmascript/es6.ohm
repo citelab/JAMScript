@@ -21,4 +21,8 @@ ES6 <: ES5 {
   AsyncFunctionDeclaration = async_function identifier "(" FormalParameterList ")" "{" FunctionBody "}"
   
   async_function = "async" " "+ "function" ~identifierPart
+
+  MemberExpression += await PrimaryExpression -- awaitCall
+
+  await = "await" " "+ 
 }
