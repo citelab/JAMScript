@@ -15,4 +15,10 @@ ES6 <: ES5 {
     = "(" Expression<guardIn> ")"  -- expression
     | "(" ")"                      -- parens
     | "(" FormalParameterList ")"  -- params
+
+  Declaration += AsyncFunctionDeclaration
+
+  AsyncFunctionDeclaration = async_function identifier "(" FormalParameterList ")" "{" FunctionBody "}"
+  
+  async_function = "async" " "+ "function" ~identifierPart
 }
