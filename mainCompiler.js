@@ -17,7 +17,8 @@ var callGraphFlag = false,
     // parseOnly = false,
     preprocessOnly = false,
     // translateOnly = false,
-    verbose = false;
+    verbose = false,
+    yieldPoint = false;
 
 // Process arguments
 
@@ -27,7 +28,8 @@ var cPath;
 var jsPath;
 var outPath;
 var supFiles = [];
-var jviewPort;
+var cSideEffectTable = "None";
+var jsSideEffectTable = "None";
 
 for (var i = 0; i < args.length; i++) {
     if (args[i].charAt(0) === "-") {
@@ -41,9 +43,6 @@ for (var i = 0; i < args.length; i++) {
         } else if (args[i] === "-o") {                          // Set output name
             outPath = args[i + 1];
             i = i + 1;
-        } else if (args[i] === "--jview") {                     // Enabled jview
-            jviewPort = args[i+1];
-            i = i + 1;
         } else if (args[i] === "-P") {                          // Preprocessor only
             preprocessOnly = true;
         } else if (args[i] === "-v") {                          // Print version
@@ -53,6 +52,8 @@ for (var i = 0; i < args.length; i++) {
             verbose = true;
         } else if (args[i] === "--analyze") {                   // Generate call graph files
             callGraphFlag = true;
+        } else if (args[i] === "-y") {
+            yieldPoint = true;
         }
         // } else if(args[i] === "-T") {                        // Translator only
         //   translateOnly = true;
@@ -102,7 +103,9 @@ if (inputError) {
 try {
     fs.mkdirSync(tmpDir);
     try {
-        var preprocessed = preprocess(cPath, verbose);
+        var preprocessedOutput = preprocess(cPath, verbose);
+        var preprocessed = preprocessedOutput.program;
+        var lineNumber = preprocessedOutput.lineNumber;
     } catch (e) {
         console.log("Exiting with preprocessor error");
         process.exit();
@@ -115,7 +118,10 @@ try {
     //   printAndExit(cTree + jsTree);
     // }
 
-    var results = jam.compile(preprocessed, fs.readFileSync(jsPath).toString(), jviewPort);
+    var results = jam.compile(preprocessed, fs.readFileSync(jsPath).toString(), lineNumber, yieldPoint);
+    // var results = jam.compile(fs.readFileSync(cPath).toString(), fs.readFileSync(jsPath).toString(), lineNumber, yieldPoint);
+    cSideEffectTable = results.C_SideEffectTable;
+    jsSideEffectTable = results.JS_SideEffectTable;
 
     if (callGraphFlag) {
         fs.writeFileSync("callgraph.html", callGraph.createWebpage());
@@ -134,12 +140,11 @@ try {
         ];
 
 
-
         // child_process.execSync(`gcc -Wno-incompatible-library-redeclaration -shared -o ${tmpDir}/libjamout.so -fPIC ${tmpDir}/jamout.c ${jamlibPath} -lpthread`);
         Promise.all(tasks).then(function(value) {
             results.manifest = createManifest(outPath, results.maxLevel);
             results.jstart = createJStart(results.hasJdata);
-            createZip(results.JS, results.jView, results.manifest, results.jstart, tmpDir, outPath);
+            createZip(results.JS, results.manifest, results.jstart, tmpDir, outPath);
             if (!debug) {
                 for (var i = 0; i < value.length; i++) {
                     console.log(value[i]);
@@ -176,9 +181,9 @@ function compile(code, verbose) {
         includes = '#include "jamdevices.h"\n' + includes;
         includes = '#include <unistd.h>\n' + includes;
 
-
         fs.writeFileSync("jamout.c", includes + preprocessDecls.join("\n") + "\n" + code);
         fs.writeFileSync(`${tmpDir}/jamout.c`, includes + preprocessDecls.join("\n") + "\n" + code);
+        
         try {
             var command = `clang -g ${tmpDir}/jamout.c -o ${tmpDir}/a.out -I/usr/local/include -I/usr/local/share/jam/lib/ ${options} -pthread -lcbor -lnanomsg /usr/local/lib/libjam.a -ltask -levent -lhiredis -lmujs -L/usr/local/lib -lpaho-mqtt3a`;
             console.log("Compiling C code...");
@@ -211,6 +216,8 @@ function preprocess(file, verbose) {
     }
     var includes = '#include "jam.h"\n';
 
+    var originalProgram = contents
+
     contents = includes + "int main();\n" + contents;
 
     fs.writeFileSync(`${tmpDir}/pre.c`, contents);
@@ -218,17 +225,21 @@ function preprocess(file, verbose) {
     if (verbose) {
         console.log(command);
     }
-    return child_process.execSync(command).toString();
-
-    // return child_process.execSync(`clang -E -P -std=iso9899:199409 ${file}`).toString();
-
+    
+    var preprocessedProg = child_process.execSync(command).toString();
+    var index = preprocessedProg.indexOf("int main();\n");
+    var tmp = preprocessedProg.substring(0, index);
+    var lineNumber = tmp.split('\n').length;
+    return {
+        program: preprocessedProg,
+        lineNumber: lineNumber
+    };
 }
 
 function flowCheck(input, verbose) {
     return new Promise(function(resolve, reject) {
         // Returns empty buffer if flow installed
         var hasFlow = child_process.execSync("flow version >/dev/null 2>&1 || { echo 'not installed';}");
-
         if (hasFlow.length === 0) {
             fs.writeFileSync(`${tmpDir}/.flowconfig`, "");
             fs.writeFileSync(`${tmpDir}/annotated.js`, input);
@@ -244,21 +255,13 @@ function flowCheck(input, verbose) {
                     resolve("No Flow JavaScript errors found");
                 }
             });
-            // const child = child_process.exec('flow check-contents --color always', (error, stdout, stderr) => {
-            //     if (error !== null) {
-            //       console.log("JavaScript Type Checking Error:");
-            //       console.log(stdout.substring(stdout.indexOf("\n") + 1));
-            //     }
-            // });
-            // child.stdin.write(input);
-            // child.stdin.end();
         } else {
             resolve("Flow not installed, skipping JavaScript typechecking");
         }
     });
 }
 
-function createZip(jsout, jview, mout, jstart, tmpDir, outputName) {
+function createZip(jsout, mout, jstart, tmpDir, outputName) {
     var zip = new JSZip();
     zip.file("MANIFEST.txt", mout);
     zip.file("jamout.js", jsout);
@@ -297,7 +300,8 @@ function createManifest(outName, level) {
     mout += `NAME = ${outName}\n`;
     mout += `CREATE-TIME = ${ctime}\n`;
     mout += `MAX-HEIGHT = ${level}\n`;
-
+    mout += `C-SIDE-EFFECT = ${JSON.stringify(cSideEffectTable)}\n`;
+    mout += `JS-SIDE-EFFECT = ${JSON.stringify(jsSideEffectTable)}\n`;
     return mout;
 }
 

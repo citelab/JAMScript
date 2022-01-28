@@ -67,6 +67,7 @@ JAMJS <: ES6 {
 
     as = "as" ~identifierPart
     at = "at" ~identifierPart
+    beat = "beat" ~identifierPart
     broadcaster = "broadcaster" ~identifierPart
     controller = "controller" ~identifierPart
     flow = "flow" ~identifierPart
@@ -79,6 +80,7 @@ JAMJS <: ES6 {
     jsync = "jsync" ~identifierPart
     jexport = "jexport" ~identifierPart
     jrequire = "jrequire" ~identifierPart
+    linegraph = "linegraph" ~identifierPart
     logger = "logger" ~identifierPart
     name = "name" ~identifierPart
     of = "of" ~identifierPart
