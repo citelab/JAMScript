@@ -1,3 +1,0 @@
-switch (true) {
-	default: 
-}
