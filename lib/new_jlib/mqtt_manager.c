@@ -397,7 +397,7 @@ BeginPublishError:
   jamCall(SetTaskData(currentTask, transmitter), 1);
   cbor_item_t *errMap = cbor_new_definite_map(2);
   size_t errBufferSize = 1024;
-  unsigned char errBuffer[errBufferSize];
+  unsigned char errBuffer = (unsigned char*) malloc(errBufferSize);
   cbor_map_add(errMap, (struct cbor_pair){
                            .key = cbor_move(cbor_build_string("id")),
                            .value = cbor_move(cbor_build_uint32(attr->id))});
@@ -442,7 +442,7 @@ BeginPublishJ2CCallAck:
   cbor_array_set(timeArray, 0, cbor_move(cbor_build_uint64(attr->dur.tv_sec)));
   cbor_array_set(timeArray, 1, cbor_move(cbor_build_uint64(attr->dur.tv_nsec)));
   size_t ackBufferSize = 1024;
-  unsigned char ackBuffer[ackBufferSize];
+  unsigned char ackBuffer = (unsigned char*) malloc(ackBufferSize);
   cbor_map_add(ackMap, (struct cbor_pair){
                            .key = cbor_move(cbor_build_string("id")),
                            .value = cbor_move(cbor_build_uint32(attr->id))});
@@ -483,7 +483,7 @@ BeginPublishC2JDataAck:
   jamCall(SetTaskData(currentTask, transmitter), 1);
   cbor_item_t *ackMap = cbor_new_definite_map(2);
   size_t ackBufferSize = 1024;
-  unsigned char ackBuffer[ackBufferSize];
+  unsigned char ackBuffer = (unsigned char*) malloc(ackBufferSize);
   cbor_map_add(ackMap, (struct cbor_pair){
                            .key = cbor_move(cbor_build_string("id")),
                            .value = cbor_move(cbor_build_uint32(attr->id))});
