@@ -233,6 +233,7 @@ void jamdata_logger_cb(redisAsyncContext *c, void *r, void *privdata)
             // TODO: Free memory contained in nv
 
             __jamdata_logto_server(js->redctx, key, value, size, time_stamp, jamdata_logger_cb);
+            free(value);
             break;
         }
     }
@@ -359,11 +360,9 @@ comboptr_t *jamdata_simple_encode(
         .key = cbor_move(cbor_build_string("timestamp")),
         .value = cbor_move(cbor_build_uint64(timestamp))
     });
-
-    cbor_serialize(root, buffer, buffer_len);
+    int len = cbor_serialize(root, buffer, buffer_len);
     cbor_decref(&root);
-
-    return create_combo2llu_ptr(redis_key, buffer, buffer_len, timestamp);
+    return create_combo2llu_ptr(redis_key, buffer, len, timestamp);
 }
 
 
@@ -372,9 +371,9 @@ void jamdata_log_to_server_string(char *ns, char *lname, char *value) {
     char *key = jamdata_makekey(ns, lname);
 
     size_t len = 1024;
-    unsigned char buffer = (unsigned char*)malloc(len);
+    unsigned char *buffer = (unsigned char*)malloc(len);
     comboptr_t *cptr = jamdata_simple_encode(key, timestamp, buffer, len, cbor_build_string(value));
-    free(buffer);
+//    free(buffer);
 
     semqueue_enq(js->dataoutq, cptr, sizeof(comboptr_t));
 }
@@ -384,9 +383,9 @@ void jamdata_log_to_server_float(char *ns, char *lname, float value) {
     char *key = jamdata_makekey(ns, lname);
 
     size_t len = 1024;
-    unsigned char buffer = (unsigned char*)malloc(len);
+    unsigned char *buffer = (unsigned char*)malloc(len);
     comboptr_t *cptr = jamdata_simple_encode(key, timestamp, buffer, len, cbor_build_float8(value));
-    free(buffer);
+ //   free(buffer);
 
     semqueue_enq(js->dataoutq, cptr, sizeof(comboptr_t));
 }
@@ -396,9 +395,9 @@ void jamdata_log_to_server_int(char *ns, char *lname, int value) {
     char *key = jamdata_makekey(ns, lname);
 
     size_t len = 1024;
-    unsigned char buffer = (unsigned char*)malloc(len);
+    unsigned char *buffer = (unsigned char*)malloc(len);
     comboptr_t *cptr = jamdata_simple_encode(key, timestamp, buffer, len, cbor_build_uint32(value));
-    free(buffer);
+ //   free(buffer);
 
     semqueue_enq(js->dataoutq, cptr, sizeof(comboptr_t));
 }
@@ -418,7 +417,7 @@ void jamdata_log_to_server(char *ns, char *lname, char *fmt, ...)
 
         // Create a comboptr_t using the key and value
         size_t len = 1024;
-        unsigned char buffer = (unsigned char*)malloc(len);
+        unsigned char *buffer = (unsigned char*)malloc(len);
         comboptr_t *cptr = jamdata_encode(key, milliseconds, fmt, buffer, len, argptr);
         free(buffer);
 

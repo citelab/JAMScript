@@ -103,7 +103,6 @@ arg_t *command_arg_clone(arg_t *arg)
     return NULL;
 }
 
-
 //empty the memory space pointer to by arg
 void command_arg_free(arg_t *arg)
 {

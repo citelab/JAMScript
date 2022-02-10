@@ -6,7 +6,7 @@ int main()
 
   for (i = 0; i < 1000; i++) {
     int q = rand() % 100;
-    qq = q;
+    qq = 0;
     ss = names[ i % 10];
     zz = rand() % 100 + (rand() % 100) * 0.01;
     printf("Wrote .. qq: %d\n", q);
