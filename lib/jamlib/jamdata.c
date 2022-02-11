@@ -233,6 +233,7 @@ void jamdata_logger_cb(redisAsyncContext *c, void *r, void *privdata)
             // TODO: Free memory contained in nv
 
             __jamdata_logto_server(js->redctx, key, value, size, time_stamp, jamdata_logger_cb);
+            free(value);
             break;
         }
     }
@@ -243,10 +244,15 @@ void jamdata_logger_cb(redisAsyncContext *c, void *r, void *privdata)
 //args followed fmt will be paired up. For example,
 //parseCmd("%s%d", "person", "Lilly", "age", 19) indicates the variable named "person"
 //is expected to have a string type value followed, which is "Lilly" in this case
-comboptr_t *jamdata_encode(char *redis_key, unsigned long long timestamp, char *fmt, va_list args)
+comboptr_t *jamdata_encode(
+    char *redis_key, 
+    unsigned long long timestamp, 
+    char *fmt, 
+    unsigned char *buffer, 
+    size_t buffer_len,
+    va_list args
+)
 {
-    size_t len = 1024;
-    unsigned char buffer[len];
     int i, num = strlen(fmt);
 
     char *name, *s;
@@ -318,12 +324,12 @@ comboptr_t *jamdata_encode(char *redis_key, unsigned long long timestamp, char *
         .value = cbor_move(cbor_build_uint64(timestamp))
     });
 
-    cbor_serialize(root, buffer, len);
+    cbor_serialize(root, buffer, buffer_len);
 
     // The cbor object itself is deallocated.
     cbor_decref(&root);
 
-    return create_combo2llu_ptr(redis_key, buffer, len, timestamp);
+    return create_combo2llu_ptr(redis_key, buffer, buffer_len, timestamp);
 }
 
 unsigned long long ms_time() {
@@ -334,10 +340,13 @@ unsigned long long ms_time() {
     return tv.tv_sec*1000LL + tv.tv_usec/1000;
 }
 
-comboptr_t *jamdata_simple_encode(char *redis_key, unsigned long long timestamp, cbor_item_t *value) {
-    size_t len = 1024;
-    unsigned char buffer[len];
-
+comboptr_t *jamdata_simple_encode(
+    char *redis_key, 
+    unsigned long long timestamp, 
+    unsigned char *buffer, 
+    size_t buffer_len,
+    cbor_item_t *value
+) {
     cbor_item_t *root = cbor_new_definite_map(2);
 
     cbor_map_add(root, (struct cbor_pair)
@@ -351,10 +360,8 @@ comboptr_t *jamdata_simple_encode(char *redis_key, unsigned long long timestamp,
         .key = cbor_move(cbor_build_string("timestamp")),
         .value = cbor_move(cbor_build_uint64(timestamp))
     });
-
-    cbor_serialize(root, buffer, len);
+    int len = cbor_serialize(root, buffer, buffer_len);
     cbor_decref(&root);
-
     return create_combo2llu_ptr(redis_key, buffer, len, timestamp);
 }
 
@@ -363,7 +370,10 @@ void jamdata_log_to_server_string(char *ns, char *lname, char *value) {
     unsigned long long timestamp = ms_time();
     char *key = jamdata_makekey(ns, lname);
 
-    comboptr_t *cptr = jamdata_simple_encode(key, timestamp, cbor_build_string(value));
+    size_t len = 1024;
+    unsigned char *buffer = (unsigned char*)malloc(len);
+    comboptr_t *cptr = jamdata_simple_encode(key, timestamp, buffer, len, cbor_build_string(value));
+//    free(buffer);
 
     semqueue_enq(js->dataoutq, cptr, sizeof(comboptr_t));
 }
@@ -372,7 +382,10 @@ void jamdata_log_to_server_float(char *ns, char *lname, float value) {
     unsigned long long timestamp = ms_time();
     char *key = jamdata_makekey(ns, lname);
 
-    comboptr_t *cptr = jamdata_simple_encode(key, timestamp, cbor_build_float8(value));
+    size_t len = 1024;
+    unsigned char *buffer = (unsigned char*)malloc(len);
+    comboptr_t *cptr = jamdata_simple_encode(key, timestamp, buffer, len, cbor_build_float8(value));
+ //   free(buffer);
 
     semqueue_enq(js->dataoutq, cptr, sizeof(comboptr_t));
 }
@@ -381,7 +394,10 @@ void jamdata_log_to_server_int(char *ns, char *lname, int value) {
     unsigned long long timestamp = ms_time();
     char *key = jamdata_makekey(ns, lname);
 
-    comboptr_t *cptr = jamdata_simple_encode(key, timestamp, cbor_build_uint32(value));
+    size_t len = 1024;
+    unsigned char *buffer = (unsigned char*)malloc(len);
+    comboptr_t *cptr = jamdata_simple_encode(key, timestamp, buffer, len, cbor_build_uint32(value));
+ //   free(buffer);
 
     semqueue_enq(js->dataoutq, cptr, sizeof(comboptr_t));
 }
@@ -400,7 +416,10 @@ void jamdata_log_to_server(char *ns, char *lname, char *fmt, ...)
         va_start(argptr,fmt);
 
         // Create a comboptr_t using the key and value
-        comboptr_t *cptr = jamdata_encode(key, milliseconds, fmt, argptr);
+        size_t len = 1024;
+        unsigned char *buffer = (unsigned char*)malloc(len);
+        comboptr_t *cptr = jamdata_encode(key, milliseconds, fmt, buffer, len, argptr);
+        free(buffer);
 
         va_end(argptr);
 
