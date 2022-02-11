@@ -7,6 +7,8 @@ node_modules/*
 
 *.db
 
+.DS_Store
+
 *.out
 **/jamout.js
 **/jamout.c
@@ -20,6 +22,7 @@ lib/jdiscovery/mdns/build
 lib/jdiscovery/app.js
 
 .vscode/c_cpp_properties.json
+.vscode/*.log
 .sconsign.dblite
 .sconf_temp
 config.log

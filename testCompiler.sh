@@ -76,5 +76,5 @@ function runTest() {
 echo "Start running compiler tests"
 runTest c
 runTest jamc
- runTest js
+runTest js
 runTest jamjs
