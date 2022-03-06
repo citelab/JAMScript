@@ -10,7 +10,7 @@ fi
 
 if [[ $OSTYPE != 'darwin'* ]]; then
   echo "The local environment is not MacOS. Installing a compatibility layer for mDNS modules..."
-  apt install libavahi-compat-libdnssd-dev
+  sudo apt-get install libavahi-compat-libdnssd-dev -y
 fi
 
 cd lib/jamserver 
