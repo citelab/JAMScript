@@ -22,10 +22,4 @@ npm install
 
 cd ../..
 npm install
-
-echo "Installing mDNS.."
-cd lib/jdiscovery/mdns
-npm link --unsafe-perm
-
-cd ../../..
 npm run link
