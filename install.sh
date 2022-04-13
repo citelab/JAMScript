@@ -8,8 +8,13 @@ if [[ $UID != 0 ]]; then
 fi
 
 if [[ $OSTYPE != 'darwin'* ]]; then
+  bash -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf'
   echo "The local environment is not MacOS. Installing a compatibility layer for mDNS modules..."
-  apt install libavahi-compat-libdnssd-dev
+  apt install -y libavahi-compat-libdnssd-dev
 fi
+
+apt-get install -y mosquitto
+apt install -y redis-server
+service redis-server restart
 
 echo "Please run ./install2.sh to finish the installation."
