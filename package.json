@@ -25,7 +25,8 @@
         "postinstall": "scripts/install/postinstall.sh",
         "postversion": "git push && git push --tags && npm publish",
         "prepublishOnly": "scripts/install/prepublishOnly.sh",
-        "link": "scripts/install/link.sh"
+        "link": "scripts/install/link.sh",
+        "ko": "node testCompiler.js tests/CommunicationTesting/J2C/async/fog.c tests/CommunicationTesting/J2C/async/fog.js"
     },
     "bin": {
         "jamc": "./mainCompiler.js"
