@@ -1,9 +1,0 @@
-(1) We need to check whether the child(n) commands make sense or not.
-    There are too many child(n).child(m) type of statements in the semantic definitions.
-    We need to fix this in a proper way. 
-
-(2) The yield point insertion method is putting "jsleep" into the source code.
-    This should be changed.
-
-
-
