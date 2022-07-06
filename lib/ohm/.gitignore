@@ -1,0 +1,2 @@
+# Remove ohm-generated type definitions.
+**/*ohm-bundle.*
