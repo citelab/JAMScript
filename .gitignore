@@ -21,8 +21,7 @@ node_modules/*
 lib/jdiscovery/mdns/build
 lib/jdiscovery/app.js
 
-.vscode/c_cpp_properties.json
-.vscode/*.log
+/.vscode
 .sconsign.dblite
 .sconf_temp
 config.log
