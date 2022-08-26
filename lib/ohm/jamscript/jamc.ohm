@@ -19,9 +19,9 @@ JAMC <: C {
 
     jcond_expr_op   = "&&" | "||"
 
-    Async_activity  = jasync Jcond_specifier? Declarator Namespace_spec? Compound_stmt
+    Async_activity  = jtaskAsync Jcond_specifier? Declarator Namespace_spec? Compound_stmt
 
-    Sync_activity   = jsync Decl_specs Jcond_specifier? Declarator Namespace_spec? Compound_stmt
+    Sync_activity   = jtaskSync Decl_specs Jcond_specifier? Declarator Namespace_spec? Compound_stmt
     
     Jtask_attr_spec = "[" ListOf<Jtask_attr, ",">  "]"
     
@@ -51,8 +51,8 @@ JAMC <: C {
 
     as = "as" ~identPart
     at = "at" ~identPart
-    jasync = "jasync" ~identPart
-    jsync = "jsync" ~identPart
+    jtaskAsync = "jtask*" ~identPart
+    jtaskSync = "jtask" ~identPart
     jtask = "jtask" ~identPart
     in = "in" ~identPart
     jamtask = "jamtask" ~identPart
