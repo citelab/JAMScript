@@ -154,7 +154,6 @@ try {
     Promise.all(tasks).then(
       function (value) {
         results.manifest = createManifest(outPath, results.maxLevel);
-        results.jstart = createJStart(results.hasJdata);
         createZip(
           results.JS,
           results.manifest,
@@ -193,11 +192,23 @@ function compile(code, verbose) {
     if (debug) {
       options += " -fno-omit-frame-pointer -fsanitize=address";
     }
-    var includes = '#include "jam.h"\n';
-    includes = '#include "command.h"\n' + includes;
-    includes = '#include "jamdata.h"\n' + includes;
-    includes = '#include "jamdevices.h"\n' + includes;
-    includes = "#include <unistd.h>\n" + includes;
+
+    const includes =
+      [
+        "stdlib",
+        "stdio",
+        "pthread",
+        "time",
+        "assert",
+        "stdbool",
+        "unistd",
+        "tboard",
+        "command",
+        "cnode",
+        "calls",
+      ]
+        .map((lib) => `#include <${lib}.h>`)
+        .join("\n") + "\n";
 
     fs.writeFileSync(
       "jamout.c",
@@ -335,22 +346,6 @@ function createManifest(outName, level) {
   mout += `MAX-HEIGHT = ${level}\n`;
   mout += `C-SIDE-EFFECT = ${JSON.stringify(cSideEffectTable)}\n`;
   mout += `JS-SIDE-EFFECT = ${JSON.stringify(jsSideEffectTable)}\n`;
-  return mout;
-}
-
-// This is to create launcher start script - jstart.js
-//
-function createJStart(hasj) {
-  var mout;
-
-  if (hasj) mout = "var jserver = require('jamserver')(true);\n";
-  else mout = "var jserver = require('jamserver')(false);\n";
-
-  mout += "const {Flow, ParallelFlow, PFlow} = require('flows.js')();\n";
-  mout += "var jamlib = jserver.jamlib;\n";
-  mout += "jamlib.run(function() {});\n";
-  mout += "\n\n";
-
   return mout;
 }
 
