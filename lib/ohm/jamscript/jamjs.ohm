@@ -86,10 +86,10 @@ JAMJS <: ES6 {
     is = "is" ~identifierPart
     inflow = "inflow" ~identifierPart
     jamtask = "jamtask" ~identifierPart
-    jasync = "jasync" ~identifierPart
+    jasync = "jtask*" ~identifierPart
     jcond = "jcond" ~identifierPart
     jdata = "jdata" ~identifierPart
-    jsync = "jsync" ~identifierPart
+    jsync = "jtask" ~identifierPart
     jexport = "jexport" ~identifierPart
     jrequire = "jrequire" ~identifierPart
     linegraph = "linegraph" ~identifierPart
