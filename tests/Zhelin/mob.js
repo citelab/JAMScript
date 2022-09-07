@@ -8,7 +8,7 @@ jdata {
 
 var iteration = 1;
 
-if (jsys.type == "fog") {
+if (jsys.type == "device") {
     setInterval(() => {
         console.log("==========\nResults from Iteration", iteration, ":");
         console.log("Total number of worker participated:", y.size());
@@ -18,9 +18,8 @@ if (jsys.type == "fog") {
         }
         iteration ++;
     },3000);
-} else {
-    // Simulate device movement by setting device longitude to random numbers
+    
     setInterval(() => {
         jsys.setLong(Math.random() * 60);
     }, 3300)
-}
+} 
