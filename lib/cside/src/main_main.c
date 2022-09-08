@@ -5,6 +5,7 @@
 #include "cnode.h"
 #include <pthread.h>
 #include <time.h>
+#include <unistd.h>
 #include <stdbool.h>
 #include "main_main.h"
 #include <pthread.h>

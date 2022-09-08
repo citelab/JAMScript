@@ -18,8 +18,6 @@ node_modules/*
 **/*.conf/*
 **/dump.rdb
 **/errlog
-lib/jdiscovery/mdns/build
-lib/jdiscovery/app.js
 
 /.vscode
 .sconsign.dblite
@@ -28,7 +26,7 @@ config.log
 
 node_modules/
 
-
+*/output/*
 build/
 *.jxe
 **/errlog

@@ -15,7 +15,7 @@
 //#define MCO_ZERO_MEMORY
 // Uncomment following to run with valgrind properly (otherwise valgrind
 // will be unable to access memory). Affects performance
-#define MCO_USE_VALGRIND
+//#define MCO_USE_VALGRIND
 
 #include <minicoro.h>
 #include "queue/queue.h"

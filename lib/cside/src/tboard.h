@@ -949,7 +949,7 @@ void history_print_records(tboard_t *t, FILE *fptr);
  * Context: locks @t->hmutex in order to access hash table
  */
 
-
+void destroy_func_registry(tboard_t *t);
 
 
 ////////////////////////////////////////////////////////////////
