@@ -1,0 +1,102 @@
+File to Fix
+===========
+
+JAMProtocol.js                  done
+
+
+
+
+
+
+
+
+
+
+Prediction Cache Design
+=======================
+
+Requests need to be grouped. TaskID has two parts: nodeID and  sequence number
+The sequence number of pseudo randomly generated starting with the same seed.
+So, all workers would have the same sequence number if they are referring to 
+the same call. 
+Pseudo random number generator is used only for task ID generation for remote calls.
+
+Task Table
+==========
+We change to a unified task table instead of the activity and runtables.
+The task table (TT) will have two types of tasks: inside and outside.
+Inside tasks are running in the node itself - any type of controller and outside 
+tasks are running either in the worker or in another controller.
+
+Now a call comes in...  you check the task table. If the task was executed previously
+we would have an entry.. and also the entry would tell us the following:
+= Do we have the result 
+= What is the reuse policy: no reuse, reuse on matching input, probabilistic reuse on matching input, 
+reuse on arrival rate (?), 
+= type of task: inside, outside 
+= controller, worker 
+= current reuse 
+= max reuse number 
+
+If reuse is the case, we collect the result from the task table and 
+    generate the result from the task table, increment the reuse count 
+
+If we are not using reuse, we need to reset the reuse counter. This way
+the reuse choice becomes a favored outcome in the subsequent remote calls.
+
+JCond Execution
+===============
+
+
+
+We attach a condition with each task definition.
+
+
+
+
+=======================================
+
+Edit JAMProtocol.js - edit it such that all opcodes are in integer. Also make the JAMProtocol simpler
+as possible.
+
+Clean up - registry - remove local storage.
+
+Clean up - constants
+
+Fully integrate the worker threads. Get it working.
+
+Get J->J working: Cloud-to-fog and fog-to-cloud, device-to-fog (could be multi-way)
+Get C->J working
+Get J->C working
+
+micro TODO
+==========
+= revise japplib. Load a simple hardcoded program using japplib. 
+= Inject requests from main hub and get it running in the app.
+= Let the app call out execution commands - remote calls.. print them at mqtt.
+= Get two "j" nodes talking app-to-app. calling each other.
+= Get fog -> cloud calls.
+= Get cloud -> fog calls. (both are J - J calls)
+
+
+What do we need RunTable and Activitity Table?
+
+Can we improve ncache? Speculative handover optimization?
+
+============================================================================================
+Registry revisions
+= We need to remove attribute management out of the registry.
+= Registry just needs to take care of first meeting.
+= There will be a paging channel that would advertise the changes
+    in nodal properties. So, those changes are not going through mDNS.
+= Swap the current mDNS to an implementation that is pure JavaScript that is easy to install.
+
+============================================================================================
+Node Cache revisions
+= We need to do speculative updates, how?
+= No mobile fogs supported now. 
+= We need to allow mobile fogs and we could predict their locations and initiate connections, which
+would allow us to provide much more responsive connections.
+
+
+

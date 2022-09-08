@@ -1,0 +1,127 @@
+/*
+
+The MIT License (MIT)
+Copyright (c) 2016 Muthucumaru Maheswaran
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+*/
+#ifndef __COMMAND_H__
+#define __COMMAND_H__
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include <tinycbor/cbor.h>
+#include <stdint.h>
+#include <pthread.h>
+#include "nvoid.h"
+
+/*
+ * TODO: May be we could have user defined structures and unions in the
+ * argument definitions. This would help serialization of arbitrary structures.
+ * The challenge would be to transfer such data between C and JavaScript.
+ */
+
+typedef enum {
+    NULL_TYPE,
+    STRING_TYPE,
+    INT_TYPE,
+    DOUBLE_TYPE,
+    NVOID_TYPE
+} argtype_t;
+
+typedef enum {
+    REXEC_SYNC = 1,
+    REXEC_ASYNC = 2,
+    REXEC_RES = 3,
+    SCHEDULE = 4
+} cmd_opcode_t;
+
+typedef enum {
+    DOWNLOAD_SCHED = 2
+} subcmd_opcode_t;
+
+#define TINY_CMD_STR_LEN            16
+#define SMALL_CMD_STR_LEN           32
+#define LARGE_CMD_STR_LEN           128
+#define HUGE_CMD_STR_LEN            1024
+
+typedef struct _arg_t
+{
+    int nargs;
+    argtype_t type;
+    union _argvalue_t
+    {
+        int ival;
+        char *sval;
+        double dval;
+        nvoid_t *nval;
+    } val;
+} arg_t;
+
+
+
+/*
+ * A structure to hold the outgoing and incoming command.
+ * An outgoing command is parsed into a CBOR formatted byte array and similarly
+ * a CBOR formatted byte array is decoded into a CBOR item handle.
+ * Also, information is extracted from the CBOR item and inserted into the
+ * command structure at the decoding process.
+ */
+typedef struct _command_t
+{
+    // Command object is going to hold truncated versions of the parameters 
+    // in case longer strings are passed at creation
+    // CBOR object is going to hold all the data
+    cmd_opcode_t cmd;
+    subcmd_opcode_t subcmd;
+    char cond[LARGE_CMD_STR_LEN];
+    int  condvec;
+    char fn_name[SMALL_CMD_STR_LEN];            // Function name
+    long int task_id;                           // Task identifier (a function in execution)
+    char fn_argsig[SMALL_CMD_STR_LEN];          // Argument signature of the functions - use fmask format
+    unsigned char buffer[HUGE_CMD_STR_LEN];     // CBOR byte array in raw byte form
+    int length;                                 // length of the raw CBOR data
+
+    arg_t *args;                                // List of args
+    int nargs;                                  // length of args array 
+
+    int refcount;                               // Deallocation control
+    pthread_mutex_t lock;
+    long id;
+} command_t;
+
+command_t *command_new(cmd_opcode_t cmd, subcmd_opcode_t subcmd, char *cond, int condvec, char *fn_name, 
+                    long int task_id, char *fn_argsig, ...);
+command_t *command_new_using_arg(cmd_opcode_t cmd, subcmd_opcode_t opt, char *cond, int condvec,
+                    char *fn_name, long int taskid, char *fn_argsig, arg_t *args, int nargs);                    
+command_t *command_from_data(char *fn_argsig, void *data, int len);                    
+void command_hold(command_t *cmd);
+void command_free(command_t *cmd);
+bool command_qargs_alloc(char *fmt, arg_t **rargs, va_list args);
+void command_arg_print(arg_t *arg);
+void command_arg_inner_free(arg_t *arg);
+void command_arg_free(arg_t *arg);
+arg_t *command_arg_clone(arg_t *arg);
+void command_print(command_t *cmd);
+#ifdef __cplusplus
+}
+#endif
+#endif
