@@ -7,12 +7,11 @@
 void terminate_error(bool terminate, const char *format, ...){
     va_list arglist;
 
-    printf("Error: ");
+    printf("ERROR!: ");
     va_start(arglist, format);
     vprintf(format, arglist);
     va_end(arglist);
     printf("\n");
-    if (terminate) {
+    if (terminate) 
         exit(1);
-    }
 }

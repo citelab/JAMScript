@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
+
 #include "utilities.h"
 
 bool args_port_valid(int port){
@@ -87,6 +89,61 @@ void destroy_args(cnode_args_t *args) {
     free(args->argv);
     // free arguments object
     free(args);
+}
+
+
+int jamargs(int argc, char **argv, char *appid, char *tag, int *num)
+{
+    char *avalue = NULL;
+    char *tvalue = NULL;
+    char *nvalue = NULL;
+    int c;
+
+    // Default port Number
+    jamport = 1883;
+
+    opterr = 0;
+
+    while ((c = getopt (argc, argv, "p:a:n:t:h:")) != -1)
+        switch (c)
+        {
+            case 'a':
+                avalue = optarg;
+            break;
+            case 'n':
+                nvalue = optarg;
+            break;
+            case 't':
+                tvalue = optarg;
+            break;
+            case 'p':
+                jamport = atoi(optarg);
+            break;
+            case 'h':
+                mheight = atoi(optarg);
+            break;
+        default:
+            printf("ERROR! Argument input error..\n");
+            printf("Usage: program -a app_id [-t tag] [-n num] [-p port] [-h height]\n");
+            exit(1);
+        }
+
+    if (avalue == NULL)
+    {
+        printf("ERROR! No app name specified. Use -a app_name to specify the app_name\n");
+        exit(1);
+    }
+    strcpy(appid, avalue);
+
+    if (tvalue != NULL)
+        strcpy(tag, tvalue);
+
+    if (nvalue != NULL)
+        *num = atoi(nvalue);
+    else
+        *num = 1;
+
+    return optind;
 }
 
 

@@ -3,7 +3,7 @@
 #include "tboard.h"
 #include "core.h"
 
-int compute_level(int cv) 
+int compute_level(int cv)
 {
     return EDGE_LEVEL;
 }
@@ -21,22 +21,24 @@ arg_t *remote_sync_call(tboard_t *t, char *cmd_func, char *condstr, int condvec,
     (void)t;
     int level = compute_level(condvec);
 
-    if (strlen(fn_sig) > 0) {
+    if (strlen(fn_sig) > 0)
+    {
         va_start(args, fn_sig);
         res = command_qargs_alloc(fn_sig, &qargs, args);
         va_end(args);
 
-        if (res) 
+        if (res)
             rarg = remote_sync_task_create(t, cmd_func, condstr, condvec, level, fn_sig, qargs, strlen(fn_sig));
-        else 
+        else
             rarg = NULL;
-    } else 
+    }
+    else
         rarg = remote_sync_task_create(t, cmd_func, condstr, condvec, level, "", NULL, 0);
     return rarg;
 }
- 
-/* 
- * An acknowledgement is required from the other side. We send the request 
+
+/*
+ * An acknowledgement is required from the other side. We send the request
  * and expect a response to the request.
  */
 bool remote_async_call(tboard_t *t, char *cmd_func, char *condstr, int condvec, char *fn_sig, ...)
@@ -48,15 +50,17 @@ bool remote_async_call(tboard_t *t, char *cmd_func, char *condstr, int condvec, 
     (void)t;
     int level = compute_level(condvec);
 
-    if (strlen(fn_sig) > 0) {
+    if (strlen(fn_sig) > 0)
+    {
         va_start(args, fn_sig);
         res = command_qargs_alloc(fn_sig, &qargs, args);
         va_end(args);
         if (res)
             return remote_async_task_create(t, cmd_func, condstr, condvec, level, fn_sig, qargs, strlen(fn_sig));
-        else 
+        else
             return false;
-    } else 
+    }
+    else
         return remote_async_task_create(t, cmd_func, condstr, condvec, level, "", NULL, 0);
 }
 
@@ -71,17 +75,20 @@ void *local_sync_call(tboard_t *t, char *cmd_func, ...)
     arg_t *qargs;
 
     function_t *f = tboard_find_func(t, cmd_func);
-    if (f == NULL) {
+    if (f == NULL)
+    {
         printf("ERROR! Function %s not available for execution\n", cmd_func);
         return NULL;
     }
     const char *fmask = f->fn_sig;
-    if (strlen(fmask) > 0) {
+    if (strlen(fmask) > 0)
+    {
         va_start(args, cmd_func);
         res = command_qargs_alloc(fmask, &qargs, args);
         va_end(args);
         return blocking_task_create(t, *f, f->sideef, qargs, strlen(fmask));
-    } else 
+    }
+    else
         return blocking_task_create(t, *f, f->sideef, NULL, 0);
 }
 
@@ -92,16 +99,19 @@ void local_async_call(tboard_t *t, char *cmd_func, ...)
     arg_t *qargs;
 
     function_t *f = tboard_find_func(t, cmd_func);
-    if (f == NULL) {
+    if (f == NULL)
+    {
         printf("ERROR! Function %s not available for execution\n", cmd_func);
         return;
     }
     const char *fmask = f->fn_sig;
-    if (strlen(fmask) > 0) {
+    if (strlen(fmask) > 0)
+    {
         va_start(args, cmd_func);
         res = command_qargs_alloc(fmask, &qargs, args);
         va_end(args);
         task_create(t, *f, qargs, strlen(fmask), NULL);
-    } else 
+    }
+    else
         task_create(t, *f, NULL, 0, NULL);
 }

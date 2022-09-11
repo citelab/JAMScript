@@ -1,10 +1,5 @@
 #include <stdio.h>
-
-
-
-
 #include "tboard.h"
-//#include "MQTT.h"
 #include "mqtt_adapter.h"
 #include "cnode.h"
 #include "utilities.h"
@@ -44,11 +39,11 @@ void cnode_core_destroy(cnode_core_t *core) {
 }
 
 cnode_t *cnode_init(int argc, char **argv){
-    cnode_t *cn = (cnode_t *)calloc(1,sizeof(cnode_t));
+    cnode_t *cn = (cnode_t *)calloc(1, sizeof(cnode_t));
     
     // get arguments
     cn->args = process_args(argc, argv);
-    if( cn->args == NULL ) {
+    if (cn->args == NULL) {
         cnode_destroy(cn);
         terminate_error(true, "invalid command line");
     }
@@ -147,7 +142,7 @@ bool cnode_stop(cnode_t *cn) {
 
 
 MQTT_info_t *find_dev_j(cnode_core_group_t *group) {
-    // this should perform a UDP scan or something, but for now I will hardcode the port as 8080
+    // this should perform a UDP scan or something, but for now I will hardcode the port as 1883
     MQTT_info_t *ret = (MQTT_info_t *)calloc(1, sizeof(MQTT_info_t));
     strcpy(ret->host, group->host);
     ret->port = group->port;

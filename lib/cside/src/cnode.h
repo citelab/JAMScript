@@ -2,7 +2,6 @@
 #define CNODE_H
 
 #include "tboard.h"
-//#include "MQTT.h"
 #include "mqtt_adapter.h"
 #include "core.h"
 

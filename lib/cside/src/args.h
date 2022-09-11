@@ -5,7 +5,7 @@
  * 
  * This includes cnode command line arguments, and MQTT server information
  */
-#define DEFAULTS_PORT 8080
+#define DEFAULTS_PORT 1883
 #define DEFAULTS_SERIALNUM 1
 #define DEFAULTS_NUMEXECUTORS 1
 
