@@ -2,6 +2,7 @@
 #include "calls.h"
 #include "tboard.h"
 #include "core.h"
+#include "mqtt_adapter.h"
 
 int compute_level(int cv)
 {

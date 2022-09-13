@@ -33,11 +33,6 @@ extern "C" {
 #include <pthread.h>
 #include "nvoid.h"
 
-/*
- * TODO: May be we could have user defined structures and unions in the
- * argument definitions. This would help serialization of arbitrary structures.
- * The challenge would be to transfer such data between C and JavaScript.
- */
 
 typedef enum {
     NULL_TYPE,
@@ -47,16 +42,6 @@ typedef enum {
     NVOID_TYPE
 } argtype_t;
 
-typedef enum {
-    REXEC_SYNC = 1,
-    REXEC_ASYNC = 2,
-    REXEC_RES = 3,
-    SCHEDULE = 4
-} cmd_opcode_t;
-
-typedef enum {
-    DOWNLOAD_SCHED = 2
-} subcmd_opcode_t;
 
 #define TINY_CMD_STR_LEN            16
 #define SMALL_CMD_STR_LEN           32
@@ -90,12 +75,11 @@ typedef struct _command_t
     // Command object is going to hold truncated versions of the parameters 
     // in case longer strings are passed at creation
     // CBOR object is going to hold all the data
-    cmd_opcode_t cmd;
-    subcmd_opcode_t subcmd;
-    char cond[LARGE_CMD_STR_LEN];
-    int  condvec;
+    int cmd;
+    int subcmd;
     char fn_name[SMALL_CMD_STR_LEN];            // Function name
     long int task_id;                           // Task identifier (a function in execution)
+    char node_id[LARGE_CMD_STR_LEN];            // this can be the UUID4 of the node
     char fn_argsig[SMALL_CMD_STR_LEN];          // Argument signature of the functions - use fmask format
     unsigned char buffer[HUGE_CMD_STR_LEN];     // CBOR byte array in raw byte form
     int length;                                 // length of the raw CBOR data
@@ -108,11 +92,10 @@ typedef struct _command_t
     long id;
 } command_t;
 
-command_t *command_new(cmd_opcode_t cmd, subcmd_opcode_t subcmd, char *cond, int condvec, char *fn_name, 
-                    long int task_id, char *fn_argsig, ...);
-command_t *command_new_using_arg(cmd_opcode_t cmd, subcmd_opcode_t opt, char *cond, int condvec,
-                    char *fn_name, long int taskid, char *fn_argsig, arg_t *args, int nargs);                    
-command_t *command_from_data(char *fn_argsig, void *data, int len);                    
+command_t *command_new(int cmd, int subcmd, char *fn_name, 
+                    long int task_id, char *node_id, char *fn_argsig, ...);
+command_t *command_new_using_arg(int cmd, int opt, char *fn_name, long int taskid, char *node_id, char *fn_argsig, arg_t *args, int nargs);
+command_t *command_from_data(char *fn_argsig, void *data, int len);
 void command_hold(command_t *cmd);
 void command_free(command_t *cmd);
 bool command_qargs_alloc(char *fmt, arg_t **rargs, va_list args);

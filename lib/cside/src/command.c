@@ -51,8 +51,7 @@ static long id = 1;
  * Return a command that includes a CBOR representation that can be sent out (a byte string)
  * It reuses the command_new_using_arg() function
  */
-command_t *command_new(cmd_opcode_t cmd, subcmd_opcode_t subcmd, char *cond, int condvec, char *fn_name, 
-                    long int task_id, char *fn_argsig, ...)
+command_t *command_new(int cmd, int subcmd, char *fn_name, long int task_id, char *node_id, char *fn_argsig, ...)
 {
     va_list args;
     nvoid_t *nv;
@@ -91,13 +90,13 @@ command_t *command_new(cmd_opcode_t cmd, subcmd_opcode_t subcmd, char *cond, int
         i++;
     }
     va_end(args);
-    command_t *c = command_new_using_arg(cmd, subcmd, cond, condvec, fn_name, task_id, fn_argsig, qargs, i);
+    command_t *c = command_new_using_arg(cmd, subcmd, fn_name, task_id, node_id, fn_argsig, qargs, i);
     return c;
 }
 
 
-command_t *command_new_using_arg(cmd_opcode_t cmd, subcmd_opcode_t subcmd, char *cond, int condvec,
-                    char *fn_name, long int taskid, char *fn_argsig, arg_t *args, int nargs)
+
+command_t *command_new_using_arg(int cmd, int subcmd, char *fn_name, long int taskid, char *node_id, char *fn_argsig, arg_t *args, int nargs)
 {
     command_t *cmdo = (command_t *)calloc(1, sizeof(command_t));
     nvoid_t *nv;
@@ -113,14 +112,6 @@ command_t *command_new_using_arg(cmd_opcode_t cmd, subcmd_opcode_t subcmd, char 
     cmdo->cmd = subcmd;
     cbor_encode_text_stringz(&mapEncoder, "subcmd");
     cbor_encode_int(&mapEncoder, subcmd);
-    // store and encode cond
-    COPY_STRING(cmdo->cond, cond, LARGE_CMD_STR_LEN);
-    cbor_encode_text_stringz(&mapEncoder, "cond");
-    cbor_encode_text_stringz(&mapEncoder, cond);
-    // store and encode condvec
-    cmdo->condvec = condvec;
-    cbor_encode_text_stringz(&mapEncoder, "condvec");
-    cbor_encode_int(&mapEncoder, condvec);
     // store and encode fn_name
     COPY_STRING(cmdo->fn_name, fn_name, SMALL_CMD_STR_LEN);
     cbor_encode_text_stringz(&mapEncoder, "fn_name");
@@ -129,6 +120,10 @@ command_t *command_new_using_arg(cmd_opcode_t cmd, subcmd_opcode_t subcmd, char 
     cmdo->task_id = taskid;
     cbor_encode_text_stringz(&mapEncoder, "task_id");
     cbor_encode_uint(&mapEncoder, taskid);
+    // store and encode node_id
+    COPY_STRING(cmdo->node_id, node_id, LARGE_CMD_STR_LEN);
+    cbor_encode_text_stringz(&mapEncoder, "node_id");
+    cbor_encode_text_stringz(&mapEncoder, node_id);
     // store and encode fn_argsig
     COPY_STRING(cmdo->fn_argsig, fn_argsig, SMALL_CMD_STR_LEN);
     cbor_encode_text_stringz(&mapEncoder, "fn_argsig");
@@ -212,21 +207,17 @@ command_t *command_from_data(char *fmt, void *data, int len)
   //          printf("Hi subcmd   2\n");
             cbor_value_get_int(&map, &result);
             cmd->subcmd = result;
-        } else if (strcmp(keybuf, "condvec") == 0) {
-    //        printf("Hi condvec 2\n");
-            cbor_value_get_int(&map, &result);
-            cmd->condvec = result;
         } else if (strcmp(keybuf, "task_id") == 0) {
       //      printf("Hi taskid 2\n");
             cbor_value_get_uint64(&map, &uresult);
             cmd->task_id = uresult;
-        } else if (strcmp(keybuf, "cond") == 0) {
+        } else if (strcmp(keybuf, "node_id") == 0) {
         //    printf("Hi cond 2\n");
             length = LARGE_CMD_STR_LEN;
             if (cbor_value_is_text_string(&map)) 
-                cbor_value_copy_text_string	(&map, cmd->cond, &length, NULL);
+                cbor_value_copy_text_string	(&map, cmd->node_id, &length, NULL);
             else 
-                strcpy(cmd->cond, "");
+                strcpy(cmd->node_id, "");
          //   assert(length < LARGE_CMD_STR_LEN);
         } else if (strcmp(keybuf, "fn_name") == 0) {
             length = SMALL_CMD_STR_LEN;
@@ -462,13 +453,11 @@ void command_print(command_t *cmd)
     printf("\n===================================\n");
     printf("\nCommand cmd: %d\n", cmd->cmd);
     printf("\nCommand subcmd: %d\n", cmd->subcmd);
-    printf("\nCommand condstr: %s\n", cmd->cond);
-    printf("\nCommand cond vector: %d\n", cmd->condvec);
 
     printf("\nCommand fn_name: %s\n", cmd->fn_name);
     printf("\nCommand taskid : %lu\n", cmd->task_id);
+    printf("\nCommand node_id: %s\n", cmd->node_id);
     printf("\nCommand fn_argsig: %s\n", cmd->fn_argsig);
-
 
     printf("\nCommand buffer: ");
     for (i = 0; i < (int)strlen((char *)cmd->buffer); i++)
@@ -476,6 +465,6 @@ void command_print(command_t *cmd)
     printf("\nCommand number of args: %d\n", cmd->nargs);
 
     command_arg_print(cmd->args);
-
+    
     printf("\n===================================\n");
 }

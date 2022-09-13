@@ -19,17 +19,14 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-// NO TASKBOARD IN CORE
+
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <mosquitto.h>
 #include "core.h"
-#include "tboard.h"
-#include "mqtt_adapter.h"
 #include "uuid4.h"
 #include "snowflake.h"
 
@@ -90,150 +87,19 @@ void core_setup(corestate_t *cs)
     fclose(fp);
 }
 
-corestate_t *core_init(int port, int serialnum, int numexecutors) // remove numexecutors since taskboard is moved
+corestate_t *core_init(int port, int serialnum) 
 {
     // create the core state structure..
     corestate_t *cs = (corestate_t *)calloc(1, sizeof(corestate_t));
     cs->serial_num = serialnum;
     cs->default_mqtt_port = port;
     core_setup(cs);
-    // initialize mqtt 
-    mqtt_lib_init();
-    // create the task board
-    // TODO: move back to cnode
-    cs->tboard = tboard_create(cs, numexecutors); // consider moving to cnode
-    cs->numservers = 0;
-
-    // TODO: move this to a different location?
-    snowflake_init(02, cs->serial_num); // the args: zone, worker-ID - zone is arbitrary 
+    snowflake_init(02, cs->serial_num); 
     return cs;
-}
-
-void core_create_server(corestate_t *cs, enum levels level, char *host, int port, char *topics[], int ntopics) 
-{
-    server_t *serv = (server_t *)calloc(1, sizeof(server_t));
-    serv->state = SERVER_NOT_REGISTERED;
-    serv->level = level;
-    serv->mqtt = setup_mqtt_adapter(serv, level, host, port, topics, ntopics);
-    // TODO: remove this as well
-    serv->tboard = cs->tboard;
-    cs->servers[cs->numservers++] = serv;
-}
-
-/* 
- * Find servers at the preferred level.. if no level, then find a server at the edge or
- * return the server at the device level. Cloud is not returned by default.
- */
-void find_active_servers(corestate_t *cs, enum levels level, int servers[], int *nservers)
-{
-    int k = 0;
-    for (int i = 0; i < cs->numservers; i++) {
-        if (cs->servers[i]->state == SERVER_REGISTERED) {
-            if (level > 0 && level == cs->servers[i]->level) 
-                servers[k++] = i; 
-            else if (level == 0 && cs->servers[i]->level <= EDGE_LEVEL)
-                servers[k++] = i;
-        }
-    }
-    *nservers = k;
 }
 
 void core_destroy(corestate_t *cs)
 {
-    // todo: move back to cnode
-    tboard_destroy(cs->tboard);
     free(cs->device_id);
-    for (int i = 0; i < cs->numservers; i++) {
-        disconnect_mqtt_adapter(cs->servers[i]->mqtt);
-        destroy_mqtt_adapter(cs->servers[i]->mqtt);
-        free(cs->servers[i]);
-    }
     free(cs);
 }
-
-
-/*
-void core_register_sent(corestate_t *cs, int indx)
-{
-    if (cs->server[indx] == NULL) 
-         cs->server[indx] = (server_t *)calloc(1, sizeof(server_t));
-     cs->server[indx]->state = SERVER_REG_SENT; 
-}
-
-void core_set_registered(corestate_t *cs, int indx, char *epoint)
-{
-    if (cs->server[indx] == NULL)
-        cs->server[indx] = (server_t *)calloc(1, sizeof(server_t));
-
-    if (cs->server[indx]->state != SERVER_REGISTERED)
-    {
-        cs->server[indx]->state = SERVER_REGISTERED;
-        cs->server[indx]->endpoint = strdup(epoint);
-    }
-}
-
-bool core_is_registered(corestate_t *cs, int indx)
-{
-    if ((cs->server[indx] != NULL) &&
-        (cs->server[indx]->state == SERVER_REGISTERED))
-        return true;
-    else 
-        return false;
-}            
-
-bool core_is_connected(corestate_t *cs, int indx, char *host)
-{
-    if ((cs->server[indx] != NULL) &&
-        (cs->server[indx]->state == SERVER_REGISTERED) && 
-        (strcmp(cs->server[indx]->endpoint, host) == 0))
-        return true;
-    else 
-        return false;
-}
-
-bool core_info_pending(corestate_t *cs)
-{
-    bool flag = false;
-    for (int i = 0; cs->server[i] != NULL; i++)
-        if (cs->server[i]->info_pending)
-            flag = true;
-    
-    return flag;
-}
-
-bool core_pending_isset(corestate_t *cs, int indx)
-{
-    if ((cs->server[indx] != NULL) &&
-        (cs->server[indx]->state == SERVER_REGISTERED) &&
-        (cs->server[indx]->info_pending == true))
-        return true;
-    else 
-        return false;
-}
-
-void core_set_pending(corestate_t *cs, int indx)
-{
-    if ((cs->server[indx] != NULL) &&
-        (cs->server[indx]->state == SERVER_REGISTERED))
-        cs->server[indx]->info_pending = true;
-}
-
-void core_set_redis(corestate_t *cs, char *host, int port)
-{
-    cs->redport = port;
-    cs->redserver = strdup(host);
-}
-
-int core_mach_height(corestate_t *cs)
-{
-    int i = 0;
-
-    while ((i < 3) && 
-           (cs->server[i] != NULL))
-        if (cs->server[i]->state == SERVER_REGISTERED)
-            i++;
-        else 
-            break;
-    return i;
-}
-*/

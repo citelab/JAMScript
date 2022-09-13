@@ -340,6 +340,7 @@ void remote_task_place(tboard_t *t, remote_task_t *rtask)
     // expect more than 8 servers to contact.
     int servers[8];
     int numservers;
+    /*
     corestate_t *cs = (corestate_t *)t->core;
     command_t *cmd;
     // check for valid taskboard and remote task
@@ -353,6 +354,7 @@ void remote_task_place(tboard_t *t, remote_task_t *rtask)
         cmd = command_new_using_arg(rtask->blocking ? REXEC_SYNC : REXEC_ASYNC, 0, rtask->rargs.condstr, rtask->rargs.condvec, rtask->command, rtask->task_id, rtask->rargs.fn_argsig, rtask->data, rtask->data_size);
         mqtt_publish(cs->servers[snum]->mqtt, "/uinfo", cmd->buffer, cmd->length, cmd, 0);
     }
+    */
     /*
      * The rtask was freed here.. not anymore we wait for the response to come from 
      * the remote side. Then the entry should be removed from the task list and it 

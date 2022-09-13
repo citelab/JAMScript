@@ -271,7 +271,7 @@ typedef struct {
     pthread_cond_t msg_cond;
 
     int sqs;
-    void *core;
+    void *cnode;
 
     function_t *registry;
 
@@ -394,7 +394,7 @@ void *executor(void *arg);
 ///////////// TBoard Definitions /////////////////
 //////////////////////////////////////////////////
 
-tboard_t* tboard_create(void *core, int secondary_queues);
+tboard_t* tboard_create(void *cnode, int secondary_queues);
 /**
  * tboard_create() - Creates task board object.
  * @secondary_queues: Number of secondary queues tboard should have.

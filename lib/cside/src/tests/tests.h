@@ -12,7 +12,6 @@
 #ifndef __TESTS_H_
 #define __TESTS_H_
 
-#include "../main_main.h"
 #include "../tboard.h"
 #include <pthread.h>
 

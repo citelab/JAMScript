@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <minicoro.h>
 #include "command.h"
+#include "constants.h"
 
 // TODO: consider adding function to add task_t task so we dont have to do this both here and task_create
 bool msg_processor(tboard_t *t, command_t *cmd)
@@ -13,7 +14,7 @@ bool msg_processor(tboard_t *t, command_t *cmd)
     remote_task_t *rtask = NULL;
     // when a message is received, it interprets message and adds to respective queue
     switch (cmd->cmd) {
-        case REXEC_ASYNC:
+        case CmdNames_REXEC:
             // find the function
             f = tboard_find_func(t, cmd->fn_name);
             if (f == NULL) {
@@ -25,7 +26,7 @@ bool msg_processor(tboard_t *t, command_t *cmd)
             task_create(t, *f, cmd->args, cmd->nargs, cmd);
             return true;
 
-        case REXEC_RES:
+        case CmdNames_REXEC_RES:
             // find the task
             HASH_FIND_INT(t->task_table, &(cmd->task_id), rtask);
             if (rtask != NULL)  {
@@ -43,7 +44,7 @@ bool msg_processor(tboard_t *t, command_t *cmd)
             command_free(cmd);
             return true;
 
-        case SCHEDULE: // unimplemented in current milestones
+        case CmdNames_GET_SCHEDULE: // unimplemented in current milestones
            // if (msg->subtype == PRIMARY_EXEC) {
            //     return bid_processing(t, (bid_t *)(msg->data));
            // } else {

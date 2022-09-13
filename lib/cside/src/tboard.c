@@ -24,7 +24,7 @@
 //////////// TBOARD FUNCTIONS //////////////
 ////////////////////////////////////////////
 
-tboard_t* tboard_create(void *core, int secondary_queues)
+tboard_t* tboard_create(void *cnode, int secondary_queues)
 {
     // create tboard
     assert(secondary_queues <= MAX_SECONDARIES);
@@ -49,7 +49,7 @@ tboard_t* tboard_create(void *core, int secondary_queues)
     assert(pthread_mutex_init(&(tboard->pmutex), NULL) == 0);
     assert(pthread_cond_init(&(tboard->pcond), NULL) == 0);
 
-    tboard->core = core;
+    tboard->cnode = cnode;
     tboard->pqueue = queue_create();
 
     queue_init(&(tboard->pqueue));

@@ -24,11 +24,11 @@ struct pub_msg_entry_t {
     UT_hash_handle hh;
 };
 
-struct broker_info_t {
+typedef struct broker_info {
     char host[64];
     int port;
     int keep_alive;
-}; 
+} broker_info_t; 
 
 typedef struct mqtt_adapter {
     int mid;
@@ -88,7 +88,7 @@ void mqtt_publish_callback(struct mosquitto *mosq, void *udata, int mid);
 void mqtt_do_subscribe(struct mqtt_adapter *ma);
 
 struct mqtt_adapter *create_mqtt_adapter(enum levels level, void *serv);
-bool connect_mqtt_adapter(struct mqtt_adapter *ma, struct broker_info_t *bi);
+bool connect_mqtt_adapter(struct mqtt_adapter *ma, broker_info_t *bi);
 struct mqtt_adapter *setup_mqtt_adapter(void *serv, enum levels level, char *host, int port, char *topics[], int ntopics);
 void destroy_mqtt_adapter(struct mqtt_adapter *ma);
 void disconnect_mqtt_adapter(struct mqtt_adapter *ma);

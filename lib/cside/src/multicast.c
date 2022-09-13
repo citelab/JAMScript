@@ -84,3 +84,9 @@ int multicast_check_receive(mcast_t *m)
     }
     return rc;
 }
+
+void multicast_destroy(mcast_t *m) 
+{
+    close(m->sock);
+    free(m);
+}

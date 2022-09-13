@@ -24,5 +24,6 @@ int multicast_send(mcast_t *m, void *msg, int msglen);
 void multicast_setup_recv(mcast_t *m);
 int multicast_receive(mcast_t *m, void *buf, int bufsize);
 int multicast_check_receive(mcast_t *m);
+void multicast_destroy(mcast_t *m);
 
 #endif

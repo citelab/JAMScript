@@ -6,7 +6,7 @@
 #include "mqtt_adapter.h"
 #include "command.h"
 #include "tboard.h"
-#include "core.h"
+#include "cnode.h"
 #include "utilities.h"
 
 // XXX: Got the message for the task board
@@ -122,7 +122,7 @@ struct mqtt_adapter *create_mqtt_adapter(enum levels level, void *s)
     return ma;
 }
 
-bool connect_mqtt_adapter(struct mqtt_adapter *ma, struct broker_info_t *bi)
+bool connect_mqtt_adapter(struct mqtt_adapter *ma, broker_info_t *bi)
 {
     if (mosquitto_connect(ma->mosq, bi->host, bi->port, bi->keep_alive)) {
         fprintf(stderr, "Connection error:\n");
@@ -144,7 +144,7 @@ struct mqtt_adapter *setup_mqtt_adapter(void *serv, enum levels level, char *hos
     for (int i = 0; i < ntopics; i++)
         mqtt_post_subscription(ma, topics[i]);
     // connect the adapter
-    struct broker_info_t b = {.keep_alive = 60};
+    broker_info_t b = {.keep_alive = 60};
     strcpy(b.host, host);
     b.port = port;
     connect_mqtt_adapter(ma, &b);

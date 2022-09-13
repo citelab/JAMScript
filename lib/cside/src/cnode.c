@@ -3,44 +3,78 @@
 #include "mqtt_adapter.h"
 #include "cnode.h"
 #include "utilities.h"
+#include "constants.h"
+#include "command.h"
+#include "multicast.h"
 
-char *find_my_ip(){
-    return "127.0.0.1"; // temporary
+
+topics_t *cnode_create_topics(char *app) 
+{
+    char sbuf[1024];
+    topics_t *t = (topics_t *)calloc(1, sizeof(topics_t));
+    int tcnt = 0;
+    sprintf(sbuf, "/%s/replies/down", app);
+    t->list[tcnt++] = strdup(sbuf);
+    sprintf(sbuf, "/%s/announce/down", app);
+    t->list[tcnt++] = strdup(sbuf);
+    sprintf(sbuf, "/%s/requests/down", app);
+    t->list[tcnt++] = strdup(sbuf);
+    t->length = tcnt;
+
+    return t;
 }
 
-cnode_core_t *cnode_core_init(char *worker_ip, cnode_args_t *args){
-    // wrapper for core_init()
-    // I dont know what to do with IP right now
-    cnode_core_t *core = (cnode_core_t *)malloc(sizeof(cnode_core_t));
-    core->group = (cnode_core_group_t *)malloc(sizeof(cnode_core_group_t));
-
-    core->group->host = calloc(strlen(worker_ip)+1, sizeof(char));
-    strcpy(core->group->host, worker_ip);
-    core->group->port = args->port;
-    core->cs = core_init(args->port, args->serialnum, args->numexecutors);
-    return core;
+void cnode_topics_destroy(topics_t *t) 
+{
+    for (int i = 0; i < t->length; i++) 
+        free(t->list[i]);
+    free(t);
 }
-void cnode_core_destroy(cnode_core_t *core) {
-    // destroy wrapper for core
-    if (core == NULL) {
-        return;
+
+
+server_t *cnode_create_mbroker(cnode_t *cn, enum levels level, char *host, int port, char *topics[], int ntopics)
+{
+    server_t *serv = (server_t *)calloc(1, sizeof(server_t));
+    serv->level = level;
+    serv->state = SERVER_NOT_REGISTERED;
+    serv->mqtt = setup_mqtt_adapter(serv, level, host, port, topics, ntopics);
+    serv->tboard = cn->tboard;
+    return serv;
+}
+
+
+broker_info_t *cnode_scanj(int groupid) {
+    char mgroup[32];
+    int count = 100;
+    broker_info_t *bi = NULL;
+
+    sprintf(mgroup, "%s.%d", Multicast_PREFIX, groupid);
+    mcast_t *m = multicast_init(mgroup, Multicast_SENDPORT, Multicast_RECVPORT);
+    command_t *smsg = command_new(CmdNames_WHERE_IS_CTRL, 0, "", 0, "", "");
+    multicast_send(m, smsg->buffer, smsg->length);
+    while (count > 0 && (multicast_check_receive(m) == 0)) {
+        multicast_send(m, smsg->buffer, smsg->length);
+        count--;
     }
-    if (core->group != NULL) {
-        if (core->group->host != NULL)
-            free(core->group->host);
-        //if (core->group->null != NULL)
-        //    free(core->group->null);
-        free(core->group);
+    if (count > 0) {
+        unsigned char buf[1024];
+        multicast_receive(m, buf, 1024);
+        command_t *rmsg = command_from_data("si", buf, 1024);
+        if (rmsg->cmd == CmdNames_HERE_IS_CTRL) {
+            bi = (broker_info_t *)calloc(1, sizeof(broker_info_t));
+            strcpy(bi->host, rmsg->args[0].val.sval);
+            bi->port = rmsg->args[1].val.ival;
+        }
+        command_free(rmsg);
     }
-    if (core->cs != NULL) {
-        core_destroy((core->cs));
-    }
-    free(core);
+    command_free(smsg);
+
+    return bi;
 }
 
 cnode_t *cnode_init(int argc, char **argv){
     cnode_t *cn = (cnode_t *)calloc(1, sizeof(cnode_t));
-    
+
     // get arguments
     cn->args = process_args(argc, argv);
     if (cn->args == NULL) {
@@ -48,42 +82,37 @@ cnode_t *cnode_init(int argc, char **argv){
         terminate_error(true, "invalid command line");
     }
 
+    cn->topics = cnode_create_topics(cn->args->appid);
+
     // generate core
-    cn->core = cnode_core_init(find_my_ip(), cn->args);
-    if( cn->core == NULL ){
+    cn->core = core_init(cn->args->port, cn->args->snumber);
+    if (cn->core == NULL) {
         cnode_destroy(cn);
         terminate_error(true, "cannot create the core");
-    } else {
-        cn->tboard = cn->core->cs->tboard; // this is created in core_init()
     }
 
-    // find MQTT info
-    cn->devjinfo = find_dev_j(cn->core->group);
-    if( cn->devjinfo == NULL ){
+    // find the J node info by UDP scanning
+    cn->devjinfo = cnode_scanj(cn->args->groupid);
+    if (cn->devjinfo == NULL ) {
         cnode_destroy(cn);
-        terminate_error(true, "cannot find controller");
-    }
-    
-    // create MQTT server adapter
-    cn->devjserv = (server_t *)calloc(1, sizeof(server_t));
-    if ( create_mqtt_adapter(DEVICE_LEVEL, cn->devjserv) == NULL ){
-        cnode_destroy(cn);
-        terminate_error(true, "cannot create MQTT adapter to controller");
-    } else {
-        mqtt_set_all_cbacks(cn->devjserv->mqtt, mqtt_connect_callback, mqtt_disconnect_callback,
-            mqtt_message_callback, mqtt_subscribe_callback, 
-            mqtt_publish_callback, mqtt_log_callback);
-    }
-    // connect to MQTT server adapter
-    if( !connect_mqtt_adapter(cn->devjserv->mqtt, cn->devjinfo) ) {
-        cnode_destroy(cn);
-        terminate_error(true, "cannot connect to MQTT controller");
+        terminate_error(true, "cannot find the device j server");
     }
 
-    /** done in core_init() it would appear
-    cn->tboard = tboard_create(0);
-    */
+    // Start the taskboard 
+    cn->tboard = tboard_create(cn, cn->args->nexecs);
+    if ( cn->tboard == NULL ) {
+        cnode_destroy(cn);
+        terminate_error(true, "cannot create the task board");
+    }
 
+    mqtt_lib_init();
+
+    // Connect to the J server (MQTT)
+    cn->devjserv = cnode_create_mbroker(cn, DEVICE_LEVEL, cn->devjinfo->host, cn->devjinfo->port, cn->topics->list, cn->topics->length);
+    if ( cn->devjserv == NULL) {
+        cnode_destroy(cn);
+        terminate_error(true, "cannot create MQTT broker");
+    }
 
     return cn;
 }
@@ -99,14 +128,18 @@ void cnode_destroy(cnode_t *cn) {
         destroy_args(cn->args);
     }
 
+    // free topics
+    if (cn->topics != NULL) 
+        cnode_topics_destroy(cn->topics);
+
     // free core
     if (cn->core != NULL) {
-        cnode_core_destroy(cn->core);
+        core_destroy(cn->core);
     }
 
     // free MQTT server info
     if (cn->devjinfo != NULL) {
-        destroy_dev_j(cn->devjinfo);
+        free(cn->devjinfo);
     }
 
     // free MQTT server
@@ -119,14 +152,11 @@ void cnode_destroy(cnode_t *cn) {
     }
 
     // destroy tboard
-    /** done in core_destroy() it would appear
     if (cn->tboard != NULL) {
         tboard_destroy(cn->tboard);
     }
-    */
     free(cn);
 }
-
 
 bool cnode_start(cnode_t *cn) {
     // start_mqtt(cn->devjserv);
@@ -139,23 +169,4 @@ bool cnode_stop(cnode_t *cn) {
     tboard_kill(cn->tboard);
     return true;
 }
-
-
-MQTT_info_t *find_dev_j(cnode_core_group_t *group) {
-    // this should perform a UDP scan or something, but for now I will hardcode the port as 1883
-    MQTT_info_t *ret = (MQTT_info_t *)calloc(1, sizeof(MQTT_info_t));
-    strcpy(ret->host, group->host);
-    ret->port = group->port;
-    ret->keep_alive = group->keep_alive;
-    return ret;
-}
-void destroy_dev_j(MQTT_info_t *info){
-    free(info);
-}
-
-/*
-void subscribe_mqtt(MQTT_t *mqtt, cnode_t *cn) {
-    // Nothing happens here that I am aware of
-}
-*/
 

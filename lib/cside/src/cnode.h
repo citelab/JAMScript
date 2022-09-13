@@ -1,46 +1,54 @@
-#ifndef CNODE_H
-#define CNODE_H
+#ifndef __CNODE_H__
+#define __CNODE_H__
 
 #include "tboard.h"
 #include "mqtt_adapter.h"
 #include "core.h"
 
-/* temporary things for MQTT adapter till figured out */
-#define MQTT_info_t     struct broker_info_t
-#define MQTT_t          struct mqtt_adapter
+#define MAX_SERVERS             16
+#define MAX_TOPICS              16
 
+typedef enum
+{
+    SERVER_NOT_REGISTERED,
+    SERVER_REG_SENT,
+    SERVER_REGISTERED,
+    SERVER_ERROR
+} server_state_t;
+
+typedef struct _server_t 
+{
+    enum levels level;
+    server_state_t state;
+    mqtt_adapter_t *mqtt;
+    tboard_t *tboard;
+    // redis_adapter goes here 
+} server_t;
+
+typedef struct _topics_t
+{
+    char *list[MAX_TOPICS];
+    int length;
+} topics_t;
 
 /* CNode arguments structure created by process_args() */
 typedef struct cnode_args_t {
-    int argc;
-    char **argv;
+    char *tags;
+    int groupid;
+    char *appid;
     int port;
-    int serialnum;
-    int numexecutors;
+    int snumber;
+    int nexecs;
 } cnode_args_t;
-
-
-/* CNode Core Group structure used in code */
-typedef struct cnode_core_group_t {
-    char *host;
-    int port;
-    int keep_alive;
-    // void *null; // placeholder
-} cnode_core_group_t;
-
-/* CNode Core structure created by core_init() */
-typedef struct cnode_core_t {
-    cnode_core_group_t *group; // can get away with no pointer most likely if called as &(cn->core->group)
-    corestate_t *cs; // core state
-} cnode_core_t;
 
 
 /* CNode type, which contains CNode substructures and taskboard */
 typedef struct cnode_t {
     cnode_args_t *args;
-    cnode_core_t *core;
+    topics_t *topics;
+    corestate_t *core;
     server_t *devjserv;
-    MQTT_info_t *devjinfo;
+    broker_info_t *devjinfo;
     tboard_t *tboard;
 } cnode_t;
 
@@ -101,30 +109,6 @@ bool cnode_start(cnode_t *cn); // cnode.c
  */
 
 
-////////////////////////////////////////
-//////////////// CORE //////////////////
-////////////////////////////////////////
-
-cnode_core_t *cnode_core_init(char *ip, cnode_args_t *args); // core.c
-/** core_init() - Initializes the CNode core
- * @ip: IP Address
- * @args: Arguments
- * 
- * Returns: core pointer on success
- *          NULL on failure
- */
-
-void cnode_core_destroy(cnode_core_t *core);  // core.c
-/** core_init() - Initializes the CNode core
- * @core: Core to destroy
- * 
- * Returns: void
- * 
- * Context: Frees argument pointer, and any other allocations made by core_init()
- */
-
-
-
 
 
 
@@ -156,68 +140,5 @@ void destroy_args(cnode_args_t *args); // args.c
  * Context: Dellocates cnode_args_t pointer and any other allocations of process_args()
  */
 
-
-
-////////////////////////////////////////
-//////////////// MQTT //////////////////
-////////////////////////////////////////
-
-MQTT_info_t *find_dev_j(cnode_core_group_t *group); // args.c
-/** find_dev_j() - Finds dev j from group (unsure of how)
- * @group: pointer to cnode_core_group_t type object
- * 
- * generates MQTT_info_t object based on core group object.
- * Unsure how this object or group is supposed to look so:
- * TODO: define and implement
- * 
- * Returns: MQTT_info_t pointer
- * 
- * Context: Allocates return pointer
- * 
- * NOTE: CONSIDER CHANGING THIS TO SOMETHING LIKE `obtain_serv_info` or something
- *       and group it into MQTT (defined in MQTT.h even)
- */
-
-void destroy_dev_j(MQTT_info_t *info); // args.c
-/** destroy_dev_j() - Destroys dev_j object (unsure of how)
- * @info: devj info object to destroy
- * 
- * Not sure what purpose this serves, so I made a dummy implementation
- * 
- * Returns: void
- * 
- * Context: Deallocates return pointer
- * 
- * NOTE: CONSIDER CHANGING THIS TO SOMETHING LIKE `destroy_serv_info` or something
- *       and group it into MQTT (defined in MQTT.h even)
- */
-
-
-void subscribe_mqtt(MQTT_t *mqtt, cnode_t *cn); // cnode.c
-/** subscribe_mqtt() - Subscribes connected mqtt server to cnode
- * @mqtt: MQTT Server connection
- * @cn: CNode to subscribe server to
- * 
- * 
- * Returns: Nothing
- * 
- * TODO: Implement
- * 
- */
-
-
-
-
-///////////////////////////////////////////
-//////////////// UTILITY //////////////////
-///////////////////////////////////////////
-// will likely move to another place...  //
-
-char *find_my_ip(); // cnode.c
-/** find_my_ip() - Finds IP and returns it
- * 
- * Returns: IP on sucess
- *          NULL on failure
- */
 
 #endif
