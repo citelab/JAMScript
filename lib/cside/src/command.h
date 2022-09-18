@@ -98,7 +98,7 @@ command_t *command_new_using_arg(int cmd, int opt, char *fn_name, long int taski
 command_t *command_from_data(char *fn_argsig, void *data, int len);
 void command_hold(command_t *cmd);
 void command_free(command_t *cmd);
-bool command_qargs_alloc(char *fmt, arg_t **rargs, va_list args);
+bool command_qargs_alloc(const char *fmt, arg_t **rargs, va_list args);
 void command_arg_print(arg_t *arg);
 void command_arg_inner_free(arg_t *arg);
 void command_arg_free(arg_t *arg);

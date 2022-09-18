@@ -56,7 +56,7 @@ cnode_args_t *process_args(int argc, char **argv) {
             args->nexecs = atoi(optarg);
         break;
         default:
-            terminate_error(true, "ERROR! Argument input error..\nUsage: program -a app_id [-t tag] [-g groupid] [-n num] [-p port] [-x executors]\n");
+            terminate_error(true, "Unknown input option\nUsage: program -a app_id [-t tag] [-g groupid] [-n num] [-p port] [-x executors]\n");
     }
 
     // check validity

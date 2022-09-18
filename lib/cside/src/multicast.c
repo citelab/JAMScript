@@ -77,11 +77,13 @@ int multicast_receive(mcast_t *m, void *buf, int bufsize)
 
 int multicast_check_receive(mcast_t *m)
 {
+    
     int rc = poll(m->fds, m->nfds, 1000);
     if (rc < 0) {
         perror("poll");
         exit(1);
     }
+    printf("Poll result %d\n", rc);
     return rc;
 }
 

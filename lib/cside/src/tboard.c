@@ -116,7 +116,7 @@ void tboard_start(tboard_t *tboard)
 
 }
 
-void tboard_destroy(tboard_t *tboard)
+void tboard_shutdown(tboard_t *tboard)
 {
     // wait for threads to terminate before destroying task board
     pthread_join(tboard->primary, NULL);
@@ -301,8 +301,8 @@ void destroy_func_registry(tboard_t *t) {
 
     HASH_ITER(hh, t->registry, currf, tmp) {
         HASH_DEL(t->registry, currf);  /* delete; t->registry advances to next */
-        free(currf->fn_name);
-        free(currf->fn_sig);
+        free((void *)currf->fn_name);
+        free((void *)currf->fn_sig);
         free(currf);
     }
 }

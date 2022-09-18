@@ -102,7 +102,7 @@ command_t *command_new_using_arg(int cmd, int subcmd, char *fn_name, long int ta
     nvoid_t *nv;
     CborEncoder encoder, mapEncoder, arrayEncoder;
     cbor_encoder_init(&encoder, cmdo->buffer, HUGE_CMD_STR_LEN, 0);
-    cbor_encoder_create_map(&encoder, &mapEncoder, 8);
+    cbor_encoder_create_map(&encoder, &mapEncoder, 7);
     // store the fields into the structure and encode into the CBOR
     // store and encode cmd
     cmdo->cmd = cmd;
@@ -229,6 +229,7 @@ command_t *command_from_data(char *fmt, void *data, int len)
                 cbor_value_copy_text_string	(&map, cmd->fn_argsig, &length, NULL);
             else 
                 strcpy(cmd->fn_argsig, "");
+            printf("Fn argsig found ...%s, length %d\n", cmd->fn_argsig, strlen(cmd->fn_argsig));
         //    assert(length < SMALL_CMD_STR_LEN);
         } else if (strcmp(keybuf, "args") == 0) {
             if (strlen(cmd->fn_argsig) > 0) {
@@ -263,6 +264,8 @@ command_t *command_from_data(char *fmt, void *data, int len)
                             cmd->args[i].type = DOUBLE_TYPE;
                             cbor_value_get_double(&arr, &dval);
                             cmd->args[i].val.dval = dval;
+                        break;
+                        default:
                         break;
                     }
                     i++;
@@ -317,7 +320,7 @@ void command_free(command_t *cmd)
     free(cmd);
 }
 
-bool command_qargs_alloc(char *fmt, arg_t **rargs, va_list args)
+bool command_qargs_alloc(const char *fmt, arg_t **rargs, va_list args)
 {
     int i = 0;
     arg_t *qargs;

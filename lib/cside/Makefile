@@ -7,7 +7,7 @@
 CC = gcc
 
 # define any compile-time flags
-CFLAGS	:= -g -pthread -lmosquitto -lcbor
+CFLAGS	:= -g -pthread 
 # -std=c99
 
 # define library paths in addition to /usr/lib

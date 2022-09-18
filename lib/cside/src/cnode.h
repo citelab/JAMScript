@@ -108,6 +108,7 @@ bool cnode_start(cnode_t *cn); // cnode.c
  * Context: should most likely throw terminate_error() on error, but this would likely not be memory safe
  */
 
+bool cnode_stop(cnode_t *cn);
 
 
 

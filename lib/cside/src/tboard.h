@@ -88,7 +88,7 @@ typedef mco_desc context_desc;
  * Task functions must have signature `void fn(context_t ctx)`. This typedef reflects
  * this signature when passing functions.
  */
-typedef void* (*tb_task_f)(context_t);
+typedef void (*tb_task_f)(context_t);
 
 
 //////////////////////////////////////////////////////
@@ -424,10 +424,10 @@ void tboard_start(tboard_t *tboard);
  * Context: Creates threads referenced in @tboard.
  */
 
-void tboard_destroy(tboard_t *t);
+void tboard_shutdown(tboard_t *t);
 /**
- * tboard_destroy() - Destroy task board on completion.
- * @t: tboard_t pointer of task board to destroy
+ * tboard_shutdown() - blocks until tboard terminates and at termination does a whole lot of data structure destroying
+ * @t: tboard_t pointer of task board to shutdown
  * 
  * This function joins task board executor threads. When threads terminate, the following occurs
  * * - Locks exit mutex @t->emutex, signals @t->tcond so tboard_kill() can return
@@ -827,15 +827,6 @@ bool data_processor(tboard_t *t, msg_t *msg); // when data is received, it inter
  * data_processor() - Handles data issued remotely by Redis Adapter.
  * @t:   tboard_t pointer to task board.
  * @msg: message recieved to be processed.
- * 
- * TODO: Need requirements and implementation
- */
-
-bool bid_processing(tboard_t *t, bid_t *bid); // missing requirements
-/**
- * bid_processing() - Processes remote schedule changes issued by MQTT
- * @t:   tboard_t pointer to task board.
- * @bid: bid issued remotely that dictates schedule changes
  * 
  * TODO: Need requirements and implementation
  */
