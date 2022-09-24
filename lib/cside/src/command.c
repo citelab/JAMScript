@@ -108,6 +108,7 @@ command_t *command_new_using_arg(int cmd, int subcmd, char *fn_name, long int ta
     cmdo->cmd = cmd;
     cbor_encode_text_stringz(&mapEncoder, "cmd");
     cbor_encode_int(&mapEncoder, cmd);
+    printf("Hi \n");
     // store and encode subcmd
     cmdo->cmd = subcmd;
     cbor_encode_text_stringz(&mapEncoder, "subcmd");
@@ -116,15 +117,17 @@ command_t *command_new_using_arg(int cmd, int subcmd, char *fn_name, long int ta
     COPY_STRING(cmdo->fn_name, fn_name, SMALL_CMD_STR_LEN);
     cbor_encode_text_stringz(&mapEncoder, "fn_name");
     cbor_encode_text_stringz(&mapEncoder, fn_name);
+        printf("Hi \n");
     // store and encode task_id
     cmdo->task_id = taskid;
-    cbor_encode_text_stringz(&mapEncoder, "task_id");
+    cbor_encode_text_stringz(&mapEncoder, "taskid");
     cbor_encode_uint(&mapEncoder, taskid);
     // store and encode node_id
     COPY_STRING(cmdo->node_id, node_id, LARGE_CMD_STR_LEN);
-    cbor_encode_text_stringz(&mapEncoder, "node_id");
+    cbor_encode_text_stringz(&mapEncoder, "nodeid");
     cbor_encode_text_stringz(&mapEncoder, node_id);
     // store and encode fn_argsig
+        printf("Hi \n");
     COPY_STRING(cmdo->fn_argsig, fn_argsig, SMALL_CMD_STR_LEN);
     cbor_encode_text_stringz(&mapEncoder, "fn_argsig");
     cbor_encode_text_stringz(&mapEncoder, fn_argsig);
@@ -133,6 +136,7 @@ command_t *command_new_using_arg(int cmd, int subcmd, char *fn_name, long int ta
     cmdo->nargs = nargs;
     cbor_encode_text_stringz(&mapEncoder, "args");
     cbor_encoder_create_array(&mapEncoder, &arrayEncoder,nargs);
+        printf("Hi \n");
     for (int i = 0; i < nargs; i++) {
         switch (args[i].type) {
             case NVOID_TYPE:
@@ -184,7 +188,8 @@ command_t *command_from_data(char *fmt, void *data, int len)
     char strbuf[LARGE_CMD_STR_LEN];
     char keybuf[32];
     int result;
-    uint64_t uresult;
+    double dresult;
+    int64_t uresult;
 
     command_t *cmd = (command_t *)calloc(1, sizeof(command_t));
     memcpy(cmd->buffer, data, len);
@@ -192,27 +197,29 @@ command_t *command_from_data(char *fmt, void *data, int len)
     cbor_parser_init(cmd->buffer, len, 0, &parser, &it);
     cbor_value_enter_container(&it, &map);
     while (!cbor_value_at_end(&map)) {
-//        printf("First type %d\n", cbor_value_get_type(&map));
+        //printf("First type %d\n", cbor_value_get_type(&map));
         if (cbor_value_get_type(&map) == CborTextStringType) {
             length = 32;
             cbor_value_copy_text_string	(&map, keybuf, &length, NULL);
         }
         cbor_value_advance(&map);
-//        printf("Second type %d\n, key %s==========", cbor_value_get_type(&map), keybuf);
+        printf("Second type %d\n, key %s==========", cbor_value_get_type(&map), keybuf);
         if (strcmp(keybuf, "cmd") == 0) {
-//            printf("Hi cmd... 2\n");
             cbor_value_get_int(&map, &result);
             cmd->cmd = result;
         } else if (strcmp(keybuf, "subcmd") == 0) {
-  //          printf("Hi subcmd   2\n");
             cbor_value_get_int(&map, &result);
             cmd->subcmd = result;
-        } else if (strcmp(keybuf, "task_id") == 0) {
-      //      printf("Hi taskid 2\n");
-            cbor_value_get_uint64(&map, &uresult);
-            cmd->task_id = uresult;
-        } else if (strcmp(keybuf, "node_id") == 0) {
-        //    printf("Hi cond 2\n");
+        } else if (strcmp(keybuf, "taskid") == 0) {
+            if (cbor_value_get_type(&map) == 251) {
+                cbor_value_get_double(&map, &dresult);
+                cmd->task_id = (uint64_t)dresult;
+            } else {
+                cbor_value_get_int(&map, &result);
+                cmd->task_id = result;
+            }
+        } else if (strcmp(keybuf, "nodeid") == 0) {
+            printf("Hi cond 2\n");
             length = LARGE_CMD_STR_LEN;
             if (cbor_value_is_text_string(&map)) 
                 cbor_value_copy_text_string	(&map, cmd->node_id, &length, NULL);
@@ -229,9 +236,10 @@ command_t *command_from_data(char *fmt, void *data, int len)
                 cbor_value_copy_text_string	(&map, cmd->fn_argsig, &length, NULL);
             else 
                 strcpy(cmd->fn_argsig, "");
-            printf("Fn argsig found ...%s, length %d\n", cmd->fn_argsig, strlen(cmd->fn_argsig));
+            printf("===================Fn argsig found ...%s, length %d\n", cmd->fn_argsig, strlen(cmd->fn_argsig));
         //    assert(length < SMALL_CMD_STR_LEN);
         } else if (strcmp(keybuf, "args") == 0) {
+            printf("~~~~~~~~~~~~~~~~~~~~~~\n");
             if (strlen(cmd->fn_argsig) > 0) {
                 cmd->nargs = strlen(cmd->fn_argsig);
                 cbor_value_enter_container(&map, &arr);

@@ -58,7 +58,6 @@ void *executor(void *arg)
     while (true) {
         // create single cancellation point
         set_thread_cancel_point_here();
-
         // run sequencer
         task_sequencer(tboard);
 
@@ -149,6 +148,7 @@ void *executor(void *arg)
                     if (!rtask->blocking)
                         e = queue_new_node(task);
                     // place remote task into appropriate message queue
+                    printf("Remote task placed... %d\n", rtask->blocking);
                     remote_task_place(tboard, rtask);
 
                 } else { // just a normal yield, so we create node to reinsert task into queue
@@ -193,8 +193,11 @@ void *executor(void *arg)
                     tboard_deinc_concurrent(tboard);
                 }
                 // if command object is specified, just free it. User data would be deallocated by itself
-                if (task->cmd_obj)
+                
+                if (task->cmd_obj) {
                     command_free((command_t *)task->cmd_obj);       // FIXME: THis is conflicting with release in the wrapper
+                    printf("Releasing the command object...\n");
+                }
             //    else {
                     // FIXME: Arg free must be fixed. It is done in applications in the "wrapper"
                     // FIXME: Should it be done in application or here? What about command release in 197?

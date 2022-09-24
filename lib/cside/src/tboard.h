@@ -81,6 +81,7 @@ typedef mco_coro* context_t;
  */
 typedef mco_desc context_desc;
 
+
 /**
  * tb_task_f - Task function prototype.
  * @arg: Passed by coroutine library.
@@ -161,13 +162,9 @@ typedef struct task_t {
 
 /**
  * @brief 
- * @condstr:    condition string that is passed to the other side
- * @condvec:    vectorized (integer) form of the condition string
- * @level:      extract from the condvec that indicates the level of execution
+  * @level:      extract from the condvec that indicates the level of execution
  */
 typedef struct {
-    char condstr[MAX_MSG_LENGTH];
-    int condvec;
     char fn_argsig[MAX_ARG_LENGTH];
     int level;
 } remote_task_args_t;
@@ -287,7 +284,6 @@ typedef struct {
 
     remote_task_t *task_table;
 
-    void *controller;
 } tboard_t;
 
 /**
@@ -562,8 +558,8 @@ void remote_task_place(tboard_t *t, remote_task_t *rtask);
  * Context: locks @t->msg_mutex
  */
 
-arg_t *remote_sync_task_create(tboard_t *tboard, char *cmd_func, char *condstr, int condvec, int level, char *fn_argsig, arg_t *qargs, int nargs);
-bool remote_async_task_create(tboard_t *tboard, char *cmd_func, char *condstr, int condvec, int level, char *fn_argsig, arg_t *qargs, int nargs);
+arg_t *remote_sync_task_create(tboard_t *tboard, char *cmd_func, int level, char *fn_argsig, arg_t *qargs, int nargs);
+bool remote_async_task_create(tboard_t *tboard, char *cmd_func, int level, char *fn_argsig, arg_t *qargs, int nargs);
 
 
 bool remote_task_create(tboard_t *t, char *message, void *response, size_t sizeof_resp, bool blocking);
@@ -799,10 +795,10 @@ typedef struct {
     void *data;
 } bid_t;
 
-bool msg_processor(tboard_t *t, command_t *cmd);
+bool msg_processor(void *serv, command_t *cmd);
 /**
  * msg_processor() - Handles message issued remotely by MQTT
- * @t:   tboard_t pointer to task board.
+ * @serv:   server_t pointer to server interface
  * @cmd: command to be processed.
  * 
  * This function should only be called by MQTT Adapter. MQTT Adapter is expected to handle memory
@@ -821,6 +817,10 @@ bool msg_processor(tboard_t *t, command_t *cmd);
  * when adding the task would exceed allowed number of concurrently running tasks, and should
  * indicate that @msg should be returned to the message queue. 
  */
+
+void send_err_msg(void *serv, char *node_id, long int task_id);
+void send_ack_msg(void *serv, char *node_id, long int task_id, int timeout);
+
 
 bool data_processor(tboard_t *t, msg_t *msg); // when data is received, it interprets message and proceeds accordingly (missing requiremnts)
 /**

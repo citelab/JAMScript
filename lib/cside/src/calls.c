@@ -12,7 +12,7 @@ int compute_level(int cv)
 /*
  * Remote call that blocks for results. It returns NULL on failure.
  */
-arg_t *remote_sync_call(tboard_t *t, char *cmd_func, char *condstr, int condvec, char *fn_sig, ...)
+arg_t *remote_sync_call(tboard_t *t, char *cmd_func, char *fn_sig, ...)
 {
     va_list args;
     bool res;
@@ -20,7 +20,9 @@ arg_t *remote_sync_call(tboard_t *t, char *cmd_func, char *condstr, int condvec,
     arg_t *rarg = NULL;
 
     (void)t;
-    int level = compute_level(condvec);
+    // TODO: FIX THIS..
+    int level = 0;
+
 
     if (strlen(fn_sig) > 0)
     {
@@ -29,12 +31,12 @@ arg_t *remote_sync_call(tboard_t *t, char *cmd_func, char *condstr, int condvec,
         va_end(args);
 
         if (res)
-            rarg = remote_sync_task_create(t, cmd_func, condstr, condvec, level, fn_sig, qargs, strlen(fn_sig));
+            rarg = remote_sync_task_create(t, cmd_func, level, fn_sig, qargs, strlen(fn_sig));
         else
             rarg = NULL;
     }
     else
-        rarg = remote_sync_task_create(t, cmd_func, condstr, condvec, level, "", NULL, 0);
+        rarg = remote_sync_task_create(t, cmd_func, level, "", NULL, 0);
     return rarg;
 }
 
@@ -42,14 +44,14 @@ arg_t *remote_sync_call(tboard_t *t, char *cmd_func, char *condstr, int condvec,
  * An acknowledgement is required from the other side. We send the request
  * and expect a response to the request.
  */
-bool remote_async_call(tboard_t *t, char *cmd_func, char *condstr, int condvec, char *fn_sig, ...)
+bool remote_async_call(tboard_t *t, char *cmd_func, char *fn_sig, ...)
 {
     va_list args;
     bool res;
     arg_t *qargs = NULL;
 
     (void)t;
-    int level = compute_level(condvec);
+    int level = 0; //compute_level(condvec);
 
     if (strlen(fn_sig) > 0)
     {
@@ -57,12 +59,12 @@ bool remote_async_call(tboard_t *t, char *cmd_func, char *condstr, int condvec, 
         res = command_qargs_alloc(fn_sig, &qargs, args);
         va_end(args);
         if (res)
-            return remote_async_task_create(t, cmd_func, condstr, condvec, level, fn_sig, qargs, strlen(fn_sig));
+            return remote_async_task_create(t, cmd_func, level, fn_sig, qargs, strlen(fn_sig));
         else
             return false;
     }
     else
-        return remote_async_task_create(t, cmd_func, condstr, condvec, level, "", NULL, 0);
+        return remote_async_task_create(t, cmd_func, level, "", NULL, 0);
 }
 
 /*

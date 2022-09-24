@@ -21,13 +21,15 @@ typedef struct _server_t
     enum levels level;
     server_state_t state;
     mqtt_adapter_t *mqtt;
-    tboard_t *tboard;
+    void *cnode;
     // redis_adapter goes here 
 } server_t;
 
 typedef struct _topics_t
 {
-    char *list[MAX_TOPICS];
+    char *subtopics[MAX_TOPICS];
+    char *requesttopic;
+    char *replytopic;
     int length;
 } topics_t;
 
@@ -49,7 +51,7 @@ typedef struct cnode_t {
     corestate_t *core;
     server_t *devjserv;
     broker_info_t *devjinfo;
-    tboard_t *tboard;
+    void *tboard;
 } cnode_t;
 
 

@@ -6,8 +6,9 @@
 #include "tboard.h"
 #include "command.h"
 #include "mqtt_adapter.h"
-#include "core.h"
+#include "cnode.h"
 #include "snowflake.h"
+#include "constants.h"
 
 ////////////////////////////////////////
 /////////// TASK FUNCTIONS /////////////
@@ -213,11 +214,12 @@ void *blocking_task_create(tboard_t *t, function_t fn, int type, void *args, siz
  * Returns true on successful call and false otherwise. The actual remote call 
  * is running asynchronously from the execution of the local task.
  */
-bool remote_async_task_create(tboard_t *tboard, char *command, char *condstr, int condvec, int level, char *fn_argsig, arg_t *args, int sizeof_args)
+bool remote_async_task_create(tboard_t *tboard, char *command, int level, char *fn_argsig, arg_t *args, int sizeof_args)
 {
     if (mco_running() == NULL) // must be called from a coroutine!
         return false;
 
+    printf("Hello \n");
     mco_result res;
     // create rtask object
     remote_task_t rtask = {0};
@@ -226,8 +228,6 @@ bool remote_async_task_create(tboard_t *tboard, char *command, char *condstr, in
     rtask.data = args;
     rtask.data_size = sizeof_args;
     rtask.blocking = false;
-    strcpy(rtask.rargs.condstr, condstr);
-    rtask.rargs.condvec = condvec;
     rtask.rargs.level = level;
     strcpy(rtask.rargs.fn_argsig, fn_argsig);
     int length = strlen(command);
@@ -245,12 +245,13 @@ bool remote_async_task_create(tboard_t *tboard, char *command, char *condstr, in
         return false;
     }
     // issued remote task, yield
+    printf("----------- yielding... \n");
     task_yield();
     return true;
 }
 
 // This call does not take task board as the first argument
-arg_t *remote_sync_task_create(tboard_t *tboard, char *command, char *condstr, int condvec, int level, char *fn_argsig, arg_t *args, int sizeof_args)
+arg_t *remote_sync_task_create(tboard_t *tboard, char *command, int level, char *fn_argsig, arg_t *args, int sizeof_args)
 {
     if (mco_running() == NULL) // must be called from a coroutine!
         return NULL;
@@ -263,8 +264,6 @@ arg_t *remote_sync_task_create(tboard_t *tboard, char *command, char *condstr, i
     rtask.data = args;
     rtask.data_size = sizeof_args;
     rtask.blocking = true;
-    strcpy(rtask.rargs.condstr, condstr);
-    rtask.rargs.condvec = condvec;
     rtask.rargs.level = level;
     strcpy(rtask.rargs.fn_argsig, fn_argsig);
     int length = strlen(command);
@@ -272,7 +271,8 @@ arg_t *remote_sync_task_create(tboard_t *tboard, char *command, char *condstr, i
         tboard_err("remote_task_create: Command length exceeds maximum supported value (%d > %d).\n",length, MAX_MSG_LENGTH);
         return NULL;
     }
-        // copy command to rtask object
+    
+    // copy command to rtask object
     memcpy(rtask.command, command, length);
     // push rtask into storage. This copies memory in current thread so we dont have
     // to worry about invalid reads
@@ -334,19 +334,20 @@ void remote_task_destroy(remote_task_t *rtask)
     free(rtask);
 }
 
-// TODO: Change the hardcoded "/info" topic.
+
 void remote_task_place(tboard_t *t, remote_task_t *rtask)
 {
-    // expect more than 8 servers to contact.
-    int servers[8];
-    int numservers;
-    /*
-    corestate_t *cs = (corestate_t *)t->core;
+
+    cnode_t *cn = (cnode_t *)t->cnode;
     command_t *cmd;
     // check for valid taskboard and remote task
     if (t == NULL || rtask == NULL)
         return;
-
+    // TODO: FIX the NodeID
+    cmd = command_new_using_arg(CmdNames_REXEC, 0, rtask->command, rtask->task_id, "", rtask->rargs.fn_argsig, rtask->data, rtask->data_size);
+    printf("GGGGG \n"); fflush(stdout);
+    mqtt_publish(cn->devjserv->mqtt, cn->topics->requesttopic, cmd->buffer, cmd->length, cmd, 0);
+    /*
     find_active_servers(cs, rtask->rargs.level, servers, &numservers);
     // XXX: Publishing to MQTT
     for (int i = 0; i < numservers; i++) {

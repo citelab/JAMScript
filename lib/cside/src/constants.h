@@ -34,5 +34,6 @@
 #define Multicast_SENDPORT  16000
 #define Multicast_RECVPORT  16500
 
+#define  globals_Timeout_REXEC_ACK_TIMEOUT 100
 
 #endif

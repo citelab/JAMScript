@@ -18,7 +18,7 @@ void mqtt_message_callback(struct mosquitto *mosq, void *udata, const struct mos
         printf("-------------------------- reading data.. %d\n", msg->payloadlen);
         command_t *cmd = command_from_data(NULL, msg->payload, msg->payloadlen);
         printf("after parsing.. %d\n", cmd->cmd);
-        msg_processor((tboard_t *)serv->tboard, cmd);
+        msg_processor(serv, cmd);
     } else {
         printf("%s\n", msg->topic);
     }
