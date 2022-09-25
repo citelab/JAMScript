@@ -127,7 +127,7 @@ command_t *command_new_using_arg(int cmd, int subcmd, char *fn_name, long int ta
     cbor_encode_text_stringz(&mapEncoder, "nodeid");
     cbor_encode_text_stringz(&mapEncoder, node_id);
     // store and encode fn_argsig
-        printf("Hi \n");
+        printf(">>>>>>>> . Hi %s\n", node_id);
     COPY_STRING(cmdo->fn_argsig, fn_argsig, SMALL_CMD_STR_LEN);
     cbor_encode_text_stringz(&mapEncoder, "fn_argsig");
     cbor_encode_text_stringz(&mapEncoder, fn_argsig);
@@ -357,7 +357,7 @@ bool command_qargs_alloc(const char *fmt, arg_t **rargs, va_list args)
                 break;
             case 'p':
                 qargs[i].val.nval = va_arg(args, void *);
-                qargs[i].type = NVOID_TYPE;
+                qargs[i].type = VOID_TYPE;
                 break;
             case 'd':
             case 'f':
@@ -423,6 +423,7 @@ void command_arg_free(arg_t *arg)
         free(arg);
     }
 }
+
 
 arg_t *command_arg_clone(arg_t *arg)
 {

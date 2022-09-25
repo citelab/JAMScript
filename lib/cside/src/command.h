@@ -38,8 +38,10 @@ typedef enum {
     NULL_TYPE,
     STRING_TYPE,
     INT_TYPE,
+    LONG_TYPE,
     DOUBLE_TYPE,
-    NVOID_TYPE
+    NVOID_TYPE,
+    VOID_TYPE
 } argtype_t;
 
 
@@ -55,9 +57,11 @@ typedef struct _arg_t
     union _argvalue_t
     {
         int ival;
+        long int lval;
         char *sval;
         double dval;
         nvoid_t *nval;
+        void *vval;
     } val;
 } arg_t;
 

@@ -98,9 +98,11 @@ void callgive_value(context_t ctx)
     arg_t *t = (arg_t *)(task_get_args());
     arg_t retarg; // = calloc(1, sizeof(arg_t));
     retarg.type = STRING_TYPE;
+    //retarg.type = INT_TYPE;
     retarg.nargs = 1;
 
     retarg.val.sval = strdup(give_value(t->val.sval));
+    //retarg.val.ival = 324321212;
 
     mco_push(mco_running(), &retarg, sizeof(arg_t));
     command_arg_inner_free(t);
