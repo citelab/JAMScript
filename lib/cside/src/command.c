@@ -236,14 +236,15 @@ command_t *command_from_data(char *fmt, void *data, int len)
                 cbor_value_copy_text_string	(&map, cmd->fn_argsig, &length, NULL);
             else 
                 strcpy(cmd->fn_argsig, "");
-            printf("===================Fn argsig found ...%s, length %d\n", cmd->fn_argsig, strlen(cmd->fn_argsig));
+            printf("===================Fn argsig found ...%s, length %ld\n", cmd->fn_argsig, strlen(cmd->fn_argsig));
         //    assert(length < SMALL_CMD_STR_LEN);
         } else if (strcmp(keybuf, "args") == 0) {
-            printf("~~~~~~~~~~~~~~~~~~~~~~\n");
-            if (strlen(cmd->fn_argsig) > 0) {
-                cmd->nargs = strlen(cmd->fn_argsig);
-                cbor_value_enter_container(&map, &arr);
-                cmd->args = (arg_t *)calloc(cmd->nargs, sizeof(arg_t));
+            cbor_value_enter_container(&map, &arr);
+            size_t nelems;
+            cbor_value_get_array_length(&map, &nelems);
+            if (nelems > 0) {
+                cmd->nargs = nelems;
+                cmd->args = (arg_t *)calloc(nelems, sizeof(arg_t));
                 while (!cbor_value_at_end(&arr)) {
                     CborType ty = cbor_value_get_type(&arr);
                     cmd->args[i].nargs = cmd->nargs;

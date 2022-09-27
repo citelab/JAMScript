@@ -5,7 +5,7 @@
 #include "mqtt_adapter.h"
 #include "core.h"
 
-#define MAX_SERVERS             16
+#define MAX_EDGE_SERVERS             16
 #define MAX_TOPICS              16
 
 typedef enum
@@ -15,6 +15,7 @@ typedef enum
     SERVER_REGISTERED,
     SERVER_ERROR
 } server_state_t;
+
 
 typedef struct _server_t 
 {
@@ -49,8 +50,11 @@ typedef struct cnode_t {
     cnode_args_t *args;
     topics_t *topics;
     corestate_t *core;
-    server_t *devjserv;
-    broker_info_t *devjinfo;
+    server_t *devserv;
+    server_t *edgeserv[MAX_EDGE_SERVERS];
+    server_t *cloudserv;
+    broker_info_t *devinfo;
+    int eservnum;
     void *tboard;
 } cnode_t;
 

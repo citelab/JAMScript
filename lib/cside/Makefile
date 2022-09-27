@@ -4,10 +4,10 @@
 #
 
 # define the C compiler to use
-CC = gcc
+CC = clang 
 
 # define any compile-time flags
-CFLAGS	:= -g -pthread 
+CFLAGS	:= -g -pthread  -fsanitize=address -fno-omit-frame-pointer -O1
 # -std=c99
 
 # define library paths in addition to /usr/lib

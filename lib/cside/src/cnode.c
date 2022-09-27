@@ -105,12 +105,12 @@ cnode_t *cnode_init(int argc, char **argv){
     }
 
     // find the J node info by UDP scanning
-    cn->devjinfo = cnode_scanj(1);
-    if (cn->devjinfo == NULL ) {
+    cn->devinfo = cnode_scanj(1);
+    if (cn->devinfo == NULL ) {
         cnode_destroy(cn);
         terminate_error(true, "cannot find the device j server");
     }
-    printf("Done cnode scane %s, %d\n", cn->devjinfo->host, cn->devjinfo->port);
+    printf("Done cnode scane %s, %d\n", cn->devinfo->host, cn->devinfo->port);
     // Start the taskboard 
     cn->tboard = tboard_create(cn, cn->args->nexecs);
     if ( cn->tboard == NULL ) {
@@ -122,11 +122,13 @@ cnode_t *cnode_init(int argc, char **argv){
 
     printf("Connecting the MQTT..\n");
     // Connect to the J server (MQTT)
-    cn->devjserv = cnode_create_mbroker(cn, DEVICE_LEVEL, cn->devjinfo->host, cn->devjinfo->port, cn->topics->subtopics, cn->topics->length);
-    if ( cn->devjserv == NULL) {
+    cn->devserv = cnode_create_mbroker(cn, DEVICE_LEVEL, cn->devinfo->host, cn->devinfo->port, cn->topics->subtopics, cn->topics->length);
+    if ( cn->devserv == NULL) {
         cnode_destroy(cn);
         terminate_error(true, "cannot create MQTT broker");
     }
+    cn->eservnum = 0;
+    cn->cloudserv = NULL;
 
     printf("Starting the task board.. \n");
     tboard_start(cn->tboard);
@@ -157,24 +159,24 @@ void cnode_destroy(cnode_t *cn) {
     }
 
     // free MQTT server info
-    if (cn->devjinfo != NULL) {
-        free(cn->devjinfo);
+    if (cn->devinfo != NULL) {
+        free(cn->devinfo);
     }
 
     // free MQTT server
-    if (cn->devjserv != NULL) {
-        if (cn->devjserv->mqtt != NULL){
-            disconnect_mqtt_adapter(cn->devjserv->mqtt);
-            //destroy_mqtt_adapter(cn->devjserv->mqtt);
+    if (cn->devserv != NULL) {
+        if (cn->devserv->mqtt != NULL){
+            disconnect_mqtt_adapter(cn->devserv->mqtt);
+            //destroy_mqtt_adapter(cn->devserv->mqtt);
         }
-        //free(cn->devjserv);
+        //free(cn->devserv);
     }
 
     free(cn);
 }
 
 bool cnode_start(cnode_t *cn) {
-    // start_mqtt(cn->devjserv);
+    // start_mqtt(cn->devserv);
     tboard_start(cn->tboard);
     return true;
 }

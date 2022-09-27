@@ -228,8 +228,8 @@ bool remote_async_task_create(tboard_t *tboard, char *command, int level, char *
     rtask.data = args;
     rtask.data_size = sizeof_args;
     rtask.blocking = false;
-    rtask.rargs.level = level;
-    strcpy(rtask.rargs.fn_argsig, fn_argsig);
+    rtask.level = level;
+    strcpy(rtask.fn_argsig, fn_argsig);
     int length = strlen(command);
     if(length > MAX_MSG_LENGTH) {
         tboard_err("remote_task_create: Command length exceeds maximum supported value (%d > %d).\n",length, MAX_MSG_LENGTH);
@@ -264,8 +264,8 @@ arg_t *remote_sync_task_create(tboard_t *tboard, char *command, int level, char 
     rtask.data = args;
     rtask.data_size = sizeof_args;
     rtask.blocking = true;
-    rtask.rargs.level = level;
-    strcpy(rtask.rargs.fn_argsig, fn_argsig);
+    rtask.level = level;
+    strcpy(rtask.fn_argsig, fn_argsig);
     int length = strlen(command);
     if(length > MAX_MSG_LENGTH){
         tboard_err("remote_task_create: Command length exceeds maximum supported value (%d > %d).\n",length, MAX_MSG_LENGTH);
@@ -335,27 +335,42 @@ void remote_task_destroy(remote_task_t *rtask)
 }
 
 
+#define  send_command_to_server(X) do {                         \
+    cmd = command_new_using_arg(CmdNames_REXEC, 0, rtask->command, rtask->task_id, cn->core->device_id, rtask->fn_argsig, rtask->data, rtask->data_size); \
+    mqtt_publish(X, cn->topics->requesttopic, cmd->buffer, cmd->length, cmd, 0); \
+} while (0)
+
 void remote_task_place(tboard_t *t, remote_task_t *rtask)
 {
-
     cnode_t *cn = (cnode_t *)t->cnode;
     command_t *cmd;
     // check for valid taskboard and remote task
     if (t == NULL || rtask == NULL)
         return;
-    // TODO: FIX the NodeID
-    cmd = command_new_using_arg(CmdNames_REXEC, 0, rtask->command, rtask->task_id, "", rtask->rargs.fn_argsig, rtask->data, rtask->data_size);
-    printf("GGGGG \n"); fflush(stdout);
-    mqtt_publish(cn->devjserv->mqtt, cn->topics->requesttopic, cmd->buffer, cmd->length, cmd, 0);
-    /*
-    find_active_servers(cs, rtask->rargs.level, servers, &numservers);
-    // XXX: Publishing to MQTT
-    for (int i = 0; i < numservers; i++) {
-        int snum = servers[i];
-        cmd = command_new_using_arg(rtask->blocking ? REXEC_SYNC : REXEC_ASYNC, 0, rtask->rargs.condstr, rtask->rargs.condvec, rtask->command, rtask->task_id, rtask->rargs.fn_argsig, rtask->data, rtask->data_size);
-        mqtt_publish(cs->servers[snum]->mqtt, "/uinfo", cmd->buffer, cmd->length, cmd, 0);
+
+    switch (rtask->level) {
+        case ALL_LEVELS:
+            send_command_to_server(cn->devserv->mqtt);
+            for(int i = 0; i < cn->eservnum; i++) 
+                send_command_to_server(cn->edgeserv[i]->mqtt);
+            if (cn->cloudserv != NULL)
+                send_command_to_server(cn->cloudserv->mqtt);
+        break;
+
+        case DEVICE_LEVEL:
+            send_command_to_server(cn->devserv->mqtt);
+        break;
+
+        case EDGE_LEVEL:
+            for(int i = 0; i < cn->eservnum; i++) 
+                send_command_to_server(cn->edgeserv[i]->mqtt);
+        break;
+
+        case CLOUD_LEVEL:
+            if (cn->cloudserv != NULL)
+                send_command_to_server(cn->cloudserv->mqtt);
+        break;
     }
-    */
     /*
      * The rtask was freed here.. not anymore we wait for the response to come from 
      * the remote side. Then the entry should be removed from the task list and it 

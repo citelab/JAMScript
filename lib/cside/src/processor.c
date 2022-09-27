@@ -121,6 +121,7 @@ bool msg_processor(void *serv, command_t *cmd)
     cnode_t *c = s->cnode;
     tboard_t *t = (tboard_t *)(c->tboard);
     // when a message is received, it interprets message and adds to respective queue
+    printf("Cmd %d, %d RES\n", cmd->cmd, CmdNames_REXEC_RES);
     switch (cmd->cmd)
     {
     case CmdNames_REXEC:
@@ -143,6 +144,7 @@ bool msg_processor(void *serv, command_t *cmd)
 
     case CmdNames_REXEC_RES:
         // find the task
+        printf("~~~~~~~~~~~~~~~~~~~~~~>>>>> ~~~~~~~~~~~~~~~~\n");
         HASH_FIND_INT(t->task_table, &(cmd->task_id), rtask);
         if (rtask != NULL)
         {

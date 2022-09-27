@@ -160,14 +160,6 @@ typedef struct task_t {
     struct task_t *parent;
 } task_t;
 
-/**
- * @brief 
-  * @level:      extract from the condvec that indicates the level of execution
- */
-typedef struct {
-    char fn_argsig[MAX_ARG_LENGTH];
-    int level;
-} remote_task_args_t;
 
 /**
  * remote_task_t - Remote task type
@@ -197,7 +189,8 @@ typedef struct {
     size_t data_size;
     task_t *calling_task;
     bool blocking;
-    remote_task_args_t rargs;
+    int level;
+    char fn_argsig[MAX_ARG_LENGTH];
     UT_hash_handle  hh;
 } remote_task_t;
 

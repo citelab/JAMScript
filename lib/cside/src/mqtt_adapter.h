@@ -13,6 +13,7 @@
 #define __MQTT_ADAPTER_H__
 
 enum levels {
+    ALL_LEVELS = 0x0,
     DEVICE_LEVEL = 0x001,
     EDGE_LEVEL = 0x010,
     CLOUD_LEVEL = 0x100

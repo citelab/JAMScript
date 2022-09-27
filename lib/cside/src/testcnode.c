@@ -10,18 +10,20 @@ extern cnode_t *cn;
 void local_test(char *name, char *g, char *h)
 {    
     arg_t *a;
-    for (int i =0; i < 1000000; i++) {
+    for (int i =0; i < 2; i++) {
         printf("XXXxxx       \n");
         sleep(1);
      //   printf("This is local test.. %s\n", name);
     //    printf("This is local test.. %s\n", g);
      //   printf("This is local test.. %d %s\n", i, h);
     //    task_yield();
-        remote_async_call(cn->tboard, "testrv", "id", 121, 34.32);
+        a = remote_sync_call(cn->tboard, "testrv", "id", 121, 34.32);
+        printf(">>>>>>>>>>>>>>>>>>> GOT The result back  %d, %d\n", a->type, a->val.ival);
         //command_arg_free(a);
         task_yield();
  //       remote_sync_call(cs->tboard, "addfloat", "", 0, "ff", 45.0, 545.03434);
-//        command_arg_print(a);
+        command_arg_print(a);
+        printf("AFTER ARG PRINT ..\n");
     }
 }
 
@@ -119,7 +121,7 @@ int main(int argc, char *argv[])
     tboard_register_func(cn->tboard, TBOARD_FUNC(callgive_value, "s", false));
     printf("=======================================\n");
 
- //   local_async_call(cn->tboard, "calllocal_test", "mahesh", "world", "argh", "dfsdfsd");
+    local_async_call(cn->tboard, "calllocal_test", "mahesh", "world", "argh", "dfsdfsd");
     cnode_stop(cn);
     cnode_destroy(cn);
 }
