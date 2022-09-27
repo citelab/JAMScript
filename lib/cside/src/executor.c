@@ -148,7 +148,6 @@ void *executor(void *arg)
                     if (!rtask->blocking)
                         e = queue_new_node(task);
                     // place remote task into appropriate message queue
-                    printf("Remote task placed... %d\n", rtask->blocking);
                     remote_task_place(tboard, rtask);
 
                 } else { // just a normal yield, so we create node to reinsert task into queue

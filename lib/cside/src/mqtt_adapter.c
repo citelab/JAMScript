@@ -15,9 +15,7 @@ void mqtt_message_callback(struct mosquitto *mosq, void *udata, const struct mos
     (void)mosq;
     server_t *serv = (server_t *)udata;
     if (msg->payloadlen) {
-        printf("-------------------------- reading data.. %d\n", msg->payloadlen);
         command_t *cmd = command_from_data(NULL, msg->payload, msg->payloadlen);
-        printf("after parsing.. %d\n", cmd->cmd);
         msg_processor(serv, cmd);
     } else {
         printf("%s\n", msg->topic);
@@ -29,7 +27,6 @@ void mqtt_connect_callback(struct mosquitto *mosq, void *udata, int res)
     (void)mosq;
     server_t *serv = (server_t *)udata;
     serv->state = SERVER_REGISTERED;
-    printf("Connect.. callback %d \n", res);
     if (!res) 
         mqtt_do_subscribe(serv->mqtt);
     else
@@ -49,7 +46,6 @@ void mqtt_disconnect_callback(struct mosquitto *mosq, void *udata, int res)
 
 void mqtt_subscribe_callback(struct mosquitto *mosq, void *udata, int mid, int qcnt, const int *qgv) 
 {
-    printf("Subscribe callback called \n");
     for(int i = 1; i < qcnt; i++)
         printf("QoS-given: %d\n", qgv[i]);
 }
@@ -103,7 +99,6 @@ void mqtt_do_subscribe(struct mqtt_adapter *ma)
     char **p;
     p = NULL;
     while ((p = (char**)utarray_next(ma->topics, p))) {
-        printf("Subscribed ... %s\n", *p);
         mosquitto_subscribe(ma->mosq, NULL, *p, 0);
     }
 }
@@ -148,7 +143,6 @@ struct mqtt_adapter *setup_mqtt_adapter(void *serv, enum levels level, char *hos
     // post the subscriptions 
     for (int i = 0; i < ntopics; i++) {
         mqtt_post_subscription(ma, topics[i]);
-        printf("Posting.. subscription to %s\n", topics[i]);
     }
     // connect the adapter
     broker_info_t b = {.keep_alive = 60};

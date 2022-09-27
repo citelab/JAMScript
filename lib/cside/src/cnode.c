@@ -59,7 +59,6 @@ broker_info_t *cnode_scanj(int groupid) {
     broker_info_t *bi = NULL;
 
     sprintf(mgroup, "%s.%d", Multicast_PREFIX, groupid);
-    printf("Sending.. to %s\n", mgroup);
     mcast_t *m = multicast_init(mgroup, Multicast_SENDPORT, Multicast_RECVPORT);
     // TODO: Fix this line.. and make it compatible with the protocol on Notion
     command_t *smsg = command_new(CmdNames_WHERE_IS_CTRL, 0, "", 0, "", "si", "127.0.0.1", 1883);
@@ -110,7 +109,6 @@ cnode_t *cnode_init(int argc, char **argv){
         cnode_destroy(cn);
         terminate_error(true, "cannot find the device j server");
     }
-    printf("Done cnode scane %s, %d\n", cn->devinfo->host, cn->devinfo->port);
     // Start the taskboard 
     cn->tboard = tboard_create(cn, cn->args->nexecs);
     if ( cn->tboard == NULL ) {
@@ -120,7 +118,6 @@ cnode_t *cnode_init(int argc, char **argv){
 
     mqtt_lib_init();
 
-    printf("Connecting the MQTT..\n");
     // Connect to the J server (MQTT)
     cn->devserv = cnode_create_mbroker(cn, DEVICE_LEVEL, cn->devinfo->host, cn->devinfo->port, cn->topics->subtopics, cn->topics->length);
     if ( cn->devserv == NULL) {
@@ -130,7 +127,6 @@ cnode_t *cnode_init(int argc, char **argv){
     cn->eservnum = 0;
     cn->cloudserv = NULL;
 
-    printf("Starting the task board.. \n");
     tboard_start(cn->tboard);
 
     return cn;
@@ -186,4 +182,3 @@ bool cnode_stop(cnode_t *cn) {
     tboard_shutdown(cn->tboard);
     return true;
 }
-

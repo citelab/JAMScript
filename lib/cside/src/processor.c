@@ -14,7 +14,6 @@ arg_t *command_arg_clone_special(arg_t *arg, char *fname, long int taskid, char 
 {   
     arg_t *rl;
     int i = 0;
-    printf("========== Node id %s\n", nodeid);
     if (arg == NULL) {
         rl = (arg_t *)calloc(4, sizeof(arg_t));
         rl[i].type = STRING_TYPE;
@@ -62,8 +61,6 @@ void exec_sync(context_t ctx)
 {
     (void)ctx;
     arg_t *t = (arg_t *)(task_get_args());
-    printf("Hi... in exec sync %d, type %d\n", t[0].nargs, t[0].type);
-   // command_arg_free(t);
     int nargs = t->nargs;
     char *fn_name = t[nargs - 4].val.sval;
     long int task_id = t[nargs - 3].val.lval;
@@ -73,7 +70,6 @@ void exec_sync(context_t ctx)
     tboard_t *tb = (tboard_t *)(c->tboard);
     function_t *f = tboard_find_func(tb, fn_name);
     if (f != NULL) {
-        printf("Node ID ........%s\n", node_id);
         arg_t *rv = blocking_task_create(tb, *f, f->sideef, t, (nargs - 4));
         if (rv != NULL) {
             command_t *cmd;
@@ -105,7 +101,6 @@ void execute_cmd(server_t *s, function_t *f, command_t *cmd)
     if (cmd->subcmd == 0)
         task_create(t, *f, cmd->args, cmd->nargs, cmd); // no return value
     else {
-        printf("Node id %s\n", cmd->node_id);
         arg_t *a = command_arg_clone_special(cmd->args, cmd->fn_name, cmd->task_id, cmd->node_id, s);
         task_create(t, esync, a, a->nargs, NULL);
     }
@@ -121,12 +116,10 @@ bool msg_processor(void *serv, command_t *cmd)
     cnode_t *c = s->cnode;
     tboard_t *t = (tboard_t *)(c->tboard);
     // when a message is received, it interprets message and adds to respective queue
-    printf("Cmd %d, %d RES\n", cmd->cmd, CmdNames_REXEC_RES);
     switch (cmd->cmd)
     {
     case CmdNames_REXEC:
         // find the function
-        printf("Looking for function %s\n", cmd->fn_name);
         f = tboard_find_func(t, cmd->fn_name);
         if (f == NULL)
         {
@@ -144,7 +137,6 @@ bool msg_processor(void *serv, command_t *cmd)
 
     case CmdNames_REXEC_RES:
         // find the task
-        printf("~~~~~~~~~~~~~~~~~~~~~~>>>>> ~~~~~~~~~~~~~~~~\n");
         HASH_FIND_INT(t->task_table, &(cmd->task_id), rtask);
         if (rtask != NULL)
         {

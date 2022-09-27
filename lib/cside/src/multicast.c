@@ -83,7 +83,6 @@ int multicast_check_receive(mcast_t *m)
         perror("poll");
         exit(1);
     }
-    printf("Poll result %d\n", rc);
     return rc;
 }
 
