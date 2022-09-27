@@ -6,8 +6,12 @@
 # define the C compiler to use
 CC = clang 
 
+# defube the archiver
+AR = ar -rc
+
 # define any compile-time flags
-CFLAGS	:= -g -pthread  -fsanitize=address -fno-omit-frame-pointer -O1
+CFLAGS	:= -g -pthread  
+#-fsanitize=address -fno-omit-frame-pointer -O1
 # -std=c99
 
 # define library paths in addition to /usr/lib
@@ -26,6 +30,8 @@ INCLUDE	:= include
 
 # define lib directory
 LIB		:= lib
+
+ARCHIVE  := libjam.a
 
 ifeq ($(OS),Windows_NT)
 MAIN	:= main.exe
@@ -68,11 +74,16 @@ OUTPUTMAIN	:= $(call FIXPATH,$(OUTPUT)/$(MAIN))
 all: $(OUTPUT) $(MAIN)
 	@echo Executing 'all' complete!
 
+archive: $(ARCHIVE)
+
 $(OUTPUT):
 	$(MD) $(OUTPUT)
 
 $(MAIN): $(OBJECTS) 
 	$(CC) $(CFLAGS) $(INCLUDES) -o $(OUTPUTMAIN) $(OBJECTS) $(LFLAGS) $(LIBS)
+
+$(ARCHIVE): $(OBJECTS) 
+	$(AR) libjam.a $(OBJECTS)
 
 # this is a suffix replacement rule for building .o's from .c's
 # it uses automatic variables $<: the name of the prerequisite of

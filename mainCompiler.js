@@ -6,7 +6,8 @@ var fs = require("fs"),
   crypto = require("crypto"),
   path = require("path"),
   callGraph = require("./lib/ohm/jamscript/callGraph"),
-  jam = require("./lib/ohm/jamscript/jam");
+  jam = require("./lib/ohm/jamscript/jam"),
+  homedir = require('os').homedir();
 
 var preprocessDecls;
 
@@ -220,7 +221,7 @@ function compile(code, verbose) {
     );
 
     try {
-      var command = `clang -g ${tmpDir}/jamout.c -o ${tmpDir}/a.out -I/usr/local/include -I/usr/local/share/jam/lib/ ${options} -pthread -lcbor -lnanomsg /usr/local/lib/libjam.a -ltask -levent -lhiredis -lmujs -L/usr/local/lib -lpaho-mqtt3a`;
+      var command = `clang -g ${tmpDir}/jamout.c -o ${tmpDir}/a.out -I/usr/local/include -I${homedir}/.jamruns/clib/include -I${homedir}/.jamruns/clib/src ${options} -pthread -ltinycbor -lmosquitto ${homedir}/.jamruns/clib/libjam.a -L/usr/local/lib`;
       console.log("Compiling C code...");
       if (verbose) {
         console.log(command);
