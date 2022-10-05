@@ -9,6 +9,7 @@
 #include <uthash.h>
 #include <stdbool.h>
 #include <pthread.h>
+#include "timeout.h"
 #include "command.h"
 
 
@@ -52,6 +53,8 @@
 #define TASK_INITIALIZED 1
 #define TASK_RUNNING 2
 #define TASK_COMPLETED 3
+#define TASK_ERROR 4
+#define TASK_ACK_RECEIVED 5
 
 #define MAX_MSG_LENGTH 254
 #define MAX_ARG_LENGTH 32
@@ -276,6 +279,7 @@ typedef struct {
     int status;
 
     remote_task_t *task_table;
+    struct timeouts *twheel;
 
 } tboard_t;
 
@@ -746,6 +750,8 @@ void task_destroy(task_t *task);
  * 
  * Task destroys task function context, and then frees task arguments if indicated as allocated
  */
+
+
 
 //////////////////////////////////////////////////
 ////////////// Processor Definitions /////////////

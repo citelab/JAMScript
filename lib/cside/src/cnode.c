@@ -11,7 +11,7 @@
 
 cnode_t *cn;
 
-topics_t *cnode_create_topics(char *app) 
+topics_t *cnode_create_topics(char *app)
 {
     char sbuf[1024];
     topics_t *t = (topics_t *)calloc(1, sizeof(topics_t));
@@ -32,7 +32,7 @@ topics_t *cnode_create_topics(char *app)
     return t;
 }
 
-void cnode_topics_destroy(topics_t *t) 
+void cnode_topics_destroy(topics_t *t)
 {
     for (int i = 0; i < t->length; i++) 
         free(t->subtopics[i]);
@@ -42,16 +42,30 @@ void cnode_topics_destroy(topics_t *t)
 }
 
 
-server_t *cnode_create_mbroker(cnode_t *cn, enum levels level, char *host, int port, char *topics[], int ntopics)
+server_t *cnode_create_mbroker(cnode_t *cn, enum levels level, char *server_id, char *host, int port, char *topics[], int ntopics)
 {
     server_t *serv = (server_t *)calloc(1, sizeof(server_t));
     serv->level = level;
+    if (server_id != NULL)
+        serv->server_id = strdup(server_id);
+    else 
+        serv->server_id = NULL;
     serv->state = SERVER_NOT_REGISTERED;
     serv->mqtt = setup_mqtt_adapter(serv, level, host, port, topics, ntopics);
     serv->cnode = cn;
     return serv;
 }
 
+void cnode_recreate_mbroker(server_t *serv, enum levels level, char *server_id, char *host, int port, char *topics[], int ntopics) 
+{
+    serv->level = level;
+    if (server_id != NULL)
+        serv->server_id = strdup(server_id);
+    else 
+        serv->server_id = NULL;
+    serv->state = SERVER_NOT_REGISTERED;
+    serv->mqtt = setup_mqtt_adapter(serv, level, host, port, topics, ntopics);
+}
 
 broker_info_t *cnode_scanj(int groupid) {
     char mgroup[32];
@@ -118,14 +132,15 @@ cnode_t *cnode_init(int argc, char **argv){
 
     mqtt_lib_init();
 
-    // Connect to the J server (MQTT)
-    cn->devserv = cnode_create_mbroker(cn, DEVICE_LEVEL, cn->devinfo->host, cn->devinfo->port, cn->topics->subtopics, cn->topics->length);
+    // Connect to the J server (MQTT), we don't have a server_id for the device, which is fine.
+    cn->devserv = cnode_create_mbroker(cn, DEVICE_LEVEL, "", cn->devinfo->host, cn->devinfo->port, cn->topics->subtopics, cn->topics->length);
     if ( cn->devserv == NULL) {
         cnode_destroy(cn);
         terminate_error(true, "cannot create MQTT broker");
     }
     cn->eservnum = 0;
     cn->cloudserv = NULL;
+    cn->countdown = COUNTDOWN_VALUE;
 
     tboard_start(cn->tboard);
 

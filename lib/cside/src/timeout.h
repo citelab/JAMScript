@@ -32,9 +32,7 @@
 #include <inttypes.h>   /* PRIu64 PRIx64 PRIX64 uint64_t */
 
 #include <sys/queue.h>  /* TAILQ(3) */
-#include <limits.h>
-#define TIMEOUT_DISABLE_INTERVALS 1
-#define TIMEOUT_DISABLE_CALLBACKS 1
+
 
 /*
  * V E R S I O N  I N T E R F A C E S
@@ -92,7 +90,7 @@ typedef uint64_t timeout_t;
 
 #ifndef TIMEOUT_CB_OVERRIDE
 struct timeout_cb {
-	void (*fn)();
+	void (*fn)(void *);
 	void *arg;
 }; /* struct timeout_cb */
 #endif
@@ -109,9 +107,9 @@ struct timeout_cb {
 
 #define TIMEOUT_INITIALIZER(flags) { (flags) }
 
-#define timeout_setcb(to, cbfn, cbarg) do { \
-	(to)->callback.fn = (cbfn);       \
-	(to)->callback.arg = (cbarg);     \
+#define timeout_setcb(to, fn, arg) do { \
+	(to)->callback.fn = (fn);       \
+	(to)->callback.arg = (arg);     \
 } while (0)
 
 struct timeout {
@@ -142,6 +140,7 @@ struct timeout {
 #endif
 }; /* struct timeout */
 
+
 TIMEOUT_PUBLIC struct timeout *timeout_init(struct timeout *, int);
 /* initialize timeout structure (same as TIMEOUT_INITIALIZER) */
 
@@ -162,12 +161,11 @@ TIMEOUT_PUBLIC void timeout_del(struct timeout *);
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 struct timeouts;
-TIMEOUT_PUBLIC struct timeouts *timeouts_init(struct timeouts *T, timeout_t hz);
+
 TIMEOUT_PUBLIC struct timeouts *timeouts_open(timeout_t, timeout_error_t *);
 /* open a new timing wheel, setting optional HZ (for float conversions) */
 
 TIMEOUT_PUBLIC void timeouts_close(struct timeouts *);
-TIMEOUT_PUBLIC void timeouts_reset(struct timeouts *T);
 /* destroy timing wheel */
 
 TIMEOUT_PUBLIC timeout_t timeouts_hz(struct timeouts *);
@@ -251,123 +249,5 @@ TIMEOUT_PUBLIC struct timeout *timeouts_next(struct timeouts *, struct timeouts_
 
 #define timeouts_addf(T, to, timeout) \
 	timeouts_add((T), (to), timeouts_f2i((T), (timeout)))
-
-
-
-
-/*
- * B I T  M A N I P U L A T I O N  R O U T I N E S
- *
- * The macros and routines below implement wheel parameterization. The
- * inputs are:
- *
- *   WHEEL_BIT - The number of value bits mapped in each wheel. The
- *               lowest-order WHEEL_BIT bits index the lowest-order (highest
- *               resolution) wheel, the next group of WHEEL_BIT bits the
- *               higher wheel, etc.
- *
- *   WHEEL_NUM - The number of wheels. WHEEL_BIT * WHEEL_NUM = the number of
- *               value bits used by all the wheels. For the default of 6 and
- *               4, only the low 24 bits are processed. Any timeout value
- *               larger than this will cycle through again.
- *
- * The implementation uses bit fields to remember which slot in each wheel
- * is populated, and to generate masks of expiring slots according to the
- * current update interval (i.e. the "tickless" aspect). The slots to
- * process in a wheel are (populated-set & interval-mask).
- *
- * WHEEL_BIT cannot be larger than 6 bits because 2^6 -> 64 is the largest
- * number of slots which can be tracked in a uint64_t integer bit field.
- * WHEEL_BIT cannot be smaller than 3 bits because of our rotr and rotl
- * routines, which only operate on all the value bits in an integer, and
- * there's no integer smaller than uint8_t.
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-#if !defined WHEEL_BIT
-#define WHEEL_BIT 6
-#endif
-
-#if !defined WHEEL_NUM
-#define WHEEL_NUM 4
-#endif
-
-#define WHEEL_LEN (1U << WHEEL_BIT)
-#define WHEEL_MAX (WHEEL_LEN - 1)
-#define WHEEL_MASK (WHEEL_LEN - 1)
-#define TIMEOUT_MAX ((TIMEOUT_C(1) << (WHEEL_BIT * WHEEL_NUM)) - 1)
-
-#include "timeout-bitops.c"
-
-#if WHEEL_BIT == 6
-#define ctz(n) ctz64(n)
-#define clz(n) clz64(n)
-#define fls(n) ((int)(64 - clz64(n)))
-#else
-#define ctz(n) ctz32(n)
-#define clz(n) clz32(n)
-#define fls(n) ((int)(32 - clz32(n)))
-#endif
-
-#if WHEEL_BIT == 6
-#define WHEEL_C(n) UINT64_C(n)
-#define WHEEL_PRIu PRIu64
-#define WHEEL_PRIx PRIx64
-
-typedef uint64_t wheel_t;
-
-#elif WHEEL_BIT == 5
-
-#define WHEEL_C(n) UINT32_C(n)
-#define WHEEL_PRIu PRIu32
-#define WHEEL_PRIx PRIx32
-
-typedef uint32_t wheel_t;
-
-#elif WHEEL_BIT == 4
-
-#define WHEEL_C(n) UINT16_C(n)
-#define WHEEL_PRIu PRIu16
-#define WHEEL_PRIx PRIx16
-
-typedef uint16_t wheel_t;
-
-#elif WHEEL_BIT == 3
-
-#define WHEEL_C(n) UINT8_C(n)
-#define WHEEL_PRIu PRIu8
-#define WHEEL_PRIx PRIx8
-
-typedef uint8_t wheel_t;
-
-#else
-#error invalid WHEEL_BIT value
-#endif
-
-static inline wheel_t rotl(const wheel_t v, int c) {
-	if (!(c &= (sizeof v * CHAR_BIT - 1)))
-		return v;
-
-	return (v << c) | (v >> (sizeof v * CHAR_BIT - c));
-} /* rotl() */
-
-
-static inline wheel_t rotr(const wheel_t v, int c) {
-	if (!(c &= (sizeof v * CHAR_BIT - 1)))
-		return v;
-
-	return (v >> c) | (v << (sizeof v * CHAR_BIT - c));
-} /* rotr() */
-
-TAILQ_HEAD(timeout_list, timeout);
-
-struct timeouts {
-	struct timeout_list wheel[WHEEL_NUM][WHEEL_LEN], expired;
-
-	wheel_t pending[WHEEL_NUM];
-
-	timeout_t curtime;
-	timeout_t hertz;
-}; /* struct timeouts */
 
 #endif /* TIMEOUT_H */

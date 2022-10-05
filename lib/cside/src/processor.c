@@ -73,8 +73,7 @@ void exec_sync(context_t ctx)
         arg_t *rv = blocking_task_create(tb, *f, f->sideef, t, (nargs - 4));
         if (rv != NULL) {
             command_t *cmd;
-            switch (rv->type)
-            {
+            switch (rv->type) {
             case INT_TYPE:
                 cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, node_id, "i", rv->val.ival);
                 break;
@@ -84,6 +83,7 @@ void exec_sync(context_t ctx)
             case DOUBLE_TYPE:
                 cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, node_id, "d", rv->val.dval);
                 break;
+            default:;
             }
             mqtt_publish(s->mqtt, c->topics->replytopic, cmd->buffer, cmd->length, cmd, 0);
         }
@@ -106,7 +106,6 @@ void execute_cmd(server_t *s, function_t *f, command_t *cmd)
     }
 }
 
-
 // TODO: consider adding function to add task_t task so we dont have to do this both here and task_create
 bool msg_processor(void *serv, command_t *cmd)
 {
@@ -115,9 +114,90 @@ bool msg_processor(void *serv, command_t *cmd)
     server_t *s = (server_t *)serv;
     cnode_t *c = s->cnode;
     tboard_t *t = (tboard_t *)(c->tboard);
+    command_t *rcmd;
     // when a message is received, it interprets message and adds to respective queue
     switch (cmd->cmd)
     {
+    case CmdNames_REGISTER_ACK:
+        // if the node is not registered, then change the state to registered
+        if (c->cnstate == CNODE_NOT_REGISTERED) {
+            c->cnstate = CNODE_REGISTERED;
+            // send a GET_CLOUD_FOG_INFO request to the device J
+            rcmd = command_new(CmdNames_GET_CLOUD_FOG_INFO, 0, "", 0, c->core->device_id, "i", 0);
+            mqtt_publish(s->mqtt, c->topics->requesttopic, rcmd->buffer, rcmd->length, rcmd, 0);
+        }
+        return true;
+
+    case CmdNames_PUT_CLOUD_FOG_INFO:
+        // use the information to register a edge or cloud server or deregister one.
+        switch (cmd->subcmd) {
+            case CmdNames_CLOUD_ADD_INFO:
+                // [cmd: PUT_CLOUD_FOG_INFO, subcmd: CLOUD_ADD_INFO, node_id: "cloud-id", args: [IP_addr, port_number]]
+                if (c->cloudserv == NULL) 
+                    c->cloudserv = cnode_create_mbroker(c, CLOUD_LEVEL, cmd->node_id, cmd->args[0].val.sval, cmd->args[1].val.ival, c->topics->subtopics, c->topics->length);
+                else if (c->cloudserv->state == SERVER_NOT_REGISTERED)
+                    cnode_recreate_mbroker(c->cloudserv, CLOUD_LEVEL, cmd->node_id, cmd->args[0].val.sval, cmd->args[1].val.ival, c->topics->subtopics, c->topics->length);
+            break;
+
+            case CmdNames_CLOUD_DEL_INFO:
+                // [cmd: PUT_CLOUD_FOG_INFO, subcmd: CLOUD_DEL_INFO, node_id: "cloud-id"]
+                if (strcmp(c->cloudserv->server_id, cmd->node_id) == 0) {
+                    disconnect_mqtt_adapter(c->cloudserv->mqtt);
+                }
+            break;
+            case CmdNames_FOG_ADD_INFO:
+                // [cmd: PUT_CLOUD_FOG_INFO, subcmd: FOG_ADD_INFO, node_id: "fog-id", args: [IP_addr, port_number]]
+                if (c->eservnum < MAX_EDGE_SERVERS/2) {
+                    for (int i = 0; i < MAX_EDGE_SERVERS; i++) {
+                        if (c->edgeserv[i] == NULL) {
+                            c->edgeserv[i] = cnode_create_mbroker(c, EDGE_LEVEL, cmd->node_id, cmd->args[0].val.sval, cmd->args[1].val.ival, c->topics->subtopics, c->topics->length);
+                            c->eservnum++;
+                            break;
+                        } else if (c->edgeserv[i]->state == SERVER_NOT_REGISTERED) {
+                            cnode_create_mbroker(c->edgeserv[i], EDGE_LEVEL, cmd->node_id, cmd->args[0].val.sval, cmd->args[1].val.ival, c->topics->subtopics, c->topics->length);
+                            c->eservnum++;
+                        }
+                    }
+                }
+            break;
+            case CmdNames_FOG_DEL_INFO:
+                // [cmd: PUT_CLOUD_FOG_INFO, subcmd: FOG_DEL_INFO, node_id: "fog-id"]
+                for (int i = 0; i < MAX_EDGE_SERVERS; i++) {
+                    if (strcmp(c->edgeserv[i]->server_id, cmd->node_id) == 0) {
+                        disconnect_mqtt_adapter(c->edgeserv[i]->mqtt);
+                        c->eservnum--;
+                        break;
+                    }
+                }
+            break;
+        }
+        return true;
+
+    case CmdNames_PING:
+        // send the PONG back to device J
+        // we received -- [cmd: PING node_id: "controller id" ]
+        rcmd = command_new(CmdNames_PONG, 0, "", 0, c->core->device_id, "");
+        mqtt_publish(s->mqtt, c->topics->requesttopic, rcmd->buffer, rcmd->length, rcmd, 0);
+        // we send -- [cmd: PONG node_id: "worker id" ]
+
+        // if the node is not registered, start the count down to registration.. if the 
+        // count do
+        if (c->countdown-- <= 0) {
+            c->countdown = COUNTDOWN_VALUE;
+            rcmd = command_new(CmdNames_GET_CLOUD_FOG_INFO, 0, "", 0, c->core->device_id, "i", 1);
+            mqtt_publish(s->mqtt, c->topics->requesttopic, rcmd->buffer, rcmd->length, rcmd, 0);
+        }
+        return true;
+
+    case CmdNames_STOP:
+        // Stop the node... 
+        // What do we do with this message?
+
+        // kill tboard?
+        // Do some memory release?
+
+        return true;
+
     case CmdNames_REXEC:
         // find the function
         f = tboard_find_func(t, cmd->fn_name);
@@ -133,6 +213,25 @@ bool msg_processor(void *serv, command_t *cmd)
 
         // cmd is freed after the task is completed.. otherwise we will create a memory fault
         execute_cmd(s, f, cmd);
+        return true;
+
+    case CmdNames_REXEC_ACK:
+        // find the task
+        HASH_FIND_INT(t->task_table, &(cmd->task_id), rtask);
+        if (rtask != NULL)
+        {
+            // remove the timeout entry
+            remove_timeout_entry(t, rtask->task_id);
+            rtask->status = TASK_ACK_RECEIVED;
+            // blocking task - put back the timeout at a future time
+            if (rtask->blocking)
+                insert_timeout_entry(t, rtask->task_id, getcurtime() + globals_Timeout_REXEC_ACK_TIMEOUT);
+            else {
+                // if not blocking, remove it from the task table and destroy the remote task entry
+                HASH_DEL(t->task_table, rtask);
+                destroy_remote_task(rtask);
+            }
+        }
         return true;
 
     case CmdNames_REXEC_RES:
@@ -153,6 +252,20 @@ bool msg_processor(void *serv, command_t *cmd)
         else
             printf("Not found the task entry.. \n");
         command_free(cmd);
+        return true;
+
+    case CmdNames_REXEC_ERR:
+        // find the task
+        HASH_FIND_INT(t->task_table, &(cmd->task_id), rtask);
+        if (rtask != NULL)
+        {
+            // remove the timeout entry
+            remove_timeout_entry(t, rtask->task_id);
+            rtask->status = TASK_ERROR;
+            // if blocking task, push an error to the task
+            // if not blocking, remove the task from task table and destroy the task
+
+        }
         return true;
 
     case CmdNames_PUT_SCHEDULE: // unimplemented in current milestones

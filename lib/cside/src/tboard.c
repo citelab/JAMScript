@@ -79,6 +79,8 @@ tboard_t* tboard_create(void *cnode, int secondary_queues)
     tboard->exec_hist = NULL;
 
     tboard->task_table = NULL;
+    timeout_error_t err;
+    tboard->twheel = timeouts_open(0, &err);
 
     return tboard; // return address of tboard in memory
 }
@@ -306,6 +308,7 @@ void destroy_func_registry(tboard_t *t) {
         free(currf);
     }
 }
+
 
 
 ///////////////////////////////////////////////////

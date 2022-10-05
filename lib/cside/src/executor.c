@@ -56,10 +56,10 @@ void *executor(void *arg)
     disable_thread_cancel();
     
     while (true) {
-        // create single cancellation point
+        // create single cancellation point 
         set_thread_cancel_point_here();
         // run sequencer
-        task_sequencer(tboard);
+    //    task_sequencer(tboard);
 
         //// define variables needed for each iteration
         struct queue_entry *next = NULL; // queue entry of ready queue
@@ -200,9 +200,9 @@ void *executor(void *arg)
             //    else {
                     // FIXME: Arg free must be fixed. It is done in applications in the "wrapper"
                     // FIXME: Should it be done in application or here? What about command release in 197?
-                    // Otherwise, check user data if specified and not null, we free it  
+                    // Otherwise, check user data if specified and not null, we free it
             //        if (task->data_size > 0 && task->desc.user_data != NULL)
-            //            free(task->desc.user_data);  
+            //            free(task->desc.user_data);
             //    }
                 // destroy context
                 mco_destroy(task->ctx);

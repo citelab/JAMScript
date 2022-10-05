@@ -5,8 +5,9 @@
 #include "mqtt_adapter.h"
 #include "core.h"
 
-#define MAX_EDGE_SERVERS             16
-#define MAX_TOPICS              16
+#define MAX_EDGE_SERVERS            16
+#define MAX_TOPICS                  16
+#define COUNTDOWN_VALUE             8
 
 typedef enum
 {
@@ -16,11 +17,18 @@ typedef enum
     SERVER_ERROR
 } server_state_t;
 
+typedef enum
+{
+    CNODE_NOT_REGISTERED,
+    CNODE_REGISTERED,
+    CNODE_ERROR
+} cnode_state_t;
 
 typedef struct _server_t 
 {
     enum levels level;
     server_state_t state;
+    char *server_id;
     mqtt_adapter_t *mqtt;
     void *cnode;
     // redis_adapter goes here 
@@ -50,12 +58,14 @@ typedef struct cnode_t {
     cnode_args_t *args;
     topics_t *topics;
     corestate_t *core;
+    cnode_state_t cnstate;
     server_t *devserv;
     server_t *edgeserv[MAX_EDGE_SERVERS];
     server_t *cloudserv;
     broker_info_t *devinfo;
     int eservnum;
     void *tboard;
+    int countdown;
 } cnode_t;
 
 
@@ -63,11 +73,15 @@ typedef struct cnode_t {
 /************************
  * Function Definitions *
  ************************/
+topics_t *cnode_create_topics(char *app);
+void cnode_topics_destroy(topics_t *t);
+server_t *cnode_create_mbroker(cnode_t *cn, enum levels level, char *server_id, char *host, int port, char *topics[], int ntopics);
+void cnode_recreate_mbroker(server_t *serv, enum levels level, char *server_id, char *host, int port, char *topics[], int ntopics);
 
-/////////////////////////////////////////
-//////////////// CNODE //////////////////
-/////////////////////////////////////////
-cnode_t *cnode_init(int argc, char **argv); // cnode.c
+broker_info_t *cnode_scanj(int groupid);
+
+
+cnode_t *cnode_init(int argc, char **argv); 
 /** cnode_init() - Initializes CNode
  * @argc: argument count
  * @argv: arguments pointer

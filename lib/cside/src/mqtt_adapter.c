@@ -34,12 +34,16 @@ void mqtt_connect_callback(struct mosquitto *mosq, void *udata, int res)
 }
 void mqtt_disconnect_callback(struct mosquitto *mosq, void *udata, int res)
 {
+    (void)mosq;
+    server_t *serv = (server_t *)udata;
+    if (serv != NULL)
+        serv->state = SERVER_NOT_REGISTERED;
     if (res != 0) {
         terminate_error(false, "MQTT disconnect callback gave unexpected res: %d", res);
     }
     // add stuff maybe for udata
-    if (((server_t *)udata)->mqtt != NULL)
-        destroy_mqtt_adapter(((server_t *)udata)->mqtt);
+    if (serv->mqtt != NULL) 
+        destroy_mqtt_adapter(serv->mqtt);
     free(udata);
     
 }

@@ -12,7 +12,7 @@
 #define CmdNames_REF_CLOUD_FOG_INFO 1102
 #define CmdNames_FOG_ADD_INFO 1150
 #define CmdNames_FOG_DEL_INFO 1151
-#define CmdNames_CLOUD_ADD_INFO 1152,
+#define CmdNames_CLOUD_ADD_INFO 1152
 #define CmdNames_CLOUD_DEL_INFO 1153
 #define CmdNames_WHERE_IS_CTRL 1550
 #define CmdNames_HERE_IS_CTRL 1551
@@ -30,6 +30,9 @@
 #define CmdNames_COND_FALSE 5810
 #define CmdNames_FUNC_NOT_FOUND 5820
 #define CmdNames_SET_JSYS 6000
+
+#define CmdNames_STOP 7000
+
 
 #define Multicast_PREFIX "224.1.1"
 #define Multicast_SENDPORT  16000
