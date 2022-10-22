@@ -41,9 +41,7 @@ tboard_t* tboard_create(void *cnode, int secondary_queues)
     assert(pthread_mutex_init(&(tboard->tmutex), NULL) == 0);
     assert(pthread_mutex_init(&(tboard->hmutex), NULL) == 0);
     assert(pthread_mutex_init(&(tboard->emutex), NULL) == 0);
-    assert(pthread_mutex_init(&(tboard->msg_mutex), NULL) == 0);
     assert(pthread_cond_init(&(tboard->tcond), NULL) == 0);
-    assert(pthread_cond_init(&(tboard->msg_cond), NULL) == 0);
 
     // create and initialize primary queues
     assert(pthread_mutex_init(&(tboard->pmutex), NULL) == 0);
@@ -70,12 +68,6 @@ tboard_t* tboard_create(void *cnode, int secondary_queues)
 
         queue_init(&(tboard->squeue[i]));
     }
-
-    // initialize remote message queues
-    tboard->msg_sent = queue_create();
-    tboard->msg_recv = queue_create();
-    queue_init(&(tboard->msg_sent));
-    queue_init(&(tboard->msg_recv));
 
     tboard->status = 0; // indicate its been created but not started
     tboard->shutdown = 0;
@@ -180,32 +172,9 @@ void tboard_shutdown(tboard_t *tboard)
         entry = queue_peek_front(&(tboard->pqueue_ba));
     }
 
-    // empty outgoing remote task message queues
-    struct queue_entry *msg = queue_peek_front(&(tboard->msg_sent));
-    while (msg != NULL) {
-        queue_pop_head(&(tboard->msg_sent));
-        remote_task_destroy((remote_task_t *)(msg->data)); // destroys remote_task_t
-                                                           // and any parent task_t's
-        free(msg);
-        msg = queue_peek_front(&(tboard->msg_sent));
-    }
-    // empty incoming remote task message queues
-    msg = queue_peek_front(&(tboard->msg_recv));
-    while (msg != NULL) {
-        queue_pop_head(&(tboard->msg_recv));
-        remote_task_destroy((remote_task_t *)(msg->data)); // destroys remote_task_t
-                                                           // and any parent task_t's
-        free(msg);
-        msg = queue_peek_front(&(tboard->msg_recv));
-    }
-
     // unlock tmutex so we can destroy it
     pthread_mutex_unlock(&(tboard->tmutex));
     
-    // broadcast MQTT msg_cond condition variable before destroying
-    pthread_cond_broadcast(&(tboard->msg_cond)); // incase MQTT is waiting on this
-    pthread_cond_destroy(&(tboard->msg_cond));
-
     // free executor arguments
     free(tboard->pexect);
     for (int i=0; i<tboard->sqs; i++) {
@@ -221,8 +190,7 @@ void tboard_shutdown(tboard_t *tboard)
     // destroy rest of task board mutexes
     pthread_mutex_destroy(&(tboard->hmutex));
     pthread_mutex_destroy(&(tboard->tmutex));
-    pthread_mutex_destroy(&(tboard->emutex));
-    pthread_mutex_destroy(&(tboard->msg_mutex));
+    pthread_mutex_destroy(&(tboard->emutex));    
 
     // free task board object
     free(tboard);

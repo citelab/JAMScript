@@ -239,8 +239,6 @@ typedef struct {
  * @emutex:     Task board exit mutex, locking only when shutdown initializes. 
  * @pqueue:     Primary task ready queue
  * @squeue:     Secondary task ready queues
- * @msg_sent:   Message queue storing outgoing remote tasks
- * @msg_recv:   Message queue storing outgoing remote task responses
  * @msg_mutex:  Message queue mutex, locking only when modifying message queues or using @msg_cond
  * @msg_cond:   Message queue condition variable, used for external MQTT adapter to sleep on
  * @sqs:        Number of secondary ready queues and executors
@@ -285,12 +283,6 @@ typedef struct {
     struct queue pqueue_rt;
     struct queue pqueue_ba;
     struct queue squeue[MAX_SECONDARIES];
-
-    struct queue msg_sent;
-    struct queue msg_recv;
-
-    pthread_mutex_t msg_mutex;
-    pthread_cond_t msg_cond;
 
     int sqs;
     void *cnode;
