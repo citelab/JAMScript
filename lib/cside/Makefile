@@ -10,7 +10,7 @@ CC = clang
 AR = ar -rc
 
 # define any compile-time flags
-CFLAGS	:= -g -pthread  
+CFLAGS	:= -g -pthread -Wall
 #-fsanitize=address -fno-omit-frame-pointer -O1
 # -std=c99
 

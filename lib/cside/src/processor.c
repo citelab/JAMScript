@@ -72,7 +72,7 @@ void exec_sync(context_t ctx)
     if (f != NULL) {
         arg_t *rv = blocking_task_create(tb, *f, f->sideef, t, (nargs - 4));
         if (rv != NULL) {
-            command_t *cmd;
+            command_t *cmd = NULL;
             switch (rv->type) {
             case INT_TYPE:
                 cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, node_id, "i", rv->val.ival);
@@ -154,7 +154,7 @@ bool msg_processor(void *serv, command_t *cmd)
                             c->eservnum++;
                             break;
                         } else if (c->edgeserv[i]->state == SERVER_NOT_REGISTERED) {
-                            cnode_create_mbroker(c->edgeserv[i], EDGE_LEVEL, cmd->node_id, cmd->args[0].val.sval, cmd->args[1].val.ival, c->topics->subtopics, c->topics->length);
+                            cnode_recreate_mbroker(c->edgeserv[i], EDGE_LEVEL, cmd->node_id, cmd->args[0].val.sval, cmd->args[1].val.ival, c->topics->subtopics, c->topics->length);
                             c->eservnum++;
                         }
                     }
@@ -221,15 +221,15 @@ bool msg_processor(void *serv, command_t *cmd)
         if (rtask != NULL)
         {
             // remove the timeout entry
-            remove_timeout_entry(t, rtask->task_id);
+            twheel_delete_timeout(t->twheel, &(rtask->task_id));
             rtask->status = TASK_ACK_RECEIVED;
             // blocking task - put back the timeout at a future time
             if (rtask->blocking)
-                insert_timeout_entry(t, rtask->task_id, getcurtime() + globals_Timeout_REXEC_ACK_TIMEOUT);
+                twheel_add_event(t->twheel, TW_EVENT_REXEC_TIMEOUT, &(rtask->task_id), getcurtime() + globals_Timeout_REXEC_ACK_TIMEOUT);
             else {
                 // if not blocking, remove it from the task table and destroy the remote task entry
                 HASH_DEL(t->task_table, rtask);
-                destroy_remote_task(rtask);
+                remote_task_destroy(rtask);
             }
         }
         return true;
@@ -239,6 +239,8 @@ bool msg_processor(void *serv, command_t *cmd)
         HASH_FIND_INT(t->task_table, &(cmd->task_id), rtask);
         if (rtask != NULL)
         {
+            // remove the timeout entry
+            twheel_delete_timeout(t->twheel, &(rtask->task_id));
             rtask->data = command_arg_clone(cmd->args);
             rtask->data_size = 1;
             if (rtask->calling_task != NULL)
@@ -260,33 +262,31 @@ bool msg_processor(void *serv, command_t *cmd)
         if (rtask != NULL)
         {
             // remove the timeout entry
-            remove_timeout_entry(t, rtask->task_id);
-            rtask->status = TASK_ERROR;
-            // if blocking task, push an error to the task
-            // if not blocking, remove the task from task table and destroy the task
-
+            twheel_delete_timeout(t->twheel, &(rtask->task_id));
+            if (rtask->calling_task != NULL)
+            {
+                rtask->status = TASK_ERROR;
+                assert(mco_push(rtask->calling_task->ctx, rtask, sizeof(remote_task_t)) == MCO_SUCCESS);
+                // place parent task back to appropriate queue
+                task_place(t, rtask->calling_task);
+            }
+            else {
+                // if not blocking, remove it from the task table and destroy the remote task entry
+                HASH_DEL(t->task_table, rtask);
+                remote_task_destroy(rtask);
+            }
         }
         return true;
 
-    case CmdNames_PUT_SCHEDULE: // unimplemented in current milestones
-                                // if (msg->subtype == PRIMARY_EXEC) {
-                                // } else {
-        tboard_err("msg_processor: Secondary scheduler unimplemented.\n");
-        return false;
-        // }
+    case CmdNames_PUT_SCHEDULE: 
+        if (t->sched != NULL)
+            command_free(t->sched);
+        t->sched = cmd;
+        return true;
     default:
-        //     tboard_err("msg_processor: Invalid message type encountered: %d\n", msg->type);
+        tboard_err("msg_processor: Invalid message type encountered: %d\n", cmd->cmd);
         return false;
     }
-}
-
-bool data_processor(tboard_t *t, msg_t *msg)
-{
-    // when data is received, it interprets message and proceeds accordingly (missing requirements)
-    (void)t;
-    (void)msg;
-    tboard_err("data_processor: Data Processor unimplemented.\n");
-    return false;
 }
 
 void send_err_msg(void *serv, char *node_id, long int task_id)

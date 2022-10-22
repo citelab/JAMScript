@@ -7,6 +7,13 @@
 #include <pthread.h>
 #include <assert.h> // assert()
 
+enum execmodes_t {
+    BATCH_MODE_EXEC = 1,
+    SYNC_MODE_EXEC = 2,
+    RT_MODE_EXEC = 3
+};
+
+
 /**
  * Define some macros that are useful to keep the code compact
  */
@@ -42,6 +49,193 @@ void convert_time_to_absolute(struct timespec *t, struct timespec *abt)
     abt->tv_nsec = t->tv_nsec + tnow.tv_usec * 1000;
 }
 
+
+void process_timing_wheel(tboard_t *tboard, enum execmodes_t *mode)
+{
+    twheel_update_to_now(tboard->twheel);
+    struct timeout *t;
+    
+    *mode = BATCH_MODE_EXEC;
+    do {
+        t = twheel_get_next(tboard->twheel);
+        if (t->callback.fn == dummy_next_schedule) {
+            install_next_schedule(tboard, t->expires);
+        } else if (t->callback.fn == dummy_next_sy_slot) {
+            *mode = SYNC_MODE_EXEC;
+            wait_to_sy_slot(tboard, t->callback.arg, t->expires);
+            break;
+        } else if (t->callback.fn == dummy_next_rt_slot) {
+            *mode = RT_MODE_EXEC;
+            twheel_add_event(tboard->twheel, TW_EVENT_RT_CLOSE, NULL, t->expires + RT_SLOT_LEN);
+            break;
+        } else if (t->callback.fn == dummy_close_rt_slot) {
+            *mode = BATCH_MODE_EXEC;
+        } else if (t->callback.fn == dummy_next_sleep_event) {
+            process_sleep_event(tboard, t->callback.arg);
+        } else if (t->callback.fn == dummy_next_timeout_event) {
+            process_timeout_event(tboard, t->callback.arg);
+        }
+    } while (t != NULL);
+}
+
+struct queue_entry *get_next_task(tboard_t *tboard, int etype, enum execmodes_t mode, int num, struct queue **q, pthread_mutex_t **mutex, pthread_cond_t **cond) 
+{
+    struct queue_entry *next = NULL; // queue entry of ready queue
+
+    if (etype == PRIMARY_EXECUTOR) { // we're in pExec
+        // check if any primary tasks are waiting in primary ready queue
+        pthread_mutex_lock(&(tboard->pmutex));
+        *mutex = &(tboard->pmutex);
+        *cond = &(tboard->pcond);
+        switch (mode) {
+            case SYNC_MODE_EXEC:
+                *q = &(tboard->pqueue_sy);
+            break;
+            case RT_MODE_EXEC:
+                *q = &(tboard->pqueue_rt);
+            break;
+            case BATCH_MODE_EXEC:
+                *q = &(tboard->pqueue_ba);
+            break;
+        }
+        next = queue_peek_front(*q);
+        if (next)   // we found a primary task so we pop it
+            queue_pop_head(*q);
+        pthread_mutex_unlock(&(tboard->pmutex));
+    } else { // we're in sExec, check if any task exists
+        for (int i=0; i<tboard->sqs; i++) {
+            // lock appropriate mutex
+            pthread_mutex_lock(&(tboard->smutex[i]));
+            *q = &(tboard->squeue[i]);
+            next = queue_peek_front(*q);
+            if (next) { // found a task to run, pop it and stop searching
+                queue_pop_head(*q);
+                *mutex = &(tboard->smutex[i]);
+                *cond = &(tboard->scond[i]);
+                pthread_mutex_unlock(&(tboard->smutex[i]));
+                break;
+            }
+            pthread_mutex_unlock(&(tboard->smutex[i]));
+        }
+    }
+    return next;
+}
+
+void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queue_entry *next, pthread_mutex_t *mutex, pthread_cond_t *cond)
+{
+    long start_time, end_time;
+
+    ////////// Get queue data, and swap context to function until task yields ///////////
+    task_t *task = ((task_t *)(next->data));
+    task->status = TASK_RUNNING; // update status incase first run
+
+    start_time = clock(); // record start time
+    mco_resume(task->ctx); // swap context to task
+    end_time = clock(); // record end time
+
+    // record task iteration time in task_t
+    task->cpu_time += (end_time - start_time);
+
+    // check status of task
+    int status = mco_status(task->ctx);
+    if (status == MCO_SUSPENDED) { // task yielded
+        task->yields++; // increment # yields of specific task
+        task->hist->yields++; // increment total # yields in history hash table
+        struct queue_entry *e = NULL;
+
+        // check if task yielded with special instruction
+        if (mco_get_bytes_stored(task->ctx) == sizeof(task_t)) {
+            // indicative of blocking local task creation, so we must retrieve it
+            task_t *subtask = calloc(1, sizeof(task_t)); // freed on termination
+            assert(mco_pop(task->ctx, subtask, sizeof(task_t)) == MCO_SUCCESS);
+            // save issuing task_t object in subtask task_t object
+            subtask->parent = task;
+            // place task in appropriate queue corresponding to subtask->type
+            task_place(tboard, subtask);
+        } else if (mco_get_bytes_stored(task->ctx) == sizeof(remote_task_t)) {
+            // indicative of remote task creation, so we must retrieve it
+            remote_task_t *rtask = calloc(1, sizeof(remote_task_t)); // freed on retrieval
+            assert(mco_pop(task->ctx, rtask, sizeof(remote_task_t)) == MCO_SUCCESS);
+            // task issuing task_t object in remote task object
+            rtask->calling_task = task;
+            HASH_ADD_INT(tboard->task_table, task_id, rtask);
+
+            // if task is not blocking we wish to reinsert issuing task back into ready queue
+            if (!rtask->blocking)
+                e = queue_new_node(task);
+            // place remote task into appropriate message queue
+            remote_task_place(tboard, rtask);
+
+        } else { // just a normal yield, so we create node to reinsert task into queue
+            e = queue_new_node(task);
+        }
+
+        if (e != NULL){
+            // reinsert task into queue it was taken out of
+            pthread_mutex_lock(mutex); // lock appropriate mutex
+            switch (task->type) {
+                case PRI_SYNC_TASK:
+                    queue_insert_tail(&(tboard->pqueue_sy), e);
+                break;
+                case PRI_REAL_TASK:
+                    queue_insert_tail(&(tboard->pqueue_rt), e);
+                break;
+                case PRI_BATCH_TASK:
+                    queue_insert_tail(&(tboard->pqueue_ba), e);
+            }
+            if(type == PRIMARY_EXECUTOR) pthread_cond_signal(cond); // we wish to wake secondary executors if they are asleep
+            pthread_mutex_unlock(mutex);
+        }
+    } else if (status == MCO_DEAD) { // task has terminated
+        printf("Terminated...\n");
+        task->status = TASK_COMPLETED; // mark task as complete for history hash table
+        // record task execution statistics into history hash table
+        history_record_exec(tboard, task, &(task->hist)); 
+
+        // check if task was blocking, if so we need to resume parent
+        if (task->parent != NULL) { // blocking task just terminated, we wish to return parent to queue
+            // push result to coroutine storage so blocking_task_create() can process results
+
+            if (mco_get_bytes_stored(task->ctx) == sizeof(arg_t)) {
+                arg_t retarg;
+                mco_pop(task->ctx, &retarg, sizeof(arg_t));
+                mco_push(task->parent->ctx, &retarg, sizeof(arg_t));
+            }
+
+            assert(mco_push(task->parent->ctx, task, sizeof(task_t)) == MCO_SUCCESS);
+            // place parent back into appropriate queue
+            task_place(tboard, task->parent); // place parent back in appropriate queue
+        } else {
+            // we only want to deincrement concurrent count for parent tasks ending
+            // since only one blocking task can be created at a time, and blocked task
+            // essentially takes the place of the parent. Of course, nesting blocked tasks
+            // should be done with caution as there is essentially no upward bound, meaning
+            // large levels of nested blocked tasks could exhaust memory
+            tboard_deinc_concurrent(tboard);
+        }
+        // if command object is specified, just free it. User data would be deallocated by itself
+        
+        if (task->cmd_obj) {
+            command_free((command_t *)task->cmd_obj);       // FIXME: THis is conflicting with release in the wrapper
+            printf("Releasing the command object...\n");
+        }
+    //    else {
+            // FIXME: Arg free must be fixed. It is done in applications in the "wrapper"
+            // FIXME: Should it be done in application or here? What about command release in 197?
+            // Otherwise, check user data if specified and not null, we free it
+    //        if (task->data_size > 0 && task->desc.user_data != NULL)
+    //            free(task->desc.user_data);
+    //    }
+        // destroy context
+        mco_destroy(task->ctx);
+        // free task_t object
+        free(task);
+    } else {
+        printf("Unexpected status received: %d, will lose task.\n",status);
+    }
+}
+
+
 void *executor(void *arg)
 {
     // get task board pointer and purpose from argument
@@ -50,7 +244,10 @@ void *executor(void *arg)
     // determine behavior based on arguments
     int type = args.type;
     int num = args.num;
-    long start_time, end_time;
+
+    pthread_mutex_t *mutex = NULL; // mutex to lock for previous queue
+    pthread_cond_t *cond = NULL; // condition variable to signal after insertion
+    enum execmodes_t mode;
 
     // disable premature cancellation by tboard_kill() to ensure graceful terminations
     disable_thread_cancel();
@@ -58,8 +255,8 @@ void *executor(void *arg)
     while (true) {
         // create single cancellation point 
         set_thread_cancel_point_here();
-        // run sequencer
-    //    task_sequencer(tboard);
+        // process the timing wheel events
+        process_timing_wheel(tboard, &mode);
 
         //// define variables needed for each iteration
         struct queue_entry *next = NULL; // queue entry of ready queue
@@ -67,155 +264,17 @@ void *executor(void *arg)
         // task is taken out of. This is important to track for pExec after taking a task
         // out of a secondary queue when primary queue is empty
         struct queue *q = NULL; // queue entry to reinsert task into after yielding
-        pthread_mutex_t *mutex = NULL; // mutex to lock for previous queue
-        pthread_cond_t *cond = NULL; // condition variable to signal after insertion
-
-        ////// Fetch next process to run ////////
-        if (type == PRIMARY_EXEC) { // we're in pExec
-            // check if any primary tasks are waiting in primary ready queue
-            pthread_mutex_lock(&(tboard->pmutex));
-            mutex = &(tboard->pmutex);
-            cond = &(tboard->pcond);
-            q = &(tboard->pqueue);
-            next = queue_peek_front(q);
-            if (next) {  // we found a primary task so we pop it
-                queue_pop_head(q);
-            } else { // no primary tasks are ready, try to pull a secondary task from any
-                     // secondary queue to execute
-                for (int i=0; i<tboard->sqs; i++) {
-                    // lock appropriate mutex
-                    pthread_mutex_lock(&(tboard->smutex[i]));
-                    q = &(tboard->squeue[i]);
-                    next = queue_peek_front(q);
-                    if (next) { // found a task to run, pop it and stop searching
-                        queue_pop_head(q);
-                        mutex = &(tboard->smutex[i]);
-                        cond = &(tboard->scond[i]);
-                        pthread_mutex_unlock(&(tboard->smutex[i]));
-                        break;
-                    }
-                    pthread_mutex_unlock(&(tboard->smutex[i]));
-                }
-            }
-            pthread_mutex_unlock(&(tboard->pmutex));
-        } else { // we're in sExec, check if any task exists
-            pthread_mutex_lock(&(tboard->smutex[num]));
-            mutex = &(tboard->smutex[num]);
-            cond = &(tboard->scond[num]);
-            q = &(tboard->squeue[num]);
-            next = queue_peek_front(q);
-            if(next) queue_pop_head(q);
-            pthread_mutex_unlock(&(tboard->smutex[num]));
-        }
+        
+        // Fetch next task to run 
+        next = get_next_task(tboard, type, mode, num, &q, &mutex, &cond);
 
         if (next) { // TExec found a task to run
-            ////////// Get queue data, and swap context to function until task yields ///////////
-            task_t *task = ((task_t *)(next->data));
-            task->status = TASK_RUNNING; // update status incase first run
-
-            start_time = clock(); // record start time
-            mco_resume(task->ctx); // swap context to task
-            end_time = clock(); // record end time
-
-            // record task iteration time in task_t
-            task->cpu_time += (end_time - start_time);
-
-            // check status of task
-            int status = mco_status(task->ctx);
-            if (status == MCO_SUSPENDED) { // task yielded
-                task->yields++; // increment # yields of specific task
-                task->hist->yields++; // increment total # yields in history hash table
-                struct queue_entry *e = NULL;
-
-                // check if task yielded with special instruction
-                if (mco_get_bytes_stored(task->ctx) == sizeof(task_t)) {
-                    // indicative of blocking local task creation, so we must retrieve it
-                    task_t *subtask = calloc(1, sizeof(task_t)); // freed on termination
-                    assert(mco_pop(task->ctx, subtask, sizeof(task_t)) == MCO_SUCCESS);
-                    // save issuing task_t object in subtask task_t object
-                    subtask->parent = task;
-                    // place task in appropriate queue corresponding to subtask->type
-                    task_place(tboard, subtask);
-                } else if (mco_get_bytes_stored(task->ctx) == sizeof(remote_task_t)) {
-                    // indicative of remote task creation, so we must retrieve it
-                    remote_task_t *rtask = calloc(1, sizeof(remote_task_t)); // freed on retrieval
-                    assert(mco_pop(task->ctx, rtask, sizeof(remote_task_t)) == MCO_SUCCESS);
-                    // task issuing task_t object in remote task object
-                    rtask->calling_task = task;
-                    HASH_ADD_INT(tboard->task_table, task_id, rtask);
-
-                    // if task is not blocking we wish to reinsert issuing task back into ready queue
-                    if (!rtask->blocking)
-                        e = queue_new_node(task);
-                    // place remote task into appropriate message queue
-                    remote_task_place(tboard, rtask);
-
-                } else { // just a normal yield, so we create node to reinsert task into queue
-                    e = queue_new_node(task);
-                }
-
-                if (e != NULL){
-                    // reinsert task into queue it was taken out of
-                    pthread_mutex_lock(mutex); // lock appropriate mutex
-                    if (REINSERT_PRIORITY_AT_HEAD == 1 && task->type == PRIORITY_EXEC)
-                        queue_insert_head(q, e); // if specified put priority at head
-                    else
-                        queue_insert_tail(q, e); // put task in tail of appropriate queue
-                    if(type == PRIMARY_EXEC) pthread_cond_signal(cond); // we wish to wake secondary executors if they are asleep
-                    pthread_mutex_unlock(mutex);
-                }
-            } else if (status == MCO_DEAD) { // task has terminated
-                printf("Terminated...\n");
-                task->status = TASK_COMPLETED; // mark task as complete for history hash table
-                // record task execution statistics into history hash table
-                history_record_exec(tboard, task, &(task->hist)); 
-
-                // check if task was blocking, if so we need to resume parent
-                if (task->parent != NULL) { // blocking task just terminated, we wish to return parent to queue
-                    // push result to coroutine storage so blocking_task_create() can process results
-
-                    if (mco_get_bytes_stored(task->ctx) == sizeof(arg_t)) {
-                        arg_t retarg;
-                        mco_pop(task->ctx, &retarg, sizeof(arg_t));
-                        mco_push(task->parent->ctx, &retarg, sizeof(arg_t));
-                    }
-
-                    assert(mco_push(task->parent->ctx, task, sizeof(task_t)) == MCO_SUCCESS);
-                    // place parent back into appropriate queue
-                    task_place(tboard, task->parent); // place parent back in appropriate queue
-                } else {
-                    // we only want to deincrement concurrent count for parent tasks ending
-                    // since only one blocking task can be created at a time, and blocked task
-                    // essentially takes the place of the parent. Of course, nesting blocked tasks
-                    // should be done with caution as there is essentially no upward bound, meaning
-                    // large levels of nested blocked tasks could exhaust memory
-                    tboard_deinc_concurrent(tboard);
-                }
-                // if command object is specified, just free it. User data would be deallocated by itself
-                
-                if (task->cmd_obj) {
-                    command_free((command_t *)task->cmd_obj);       // FIXME: THis is conflicting with release in the wrapper
-                    printf("Releasing the command object...\n");
-                }
-            //    else {
-                    // FIXME: Arg free must be fixed. It is done in applications in the "wrapper"
-                    // FIXME: Should it be done in application or here? What about command release in 197?
-                    // Otherwise, check user data if specified and not null, we free it
-            //        if (task->data_size > 0 && task->desc.user_data != NULL)
-            //            free(task->desc.user_data);
-            //    }
-                // destroy context
-                mco_destroy(task->ctx);
-                // free task_t object
-                free(task);
-            } else {
-                printf("Unexpected status received: %d, will lose task.\n",status);
-            }
             // free queue entry
+            process_next_task(tboard, type, &q, next, mutex, cond);
             free(next);
         } else {
             // empty queue, we sleep on appropriate condition variable until signal received
-            if (type == PRIMARY_EXEC) {
+            if (type == PRIMARY_EXECUTOR) {
                 conditional_timedwait(&(tboard->pmutex), &(tboard->pcond), &(pexec_timeout));
             } else
                 conditional_wait(&(tboard->smutex[num]), &(tboard->scond[num]));

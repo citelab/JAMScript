@@ -44,7 +44,7 @@ void local_test3(char *name, char *g, char *h)
 
 void local_test2(char *name, int k, double q)
 {
-    arg_t *q2;
+    //arg_t *q2;
     printf("This is local test.. %s\n", name);
     printf("This is local test.. %d\n", k);
     printf("This is local test.. %f\n", q);

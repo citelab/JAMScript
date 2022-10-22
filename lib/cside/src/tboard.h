@@ -11,6 +11,7 @@
 #include <pthread.h>
 #include "timeout.h"
 #include "command.h"
+#include "sleeping.h"
 
 
 ///////////////////////////////
@@ -37,11 +38,10 @@
 
 
 /////////////////////////
-//// Internal Macros ////
+//// State definitions
 /////////////////////////
-#define PRIORITY_EXEC -1
-#define PRIMARY_EXEC 0
-#define SECONDARY_EXEC 1
+#define PRIMARY_EXECUTOR        1
+#define SECONDARY_EXECUTOR      2
 
 #define TASK_EXEC 0 // for msg_processor
 #define TASK_SCHEDULE 1 // for msg_processor
@@ -50,14 +50,28 @@
 #define TASK_ID_NONBLOCKING 0
 #define TASK_ID_BLOCKING 1
 
-#define TASK_INITIALIZED 1
-#define TASK_RUNNING 2
-#define TASK_COMPLETED 3
-#define TASK_ERROR 4
-#define TASK_ACK_RECEIVED 5
+enum task_types_t {
+    PRI_SYNC_TASK = 1,
+    PRI_REAL_TASK = 2,
+    PRI_BATCH_TASK = 3,
+    SEC_BATCH_TASK = 4
+};
+
+enum task_status_codes_t {
+    TASK_INITIALIZED = 1,
+    TASK_RUNNING = 2,
+    TASK_COMPLETED = 3,
+    TASK_ERROR = 4,
+    TASK_ACK_RECEIVED = 5,
+    TASK_JSLEEP_DONE = 6
+};
+
+#define TASK_MAX_RETRIES 3
 
 #define MAX_MSG_LENGTH 254
 #define MAX_ARG_LENGTH 32
+
+#define RT_SLOT_LEN     500            // in microseconds
 
 #define RTASK_SEND 1
 #define RTASK_RECV 0
@@ -95,6 +109,17 @@ typedef mco_desc context_desc;
 typedef void (*tb_task_f)(context_t);
 
 
+typedef enum
+{
+    TW_EVENT_INSTALL_SCHEDULE,
+    TW_EVENT_RT_SCHEDULE,
+    TW_EVENT_RT_CLOSE,
+    TW_EVENT_SY_SCHEDULE,
+    TW_EVENT_BEGIN_JSLEEP,
+    TW_EVENT_REXEC_TIMEOUT
+} twheel_event_t;
+
+
 //////////////////////////////////////////////////////
 /////////// TBoard Structure Definitions /////////////
 //////////////////////////////////////////////////////
@@ -130,9 +155,10 @@ struct exec_t;
  *              @status == 1: task is running
  *              @status == 2: task has terminated
  * @type:       Task type.
- *              @type == PRIORITY_EXEC:  Highest priority primary task
- *              @type == PRIMARY_EXEC:   Primary task
- *              @type == SECONDARY_EXEC: Secondary task
+ *              @type == PRIMARY_SY_EXEC: Highest priority primary task (synchronous)
+ *              @type == PRIMARY_RT_EXEC: Second highest priority (real time task)
+ *              @type == PRIMARY_BA_EXEC: Lowest priority task that goes in the primary executor
+ *              @type == SECONDARY_BA_EXEC: Secondary executor tasks (only batch goes there)
  * @cpu_time:   CPU time of task execution 
  * @yields:     Count of yields by task
  * @fn:         Task function to be run by task executor as function_t.
@@ -192,6 +218,7 @@ typedef struct {
     size_t data_size;
     task_t *calling_task;
     bool blocking;
+    int retries;
     int level;
     char fn_argsig[MAX_ARG_LENGTH];
     UT_hash_handle  hh;
@@ -254,7 +281,9 @@ typedef struct {
     pthread_mutex_t emutex;
     pthread_mutex_t hmutex;
 
-    struct queue pqueue;
+    struct queue pqueue_sy;
+    struct queue pqueue_rt;
+    struct queue pqueue_ba;
     struct queue squeue[MAX_SECONDARIES];
 
     struct queue msg_sent;
@@ -280,6 +309,8 @@ typedef struct {
 
     remote_task_t *task_table;
     struct timeouts *twheel;
+    command_t *sched;
+    sleeper_t sleeper;
 
 } tboard_t;
 
@@ -942,6 +973,37 @@ void history_print_records(tboard_t *t, FILE *fptr);
 void destroy_func_registry(tboard_t *t);
 
 
+
+////////////////////////////////////////////////////////////////
+/////////////////////// Timing Wheel Utils //////////////////
+////////////////////////////////////////////////////////////////
+
+#define twheel_get_next(X)          timeouts_get(X)
+
+long int getcurtime();
+struct timeouts *twheel_init();
+bool twheel_add_event(struct timeouts *twheel, twheel_event_t type, void *arg, long int tval);
+bool twheel_delete_timeout(struct timeouts *twheel, long int *id);
+void twheel_update_to_now(struct timeouts *twheel);
+
+
+////////////////////////////////////////////////////////////////
+/////////////////////// Executor Utils //////////////////
+////////////////////////////////////////////////////////////////
+
+void dummy_next_schedule(void *arg);
+void dummy_next_sy_slot(void *arg);
+void dummy_next_rt_slot(void *arg);
+void dummy_close_rt_slot(void *arg);
+void dummy_next_sleep_event(void *arg);
+void dummy_next_timeout_event(void *arg);
+
+void install_next_schedule(tboard_t *tb, long int etime);
+void wait_to_sy_slot(tboard_t *tb, void *arg, long int stime);
+void process_sleep_event(tboard_t *t, void *arg);
+void process_timeout_event(tboard_t *t, void *arg);
+
+
 ////////////////////////////////////////////////////////////////
 /////////////////////// Logging functionality //////////////////
 ////////////////////////////////////////////////////////////////
@@ -962,5 +1024,8 @@ int tboard_err(char *format, ...);
  * 
  * identical syntax to functions we love like printf
  */
+
+
+
 
 #endif

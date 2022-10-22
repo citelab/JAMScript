@@ -50,9 +50,13 @@ tboard_t* tboard_create(void *cnode, int secondary_queues)
     assert(pthread_cond_init(&(tboard->pcond), NULL) == 0);
 
     tboard->cnode = cnode;
-    tboard->pqueue = queue_create();
+    tboard->pqueue_sy = queue_create();
+    tboard->pqueue_rt = queue_create();
+    tboard->pqueue_ba = queue_create();    
 
-    queue_init(&(tboard->pqueue));
+    queue_init(&(tboard->pqueue_sy));
+    queue_init(&(tboard->pqueue_rt));
+    queue_init(&(tboard->pqueue_ba));
 
     // set number of secondaries tboard has
     tboard->sqs = secondary_queues;
@@ -81,6 +85,7 @@ tboard_t* tboard_create(void *cnode, int secondary_queues)
     tboard->task_table = NULL;
     timeout_error_t err;
     tboard->twheel = timeouts_open(0, &err);
+    learn_sleeping(&(tboard->sleeper), 1000000);
 
     return tboard; // return address of tboard in memory
 }
@@ -95,7 +100,7 @@ void tboard_start(tboard_t *tboard)
     
     // create primary executor
     exec_t *primary = (exec_t *)calloc(1, sizeof(exec_t));
-    primary->type = PRIMARY_EXEC;
+    primary->type = PRIMARY_EXECUTOR;
     primary->num = 0;
     primary->tboard = tboard;
     pthread_create(&(tboard->primary), NULL, executor, primary);
@@ -106,7 +111,7 @@ void tboard_start(tboard_t *tboard)
     // create secondary executors
     for (int i=0; i<tboard->sqs; i++) {
         exec_t *secondary = (exec_t *)calloc(1, sizeof(exec_t));
-        secondary->type = SECONDARY_EXEC;
+        secondary->type = SECONDARY_EXECUTOR;
         secondary->num = i;
         secondary->tboard = tboard;
         pthread_create(&(tboard->secondary[i]), NULL, executor, secondary);
@@ -153,12 +158,26 @@ void tboard_shutdown(tboard_t *tboard)
             entry = queue_peek_front(&(tboard->squeue[i]));
         }
     }
-    struct queue_entry *entry = queue_peek_front(&(tboard->pqueue));
+    struct queue_entry *entry = queue_peek_front(&(tboard->pqueue_sy));
     while (entry != NULL) {
-        queue_pop_head(&(tboard->pqueue));
+        queue_pop_head(&(tboard->pqueue_sy));
         task_destroy((task_t *)(entry->data)); // destroys task_t and coroutine
         free(entry);
-        entry = queue_peek_front(&(tboard->pqueue));
+        entry = queue_peek_front(&(tboard->pqueue_sy));
+    }
+    entry = queue_peek_front(&(tboard->pqueue_rt));
+    while (entry != NULL) {
+        queue_pop_head(&(tboard->pqueue_rt));
+        task_destroy((task_t *)(entry->data)); // destroys task_t and coroutine
+        free(entry);
+        entry = queue_peek_front(&(tboard->pqueue_rt));
+    }
+    entry = queue_peek_front(&(tboard->pqueue_ba));
+    while (entry != NULL) {
+        queue_pop_head(&(tboard->pqueue_ba));
+        task_destroy((task_t *)(entry->data)); // destroys task_t and coroutine
+        free(entry);
+        entry = queue_peek_front(&(tboard->pqueue_ba));
     }
 
     // empty outgoing remote task message queues

@@ -24,9 +24,9 @@ bool task_create(tboard_t *t, function_t fn, void *args, size_t sizeof_args, voi
     task_t *task = calloc(1, sizeof(task_t));
     task->status = TASK_INITIALIZED;
     if (fn.sideef)
-        task->type = PRIMARY_EXEC;
+        task->type = PRIMARY_EXECUTOR;
     else 
-        task->type = SECONDARY_EXEC;
+        task->type = SECONDARY_EXECUTOR;
     task->id = TASK_ID_NONBLOCKING;
     task->fn = fn;
     // create description and populate it with argument
@@ -73,13 +73,13 @@ void task_destroy(task_t *task)
     free(task);
 }
 
-void task_yield()
+inline void task_yield()
 {
     // yield currently running task
     mco_yield(mco_running());
 }
 
-void *task_get_args()
+inline void *task_get_args()
 {
     // get arguments of currently running task
     return mco_get_user_data(mco_running());
@@ -88,14 +88,20 @@ void *task_get_args()
 void task_place(tboard_t *t, task_t *task)
 {
     // add task to ready queue
-    if(task->type <= PRIMARY_EXEC || t->sqs == 0) {
+    if(task->type <= PRI_BATCH_TASK || t->sqs == 0) {
         // task should be added to primary ready queue
         pthread_mutex_lock(&(t->pmutex)); // lock primary mutex
         struct queue_entry *task_q = queue_new_node(task); // create queue entry
-        if (task->type == PRIORITY_EXEC)
-            queue_insert_head(&(t->pqueue), task_q); // insert queue entry to head
-        else
-            queue_insert_tail(&(t->pqueue), task_q); // insert queue entry to tail
+        switch (task->type) {
+            case PRI_SYNC_TASK:
+                queue_insert_tail(&(t->pqueue_sy), task_q);
+            break;
+            case PRI_REAL_TASK:
+                queue_insert_tail(&(t->pqueue_rt), task_q);
+            break;
+            case PRI_BATCH_TASK:
+                queue_insert_tail(&(t->pqueue_ba), task_q);
+        }
         pthread_cond_signal(&(t->pcond)); // signal primary condition variable as only one 
                                           // thread will ever wait for pcond
         pthread_mutex_unlock(&(t->pmutex)); // unlock mutex
@@ -228,6 +234,7 @@ bool remote_async_task_create(tboard_t *tboard, char *command, int level, char *
     rtask.data = args;
     rtask.data_size = sizeof_args;
     rtask.blocking = false;
+    rtask.retries = TASK_MAX_RETRIES;
     rtask.level = level;
     strcpy(rtask.fn_argsig, fn_argsig);
     int length = strlen(command);
@@ -264,6 +271,7 @@ arg_t *remote_sync_task_create(tboard_t *tboard, char *command, int level, char 
     rtask.data = args;
     rtask.data_size = sizeof_args;
     rtask.blocking = true;
+    rtask.retries = TASK_MAX_RETRIES;
     rtask.level = level;
     strcpy(rtask.fn_argsig, fn_argsig);
     int length = strlen(command);

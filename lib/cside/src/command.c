@@ -143,6 +143,7 @@ command_t *command_new_using_arg(int cmd, int subcmd, char *fn_name, long int ta
                 cbor_encode_text_stringz(&arrayEncoder, args[i].val.sval);
                 break;
             case INT_TYPE:
+            case LONG_TYPE:
                 if (args[i].val.ival < 0)
                     cbor_encode_negative_int(&arrayEncoder, abs(args[i].val.ival));
                 else
@@ -153,6 +154,7 @@ command_t *command_new_using_arg(int cmd, int subcmd, char *fn_name, long int ta
                 break;
             case NULL_TYPE:
                 cbor_encode_null(&arrayEncoder);
+            default:;
         }
     }
     cbor_encoder_close_container(&mapEncoder, &arrayEncoder);
@@ -173,7 +175,7 @@ command_t *command_new_using_arg(int cmd, int subcmd, char *fn_name, long int ta
 command_t *command_from_data(char *fmt, void *data, int len)
 {
     CborParser parser;
-    CborValue it, map, value, key, arr;
+    CborValue it, map, arr;
     CborError err;
     size_t length;
     int i = 0;
@@ -185,7 +187,6 @@ command_t *command_from_data(char *fmt, void *data, int len)
     char keybuf[32];
     int result;
     double dresult;
-    int64_t uresult;
 
     command_t *cmd = (command_t *)calloc(1, sizeof(command_t));
     memcpy(cmd->buffer, data, len);
@@ -430,6 +431,7 @@ arg_t *command_arg_clone(arg_t *arg)
     switch (arg->type)
     {
         case INT_TYPE:
+        case LONG_TYPE:
             val->val.ival = arg->val.ival;
             return val;
         case DOUBLE_TYPE:
@@ -444,6 +446,7 @@ arg_t *command_arg_clone(arg_t *arg)
         case NULL_TYPE:
             val->val.ival = 0;
             return val;
+        default:;
     }
     return NULL;
 }
