@@ -23,10 +23,7 @@ bool task_create(tboard_t *t, function_t fn, void *args, size_t sizeof_args, voi
     // create task_t object
     task_t *task = calloc(1, sizeof(task_t));
     task->status = TASK_INITIALIZED;
-    if (fn.sideef)
-        task->type = PRIMARY_EXECUTOR;
-    else 
-        task->type = SECONDARY_EXECUTOR;
+    task->type = fn.tasktype;
     task->id = TASK_ID_NONBLOCKING;
     task->fn = fn;
     // create description and populate it with argument

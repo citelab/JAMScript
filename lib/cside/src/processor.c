@@ -70,7 +70,7 @@ void exec_sync(context_t ctx)
     tboard_t *tb = (tboard_t *)(c->tboard);
     function_t *f = tboard_find_func(tb, fn_name);
     if (f != NULL) {
-        arg_t *rv = blocking_task_create(tb, *f, f->sideef, t, (nargs - 4));
+        arg_t *rv = blocking_task_create(tb, *f, f->tasktype, t, (nargs - 4));
         if (rv != NULL) {
             command_t *cmd = NULL;
             switch (rv->type) {

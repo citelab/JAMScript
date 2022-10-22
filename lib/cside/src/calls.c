@@ -89,10 +89,10 @@ void *local_sync_call(tboard_t *t, char *cmd_func, ...)
         va_start(args, cmd_func);
         res = command_qargs_alloc(fmask, &qargs, args);
         va_end(args);
-        return blocking_task_create(t, *f, f->sideef, qargs, strlen(fmask));
+        return blocking_task_create(t, *f, f->tasktype, qargs, strlen(fmask));
     }
     else
-        return blocking_task_create(t, *f, f->sideef, NULL, 0);
+        return blocking_task_create(t, *f, f->tasktype, NULL, 0);
 }
 
 void local_async_call(tboard_t *t, char *cmd_func, ...)

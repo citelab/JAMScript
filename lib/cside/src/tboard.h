@@ -137,12 +137,12 @@ typedef enum
 typedef struct {
     const char *fn_name;
     tb_task_f fn;
-    bool sideef;
+    enum task_types_t tasktype;
     const char *fn_sig;
     UT_hash_handle hh;
 } function_t;
 
-#define TBOARD_FUNC(func, sig, se) (function_t){.fn = func, .fn_name = #func, .fn_sig = sig, .sideef = se}
+#define TBOARD_FUNC(func, sig, ttype) (function_t){.fn = func, .fn_name = #func, .fn_sig = sig, .tasktype = ttype}
 
 struct history_t;
 struct exec_t;

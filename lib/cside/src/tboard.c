@@ -186,11 +186,10 @@ void tboard_shutdown(tboard_t *tboard)
     // destroy the registry of functions
     destroy_func_registry(tboard);
 
-
     // destroy rest of task board mutexes
     pthread_mutex_destroy(&(tboard->hmutex));
     pthread_mutex_destroy(&(tboard->tmutex));
-    pthread_mutex_destroy(&(tboard->emutex));    
+    pthread_mutex_destroy(&(tboard->emutex));
 
     // free task board object
     free(tboard);
@@ -272,7 +271,7 @@ void tboard_register_func(tboard_t *t, function_t fn) {
     f->fn = fn.fn;
     f->fn_name = strdup(fn.fn_name);
     f->fn_sig = strdup(fn.fn_sig);
-    f->sideef = fn.sideef;
+    f->tasktype = fn.tasktype;
     HASH_ADD_KEYPTR(hh, t->registry, f->fn_name, strlen(f->fn_name), f);
 }
 
