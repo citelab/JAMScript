@@ -3,4 +3,4 @@
 srcfile=$1
 destfile=${srcfile%.*}
 echo "Compiling $srcfile --> $destfile"
-gcc ./$srcfile -I../src -I../include ../libjam.a -lmosquitto -ltinycbor -o $destfile
+clang  ./$srcfile  -I../include ../libjam.a -Ofast -lmosquitto -ltinycbor -o $destfile

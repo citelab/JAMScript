@@ -7,6 +7,8 @@
 #include <pthread.h>
 #include <assert.h> // assert()
 
+#include "tprofiler.h"
+
 enum execmodes_t {
     BATCH_MODE_EXEC = 1,
     SYNC_MODE_EXEC = 2,
@@ -52,12 +54,13 @@ void convert_time_to_absolute(struct timespec *t, struct timespec *abt)
 
 void process_timing_wheel(tboard_t *tboard, enum execmodes_t *mode)
 {
-    twheel_update_to_now(tboard->twheel);
+    twheel_update_to_now(tboard);
     struct timeout *t;
-    
     *mode = BATCH_MODE_EXEC;
+    return;
+
     do {
-        t = twheel_get_next(tboard->twheel);
+        t = twheel_get_next(tboard);
         if (t->callback.fn == dummy_next_schedule) {
             install_next_schedule(tboard, t->expires);
         } else if (t->callback.fn == dummy_next_sy_slot) {
@@ -66,7 +69,7 @@ void process_timing_wheel(tboard_t *tboard, enum execmodes_t *mode)
             break;
         } else if (t->callback.fn == dummy_next_rt_slot) {
             *mode = RT_MODE_EXEC;
-            twheel_add_event(tboard->twheel, TW_EVENT_RT_CLOSE, NULL, t->expires + RT_SLOT_LEN);
+            twheel_add_event(tboard, TW_EVENT_RT_CLOSE, NULL, t->expires + RT_SLOT_LEN);
             break;
         } else if (t->callback.fn == dummy_close_rt_slot) {
             *mode = BATCH_MODE_EXEC;
@@ -76,6 +79,7 @@ void process_timing_wheel(tboard_t *tboard, enum execmodes_t *mode)
             process_timeout_event(tboard, t->callback.arg);
         }
     } while (t != NULL);
+    printf("-------------------------- end process timing wheel ----------%d\n", *mode);
 }
 
 struct queue_entry *get_next_task(tboard_t *tboard, int etype, enum execmodes_t mode, int num, struct queue **q, pthread_mutex_t **mutex, pthread_cond_t **cond) 
@@ -123,26 +127,21 @@ struct queue_entry *get_next_task(tboard_t *tboard, int etype, enum execmodes_t 
 
 void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queue_entry *next, pthread_mutex_t *mutex, pthread_cond_t *cond)
 {
-    long start_time, end_time;
-
+//    get_snapshot(0);
     ////////// Get queue data, and swap context to function until task yields ///////////
     task_t *task = ((task_t *)(next->data));
     task->status = TASK_RUNNING; // update status incase first run
-
-    start_time = clock(); // record start time
+//    get_snapshot(1);
     mco_resume(task->ctx); // swap context to task
-    end_time = clock(); // record end time
-
-    // record task iteration time in task_t
-    task->cpu_time += (end_time - start_time);
+//    get_snapshot(2);
 
     // check status of task
     int status = mco_status(task->ctx);
     if (status == MCO_SUSPENDED) { // task yielded
+  //      get_snapshot(3);
         task->yields++; // increment # yields of specific task
         task->hist->yields++; // increment total # yields in history hash table
         struct queue_entry *e = NULL;
-
         // check if task yielded with special instruction
         if (mco_get_bytes_stored(task->ctx) == sizeof(task_t)) {
             // indicative of blocking local task creation, so we must retrieve it
@@ -167,10 +166,13 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
             remote_task_place(tboard, rtask);
 
         } else { // just a normal yield, so we create node to reinsert task into queue
+  //          get_snapshot(4);
             e = queue_new_node(task);
+  //          get_snapshot(5);
         }
 
         if (e != NULL){
+     //       get_snapshot(6);
             // reinsert task into queue it was taken out of
             pthread_mutex_lock(mutex); // lock appropriate mutex
             switch (task->type) {
@@ -185,9 +187,10 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
             }
             if(type == PRIMARY_EXECUTOR) pthread_cond_signal(cond); // we wish to wake secondary executors if they are asleep
             pthread_mutex_unlock(mutex);
+    //        get_snapshot(7);
         }
     } else if (status == MCO_DEAD) { // task has terminated
-        printf("Terminated...\n");
+    //    printf("Terminated.. \n");
         task->status = TASK_COMPLETED; // mark task as complete for history hash table
         // record task execution statistics into history hash table
         history_record_exec(tboard, task, &(task->hist)); 
@@ -227,6 +230,7 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
     //            free(task->desc.user_data);
     //    }
         // destroy context
+    //    printf("End of task .. \n");
         mco_destroy(task->ctx);
         // free task_t object
         free(task);
@@ -257,6 +261,7 @@ void *executor(void *arg)
         set_thread_cancel_point_here();
         // process the timing wheel events
         process_timing_wheel(tboard, &mode);
+    //    mode = BATCH_MODE_EXEC;
 
         //// define variables needed for each iteration
         struct queue_entry *next = NULL; // queue entry of ready queue
@@ -264,14 +269,17 @@ void *executor(void *arg)
         // task is taken out of. This is important to track for pExec after taking a task
         // out of a secondary queue when primary queue is empty
         struct queue *q = NULL; // queue entry to reinsert task into after yielding
-        
+    //    get_snapshot(0);
         // Fetch next task to run 
         next = get_next_task(tboard, type, mode, num, &q, &mutex, &cond);
-
+    //    get_snapshot(1);
+    //    get_snapshot(2);
         if (next) { // TExec found a task to run
-            // free queue entry
+    //        get_snapshot(3);
             process_next_task(tboard, type, &q, next, mutex, cond);
+    //        get_snapshot(4);
             free(next);
+    //        get_snapshot(5);
         } else {
             // empty queue, we sleep on appropriate condition variable until signal received
             if (type == PRIMARY_EXECUTOR) {
@@ -279,5 +287,6 @@ void *executor(void *arg)
             } else
                 conditional_wait(&(tboard->smutex[num]), &(tboard->scond[num]));
         }
+ //       print_snapshot_summary(100000);
     }
 }

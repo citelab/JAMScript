@@ -1,0 +1,26 @@
+Plan for organizing the test files
+
+Local Tasks
+1. Local task create and calls
+2. Multiple local task calls
+3. Put local tasks on multiple executors - test with sleep - we should have concurrent exec_hist
+4. Put local tasks and jsleep - we need to test for the accuracy of the jsleep
+
+C->J Tasks
+1. Launch C->J tasks with -- no results
+2. Launch C->J tasks with -- results
+3. Launch C->J tasks and test for timeout operation
+4. Launch C->J tasks and see whether it goes to multiple levels
+5. Launch C->J task and see whether it reaches different fogs we could have.
+6. Selected operation at a particular level with JCond execution at the receiving node 
+
+J->C Tasks
+1. Launch J->C task with no results
+2. Launch J->C tasks that have SYNC requirements - the schedule has a sync slot
+3. Same as above with no SYNC slot - see whether we see any difference.
+4. Launch J->C tasks that have REAL requirement with the schedule having a RT slot
+5. Same as above with no REAL slot - see whether we see any difference
+
+Combination of Tasks
+1. J->C and C->J tasks going in loops 
+2. J->C and C->J and Local tasks 

@@ -221,11 +221,11 @@ bool msg_processor(void *serv, command_t *cmd)
         if (rtask != NULL)
         {
             // remove the timeout entry
-            twheel_delete_timeout(t->twheel, &(rtask->task_id));
+            twheel_delete_timeout(t, &(rtask->task_id));
             rtask->status = TASK_ACK_RECEIVED;
             // blocking task - put back the timeout at a future time
             if (rtask->blocking)
-                twheel_add_event(t->twheel, TW_EVENT_REXEC_TIMEOUT, &(rtask->task_id), getcurtime() + globals_Timeout_REXEC_ACK_TIMEOUT);
+                twheel_add_event(t, TW_EVENT_REXEC_TIMEOUT, &(rtask->task_id), getcurtime() + globals_Timeout_REXEC_ACK_TIMEOUT);
             else {
                 // if not blocking, remove it from the task table and destroy the remote task entry
                 HASH_DEL(t->task_table, rtask);
@@ -240,7 +240,7 @@ bool msg_processor(void *serv, command_t *cmd)
         if (rtask != NULL)
         {
             // remove the timeout entry
-            twheel_delete_timeout(t->twheel, &(rtask->task_id));
+            twheel_delete_timeout(t, &(rtask->task_id));
             rtask->data = command_arg_clone(cmd->args);
             rtask->data_size = 1;
             if (rtask->calling_task != NULL)
@@ -262,7 +262,7 @@ bool msg_processor(void *serv, command_t *cmd)
         if (rtask != NULL)
         {
             // remove the timeout entry
-            twheel_delete_timeout(t->twheel, &(rtask->task_id));
+            twheel_delete_timeout(t, &(rtask->task_id));
             if (rtask->calling_task != NULL)
             {
                 rtask->status = TASK_ERROR;

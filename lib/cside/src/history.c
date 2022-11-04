@@ -10,8 +10,6 @@
 #include <string.h>
 
 
-
-
 void history_record_exec(tboard_t *t, task_t *task, history_t **hist)
 {
     pthread_mutex_lock(&(t->hmutex));

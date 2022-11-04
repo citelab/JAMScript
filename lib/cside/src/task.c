@@ -89,6 +89,7 @@ void task_place(tboard_t *t, task_t *task)
         // task should be added to primary ready queue
         pthread_mutex_lock(&(t->pmutex)); // lock primary mutex
         struct queue_entry *task_q = queue_new_node(task); // create queue entry
+        //printf("Task type %d\n", task->type);
         switch (task->type) {
             case PRI_SYNC_TASK:
                 queue_insert_tail(&(t->pqueue_sy), task_q);

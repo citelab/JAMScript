@@ -41,28 +41,31 @@ void dummy_next_timeout_event(void *arg)
  * At the end of the schedule - we put a TW_EVENT_INSTALL_SCHEDULE. For other 
  * types we install the proper event: TW_EVENT_RT_SCHEDULE, etc. 
  *
- * IMPORTANT: schedule installed depends on the one found in the schedule object
+ * IMPORTANT: at bootstrap, we install a default schedule. if the schedule is 
+ * received from the controller, then we install it. 
  * PARAMS: taskboard and end time
  */
 void install_next_schedule(tboard_t *tb, long int etime)
 {
     int k = 0;
     int indx;
-    long int sched_dur = tb->sched->args[0].val.lval;
     long int stime = getcurtime();
     stime = etime > stime ? etime : stime;
+    long int sched_dur = tb->sched == NULL ? TW_DEFAULT_SCHEDULE_LEN : tb->sched->args[0].val.lval;
 
-    twheel_add_event(tb->twheel, TW_EVENT_INSTALL_SCHEDULE, NULL, stime + sched_dur);
-    k++;
-    indx = tb->sched->args[k].val.ival;
-    for (int i  = 0; i < indx; i++) {
+    twheel_add_event(tb, TW_EVENT_INSTALL_SCHEDULE, NULL, stime + sched_dur);
+    if (tb->sched != NULL) {
         k++;
-        twheel_add_event(tb->twheel, TW_EVENT_RT_SCHEDULE, NULL, stime + tb->sched->args[k].val.lval);
-    }
-    indx = tb->sched->args[k].val.ival;
-    for (int i  = 0; i < indx; i++) {
-        k++;
-        twheel_add_event(tb->twheel, TW_EVENT_SY_SCHEDULE, NULL, stime + tb->sched->args[k].val.lval);
+        indx = tb->sched->args[k].val.ival;
+        for (int i  = 0; i < indx; i++) {
+            k++;
+            twheel_add_event(tb, TW_EVENT_RT_SCHEDULE, NULL, stime + tb->sched->args[k].val.lval);
+        }
+        indx = tb->sched->args[k].val.ival;
+        for (int i  = 0; i < indx; i++) {
+            k++;
+            twheel_add_event(tb, TW_EVENT_SY_SCHEDULE, NULL, stime + tb->sched->args[k].val.lval);
+        }
     }
 }
 

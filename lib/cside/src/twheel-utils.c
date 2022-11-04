@@ -24,12 +24,13 @@ struct timeouts *twheel_init()
     return tw;
 }
 
-bool twheel_add_event(struct timeouts *twheel, twheel_event_t type, void *arg, long int tval)
+bool twheel_add_event(tboard_t *tb, twheel_event_t type, void *arg, long int tval)
 {
     // create an timeout event entry - note that just the entry is initialized
     struct timeout t;
     timeout_init(&t, TIMEOUT_ABS);
     long int atval = tval;
+
     switch (type) {
         case TW_EVENT_INSTALL_SCHEDULE:
             t.callback.fn = dummy_next_schedule;
@@ -60,29 +61,48 @@ bool twheel_add_event(struct timeouts *twheel, twheel_event_t type, void *arg, l
         break;
     }
     // add the timeout event to the wheel at the adjusted time
-    timeouts_add(twheel, &t, atval);
+    pthread_mutex_lock(&tb->twmutex);
+    timeouts_add(tb->twheel, &t, atval);
+    pthread_mutex_unlock(&tb->twmutex);
+
     return true;
 }
 
-bool twheel_delete_timeout(struct timeouts *twheel, long int *id)
+bool twheel_delete_timeout(tboard_t *tb, long int *id)
 {
     struct timeouts_it it = TIMEOUTS_IT_INITIALIZER(TIMEOUTS_PENDING);
     struct timeout *q;
     
-    while ((q = timeouts_next(twheel, &it)) != NULL) {
+    pthread_mutex_lock(&tb->twmutex);
+    while ((q = timeouts_next(tb->twheel, &it)) != NULL) {
         if ((q->callback.fn == dummy_next_timeout_event) && (*(long int *)(q->callback.arg) == *id))
             break;
     }
     if (q != NULL) {
-        timeouts_del(twheel, q);
+        timeouts_del(tb->twheel, q);
+        pthread_mutex_unlock(&tb->twmutex);
         return true;
     }
+    pthread_mutex_unlock(&tb->twmutex);
     return false;
 }
 
-void twheel_update_to_now(struct timeouts *twheel)
+struct timeout *twheel_get_next(tboard_t *tb)
 {
-    timeouts_update(twheel, getcurtime());
+    struct timeout *x;
+    pthread_mutex_lock(&tb->twmutex);
+    x = timeouts_get(tb->twheel);
+    pthread_mutex_unlock(&tb->twmutex);
+    return x;
+}
+
+void twheel_update_to_now(tboard_t *tb)
+{
+    long int x = getcurtime();
+    printf("Current time %lu\n", x);
+    pthread_mutex_lock(&tb->twmutex);
+    timeouts_update(tb->twheel, x);
+    pthread_mutex_unlock(&tb->twmutex);
 }
 
 

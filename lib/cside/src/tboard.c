@@ -9,13 +9,15 @@
 #include "core.h"
 
 #define MINICORO_IMPL
-#define MINICORO_ASM
+#define MCO_USE_ASM
+#define MCO_NO_DEBUG
 
 // Uncomment following to zero stack memory. Affects performance
 //#define MCO_ZERO_MEMORY
 // Uncomment following to run with valgrind properly (otherwise valgrind
 // will be unable to access memory). Affects performance
 //#define MCO_USE_VALGRIND
+
 
 #include <minicoro.h>
 #include "queue/queue.h"
@@ -42,6 +44,7 @@ tboard_t* tboard_create(void *cnode, int secondary_queues)
     assert(pthread_mutex_init(&(tboard->hmutex), NULL) == 0);
     assert(pthread_mutex_init(&(tboard->emutex), NULL) == 0);
     assert(pthread_cond_init(&(tboard->tcond), NULL) == 0);
+    assert(pthread_mutex_init(&(tboard->twmutex), NULL) == 0);
 
     // create and initialize primary queues
     assert(pthread_mutex_init(&(tboard->pmutex), NULL) == 0);
@@ -75,8 +78,8 @@ tboard_t* tboard_create(void *cnode, int secondary_queues)
     tboard->exec_hist = NULL;
 
     tboard->task_table = NULL;
-    timeout_error_t err;
-    tboard->twheel = timeouts_open(0, &err);
+    printf("Initializing the twheel... \n");
+    tboard->twheel = twheel_init();
     learn_sleeping(&(tboard->sleeper), 1000000);
 
     return tboard; // return address of tboard in memory
@@ -130,6 +133,7 @@ void tboard_shutdown(tboard_t *tboard)
     // lock tmutex. If we get lock, it means that user has taken all necessary data
     // from task board as it should be locked before tboard_kill() is run
     pthread_mutex_lock(&(tboard->tmutex));
+    pthread_mutex_lock(&(tboard->twmutex));
     // destroy mutex and condition variables 
     pthread_mutex_destroy(&(tboard->cmutex));
     pthread_mutex_destroy(&(tboard->pmutex));

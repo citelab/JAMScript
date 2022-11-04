@@ -6,7 +6,7 @@
  */
 #define DEFAULTS_PORT 1883
 #define DEFAULTS_SERIALNUM 1
-#define DEFAULTS_NUMEXECUTORS 1
+#define DEFAULTS_NUMEXECUTORS 0
 
 // arbitrary - the dynamic UDP port range
 #define PORT_MIN 1024

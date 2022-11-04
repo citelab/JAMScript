@@ -119,6 +119,9 @@ typedef enum
     TW_EVENT_REXEC_TIMEOUT
 } twheel_event_t;
 
+// default schedule cycle in microseconds - 50ms
+#define TW_DEFAULT_SCHEDULE_LEN 50000
+
 
 //////////////////////////////////////////////////////
 /////////// TBoard Structure Definitions /////////////
@@ -278,6 +281,7 @@ typedef struct {
 
     pthread_mutex_t emutex;
     pthread_mutex_t hmutex;
+    pthread_mutex_t twmutex;
 
     struct queue pqueue_sy;
     struct queue pqueue_rt;
@@ -970,13 +974,12 @@ void destroy_func_registry(tboard_t *t);
 /////////////////////// Timing Wheel Utils //////////////////
 ////////////////////////////////////////////////////////////////
 
-#define twheel_get_next(X)          timeouts_get(X)
-
 long int getcurtime();
 struct timeouts *twheel_init();
-bool twheel_add_event(struct timeouts *twheel, twheel_event_t type, void *arg, long int tval);
-bool twheel_delete_timeout(struct timeouts *twheel, long int *id);
-void twheel_update_to_now(struct timeouts *twheel);
+struct timeout *twheel_get_next(tboard_t *tb);
+bool twheel_add_event(tboard_t *tb, twheel_event_t type, void *arg, long int tval);
+bool twheel_delete_timeout(tboard_t *tb, long int *id);
+void twheel_update_to_now(tboard_t *tb);
 
 
 ////////////////////////////////////////////////////////////////

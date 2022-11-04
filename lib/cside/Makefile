@@ -10,14 +10,13 @@ CC = clang
 AR = ar -rc
 
 # define any compile-time flags
-CFLAGS	:= -g -pthread -Wall
-#-fsanitize=address -fno-omit-frame-pointer -O1
+CFLAGS	:= -g -pthread -Wall -fsanitize=address -fno-omit-frame-pointer -O1
 # -std=c99
 
 # define library paths in addition to /usr/lib
 #   if I wanted to include libraries not in /usr/lib I'd specify
 #   their path using -Lpath, something like:
-LFLAGS = -lm -lmosquitto -ltinycbor
+LFLAGS = -lm -lmosquitto -ltinycbor 
 
 # define output directory
 OUTPUT	:= output

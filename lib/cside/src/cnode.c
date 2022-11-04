@@ -142,6 +142,7 @@ cnode_t *cnode_init(int argc, char **argv){
     cn->cloudserv = NULL;
     cn->countdown = COUNTDOWN_VALUE;
 
+    install_next_schedule(cn->tboard, 0);
     tboard_start(cn->tboard);
 
     return cn;
@@ -195,5 +196,6 @@ bool cnode_start(cnode_t *cn) {
 bool cnode_stop(cnode_t *cn) {
     // tboard_shutdown is going to block.. until another thread kills the tboard.
     tboard_shutdown(cn->tboard);
+    history_print_records(cn->tboard, stdout);
     return true;
 }
