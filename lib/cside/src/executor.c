@@ -57,27 +57,28 @@ void process_timing_wheel(tboard_t *tboard, enum execmodes_t *mode)
     twheel_update_to_now(tboard);
     struct timeout *t;
     *mode = BATCH_MODE_EXEC;
-    return;
 
     do {
         t = twheel_get_next(tboard);
-        if (t->callback.fn == dummy_next_schedule) {
-            install_next_schedule(tboard, t->expires);
-        } else if (t->callback.fn == dummy_next_sy_slot) {
-            *mode = SYNC_MODE_EXEC;
-            wait_to_sy_slot(tboard, t->callback.arg, t->expires);
-            break;
-        } else if (t->callback.fn == dummy_next_rt_slot) {
-            *mode = RT_MODE_EXEC;
-            twheel_add_event(tboard, TW_EVENT_RT_CLOSE, NULL, t->expires + RT_SLOT_LEN);
-            break;
-        } else if (t->callback.fn == dummy_close_rt_slot) {
-            *mode = BATCH_MODE_EXEC;
-        } else if (t->callback.fn == dummy_next_sleep_event) {
-            process_sleep_event(tboard, t->callback.arg);
-        } else if (t->callback.fn == dummy_next_timeout_event) {
-            process_timeout_event(tboard, t->callback.arg);
-        }
+        if (t != NULL) {
+            if (t->callback.fn == dummy_next_schedule) {
+                install_next_schedule(tboard, t->expires);
+            } else if (t->callback.fn == dummy_next_sy_slot) {
+                *mode = SYNC_MODE_EXEC;
+                wait_to_sy_slot(tboard, t->callback.arg, t->expires);
+                break;
+            } else if (t->callback.fn == dummy_next_rt_slot) {
+                *mode = RT_MODE_EXEC;
+                twheel_add_event(tboard, TW_EVENT_RT_CLOSE, NULL, t->expires + RT_SLOT_LEN);
+                break;
+            } else if (t->callback.fn == dummy_close_rt_slot) {
+                *mode = BATCH_MODE_EXEC;
+            } else if (t->callback.fn == dummy_next_sleep_event) {
+                process_sleep_event(tboard, t->callback.arg);
+            } else if (t->callback.fn == dummy_next_timeout_event) {
+                process_timeout_event(tboard, t->callback.arg);
+            }
+        } 
     } while (t != NULL);
     printf("-------------------------- end process timing wheel ----------%d\n", *mode);
 }

@@ -141,8 +141,6 @@ cnode_t *cnode_init(int argc, char **argv){
     cn->eservnum = 0;
     cn->cloudserv = NULL;
     cn->countdown = COUNTDOWN_VALUE;
-
-    install_next_schedule(cn->tboard, 0);
     tboard_start(cn->tboard);
 
     return cn;

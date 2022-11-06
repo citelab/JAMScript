@@ -51,6 +51,7 @@ void install_next_schedule(tboard_t *tb, long int etime)
     int indx;
     long int stime = getcurtime();
     stime = etime > stime ? etime : stime;
+    printf("Stime %lu\n", stime);
     long int sched_dur = tb->sched == NULL ? TW_DEFAULT_SCHEDULE_LEN : tb->sched->args[0].val.lval;
 
     twheel_add_event(tb, TW_EVENT_INSTALL_SCHEDULE, NULL, stime + sched_dur);

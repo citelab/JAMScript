@@ -30,12 +30,13 @@ bool twheel_add_event(tboard_t *tb, twheel_event_t type, void *arg, long int tva
     struct timeout t;
     timeout_init(&t, TIMEOUT_ABS);
     long int atval = tval;
-
+    
     switch (type) {
         case TW_EVENT_INSTALL_SCHEDULE:
             t.callback.fn = dummy_next_schedule;
             t.callback.arg = arg;
             atval -= EARLY_TIME_FOR_SCHEDULE;
+            printf("Atval %ld\n", atval);
         break;
         case TW_EVENT_RT_SCHEDULE:
             t.callback.fn = dummy_next_rt_slot;
