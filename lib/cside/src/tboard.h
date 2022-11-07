@@ -119,8 +119,8 @@ typedef enum
     TW_EVENT_REXEC_TIMEOUT
 } twheel_event_t;
 
-// default schedule cycle in microseconds - 50ms
-#define TW_DEFAULT_SCHEDULE_LEN 50000
+// default schedule cycle in microseconds - 1ms
+#define TW_DEFAULT_SCHEDULE_LEN 5000
 
 
 //////////////////////////////////////////////////////

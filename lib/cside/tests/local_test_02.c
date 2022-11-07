@@ -11,7 +11,7 @@ void local_test3(char *name, char *g, char *h)
 {    
     arg_t *a;
     for (int i =0; i < 2; i++) {
-        //printf("Hi\n");
+        printf("Hi\n");
         task_yield();
     }
 }

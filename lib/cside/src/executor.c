@@ -55,14 +55,16 @@ void convert_time_to_absolute(struct timespec *t, struct timespec *abt)
 void process_timing_wheel(tboard_t *tboard, enum execmodes_t *mode)
 {
     twheel_update_to_now(tboard);
-    struct timeout *t;
+    struct timeout *t = NULL;
     *mode = BATCH_MODE_EXEC;
-
+    
     do {
         t = twheel_get_next(tboard);
         if (t != NULL) {
+            printf("Got something non null \n");
             if (t->callback.fn == dummy_next_schedule) {
                 install_next_schedule(tboard, t->expires);
+                printf("Installing.. the next schedule............. %lu\n", t->expires);
             } else if (t->callback.fn == dummy_next_sy_slot) {
                 *mode = SYNC_MODE_EXEC;
                 wait_to_sy_slot(tboard, t->callback.arg, t->expires);
@@ -78,9 +80,9 @@ void process_timing_wheel(tboard_t *tboard, enum execmodes_t *mode)
             } else if (t->callback.fn == dummy_next_timeout_event) {
                 process_timeout_event(tboard, t->callback.arg);
             }
-        } 
+            free(t);
+        }
     } while (t != NULL);
-    printf("-------------------------- end process timing wheel ----------%d\n", *mode);
 }
 
 struct queue_entry *get_next_task(tboard_t *tboard, int etype, enum execmodes_t mode, int num, struct queue **q, pthread_mutex_t **mutex, pthread_cond_t **cond) 
