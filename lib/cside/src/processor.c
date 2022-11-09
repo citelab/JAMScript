@@ -115,6 +115,7 @@ bool msg_processor(void *serv, command_t *cmd)
     cnode_t *c = s->cnode;
     tboard_t *t = (tboard_t *)(c->tboard);
     command_t *rcmd;
+    int k;
     // when a message is received, it interprets message and adds to respective queue
     switch (cmd->cmd)
     {
@@ -224,7 +225,7 @@ bool msg_processor(void *serv, command_t *cmd)
             twheel_delete_timeout(t, &(rtask->task_id));
             rtask->status = TASK_ACK_RECEIVED;
             // blocking task - put back the timeout at a future time
-            if (rtask->blocking)
+            if (rtask->mode == TASK_MODE_REMOTE)
                 twheel_add_event(t, TW_EVENT_REXEC_TIMEOUT, &(rtask->task_id), getcurtime() + globals_Timeout_REXEC_ACK_TIMEOUT);
             else {
                 // if not blocking, remove it from the task table and destroy the remote task entry
@@ -279,9 +280,23 @@ bool msg_processor(void *serv, command_t *cmd)
         return true;
 
     case CmdNames_PUT_SCHEDULE: 
-        if (t->sched != NULL)
-            command_free(t->sched);
-        t->sched = cmd;
+        k = 0;
+        pthread_mutex_lock(&t->schmutex);
+        t->sched.len = cmd->args[k].val.lval;
+        k++;
+        t->sched.rtslots = cmd->args[k].val.ival;
+        for (int i  = 0; i < t->sched.rtslots; i++) {
+            k++;
+            t->sched.rtstarts[i] = cmd->args[k].val.ival;
+        }
+        k++;
+        t->sched.syslots = cmd->args[k].val.ival;
+        for (int i  = 0; i < t->sched.syslots; i++) {
+            k++;
+            t->sched.systarts[i] = cmd->args[k].val.ival;
+        }
+        pthread_mutex_unlock(&t->schmutex);
+        command_free(cmd);
         return true;
     default:
         tboard_err("msg_processor: Invalid message type encountered: %d\n", cmd->cmd);

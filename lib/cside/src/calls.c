@@ -23,7 +23,6 @@ arg_t *remote_sync_call(tboard_t *t, char *cmd_func, char *fn_sig, ...)
     // TODO: FIX THIS..
     int level = 0;
 
-
     if (strlen(fn_sig) > 0)
     {
         va_start(args, fn_sig);
@@ -31,12 +30,12 @@ arg_t *remote_sync_call(tboard_t *t, char *cmd_func, char *fn_sig, ...)
         va_end(args);
 
         if (res)
-            rarg = remote_sync_task_create(t, cmd_func, level, fn_sig, qargs, strlen(fn_sig));
+            rarg = remote_task_create(t, cmd_func, level, fn_sig, qargs, strlen(fn_sig));
         else
             rarg = NULL;
     }
     else
-        rarg = remote_sync_task_create(t, cmd_func, level, "", NULL, 0);
+        rarg = remote_task_create(t, cmd_func, level, "", NULL, 0);
     return rarg;
 }
 
@@ -59,12 +58,12 @@ bool remote_async_call(tboard_t *t, char *cmd_func, char *fn_sig, ...)
         res = command_qargs_alloc(fn_sig, &qargs, args);
         va_end(args);
         if (res)
-            return remote_async_task_create(t, cmd_func, level, fn_sig, qargs, strlen(fn_sig));
+            return remote_task_create_nb(t, cmd_func, level, fn_sig, qargs, strlen(fn_sig));
         else
             return false;
     }
     else
-        return remote_async_task_create(t, cmd_func, level, "", NULL, 0);
+        return remote_task_create_nb(t, cmd_func, level, "", NULL, 0);
 }
 
 /*

@@ -216,14 +216,14 @@ void *blocking_task_create(tboard_t *t, function_t fn, int type, void *args, siz
 /* 
  * This call does not take task board as the first argument
  * Returns true on successful call and false otherwise. The actual remote call 
- * is running asynchronously from the execution of the local task.
+ * is running asynchronously from the execution of the local task. We don't get 
+ * any return value from the remote side.
  */
-bool remote_async_task_create(tboard_t *tboard, char *command, int level, char *fn_argsig, arg_t *args, int sizeof_args)
+bool remote_task_create_nb(tboard_t *tboard, char *command, int level, char *fn_argsig, arg_t *args, int sizeof_args)
 {
     if (mco_running() == NULL) // must be called from a coroutine!
         return false;
 
-    printf("Hello \n");
     mco_result res;
     // create rtask object
     remote_task_t rtask = {0};
@@ -231,7 +231,7 @@ bool remote_async_task_create(tboard_t *tboard, char *command, int level, char *
     rtask.status = TASK_INITIALIZED;
     rtask.data = args;
     rtask.data_size = sizeof_args;
-    rtask.blocking = false;
+    rtask.mode = TASK_MODE_REMOTE_NB;
     rtask.retries = TASK_MAX_RETRIES;
     rtask.level = level;
     strcpy(rtask.fn_argsig, fn_argsig);
@@ -256,7 +256,7 @@ bool remote_async_task_create(tboard_t *tboard, char *command, int level, char *
 }
 
 // This call does not take task board as the first argument
-arg_t *remote_sync_task_create(tboard_t *tboard, char *command, int level, char *fn_argsig, arg_t *args, int sizeof_args)
+arg_t *remote_task_create(tboard_t *tboard, char *command, int level, char *fn_argsig, arg_t *args, int sizeof_args)
 {
     if (mco_running() == NULL) // must be called from a coroutine!
         return NULL;
@@ -268,7 +268,7 @@ arg_t *remote_sync_task_create(tboard_t *tboard, char *command, int level, char 
     rtask.status = TASK_INITIALIZED;
     rtask.data = args;
     rtask.data_size = sizeof_args;
-    rtask.blocking = true;
+    rtask.mode = TASK_MODE_REMOTE;      // This is blocking
     rtask.retries = TASK_MAX_RETRIES;
     rtask.level = level;
     strcpy(rtask.fn_argsig, fn_argsig);
@@ -313,6 +313,54 @@ arg_t *remote_sync_task_create(tboard_t *tboard, char *command, int level, char 
     
 }
 
+// We are using the remote task for the sleep task create and management 
+bool sleep_task_create(tboard_t *tboard, int sval)
+{
+    if (mco_running() == NULL) // must be called from a coroutine!
+        return NULL;
+
+    mco_result res;
+    // create rtask object
+    remote_task_t rtask = {0};
+    rtask.task_id = snowflake_id();
+    rtask.status = TASK_INITIALIZED;
+    rtask.mode = TASK_MODE_SLEEPING;
+
+    twheel_add_event(tboard, TW_EVENT_REXEC_TIMEOUT, &rtask, getcurtime() + sval);
+
+    // push rtask into storage. This copies memory in current thread so we dont have
+    // to worry about invalid reads
+    res = mco_push(mco_running(), &rtask, sizeof(remote_task_t));
+    if (res != MCO_SUCCESS) {
+        tboard_err("remote_task_create: Failed to push remote task to mco storage interface.\n");
+        return NULL;
+    }
+    // issued remote task, yield
+    task_yield();
+    // we have resumed the coroutine .. so we have access to the previous values
+
+    // blocking: get if remote_task_t is currently in storage. If so we must parse it
+    if (mco_get_bytes_stored(mco_running()) == sizeof(remote_task_t)) {
+        res = mco_pop(mco_running(), &rtask, sizeof(remote_task_t));
+        if (res != MCO_SUCCESS) {
+            tboard_err("sleep_task_create: Failed to pop mco storage interface.\n");
+            return NULL;
+        }
+        // check if task completed
+        if (rtask.status == TASK_COMPLETED) {
+            remote_task_free(tboard, rtask.task_id);
+            return true;
+        } else {
+            tboard_err("sleep_task_create: Sleeping task is not marked as completed: %d.\n",rtask.status);
+            return false;
+        }
+    } else {
+        tboard_err("sleep_task_create: Failed to capture sleeping task after termination.\n");
+        return false;
+    }
+}
+
+
 void remote_task_free(tboard_t *t, long int taskid) 
 {
     remote_task_t *rtask = NULL;
@@ -329,7 +377,7 @@ void remote_task_destroy(remote_task_t *rtask)
     if (rtask == NULL)
         return;
     // check if task is blocking. If it is, then we must destroy task
-    if (rtask->blocking) {
+    if (rtask->mode == TASK_MODE_REMOTE) {
         // this will recursively destroy parents if nested blocking tasks have been issued
         task_destroy(rtask->calling_task);
     }
@@ -354,6 +402,7 @@ void remote_task_place(tboard_t *t, remote_task_t *rtask)
     if (t == NULL || rtask == NULL)
         return;
 
+    twheel_add_event(t, TW_EVENT_REXEC_TIMEOUT, NULL, REXEC_TIMEOUT);
     switch (rtask->level) {
         case ALL_LEVELS:
             send_command_to_server(cn->devserv->mqtt);

@@ -9,6 +9,7 @@
 #define EARLY_TIME_FOR_SY               1000
 
 
+
 long int getcurtime()
 {
     struct timespec ts;
@@ -69,13 +70,6 @@ bool twheel_add_event(tboard_t *tb, twheel_event_t type, void *arg, long int tva
     return true;
 }
 
-
-bool twheel_delete_timeout(tboard_t *tb, long int *id)
-{
-    printf("Deletion is not yet enabled...\n");
-}
-
-/*
 bool twheel_delete_timeout(tboard_t *tb, long int *id)
 {
     struct timeouts_it it = TIMEOUTS_IT_INITIALIZER(TIMEOUTS_PENDING);
@@ -94,7 +88,6 @@ bool twheel_delete_timeout(tboard_t *tb, long int *id)
     pthread_mutex_unlock(&tb->twmutex);
     return false;
 }
-*/
 
 struct timeout *twheel_get_next(tboard_t *tb)
 {
@@ -112,8 +105,6 @@ void twheel_update_to_now(tboard_t *tb)
     pthread_mutex_lock(&tb->twmutex);
     timeouts_update(tb->twheel, (timeout_t)getcurtime());
     pthread_mutex_unlock(&tb->twmutex);
-
-  
 }
 
 

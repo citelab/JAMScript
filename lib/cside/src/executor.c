@@ -57,7 +57,7 @@ void process_timing_wheel(tboard_t *tboard, enum execmodes_t *mode)
     twheel_update_to_now(tboard);
     struct timeout *t = NULL;
     *mode = BATCH_MODE_EXEC;
-    
+
     do {
         t = twheel_get_next(tboard);
         if (t != NULL) {
@@ -163,7 +163,7 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
             HASH_ADD_INT(tboard->task_table, task_id, rtask);
 
             // if task is not blocking we wish to reinsert issuing task back into ready queue
-            if (!rtask->blocking)
+            if (rtask->mode == TASK_MODE_REMOTE_NB)
                 e = queue_new_node(task);
             // place remote task into appropriate message queue
             remote_task_place(tboard, rtask);

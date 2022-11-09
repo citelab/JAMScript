@@ -47,27 +47,17 @@ void dummy_next_timeout_event(void *arg)
  */
 void install_next_schedule(tboard_t *tb, long int etime)
 {
-    int k = 0;
-    int indx;
     long int stime = getcurtime();
     stime = etime > stime ? etime : stime;
     printf(">>>>> Stime %lu\n", stime);
-    long int sched_dur = tb->sched == NULL ? TW_DEFAULT_SCHEDULE_LEN : tb->sched->args[0].val.lval;
 
-    twheel_add_event(tb, TW_EVENT_INSTALL_SCHEDULE, NULL, stime + sched_dur);
-    if (tb->sched != NULL) {
-        k++;
-        indx = tb->sched->args[k].val.ival;
-        for (int i  = 0; i < indx; i++) {
-            k++;
-            twheel_add_event(tb, TW_EVENT_RT_SCHEDULE, NULL, stime + tb->sched->args[k].val.lval);
-        }
-        indx = tb->sched->args[k].val.ival;
-        for (int i  = 0; i < indx; i++) {
-            k++;
-            twheel_add_event(tb, TW_EVENT_SY_SCHEDULE, NULL, stime + tb->sched->args[k].val.lval);
-        }
-    }
+    pthread_mutex_lock(&tb->schmutex);
+    twheel_add_event(tb, TW_EVENT_INSTALL_SCHEDULE, NULL, stime + tb->sched.len);
+    for (int i  = 0; i < tb->sched.rtslots; i++)
+        twheel_add_event(tb, TW_EVENT_RT_SCHEDULE, NULL, stime + tb->sched.rtstarts[i]);
+    for (int i  = 0; i < tb->sched.syslots; i++)
+        twheel_add_event(tb, TW_EVENT_SY_SCHEDULE, NULL, stime + tb->sched.systarts[i]);
+    pthread_mutex_unlock(&tb->schmutex);
 }
 
 /*

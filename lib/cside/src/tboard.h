@@ -35,8 +35,6 @@
  *  the task board, regardless of the number of new secondary tasks
  */
 
-
-
 /////////////////////////
 //// State definitions
 /////////////////////////
@@ -49,6 +47,8 @@
 #define TASK_ID_REMOTE_ISSUED -1
 #define TASK_ID_NONBLOCKING 0
 #define TASK_ID_BLOCKING 1
+
+#define REXEC_TIMEOUT                   100000
 
 enum task_types_t {
     PRI_SYNC_TASK = 1,
@@ -86,14 +86,12 @@ enum task_status_codes_t {
 
 /**
  * context_t - Coroutine context type.
- * 
  * As we are using minicoro library to handle coroutines, type is mco_coro*
  */
 typedef mco_coro* context_t;
 
 /**
  * context_desc - Coroutine description object.
- * 
  * As we are using minicoro library to handle coroutines, type is mco_desc
  */
 typedef mco_desc context_desc;
@@ -102,7 +100,6 @@ typedef mco_desc context_desc;
 /**
  * tb_task_f - Task function prototype.
  * @arg: Passed by coroutine library.
- * 
  * Task functions must have signature `void fn(context_t ctx)`. This typedef reflects
  * this signature when passing functions.
  */
@@ -150,6 +147,26 @@ typedef struct {
 struct history_t;
 struct exec_t;
 
+
+#define MAX_RT_SLOTS            8
+#define MAX_SY_SLOTS            8
+
+/**
+ * sched_t - Data type for schedules
+ * @len:        length of the schedule epoch in microseconds
+ * @syslots:    SY task slots - could be 0
+ * @systarts:   Starting times of each slot. We don't have end times because slot size is fixed 
+ * @rtslots:    RT task slots - could be 0
+ * @rtstarts:   Starting times of each RT slot. The slot size is same across all slots. However, RT slots different from SY slots.
+ */
+typedef struct sched_t {
+    int len;
+    int syslots;
+    int systarts[MAX_SY_SLOTS];
+    int rtslots;
+    int rtstarts[MAX_RT_SLOTS];
+} sched_t;
+
 /**
  * task_t - Data type containing task information
  * @id:         Task ID representing source of task
@@ -193,6 +210,12 @@ typedef struct task_t {
 } task_t;
 
 
+typedef enum {
+    TASK_MODE_REMOTE,
+    TASK_MODE_REMOTE_NB,
+    TASK_MODE_SLEEPING
+} remote_task_mode_t;
+
 /**
  * remote_task_t - Remote task type
  * @status:       status of remote task
@@ -200,15 +223,11 @@ typedef struct task_t {
  * @data:         response from remote task and/or data passed to MQTT adapter
  * @data_size:    size of data/response. non-zero value indicative of alloc'd data 
  * @calling_task: task_t pointer to task that issued remote task
- * @blocking:     indicate whether or not remote task is blocking
- * 
+ * @mode:     indicate the type of remote interaction the task would have.
+  * 
  * Any remote interface must be able to pull this from outgoing task queue and interpret it.
  * Once request has been fulfilled, it must be placed back into the incoming task queue
- * 
- * Data can be provided before remote_task_t is added into a message queue, but the user
- * must ensure that this case is handled properly by the MQTT interface to prevent undefined
- * behavior or leaked memory.
- * 
+ *
  * If @blocking, then parent task will only be eligible for resuming once remote task response
  * is received. Otherwise, it will be placed back into the appropriate ready queue after task is
  * issued by MQTT adapter.
@@ -220,7 +239,7 @@ typedef struct {
     void *data;
     size_t data_size;
     task_t *calling_task;
-    bool blocking;
+    remote_task_mode_t mode;
     int retries;
     int level;
     char fn_argsig[MAX_ARG_LENGTH];
@@ -282,6 +301,7 @@ typedef struct {
     pthread_mutex_t emutex;
     pthread_mutex_t hmutex;
     pthread_mutex_t twmutex;
+    pthread_mutex_t schmutex;
 
     struct queue pqueue_sy;
     struct queue pqueue_rt;
@@ -305,7 +325,7 @@ typedef struct {
 
     remote_task_t *task_table;
     struct timeouts *twheel;
-    command_t *sched;
+    sched_t sched;
     sleeper_t sleeper;
 
 } tboard_t;
@@ -582,40 +602,9 @@ void remote_task_place(tboard_t *t, remote_task_t *rtask);
  * Context: locks @t->msg_mutex
  */
 
-arg_t *remote_sync_task_create(tboard_t *tboard, char *cmd_func, int level, char *fn_argsig, arg_t *qargs, int nargs);
-bool remote_async_task_create(tboard_t *tboard, char *cmd_func, int level, char *fn_argsig, arg_t *qargs, int nargs);
+arg_t *remote_task_create(tboard_t *tboard, char *cmd_func, int level, char *fn_argsig, arg_t *qargs, int nargs);
+bool remote_task_create_nb(tboard_t *tboard, char *cmd_func, int level, char *fn_argsig, arg_t *qargs, int nargs);
 
-
-bool remote_task_create(tboard_t *t, char *message, void *response, size_t sizeof_resp, bool blocking);
-/**
- * remote_task_create() - Called from a parent task, it will issue the remote task descibed in
- *                        message, queueing in @t->msg_sent, and yield parent coroutine
- * @t:           tboard_t pointer of task board.
- * @message:     Remote task to be issued to MQTT adapter
- * @args:        Pointer to buffer to pass to MQTT/store remote task response. Can be NULL
- * @sizeof_args: Size of @args. Non-zero values indicate @args is allocated memory
- * @blocking:    Indicates whether or not remote task should be blocking.
- * 
- * Important notes: Function must be called from within a task board task, otherwise it will return
- * false.
- * 
- * Freedom is given to the user in terms of data type of @args, as well as how the MQTT adapter
- * handles this data type. The only restriction imposed on non-NULL @args is that it will be
- * passed to MQTT adapter via remote_task_t data structure, and if @args points to allocated memory,
- * then @sizeof_resp must be non-zero.
- * 
- * After creating remote_task_t remote task object, it will place it in @t->msg_send wait queue and
- * yield from issuing coroutine. If task is not-blocking, issuing task will be placed back into
- * the appropriate task ready queue. Otherwise, it will be placed in remote_task_t remote task
- * object that is placed in @t->msg_send message queue, returning context only once controller has 
- * responded and MQTT adapter has placed remote_task_t remote task object into @t->msg_recv message queue.
- * 
- * Context: Locks @t->msg_mutex
- * 
- * Return: True  - If @blocking, then remote task has completed and @args is updated where applicable.
- *                 Else, remote task has been created and sent to MQTT
- * Return: False - Remote task has not been issued.
- */
 
 int preferred_task_level(remote_task_t *rt);
 
@@ -784,42 +773,6 @@ void task_destroy(task_t *task);
 ////////////// Processor Definitions /////////////
 //////////////////////////////////////////////////
 
-/**
- * msg_t - Message data type
- * @type: Message type
- * @subtype: Message subtype
- * @has_side_effects: Indicates if task has side effects.
- * @data: Data recieved from MQTT Adapter
- * @user_data: Data passed to task, determined by MQTT Adapter.
- * @ud_allocd: Integer representing size of allocated memory pointed to by @user_data
- * 
- * msg_t objects are created by MQTT Adapter when message is recieved, and is used to pass message
- * information appropriated to task board.
- */
-typedef struct {
-    int type;
-    int subtype;
-    bool has_side_effects;
-    void *data; // must be castable to task_t or bid_t
-    void *user_data;
-    size_t ud_allocd; // whether user_data was alloc'd
-} msg_t;
-
-/**
- * bid_t - Bid data object.
- * 
- * bid_t objects are created by Redis adapter.
- * 
- * Current values are placeholders, as implementation specifications have not been issued.
- * 
- * TODO: Implement.
- */
-typedef struct {
-    int type;
-    int EST;
-    int LST;
-    void *data;
-} bid_t;
 
 bool msg_processor(void *serv, command_t *cmd);
 /**
@@ -846,18 +799,6 @@ bool msg_processor(void *serv, command_t *cmd);
 
 void send_err_msg(void *serv, char *node_id, long int task_id);
 void send_ack_msg(void *serv, char *node_id, long int task_id, int timeout);
-
-
-bool data_processor(tboard_t *t, msg_t *msg); // when data is received, it interprets message and proceeds accordingly (missing requiremnts)
-/**
- * data_processor() - Handles data issued remotely by Redis Adapter.
- * @t:   tboard_t pointer to task board.
- * @msg: message recieved to be processed.
- * 
- * TODO: Need requirements and implementation
- */
-
-
 
 
 ////////////////////////////////////////////////////////////////
