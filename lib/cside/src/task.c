@@ -326,7 +326,7 @@ bool sleep_task_create(tboard_t *tboard, int sval)
     rtask.status = TASK_INITIALIZED;
     rtask.mode = TASK_MODE_SLEEPING;
 
-    twheel_add_event(tboard, TW_EVENT_REXEC_TIMEOUT, &rtask, getcurtime() + sval);
+    twheel_add_event(tboard, TW_EVENT_BEGIN_JSLEEP, &(rtask.task_id), getcurtime() + sval);
 
     // push rtask into storage. This copies memory in current thread so we dont have
     // to worry about invalid reads

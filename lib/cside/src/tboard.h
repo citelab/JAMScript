@@ -605,6 +605,7 @@ void remote_task_place(tboard_t *t, remote_task_t *rtask);
 arg_t *remote_task_create(tboard_t *tboard, char *cmd_func, int level, char *fn_argsig, arg_t *qargs, int nargs);
 bool remote_task_create_nb(tboard_t *tboard, char *cmd_func, int level, char *fn_argsig, arg_t *qargs, int nargs);
 
+bool sleep_task_create(tboard_t *tboard, int sval);
 
 int preferred_task_level(remote_task_t *rt);
 

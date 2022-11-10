@@ -24,7 +24,7 @@ void calllocal_test3(context_t ctx)
     local_test3(t[0].val.sval, t[1].val.sval, t[2].val.sval);
     command_arg_free(t);
     count++;
-    if (count == 1000)
+    if (count == 500)
         exit(0);
 }
 

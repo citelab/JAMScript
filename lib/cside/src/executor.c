@@ -61,10 +61,8 @@ void process_timing_wheel(tboard_t *tboard, enum execmodes_t *mode)
     do {
         t = twheel_get_next(tboard);
         if (t != NULL) {
-            printf("Got something non null \n");
             if (t->callback.fn == dummy_next_schedule) {
                 install_next_schedule(tboard, t->expires);
-                printf("Installing.. the next schedule............. %lu\n", t->expires);
             } else if (t->callback.fn == dummy_next_sy_slot) {
                 *mode = SYNC_MODE_EXEC;
                 wait_to_sy_slot(tboard, t->callback.arg, t->expires);
@@ -166,7 +164,8 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
             if (rtask->mode == TASK_MODE_REMOTE_NB)
                 e = queue_new_node(task);
             // place remote task into appropriate message queue
-            remote_task_place(tboard, rtask);
+            if (rtask->mode != TASK_MODE_SLEEPING)
+                remote_task_place(tboard, rtask);
 
         } else { // just a normal yield, so we create node to reinsert task into queue
   //          get_snapshot(4);

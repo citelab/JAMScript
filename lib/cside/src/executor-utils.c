@@ -49,7 +49,6 @@ void install_next_schedule(tboard_t *tb, long int etime)
 {
     long int stime = getcurtime();
     stime = etime > stime ? etime : stime;
-    printf(">>>>> Stime %lu\n", stime);
 
     pthread_mutex_lock(&tb->schmutex);
     twheel_add_event(tb, TW_EVENT_INSTALL_SCHEDULE, NULL, stime + tb->sched.len);
@@ -84,7 +83,7 @@ void process_sleep_event(tboard_t *t, void *arg)
     {
         if (rtask->calling_task != NULL)
         {
-            rtask->status = TASK_JSLEEP_DONE;
+            rtask->status = TASK_COMPLETED;
             assert(mco_push(rtask->calling_task->ctx, rtask, sizeof(remote_task_t)) == MCO_SUCCESS);
             // place parent task back to appropriate queue - should be batch
             task_place(t, rtask->calling_task);

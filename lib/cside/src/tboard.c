@@ -79,7 +79,6 @@ tboard_t* tboard_create(void *cnode, int secondary_queues)
     tboard->exec_hist = NULL;
 
     tboard->task_table = NULL;
-    printf("Initializing the twheel... \n");
     tboard->twheel = twheel_init();
     learn_sleeping(&(tboard->sleeper), 1000000);
     install_next_schedule(tboard, 0);
