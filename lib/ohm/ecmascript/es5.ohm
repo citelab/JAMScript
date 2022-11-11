@@ -89,8 +89,8 @@ ES5 {
           | catch    | finally   | return     | void
           | continue | for       | switch     | while
           | debugger | function  | this       | with
-          | default  | if        | throw
-          | delete   | in        | try
+          | default  | if        | throw      | let
+          | delete   | in        | try        | const
 
   futureReservedWordLax = class  | enum  | extends
                         | super  | const | export
@@ -409,7 +409,7 @@ ES5 {
 
   StatementList = Statement*
 
-  VariableStatement = var VariableDeclarationList<withIn> #sc
+  VariableStatement = (var | const | let) VariableDeclarationList<withIn> #sc
 
   VariableDeclarationList<guardIn> = NonemptyListOf<VariableDeclaration<guardIn>, ",">
 
