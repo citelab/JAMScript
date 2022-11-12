@@ -90,7 +90,7 @@ void exec_sync(context_t ctx)
     }
 }
 
-function_t esync = TBOARD_FUNC(exec_sync, "nnn", true);
+function_t esync = TBOARD_FUNC("exec_sync", exec_sync, "nnn", "", PRI_BATCH_TASK);
 
 
 void execute_cmd(server_t *s, function_t *f, command_t *cmd)

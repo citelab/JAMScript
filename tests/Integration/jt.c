@@ -1,3 +1,5 @@
+void you(char *s);
+
 jtask* localme(int c, char *s) {
     while(1) {
         jsleep(2000);

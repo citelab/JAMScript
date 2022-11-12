@@ -13,4 +13,8 @@
 #include "utarray.h"
 #include "uthash.h"
 
+#define milestone_log(X)
+#define jsleep(X)               sleep_task_create(cnode->tboard, X)
+
+
 #endif
