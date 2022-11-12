@@ -196,25 +196,11 @@ function compile(code, verbose) {
 
     const includes =
       [
-        "stdlib",
-        "stdio",
-        "pthread",
-        "time",
-        "assert",
-        "stdbool",
-        "unistd",
-        "tboard",
-        "command",
-        "cnode",
-        "calls",
+        'jam'
       ]
         .map((lib) => `#include <${lib}.h>`)
         .join("\n") + "\n";
 
-    fs.writeFileSync(
-      "jamout.c",
-      includes + preprocessDecls.join("\n") + "\n" + code
-    );
     fs.writeFileSync(
       `${tmpDir}/jamout.c`,
       includes + preprocessDecls.join("\n") + "\n" + code
