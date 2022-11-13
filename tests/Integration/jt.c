@@ -1,4 +1,4 @@
-//void you(char *s);
+void you(char *s);
 
 jtask* localme(int c, char *s) {
     while(1) {
@@ -9,9 +9,9 @@ jtask* localme(int c, char *s) {
 
 jtask* localyou(int c, char *s) {
     while(1) {
-	jsleep(1000);
-	printf("############-->>> Hello YOU  %d, %s", c, s);
-//	you(s);
+        jsleep(1000);
+        printf("############-->>> Hello YOU  %d, %s", c, s);
+        you(s);
     }
 }
 
