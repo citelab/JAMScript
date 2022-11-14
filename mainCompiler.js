@@ -295,6 +295,7 @@ function createZip(jsout, mout, jstart, tmpDir, outputName) {
   zip.file("jstart.js", jstart);
 
   zip.file("a.out", fs.readFileSync(`${tmpDir}/a.out`));
+  zip.file("dummysched.js", fs.readFileSync(__dirname + '/lib/jside/dummysched.js'));  
 
   if (supFiles.length > 0)
     supFiles.forEach(function (e) {
