@@ -2,14 +2,14 @@ void you(char *s);
 
 jtask* localme(int c, char *s) {
     while(1) {
-        jsleep(2000);
+        jsleep(20000);
         printf("############-->>> Hello  ME  %d... %s", c, s);
     }
 }
 
 jtask* localyou(int c, char *s) {
     while(1) {
-        jsleep(1000);
+        jsleep(10000);
         printf("############-->>> Hello YOU  %d, %s", c, s);
         you(s);
     }

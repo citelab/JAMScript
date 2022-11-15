@@ -211,7 +211,7 @@ doaout() {
     while [ $counter -le $num ]; do
         if [ -e a.out ]; then
             # execute the program.. we are in the folder..
-            buildcargs "-a=$jappid" "-p=$port" "-n=$counter" "-t=$tags" "-h=$height"
+            buildcargs "-a=$jappid" "-p=$port" "-n=$counter" "-t=$tags" 
             local cargs=$results
             if [ -z $log ]; then
                 $TMUX new-session -s $tmuxapp-$counter -d  "./a.out $cargs"

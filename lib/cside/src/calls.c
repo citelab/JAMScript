@@ -112,8 +112,8 @@ void local_async_call(tboard_t *t, char *cmd_func, ...)
         va_start(args, cmd_func);
         res = command_qargs_alloc(fmask, &qargs, args);
         va_end(args);
-        task_create(t, *f, qargs, strlen(fmask), NULL);
+        task_create(t, *f, qargs, NULL);
     }
     else
-        task_create(t, *f, NULL, 0, NULL);
+        task_create(t, *f, NULL, NULL);
 }

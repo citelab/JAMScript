@@ -56,47 +56,45 @@ command_t *command_new(int cmd, int subcmd, char *fn_name, long int task_id, cha
     va_list args;
     nvoid_t *nv;
     arg_t *qargs;
-    int i = 0;
-    char *fmt = fn_argsig;
+    int len = strlen(fn_argsig);
 
-    if (strlen(fmt) > 0)
-        qargs = (arg_t *)calloc(strlen(fmt), sizeof(arg_t));
-    else
+    if (len > 0) {
+        qargs = (arg_t *)calloc(len, sizeof(arg_t));
+
+        va_start(args, fn_argsig);
+        for (int i = 0; i < len; i++) {
+            switch(fn_argsig[i]) {
+                case 'n':
+                    nv = va_arg(args, nvoid_t*);
+                    qargs[i].val.nval = nv;
+                    qargs[i].type = NVOID_TYPE;
+                    break;
+                case 's':
+                    qargs[i].val.sval = strdup(va_arg(args, char *));
+                    qargs[i].type = STRING_TYPE;
+                    break;
+                case 'i':
+                    qargs[i].val.ival = va_arg(args, int);
+                    qargs[i].type = INT_TYPE;
+                    break;
+                case 'f':
+                    qargs[i].val.dval = va_arg(args, double);
+                    qargs[i].type = DOUBLE_TYPE;
+                    break;
+                default:
+                    break;
+            }
+            qargs[i].nargs = len;
+        }
+        va_end(args);
+    } else
         qargs = NULL;
 
-    va_start(args, fn_argsig);
-    while(*fmt) {
-        switch(*fmt++) {
-            case 'n':
-                nv = va_arg(args, nvoid_t*);
-                qargs[i].val.nval = nv;
-                qargs[i].type = NVOID_TYPE;
-                break;
-            case 's':
-                qargs[i].val.sval = strdup(va_arg(args, char *));
-                qargs[i].type = STRING_TYPE;
-                break;
-            case 'i':
-                qargs[i].val.ival = va_arg(args, int);
-                qargs[i].type = INT_TYPE;
-                break;
-            case 'f':
-                qargs[i].val.dval = va_arg(args, double);
-                qargs[i].type = DOUBLE_TYPE;
-                break;
-            default:
-                break;
-        }
-        i++;
-    }
-    va_end(args);
-    command_t *c = command_new_using_arg(cmd, subcmd, fn_name, task_id, node_id, fn_argsig, qargs, i);
+    command_t *c = command_new_using_arg(cmd, subcmd, fn_name, task_id, node_id, fn_argsig, qargs);
     return c;
 }
 
-
-
-command_t *command_new_using_arg(int cmd, int subcmd, char *fn_name, long int taskid, char *node_id, char *fn_argsig, arg_t *args, int nargs)
+command_t *command_new_using_arg(int cmd, int subcmd, char *fn_name, long int taskid, char *node_id, char *fn_argsig, arg_t *args)
 {
     command_t *cmdo = (command_t *)calloc(1, sizeof(command_t));
     nvoid_t *nv;
@@ -129,32 +127,36 @@ command_t *command_new_using_arg(int cmd, int subcmd, char *fn_name, long int ta
     cbor_encode_text_stringz(&mapEncoder, "fn_argsig");
     cbor_encode_text_stringz(&mapEncoder, fn_argsig);
     // store and encode the args
-    cmdo->args = args;
-    cmdo->nargs = nargs;
     cbor_encode_text_stringz(&mapEncoder, "args");
-    cbor_encoder_create_array(&mapEncoder, &arrayEncoder,nargs);
-    for (int i = 0; i < nargs; i++) {
-        switch (args[i].type) {
-            case NVOID_TYPE:
-                nv = args[i].val.nval;
-                cbor_encode_byte_string(&arrayEncoder, nv->data, nv->len);
-                break;
-            case STRING_TYPE:
-                cbor_encode_text_stringz(&arrayEncoder, args[i].val.sval);
-                break;
-            case INT_TYPE:
-            case LONG_TYPE:
-                if (args[i].val.ival < 0)
-                    cbor_encode_negative_int(&arrayEncoder, abs(args[i].val.ival));
-                else
-                    cbor_encode_int(&arrayEncoder, args[i].val.ival);
-                break;
-            case DOUBLE_TYPE:
-                cbor_encode_double(&arrayEncoder, args[i].val.dval);
-                break;
-            case NULL_TYPE:
-                cbor_encode_null(&arrayEncoder);
-            default:;
+    if (args == NULL) {
+        cmdo->args = NULL;
+        cbor_encoder_create_array(&mapEncoder, &arrayEncoder, 0);
+    } else {
+        cmdo->args = command_args_clone(args);
+        cbor_encoder_create_array(&mapEncoder, &arrayEncoder, args[0].nargs);
+        for (int i = 0; i < args[0].nargs; i++) {
+            switch (args[i].type) {
+                case NVOID_TYPE:
+                    nv = args[i].val.nval;
+                    cbor_encode_byte_string(&arrayEncoder, nv->data, nv->len);
+                    break;
+                case STRING_TYPE:
+                    cbor_encode_text_stringz(&arrayEncoder, args[i].val.sval);
+                    break;
+                case INT_TYPE:
+                case LONG_TYPE:
+                    if (args[i].val.ival < 0)
+                        cbor_encode_negative_int(&arrayEncoder, abs(args[i].val.ival));
+                    else
+                        cbor_encode_int(&arrayEncoder, args[i].val.ival);
+                    break;
+                case DOUBLE_TYPE:
+                    cbor_encode_double(&arrayEncoder, args[i].val.dval);
+                    break;
+                case NULL_TYPE:
+                    cbor_encode_null(&arrayEncoder);
+                default:;
+            }
         }
     }
     cbor_encoder_close_container(&mapEncoder, &arrayEncoder);
@@ -233,11 +235,10 @@ command_t *command_from_data(char *fmt, void *data, int len)
             size_t nelems;
             cbor_value_get_array_length(&map, &nelems);
             if (nelems > 0) {
-                cmd->nargs = nelems;
                 cmd->args = (arg_t *)calloc(nelems, sizeof(arg_t));
                 while (!cbor_value_at_end(&arr)) {
                     CborType ty = cbor_value_get_type(&arr);
-                    cmd->args[i].nargs = cmd->nargs;
+                    cmd->args[i].nargs = nelems;
                     switch (ty) {
                         case CborIntegerType:
                             cmd->args[i].type = INT_TYPE;
@@ -270,10 +271,9 @@ command_t *command_from_data(char *fmt, void *data, int len)
                     i++;
                     err = cbor_value_advance(&arr);
                 }
-            } else {
-                cmd->nargs = 0;
+            } else 
                 cmd->args = NULL;
-            }
+
         }
         cbor_value_advance(&map);
     }
@@ -293,6 +293,7 @@ void command_hold(command_t *cmd)
 
 void command_free(command_t *cmd)
 {
+    int nargs;
     int rc;
     pthread_mutex_lock(&cmd->lock);
     rc = --cmd->refcount;
@@ -302,7 +303,8 @@ void command_free(command_t *cmd)
     if (rc > 0)
         return;
 
-    for(int i = 0; i < cmd->nargs && cmd->args != NULL; i++) {
+    nargs = cmd->args != NULL ? cmd->args[0].nargs : 0;
+    for(int i = 0; i < nargs; i++) {
         switch(cmd->args[i].type) {
             case STRING_TYPE: 
                 free(cmd->args[i].val.sval);
@@ -321,8 +323,7 @@ void command_free(command_t *cmd)
 
 bool command_qargs_alloc(const char *fmt, arg_t **rargs, va_list args)
 {
-    int i = 0;
-    arg_t *qargs;
+    arg_t *qargs = NULL;
     nvoid_t *nv;
     int flen = strlen(fmt);
 
@@ -331,8 +332,8 @@ bool command_qargs_alloc(const char *fmt, arg_t **rargs, va_list args)
     else
         return false;
 
-    while(*fmt) {
-        switch(*fmt++) {
+    for (int i = 0; i < flen; i++) {
+        switch(fmt[i]) {
             case 'n':
                 nv = va_arg(args, nvoid_t*);
                 qargs[i].val.nval = nv;
@@ -359,7 +360,6 @@ bool command_qargs_alloc(const char *fmt, arg_t **rargs, va_list args)
                 break;
         }
         qargs[i].nargs = flen;
-        i++;
     }
 
     *rargs = qargs;
@@ -416,39 +416,34 @@ void command_arg_free(arg_t *arg)
 }
 
 
-arg_t *command_arg_clone(arg_t *arg)
+arg_t *command_args_clone(arg_t *arg)
 {
-    arg_t *val = (arg_t *)calloc(1, sizeof(arg_t));
+    arg_t *val = (arg_t *)calloc(arg[0].nargs, sizeof(arg_t));
     assert(val != NULL);
-    if (arg == NULL)
-    {
-        printf("ERROR! Argument is NULL. Sender is putting argument values?\n");
-        printf("Quitting\n");
-        exit(1);
+    for (int i = 0; i < arg[0].nargs; i++) {
+        val[i].type = arg[i].type;
+        val[i].nargs = arg[i].nargs;
+        switch (arg[i].type) {
+            case INT_TYPE:
+            case LONG_TYPE:
+                val[i].val.ival = arg[i].val.ival;
+                break;
+            case DOUBLE_TYPE:
+                val[i].val.dval = arg[i].val.dval;
+                break;
+            case STRING_TYPE:
+                val[i].val.sval = strdup(arg[i].val.sval);
+                break;
+            case NVOID_TYPE:
+                val[i].val.nval = nvoid_new(arg[i].val.nval->data, arg[i].val.nval->len);
+                break;
+            case NULL_TYPE:
+                val[i].val.ival = 0;
+                break;
+            default:;
+        }
     }
-    val->type = arg->type;
-    val->nargs = 1;
-    switch (arg->type)
-    {
-        case INT_TYPE:
-        case LONG_TYPE:
-            val->val.ival = arg->val.ival;
-            return val;
-        case DOUBLE_TYPE:
-            val->val.dval = arg->val.dval;
-            return val;
-        case STRING_TYPE:
-            val->val.sval = strdup(arg->val.sval);
-            return val;
-        case NVOID_TYPE:
-            val->val.nval = nvoid_new(arg->val.nval->data, arg->val.nval->len);
-            return val;
-        case NULL_TYPE:
-            val->val.ival = 0;
-            return val;
-        default:;
-    }
-    return NULL;
+    return val;
 }
 
 void command_print(command_t *cmd)
@@ -467,7 +462,6 @@ void command_print(command_t *cmd)
     printf("\nCommand buffer: ");
     for (i = 0; i < (int)strlen((char *)cmd->buffer); i++)
         printf("%x", (int)cmd->buffer[i]);
-    printf("\nCommand number of args: %d\n", cmd->nargs);
 
     command_arg_print(cmd->args);
     

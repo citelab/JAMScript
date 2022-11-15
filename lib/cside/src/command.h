@@ -89,7 +89,6 @@ typedef struct _command_t
     int length;                                 // length of the raw CBOR data
 
     arg_t *args;                                // List of args
-    int nargs;                                  // length of args array 
 
     int refcount;                               // Deallocation control
     pthread_mutex_t lock;
@@ -98,7 +97,7 @@ typedef struct _command_t
 
 command_t *command_new(int cmd, int subcmd, char *fn_name, 
                     long int task_id, char *node_id, char *fn_argsig, ...);
-command_t *command_new_using_arg(int cmd, int opt, char *fn_name, long int taskid, char *node_id, char *fn_argsig, arg_t *args, int nargs);
+command_t *command_new_using_arg(int cmd, int opt, char *fn_name, long int taskid, char *node_id, char *fn_argsig, arg_t *args);
 command_t *command_from_data(char *fn_argsig, void *data, int len);
 void command_hold(command_t *cmd);
 void command_free(command_t *cmd);
@@ -106,7 +105,7 @@ bool command_qargs_alloc(const char *fmt, arg_t **rargs, va_list args);
 void command_arg_print(arg_t *arg);
 void command_arg_inner_free(arg_t *arg);
 void command_arg_free(arg_t *arg);
-arg_t *command_arg_clone(arg_t *arg);
+arg_t *command_args_clone(arg_t *arg);
 void command_print(command_t *cmd);
 #ifdef __cplusplus
 }

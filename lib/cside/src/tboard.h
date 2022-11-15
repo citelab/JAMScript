@@ -647,15 +647,13 @@ void *blocking_task_create(tboard_t *t, function_t fn, int type, void *args, siz
  * Function will only return once parent task has been resumed by executor after child task was issued.
  */
 
-bool task_create(tboard_t *t, function_t fn, void *args, size_t sizeof_args, void *cmd);
+bool task_create(tboard_t *t, function_t fn, void *args, void *cmd);
 /**
  * task_create() - Creates task, adds to appropriate ready queue to be executed
  *                 by task executor.
  * @t:           tboard_t pointer of task board.
  * @fn:          Task function with signature `void fn(void *)` as function_t to be executed.
  * @args:        Task arguments made available to task function @fn.
- * @sizeof_args: Size of task arguments passed. Should be non-zero only if @args points to
- *               alloc'd memory.
  * 
  * Important notes: @fn should not free passed `void *` argument, nor should it modify any pthread
  * cancellation policy. This is crucial!

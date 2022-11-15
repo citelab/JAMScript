@@ -99,10 +99,10 @@ void execute_cmd(server_t *s, function_t *f, command_t *cmd)
     tboard_t *t = (tboard_t *)(c->tboard);
 
     if (cmd->subcmd == 0)
-        task_create(t, *f, cmd->args, cmd->nargs, cmd); // no return value
+        task_create(t, *f, cmd->args, cmd); // no return value
     else {
         arg_t *a = command_arg_clone_special(cmd->args, cmd->fn_name, cmd->task_id, cmd->node_id, s);
-        task_create(t, esync, a, a->nargs, NULL);
+        task_create(t, esync, a, NULL);
     }
 }
 
@@ -242,7 +242,7 @@ bool msg_processor(void *serv, command_t *cmd)
         {
             // remove the timeout entry
             twheel_delete_timeout(t, &(rtask->task_id));
-            rtask->data = command_arg_clone(cmd->args);
+            rtask->data = command_args_clone(cmd->args);
             rtask->data_size = 1;
             if (rtask->calling_task != NULL)
             {

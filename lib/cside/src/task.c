@@ -14,7 +14,7 @@
 /////////// TASK FUNCTIONS /////////////
 ////////////////////////////////////////
 
-bool task_create(tboard_t *t, function_t fn, void *args, size_t sizeof_args, void *cmd)
+bool task_create(tboard_t *t, function_t fn, void *args, void *cmd)
 {
     if (t == NULL)
         return false;
@@ -29,7 +29,10 @@ bool task_create(tboard_t *t, function_t fn, void *args, size_t sizeof_args, voi
     // create description and populate it with argument
     task->desc = mco_desc_init((task->fn.fn), 0);
     task->desc.user_data = args;
-    task->data_size = sizeof_args;
+    if (args != NULL) {
+        arg_t *a = args;
+        task->data_size = a[0].nargs;
+    }
     task->cmd_obj = cmd;
     // non-blocking task so no parent
     task->parent = NULL;
@@ -390,7 +393,7 @@ void remote_task_destroy(remote_task_t *rtask)
 
 
 #define  send_command_to_server(X) do {                         \
-    cmd = command_new_using_arg(CmdNames_REXEC, 0, rtask->command, rtask->task_id, cn->core->device_id, rtask->fn_argsig, rtask->data, rtask->data_size); \
+    cmd = command_new_using_arg(CmdNames_REXEC, 0, rtask->command, rtask->task_id, cn->core->device_id, rtask->fn_argsig, rtask->data); \
     mqtt_publish(X, cn->topics->requesttopic, cmd->buffer, cmd->length, cmd, 0); \
 } while (0)
 
@@ -402,7 +405,7 @@ void remote_task_place(tboard_t *t, remote_task_t *rtask)
     if (t == NULL || rtask == NULL)
         return;
 
-    twheel_add_event(t, TW_EVENT_REXEC_TIMEOUT, NULL, REXEC_TIMEOUT);
+    twheel_add_event(t, TW_EVENT_REXEC_TIMEOUT, &(rtask->task_id), REXEC_TIMEOUT);
     switch (rtask->level) {
         case ALL_LEVELS:
             send_command_to_server(cn->devserv->mqtt);

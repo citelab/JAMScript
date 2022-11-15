@@ -95,11 +95,13 @@ void process_timeout_event(tboard_t *t, void *arg)
 {
     remote_task_t *rtask = NULL;
 
-    HASH_FIND_INT(t->task_table, ((long int *)arg), rtask);
-    if (rtask != NULL)
-    {
-        rtask->retries--;
-        if (rtask->retries > 0) 
-            remote_task_place(t, rtask);
+    if (arg != NULL) {
+        HASH_FIND_INT(t->task_table, ((long int *)arg), rtask);
+        if (rtask != NULL)
+        {
+            rtask->retries--;
+            if (rtask->retries > 0) 
+                remote_task_place(t, rtask);
+        }
     }
 }
