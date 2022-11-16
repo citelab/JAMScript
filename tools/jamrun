@@ -85,13 +85,14 @@ EOF
 
 startmqtt() {
     local port=$1
+    local cfile=$2
 
     # Check whether the MQTT server is running.. if not start it
     $MOSQUITTO_PUB -p $port -t "test" -m "hello"
     if [ $? -ne 0 ]; then
         echo "MQTT is not running at $port"
         echo "Attempting to start MQTT at $port"
-        nohup $MOSQUITTO -p $port &>/dev/null &
+        nohup $MOSQUITTO -c $cfile &>/dev/null &
     fi
 }
 
@@ -107,7 +108,7 @@ dojamout_p1() {
     local pnum=$2
     local floc=$3
 
-    startmqtt $pnum
+    startmqtt $pnum "${floc}/${pnum}/mqtt.conf"
     echo "$data" > $floc/$pnum/dataStore
     echo "process" > $floc/$pnum/class
     echo "$SHELLPID" > $floc/$pnum/shellpid
@@ -653,6 +654,7 @@ if [ -e "$file" ]; then
                     ((iport++))
                 done
                 create_missingdir $folder/$iport
+                create_conffile "${folder}/${iport}/mqtt.conf"  $iport
                 getappid $jamfolder $folder/$iport $app
                 dojamout $type $iport $folder
             ;;
@@ -664,6 +666,7 @@ if [ -e "$file" ]; then
                     ((iport++))
                 done
                 create_missingdir $folder/$iport
+                create_conffile "${folder}/${iport}/mqtt.conf"  $iport
                 getappid $jamfolder $folder/$iport $app
                 dojamout $type $iport $folder
             ;;
@@ -675,6 +678,7 @@ if [ -e "$file" ]; then
                     ((iport++))
                 done
                 create_missingdir $folder/$iport
+                create_conffile "${folder}/${iport}/mqtt.conf"  $iport
                 getappid $jamfolder $folder/$iport $app
                 dojamout_p1 $type $iport $folder
                 setuptmux $folder/$iport

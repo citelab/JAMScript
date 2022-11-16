@@ -194,8 +194,15 @@ exit_missingfile() {
     fi
 }
 
+create_conffile() {
+    local file=$1
+    local contents=$2
 
-
+    echo "#" | cat > $1
+    echo "allow_anonymous true" | cat >> $1
+    echo "#" | cat >> $1
+    echo "listener  ${2}" | cat >> $1
+}
 
 check_prog() {
     local prog=$1

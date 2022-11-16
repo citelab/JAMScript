@@ -96,12 +96,15 @@ void process_timeout_event(tboard_t *t, void *arg)
     remote_task_t *rtask = NULL;
 
     if (arg != NULL) {
+        printf("Looking for %ld \n", *(long int *)arg);
         HASH_FIND_INT(t->task_table, ((long int *)arg), rtask);
         if (rtask != NULL)
         {
-            rtask->retries--;
-            if (rtask->retries > 0) 
-                remote_task_place(t, rtask);
+            if (rtask->status == RTASK_ACK_PENDING || rtask->status == RTASK_RES_PENDING) {
+                rtask->retries--;
+                if (rtask->retries > 0) 
+                    remote_task_place(t, rtask);
+            }
         }
     }
 }

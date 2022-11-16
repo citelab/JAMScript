@@ -60,10 +60,15 @@ enum task_types_t {
 enum task_status_codes_t {
     TASK_INITIALIZED = 1,
     TASK_RUNNING = 2,
-    TASK_COMPLETED = 3,
-    TASK_ERROR = 4,
-    TASK_ACK_RECEIVED = 5,
-    TASK_JSLEEP_DONE = 6
+    TASK_COMPLETED = 5,
+};
+
+enum rtask_status_codes_t {
+    RTASK_ACK_PENDING = 1,
+    RTASK_ACK_RECEIVED = 2,
+    RTASK_RES_PENDING = 3,
+    RTASK_COMPLETED = 4,
+    RTASK_ERROR = 5,
 };
 
 #define TASK_MAX_RETRIES 3

@@ -218,18 +218,21 @@ bool msg_processor(void *serv, command_t *cmd)
 
     case CmdNames_REXEC_ACK:
         // find the task
+        printf("Ack received for .. %ld\n", cmd->task_id);
         HASH_FIND_INT(t->task_table, &(cmd->task_id), rtask);
         if (rtask != NULL)
         {
             // remove the timeout entry
             twheel_delete_timeout(t, &(rtask->task_id));
-            rtask->status = TASK_ACK_RECEIVED;
+            rtask->status = RTASK_ACK_RECEIVED;
             // blocking task - put back the timeout at a future time
-            if (rtask->mode == TASK_MODE_REMOTE)
+            if (rtask->mode == TASK_MODE_REMOTE) {
+                rtask->status = RTASK_RES_PENDING;
                 twheel_add_event(t, TW_EVENT_REXEC_TIMEOUT, &(rtask->task_id), getcurtime() + globals_Timeout_REXEC_ACK_TIMEOUT);
-            else {
+            } else {
                 // if not blocking, remove it from the task table and destroy the remote task entry
                 HASH_DEL(t->task_table, rtask);
+                printf("Destroy.. remote task %ld\n", rtask->task_id);
                 remote_task_destroy(rtask);
             }
         }
@@ -246,7 +249,7 @@ bool msg_processor(void *serv, command_t *cmd)
             rtask->data_size = 1;
             if (rtask->calling_task != NULL)
             {
-                rtask->status = TASK_COMPLETED;
+                rtask->status = RTASK_COMPLETED;
                 assert(mco_push(rtask->calling_task->ctx, rtask, sizeof(remote_task_t)) == MCO_SUCCESS);
                 // place parent task back to appropriate queue
                 task_place(t, rtask->calling_task);
@@ -266,7 +269,7 @@ bool msg_processor(void *serv, command_t *cmd)
             twheel_delete_timeout(t, &(rtask->task_id));
             if (rtask->calling_task != NULL)
             {
-                rtask->status = TASK_ERROR;
+                rtask->status = RTASK_ERROR;
                 assert(mco_push(rtask->calling_task->ctx, rtask, sizeof(remote_task_t)) == MCO_SUCCESS);
                 // place parent task back to appropriate queue
                 task_place(t, rtask->calling_task);
