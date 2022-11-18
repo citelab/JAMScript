@@ -1,6 +1,10 @@
+let count = 0;
 
 jtask* function you(str) {
-    console.log("Received.. ", str);
+    count++;
+    if ((count % 1000) === 0) {
+        console.log(count);
+    }
 }
 
 //setInterval(()=> {

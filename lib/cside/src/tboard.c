@@ -39,6 +39,7 @@ tboard_t* tboard_create(void *cnode, int secondary_queues)
     assert(sizeof(remote_task_t) != sizeof(task_t));
 
     // initiate primary queue's mutex and condition variables
+    assert(pthread_mutex_init(&(tboard->iqmutex), NULL) == 0);
     assert(pthread_mutex_init(&(tboard->cmutex), NULL) == 0);
     assert(pthread_mutex_init(&(tboard->tmutex), NULL) == 0);
     assert(pthread_mutex_init(&(tboard->hmutex), NULL) == 0);
@@ -55,10 +56,12 @@ tboard_t* tboard_create(void *cnode, int secondary_queues)
     tboard->pqueue_sy = queue_create();
     tboard->pqueue_rt = queue_create();
     tboard->pqueue_ba = queue_create();
+    tboard->iq = queue_create();
 
     queue_init(&(tboard->pqueue_sy));
     queue_init(&(tboard->pqueue_rt));
     queue_init(&(tboard->pqueue_ba));
+    queue_init(&(tboard->iq));
 
     // set number of secondaries tboard has
     tboard->sqs = secondary_queues;
@@ -135,6 +138,7 @@ void tboard_shutdown(tboard_t *tboard)
     pthread_mutex_lock(&(tboard->tmutex));
     pthread_mutex_lock(&(tboard->twmutex));
     // destroy mutex and condition variables 
+    pthread_mutex_destroy(&(tboard->iqmutex));
     pthread_mutex_destroy(&(tboard->cmutex));
     pthread_mutex_destroy(&(tboard->pmutex));
     pthread_cond_destroy(&(tboard->pcond)); // broadcasted in tboard_kill()

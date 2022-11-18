@@ -5,6 +5,7 @@
 #include "queue/queue.h"
 #include "executor.h"
 #include <pthread.h>
+#include "constants.h"
 #include <assert.h> // assert()
 
 #include "tprofiler.h"
@@ -241,6 +242,84 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
     }
 }
 
+void process_internal_command(tboard_t *t, internal_command_t *ic)
+{
+    remote_task_t *rtask = NULL;    
+
+    switch (ic->cmd)
+    {
+    case CmdNames_REXEC_ACK:
+        HASH_FIND_INT(t->task_table, &(ic->task_id), rtask);
+        if (rtask != NULL)
+        {
+            rtask->status = RTASK_ACK_RECEIVED;
+            // blocking task - put back the timeout at a future time
+            if (rtask->mode == TASK_MODE_REMOTE) {
+                rtask->status = RTASK_RES_PENDING;
+                // TODO: args has a timeout value from remote - convert and add to the current time.
+                twheel_add_event(t, TW_EVENT_REXEC_TIMEOUT, clone_taskid(&(rtask->task_id)), getcurtime() + globals_Timeout_REXEC_ACK_TIMEOUT);
+            } else {
+                // if not blocking, remove it from the task table and destroy the remote task entry
+                HASH_DEL(t->task_table, rtask);
+                printf("Destroy.. remote task %ld\n", rtask->task_id);
+                remote_task_destroy(rtask);
+            }
+        }
+        internal_command_free(ic);
+        break;
+
+    case CmdNames_REXEC_RES:  
+        // find the task
+        HASH_FIND_INT(t->task_table, &(ic->task_id), rtask);
+        if (rtask != NULL)
+        {
+            rtask->data = command_args_clone(ic->args);
+            rtask->data_size = 1;
+            if (rtask->calling_task != NULL)
+            {
+                rtask->status = RTASK_COMPLETED;
+                assert(mco_push(rtask->calling_task->ctx, rtask, sizeof(remote_task_t)) == MCO_SUCCESS);
+                // place parent task back to appropriate queue
+                task_place(t, rtask->calling_task);
+            }
+        }
+        internal_command_free(ic);
+        break;
+
+    case CmdNames_REXEC_ERR:
+        // find the task
+        HASH_FIND_INT(t->task_table, &(ic->task_id), rtask);
+        if (rtask != NULL)
+        {
+            if (rtask->calling_task != NULL)
+            {
+                rtask->status = RTASK_ERROR;
+                assert(mco_push(rtask->calling_task->ctx, rtask, sizeof(remote_task_t)) == MCO_SUCCESS);
+                // place parent task back to appropriate queue
+                task_place(t, rtask->calling_task);
+            }
+            else {
+                // if not blocking, remove it from the task table and destroy the remote task entry
+                HASH_DEL(t->task_table, rtask);
+                remote_task_destroy(rtask);
+            }
+        }
+        internal_command_free(ic);
+        break;
+    }
+}
+
+void process_internal_queue(tboard_t *t)
+{
+    struct queue_entry *next = NULL;
+    pthread_mutex_lock(&t->iqmutex);
+    next = queue_peek_front(&t->iq);
+    if (next)
+        queue_pop_head(&t->iq);
+    pthread_mutex_lock(&t->iqmutex);
+    if (next)
+        process_internal_command(t, next->data);
+}
 
 void *executor(void *arg)
 {

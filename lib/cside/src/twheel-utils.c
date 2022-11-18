@@ -25,6 +25,14 @@ struct timeouts *twheel_init()
     return tw;
 }
 
+void *clone_taskid(long int *task_id) 
+{
+    long int *t = (long int *)calloc(1, sizeof(long int));
+    memcpy(t, task_id, sizeof(long int));
+    return t;
+}
+
+
 bool twheel_add_event(tboard_t *tb, twheel_event_t type, void *arg, long int tval)
 {
     // create an timeout event entry - note that just the entry is initialized

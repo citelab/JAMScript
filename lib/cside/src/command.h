@@ -95,6 +95,20 @@ typedef struct _command_t
     long id;
 } command_t;
 
+
+/* 
+ * Structure for hold internal commands - from the message processor to the executor.
+ */
+typedef struct _internal_command_t
+{
+    int cmd;
+    long int task_id;
+    arg_t *args;
+} internal_command_t;
+
+internal_command_t *internal_command_new(command_t *cmd);
+void internal_command_free(internal_command_t *ic);
+
 command_t *command_new(int cmd, int subcmd, char *fn_name, 
                     long int task_id, char *node_id, char *fn_argsig, ...);
 command_t *command_new_using_arg(int cmd, int opt, char *fn_name, long int taskid, char *node_id, char *fn_argsig, arg_t *args);
@@ -104,7 +118,7 @@ void command_free(command_t *cmd);
 bool command_qargs_alloc(const char *fmt, arg_t **rargs, va_list args);
 void command_arg_print(arg_t *arg);
 void command_arg_inner_free(arg_t *arg);
-void command_arg_free(arg_t *arg);
+void command_args_free(arg_t *arg);
 arg_t *command_args_clone(arg_t *arg);
 void command_print(command_t *cmd);
 #ifdef __cplusplus

@@ -20,7 +20,7 @@
 
 #define MAX_TASKS 65536 // 8196
 #define MAX_SECONDARIES 10
-#define STACK_SIZE 37344 // in bytes
+#define STACK_SIZE 57344 // 37344 // in bytes
 #define REINSERT_PRIORITY_AT_HEAD 1 
 
 #define DEBUG 0
@@ -299,6 +299,7 @@ typedef struct {
     pthread_mutex_t pmutex;
     pthread_mutex_t smutex[MAX_SECONDARIES];
 
+    pthread_mutex_t iqmutex;
     pthread_mutex_t cmutex;
 
     pthread_mutex_t tmutex;
@@ -313,6 +314,7 @@ typedef struct {
     struct queue pqueue_rt;
     struct queue pqueue_ba;
     struct queue squeue[MAX_SECONDARIES];
+    struct queue iq;
 
     int sqs;
     void *cnode;
@@ -923,6 +925,7 @@ void destroy_func_registry(tboard_t *t);
 long int getcurtime();
 struct timeouts *twheel_init();
 struct timeout *twheel_get_next(tboard_t *tb);
+void *clone_taskid(long int *task_id);
 bool twheel_add_event(tboard_t *tb, twheel_event_t type, void *arg, long int tval);
 bool twheel_delete_timeout(tboard_t *tb, long int *id);
 void twheel_update_to_now(tboard_t *tb);

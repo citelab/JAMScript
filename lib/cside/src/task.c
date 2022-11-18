@@ -10,6 +10,19 @@
 #include "snowflake.h"
 #include "constants.h"
 
+
+long int mysnowflake_id()
+{
+    static int counter = 0;
+    counter = (counter + 1) % 10000;
+    long int x;
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    x = ts.tv_sec * 1000000000 +  ts.tv_nsec;
+    return x/100 + counter;
+}
+
+
 ////////////////////////////////////////
 /////////// TASK FUNCTIONS /////////////
 ////////////////////////////////////////
@@ -230,7 +243,7 @@ bool remote_task_create_nb(tboard_t *tboard, char *command, int level, char *fn_
     mco_result res;
     // create rtask object
     remote_task_t rtask = {0};
-    rtask.task_id = snowflake_id();
+    rtask.task_id = mysnowflake_id();
     rtask.status = TASK_INITIALIZED;
     rtask.data = args;
     rtask.data_size = sizeof_args;
@@ -253,7 +266,6 @@ bool remote_task_create_nb(tboard_t *tboard, char *command, int level, char *fn_
         return false;
     }
     // issued remote task, yield
-    printf("----------- yielding... \n");
     task_yield();
     return true;
 }
@@ -267,7 +279,7 @@ arg_t *remote_task_create(tboard_t *tboard, char *command, int level, char *fn_a
     mco_result res;
     // create rtask object
     remote_task_t rtask = {0};
-    rtask.task_id = snowflake_id();
+    rtask.task_id = mysnowflake_id();
     rtask.status = TASK_INITIALIZED;
     rtask.data = args;
     rtask.data_size = sizeof_args;
@@ -325,11 +337,11 @@ bool sleep_task_create(tboard_t *tboard, int sval)
     mco_result res;
     // create rtask object
     remote_task_t rtask = {0};
-    rtask.task_id = snowflake_id();
+    rtask.task_id = mysnowflake_id();
     rtask.status = TASK_INITIALIZED;
     rtask.mode = TASK_MODE_SLEEPING;
 
-    twheel_add_event(tboard, TW_EVENT_BEGIN_JSLEEP, &(rtask.task_id), getcurtime() + sval);
+    twheel_add_event(tboard, TW_EVENT_BEGIN_JSLEEP, clone_taskid(&(rtask.task_id)), getcurtime() + sval);
 
     // push rtask into storage. This copies memory in current thread so we dont have
     // to worry about invalid reads
@@ -367,7 +379,7 @@ bool sleep_task_create(tboard_t *tboard, int sval)
 void remote_task_free(tboard_t *t, long int taskid) 
 {
     remote_task_t *rtask = NULL;
-    HASH_FIND_INT(t->task_table, &(taskid), rtask);
+        HASH_FIND_INT(t->task_table, &(taskid), rtask);
     if (rtask != NULL) {
         HASH_DEL(t->task_table, rtask);
         free(rtask);
@@ -405,7 +417,7 @@ void remote_task_place(tboard_t *t, remote_task_t *rtask)
     if (t == NULL || rtask == NULL)
         return;
 
-    twheel_add_event(t, TW_EVENT_REXEC_TIMEOUT, &(rtask->task_id), REXEC_TIMEOUT);
+    twheel_add_event(t, TW_EVENT_REXEC_TIMEOUT, clone_taskid(&(rtask->task_id)), REXEC_TIMEOUT);
     switch (rtask->level) {
         case ALL_LEVELS:
             send_command_to_server(cn->devserv->mqtt);

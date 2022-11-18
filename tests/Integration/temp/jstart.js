@@ -1,12 +1,12 @@
 
-  const minicore = require('./core/minicore');
-  const jaminit = require('./core/jaminit');
-  const JAMCore = require('./core/jamcore');
+  const minicore = require('core/minicore');
+  const jaminit = require('core/jaminit');
+  const JAMCore = require('core/jamcore');
 
   
         const mbox = new Map();
 
-        mbox.set("you", {arg_sig: "x", side_eff: false, cond: ""});
+        mbox.set("you", {func: "you", arg_sig: "x", side_eff: true, results: false, reuse: false, cond: ""});
         
   
   const conds = new Map();
@@ -21,7 +21,6 @@
       var jsys = await jaminit.run();
       var jcore = new JAMCore(jsys);
       jcore.registerFuncs(mbox);
-      jcore.registerConds(conds);
       await jcore.run();
       jcore.addWorker(ports.app);
   }

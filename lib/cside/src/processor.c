@@ -110,12 +110,13 @@ void execute_cmd(server_t *s, function_t *f, command_t *cmd)
 bool msg_processor(void *serv, command_t *cmd)
 {
     function_t *f;
-    remote_task_t *rtask = NULL;
     server_t *s = (server_t *)serv;
     cnode_t *c = s->cnode;
     tboard_t *t = (tboard_t *)(c->tboard);
     command_t *rcmd;
     int k;
+    struct queue_entry *e = NULL;
+    internal_command_t *ic;
     // when a message is received, it interprets message and adds to respective queue
     switch (cmd->cmd)
     {
@@ -217,70 +218,17 @@ bool msg_processor(void *serv, command_t *cmd)
         return true;
 
     case CmdNames_REXEC_ACK:
-        // find the task
-        printf("Ack received for .. %ld\n", cmd->task_id);
-        HASH_FIND_INT(t->task_table, &(cmd->task_id), rtask);
-        if (rtask != NULL)
-        {
-            // remove the timeout entry
-            twheel_delete_timeout(t, &(rtask->task_id));
-            rtask->status = RTASK_ACK_RECEIVED;
-            // blocking task - put back the timeout at a future time
-            if (rtask->mode == TASK_MODE_REMOTE) {
-                rtask->status = RTASK_RES_PENDING;
-                twheel_add_event(t, TW_EVENT_REXEC_TIMEOUT, &(rtask->task_id), getcurtime() + globals_Timeout_REXEC_ACK_TIMEOUT);
-            } else {
-                // if not blocking, remove it from the task table and destroy the remote task entry
-                HASH_DEL(t->task_table, rtask);
-                printf("Destroy.. remote task %ld\n", rtask->task_id);
-                remote_task_destroy(rtask);
-            }
-        }
-        return true;
-
-    case CmdNames_REXEC_RES:
-        // find the task
-        HASH_FIND_INT(t->task_table, &(cmd->task_id), rtask);
-        if (rtask != NULL)
-        {
-            // remove the timeout entry
-            twheel_delete_timeout(t, &(rtask->task_id));
-            rtask->data = command_args_clone(cmd->args);
-            rtask->data_size = 1;
-            if (rtask->calling_task != NULL)
-            {
-                rtask->status = RTASK_COMPLETED;
-                assert(mco_push(rtask->calling_task->ctx, rtask, sizeof(remote_task_t)) == MCO_SUCCESS);
-                // place parent task back to appropriate queue
-                task_place(t, rtask->calling_task);
-            }
-        }
-        else
-            printf("Not found the task entry.. \n");
+    case CmdNames_REXEC_RES:    
+    case CmdNames_REXEC_ERR:
+        ic = internal_command_new(cmd);
+        e = queue_new_node(ic);
+        pthread_mutex_lock(&t->iqmutex);
+        queue_insert_tail(&(t->iq), e);
+        pthread_mutex_unlock(&t->iqmutex);
         command_free(cmd);
         return true;
 
-    case CmdNames_REXEC_ERR:
-        // find the task
-        HASH_FIND_INT(t->task_table, &(cmd->task_id), rtask);
-        if (rtask != NULL)
-        {
-            // remove the timeout entry
-            twheel_delete_timeout(t, &(rtask->task_id));
-            if (rtask->calling_task != NULL)
-            {
-                rtask->status = RTASK_ERROR;
-                assert(mco_push(rtask->calling_task->ctx, rtask, sizeof(remote_task_t)) == MCO_SUCCESS);
-                // place parent task back to appropriate queue
-                task_place(t, rtask->calling_task);
-            }
-            else {
-                // if not blocking, remove it from the task table and destroy the remote task entry
-                HASH_DEL(t->task_table, rtask);
-                remote_task_destroy(rtask);
-            }
-        }
-        return true;
+
 
     case CmdNames_PUT_SCHEDULE: 
         k = 0;

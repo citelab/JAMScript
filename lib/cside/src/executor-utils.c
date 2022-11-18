@@ -96,7 +96,6 @@ void process_timeout_event(tboard_t *t, void *arg)
     remote_task_t *rtask = NULL;
 
     if (arg != NULL) {
-        printf("Looking for %ld \n", *(long int *)arg);
         HASH_FIND_INT(t->task_table, ((long int *)arg), rtask);
         if (rtask != NULL)
         {

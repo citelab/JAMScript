@@ -31,7 +31,7 @@ void local_test3(char *name, char *g, char *h)
      //   printf("This is local test.. %d %s\n", i, h);
     //    task_yield();
         a = remote_sync_call(cn->tboard, "testfunc", "", 0, "ssi", "this is test 2 - hello", "world", i);
-        command_arg_free(a);
+        command_args_free(a);
         task_yield();
  //       remote_sync_call(cs->tboard, "addfloat", "", 0, "ff", 45.0, 545.03434);
 //        command_arg_print(a);
@@ -71,7 +71,7 @@ void *calllocal_test3(context_t ctx)
     (void)ctx;
     arg_t *t = (arg_t *)(task_get_args());
     local_test3(t[0].val.sval, t[1].val.sval, t[2].val.sval);
-    command_arg_free(t);
+    command_args_free(t);
     return NULL;
 }
 
@@ -80,7 +80,7 @@ void calllocal_test(context_t ctx)
     (void)ctx;
     arg_t *t = (arg_t *)(task_get_args());
     local_test(t[0].val.sval, t[1].val.sval, t[2].val.sval);
-    command_arg_free(t);
+    command_args_free(t);
 }
 
 char *give_value(char *str)

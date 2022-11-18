@@ -29,7 +29,7 @@ void calllocal_test(context_t ctx)
     (void)ctx;
     arg_t *t = (arg_t *)(task_get_args());
     local_test(t[0].val.sval, t[1].val.sval, t[2].val.sval);
-    command_arg_free(t);
+    command_args_free(t);
 }
 
 void calllocal_test2(context_t ctx)
@@ -37,7 +37,7 @@ void calllocal_test2(context_t ctx)
     (void)ctx;
     arg_t *t = (arg_t *)(task_get_args());
     local_test2(t[0].val.sval, t[1].val.sval, t[2].val.sval);
-    command_arg_free(t);
+    command_args_free(t);
 }
 
 int main(int argc, char *argv[]) 

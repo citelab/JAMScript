@@ -22,7 +22,7 @@ void calllocal_test3(context_t ctx)
     (void)ctx;
     arg_t *t = (arg_t *)(task_get_args());
     local_test3(t[0].val.sval, t[1].val.sval, t[2].val.sval);
-    command_arg_free(t);
+    command_args_free(t);
     count++;
     if (count == 500)
         exit(0);

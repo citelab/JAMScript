@@ -37,7 +37,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "command.h"
 #include <assert.h>
 
-
 static long id = 1;
 
 #define COPY_STRING(x, y, n)  do {       \
@@ -46,6 +45,22 @@ static long id = 1;
     else                                \
         strcpy(x, "");                  \
 } while (0)
+
+internal_command_t *internal_command_new(command_t *cmd)
+{
+    internal_command_t *icmd = (internal_command_t *)calloc(1, sizeof(internal_command_t));
+
+    icmd->cmd = cmd->cmd;
+    icmd->task_id = cmd->task_id;
+    icmd->args = command_args_clone(cmd->args);
+    return icmd;
+}
+
+void internal_command_free(internal_command_t *ic)
+{
+    command_args_free(ic->args);
+    free(ic);
+}
 
 /*
  * Return a command that includes a CBOR representation that can be sent out (a byte string)
@@ -407,7 +422,7 @@ void command_arg_inner_free(arg_t *arg)
     }
 }
 
-void command_arg_free(arg_t *arg) 
+void command_args_free(arg_t *arg) 
 {
     if (arg != NULL) {
         command_arg_inner_free(arg);
