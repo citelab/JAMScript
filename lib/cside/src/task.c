@@ -122,7 +122,6 @@ void task_place(tboard_t *t, task_t *task)
     } else {
         // task should be added to secondary ready queue
         int j = rand() % (t->sqs); // randomly select secondary queue
-        
         pthread_mutex_lock(&(t->smutex[j])); // lock secondary mutex
         struct queue_entry *task_q = queue_new_node(task); // create queue entry
         queue_insert_tail(&(t->squeue[j]), task_q); // insert queue entry to tail
@@ -314,7 +313,7 @@ arg_t *remote_task_create(tboard_t *tboard, char *command, int level, char *fn_a
             return NULL;
         }
         // check if task completed
-        if (rtask.status == TASK_COMPLETED) {
+        if (rtask.status == RTASK_COMPLETED) {
             remote_task_free(tboard, rtask.task_id);
             return rtask.data;
         } else {

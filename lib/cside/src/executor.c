@@ -316,8 +316,8 @@ void process_internal_queue(tboard_t *t)
     next = queue_peek_front(&t->iq);
     if (next)
         queue_pop_head(&t->iq);
-    pthread_mutex_lock(&t->iqmutex);
-    if (next)
+    pthread_mutex_unlock(&t->iqmutex);
+    if (next) 
         process_internal_command(t, next->data);
 }
 
@@ -343,6 +343,8 @@ void *executor(void *arg)
         // process the timing wheel events
         process_timing_wheel(tboard, &mode);
     //    mode = BATCH_MODE_EXEC;
+        if (mode == BATCH_MODE_EXEC)
+            process_internal_queue(tboard);
 
         //// define variables needed for each iteration
         struct queue_entry *next = NULL; // queue entry of ready queue
