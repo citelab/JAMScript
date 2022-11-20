@@ -6,7 +6,7 @@
   
         const mbox = new Map();
 
-        mbox.set("you", {func: "you", arg_sig: "x", side_eff: true, results: false, reuse: false, cond: ""});
+        mbox.set("compyou", {func: "compyou", arg_sig: "x", side_eff: true, results: true, reuse: false, cond: ""});
         
   
   const conds = new Map();

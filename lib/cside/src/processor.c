@@ -77,6 +77,9 @@ void exec_sync(context_t ctx)
             case INT_TYPE:
                 cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, node_id, "i", rv->val.ival);
                 break;
+            case LONG_TYPE:
+                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, node_id, "i", rv->val.lval);
+                break;
             case STRING_TYPE:
                 cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, node_id, "s", rv->val.sval);
                 break;
