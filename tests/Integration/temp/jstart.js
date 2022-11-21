@@ -6,12 +6,13 @@
   
         const mbox = new Map();
 
-        mbox.set("compyou", {func: "compyou", arg_sig: "x", side_eff: true, results: false, reuse: false, cond: ""});
+        mbox.set("compyou", {func: "compyou", arg_sig: "x", side_eff: true, results: true, reuse: false, cond: "fogonly"});
         
   
   const conds = new Map();
   
-  
+  conds.set("fogonly", {source: `jsys.type == 'fog'`});
+conds.set("typeAonly", {source: `jsys.tag == 'typeA'`});
   
 
   async function launch()

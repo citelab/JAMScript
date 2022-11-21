@@ -15,6 +15,6 @@
 
 #define milestone_log(X)
 #define jsleep(X)               sleep_task_create(cnode->tboard, X)
-
+#define define_condition(X, Y, Z)
 
 #endif

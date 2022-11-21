@@ -1,12 +1,6 @@
-
-jcond {
-    fogonly: jsys.type == "fog";
-    typeAonly: jsys.tag == "typeA";
-}
-
 let count = 10;
 
-jtask {fogonly} function compyou(str) {
+jtask function compyou(str) {
     count++;
     console.log("Compyou running.... ",  count, str);
     let qq = count * count;
@@ -15,7 +9,7 @@ jtask {fogonly} function compyou(str) {
 }
 
 setInterval(()=> {
-    console.log("Calling compyou.. ", jsys);
+    console.log("Calling compyou.. ");
     let x = compyou(" String = " + count++); // --> let x = jworklib.machExecuteRV("compyou", ...)
     x.then((y)=> {
         console.log("Return value ", y);
