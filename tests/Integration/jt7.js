@@ -15,7 +15,7 @@ jtask {fogonly} function compyou(str) {
 }
 
 setInterval(()=> {
-    console.log("Calling compyou.. ", jsys);
+    console.log("Calling compyou.. ");
     let x = compyou(" String = " + count++); // --> let x = jworklib.machExecuteRV("compyou", ...)
     x.then((y)=> {
         console.log("Return value ", y);
