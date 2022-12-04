@@ -78,7 +78,7 @@ void cnode_topics_destroy(topics_t *t);
 server_t *cnode_create_mbroker(cnode_t *cn, enum levels level, char *server_id, char *host, int port, char *topics[], int ntopics);
 void cnode_recreate_mbroker(server_t *serv, enum levels level, char *server_id, char *host, int port, char *topics[], int ntopics);
 
-broker_info_t *cnode_scanj(int groupid);
+broker_info_t *cnode_scanj(int groupid, int port);
 
 
 cnode_t *cnode_init(int argc, char **argv); 

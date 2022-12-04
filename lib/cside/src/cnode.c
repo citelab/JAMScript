@@ -68,21 +68,26 @@ void cnode_recreate_mbroker(server_t *serv, enum levels level, char *server_id, 
     serv->mqtt = setup_mqtt_adapter(serv, level, host, port, topics, ntopics);
 }
 
-broker_info_t *cnode_scanj(int groupid) {
+broker_info_t *cnode_scanj(int groupid, int port) {
     char mgroup[32];
     int count = 5;
     broker_info_t *bi = NULL;
 
     sprintf(mgroup, "%s.%d", Multicast_PREFIX, groupid);
+    printf("AAAAAA 1   == %s\n", mgroup);
+
     mcast_t *m = multicast_init(mgroup, Multicast_SENDPORT, Multicast_RECVPORT);
+    printf("AAAAAA 2 \n");
     // TODO: Fix this line.. and make it compatible with the protocol on Notion
-    command_t *smsg = command_new(CmdNames_WHERE_IS_CTRL, 0, "", 0, "", "si", "127.0.0.1", 1883);
+    command_t *smsg = command_new(CmdNames_WHERE_IS_CTRL, 0, "", 0, "", "si", "127.0.0.1", port);
     multicast_setup_recv(m);
     multicast_send(m, smsg->buffer, smsg->length);
+    printf("AAAAAA 3 \n");
     while (count > 0 && (multicast_check_receive(m) == 0)) {
         multicast_send(m, smsg->buffer, smsg->length);
         count--;
     }
+    printf("AAAAAA 4 \n");
     if (count > 0) {
         unsigned char buf[1024];
         multicast_receive(m, buf, 1024);
@@ -94,6 +99,7 @@ broker_info_t *cnode_scanj(int groupid) {
         }
         command_free(rmsg);
     }
+    printf("AAAAAA 5 \n");
     command_free(smsg);
 
     return bi;
@@ -134,7 +140,7 @@ cnode_t *cnode_init(int argc, char **argv){
     }
 
     // find the J node info by UDP scanning
-    cn->devinfo = cnode_scanj(1);
+    cn->devinfo = cnode_scanj(cn->args->groupid, cn->args->port);
     if (cn->devinfo == NULL ) {
         cnode_destroy(cn);
         terminate_error(true, "cannot find the device j server");
@@ -145,7 +151,7 @@ cnode_t *cnode_init(int argc, char **argv){
         cnode_destroy(cn);
         terminate_error(true, "cannot create the task board");
     }
-
+    
     mqtt_lib_init();
 
     // Connect to the J server (MQTT), we don't have a server_id for the device, which is fine.
@@ -157,10 +163,10 @@ cnode_t *cnode_init(int argc, char **argv){
     cn->eservnum = 0;
     cn->cloudserv = NULL;
     cn->countdown = COUNTDOWN_VALUE;
-
+    
     cnode_setup_jcond(cn->args->tags);
     tboard_start(cn->tboard);
-
+    
     return cn;
 }
 

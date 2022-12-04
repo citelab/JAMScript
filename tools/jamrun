@@ -119,9 +119,9 @@ dojamout_p1() {
 dojamout_p2() {
 
     if [ -z $bg ]; then
-        dojamout_p2_fg $1 $2 $3
+        dojamout_p2_fg $1 $2 $3 $4
     else
-        dojamout_p2_bg $1 $2 $3
+        dojamout_p2_bg $1 $2 $3 $4
     fi
 }
 
@@ -147,8 +147,9 @@ dojamout_p2_fg() {
     local type=$1
     local pnum=$2
     local floc=$3
+    local group=$4
 
-    buildjargs "--app=$jappid" "--port=$pnum" "--data=$data" "--tags=$tags" "--iflow=$iflow" "--oflow=$oflow" "--link=$link" "--long=$long" "--lat=$lat"
+    buildjargs "--app=$jappid" "--port=$pnum" "--group=$group" "--data=$data" "--tags=$tags" "--iflow=$iflow" "--oflow=$oflow" "--link=$link" "--long=$long" "--lat=$lat"
     local args=$results
     case $type in
         cloud)
@@ -186,8 +187,9 @@ dojamout_p2_bg() {
     local type=$1
     local pnum=$2
     local floc=$3
+    local group=$4
 
-    buildjargs "--app=$jappid" "--port=$pnum" "--data=$data" "--tags=$tags" "--iflow=$iflow" "--oflow=$oflow" "--link=$link" "--long=$long" "--lat=$lat"
+    buildjargs "--app=$jappid" "--port=$pnum" "--group=$group" "--data=$data" "--tags=$tags" "--iflow=$iflow" "--oflow=$oflow" "--link=$link" "--long=$long" "--lat=$lat"
     local args=$results
 
     if [ `uname` == "Linux" ]; then
@@ -204,6 +206,7 @@ doaout() {
     local counter=1
     local num=$1
     local port=$2
+    local group=$3
 
     if [ -e a.out ]; then
         chmod +x a.out
@@ -212,7 +215,7 @@ doaout() {
     while [ $counter -le $num ]; do
         if [ -e a.out ]; then
             # execute the program.. we are in the folder..
-            buildcargs "-a=$jappid" "-p=$port" "-n=$counter" "-t=$tags" 
+            buildcargs "-a=$jappid" "-p=$port" "-n=$counter" "-g=$group" "-t=$tags" 
             local cargs=$results
             if [ -z $log ]; then
                 $TMUX new-session -s $tmuxapp-$counter -d  "./a.out $cargs"
@@ -677,13 +680,14 @@ if [ -e "$file" ]; then
                     [[ $porttaken == 1 ]] || break
                     ((iport++))
                 done
+                group="$((iport-1882))"
                 create_missingdir $folder/$iport
                 create_conffile "${folder}/${iport}/mqtt.conf"  $iport
                 getappid $jamfolder $folder/$iport $app
                 dojamout_p1 $type $iport $folder
                 setuptmux $folder/$iport
-                doaout $num $iport
-                dojamout_p2 $type $iport $folder
+                doaout $num $iport $group
+                dojamout_p2 $type $iport $folder $group
                 if [ -z $bg ]; then
                     cleanuptmux
                 fi
