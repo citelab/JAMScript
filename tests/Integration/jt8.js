@@ -1,19 +1,15 @@
 let count = 10;
 
-jtask function compyou(str) {
-    count++;
-    console.log("Compyou running.... ",  count, str);
-    let qq = count * count;
-    console.log("Value I am returning..... to the other side == ", qq);
-    return qq;
+jcond {
+    fogonly: jsys.type == "fog";
+    typeAonly: jsys.tag == "typeA";
 }
 
+
 setInterval(()=> {
-    console.log("Calling compyou.. ");
-    let x = compyou(" String = " + count++); // --> let x = jworklib.machExecuteRV("compyou", ...)
-    x.then((y)=> {
-        console.log("Return value ", y);
-    });
+    console.log("Calling answer me .... ");
+    answerme("String -- " + count);
+    count++;
 }, 1000);
 
 

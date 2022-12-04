@@ -8,6 +8,7 @@
 #include "../src/calls.h"
 #include "../src/constants.h"
 #include "../src/tboard.h"
+#include "../src/jcond.h"
 
 #include "minicoro.h"
 #include "utarray.h"
@@ -15,6 +16,5 @@
 
 #define milestone_log(X)
 #define jsleep(X)               sleep_task_create(cnode->tboard, X)
-#define define_condition(X, Y, Z)
 
 #endif

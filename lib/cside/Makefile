@@ -16,7 +16,7 @@ CFLAGS	:= -g -pthread -Wall -fsanitize=address -fno-omit-frame-pointer -O1
 # define library paths in addition to /usr/lib
 #   if I wanted to include libraries not in /usr/lib I'd specify
 #   their path using -Lpath, something like:
-LFLAGS = -lm -lmosquitto -ltinycbor 
+LFLAGS = -lm -lmosquitto -ltinycbor -lmujs
 
 # define output directory
 OUTPUT	:= output

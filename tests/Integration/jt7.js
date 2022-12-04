@@ -20,6 +20,6 @@ setInterval(()=> {
     x.then((y)=> {
         console.log("Return value ", y);
     });
-}, 1000);
+}, 3000);
 
 

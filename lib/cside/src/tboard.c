@@ -280,6 +280,7 @@ void tboard_register_func(tboard_t *t, function_t fn) {
     f->fn_name = strdup(fn.fn_name);
     f->fn_sig = strdup(fn.fn_sig);
     f->tasktype = fn.tasktype;
+    f->cond = strdup(fn.cond);
     HASH_ADD_KEYPTR(hh, t->registry, f->fn_name, strlen(f->fn_name), f);
 }
 
@@ -299,7 +300,8 @@ void destroy_func_registry(tboard_t *t) {
         HASH_DEL(t->registry, currf);  /* delete; t->registry advances to next */
         free((void *)currf->fn_name);
         free((void *)currf->fn_sig);
-        free(currf);
+        free((void *)currf->cond);
+        free((void *)currf);
     }
 }
 

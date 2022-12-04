@@ -2,6 +2,7 @@
 #include "calls.h"
 #include "tboard.h"
 #include "core.h"
+#include "jcond.h"
 #include "mqtt_adapter.h"
 
 int compute_level(int cv)
@@ -101,19 +102,20 @@ void local_async_call(tboard_t *t, char *cmd_func, ...)
     arg_t *qargs;
 
     function_t *f = tboard_find_func(t, cmd_func);
-    if (f == NULL)
-    {
+    if (f == NULL) {
         printf("ERROR! Function %s not available for execution\n", cmd_func);
         return;
     }
-    const char *fmask = f->fn_sig;
-    if (strlen(fmask) > 0)
-    {
-        va_start(args, cmd_func);
-        res = command_qargs_alloc(fmask, &qargs, args);
-        va_end(args);
-        task_create(t, *f, qargs, NULL);
+
+    if (jcond_evaluate(f->cond)) {
+        const char *fmask = f->fn_sig;
+        if (strlen(fmask) > 0) {
+            va_start(args, cmd_func);
+            res = command_qargs_alloc(fmask, &qargs, args);
+            va_end(args);
+            task_create(t, *f, qargs, NULL);
+        }
+        else
+            task_create(t, *f, NULL, NULL);
     }
-    else
-        task_create(t, *f, NULL, NULL);
 }

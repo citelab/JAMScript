@@ -8,6 +8,7 @@
 #include "constants.h"
 #include "cnode.h"
 #include "tboard.h"
+#include "jcond.h"
 
 
 arg_t *command_arg_clone_special(arg_t *arg, char *fname, long int taskid, char *nodeid, void *serv) 
@@ -110,7 +111,7 @@ void execute_cmd(server_t *s, function_t *f, command_t *cmd)
 }
 
 // TODO: consider adding function to add task_t task so we dont have to do this both here and task_create
-bool msg_processor(void *serv, command_t *cmd)
+void msg_processor(void *serv, command_t *cmd)
 {
     function_t *f;
     server_t *s = (server_t *)serv;
@@ -131,7 +132,7 @@ bool msg_processor(void *serv, command_t *cmd)
             rcmd = command_new(CmdNames_GET_CLOUD_FOG_INFO, 0, "", 0, c->core->device_id, "i", 0);
             mqtt_publish(s->mqtt, c->topics->requesttopic, rcmd->buffer, rcmd->length, rcmd, 0);
         }
-        return true;
+        return;
 
     case CmdNames_PUT_CLOUD_FOG_INFO:
         // use the information to register a edge or cloud server or deregister one.
@@ -176,7 +177,7 @@ bool msg_processor(void *serv, command_t *cmd)
                 }
             break;
         }
-        return true;
+        return;
 
     case CmdNames_PING:
         // send the PONG back to device J
@@ -192,7 +193,7 @@ bool msg_processor(void *serv, command_t *cmd)
             rcmd = command_new(CmdNames_GET_CLOUD_FOG_INFO, 0, "", 0, c->core->device_id, "i", 1);
             mqtt_publish(s->mqtt, c->topics->requesttopic, rcmd->buffer, rcmd->length, rcmd, 0);
         }
-        return true;
+        return;
 
     case CmdNames_STOP:
         // Stop the node... 
@@ -201,7 +202,7 @@ bool msg_processor(void *serv, command_t *cmd)
         // kill tboard?
         // Do some memory release?
 
-        return true;
+        return;
 
     case CmdNames_REXEC:
         // find the function
@@ -211,17 +212,20 @@ bool msg_processor(void *serv, command_t *cmd)
             send_err_msg(s, cmd->node_id, cmd->task_id);
             // send REXEC_ERR to the controller that sent the request
             command_free(cmd);
-            return false;
-        } else
+            return;
+        } else if (jcond_evaluate(f->cond) != true) {
+            send_nak_msg(s, cmd->node_id, cmd->task_id);
+            return;
+        } else 
             // send the REXEC_ACK to the controller that sent the request
             send_ack_msg(s, cmd->node_id, cmd->task_id, ((cmd->subcmd == 0) ? 0: globals_Timeout_REXEC_ACK_TIMEOUT));
 
         // cmd is freed after the task is completed.. otherwise we will create a memory fault
         execute_cmd(s, f, cmd);
-        return true;
+        return;
 
     case CmdNames_REXEC_ACK:
-    case CmdNames_REXEC_RES:    
+    case CmdNames_REXEC_RES:
     case CmdNames_REXEC_ERR:
         ic = internal_command_new(cmd);
         e = queue_new_node(ic);
@@ -229,9 +233,7 @@ bool msg_processor(void *serv, command_t *cmd)
         queue_insert_tail(&(t->iq), e);
         pthread_mutex_unlock(&t->iqmutex);
         command_free(cmd);
-        return true;
-
-
+        return;
 
     case CmdNames_PUT_SCHEDULE: 
         k = 0;
@@ -251,10 +253,10 @@ bool msg_processor(void *serv, command_t *cmd)
         }
         pthread_mutex_unlock(&t->schmutex);
         command_free(cmd);
-        return true;
+        return;
     default:
         tboard_err("msg_processor: Invalid message type encountered: %d\n", cmd->cmd);
-        return false;
+        return;
     }
 }
 
@@ -271,6 +273,14 @@ void send_ack_msg(void *serv, char *node_id, long int task_id, int timeout)
     server_t *s = (server_t *)serv;
     cnode_t *c = s->cnode;
     command_t *cmd = command_new(CmdNames_REXEC_ACK, 0, "", task_id, node_id, "i", timeout);
+    mqtt_publish(s->mqtt, c->topics->replytopic, cmd->buffer, cmd->length, cmd, 0);
+}
+
+void send_nak_msg(void *serv, char *node_id, long int task_id)
+{
+    server_t *s = (server_t *)serv;
+    cnode_t *c = s->cnode;
+    command_t *cmd = command_new(CmdNames_REXEC_NAK, 0, "", task_id, node_id, "i", CmdNames_COND_FALSE);
     mqtt_publish(s->mqtt, c->topics->replytopic, cmd->buffer, cmd->length, cmd, 0);
 }
 

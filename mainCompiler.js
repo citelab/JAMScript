@@ -207,7 +207,7 @@ function compile(code, verbose) {
     );
 
     try {
-      var command = `clang -g ${tmpDir}/jamout.c -o ${tmpDir}/a.out -I/usr/local/include -I${homedir}/.jamruns/clib/include -I${homedir}/.jamruns/clib/src ${options} -pthread -ltinycbor -lmosquitto ${homedir}/.jamruns/clib/libjam.a -L/usr/local/lib`;
+      var command = `clang -g ${tmpDir}/jamout.c -o ${tmpDir}/a.out -I/usr/local/include -I${homedir}/.jamruns/clib/include -I${homedir}/.jamruns/clib/src ${options} -pthread -ltinycbor -lmosquitto -lmujs ${homedir}/.jamruns/clib/libjam.a -L/usr/local/lib`;
       console.log("Compiling C code...");
       if (verbose) {
         console.log(command);

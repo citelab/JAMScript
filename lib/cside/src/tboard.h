@@ -781,7 +781,7 @@ void task_destroy(task_t *task);
 //////////////////////////////////////////////////
 
 
-bool msg_processor(void *serv, command_t *cmd);
+void msg_processor(void *serv, command_t *cmd);
 /**
  * msg_processor() - Handles message issued remotely by MQTT
  * @serv:   server_t pointer to server interface
@@ -806,7 +806,7 @@ bool msg_processor(void *serv, command_t *cmd);
 
 void send_err_msg(void *serv, char *node_id, long int task_id);
 void send_ack_msg(void *serv, char *node_id, long int task_id, int timeout);
-
+void send_nak_msg(void *serv, char *node_id, long int task_id);
 
 ////////////////////////////////////////////////////////////////
 /////////////////// Task history functionality /////////////////

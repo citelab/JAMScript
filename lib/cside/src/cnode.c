@@ -7,6 +7,7 @@
 #include "command.h"
 #include "multicast.h"
 #include "calls.h"
+#include "jcond.h"
 #include <unistd.h>
 
 cnode_t *cn;
@@ -98,6 +99,21 @@ broker_info_t *cnode_scanj(int groupid) {
     return bi;
 }
 
+void cnode_setup_jcond(char *dstr) {
+
+    char tagstr[1024];
+    // Initialize the jconditional
+    jcond_init();
+    jcond_eval_str("var jsys = {type: 'device'};");
+
+    if (dstr != NULL && strlen(dstr) > 0)
+    {
+        sprintf(tagstr, "jsys.tag = '%s';", dstr);
+        jcond_eval_str(tagstr);
+    }
+    jcond_eval_str("function jcondContext(a) { return eval(a); }");
+}
+
 cnode_t *cnode_init(int argc, char **argv){
     cnode_t *cn = (cnode_t *)calloc(1, sizeof(cnode_t));
 
@@ -141,6 +157,8 @@ cnode_t *cnode_init(int argc, char **argv){
     cn->eservnum = 0;
     cn->cloudserv = NULL;
     cn->countdown = COUNTDOWN_VALUE;
+
+    cnode_setup_jcond(cn->args->tags);
     tboard_start(cn->tboard);
 
     return cn;
