@@ -64,15 +64,6 @@ cleanup() {
 }
 
 
-check_jamhome() {
-
-    if [ -e jview.json ]; then
-        if [ -z `printenv JAMHOME` ]; then
-            die "JAMHOME not set. Point JAMHOME to JAMScript installation and restart."
-        fi
-    fi
-}
-
 dojamout_p2_fg() {
     local type=$1
     local pnum=$2
@@ -89,25 +80,7 @@ dojamout_p2_fg() {
             node jamout.js $args
             ;;
         device)
-            check_jamhome
-            (
-                if [ -e jview.json ]; then
-                    node $JAMHOME/lib/jview/Compiler.js jview.json
-                    cp -R $JAMHOME/lib/jview/templates/electron electron
-                    cd app
-                    node index.js &
-                    sleep 2
-                    cd ../electron
-                    electron .
-                fi
-            ) &
-            echo $! > $floc/$pnum/jviewshell
             node jamout.js $args
-            vpid=`cat $floc/$pnum/jviewshell`
-            local pid=`ps -o pid= -p $vpid`
-            if [ ! -z $pid ]; then
-                kill $pid
-            fi
             ;;
     esac
     echo ">>> Started the J node at port $pnum"

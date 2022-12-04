@@ -133,16 +133,6 @@ cleanup() {
 }
 
 
-check_jamhome() {
-
-    if [ -e jview.json ]; then
-        if [ -z `printenv JAMHOME` ]; then
-            die "JAMHOME not set. Point JAMHOME to JAMScript installation and restart."
-        fi
-    fi
-}
-
-
 dojamout_p2_fg() {
     local type=$1
     local pnum=$2
@@ -153,31 +143,13 @@ dojamout_p2_fg() {
     local args=$results
     case $type in
         cloud)
-            node --experimental-worker jstart.js $args
+            node jstart.js $args
             ;;
         fog)
-            node --experimental-worker jstart.js $args
+            node jstart.js $args
             ;;
         device)
-            check_jamhome
-            (
-                if [ -e jview.json ]; then
-                    node --experimental-worker $JAMHOME/lib/jview/Compiler.js jview.json
-                    cp -R $JAMHOME/lib/jview/templates/electron electron
-                    cd app
-                    node --experimental-worker index.js &
-                    sleep 2
-                    cd ../electron
-                    electron .
-                fi
-            ) &
-            echo $! > $floc/$pnum/jviewshell
-            node --experimental-worker jstart.js $args
-            vpid=`cat $floc/$pnum/jviewshell`
-            local pid=`ps -o pid= -p $vpid`
-            if [ ! -z $pid ]; then
-                kill $pid
-            fi
+            node jstart.js $args
             ;;
     esac
 }
@@ -193,9 +165,9 @@ dojamout_p2_bg() {
     local args=$results
 
     if [ `uname` == "Linux" ]; then
-        script -a -c "node --experimental-worker jstart.js $args" -f log.j > /dev/null &
+        script -a -c "node jstart.js $args" -f log.j > /dev/null &
     else
-        script -a -t 1 log.j node --experimental-worker jstart.js $args > /dev/null &
+        script -a -t 1 log.j node jstart.js $args > /dev/null &
     fi
 
     echo ">>> Started the J node in background"
