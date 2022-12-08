@@ -7,7 +7,9 @@ jcond {
 
 
 setInterval(()=> {
-    console.log("Calling answer me .... ");
+    console.log("Calling answer me .... ", jsys.tags);
+    console.log("Calling answer me .... ", jsys.long, jsys.lat);
+
     answerme("String -- " + count).catch((e)=> { console.log("Received... ", e)});
     count++;
 }, 1000);

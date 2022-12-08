@@ -65,17 +65,19 @@ the C side is crashing at the startup. The tmux console would not run when
 the program crash at startup. So the --log option allows us to see the
 program error messages.
 
-
-Usage: jamrun file.jxe [--app=appl_name] [--fog|--cloud] [--num=num_c_devs]
-                                    [--data=data-url]
-                                    [--tags=quoted_list_of_tags]
-                                    [--bg]
-                                    [--old]
-                                    [--iflow=flow_name]
-                                    [--oflow=flow_name]
-                                    [--log]
-                                    [--loc=long,lat]
-                                    [--link=random|near|best]
+Usage: jamrun file.jxe 
+                [--app=appl_name] 
+                [--fog|--cloud] 
+                [--num=num_c_devs]
+                [--data=data-url]
+                [--tags=quoted_list_of_tags]
+                [--bg]
+                [--old]
+                [--iflow=flow_name]
+                [--oflow=flow_name]
+                [--log]
+                [--loc=long,lat]
+                [--link=random|near|best]
 
 
 The jamrun command creates a run state in the $HOME/__jamrun folder.

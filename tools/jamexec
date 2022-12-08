@@ -28,12 +28,10 @@ Usage: jamexec file.jxe [--app=appl_name] [--fog|--cloud] [--num=num_c_devs]
 EOF
 }
 
-
 dojamout() {
     dojamout_p1 $1 $2 $3
     dojamout_p2 $1 $2 $3
 }
-
 
 dojamout_p1() {
     local type=$1
@@ -46,7 +44,6 @@ dojamout_p1() {
     echo "new" > $floc/$pnum/processId
 }
 
-
 dojamout_p2() {
 
     if [ -z $bg ]; then
@@ -56,13 +53,11 @@ dojamout_p2() {
     fi
 }
 
-
 cleanup() {
     reset
     cleanuptmux
     exit 1
 }
-
 
 dojamout_p2_fg() {
     local type=$1
@@ -86,8 +81,6 @@ dojamout_p2_fg() {
     echo ">>> Started the J node at port $pnum"
 }
 
-
-
 dojamout_p2_bg() {
     local type=$1
     local pnum=$2
@@ -97,7 +90,6 @@ dojamout_p2_bg() {
     node jamout.js $results &
     jpid=$!
 }
-
 
 doaout() {
     local counter=1
@@ -127,7 +119,6 @@ doaout() {
     done
 }
 
-
 setuptmux() {
 
     if [ -z $tmuxid ]; then
@@ -141,7 +132,6 @@ setuptmux() {
 
     trap cleanuptmux SIGINT
 }
-
 
 getappid() {
     local mainf=$1
@@ -158,15 +148,12 @@ getappid() {
     jappid=`cat $localf/appid`
 }
 
-
 cleanuptmux() {
     if [ ! -z $tmuxapp ]; then
         $TMUX kill-session -t $tmuxapp
     fi
     exit
 }
-
-
 
 # We are already in the correct foldler
 # We should find MANIFEST if there is a previous version in the current folder
