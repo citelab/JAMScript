@@ -14,13 +14,13 @@ jtask* function answerme_ctl(t, s) {
 
 setInterval(()=> {
     console.log("Tag..... ", jsys.tags);
-    if (jsys.type === 'device') {
+    if (jsys.type === 'fog') {
         long = (long + 5) % 170;
         jsys.setLoc({long: long, lat: lat});
-
         console.log("Longitude and Latitude .... ", jsys.long, jsys.lat);
     }
-    answerme_ctl(jsys.tags, "String -- " + count);
+
+    answerme_ctl(jsys.tags, "String -- " + count).catch((e)=> { console.log("Received... ", e)});
     count++;
 }, 2000);
 
