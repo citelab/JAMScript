@@ -148,6 +148,7 @@ void msg_processor(void *serv, command_t *cmd)
             case CmdNames_CLOUD_DEL_INFO:
                 // [cmd: PUT_CLOUD_FOG_INFO, subcmd: CLOUD_DEL_INFO, node_id: "cloud-id"]
                 if (strcmp(c->cloudserv->server_id, cmd->node_id) == 0) {
+                    printf("Deleting the cloud \n");
                     disconnect_mqtt_adapter(c->cloudserv->mqtt);
                 }
             break;
@@ -170,6 +171,7 @@ void msg_processor(void *serv, command_t *cmd)
                 // [cmd: PUT_CLOUD_FOG_INFO, subcmd: FOG_DEL_INFO, node_id: "fog-id"]
                 for (int i = 0; i < MAX_EDGE_SERVERS; i++) {
                     if (strcmp(c->edgeserv[i]->server_id, cmd->node_id) == 0) {
+                        printf("Deleting the fog .. %s\n", cmd->node_id);
                         disconnect_mqtt_adapter(c->edgeserv[i]->mqtt);
                         c->eservnum--;
                         break;
@@ -188,11 +190,11 @@ void msg_processor(void *serv, command_t *cmd)
 
         // if the node is not registered, start the count down to registration.. if the 
         // count do
-        if (c->countdown-- <= 0) {
-            c->countdown = COUNTDOWN_VALUE;
-            rcmd = command_new(CmdNames_GET_CLOUD_FOG_INFO, 0, "", 0, c->core->device_id, "i", 1);
-            mqtt_publish(s->mqtt, c->topics->requesttopic, rcmd->buffer, rcmd->length, rcmd, 0);
-        }
+        printf("CNState %d\n", c->cnstate);
+
+        if (c->cnstate == CNODE_NOT_REGISTERED) 
+            send_reg_msg(c->devserv, c->core->device_id, 0);
+
         return;
 
     case CmdNames_STOP:
@@ -284,3 +286,10 @@ void send_nak_msg(void *serv, char *node_id, long int task_id)
     mqtt_publish(s->mqtt, c->topics->replytopic, cmd->buffer, cmd->length, cmd, 0);
 }
 
+void send_reg_msg(void *serv, char *node_id, long int task_id) 
+{
+    server_t *s = (server_t *)serv;
+    cnode_t *c = s->cnode;
+    command_t *cmd = command_new(CmdNames_REGISTER, 0, "", task_id, node_id, "");
+    mqtt_publish(s->mqtt, c->topics->requesttopic, cmd->buffer, cmd->length, cmd, 0);
+}

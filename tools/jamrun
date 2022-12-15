@@ -12,6 +12,14 @@ die() {
     exit 1
 }
 
+# Determine the platform we are running on
+unameOut="$(uname -s)"
+case "${unameOut}" in
+    Linux*)     machine=Linux;;
+    Darwin*)    machine=Mac;;
+    *)          machine="UNKNOWN:${unameOut}"
+esac
+
 
 MOSQUITTO=`which mosquitto`
 MOSQUITTO_PUB=`which mosquitto_pub`
@@ -80,7 +88,7 @@ Usage: jamrun file.jxe
                 [--link=random|near|best]
 
 
-The jamrun command creates a run state in the $HOME/__jamrun folder.
+The jamrun command creates a run state in the $HOME/.jamruns folder.
 EOF
 }
 
@@ -94,7 +102,11 @@ startmqtt() {
     if [ $? -ne 0 ]; then
         echo "MQTT is not running at $port"
         echo "Attempting to start MQTT at $port"
-        nohup $MOSQUITTO -c $cfile &>/dev/null &
+        if [ $machine = Mac ]; then 
+            open -n -a $MOSQUITTO --stdout /dev/null --args -c $cfile
+        elif [ $machine = Linux ]; then 
+            nohup $MOSQUITTO -c $cfile &>/dev/null &
+        fi
     fi
 }
 

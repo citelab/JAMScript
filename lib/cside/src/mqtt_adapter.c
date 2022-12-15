@@ -41,10 +41,13 @@ void mqtt_disconnect_callback(struct mosquitto *mosq, void *udata, int res)
     if (res != 0) {
         terminate_error(false, "MQTT disconnect callback gave unexpected res: %d", res);
     }
+    printf("Here... \n");
     // add stuff maybe for udata
     if (serv->mqtt != NULL) 
         destroy_mqtt_adapter(serv->mqtt);
+    printf("Here again...\n");
     free(udata);
+    printf("Here again.. again.. \n");
     
 }
 
@@ -159,11 +162,14 @@ struct mqtt_adapter *setup_mqtt_adapter(void *serv, enum levels level, char *hos
 
 void destroy_mqtt_adapter(struct mqtt_adapter *ma) 
 {
-    
+    printf("One..\n");
     mosquitto_destroy(ma->mosq);
+        printf("Two..\n");
     utarray_free(ma->topics);
+        printf("Three ...\n");
     free(ma);
     mosquitto_lib_cleanup();
+        printf("Four ..\n");
 }
 
 void disconnect_mqtt_adapter(struct mqtt_adapter *ma) 

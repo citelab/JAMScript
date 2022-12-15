@@ -8,8 +8,8 @@ jcond {
 let long = jsys.long;
 let lat = jsys.lat;
 
-jtask* function answerme_ctl(t, s, x, y) {
-    console.log("Answer me called: ", s, " -- by -- ", t, x, y);
+jtask* function answerme_ctl(t, s) {
+    console.log("Answer me called: ", s, " -- by -- ", t);
 }
 
 setInterval(()=> {
@@ -20,8 +20,8 @@ setInterval(()=> {
         console.log("Longitude and Latitude .... ", jsys.long, jsys.lat);
     }
 
-    answerme_ctl(jsys.tags, "String -- " + count, 100, 1050).catch((e)=> { console.log("Received... ", e)});
+    answerme(jsys.type, "WHat is the count? - " + count).catch((e)=> { console.log("Received... ", e)});
     count++;
-}, 20);
+}, 3000);
 
 

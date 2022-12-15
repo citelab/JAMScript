@@ -74,20 +74,16 @@ broker_info_t *cnode_scanj(int groupid, int port) {
     broker_info_t *bi = NULL;
 
     sprintf(mgroup, "%s.%d", Multicast_PREFIX, groupid);
-    printf("AAAAAA 1   == %s\n", mgroup);
 
     mcast_t *m = multicast_init(mgroup, Multicast_SENDPORT, Multicast_RECVPORT);
-    printf("AAAAAA 2 \n");
     // TODO: Fix this line.. and make it compatible with the protocol on Notion
     command_t *smsg = command_new(CmdNames_WHERE_IS_CTRL, 0, "", 0, "", "si", "127.0.0.1", port);
     multicast_setup_recv(m);
     multicast_send(m, smsg->buffer, smsg->length);
-    printf("AAAAAA 3 \n");
     while (count > 0 && (multicast_check_receive(m) == 0)) {
         multicast_send(m, smsg->buffer, smsg->length);
         count--;
     }
-    printf("AAAAAA 4 \n");
     if (count > 0) {
         unsigned char buf[1024];
         multicast_receive(m, buf, 1024);
@@ -99,7 +95,6 @@ broker_info_t *cnode_scanj(int groupid, int port) {
         }
         command_free(rmsg);
     }
-    printf("AAAAAA 5 \n");
     command_free(smsg);
 
     return bi;
@@ -162,7 +157,7 @@ cnode_t *cnode_init(int argc, char **argv){
     }
     cn->eservnum = 0;
     cn->cloudserv = NULL;
-    cn->countdown = COUNTDOWN_VALUE;
+    cn->cnstate = CNODE_NOT_REGISTERED;
     
     cnode_setup_jcond(cn->args->tags);
     tboard_start(cn->tboard);

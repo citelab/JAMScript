@@ -7,7 +7,6 @@
 
 #define MAX_EDGE_SERVERS            16
 #define MAX_TOPICS                  16
-#define COUNTDOWN_VALUE             8
 
 typedef enum
 {
@@ -64,8 +63,7 @@ typedef struct cnode_t {
     server_t *cloudserv;
     broker_info_t *devinfo;
     int eservnum;
-    void *tboard;
-    int countdown;
+    void *tboard;    
 } cnode_t;
 
 
