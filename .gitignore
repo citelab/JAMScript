@@ -4,7 +4,7 @@ node_modules/*
 *.o
 *.a
 *.gch
-
+/tmp
 *.db
 
 .DS_Store
