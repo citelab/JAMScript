@@ -804,6 +804,7 @@ void msg_processor(void *serv, command_t *cmd);
  * indicate that @msg should be returned to the message queue. 
  */
 
+void send_close_msg(void *serv, char *node_id, long int task_id);
 void send_err_msg(void *serv, char *node_id, long int task_id);
 void send_ack_msg(void *serv, char *node_id, long int task_id, int timeout);
 void send_nak_msg(void *serv, char *node_id, long int task_id);

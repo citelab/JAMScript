@@ -27,6 +27,8 @@ topics_t *cnode_create_topics(char *app)
 
     sprintf(sbuf, "/%s/requests/up", app);
     t->requesttopic = strdup(sbuf);
+    sprintf(sbuf, "/%s/requests/down/c", app);
+    t->selfrequesttopic = strdup(sbuf);
     sprintf(sbuf, "/%s/replies/up", app);
     t->replytopic = strdup(sbuf);
 
@@ -134,6 +136,7 @@ cnode_t *cnode_init(int argc, char **argv){
         terminate_error(true, "cannot create the core");
     }
 
+    printf("AAAAAA\n");
     // find the J node info by UDP scanning
     cn->devinfo = cnode_scanj(cn->args->groupid, cn->args->port);
     if (cn->devinfo == NULL ) {
@@ -147,6 +150,7 @@ cnode_t *cnode_init(int argc, char **argv){
         terminate_error(true, "cannot create the task board");
     }
     
+    printf("AAAAAA\n");
     mqtt_lib_init();
 
     // Connect to the J server (MQTT), we don't have a server_id for the device, which is fine.
@@ -155,6 +159,7 @@ cnode_t *cnode_init(int argc, char **argv){
         cnode_destroy(cn);
         terminate_error(true, "cannot create MQTT broker");
     }
+        printf("AAAAAA\n");
     cn->eservnum = 0;
     cn->cloudserv = NULL;
     cn->cnstate = CNODE_NOT_REGISTERED;

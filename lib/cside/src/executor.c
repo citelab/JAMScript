@@ -193,7 +193,6 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
     //        get_snapshot(7);
         }
     } else if (status == MCO_DEAD) { // task has terminated
-    //    printf("Terminated.. \n");
         task->status = TASK_COMPLETED; // mark task as complete for history hash table
         // record task execution statistics into history hash table
         history_record_exec(tboard, task, &(task->hist)); 
@@ -221,19 +220,8 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
         }
         // if command object is specified, just free it. User data would be deallocated by itself
         
-        if (task->cmd_obj) {
+        if (task->cmd_obj) 
             command_free((command_t *)task->cmd_obj);       // FIXME: THis is conflicting with release in the wrapper
-            printf("Releasing the command object...\n");
-        }
-    //    else {
-            // FIXME: Arg free must be fixed. It is done in applications in the "wrapper"
-            // FIXME: Should it be done in application or here? What about command release in 197?
-            // Otherwise, check user data if specified and not null, we free it
-    //        if (task->data_size > 0 && task->desc.user_data != NULL)
-    //            free(task->desc.user_data);
-    //    }
-        // destroy context
-    //    printf("End of task .. \n");
         mco_destroy(task->ctx);
         // free task_t object
         free(task);
@@ -261,7 +249,6 @@ void process_internal_command(tboard_t *t, internal_command_t *ic)
             } else {
                 // if not blocking, remove it from the task table and destroy the remote task entry
                 HASH_DEL(t->task_table, rtask);
-                printf("Destroy.. remote task %ld\n", rtask->task_id);
                 remote_task_destroy(rtask);
             }
         }

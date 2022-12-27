@@ -7,7 +7,7 @@ jtask* localyou(int c, char *s) {
     }
 }
 
-jtask* {typeAonly} answerme(char *s, char *t) {
+jtask* answerme(char *s, char *t) {
     printf("\tSource : %s... -- %s\n", s, t);
 }
 

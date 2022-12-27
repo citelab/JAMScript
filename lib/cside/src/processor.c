@@ -160,9 +160,10 @@ void msg_processor(void *serv, command_t *cmd)
                             c->edgeserv[i] = cnode_create_mbroker(c, EDGE_LEVEL, cmd->node_id, cmd->args[0].val.sval, cmd->args[1].val.ival, c->topics->subtopics, c->topics->length);
                             c->eservnum++;
                             break;
-                        } else if (c->edgeserv[i]->state == SERVER_NOT_REGISTERED) {
+                        } else if (c->edgeserv[i]->state == SERVER_UNUSED) {
                             cnode_recreate_mbroker(c->edgeserv[i], EDGE_LEVEL, cmd->node_id, cmd->args[0].val.sval, cmd->args[1].val.ival, c->topics->subtopics, c->topics->length);
                             c->eservnum++;
+                            break;
                         }
                     }
                 }
@@ -171,9 +172,7 @@ void msg_processor(void *serv, command_t *cmd)
                 // [cmd: PUT_CLOUD_FOG_INFO, subcmd: FOG_DEL_INFO, node_id: "fog-id"]
                 for (int i = 0; i < MAX_EDGE_SERVERS; i++) {
                     if (strcmp(c->edgeserv[i]->server_id, cmd->node_id) == 0) {
-                        printf("Deleting the fog .. %s\n", cmd->node_id);
-                        disconnect_mqtt_adapter(c->edgeserv[i]->mqtt);
-                        c->eservnum--;
+                        send_close_msg(c->edgeserv[i], c->core->device_id, 0);
                         break;
                     }
                 }
@@ -190,8 +189,6 @@ void msg_processor(void *serv, command_t *cmd)
 
         // if the node is not registered, start the count down to registration.. if the 
         // count do
-        printf("CNState %d\n", c->cnstate);
-
         if (c->cnstate == CNODE_NOT_REGISTERED) 
             send_reg_msg(c->devserv, c->core->device_id, 0);
 
@@ -237,6 +234,10 @@ void msg_processor(void *serv, command_t *cmd)
         command_free(cmd);
         return;
 
+    case CmdNames_CLOSE_PORT:
+        disconnect_mqtt_adapter(s->mqtt);
+        return;
+
     case CmdNames_PUT_SCHEDULE: 
         k = 0;
         pthread_mutex_lock(&t->schmutex);
@@ -260,6 +261,14 @@ void msg_processor(void *serv, command_t *cmd)
         tboard_err("msg_processor: Invalid message type encountered: %d\n", cmd->cmd);
         return;
     }
+}
+
+void send_close_msg(void *serv, char *node_id, long int task_id)
+{
+    server_t *s = (server_t *)serv;
+    cnode_t *c = s->cnode;
+    command_t *cmd = command_new(CmdNames_CLOSE_PORT, 0, "", task_id, node_id, "");
+    mqtt_publish(s->mqtt, c->topics->selfrequesttopic, cmd->buffer, cmd->length, cmd, 0);
 }
 
 void send_err_msg(void *serv, char *node_id, long int task_id)

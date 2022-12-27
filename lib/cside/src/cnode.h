@@ -10,6 +10,7 @@
 
 typedef enum
 {
+    SERVER_UNUSED,
     SERVER_NOT_REGISTERED,
     SERVER_REG_SENT,
     SERVER_REGISTERED,
@@ -37,6 +38,7 @@ typedef struct _topics_t
 {
     char *subtopics[MAX_TOPICS];
     char *requesttopic;
+    char *selfrequesttopic;
     char *replytopic;
     int length;
 } topics_t;
