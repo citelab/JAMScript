@@ -85,7 +85,7 @@ Usage: jamrun file.jxe
                 [--oflow=flow_name]
                 [--log]
                 [--loc=long,lat]
-                [--link=random|near|best]
+                [--edge=num_edge_connections]
 
 
 The jamrun command creates a run state in the $HOME/.jamruns folder.
@@ -153,7 +153,7 @@ dojamout_p2_fg() {
     local floc=$3
     local group=$4
 
-    buildjargs "--app=$jappid" "--port=$pnum" "--group=$group" "--data=$data" "--tags=$tags" "--iflow=$iflow" "--oflow=$oflow" "--link=$link" "--long=$long" "--lat=$lat"
+    buildjargs "--app=$jappid" "--port=$pnum" "--group=$group" "--data=$data" "--tags=$tags" "--iflow=$iflow" "--oflow=$oflow" "--edge=$edge" "--long=$long" "--lat=$lat"
     local args=$results
     case $type in
         cloud)
@@ -175,7 +175,7 @@ dojamout_p2_bg() {
     local floc=$3
     local group=$4
 
-    buildjargs "--app=$jappid" "--port=$pnum" "--group=$group" "--data=$data" "--tags=$tags" "--iflow=$iflow" "--oflow=$oflow" "--link=$link" "--long=$long" "--lat=$lat"
+    buildjargs "--app=$jappid" "--port=$pnum" "--group=$group" "--data=$data" "--tags=$tags" "--iflow=$iflow" "--oflow=$oflow" "--edge=$edge" "--long=$long" "--lat=$lat"
     local args=$results
 
     if [ `uname` == "Linux" ]; then
@@ -293,7 +293,6 @@ cleanuptmux() {
 }
 
 
-
 startredis() {
 
     # Start redis with no protected-mode and at the port
@@ -399,9 +398,7 @@ old=
 porttaken=0
 tmuxid=
 log=
-iflow=
-oflow=
-link=random
+edge=1
 
 # generate the random longitude and lattitude values
 # use the --loc option to override these values
@@ -484,20 +481,6 @@ while :; do
         --num=)            # Handle the case of an empty
             die 'ERROR: "--num" requires a non-empty option argument.'
             ;;
-        --oflow)           # Takes an option argument; ensure it has been specified.
-            if [ "$2" ]; then
-                oflow=$2
-                shift
-            else
-                die 'ERROR: "--oflow" requires a non-empty option argument.'
-            fi
-            ;;
-        --oflow=?*)
-            oflow=${1#*=}     # Delete everything up to "=" and assign the remainder.
-            ;;
-        --oflow=)            # Handle the case of an empty
-            die 'ERROR: "--oflow" requires a non-empty option argument.'
-            ;;
         --loc)           # Takes an option argument; ensure it has been specified.
             if [ "$2" ]; then
                 getlonglat $2
@@ -513,33 +496,19 @@ while :; do
         --loc=)            # Handle the case of an empty
             die 'ERROR: "--loc" requires longitude and lattitude specification'
             ;;
-        --iflow)           # Takes an option argument; ensure it has been specified.
+        --edge)           # Takes an option argument; ensure it has been specified.
             if [ "$2" ]; then
-                iflow=$2
+                edge=$2
                 shift
             else
-                die 'ERROR: "--iflow" requires a non-empty option argument.'
+                die 'ERROR: "--edge" requires a non-empty option argument.'
             fi
             ;;
-        --iflow=?*)
-            iflow=${1#*=}     # Delete everything up to "=" and assign the remainder.
+        --edge=?*)
+            edge=${1#*=}     # Delete everything up to "=" and assign the remainder.
             ;;
-        --iflow=)            # Handle the case of an empty
-            die 'ERROR: "--iflow" requires a non-empty option argument.'
-            ;;
-        --link)           # Takes an option argument; ensure it has been specified.
-            if [ "$2" ]; then
-                link=$2
-                shift
-            else
-                die 'ERROR: "--link" requires a non-empty option argument.'
-            fi
-            ;;
-        --link=?*)
-            link=${1#*=}     # Delete everything up to "=" and assign the remainder.
-            ;;
-        --link=)            # Handle the case of an empty
-            die 'ERROR: "--link" requires a non-empty option argument.'
+        --edge=)            # Handle the case of an empty
+            die 'ERROR: "--edge" requires a non-empty option argument.'
             ;;
         --data)           # Takes an option argument; ensure it has been specified.
             if [ "$2" ]; then
@@ -598,8 +567,14 @@ done
 
 # Check necessary parameters and set defaults
 
-if [ "$type" != "device" ] && [ -n "$num" ]; then
-    die "number of devices can't be speciied for fog/cloud"
+if [ "$type" != "device" ]; then 
+    edge=
+    if [ -n "$num" ]; then
+        die "number of devices can't be speciied for fog/cloud"
+    fi
+    if [ -n "$edge" ]; then 
+        die "number of edge connections can't be specified for fog/cloud"
+    fi
 fi
 
 

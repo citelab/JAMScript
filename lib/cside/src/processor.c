@@ -153,6 +153,7 @@ void msg_processor(void *serv, command_t *cmd)
                 }
             break;
             case CmdNames_FOG_ADD_INFO:
+                printf("Adding a fog.... \n");
                 // [cmd: PUT_CLOUD_FOG_INFO, subcmd: FOG_ADD_INFO, node_id: "fog-id", args: [IP_addr, port_number]]
                 if (c->eservnum < MAX_EDGE_SERVERS/2) {
                     for (int i = 0; i < MAX_EDGE_SERVERS; i++) {
@@ -169,6 +170,7 @@ void msg_processor(void *serv, command_t *cmd)
                 }
             break;
             case CmdNames_FOG_DEL_INFO:
+                printf("Deleting a fog...\n");
                 // [cmd: PUT_CLOUD_FOG_INFO, subcmd: FOG_DEL_INFO, node_id: "fog-id"]
                 for (int i = 0; i < MAX_EDGE_SERVERS; i++) {
                     if (strcmp(c->edgeserv[i]->server_id, cmd->node_id) == 0) {
@@ -189,6 +191,7 @@ void msg_processor(void *serv, command_t *cmd)
 
         // if the node is not registered, start the count down to registration.. if the 
         // count do
+        printf("============= >> Eservnum %d\n", c->eservnum);
         if (c->cnstate == CNODE_NOT_REGISTERED) 
             send_reg_msg(c->devserv, c->core->device_id, 0);
 
