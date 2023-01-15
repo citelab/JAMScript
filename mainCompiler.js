@@ -86,7 +86,7 @@ function nativeCompile(code, cargs) {
             options = "-framework CoreFoundation";
         } else {
             // Linux
-            options = "-lm -lbsd";
+            options = "-lm";
         }
         if (cargs.debug) {
             options += " -fno-omit-frame-pointer -fsanitize=address";
