@@ -243,12 +243,16 @@ function preprocess(file, verbose) {
   contents = includes + "int main();\n" + contents;
 
   fs.writeFileSync(`${tmpDir}/pre.c`, contents);
+  //var command = `clang -E -P -I/usr/local/include -I${homedir}/.jamruns/jamhome/deps/fake_libc_include -I${homedir}/.jamruns/clib/include ${tmpDir}/pre.c`;
   var command = `clang -E -P -I/usr/local/include -I/usr/local/share/jam/deps/fake_libc_include -I/usr/local/share/jam/lib ${tmpDir}/pre.c`;
+  //var command = `clang -E -P -I/usr/local/include -I${homedir}/.jamruns/jamhome/deps/fake_libc_include -I/Users/maheswar/Programs/lib ${tmpDir}/pre.c`;
+  //var command = `clang -E -P -I/usr/local/include -I${homedir}/.jamruns/jamhome/deps/fake_libc_include -I/User/maheswar/Programs/lib ${tmpDir}/pre.c`;
   if (verbose) {
     console.log(command);
   }
 
   var preprocessedProg = child_process.execSync(command).toString();
+  fs.writeFileSync(`${tmpDir}/pre2.c`, preprocessedProg);
   var index = preprocessedProg.indexOf("int main();\n");
   var tmp = preprocessedProg.substring(0, index);
   var lineNumber = tmp.split("\n").length;

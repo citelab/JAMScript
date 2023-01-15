@@ -14,6 +14,6 @@ setInterval(()=> {
 
     answerme(jsys.type, "WHat is the count? - " + count).catch((e)=> { console.log("Received... ", e)});
     count++;
-}, 3000);
+}, 200);
 
 

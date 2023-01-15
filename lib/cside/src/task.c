@@ -7,7 +7,6 @@
 #include "command.h"
 #include "mqtt_adapter.h"
 #include "cnode.h"
-#include "snowflake.h"
 #include "constants.h"
 
 

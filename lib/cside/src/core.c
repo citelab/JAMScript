@@ -28,7 +28,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <sys/stat.h>
 #include "core.h"
 #include "uuid4.h"
-#include "snowflake.h"
 
 void core_setup(corestate_t *cs)
 {
@@ -94,7 +93,6 @@ corestate_t *core_init(int port, int serialnum)
     cs->serial_num = serialnum;
     cs->default_mqtt_port = port;
     core_setup(cs);
-    snowflake_init(02, cs->serial_num); 
     return cs;
 }
 
