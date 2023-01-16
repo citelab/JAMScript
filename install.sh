@@ -26,14 +26,14 @@ fi
 # install redis
 if ! command -v redis-cli &> /dev/null; then 
     echo "Redis not found: installing..."
-    sudo apt install redis-server
-    sudo apt install redis-tools
+    sudo apt install -y redis-server
+    sudo apt install -y redis-tools
 fi
 
 # install make
 if ! command -v make &> /dev/null; then 
     echo "Make not found: installing..."
-    sudo apt install make
+    sudo apt install -y make
 fi
 
 # install node
