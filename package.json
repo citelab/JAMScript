@@ -40,5 +40,5 @@
         "darwin",
         "linux"
     ],
-    "preferGlobal": true,
+    "preferGlobal": true
 }

@@ -12,6 +12,7 @@ fi
 if ! command -v mosquitto_pub &> /dev/null; then 
     echo "Mosquitto tools not found: installing..."
     sudo apt install -y mosquitto-clients
+    sudo apt install -y mosquitto
 fi
 
 # install unzip
@@ -23,7 +24,14 @@ fi
 # install redis
 if ! command -v redis-cli &> /dev/null; then 
     echo "Redis not found: installing..."
-    sudo apt install -y redis
+    sudo apt install redis-server
+    sudo apt install redis-tools
+fi
+
+# install make
+if ! command -v make &> /dev/null; then 
+    echo "Make not found: installing..."
+    sudo apt install make
 fi
 
 # install node
@@ -37,7 +45,6 @@ fi
 # install the necessary npm packages
 cd $SCRIPT_DIR
 npm install 
-
 
 # compile the cside 
 cd $SCRIPT_DIR/lib/cside
