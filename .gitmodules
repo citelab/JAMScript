@@ -1,3 +1,0 @@
-[submodule "deps/tinycbor"]
-	path = deps/deps/tinycbor
-	url = https://github.com/intel/tinycbor
