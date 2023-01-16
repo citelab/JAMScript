@@ -44,12 +44,16 @@ if ! command -v node &> /dev/null; then
     sudo apt install -y nodejs
 fi 
 
+
 #install tiny_cbor
 cd $SCRIPT_DIR/deps/tiny_cbor
 git clone https://github.com/intel/tinycbor
 cd tinycbor
 make 
 sudo make install 
+
+# install some libraries
+sudo apt install -y libmosquitto-dev
 
 # install the necessary npm packages
 cd $SCRIPT_DIR
