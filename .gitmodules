@@ -4,3 +4,6 @@
 [submodule "samples"]
 	path = samples
 	url = https://github.com/citelab/JAMSamples
+[submodule "deps/deps/tinycbor"]
+	path = deps/deps/tinycbor
+	url = https://github.com/intel/tinycbor
