@@ -46,10 +46,10 @@ fi
 
 #install tiny_cbor
 cd $SCRIPT_DIR/deps/tiny_cbor
-git clone https://github.com/intel/tiny_cbor
-cd tiny_cbor
+git clone https://github.com/intel/tinycbor
+cd tinycbor
 make 
-make install 
+sudo make install 
 
 # install the necessary npm packages
 cd $SCRIPT_DIR
