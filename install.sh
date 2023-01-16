@@ -2,6 +2,8 @@
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
+sudo apt update
+
 # install clang if not found
 if ! command -v clang &> /dev/null; then 
     echo "Clang not found: installing..."
