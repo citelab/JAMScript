@@ -35,8 +35,9 @@ if ! command -v node &> /dev/null; then
 fi 
 
 # install the necessary npm packages
-npm install jszip 
-npm install cbor-x
+cd $SCRIPT_DIR
+npm install 
+
 
 # compile the cside 
 cd $SCRIPT_DIR/lib/cside
