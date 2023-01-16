@@ -76,5 +76,11 @@ ln -s $SCRIPT_DIR/lib/cside clib
 ln -s $SCRIPT_DIR jamhome
 ln -s $SCRIPT_DIR/lib/jside node_modules
 
-echo "Install of JAMScript complete. Include ${SCRIPT_DIR}/tools in your executable path."
-
+echo
+echo 
+echo "====================================================="
+echo 
+echo "Install of JAMScript complete."
+echo 
+echo "Include ${SCRIPT_DIR}/tools in your executable path."
+echo "====================================================="
