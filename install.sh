@@ -52,6 +52,11 @@ cd tinycbor
 make 
 sudo make install 
 
+#install mujs
+cd $SCRIPT_DIR/deps/mujs2
+make 
+sudo make install
+
 # install some libraries
 sudo apt install -y libmosquitto-dev
 
