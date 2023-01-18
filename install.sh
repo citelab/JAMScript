@@ -76,6 +76,8 @@ ln -s $SCRIPT_DIR/lib/cside clib
 ln -s $SCRIPT_DIR jamhome
 ln -s $SCRIPT_DIR/lib/jside node_modules
 
+cd $SCRIPT_DIR
+
 echo
 echo 
 echo "====================================================="
