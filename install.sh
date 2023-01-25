@@ -26,43 +26,57 @@ if [ $machine = Linux ]; then
     echo "Installing JAMScript Version ${VERSION} on Linux....."
     echo 
     echo 
-    sudo apt update
+    
+    if [ -f "/etc/arch-release" ]; then
+        echo "Detected Arch"
+        PM_INSTALL="sudo pacman -S --needed"
+        MOSQUITTO="mosquitto"
+        REDIS="redis"
+
+        NODE_SETUP=":"
+        NODE="nodejs-lts-hydrogen"
+
+    else
+        PM_INSTALL="sudo apt-get install -y"
+        MOSQUITTO="mosquitto mosquitto-clients libmosquitto-dev"
+        REDIS="redis-server redis-tools"
+
+        NODE_SETUP="curl -sL https://deb.nodesource.com/setup_18.x -o /tmp/nodesource_setup.sh && sudo bash /tmp/nodesource_setup.sh"
+        NODE="nodejs"
+        sudo apt update
+    fi
+
     # install clang if not found
     if ! command -v clang &> /dev/null; then 
         echo "Clang not found: installing..."
-        sudo apt install -y clang
+        exec ${PM_INSTALL} clang
     fi
     # install mosquitto clients
     if ! command -v mosquitto_pub &> /dev/null; then 
         echo "Mosquitto tools not found: installing..."
-        sudo apt install -y mosquitto-clients
-        sudo apt install -y mosquitto
+        exec ${PM_INSTALL} ${MOSQUITTO}
     fi
     # install unzip
     if ! command -v unzip &> /dev/null; then 
         echo "Unzip not found: installing..."
-        sudo apt install -y unzip
+        exec ${PM_INSTALL} unzip
     fi
     # install redis
     if ! command -v redis-cli &> /dev/null; then 
         echo "Redis not found: installing..."
-        sudo apt install -y redis-server
-        sudo apt install -y redis-tools
+        exec ${PM_INSTALL} ${REDIS}
     fi
     # install make
     if ! command -v make &> /dev/null; then 
         echo "Make not found: installing..."
-        sudo apt install -y make
+        exec ${PM_INSTALL} make
     fi
     # install node
     if ! command -v node &> /dev/null; then 
         echo "Node JS not found: install ...."
-        curl -sL https://deb.nodesource.com/setup_18.x -o /tmp/nodesource_setup.sh
-        sudo bash /tmp/nodesource_setup.sh
-        sudo apt install -y nodejs
+        exec ${NODE_SETUP}
+        exec ${PM_INSTALL} ${NODE}
     fi 
-    # install some libraries
-    sudo apt install -y libmosquitto-dev
 
 elif [ $machine = Mac ]; then 
     echo 
@@ -76,6 +90,11 @@ elif [ $machine = Mac ]; then
         echo "JAMScript install needs Homebrew. You can install Homebrew from -- https://brew.sh "
         echo "Rerun JAMScript after installing Homebrew."
         exit 1
+    fi
+    # install wget
+    if ! command -v wget &> /dev/null; then 
+        echo "Wget not found: installing..."
+        brew install wget
     fi
     # install node
     if ! command -v node &> /dev/null; then 
