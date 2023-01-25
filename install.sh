@@ -49,33 +49,33 @@ if [ $machine = Linux ]; then
     # install clang if not found
     if ! command -v clang &> /dev/null; then 
         echo "Clang not found: installing..."
-        exec ${PM_INSTALL} clang
+        eval ${PM_INSTALL} clang
     fi
     # install mosquitto clients
     if ! command -v mosquitto_pub &> /dev/null; then 
         echo "Mosquitto tools not found: installing..."
-        exec ${PM_INSTALL} ${MOSQUITTO}
+        eval ${PM_INSTALL} ${MOSQUITTO}
     fi
     # install unzip
     if ! command -v unzip &> /dev/null; then 
         echo "Unzip not found: installing..."
-        exec ${PM_INSTALL} unzip
+        eval ${PM_INSTALL} unzip
     fi
     # install redis
     if ! command -v redis-cli &> /dev/null; then 
         echo "Redis not found: installing..."
-        exec ${PM_INSTALL} ${REDIS}
+        eval ${PM_INSTALL} ${REDIS}
     fi
     # install make
     if ! command -v make &> /dev/null; then 
         echo "Make not found: installing..."
-        exec ${PM_INSTALL} make
+        eval ${PM_INSTALL} make
     fi
     # install node
     if ! command -v node &> /dev/null; then 
         echo "Node JS not found: install ...."
-        exec ${NODE_SETUP}
-        exec ${PM_INSTALL} ${NODE}
+        eval ${NODE_SETUP}
+        eval ${PM_INSTALL} ${NODE}
     fi 
 
 elif [ $machine = Mac ]; then 
@@ -129,8 +129,8 @@ elif [ $machine = Mac ]; then
 
 fi 
 
-#install tiny_cbor
-cd $SCRIPT_DIR/deps/tiny_cbor
+#install tinycbor
+cd $SCRIPT_DIR/deps/tinycbor
 git clone https://github.com/intel/tinycbor
 cd tinycbor
 make 

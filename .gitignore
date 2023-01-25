@@ -25,7 +25,8 @@ node_modules/*
 .sconf_temp
 config.log
 
-node_modules/
+idf_build/
+package-lock.json
 
 **/output/main
 build/
