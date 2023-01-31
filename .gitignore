@@ -8,6 +8,7 @@ node_modules/*
 *.db
 
 .DS_Store
+.vscode 
 
 *.out
 **/jamout.js
@@ -25,7 +26,9 @@ node_modules/*
 .sconf_temp
 config.log
 
-node_modules/
+idf_build/
+package-lock.json
+.editorconfig
 
 **/output/main
 build/

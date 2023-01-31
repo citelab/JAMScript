@@ -50,6 +50,10 @@ function runMain(cargs) {
             fs.writeFileSync("callgraph.dot", callGraph.createDOT());
         }
 
+        if (cargs.esp32.used) {
+            esp32Compile(results.C, cargs);
+        }
+
         if (!cargs.noCompile) {
             let task = nativeCompile(results.C, cargs);
             task.then(function (value) {
@@ -119,6 +123,86 @@ function nativeCompile(code, cargs) {
         resolve("Compilation finished");
     });
 }
+
+function esp32Compile(code, cargs) {
+    console.log("Compiling with esp32 backend...");
+
+    // Check for Install
+    let idfPath;
+    let inEnvironment = false;
+
+    if('IDF_PATH' in process.env) {
+        inEnvironment = true;
+        idfPath = process.env.IDF_PATH;
+    } else {
+        console.log("Searching for IDF Installation...");
+        let idfEnvPath = `${os.homedir}/.espressif/idf-env.json`;
+
+        if(!fs.existsSync(idfEnvPath)) {
+            printAndExit("Error: couldn't find esp-idf installation.");
+        }
+
+        try {
+            let idfEnv = JSON.parse(fs.readFileSync(idfEnvPath));
+            let installation = Object.keys(idfEnv.idfInstalled)[0];
+
+            idfPath = idfEnv.idfInstalled[installation].path;
+        } catch (e) {
+            printAndExit(`Error: couldn't extract esp-idf environment from ${idfEnvPath}`);
+        }
+    }
+    
+    let idfBuildPath;
+    if(cargs.debug)
+    {
+        idfBuildPath = "idf_build";
+
+        if (!fs.existsSync(idfBuildPath)) {
+            fs.mkdirSync(idfBuildPath);
+        }
+    } else {
+        idfBuildPath = tmpDir;
+    }
+
+    // Copy idf-project template and cside to tmp/build dir. This could be replaced later with generated references
+    if (!fs.existsSync(`${idfBuildPath}/cside-esp32`) || cargs.esp32.flush_cside) {
+        fs.cpSync("lib/cside-esp32", `${idfBuildPath}/cside-esp32`, { recursive: true });
+    }
+
+    // Write out jam-c code
+    const includes = [
+        'jam'
+    ]
+    .map((lib) => `#include <${lib}.h>`)
+    .join("\n") + "\n";
+
+    fs.writeFileSync(
+        `${idfBuildPath}/jamout.c`,
+        includes + code
+    );
+
+    let command = '';
+    if(!inEnvironment) {
+        command += `. ${idfPath}/export.sh &&`;
+    }
+
+    command += `cd ${idfBuildPath}/cside-esp32 &&`;
+
+    if(cargs.esp32.flash) {
+        command += "idf.py flash &&";
+    } else {
+        command += "idf.py app &&";
+    }
+
+    if(cargs.esp32.monitor) {
+        command += "idf.py monitor &&";
+    }
+
+    command += ':';
+
+    child_process.execSync(command, { stdio: 'inherit' });
+}
+
 
 function printAndExit(output) {
     console.log(output);
@@ -245,6 +329,15 @@ function validateArgs(cargs) {
         console.error("File not found: " + cargs.jsPath);
         inputError = true;
     }
+    if (!cargs.esp32.used && 
+        (cargs.esp32.flash || 
+        cargs.esp32.monitor ||
+        cargs.esp32.flush_cside)
+    ) {
+        console.error("Using esp32 specific arguments without selecting esp32 as backend."); // @REPLACE_TEXT
+        inputError = true;
+    }
+
     if (inputError) {
         process.exit(1);
     }
@@ -277,6 +370,12 @@ function processArgs() {
         debug: false,
         noCompile: false,
         preprocessOnly: false,
+        esp32 : {
+            used: undefined,
+            flash: undefined,
+            monitor: undefined,
+            flush_cside: undefined,
+        },
         verbose: false,
         callGraphFlag: false,
         yieldPoint: false,
@@ -300,6 +399,19 @@ function processArgs() {
             } else if (args[i] === "-p" || args[i] === "--preprocess") {
                 // Preprocessor only
                 conf.preprocessOnly = true;
+            } else if (args[i] === "-e" || args[i] === "--esp32") {
+                // ESP32 Backend
+                conf.esp32.used = true;
+                conf.noCompile = true;
+            } else if (args[i] === "-f" || args[i] === "--flash") { 
+                // Flash to esp32 after build
+                conf.esp32.flash = true; 
+            } else if (args[i] === "--flash-monitor") { 
+                // Flash to esp32 after build then open monitor
+                conf.esp32.flash = true;
+                conf.esp32.monitor = true;
+            } else if (args[i] === "--flush-cside") {
+                conf.esp32.flush_cside = true;
             } else if (args[i] === "-v" || args[i] === "--version") {
                 // Print version
                 console.log(require("./package.json").version);

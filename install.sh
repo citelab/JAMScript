@@ -111,7 +111,7 @@ elif [ $machine = Mac ]; then
 fi 
 
 #install tiny_cbor
-cd $SCRIPT_DIR/deps/tiny_cbor
+cd $SCRIPT_DIR/deps/tinycbor
 git clone https://github.com/intel/tinycbor
 cd tinycbor
 make 
