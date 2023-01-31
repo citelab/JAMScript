@@ -5,7 +5,7 @@
 Interesting Idea:
 - Could disable os tick on one core use that as primary executor
 - On second core, could handle networking and second executor tasks
-
+- for those second executor tasks, Could instead assign to either core 1 or core 0 depending on CPU load.
 */
 
 void app_main(void)

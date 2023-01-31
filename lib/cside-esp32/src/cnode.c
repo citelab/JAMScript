@@ -2,6 +2,10 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#include <esp_wifi.h>
+#include <lwip/err.h>
+#include <lwip/sys.h>
+
 // Statically defined
 cnode_t _global_cnode;
 
