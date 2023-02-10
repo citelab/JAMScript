@@ -41,7 +41,7 @@ function runMain(cargs) {
             printAndExit(preprocessed);
 
         let results = jam.compile(preprocessed, fs.readFileSync(cargs.jsPath).toString(),
-                                    lineNumber, cargs.yieldPoint);
+                                    lineNumber, cargs.yieldPoint, cargs.esp32.used ? "esp32" : "linux");
         cargs.cSideEffectTable = results.C_SideEffectTable;
         cargs.jsSideEffectTable = results.JS_SideEffectTable;
 

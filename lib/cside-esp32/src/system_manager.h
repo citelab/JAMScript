@@ -11,8 +11,11 @@ typedef struct _system_manager_t
     int   serial_num;
     int   default_mqtt_port;
 
+<<<<<<< HEAD
     bool initialized;
     
+=======
+>>>>>>> V2/esp32
     volatile bool wifi_connection;
 
     esp_netif_ip_info_t ip_info;

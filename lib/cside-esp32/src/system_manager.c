@@ -1,33 +1,56 @@
 #include "system_manager.h"
+#include <stdint.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <esp_event.h>
 #include <esp_netif_sntp.h>
 #include <esp_sntp.h>
 #include <esp_event.h>
 #include <lwip/ip_addr.h>
 #include <esp_wifi.h>
+#include <nvs_flash.h>
 
 #include <stdlib.h>
 
 #define MAX_RECONNECTION_ATTEMPTS 8
-#define PRECONFIG_WIFI_SSID "TODO: fill this in"
-#define PRECONFIG_WIFI_PASS "TODO: fill this in"
+#define PRECONFIG_WIFI_SSID "__TEMP__"
+#define PRECONFIG_WIFI_PASS "__TEMP__"
+#define SNTP_SERVER "ca.pool.ntp.org"
+#define WIFI_CONNECTION_NOTIFICATION 0x01
+// Currently set to toronto time
+#define TIMEZONE "EST5EDT,M3.2.0,M11.1.0" 
 
+//#define SHOULD_SKIP_WIFI_INIT
 
 system_manager_t _global_system_manager;
+static TaskHandle_t _init_task;
+static bool _system_initialized = false;
+static void _system_manager_event_handler(void* arg, esp_event_base_t event_base,
+                                          int32_t event_id, void* event_data);
 
 static void _system_manager_event_handler(void* arg, esp_event_base_t event_base,
                                           int32_t event_id, void* event_data);
 
 system_manager_t* system_manager_init()
 {
+    assert(!_system_initialized && "System Manager was initialized a second time!");
+
     system_manager_t* system_manager = &_global_system_manager;
     memset(system_manager, 0, sizeof(system_manager_t));
 
-    _system_manager_board_init(system_manager);
-    _system_manager_rtc_sync_ntp(system_manager);
-
-    system_manager->initialized = true;
     system_manager->_connection_attempts = 0;
     system_manager->wifi_connection = false;
+
+    _init_task = xTaskGetCurrentTaskHandle();
+
+    _system_manager_board_init(system_manager);
+
+#ifndef SHOULD_SKIP_WIFI_INIT
+    _system_manager_rtc_sync_ntp(system_manager);
+#endif
+
+    _system_initialized = true;
+
     return system_manager;
 }
 
@@ -35,9 +58,9 @@ void _system_manager_board_init(system_manager_t* system_manager)
 {
     ESP_ERROR_CHECK(nvs_flash_init());
 
+#ifndef SHOULD_SKIP_WIFI_INIT
     _system_manager_net_init(system_manager);
-    //TODO: might have to initialize in station mode
-
+#endif  
 }
 
 // Initialise wifi and netif to act as a station
@@ -46,13 +69,11 @@ void _system_manager_net_init(system_manager_t* system_manager)
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
-    // Netif wifi Init -- TODO: Understand exactly what this step does
     esp_netif_create_default_wifi_sta();
 
     // TODO: what exactly does this do compared to the above line.
-    wifi_init_config_t wifi_config = WIFI_INIT_CONFIG_DEFAULT();
-    ESP_ERROR_CHECK(esp_wifi_init(&wifi_config));
-
+    wifi_init_config_t wifi_init_config = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(esp_wifi_init(&wifi_init_config));
 
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
                                                         ESP_EVENT_ANY_ID,
@@ -62,7 +83,7 @@ void _system_manager_net_init(system_manager_t* system_manager)
 
     ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT,
                                                         IP_EVENT_STA_GOT_IP,
-                                                        &event_handler,
+                                                        &_system_manager_event_handler,
                                                         system_manager,
                                                         &system_manager->got_ip_event_handle));
     
@@ -71,7 +92,7 @@ void _system_manager_net_init(system_manager_t* system_manager)
         .sta = {
             .ssid       = PRECONFIG_WIFI_SSID,
             .password   = PRECONFIG_WIFI_PASS,
-            .threshold.authmode = ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD,
+            .threshold.authmode = WIFI_AUTH_WPA2_PSK,
             .sae_pwe_h2e        = WPA3_SAE_PWE_BOTH,
         },
     };
@@ -80,35 +101,40 @@ void _system_manager_net_init(system_manager_t* system_manager)
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
     ESP_ERROR_CHECK(esp_wifi_start());
 
-    // TODO: should maybe wait for wifi connection to happen.
+    // Wait for wifi connection before continuing init.
+    xTaskNotifyWait(0, WIFI_CONNECTION_NOTIFICATION, NULL, portMAX_DELAY);
 }
 
 void _system_manager_rtc_sync_ntp(system_manager_t* system_manager)
 {
-    ESP_LOGI(TAG, "Initializing and starting SNTP");
+    printf("Initializing and starting SNTP\n");
 
     // This is rtc sync code from esp32 examples
-    esp_sntp_config_t config = ESP_NETIF_SNTP_DEFAULT_CONFIG(CONFIG_SNTP_TIME_SERVER);
+    esp_sntp_config_t config = ESP_NETIF_SNTP_DEFAULT_CONFIG(SNTP_SERVER);
 
-    config.sync_cb = time_sync_notification_cb;
     esp_netif_sntp_init(&config);
 
-    time_t now = 0;
-    struct tm timeinfo = { 0 };
     int retry = 0;
     const int retry_count = 15;
 
     while (esp_netif_sntp_sync_wait(2000 / portTICK_PERIOD_MS) == ESP_ERR_TIMEOUT && ++retry < retry_count) 
     {
-        ESP_LOGI(TAG, "Waiting for system time to be set... (%d/%d)", retry, retry_count);
+        printf("Waiting for system time to be set... (%d/%d)\n", retry, retry_count);
     }
 
     assert(retry != retry_count && "Failed to connect to sntp");
 
+    // Setup timezone
+    setenv("TZ", TIMEZONE, 1);
+    tzset();
+
+    // Get current time
+    time_t now = 0;
+    struct tm timeinfo = { 0 };
+
     time(&now);
     localtime_r(&now, &timeinfo);
-
-    esp_netif_sntp_deinit();
+    printf("Current Time %s", asctime(&timeinfo));
 }
 
 // TODO: think about how useful event group bits are...
@@ -117,7 +143,6 @@ static void _system_manager_event_handler(void* arg, esp_event_base_t event_base
                                           int32_t event_id, void* event_data)
 {
     system_manager_t* system_manager = (system_manager_t*) arg;
-    assert(system_manager->initialized);
 
     if(event_base == WIFI_EVENT)
     {
@@ -132,6 +157,7 @@ static void _system_manager_event_handler(void* arg, esp_event_base_t event_base
                 {
                     esp_wifi_connect();
                     system_manager->_connection_attempts++;
+                    system_manager->wifi_connection = false;
                     printf("Attempting to reconnect to network...\n");
                     //TODO: consider setting a wifi fail flag
                 }
@@ -148,9 +174,17 @@ static void _system_manager_event_handler(void* arg, esp_event_base_t event_base
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
         system_manager->ip_info = event->ip_info;
 
-        printf("Succesfully connected to Network, IP: " IPSTR, IP2STR(&system_manager->ip_info.ip));
-        
+        printf("Succesfully connected to Network, IP: " IPSTR "\n", IP2STR(&system_manager->ip_info.ip));
+
         system_manager->_connection_attempts = 0;
         system_manager->wifi_connection = true;
+        
+        // If still in initialization stage, wake main init thread
+        if(!_system_initialized)
+            {
+            xTaskNotify(_init_task,
+                        WIFI_CONNECTION_NOTIFICATION,
+                        eSetBits);
+        }
     }
 }

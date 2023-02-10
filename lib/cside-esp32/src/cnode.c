@@ -13,7 +13,7 @@ cnode_t _global_cnode;
 cnode_t* cnode_init(int argc, char** argv)
 {
     cnode_t* cnode = &_global_cnode;
-    memeset(cnode, 0, sizeof(cnode_t));
+    memset(cnode, 0, sizeof(cnode_t));
 
     cnode->system_manager = system_manager_init();
 
