@@ -94,7 +94,7 @@ typedef struct _command_t
 typedef struct _internal_command_t
 {
     int cmd;
-    long int task_id;
+    uint32_t task_id;
     arg_t* args;
 } internal_command_t;
 
@@ -102,10 +102,10 @@ internal_command_t* internal_command_new(command_t* cmd);
 void internal_command_free(internal_command_t* ic);
 
 // Constructors
-command_t* command_new(int cmd, int subcmd, char* fn_name, long int task_id,
+command_t* command_new(int cmd, int subcmd, char* fn_name, uint32_t task_id,
                        char* node_id, char* fn_argsig, ...);
 command_t* command_new_using_arg(int cmd, int opt, char* fn_name,
-                                 long int taskid, char* node_id,
+                                 uint32_t taskid, char* node_id,
                                  char* fn_argsig, arg_t* args);
 command_t* command_from_data(char* fn_argsig, void* data, int len);
 
