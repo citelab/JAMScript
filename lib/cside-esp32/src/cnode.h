@@ -2,7 +2,7 @@
 #define __CNODE_H__
 
 #include <stdbool.h>
-#include "tboard.h"
+#include "task.h"
 #include "system_manager.h"
 
 typedef struct _cnode_t 

@@ -1,5 +1,5 @@
 #include "calls.h"
-#include "tboard.h"
+#include "task.h"
 #include <stdarg.h>
 
 arg_t* remote_sync_call(tboard_t* tboard, char* symbol, char* arg_signature, ...)
@@ -59,11 +59,48 @@ bool remote_async_call(tboard_t* tboard, char* symbol, char* arg_signature, ...)
 
 void* local_sync_call(tboard_t* tboard, char* symbol, ...)
 {
-    assert(0 && "Unimplemented");
-    return NULL;
+    va_list args;
+    arg_t* query_args = NULL;
+    arg_t* return_arg = calloc(1, sizeof(arg_t));
+
+    function_t* func = tboard_find_func(tboard, symbol);
+    if(func == NULL)
+    {
+        printf("Unable to find function '%s'.\n", symbol);
+        return NULL;
+    }
+
+    va_start(args, symbol);
+    command_qargs_alloc(func->arg_signature, &query_args, args);
+    va_end(args);
+
+    execution_context_t ctx;
+    ctx.query_args = query_args;
+    ctx.return_arg = return_arg;
+
+    func->entry_point(&ctx);
+
+    return return_arg;
 }
 
 void local_async_call(tboard_t* tboard, char* symbol, ...)
 {
-    assert(0 && "Unimplemented");
+    va_list args;
+    arg_t* qargs = NULL;
+
+
+
+    function_t* func = tboard_find_func(tboard, symbol);
+    if(func == NULL)
+    {
+        printf("Unable to find function '%s'.\n", symbol);
+        return;
+    }
+
+    va_start(args, symbol);
+    command_qargs_alloc(func->arg_signature, &qargs, args);
+    va_end(args);
+
+    task_create(tboard, func, qargs);
+
 }

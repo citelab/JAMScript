@@ -1,6 +1,9 @@
 #include "util.h"
 #include <stdio.h>
 
+void mco_push(void*, void*, void*) {}
+void* mco_running() {return 0;}
+
 void dump_bufer_hex(uint8_t* buffer, uint32_t size)
 {
     uint32_t* cast_buffer = (uint32_t*) buffer;

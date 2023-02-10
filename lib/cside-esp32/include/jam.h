@@ -2,7 +2,7 @@
 
 // temp setup.
 #include "../src/calls.h"
-#include "../src/tboard.h"
+#include "../src/task.h"
 #include "../src/cnode.h"
 #include "../src/command.h"
 //#include "../src/dummy_interface.h"
@@ -10,6 +10,8 @@
 
 #define jsleep(x)
 #define milestone_log(x)
+#define task_yield() taskYIELD()
 
-// temp definition
-typedef struct {} context_t;
+void mco_push(void*,void*,void*);
+void* mco_running();
+typedef void* context_t;

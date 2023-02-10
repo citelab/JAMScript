@@ -10,6 +10,5 @@ int main(int argc, char *argv[])
     local_noargs();
     
     simple_function("b", "Test string. That is a lot larger.");
-    
     return 0;
 }
