@@ -13,8 +13,8 @@
 #include <stdlib.h>
 
 #define MAX_RECONNECTION_ATTEMPTS 8
-#define PRECONFIG_WIFI_SSID "__TEMP__"
-#define PRECONFIG_WIFI_PASS "__TEMP__"
+#define PRECONFIG_WIFI_SSID "Apt 3"
+#define PRECONFIG_WIFI_PASS "augslambo"
 #define SNTP_SERVER "ca.pool.ntp.org"
 #define WIFI_CONNECTION_NOTIFICATION 0x01
 // Currently set to toronto time

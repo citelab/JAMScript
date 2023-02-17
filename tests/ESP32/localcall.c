@@ -28,6 +28,8 @@ int main()
     local_async_call(cnode->tboard, "local_noargs");
     local_async_call(cnode->tboard, "local_input", 1337);
 
+    multicast_test();
+
     while(1){}
 
     return 0;

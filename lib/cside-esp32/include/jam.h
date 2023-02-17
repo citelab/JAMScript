@@ -15,3 +15,5 @@
 void mco_push(void*,void*,void*);
 void* mco_running();
 typedef void* context_t;
+
+void multicast_test();
