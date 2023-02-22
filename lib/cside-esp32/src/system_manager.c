@@ -13,8 +13,8 @@
 #include <stdlib.h>
 
 #define MAX_RECONNECTION_ATTEMPTS 8
-#define PRECONFIG_WIFI_SSID "Apt 3"
-#define PRECONFIG_WIFI_PASS "augslambo"
+#define PRECONFIG_WIFI_SSID "jamscript_test_network"
+#define PRECONFIG_WIFI_PASS "extremelysecure"
 #define SNTP_SERVER "ca.pool.ntp.org"
 #define WIFI_CONNECTION_NOTIFICATION 0x01
 // Currently set to toronto time
@@ -46,7 +46,7 @@ system_manager_t* system_manager_init()
     _system_manager_board_init(system_manager);
 
 #ifndef SHOULD_SKIP_WIFI_INIT
-    _system_manager_rtc_sync_ntp(system_manager);
+    // _system_manager_rtc_sync_ntp(system_manager);
 #endif
 
     _system_initialized = true;
@@ -88,13 +88,19 @@ void _system_manager_net_init(system_manager_t* system_manager)
                                                         &system_manager->got_ip_event_handle));
     
     // This is a temporary wifi_config
-    wifi_config_t wifi_config = {
+    /*wifi_config_t wifi_config = {
         .sta = {
             .ssid       = PRECONFIG_WIFI_SSID,
             .password   = PRECONFIG_WIFI_PASS,
             .threshold.authmode = WIFI_AUTH_WPA2_PSK,
             .sae_pwe_h2e        = WPA3_SAE_PWE_BOTH,
         },
+	};*/
+    wifi_config_t wifi_config = {
+	.sta = {
+	    .ssid = PRECONFIG_WIFI_SSID,
+	    .threshold.authmode = WIFI_AUTH_OPEN
+	}
     };
 
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));

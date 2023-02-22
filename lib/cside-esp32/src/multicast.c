@@ -93,7 +93,13 @@ char* RAW = "\x00\x00\x30\x00\x2f\x40\x00\xa0\x20\x08\x00\xa0\x20\x08\x00\xa0" \
 
 // should change flags
 #define DEVICE_MAC_ADDR "\x84\xcc\xa8\x53\x94\x50"
-#define BSS_ID_TEMP     "\xe0\xdb\xd1\xb7\x34\x81"
+
+
+// HOME WIFI
+//#define BSS_ID_TEMP     "\xe0\xdb\xd1\xb7\x34\x81"
+
+#define BSS_ID_TEMP     "\xb8\x27\xeb\x85\x3c\xdf"
+
 //#define SOURCE_ADDR     "\x0a\x00\x00\x65"
 #define SOURCE_ADDR     (ipv4_address_t) {.a1 = 0x0a, .a2 = 0x00, .a3 = 0x00, .a4 = 0x65}
 
@@ -101,12 +107,21 @@ char* RAW = "\x00\x00\x30\x00\x2f\x40\x00\xa0\x20\x08\x00\xa0\x20\x08\x00\xa0" \
 // Temp
 //#define DESTINATION_ADDR_IP "\x0a\x00\x00\x28"
 
+// Home Computer
 //#define DESTINATION_ADDR_IP (ipv4_address_t) {.a1 = 0x0a, .a2 = 0x00, .a3 = 0x00, .a4 = 0x28}
-#define DESTINATION_ADDR_IP (ipv4_address_t) {.a1 = 0x0a, .a2 = 0x00, .a3 = 0x00, .a4 = 0xab}
+// Raspbery pi
+//#define DESTINATION_ADDR_IP (ipv4_address_t) {.a1 = 0x0a, .a2 = 0x00, .a3 = 0x00, .a4 = 0xab}
+
+#define DESTINATION_ADDR_IP (ipv4_address_t) {.a1 = 10, .a2 = 0, .a3 = 0, .a4 = 10}
 
 //#define DESTINATION_ADDR    "\xb8\x27\xeb\xcd\x85\xae"
+// Home Computer
 //#define DESTINATION_ADDR    (mac_address_t) {0xb8, 0x27, 0xeb, 0xcd, 0x85, 0xae}
-#define DESTINATION_ADDR    (mac_address_t) {0x98, 0xde, 0xd0, 0x10, 0xc2, 0xfd}
+// Raspberry Pi
+//#define DESTINATION_ADDR    (mac_address_t) {0x98, 0xde, 0xd0, 0x10, 0xc2, 0xfd}
+#define DESTINATION_ADDR    (mac_address_t) {0xb8, 0x27, 0xeb, 0x85, 0x3c, 0xdf}
+
+#define DESTINATION_ADDR_IP_STR "10.0.0.10"
 
                 //"\x98\xde\xd0\x10\xc2\xfd"
 frame_80211_t frame_80211_udp_config(mac_address_t destination_addr)
@@ -269,9 +284,12 @@ void multicast_test()
 
     printf("Channel info: Primary Channel %d, Secondary channel state: %d\n", (int) primary, (int) second);
     printf("Why is nothing getting printed?? \n\n\n\n");
-    moss_udp_ping("10.0.0.127", 80);
-
-    moss_udp_ping("10.0.0.40", 80);moss_udp_ping("10.0.0.40", 80);moss_udp_ping("10.0.0.40", 80);moss_udp_ping("10.0.0.40", 80);
+    moss_udp_ping(DESTINATION_ADDR_IP_STR, 80);
+    moss_udp_ping(DESTINATION_ADDR_IP_STR, 80);
+    moss_udp_ping(DESTINATION_ADDR_IP_STR, 80);
+    moss_udp_ping(DESTINATION_ADDR_IP_STR, 80);
+    moss_udp_ping(DESTINATION_ADDR_IP_STR, 80);
+    moss_udp_ping(DESTINATION_ADDR_IP_STR, 80);
     // Address line is first
 
 
