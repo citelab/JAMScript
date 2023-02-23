@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <jam_component_wrap.h>
-
+#include <esp_task_wdt.h>
 /*
 Interesting Idea:
 - Could disable os tick on one core use that as primary executor

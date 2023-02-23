@@ -186,7 +186,7 @@ function esp32Compile(code, cargs) {
         command += `. ${idfPath}/export.sh &&`;
     }
 
-    command += `cd ${idfBuildPath}/cside-esp32 &&`;
+    command += `cd ${idfBuildPath}/cside-esp32 &&`; //idf.py set-target esp32s3 &&
 
     if(cargs.esp32.flash) {
         command += "idf.py flash &&";

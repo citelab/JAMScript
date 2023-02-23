@@ -87,6 +87,7 @@ void _system_manager_net_init(system_manager_t* system_manager)
                                                         system_manager,
                                                         &system_manager->got_ip_event_handle));
     
+
     // This is a temporary wifi_config
     /*wifi_config_t wifi_config = {
         .sta = {
@@ -105,6 +106,10 @@ void _system_manager_net_init(system_manager_t* system_manager)
 
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
+
+    esp_wifi_config_80211_tx_rate(WIFI_IF_STA, WIFI_PHY_RATE_54M);
+    //esp_wifi_config_80211_tx_rate(WIFI_IF_STA, WIFI_PHY_RATE_MAX);
+
     ESP_ERROR_CHECK(esp_wifi_start());
 
     // Wait for wifi connection before continuing init.

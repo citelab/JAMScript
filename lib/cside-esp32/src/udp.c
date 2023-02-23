@@ -1,10 +1,26 @@
-#ifndef __MULTICAST_H__
-#define __MULTICAST_H__
-#include <sys/socket.h>
+#include <udp.h>
+#include <stdlib.h>
+#include <esp_wifi.h>
+
+#include "esp_system.h"
+#include "esp_wifi.h"
+#include "esp_event.h"
+#include "esp_log.h"
+#include "nvs_flash.h"
+#include "esp_timer.h"
+#include "esp_task_wdt.h"
+#include "lwip/err.h"
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include "lwip/netdb.h"
+#include "lwip/dns.h"
+
+udp_stack_context_t _global_stack_context;
+
+// Here is a ton of temporary definitions
 
 // should change flags
 #define DEVICE_MAC_ADDR "\x84\xcc\xa8\x53\x94\x50"
-
 
 // HOME WIFI
 //#define BSS_ID_TEMP     "\xe0\xdb\xd1\xb7\x34\x81"
@@ -34,6 +50,8 @@
 
 #define DESTINATION_ADDR_IP_STR "10.0.0.10"
 
+
+
                 //"\x98\xde\xd0\x10\xc2\xfd"
 frame_80211_t frame_80211_udp_config(mac_address_t destination_addr)
 {
@@ -43,24 +61,8 @@ frame_80211_t frame_80211_udp_config(mac_address_t destination_addr)
 
     memcpy(frame_80211.address3, destination_addr,  sizeof(mac_address_t));
     // TODO: automate the below terms
-    memcpy(frame_80211.address2, DEVICE_MAC_ADDR,   sizeof(mac_address_t));
-    memcpy(frame_80211.address1, BSS_ID_TEMP,       sizeof(mac_address_t));
-    return frame_80211;
-}
-
-frame_80211_t frame_80211_rts_config()
-{
-    frame_80211_t frame_80211 = {0};
-    frame_80211.frame_type0 = 0xb4;
-
-    // This may get overwritten...
-    frame_80211.duration = 400;
-
-    //frame_80211.frame_type1 = 0x01;
-    //memcpy(frame_80211.address3, destination_addr,  sizeof(mac_address_t));
-    // TODO: automate the below terms
-    memcpy(frame_80211.address1, DEVICE_MAC_ADDR,   sizeof(mac_address_t));
-    memcpy(frame_80211.address2, BSS_ID_TEMP,       sizeof(mac_address_t));
+    memcpy(frame_80211.address2, _global_stack_context.device_mac,   sizeof(mac_address_t));
+    memcpy(frame_80211.address1, _global_stack_context.access_point_mac,       sizeof(mac_address_t));
     return frame_80211;
 }
 
@@ -152,6 +154,20 @@ void frame_udp_calculate_checksum(frame_udp_t* udp_frame, frame_ip_t* ip_frame, 
     udp_frame->checksum = ~bswap16((uint16_t)acc);
 }
 
+void udp_init_stack()
+{
+    udp_stack_context_t* stack_context = &_global_stack_context;
+    uint8_t device_mac[6]
+    esp_wifi_get_mac(WIFI_IF_STA, stack_context->device_mac);
+    
+    wifi_config_t config;
+    esp_wifi_get_config(WIFI_IF_STA, &config);
+
+    memcpy(stack_context->access_point_mac, config.sta.bssid, sizeof(udp_stack_context_t));
+
+    stack_context->initialized = true;
+}
+
 udp_packet_t* udp_packet_init(ipv4_address_t destination, 
                               uint16_t source_port, 
                               uint16_t destination_port, 
@@ -186,19 +202,3 @@ udp_packet_t* udp_packet_init(ipv4_address_t destination,
 
     return packet;
 }
-
-
-// implement
-typedef struct _multicast_souce
-{
-    //struct sockaddr_in addr;
-
-} multicast_source;
-
-
-
-void multicast_test();
-
-//multicast_source* multicast_create(sockaddr_in addr);
-
-#endif
