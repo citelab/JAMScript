@@ -26,11 +26,15 @@ void function_dump(function_t* func)
            func->condition);
 }
 
+// This is a misleading name
 tboard_t* tboard_create()
 {
-    memset(&_global_tboard, 0, sizeof(tboard_t));
+    tboard_t* tboard = &_global_tboard;
+    memset(tboard, 0, sizeof(tboard_t));
 
-    return &_global_tboard;
+    tboard->task_management_mutex = xSemaphoreCreateMutexStatic(&tboard->task_management_mutex_data);
+
+    return tboard;
 }
 
 void tboard_destroy(tboard_t* tboard)
@@ -158,11 +162,15 @@ task_t* task_create(tboard_t *tboard, function_t* function, arg_t* query_args)
 {
     task_t* task = (task_t*) calloc(1, sizeof(task_t));
 
+    xSemaphoreTake(tboard->task_management_mutex);
+
     task->index = _tboard_get_next_task_index(tboard);
     tboard->tasks[task->index] = task;
 
     static uint32_t task_id_counter = 0;
     task->id = ++task_id_counter;
+
+    xSemaphoreGive(tboard->task_management_mutex);
 
     task->function = function;
     task->query_args = query_args;
@@ -185,10 +193,14 @@ void task_destroy(tboard_t *tboard, task_t* task)
 {
     tboard->tasks[task->index] = NULL;
 
+    xSemaphoreTake(tboard->task_management_mutex);
+
     if(tboard->last_dead_task > task->index || tboard->num_dead_tasks == 0)
         tboard->last_dead_task = task->index;
     
     tboard->num_dead_tasks++;
+    xSemaphoreGive(tboard->task_management_mutex);
+
 
     free(task);
 }

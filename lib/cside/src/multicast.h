@@ -7,6 +7,11 @@
 #include <arpa/inet.h>
 #include <sys/poll.h>
 
+#define Multicast_PREFIX "224.1.1"
+#define Multicast_SENDPORT  16000
+#define Multicast_RECVPORT  16500
+
+
 typedef struct _mcast_t
 {
     struct sockaddr_in addr;

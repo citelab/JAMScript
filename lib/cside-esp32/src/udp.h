@@ -5,6 +5,7 @@
 
 typedef uint8_t mac_address_t[6];
 typedef uint8_t org_code_t[3];
+typedef uint8_t port_t;
 
 typedef struct _udp_stack_context_t
 {
@@ -82,12 +83,23 @@ typedef struct _udp_packet_t
 
 void udp_stack_init();
 
-udp_packet_t* udp_packet_init(ipv4_address_t destination, 
+uint32_t udp_packet_size(uint32_t buffer_size);
+
+error_t udp_packet_init(udp_packet_t* packet,
+                              ipv4_address_t destination, 
                               uint16_t source_port, 
                               uint16_t destination_port, 
                               void* buffer, 
                               uint32_t buffer_size,
                               uint32_t* packet_size);
+
+error_t udp_packet_init_headers(udp_packet_t* packet,
+                              ipv4_address_t destination, 
+                              uint16_t source_port, 
+                              uint16_t destination_port);
+
+// Assumes buffer size is rounded up to factor of two
+error_t udp_packet_packge(udp_packet_t* packet, uint32_t buffer_size);
 
 #endif
 

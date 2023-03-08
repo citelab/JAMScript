@@ -110,6 +110,9 @@ struct _tboard_t
     uint32_t    num_dead_tasks;
     uint32_t    last_dead_task;
 
+    SemaphoreHandle_t task_management_mutex;
+    StaticSemaphore_t task_management_mutex_data;
+
     remote_task_t*  remote_tasks[MAX_TASKS];
     uint32_t        num_remote_tasks;
 };
