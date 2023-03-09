@@ -159,13 +159,13 @@ void frame_udp_calculate_checksum(frame_udp_t* udp_frame, frame_ip_t* ip_frame, 
 void udp_init_stack()
 {
     udp_stack_context_t* stack_context = &_global_stack_context;
-    uint8_t device_mac[6]
+    uint8_t device_mac[6];
     esp_wifi_get_mac(WIFI_IF_STA, stack_context->device_mac);
     
     wifi_config_t config;
     esp_wifi_get_config(WIFI_IF_STA, &config);
 
-    memcpy(stack_context->access_point_mac, config.sta.bssid, sizeof(udp_stack_context_t));
+    memcpy(stack_context->access_point_mac, config.sta.bssid, sizeof(mac_address_t));
 
     stack_context->initialized = true;
 }
@@ -178,11 +178,13 @@ uint32_t udp_packet_size(uint32_t buffer_size)
     return padded_size;
 }
 
-error_t* udp_packet_init_headers(udp_packet_t* packet,
+jam_error_t udp_packet_init_headers(udp_packet_t* packet,
                               ipv4_address_t destination, 
                               uint16_t source_port, 
                               uint16_t destination_port)
 {
+    //TODO: replace integers of pointers to specific type that is dynamic based on architecture
+    assert((uint32_t)packet % 2 == 0);
     packet->frame_80211     = frame_80211_udp_config(DESTINATION_ADDR); //TODO: Replace
     packet->frame_llc       = frame_llc_udp_config();
     packet->frame_ip        = frame_ip_udp_config(destination);
@@ -197,7 +199,7 @@ error_t* udp_packet_init_headers(udp_packet_t* packet,
     return JAM_OK;
 }
 
-error_t udp_packet_init(udp_packet_t* packet,
+jam_error_t udp_packet_init(udp_packet_t* packet,
                               ipv4_address_t destination, 
                               uint16_t source_port, 
                               uint16_t destination_port, 
@@ -205,6 +207,7 @@ error_t udp_packet_init(udp_packet_t* packet,
                               uint32_t buffer_size,
                               uint32_t* packet_size)
 {
+    assert((uint32_t)packet % 2 == 0);
     uint32_t padded_size = udp_packet_size(buffer_size);
 
     //udp_packet_t* packet    = calloc(1, padded_size);
@@ -232,11 +235,13 @@ error_t udp_packet_init(udp_packet_t* packet,
     return JAM_OK;
 }
 
-error_t udp_packet_package(udp_packet_t* packet, uint32_t buffer_size)
+jam_error_t udp_packet_package(udp_packet_t* packet, uint32_t buffer_size)
 {
     packet->frame_udp.length = bswap16(sizeof(frame_udp_t) + buffer_size);
     packet->frame_ip.total_length = bswap16(sizeof(frame_ip_t) + sizeof(frame_udp_t) + buffer_size);
 
     frame_ip_calculate_checksum(&packet->frame_ip);
     frame_udp_calculate_checksum(&packet->frame_udp, &packet->frame_ip, sizeof(frame_udp_t) +buffer_size);
+
+    return JAM_OK;
 }

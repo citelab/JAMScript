@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <freertos/semphr.h>
 
 // Perhaps all of this should just be put into the task.h file...
 

@@ -10,6 +10,8 @@
 // Statically defined
 cnode_t _global_cnode;
 
+#define TEMP_PORT 1000
+
 
 
 // System initialization is done here
@@ -42,7 +44,7 @@ void _cnode_scan_controllers(cnode_t* cnode)
 
 
     // This is not in spec!!!
-    command_t *smsg = command_new(CmdNames_WHERE_IS_CTRL, 0, "", 0, "", "si", "127.0.0.1", port);
+    command_t *smsg = command_new(CmdNames_WHERE_IS_CTRL, 0, "", 0, "", "si", "127.0.0.1", TEMP_PORT);
     assert(buffer_size >= smsg->length);
     
     void* internal_buf = multicast_get_packet_buffer(cnode->discovery_multicast, NULL);
@@ -52,9 +54,11 @@ void _cnode_scan_controllers(cnode_t* cnode)
 
     //TODO: handle received
     jnode_record_t new_record;
+    new_record.port = 125;
     for(int i = 0; i < MAX_JNODES; i++)
     {
-        if(cnode->jnode_records[i]==0)
+        //TODO: make sure this is actually always an invalid ip
+        if(cnode->jnode_records[i].ip.a1==0) 
             cnode->jnode_records[i] = new_record;
     }
 }

@@ -162,7 +162,7 @@ task_t* task_create(tboard_t *tboard, function_t* function, arg_t* query_args)
 {
     task_t* task = (task_t*) calloc(1, sizeof(task_t));
 
-    xSemaphoreTake(tboard->task_management_mutex);
+    assert(xSemaphoreTake(tboard->task_management_mutex, 1000 * portTICK_PERIOD_MS) == pdTRUE);
 
     task->index = _tboard_get_next_task_index(tboard);
     tboard->tasks[task->index] = task;
@@ -193,7 +193,8 @@ void task_destroy(tboard_t *tboard, task_t* task)
 {
     tboard->tasks[task->index] = NULL;
 
-    xSemaphoreTake(tboard->task_management_mutex);
+        assert(xSemaphoreTake(tboard->task_management_mutex, 1000 * portTICK_PERIOD_MS) == pdTRUE);
+
 
     if(tboard->last_dead_task > task->index || tboard->num_dead_tasks == 0)
         tboard->last_dead_task = task->index;
