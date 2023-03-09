@@ -99,7 +99,7 @@ void frame_ip_calculate_checksum(frame_ip_t* frame)
     for(int i = 0; i < 10; i++)
     {
         _accumulate(&acc, bswap16(cast_frame[i]));
-        printf("Checksum status %4x sum state: %4x checksum state: %4x\n", (uint16_t) bswap16(cast_frame[i]), (uint16_t) acc, (uint16_t)~(acc));
+        //printf("Checksum status %4x sum state: %4x checksum state: %4x\n", (uint16_t) bswap16(cast_frame[i]), (uint16_t) acc, (uint16_t)~(acc));
     }
 
     frame->header_checksum = ~bswap16((uint16_t)acc);
@@ -150,7 +150,7 @@ void frame_udp_calculate_checksum(frame_udp_t* udp_frame, frame_ip_t* ip_frame, 
     for(int i = 0; i < full_size/2; i++)
     {
         _accumulate(&acc, bswap16(cast_frame[i]));
-        printf("Checksum status %4x sum state: %4x checksum state: %4x\n", (uint16_t) bswap16(cast_frame[i]), (uint16_t) acc, (uint16_t)~(acc));
+        //printf("Checksum status %4x sum state: %4x checksum state: %4x\n", (uint16_t) bswap16(cast_frame[i]), (uint16_t) acc, (uint16_t)~(acc));
     }
 
     udp_frame->checksum = ~bswap16((uint16_t)acc);

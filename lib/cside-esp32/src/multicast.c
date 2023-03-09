@@ -30,7 +30,8 @@ jam_error_t multicast_init(multicast_t* multicast, ipv4_address_t destination, p
 multicast_t* multicast_create(ipv4_address_t destination, port_t outgoing, port_t incoming, uint32_t buffer_size)
 {
     uint32_t multicast_size = sizeof(multicast_t) + factor_two_round_up(buffer_size);
-    multicast_t* multicast = (multicast_t*) calloc(0, multicast_size); //TODO: use alligned_alloc
+    multicast_t* multicast = (multicast_t*) calloc(1, multicast_size); //TODO: use alligned_alloc
+    printf("eTrouble pointer: %d +     %d\n", (int)(void*)multicast, offsetof(multicast_t, packet_template));
 
     if(multicast_init(multicast, destination, outgoing, incoming, buffer_size)!=JAM_OK)
     {

@@ -32,7 +32,7 @@ cnode_t* cnode_init(int argc, char** argv)
 
 void _cnode_scan_controllers(cnode_t* cnode)
 {
-    const uint32_t buffer_size = 32;
+    const uint32_t buffer_size = 256;
 
     if(cnode->discovery_multicast==NULL)
     {

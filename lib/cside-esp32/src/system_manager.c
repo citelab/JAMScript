@@ -9,6 +9,7 @@
 #include <lwip/ip_addr.h>
 #include <esp_wifi.h>
 #include <nvs_flash.h>
+#include <udp.h>
 
 #include <stdlib.h>
 
@@ -48,6 +49,8 @@ system_manager_t* system_manager_init()
 #ifndef SHOULD_SKIP_WIFI_INIT
     // _system_manager_rtc_sync_ntp(system_manager);
 #endif
+
+    udp_init_stack();
 
     _system_initialized = true;
 

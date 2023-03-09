@@ -81,9 +81,9 @@ typedef struct _udp_packet_t
     frame_ip_t      frame_ip;
     frame_udp_t     frame_udp;
 
-} __attribute__((packed)) udp_packet_t;
+} udp_packet_t;
 
-void udp_stack_init();
+void udp_init_stack();
 
 uint32_t udp_packet_size(uint32_t buffer_size);
 

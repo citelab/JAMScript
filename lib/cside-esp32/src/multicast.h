@@ -13,9 +13,10 @@ typedef struct _multicast_t
     
     bool ready_for_transmit;
 
+    char PADDING_BC_ALIGNMENT_ISNT_WORKING;
     udp_packet_t packet_template;
     
-} multicast_t;
+}__attribute__((aligned (2)))  multicast_t;
 
 
 jam_error_t multicast_init(multicast_t* multicast, ipv4_address_t destination, port_t outgoing, port_t incoming, uint32_t buffer_size);
