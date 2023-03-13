@@ -34,6 +34,7 @@ void        cnode_destroy(cnode_t* cn);
 bool        cnode_start(cnode_t* cn);
 bool        cnode_stop(cnode_t* cn);
 
+bool    get_device_cnode_initialized();
 cnode_t* get_device_cnode();
 void _cnode_scan_controllers(cnode_t* cn);
 

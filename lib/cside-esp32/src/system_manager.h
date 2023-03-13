@@ -23,6 +23,8 @@ typedef struct _system_manager_t
 
 system_manager_t* system_manager_init();
 
+system_manager_t* system_manager();
+
 void _system_manager_board_init(system_manager_t* system_manager);
 void _system_manager_net_init(system_manager_t* system_manager);    
 void _system_manager_rtc_sync_ntp(system_manager_t* system_manager);

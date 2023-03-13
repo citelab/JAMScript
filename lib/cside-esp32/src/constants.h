@@ -42,6 +42,8 @@
 
 #define  globals_Timeout_REXEC_ACK_TIMEOUT 100
 
+// THIS IS TEMPORARY 
+#define STACK_SIZE 1024*2
 
 
 #endif

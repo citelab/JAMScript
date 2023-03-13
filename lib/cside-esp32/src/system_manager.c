@@ -10,7 +10,7 @@
 #include <esp_wifi.h>
 #include <nvs_flash.h>
 #include <udp.h>
-
+#include <receiver.h>
 #include <stdlib.h>
 
 #define MAX_RECONNECTION_ATTEMPTS 8
@@ -31,6 +31,11 @@ static void _system_manager_event_handler(void* arg, esp_event_base_t event_base
 
 static void _system_manager_event_handler(void* arg, esp_event_base_t event_base,
                                           int32_t event_id, void* event_data);
+
+system_manager_t* system_manager()
+{
+    return &_global_system_manager;
+}
 
 system_manager_t* system_manager_init()
 {

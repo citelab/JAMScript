@@ -6,6 +6,7 @@
 #include <lwip/err.h>
 #include <lwip/sys.h>
 #include "command.h"
+#include <receiver.h>
 
 // Statically defined
 cnode_t _global_cnode;
@@ -27,6 +28,10 @@ cnode_t* cnode_init(int argc, char** argv)
     cnode->tboard = tboard_create();
 
     cnode->initialized = true;
+
+    // Must happen postinit
+    receiver_init();
+
     return cnode;
 }
 
@@ -50,7 +55,7 @@ void _cnode_scan_controllers(cnode_t* cnode)
     void* internal_buf = multicast_get_packet_buffer(cnode->discovery_multicast, NULL);
     memcpy(internal_buf, smsg->buffer, smsg->length);
 
-    multicast_send(cnode->discovery_multicast);
+    multicast_send(cnode->discovery_multicast, smsg->length);
 
     //TODO: handle received
     jnode_record_t new_record;
@@ -65,6 +70,10 @@ void _cnode_scan_controllers(cnode_t* cnode)
 
 void cnode_destroy(cnode_t* cn)
 {
+    // NOTE: very  temp
+    return;
+
+
     assert(cn->initialized);
     tboard_destroy(cn->tboard);
 }
@@ -92,4 +101,9 @@ cnode_t* get_device_cnode()
 {
     assert(_global_cnode.initialized == true);
     return &_global_cnode;
+}
+
+bool get_device_cnode_initialized()
+{
+    return _global_cnode.initialized;
 }

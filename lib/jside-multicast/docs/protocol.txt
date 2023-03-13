@@ -1,0 +1,383 @@
+Registration 
+============ 
+Why is registration important? Registration allows us to maintain the number of
+workers engaged with the controller. We do the registration between the workers
+and the device level controller. The device level controller can notify the
+numbers of workers to the edge level controller. 
+
+Worker      ----->> REGISTER id ----->>     controller
+Use the topic "/app/requests/up" @ the controller's MQTT server (device MQTT only).
+            <<----- REGISTER-ACK <<----     
+                                            Keep counter of the workers under it.
+Use the topic "/app/replies/down" @ the controller's MQTT server (device MQTT only).
+
+Worker      <<----- PING x <<---------        controller
+Use the topic "/app/announce/down" @ the controller's MQTT server (device MQTT only).
+                                            Checking the presence of the worker and telling its own id x
+                                            (I am controller x, are you still there?)
+            ----->> PONG id----->>          controller
+Use the topic "/app/replies/up" @ the controller's MQTT server (device MQTT only).            
+                                            Worker informing that it is alive
+                                            (sort of like a heartbeat)
+                                            If a PONG is not received for N PING messages
+                                            the registration will be suspended. 
+                                            A suspended registration can be immediately activated 
+                                            when a PONG message comes from the device.
+
+Using the available registrations we can estimate the population of workers that
+are available work under a certain number of controllers. Could we have a
+recruitment protocol to select the device controller that can work on a specific
+tasks based on the number of workers available under them?
+
+Workers expect the device level controller to be in the local network. At least
+one controller must be in the local network. If there are multiple controllers
+we will have the workers joining the closest controller. How do we discover the
+closest controller? We can use a UDP ping from the workers. The controller can
+respond to the ping with the IP address of the gateway MQTT broker and then the
+worker can do the registration. 
+
+Worker      ------->> WHERE-IS-CTRL ----->>     controller
+            <<------ HERE-IS-CTRL x -<<----
+                                                controller sending information,
+                                                we can have multiple controllers
+                                                sending information for the
+                                                worker to select the one it
+                                                wants to join. x is the address
+                                                the gateway MQTT.
+This is NOT using a publish-subscribe pattern. 
+
+
+NOTE: There is a problem with the above discovery. If we have many controllers
+and workers in a local area we don't have control over the association between
+the workers and controllers. One way to solve that problem is to just start the
+worker with group name g. Each controller also is started with group name g. We
+revise the protocols to work like the following. 
+
+A generalized protocol as above would enable use to run controllers and workers
+at the device levels in heterogeneous configurations. 
+
+Worker      ------->> WHERE-IS-CTRL g ----->>     controller
+            <<------ HERE-IS-CTRL x for g .-<<----
+
+The workers can move across controllers! The workers are attached to a
+device-level controller and that association does not change. However, the
+device to fog association changes and this can be a rapid change. So, the
+workers under the device controllers need to be rearranged to connect to the
+appropriate fogs. Remember in the new design the device can be associated with
+multiple fogs at the same time. So, the workers can have multiple fogs too. The
+protocol we use is a revision of the existing  PUT-CF protocol. 
+
+Worker      ------>> GET-CLOUD-FOG-INFO ----->    controller
+The worker is asking the controller to send all information it might have about clouds and fogs. THis is
+information with IP/Port number pairs. May be other information such as Node IDs will be there too.
+            <<------ PUT-CLOUD-FOG-INFO ---<<--     controller 
+            The controller is sending down the information it has to the worker
+
+At N-th PING from the controller (note that the PING comes only from the
+device-level controller we would have the worker sending out a refresh cloud-fog
+information request. 
+
+Worker      ------>> REF-CLOUD-FOG-INFO x           controller 
+                                            The refresh request is posting the
+                                            updated-since time with the request.
+                                            This way the controller can see
+                                            whether it has any new data and send
+                                            them. So, the controller would not
+                                            send any reply if there is nothing
+                                            to refresh about. A cloud or fog
+                                            deletion is also considered new
+                                            information so that should be sent
+                                            down if it is not yet sent down. 
+            <<------ PUT-CLOUD-FOG-INFO ---<<--     controller 
+
+The controller will respond with a PUT-CLOUD-FOG-INFO message if the conditions
+have changed. 
+
+The PUT-CLOUD-FOG-INFO could be sent down unsolicited if the information changes
+at the device controller. 
+
+Network Monitoring 
+==================
+
+Another problem is node and network monitoring. We want to get a picture of the
+network performance (e.g., bandwidth and latency) that exists between the
+controller and workers. So, the workers send continuous probes to the
+controllers. The probe just sends a random payload to the controller from the
+worker and let the controller echo it. The worker can estimate the bandwidth and
+latency using these probes. We can have this process happening between the
+workers and the controllers at the different levels. 
+
+The implementation of the probing protocol between controllers and workers is 
+going to work little differently from the other protocols. We have the probing
+module at the controller in another C program running in the same node as the 
+controller (so it is a different process). 
+
+Controller,     Controller-probe            Worker (Probe)
+Probe in both sides are built using C. Controller-probe registers with the Controller
+using a discovery protocol that is the same as the worker. So, if the controller-probe
+is not running the probing activity does not take place. 
+
+Controller-probe    ------>>    PROBE-REGISTER app, port, etc ----->>    Controller 
+            The Controller-probe is broadcasting its presence, the app it would cover, and 
+            port number it is using, etc.
+
+            The Controller would response with PROBE-ACK message
+                    <<------- PROBE-ACK <<-----------  Controller 
+
+Now the controller would know there is a probe attached to it.
+We start the probing from the controller using the following command. This is 
+for a given phase of the probe.
+
+Controller  -------->> START-PROBING t alpha ------->>       worker
+                Sending a start probing message to the workers. There are many
+                workers underneath a controller. All of them receive this start
+                probing message and the probe period is set to t. That means in
+                the next t seconds each worker would randomly select a time
+                point and send the probe to the controller. Some workers would
+                not even send the probe. The second parameter - alpha - denotes
+                the probability of a worker sending probe. By setting the alpha
+                parameter the controller can decide on the probing traffic that
+                would be injected into the network. 
+
+Worker      -------->> PROBE-RES payload (measurement data) ---->>       controller 
+                
+
+                    Controller is just echos the data. The worker measures the
+                    latency and also the byte rate it got. Worker updates the
+                    average value it sees for latency and byte rate (bandwidth).
+                    The worker is going to update the controller with these
+                    values at the next start probe message. We are going to have
+                    a data log event from all the workers (hidden logger). The
+                    controller would receive latency/bandwidth information from
+                    all workers at the next probe. This process continues.
+
+So the controller maintains a good picture of the network and its health using
+the probes. However, the probes can put burden on the network so the probing
+interval, probability, and probe sizes must be adjusted to create the most
+appropriate loading and accuracy of measurement. 
+
+Schedule Management
+===================
+When workers start, they don't have a schedule. So, they will send a request to
+the controller to provide a schedule. The worker needs to say which milestone it
+wants - initially we start with milestone 0 (start of the program). If there is
+no schedule, the worker runs the default which is all batch (i.e., FCFS). We
+could run into missed deadlines for RT tasks and un-synchronized SY tasks if we
+keep going with FCFS. So, the scheduler needs to provide a schedule. 
+
+Given a JAMScript program we have run the profiler that would have built a table
+with milestones and schedules. That is the table is going to have milestones 1..
+N and for each milestone it is going to have the set of tasks that needs
+scheduling. The set of tasks is found by the profiler by examining the call
+graph of the JAMScript program. We run the optimizing scheduler on the set of
+tasks with the expected conditions of the machine and it should provide us with
+an optimal execution plan. We download that execution plan to the workers and
+they put that into action. 
+
+So, milestones 1..N that the program can be in at any time is known ahead of
+time (or fixed ahead of time). The scheduler would have created candidate
+schedules for the ones the program can enter at the very beginning. We start
+with milestone 0 so the schedule for that is generated at the very beginning.
+
+Worker          ---->> GET-SCHEDULE {m}   ----->>         Controller 
+                Send a message asking for schedule for milestone m. Although we
+                are sending the message to the controller it will be forwarded
+                to the scheduler that is associated with the controller. As
+                denoted we can ask for set of milestones at one time. To keep
+                things current, we need to keep this set small. 
+                --<<--- PUT-SCHEDULE {m}  <<-----       Controller
+
+Worker          ---->> PUT-EXEC-STATS {t}   ----->>       Controller
+                This command pushes the execution results from the tasks to the
+                controller. This report is used by the scheduler to make the
+                best scheduling decisions. 
+
+Asynchronous Remote Execution 
+=============================
+This is JAMScript version of the remote procedure call. All the calls are
+one-to-multiway because we are using the publish-subscribe protocol as the
+underlying implementation. Here we consider asynchronous remote calls. We
+essentially launch the remote calls and forget about the calls. 
+
+Worker to Controller
+--------------------
+This is a subtype of remote execution commands. Here, the controller is
+launching tasks on the controller. We would have many workers sending execution
+requests pretty much at the same time to the controller. Trying to execute all
+of them at the controller is bound to create a bottleneck. We will see elsewhere
+-- in the task attributes -- that the program can specify mitigation schemes for
+this problem. The basic idea is to limit the number of task executions to a
+small number by limiting the execution calls to a small number. 
+
+We will discuss the details of the mitigation schemes in the task definition document. 
+
+worker      ------>>    REXEC-ASY params ------>>        Controller
+        params:: taskId -- (unique number assigned by the worker), args -- arguments for the task,
+            funcname -- function name, condvec -- condition code, condstr -- condition string
+
+Worker is sending the REXEC-ASY call to the controller asking it to run the task with funcname.
+Also, the worker provides a taskId using which we can detect few things about the task. The 
+first 32 bits (LSB bits) of the taskId is the node Id and the next 32 bits (MSB bits) are 
+sequence number. 
+
+Since there is no acknowledgement associated with REXEC-ASY we are done with just sending the 
+REXEC-ASY.
+
+Controller to Worker
+--------------------
+We also have REXEC-ASY used to launch commands on the workers. The call is initiated by the controller.
+So, all the workers underneath a controller would receive this REXEC-ASY call. 
+
+Controller      ------>>    REXEC-ASY params ------>>        Worker
+        params:: taskId -- (unique number assigned by the worker), args -- arguments for the task,
+            funcname -- function name, condvec -- condition code, condstr -- condition string
+
+NOTE: Both Controller-worker and worker-controller calls are one-to-multiway calls. That is with 
+worker to controller, we could end up sending the calls to a set of fog servers - this is a subset 
+of fog servers in the system that are in the close range of the device.
+
+Asynchronous remote execution provides "at most once" execution. There are no message (request message)
+retransmissions so there cannot be more than one instance of the request launched into the controller or worker.
+
+Synchronous Remote Execution
+============================
+There is a major change in the semantics of execution between synchronous and asynchronous. Here, we are
+implementing an "at least once" execution. Note that we are not seeking "exactly once" execution which would be
+much harder to realize in a transient edge computing environment. 
+
+Worker to Controller
+--------------------
+The launching worker needs a result for each call. If the result is not received within a timeout period the 
+worker will relaunch the execution call. In the meantime, the fog association could have changed. So, if the 
+result of execution from the fog is lost, we need to repeat the execution in the new fog because the worker 
+wants the results. Therefore, we are implementing the "at least once" execution. The execution is determined 
+by the availability of the results. Because many workers are launching the request for task execution, the 
+controller need not be executing the task for each call. Depending on what the task is doing, we can 
+reuse a previous execution and provide the result to another worker. 
+
+worker      ------>>    REXEC-SYN params ------>>        Controller
+        params:: taskId -- (unique number assigned by the worker), args -- arguments for the task,
+            funcname -- function name, condvec -- condition code, condstr -- condition string
+            <<------    REXEC-ACK taskId <<----- Controller
+            [------->> . GET-REXEC-RES taskId --->> ]       This is optional, REXEC-RES could 
+                                                            executed before this step. Also, this could be repeated
+                                                            and error could result if a response is not forthcoming.
+            <<------    REXEC-RES Results <<----- Controller
+
+Controller to Worker
+--------------------
+
+Controller      ------>>    REXEC-SYN params ------>>        Worker
+        params:: taskId -- (unique number assigned by the worker), args -- arguments for the task,
+            funcname -- function name, condvec -- condition code, condstr -- condition string
+            <<------    REXEC-ACK taskId <<----- Worker
+            [------->> . GET-REXEC-RES taskId --->> ]       This is optional, REXEC-RES could 
+                                                            executed before this step. Also, this could be repeated
+                                                            and error could result if a response is not forthcoming.
+            <<------    REXEC-RES Results <<-----
+
+
+Fog Group Management
+====================
+We have an interesting fog group management problem. As fogs become available, we detect them. If 
+the node cache predicts that the new node is closer than all active fogs, it provides a notification
+of a fog being up. We need to replace an existing fog with that new one based on some policy. This is 
+true if we already know k fogs. If we know less than k fogs we just add the new fog to the list of known fogs
+and inform the C side about the new addition. 
+
+Most k-popular (We can measure popularity using task ack rates and completion rates. The task ack and 
+completion can be weighted differently.)
+
+We send the k-fogs to the C side. It would use those and send the controller about periodic reports. These reports
+will have ACK rates (what fraction of the requests were acknowledged) and what fraction of the synchronous 
+requests were completed. We use this information to rank the fogs in the k-fog set.
+
+We can use the ranked list of fogs to implement the least popular fog as the replacement policy. 
+
+In addition to the ack and completion rates, we can also use the measurements that are reported 
+by the worker nodes. The measurements are reporting the bottleneck bandwidth from the worker to the fogs.
+We want to retain the fogs with the most bandwidth. So, the new fog should replace the fog with the 
+smallest bandwidth among the existing ones. 
+
+Controller-Controller Management
+================================
+Everything we talked about so far is controller-worker communication. We now discuss controller-controller
+communication.
+
+Association Among controllers
+=============================
+Sub-Controller  ---->>> ASSOCIATE-ME x  ------>>    Super-Controller 
+Use the topic "/app/requests/up" @ the Super-Controller's MQTT server.
+Sub-Controller  <<<---- ASSOCIATE-OK y  ------>>    Sub-Controller 
+Use the topic "/app/replies/down" @ the Super-Controller's MQTT server.
+
+Sub-Controller      <<----- PING x <<---------      Super-Controller
+Use the topic "/app/announce/down" @ the super controller's MQTT server
+                                            Checking the presence of the sub controller and telling its own id x
+                                            (I am controller x, are you still there?)
+            ----->> PONG id----->>          super controller
+Use the topic "/app/replies/up" @ the controller's MQTT server
+
+If PONGs are not received then the association of the sub controller at the super controller
+will expire. That the entry created by the association at the super controller will be removed 
+by the lack of PONG replies - this happens when the sub controller is not engaged with the 
+super controller. 
+
+The association table can have the sub controllers at the super controller. And at the sub controllers 
+we can have the super controllers in the association table. The association table can be used in few 
+different ways. 
+
+When we send a call sub-controller to super-controller, we need to post the call as requests in the 
+super-controller. The association table gives the super-controller that we should be posting at. The
+entries in the association tables were created using the ASSOCIATE-ME messages. The ASSOCIATE-ME messages
+were sent as a response for discovery event - that is JDiscovery would trigger a discovery event at the sub controller
+when a super controller is available for connection. The ASSOCIATE-ME messaging takes over from there to create the 
+association table.
+
+Asynchronous Remote Execution
+=============================
+
+This is JAMScript version of the remote procedure call. All the calls are
+one-to-multiway because we are using the publish-subscribe protocol as the
+underlying implementation. Here we consider asynchronous remote calls. We
+essentially launch the remote calls and forget about the calls. 
+
+We use the association table to determine how many sub or super controllers we
+have for remote execution. Also depending on the JCond statements some of these
+controllers will be disabled. However, JCond evaluation is tricky - it needs to
+happen in the remote node. Some of this evaluation is static and some are
+dynamic (changes at runtime). If it is static, we can evaluate it and reflect it
+on the sending side. So, the sender can initiate the call at the right
+destination. In the controller-controller calls we are reaching out to all
+possible calls. So, there is no retry requirement. 
+
+Controller to Controller
+------------------------
+In JAMScript we also allow a controller to send execution calls to another controller. For instance,
+a device-level controller can send a call to fog (edge)-level controller. The fog level controller can
+send its calls to the device and cloud-level controllers. These rules dictate how the default
+calls are propagated in JAMScript. The actual execution would depend on conditional (filtering)
+attributes associated with the task specification (function specification).
+
+Controller      ------>>    MEXEC-ASY params ------>>        Controller
+        params:: taskId -- (unique number assigned by the worker), args -- arguments for the task,
+            funcname -- function name, condvec -- condition code, condstr -- condition string
+
+Synchronous Remote Execution
+============================
+There is a major change in the semantics of execution between synchronous and asynchronous. Here, we are
+implementing an "at least once" execution. Note that we are not seeking "exactly once" execution which would be
+much harder to realize in a transient edge computing environment. 
+
+Controller to Controller
+------------------------
+
+Controller      ------>>    MEXEC-SYN params ------>>        Controller
+        params:: taskId -- (unique number assigned by the worker), args -- arguments for the task,
+            funcname -- function name, condvec -- condition code, condstr -- condition string
+                <<------    MEXEC-ACK taskId  <<----- Worker
+                [------->> . GET-MEXEC-RES taskId --->> ]       This is optional, MEXEC-RES could 
+                                                            executed before this step. Also, this could be repeated
+                                                            and error could result if a response is not forthcoming.
+                <<------    MEXEC-RES Results <<-----
+

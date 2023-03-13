@@ -14,7 +14,7 @@
 #include "lwip/sys.h"
 #include "lwip/netdb.h"
 #include "lwip/dns.h"
-
+#include "system_manager.h"
 #include "endian.h"
 
 udp_stack_context_t _global_stack_context;
@@ -83,6 +83,7 @@ frame_llc_t frame_llc_udp_config()
 inline void _accumulate(uint32_t* acc, uint16_t sumee)
 {
     *acc += sumee;
+    
     if(*acc > 0xffff)
         *acc -= 0xffff;
 }
@@ -121,13 +122,15 @@ frame_ip_t frame_ip_udp_config(ipv4_address_t destination_addr)
     frame_ip.header_checksum = 0x00; // THIS IS JUST FOR NOW!
 
     frame_ip.destination_address = destination_addr;    
-    frame_ip.source_address = SOURCE_ADDR;
+    memcpy(&frame_ip.source_address, &system_manager()->ip_info.ip, sizeof(uint32_t));
+
     // These could just be assignments
     //memcpy(&frame_ip.source_address, SOURCE_ADDR, sizeof(ipv4_address_t));
 
     return frame_ip;
 }
 
+// TODO: refactor full_size
 void frame_udp_calculate_checksum(frame_udp_t* udp_frame, frame_ip_t* ip_frame, uint32_t full_size)
 {
     // header is 20 bytes
@@ -173,15 +176,15 @@ void udp_init_stack()
 uint32_t udp_packet_size(uint32_t buffer_size)
 {
     uint32_t raw_size = sizeof(udp_packet_t)+buffer_size;
-    uint32_t padded_size = raw_size + 2 - (raw_size % 2);
+    uint32_t padded_size = raw_size + (raw_size % 2);
 
     return padded_size;
 }
 
 jam_error_t udp_packet_init_headers(udp_packet_t* packet,
                               ipv4_address_t destination, 
-                              uint16_t source_port, 
-                              uint16_t destination_port)
+                              port_t source_port, 
+                              port_t destination_port)
 {
     //TODO: replace integers of pointers to specific type that is dynamic based on architecture
     assert((uint32_t)packet % 2 == 0);
@@ -201,8 +204,8 @@ jam_error_t udp_packet_init_headers(udp_packet_t* packet,
 
 jam_error_t udp_packet_init(udp_packet_t* packet,
                               ipv4_address_t destination, 
-                              uint16_t source_port, 
-                              uint16_t destination_port, 
+                              port_t source_port, 
+                              port_t destination_port, 
                               void* buffer, 
                               uint32_t buffer_size,
                               uint32_t* packet_size)
@@ -219,7 +222,6 @@ jam_error_t udp_packet_init(udp_packet_t* packet,
     packet->frame_udp.source_port       = bswap16(source_port);
     packet->frame_udp.destination_port  = bswap16(destination_port);
     packet->frame_udp.length = bswap16(sizeof(frame_udp_t) + buffer_size);
-
     packet->frame_ip.total_length = bswap16(sizeof(frame_ip_t) + sizeof(frame_udp_t) + buffer_size);
 
     frame_ip_calculate_checksum(&packet->frame_ip);
@@ -241,7 +243,7 @@ jam_error_t udp_packet_package(udp_packet_t* packet, uint32_t buffer_size)
     packet->frame_ip.total_length = bswap16(sizeof(frame_ip_t) + sizeof(frame_udp_t) + buffer_size);
 
     frame_ip_calculate_checksum(&packet->frame_ip);
-    frame_udp_calculate_checksum(&packet->frame_udp, &packet->frame_ip, sizeof(frame_udp_t) +buffer_size);
-
+    frame_udp_calculate_checksum(&packet->frame_udp, &packet->frame_ip, sizeof(frame_udp_t) + buffer_size + 1);
+    //frame_udp_calculate_checksum(&packet->frame_udp, &packet->frame_ip, buffer_size);
     return JAM_OK;
 }

@@ -5,7 +5,7 @@
 #include <lwip/sys.h>
 #include <stdlib.h>
 #include <esp_timer.h>
-
+#include <constants.h>
 #include <udp.h>
 #define DESTINATION_ADDR_IP (ipv4_address_t) {.a1 = 10, .a2 = 0, .a3 = 0, .a4 = 10}
 
@@ -16,27 +16,29 @@ uint32_t factor_two_round_up(uint32_t num)
     return num + (num%2);
 }
 
-jam_error_t multicast_init(multicast_t* multicast, ipv4_address_t destination, port_t outgoing, port_t incoming, uint32_t buffer_size)
+jam_error_t multicast_init(multicast_t* multicast, ipv4_address_t destination, port_t retport, port_t outgoing, uint32_t buffer_size)
 {
     int status = JAM_OK;
 
     *multicast = (multicast_t) {0};
     multicast->packet_buffer_size = factor_two_round_up(buffer_size);
-    ERR_PROP(udp_packet_init_headers(&multicast->packet_template, destination, outgoing, incoming));
+    ERR_PROP(udp_packet_init_headers(&multicast->packet_template, destination, retport, outgoing));
+
 
     return status;
 }
 
-multicast_t* multicast_create(ipv4_address_t destination, port_t outgoing, port_t incoming, uint32_t buffer_size)
+multicast_t* multicast_create(ipv4_address_t destination, port_t retport, port_t outgoing, uint32_t buffer_size)
 {
     uint32_t multicast_size = sizeof(multicast_t) + factor_two_round_up(buffer_size);
     multicast_t* multicast = (multicast_t*) calloc(1, multicast_size); //TODO: use alligned_alloc
-    printf("eTrouble pointer: %d +     %d\n", (int)(void*)multicast, offsetof(multicast_t, packet_template));
+    //printf("eTrouble pointer: %d +     %d\n", (int)(void*)multicast, offsetof(multicast_t, packet_template));
 
-    if(multicast_init(multicast, destination, outgoing, incoming, buffer_size)!=JAM_OK)
+        printf("Wasnt asdasdas for %d : %d \n", (int)retport, (int)outgoing);
+    if(multicast_init(multicast, destination, retport, outgoing, buffer_size)!=JAM_OK)
     {
         // @ERROR TODO: improve error message
-        printf("Wasnt able to create multicast for %d : %d \n", (int)outgoing, (int)incoming);
+        printf("Wasnt able to create multicast for %d : %d \n", (int)retport, (int)outgoing);
         free(multicast);
         return NULL;
     }
@@ -45,30 +47,30 @@ multicast_t* multicast_create(ipv4_address_t destination, port_t outgoing, port_
 }
 
 // returns udp data buffer
-void* _multicast_get_internal_buffer(multicast_t* multicast)
+uint8_t* _multicast_get_internal_buffer(multicast_t* multicast)
 {
-    return ((void*)multicast) + sizeof(multicast);
+    return ((uint8_t*)multicast) + sizeof(multicast_t);
 }
 
 jam_error_t multicast_copy_send(multicast_t* multicast, void* buf, uint32_t buf_size)
 {
     assert(buf_size <= multicast->packet_buffer_size);
     memcpy(_multicast_get_internal_buffer(multicast), buf, buf_size);
-    multicast->occupied_packet_buffer_size = buf_size;
-
-    ERR_PROP(multicast_send(multicast));
+    printf("Testing1: %ld", buf_size);
+    ERR_PROP(multicast_send(multicast, buf_size));
 
     return JAM_OK;
 }
 
 // The destination needs to register into an IGMP group, responses will be unicast.
 // 
-jam_error_t multicast_send(multicast_t* multicast)
+jam_error_t multicast_send(multicast_t* multicast, uint32_t buf_size)
 {
-    int size = multicast->occupied_packet_buffer_size;
-    udp_packet_package(&multicast->packet_template, size);
+    multicast->occupied_packet_buffer_size = buf_size;
+    //printf("Testing2: %d", size);
+    udp_packet_package(&multicast->packet_template, buf_size);
 
-    int status = esp_wifi_80211_tx(WIFI_IF_STA, &multicast->packet_template, udp_packet_size(size), 1);
+    int status = esp_wifi_80211_tx(WIFI_IF_STA, &multicast->packet_template, udp_packet_size(buf_size), 1);
     if(status == ESP_ERR_NO_MEM)
         return JAM_MEMORY_ERR;
     return JAM_OK;
@@ -117,6 +119,29 @@ void moss_udp_ping(char* server, int port)
     return;
 }
 
+void multicast_test2()
+{
+    char* secret_message = "This is the super important secret message!";
+
+    uint32_t packet_size;
+    udp_packet_t* packet = calloc(1, udp_packet_size(strlen(secret_message)));
+
+    // NOTE: passing back packet size is a bit dumb now.
+    udp_packet_init(packet, 
+                    DESTINATION_ADDR_IP, 
+                    Multicast_RECVPORT, 
+                    Multicast_SENDPORT, 
+                    secret_message, 
+                    strlen(secret_message), 
+                    &packet_size);
+
+    esp_wifi_80211_tx(WIFI_IF_STA, packet, packet_size, 1);
+    esp_wifi_80211_tx(WIFI_IF_STA, packet, packet_size, 1);
+    esp_wifi_80211_tx(WIFI_IF_STA, packet, packet_size, 1);
+    esp_wifi_80211_tx(WIFI_IF_STA, packet, packet_size, 1);
+}
+
+
 void multicast_test()
 {
 
@@ -127,12 +152,12 @@ void multicast_test()
 
     printf("Channel info: Primary Channel %d, Secondary channel state: %d\n", (int) primary, (int) second);
     printf("Why is nothing getting printed?? \n\n\n\n");
-    moss_udp_ping(DESTINATION_ADDR_IP_STR, 80);
-    moss_udp_ping(DESTINATION_ADDR_IP_STR, 80);
-    moss_udp_ping(DESTINATION_ADDR_IP_STR, 80);
-    moss_udp_ping(DESTINATION_ADDR_IP_STR, 80);
-    moss_udp_ping(DESTINATION_ADDR_IP_STR, 80);
-    moss_udp_ping(DESTINATION_ADDR_IP_STR, 80);
+    moss_udp_ping(DESTINATION_ADDR_IP_STR, 16000);
+    moss_udp_ping(DESTINATION_ADDR_IP_STR, 16000);
+    moss_udp_ping(DESTINATION_ADDR_IP_STR, 16000);
+    moss_udp_ping(DESTINATION_ADDR_IP_STR, 16000);
+    moss_udp_ping(DESTINATION_ADDR_IP_STR, 16000);
+    moss_udp_ping(DESTINATION_ADDR_IP_STR, 16000);
     // Address line is first
 
     char* secret_message = "This is the super important secret message!";
@@ -143,8 +168,8 @@ void multicast_test()
     // NOTE: passing back packet size is a bit dumb now.
     udp_packet_init(packet, 
                     DESTINATION_ADDR_IP, 
-                    2000, 
-                    80, 
+                    16500, 
+                    16000, 
                     secret_message, 
                     strlen(secret_message), 
                     &packet_size);
@@ -179,7 +204,7 @@ void multicast_test()
             per_second_count = 0;
             start_time = esp_timer_get_time();
         }
-
+        return;
     }
 
 

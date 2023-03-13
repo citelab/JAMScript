@@ -48,12 +48,15 @@ function_t* tboard_find_func(tboard_t* tboard, const char* symbol)
 {
     assert(tboard != NULL);
 
+    printf("Looking for a symbol %s\n", symbol);
+
 
     // Should consider using a hash
     for (int i = 0; i < tboard->num_funcs; i++)
     {
         function_t *func = tboard->funcs[i];
-        
+        printf("Testing for a symbol %s\n", func->symbol);
+
         if (!strcmp(func->symbol, symbol))
         {
             return func;
@@ -121,8 +124,6 @@ void tboard_dump_funcs(tboard_t* tboard)
  * Task Definitions Here
 */
 
-
-#define STACK_SIZE 1024*2
 
 // @Unimplemented TODO: replace
 uint32_t mysnowflake_id()

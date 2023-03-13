@@ -34,6 +34,8 @@ void process_message(tboard_t* tboard, command_t* cmd)
         return;
     case CmdNames_REXEC:
         function_t* func = tboard_find_func(tboard, cmd->fn_name);
+
+        printf("got here\n");
         if(func==NULL)
         {
             printf("Couldn't find function '%s'\n", cmd->fn_name);
