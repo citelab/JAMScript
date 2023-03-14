@@ -3,6 +3,7 @@
 #include <esp_wifi.h>
 #include <lwip/err.h>
 #include <lwip/sys.h>
+
 #include <stdlib.h>
 #include <esp_timer.h>
 #include <constants.h>
@@ -24,17 +25,17 @@ jam_error_t multicast_init(multicast_t* multicast, ipv4_address_t destination, p
     multicast->packet_buffer_size = factor_two_round_up(buffer_size);
     ERR_PROP(udp_packet_init_headers(&multicast->packet_template, destination, retport, outgoing));
 
-
     return status;
 }
 
 multicast_t* multicast_create(ipv4_address_t destination, port_t retport, port_t outgoing, uint32_t buffer_size)
 {
     uint32_t multicast_size = sizeof(multicast_t) + factor_two_round_up(buffer_size);
-    multicast_t* multicast = (multicast_t*) calloc(1, multicast_size); //TODO: use alligned_alloc
+    multicast_t* multicast = (multicast_t*) aligned_alloc(4, multicast_size); 
+    
     //printf("eTrouble pointer: %d +     %d\n", (int)(void*)multicast, offsetof(multicast_t, packet_template));
 
-        printf("Wasnt asdasdas for %d : %d \n", (int)retport, (int)outgoing);
+    printf("Creating multicast for %d : %d \n", (int)retport, (int)outgoing);
     if(multicast_init(multicast, destination, retport, outgoing, buffer_size)!=JAM_OK)
     {
         // @ERROR TODO: improve error message
@@ -46,6 +47,12 @@ multicast_t* multicast_create(ipv4_address_t destination, port_t retport, port_t
     return multicast;
 }
 
+void multicast_make_threadsafe(multicast_t* multicast)
+{
+    multicast->buffer_access = xSemaphoreCreateMutex();
+    multicast->thread_safe = true;
+}
+
 // returns udp data buffer
 uint8_t* _multicast_get_internal_buffer(multicast_t* multicast)
 {
@@ -55,9 +62,16 @@ uint8_t* _multicast_get_internal_buffer(multicast_t* multicast)
 jam_error_t multicast_copy_send(multicast_t* multicast, void* buf, uint32_t buf_size)
 {
     assert(buf_size <= multicast->packet_buffer_size);
+
+    if(multicast->thread_safe)
+        assert(xSemaphoreTake(multicast->buffer_access, MAX_SEMAPHORE_WAIT) == pdTRUE);
+
     memcpy(_multicast_get_internal_buffer(multicast), buf, buf_size);
-    printf("Testing1: %ld", buf_size);
+
     ERR_PROP(multicast_send(multicast, buf_size));
+
+    if(multicast->thread_safe)
+        xSemaphoreGive(multicast->buffer_access);
 
     return JAM_OK;
 }
@@ -67,7 +81,7 @@ jam_error_t multicast_copy_send(multicast_t* multicast, void* buf, uint32_t buf_
 jam_error_t multicast_send(multicast_t* multicast, uint32_t buf_size)
 {
     multicast->occupied_packet_buffer_size = buf_size;
-    //printf("Testing2: %d", size);
+    
     udp_packet_package(&multicast->packet_template, buf_size);
 
     int status = esp_wifi_80211_tx(WIFI_IF_STA, &multicast->packet_template, udp_packet_size(buf_size), 1);
@@ -82,7 +96,10 @@ void* multicast_get_packet_buffer(multicast_t* multicast, uint32_t* buffer_size)
         *buffer_size = multicast->packet_buffer_size;
     return _multicast_get_internal_buffer(multicast);
 }
+
 //Test function
+
+// TODO: remove multicast tests
 void moss_udp_ping(char* server, int port)
 {
     int err;
@@ -100,12 +117,9 @@ void moss_udp_ping(char* server, int port)
         return;
     }
 
-    // TODO: Need to figure out what to send here.
-
     char buf[64]; // this is temp
     strcpy(buf, "Alternative message");
 
-    // TODO: check what flags to use here
     //for(int i = 0; i < 1; i++)
     {
         err = sendto(s, buf, strlen(buf), 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
@@ -141,7 +155,6 @@ void multicast_test2()
     esp_wifi_80211_tx(WIFI_IF_STA, packet, packet_size, 1);
 }
 
-
 void multicast_test()
 {
 
@@ -173,12 +186,6 @@ void multicast_test()
                     secret_message, 
                     strlen(secret_message), 
                     &packet_size);
-
-
-    //frame_80211_t* rts = (frame_80211_t*) malloc(sizeof(frame_80211_t));
-    //*rts = frame_80211_rts_config();
-
-    //esp_wifi_80211_tx(WIFI_IF_STA, rts, sizeof(rts), true);
 
 
     int64_t start_time = 0, current_time = 0; // in microseconds
@@ -215,9 +222,3 @@ void multicast_test()
     }
 
 }
-
-//multicast_source* multicast_create(sockaddr_in addr)
-//{
-    
-    //return NULL;
-//}

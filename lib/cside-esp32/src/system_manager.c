@@ -37,6 +37,7 @@ system_manager_t* system_manager()
     return &_global_system_manager;
 }
 
+
 system_manager_t* system_manager_init()
 {
     assert(!_system_initialized && "System Manager was initialized a second time!");
@@ -119,6 +120,8 @@ void _system_manager_net_init(system_manager_t* system_manager)
     //esp_wifi_config_80211_tx_rate(WIFI_IF_STA, WIFI_PHY_RATE_MAX);
 
     ESP_ERROR_CHECK(esp_wifi_start());
+
+    esp_wifi_set_ps(WIFI_PS_NONE);
 
     // Wait for wifi connection before continuing init.
     xTaskNotifyWait(0, WIFI_CONNECTION_NOTIFICATION, NULL, portMAX_DELAY);

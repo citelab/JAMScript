@@ -5,6 +5,7 @@
 #include <esp_wifi.h>
 #include <lwip/err.h>
 #include <lwip/sys.h>
+#include <string.h>
 #include "command.h"
 #include <receiver.h>
 
@@ -28,6 +29,8 @@ cnode_t* cnode_init(int argc, char** argv)
     cnode->tboard = tboard_create();
 
     cnode->initialized = true;
+
+    cnode->node_id = strdup("UNUSED FOR NOW");
 
     // Must happen postinit
     receiver_init();
@@ -68,14 +71,15 @@ void _cnode_scan_controllers(cnode_t* cnode)
     }
 }
 
-void cnode_destroy(cnode_t* cn)
+void cnode_destroy(cnode_t* cnode)
 {
-    // NOTE: very  temp
+    // NOTE: very  temp TODO: REMOVE
     return;
 
 
-    assert(cn->initialized);
-    tboard_destroy(cn->tboard);
+    assert(cnode->initialized);
+    free(cnode->node_id);
+    tboard_destroy(cnode->tboard);
 }
 
 // @Unimplemented

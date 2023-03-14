@@ -28,35 +28,38 @@ void receiver_thread(void* raw_ctx)
 
 
     struct netbuf* buffer;
-    uint8_t raw_buffer[256];
+    //uint8_t raw_buffer[256];
     uint16_t buffer_length;
 
     tboard_t* tboard = get_device_cnode()->tboard;
 
+
     int status;
     while(1)
-    {
+    {           
+        printf("Waiting for message...\n");
         status = netconn_recv(ctx->conn, &buffer);
         if(status == ERR_OK)
         {
-            buffer_length = netbuf_len(buffer);
-            
-            netbuf_copy(buffer, raw_buffer, 256);
-    
-            printf("Received: Buffer of length %d\n", buffer_length);
+            do
+            {            
+                printf("Received: Buffer of length %d\n", buffer->p->len);
 
-            // This is just a test
-            if(buffer_length > 50)
-            {
+                //dump_bufer_hex(buffer->p->payload, buffer->p->len);
 
-                dump_bufer_hex(raw_buffer, buffer_length);
+                command_t* cmd = command_from_data(NULL, buffer->p->payload, buffer->p->len);
 
-                command_t* cmd = command_from_data(NULL, raw_buffer, buffer_length);
                 process_message(tboard, cmd);
+                
                 command_free(cmd);
-            }
+        
+            } while (netbuf_next(buffer) > 0);
 
-            netbuf_free(buffer);
+            netbuf_delete(buffer);
+        }
+        else
+        {
+            printf("Somethign happened here!!!\n\n\n\n");
         }
     }
 }
@@ -75,14 +78,14 @@ void receiver_init()
     ctx->conn = netconn_new(NETCONN_UDP);
     assert(ctx->conn != NULL);
 
-    assert(netconn_bind(ctx->conn, NULL, Multicast_RECVPORT)==ERR_OK);
+    assert(netconn_bind(ctx->conn, NULL, 16501)==ERR_OK);
 
     //netconn_join_leave_group();
 
     // Start receiving/processing thread
     xTaskCreatePinnedToCore(receiver_thread, 
                             "Netconn Thread", 
-                            STACK_SIZE, 
+                            STACK_SIZE*4, 
                             ctx, 
                             2,
                             NULL, 

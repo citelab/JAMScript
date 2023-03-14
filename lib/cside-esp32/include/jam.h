@@ -8,7 +8,7 @@
 //#include "../src/dummy_interface.h"
 
 
-#define jsleep(x)
+#define jsleep(x) vTaskDelay(x/1000 * portTICK_PERIOD_MS)
 #define milestone_log(x)
 #define task_yield() taskYIELD()
 

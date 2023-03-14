@@ -22,6 +22,8 @@ typedef struct _cnode_t
     tboard_t* tboard;
     system_manager_t* system_manager;
 
+    char* node_id;
+
     multicast_t* discovery_multicast;
 
     jnode_record_t jnode_records[MAX_JNODES];

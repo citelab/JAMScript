@@ -1,6 +1,9 @@
 #include <processor.h>
 #include <cnode.h>
 #include <task.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <constants.h>
 
 void execute_cmd(tboard_t* tboard, function_t* f, command_t* cmd)
 {
@@ -20,6 +23,7 @@ void process_message(tboard_t* tboard, command_t* cmd)
 {
     command_t *rcmd;
     cnode_t* cnode = get_device_cnode();
+    remote_task_t* rtask;
     switch(cmd->cmd)
     {
     case CmdNames_PING:
@@ -29,23 +33,40 @@ void process_message(tboard_t* tboard, command_t* cmd)
         printf("Received ping!\n");
         
         command_free(rcmd);
-        command_free(cmd);
         //TODO: implement return ping send
         return;
     case CmdNames_REXEC:
         function_t* func = tboard_find_func(tboard, cmd->fn_name);
-
-        printf("got here\n");
         if(func==NULL)
         {
             printf("Couldn't find function '%s'\n", cmd->fn_name);
             //TODO: send error response
             return;
         }
-
-        //TODO: send ack
-
         execute_cmd(tboard, func, cmd);
+        return;
+    case CmdNames_REXEC_ACK:
+        rtask = tboard_find_remote_task(tboard, cmd->task_id);
+        rtask->status = REMOTE_TASK_STATUS_ACKED;
+        rtask->timeout = cmd->args[0].val.ival;
+
+        // TODO: consider if this task notify really needs to be here.        
+        xTaskNotify(rtask->parent_task->internal_handle,
+                    RTASK_ACK_BITS,
+                    eSetBits);
+        printf("Acknowledgement \n");
+        return;
+    case CmdNames_REXEC_RES:
+        rtask = tboard_find_remote_task(tboard, cmd->task_id);
+
+        rtask->return_arg = command_args_clone(cmd->args);
+        rtask->status = REMOTE_TASK_STATUS_COMPLETE;
+        xTaskNotify(rtask->parent_task->internal_handle,
+                    RTASK_RES_BITS,
+                    eSetBits);
+
+        printf("Finished rexec res\n");
+
         return;
     }   
 }

@@ -19,13 +19,16 @@ arg_t* remote_sync_call(tboard_t* tboard, char* symbol, char* arg_signature, ...
         res = command_qargs_alloc(arg_signature, &qargs, args);
         va_end(args);
 
+        assert(res!=NULL);
+
         if (res)
         {
             rarg = remote_task_start_sync(tboard, symbol, level, arg_signature,
                                           qargs, strlen(arg_signature));
         }
         else
-            rarg = NULL;
+            rarg = NULL; //TODO: This is an error state I believe..
+
     }
     else
         rarg = remote_task_start_sync(tboard, symbol, level, "", NULL, 0);
@@ -45,6 +48,9 @@ bool remote_async_call(tboard_t* tboard, char* symbol, char* arg_signature, ...)
         va_start(args, arg_signature);
         res = command_qargs_alloc(arg_signature, &qargs, args);
         va_end(args);
+
+        assert(res!=NULL);
+
         if (res)
         {
             return remote_task_start_async(tboard, symbol, level, arg_signature,

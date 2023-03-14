@@ -7,6 +7,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <freertos/semphr.h>
+#include "multicast.h"
 
 // Perhaps all of this should just be put into the task.h file...
 
@@ -28,7 +29,7 @@ void execution_context_return(execution_context_t* ctx, arg_t* return_arg);
 
 typedef struct _task_t
 {
-    uint32_t id;
+    uint32_t task_id;
     uint32_t index;
     TaskHandle_t internal_handle; //@Refactor
 
@@ -44,8 +45,24 @@ typedef struct _task_t
     
 } task_t;
 
+
+#define REMOTE_TASK_STATUS_WAITING_ACK  1
+#define REMOTE_TASK_STATUS_ACKED        2
+#define REMOTE_TASK_STATUS_COMPLETE     3
+#define REMOTE_TASK_STATUS_ERROR        4
+
 typedef struct _remote_task_t
 {
+    int status;
+    int index;
+    arg_t*   return_arg;
+    char*   symbol;
+
+    uint32_t task_id;
+    uint32_t timeout;
+
+    task_t* parent_task;
+
     bool destroyed;
 } remote_task_t;
 
@@ -55,6 +72,8 @@ void    task_destroy(tboard_t* tboard, task_t* task);
 
 arg_t*  task_get_args(task_t* task); 
 void    task_set_return_arg(task_t* task, arg_t* return_arg);
+
+task_t* get_current_task();
 
 // @Unimplemented
 arg_t* remote_task_start_sync(tboard_t* tboard, 
@@ -114,8 +133,17 @@ struct _tboard_t
     SemaphoreHandle_t task_management_mutex;
     StaticSemaphore_t task_management_mutex_data;
 
-    remote_task_t*  remote_tasks[MAX_TASKS];
+    // No indirection for faster iterations.
+    remote_task_t   remote_tasks[MAX_TASKS];
     uint32_t        num_remote_tasks;
+    uint32_t        num_dead_remote_tasks;
+    uint32_t        last_dead_remote_task; //rename to be clearer. Destroyed index search start.
+
+    SemaphoreHandle_t remote_task_management_mutex;
+    StaticSemaphore_t remote_task_management_mutex_data;
+
+    multicast_t* dispatcher;
+
 };
 
 void        function_dump(function_t* func);
@@ -126,6 +154,8 @@ void        tboard_destroy();
 void        tboard_register_func(tboard_t* tboard, function_t func);
 
 void        tboard_dump_funcs(tboard_t* tboard);
+remote_task_t* tboard_find_remote_task(tboard_t* tboard, uint32_t task_id);
+
 
 function_t* tboard_find_func(tboard_t* tboard, const char* symbol);
 

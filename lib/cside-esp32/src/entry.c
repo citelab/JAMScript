@@ -24,12 +24,6 @@ void tests()
     test_command = command_new(CmdNames_REXEC, 0, "test_func", 12, "goodnode", "");
     process_message(device_cnode->tboard, test_command);
     command_free(test_command);
-
-                
-    //arg_t arg;
-    //arg.nargs = 1;
-    //arg.type = INT_TYPE;
-    //arg.val.ival = 2011;
     
     test_command = command_new(CmdNames_REXEC, 0, "test_func2", 12, "goodnode", "i", 2012);
 
@@ -38,7 +32,7 @@ void tests()
     multicast_test2();
 
     // Test 3
-    test_command = command_new(CmdNames_REXEC, 0, "test_func2", 12, "goodnode", "i", 2424);
+    test_command = command_new(CmdNames_REXEC, 0, "compyou", 12, "goodnode", "s", "Secret special message!");
 
     ipv4_address_t addr;
     addr.a1 = 10;
@@ -46,7 +40,7 @@ void tests()
     addr.a3 = 0;
     addr.a4 = 10;
 
-    multicast_t* multicast = multicast_create(addr, Multicast_RECVPORT, Multicast_SENDPORT, test_command->length);
+    multicast_t* multicast = multicast_create(addr, Multicast_RECVPORT+1, Multicast_SENDPORT+1, test_command->length);
     multicast_copy_send(multicast, test_command->buffer, test_command->length);
 
 
@@ -65,7 +59,12 @@ void app_main(void)
 
     jam_component_wrap_main(0, NULL);
 
-    tests();
+    //tests();
+    while (1)
+    {
+        // Feed watchdog.
+        vTaskDelay(10);
+    }
 
     assert(0 && "JAMScript program exited");
     while(1) {}
