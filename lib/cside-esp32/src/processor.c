@@ -5,31 +5,27 @@
 #include <freertos/task.h>
 #include <constants.h>
 
+void send_ack(tboard_t* tboard, command_t* cmd, int duration)
+{
+    command_t* ack_cmd = command_new(CmdNames_REXEC_ACK, 0, cmd->fn_name, cmd->task_id, cmd->node_id, "i", duration);
+        
+    assert(ack_cmd->length <= MAX_COMMAND_SIZE);
+    multicast_copy_send(tboard->dispatcher, ack_cmd->buffer, ack_cmd->length);
+    command_free(ack_cmd); 
+}
+
 void execute_cmd(tboard_t *tboard, function_t *f, command_t *cmd)
 {
-    // Send Ack
+    //This is silly
+    if(get_device_cnode()->node_id==NULL)
+        get_device_cnode()->node_id = strdup(cmd->node_id);
+
+    // Ack
+    send_ack(tboard, cmd, 20);
 
     // Queue Task
-    if (cmd->subcmd == 0)
-    {
-        task_t* task = task_create_from_remote(tboard, f, cmd->args); // no return value
-
-        command_t* ack_cmd = command_new(CmdNames_REXEC_ACK, 0, cmd->fn_name, cmd->task_id, cmd->node_id, "i", 20);
-        
-        assert(ack_cmd->length <= MAX_COMMAND_SIZE);
-        multicast_copy_send(tboard->dispatcher, ack_cmd->buffer, ack_cmd->length);
-        command_free(ack_cmd); 
-
-    }
-    else
-    {
-        assert(0 && "UNIMPLEMENTED");
-
-        // arg_t *a = command_arg_clone_special(cmd->args, cmd->fn_name, cmd->task_id, cmd->node_id, s);
-        //  TODO: maybe replace task allocation with a fixed size buffer and queue
-        //  commands when buffer reaches capacity
-        // task_create(tboard, esync, a);
-    }
+    task_t* task = task_create_from_remote(tboard, f, cmd->task_id, cmd->args, true); // no return value
+    
 }
 #define TEMP_ID 12
 void process_message(tboard_t *tboard, command_t *cmd)
@@ -80,6 +76,12 @@ void process_message(tboard_t *tboard, command_t *cmd)
 
         printf("Finished rexec res\n");
 
+        return;
+    case CmdNames_GET_REXEC_RES:
+        printf("Requesting response\n");
+        // TODO: check if task exists
+        task_t* task = tboard_find_task(tboard, cmd->task_id);
+        send_ack(tboard, cmd, 20);
         return;
     }
 }

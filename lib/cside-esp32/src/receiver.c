@@ -42,7 +42,7 @@ void receiver_thread(void* raw_ctx)
         {
             do
             {            
-                printf("Received: Buffer of length %d\n", buffer->p->len);
+                //printf("Received: Buffer of length %d\n", buffer->p->len);
 
                 //dump_bufer_hex(buffer->p->payload, buffer->p->len);
 

@@ -24,14 +24,14 @@ typedef struct _function_t function_t;
 typedef struct _execution_context_t
 {
     arg_t* query_args;
-    arg_t* return_arg;
+    arg_t** return_arg;
 } execution_context_t;
 
 void execution_context_return(execution_context_t* ctx, arg_t* return_arg);
 
 typedef struct _task_t
 {
-    uint32_t task_id;
+    uint64_t task_id;
     uint32_t index;
     TaskHandle_t internal_handle; //@Refactor
 
@@ -39,7 +39,6 @@ typedef struct _task_t
     // TODO: refactor to func.
     function_t* function; 
     arg_t*  query_args;
-    arg_t   return_arg;
 
     bool completed;
 
@@ -63,7 +62,7 @@ typedef struct _remote_task_t
     arg_t*   return_arg;
     char*   symbol;
 
-    uint32_t task_id;
+    uint64_t task_id;
     uint32_t timeout;
 
     task_t* parent_task;
@@ -73,9 +72,8 @@ typedef struct _remote_task_t
     
 
 task_t* task_create(tboard_t* tboard, function_t* function, arg_t* args);
-task_t* task_create_from_remote(tboard_t* tboard, function_t* function, arg_t* args);
+task_t* task_create_from_remote(tboard_t* tboard, function_t* function, uint64_t task_id, arg_t* args, bool remote_hook);
 void    task_destroy(tboard_t* tboard, task_t* task);
-
 arg_t*  task_get_args(task_t* task); 
 void    task_set_return_arg(task_t* task, arg_t* return_arg);
 
@@ -160,7 +158,8 @@ void        tboard_destroy();
 void        tboard_register_func(tboard_t* tboard, function_t func);
 
 void        tboard_dump_funcs(tboard_t* tboard);
-remote_task_t* tboard_find_remote_task(tboard_t* tboard, uint32_t task_id);
+remote_task_t*  tboard_find_remote_task(tboard_t* tboard, uint64_t task_id);
+task_t*         tboard_find_task(tboard_t* tboard, uint64_t task_id);
 
 
 function_t* tboard_find_func(tboard_t* tboard, const char* symbol);

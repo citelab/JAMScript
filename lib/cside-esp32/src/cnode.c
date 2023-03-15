@@ -30,7 +30,7 @@ cnode_t* cnode_init(int argc, char** argv)
 
     cnode->initialized = true;
 
-    cnode->node_id = strdup("UNUSED FOR NOW");
+    cnode->node_id = NULL;
 
     // Must happen postinit
     receiver_init();

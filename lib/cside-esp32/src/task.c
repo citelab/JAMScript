@@ -69,7 +69,7 @@ function_t* tboard_find_func(tboard_t* tboard, const char* symbol)
 {
     assert(tboard != NULL);
 
-    printf("Looking for a symbol %s\n", symbol);
+    //printf("Looking for a symbol %s\n", symbol);
 
 
     // Should consider using a hash
@@ -94,21 +94,33 @@ uint32_t _tboard_get_next_task_index(tboard_t* tboard)
     if(!tboard->num_dead_tasks)
     {
         //TODO: double check
-        assert(tboard->num_tasks < MAX_TASKS);
-        return tboard->num_tasks;
+        assert(tboard->num_tasks+1 < MAX_TASKS);
+
+        assert(xSemaphoreTake(tboard->task_management_mutex, MAX_SEMAPHORE_WAIT) == pdTRUE);
+        int indx = tboard->num_tasks++;
+        xSemaphoreGive(tboard->task_management_mutex);
+
+        return indx;
     }
 
     for(int i = tboard->last_dead_task; i < tboard->num_tasks; i++)
     {
         if(tboard->tasks[i] == NULL)
         {
-            tboard->last_dead_task = i;
+            assert(xSemaphoreTake(tboard->task_management_mutex, MAX_SEMAPHORE_WAIT) == pdTRUE);
+            if(tboard->tasks[i] != NULL)
+                continue;
+
+            tboard->last_dead_task = i+1;
             tboard->num_dead_tasks--;
+
+            xSemaphoreGive(tboard->task_management_mutex);
             return i;
         }
     }
 
-    printf("Task list state invalid...\n");
+    //printf("Task list state invalid...\n");
+    assert(0 && "Corrupted task array.");
 
     //TODO: double check
     assert(tboard->num_tasks < MAX_TASKS);
@@ -171,12 +183,12 @@ void _debug_print_command_cbor(command_t* command)
 void _task_freertos_entrypoint_wrapper(void* param)
 {
     task_t* task = (task_t*) param;
-
+    arg_t* return_arg = NULL;
     execution_context_t ctx;
     ctx.query_args = task->query_args;
-    ctx.return_arg = &task->return_arg;
+    ctx.return_arg = &return_arg;
 
-    printf("Heap size left: %u\n\n", heap_caps_get_free_size(MALLOC_CAP_8BIT) );
+    //printf("Heap size left: %u\n\n", heap_caps_get_free_size(MALLOC_CAP_8BIT) );
 
     vTaskSetThreadLocalStoragePointer( NULL,  
                                        TLSTORE_TASK_PTR_IDX,     
@@ -185,24 +197,27 @@ void _task_freertos_entrypoint_wrapper(void* param)
 
     task->function->entry_point(&ctx);
 
-    //
-    if(task->return_arg.val.sval != NULL && task->return_hook)
-    {
+    if(return_arg != NULL && task->return_hook)
+    {    
         command_t* res_cmd = command_new_using_arg(CmdNames_REXEC_RES, 
                                                     0, 
                                                     task->function->symbol, 
                                                     task->task_id, 
-                                                    "UNUSED_FOR_NOW", 
+                                                    get_device_cnode()->node_id, 
                                                     task->function->arg_signature, 
-                                                    &ctx.return_arg);
+                                                    return_arg);
 
         assert(res_cmd->length <= MAX_COMMAND_SIZE);
-        multicast_copy_send(get_device_cnode()->tboard->dispatcher, res_cmd->buffer, res_cmd->length);
+        multicast_copy_send(get_device_cnode()->tboard->dispatcher, 
+                            res_cmd->buffer, 
+                            res_cmd->length);
         command_free(res_cmd);
     }
 
     task->completed = true;
 
+    if(return_arg != NULL)
+        command_args_free(return_arg);
     task_destroy(get_device_cnode()->tboard, task);
     vTaskDelete(0);
 }
@@ -211,14 +226,10 @@ task_t* task_create(tboard_t *tboard, function_t* function, arg_t* query_args)
 {
     task_t* task = (task_t*) calloc(1, sizeof(task_t));
 
-    assert(xSemaphoreTake(tboard->task_management_mutex, MAX_SEMAPHORE_WAIT) == pdTRUE);
-
     task->index = _tboard_get_next_task_index(tboard);
     tboard->tasks[task->index] = task;
 
     task->task_id = mysnowflake_id();
-
-    xSemaphoreGive(tboard->task_management_mutex);
 
     task->function = function;
     task->query_args = command_args_clone(query_args);
@@ -238,26 +249,26 @@ task_t* task_create(tboard_t *tboard, function_t* function, arg_t* query_args)
 }
 
 
-task_t* task_create_from_remote(tboard_t* tboard, function_t* function, arg_t* query_args)
+task_t* task_create_from_remote(tboard_t* tboard, function_t* function, uint64_t task_id, arg_t* query_args, bool return_hook)
 {
     task_t* task = (task_t*) calloc(1, sizeof(task_t));
-
-    assert(xSemaphoreTake(tboard->task_management_mutex, MAX_SEMAPHORE_WAIT) == pdTRUE);
-
     task->index = _tboard_get_next_task_index(tboard);
     tboard->tasks[task->index] = task;
 
-    task->task_id = mysnowflake_id();
-
-    xSemaphoreGive(tboard->task_management_mutex);
-
+    task->task_id = task_id;
+    
     task->function = function;
     task->query_args = command_args_clone(query_args);
-    task->return_hook = true;
+
+    //TODO: disable this if return val is not used
+    task->return_hook = return_hook;
 
     int core = 1;
     if (function->task_type==SEC_BATCH_TASK)
+    {
+        printf("Warning: Starting Task on core 0\n");
         core = 0;
+    }
 
     xTaskCreatePinnedToCore(_task_freertos_entrypoint_wrapper, 
                             "UNUSED", 
@@ -267,6 +278,25 @@ task_t* task_create_from_remote(tboard_t* tboard, function_t* function, arg_t* q
                             &task->internal_handle, 
                             core);
     return task;
+}
+
+
+task_t* tboard_find_task(tboard_t* tboard, uint64_t task_id)
+{
+    for(int i = 0; i < tboard->num_tasks; i++)
+    {
+        task_t* indx = tboard->tasks[i];
+        if(indx==NULL)
+            continue;
+
+        if(indx->task_id==task_id)
+        {
+            return indx;
+        }
+    }
+    printf("Couldn't find remote task with id %llu\n", task_id);
+    assert(0 && "Couldn't find task with id");
+    return NULL;
 }
 
 void task_destroy(tboard_t *tboard, task_t* task)
@@ -308,9 +338,12 @@ uint32_t _tboard_alloc_next_remote_task(tboard_t* tboard)
 
     for(int i = tboard->last_dead_remote_task; i < tboard->num_remote_tasks; i++)
     {
-        if(tboard->remote_tasks[i].destroyed == true)
+        if(tboard->remote_tasks[i].destroyed)
         {
             assert(xSemaphoreTake(tboard->remote_task_management_mutex, MAX_SEMAPHORE_WAIT) == pdTRUE);
+            if(!tboard->remote_tasks[i].destroyed)
+                continue;
+
             // next search should start at the next index after this
             tboard->last_dead_remote_task = i+1;
             tboard->num_dead_remote_tasks--;
@@ -339,7 +372,7 @@ void remote_task_destroy(tboard_t *tboard, remote_task_t* rtask)
     xSemaphoreGive(tboard->remote_task_management_mutex);
 }
 
-remote_task_t* tboard_find_remote_task(tboard_t* tboard, uint32_t task_id)
+remote_task_t* tboard_find_remote_task(tboard_t* tboard, uint64_t task_id)
 {
     for(int i = 0; i < tboard->num_remote_tasks; i++)
     {
@@ -352,7 +385,7 @@ remote_task_t* tboard_find_remote_task(tboard_t* tboard, uint32_t task_id)
             return indx;
         }
     }
-
+    printf("Couldn't find remote task with id %llu\n", task_id);
     assert(0 && "Couldn't find remote task with id");
     return NULL;
 }
@@ -363,7 +396,7 @@ void execution_context_return(execution_context_t* ctx, arg_t* return_arg)
     assert(return_arg != NULL);
     assert(ctx->return_arg != NULL);
 
-    *ctx->return_arg = *return_arg;
+    *ctx->return_arg = command_args_clone(return_arg);
 }
 
 jam_error_t remote_command_send_basic_command(tboard_t* tboard, remote_task_t* rtask, int cmd)
@@ -433,7 +466,7 @@ arg_t* remote_task_start_sync(tboard_t* tboard, char* symbol, int32_t level,
 
         if(response == 0)
         {
-            printf("Remote Task %ld running '%s' timed out!\n", rtask->task_id, rtask->symbol);
+            printf("Remote Task %llu running '%s' timed out!\n", rtask->task_id, rtask->symbol);
             if(!got_ack)
             {
                 assert(0 && "Never received an acknowledgement");

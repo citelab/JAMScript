@@ -44,7 +44,7 @@ static long id = 1;
     do                                                                         \
     {                                                                          \
         if (y != NULL)                                                         \
-            strncpy(x, y, n);                                                  \
+            strncpy(x, y, n-1);                                                  \
         else                                                                   \
             strcpy(x, "");                                                     \
     } while (0)
@@ -496,6 +496,8 @@ void command_args_free(arg_t* arg)
 
 arg_t* command_args_clone(arg_t* arg)
 {
+    if(arg==NULL)
+        return NULL;
     arg_t* val = (arg_t*)calloc(arg[0].nargs, sizeof(arg_t));
     assert(val != NULL);
     for (int i = 0; i < arg[0].nargs; i++)
