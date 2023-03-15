@@ -57,5 +57,6 @@
 // THIS IS TEMPORARY 
 #define STACK_SIZE 1024*2
 
+#define MAX_COMMAND_SIZE 256
 
 #endif

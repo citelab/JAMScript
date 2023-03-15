@@ -36,8 +36,7 @@ void receiver_thread(void* raw_ctx)
 
     int status;
     while(1)
-    {           
-        printf("Waiting for message...\n");
+    {
         status = netconn_recv(ctx->conn, &buffer);
         if(status == ERR_OK)
         {

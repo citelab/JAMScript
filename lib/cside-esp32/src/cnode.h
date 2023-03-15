@@ -5,6 +5,7 @@
 #include "task.h"
 #include "system_manager.h"
 #include "multicast.h"
+#include "util.h"
 
 #define MAX_JNODES 8
 

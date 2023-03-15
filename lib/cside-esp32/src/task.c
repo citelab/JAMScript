@@ -8,13 +8,14 @@
 #include "constants.h"
 #include "util.h"
 #include "multicast.h"
+#include "cnode.h"
+#include "esp_heap_caps.h"
 
 
 
 tboard_t _global_tboard;
 
 // This is a totally random guess
-#define MAX_COMMAND_SIZE 256
 #define TLSTORE_TASK_PTR_IDX 0 
 
 // Wait do we need this...
@@ -175,6 +176,8 @@ void _task_freertos_entrypoint_wrapper(void* param)
     ctx.query_args = task->query_args;
     ctx.return_arg = &task->return_arg;
 
+    printf("Heap size left: %u\n\n", heap_caps_get_free_size(MALLOC_CAP_8BIT) );
+
     vTaskSetThreadLocalStoragePointer( NULL,  
                                        TLSTORE_TASK_PTR_IDX,     
                                        param );
@@ -182,7 +185,25 @@ void _task_freertos_entrypoint_wrapper(void* param)
 
     task->function->entry_point(&ctx);
 
+    //
+    if(task->return_arg.val.sval != NULL && task->return_hook)
+    {
+        command_t* res_cmd = command_new_using_arg(CmdNames_REXEC_RES, 
+                                                    0, 
+                                                    task->function->symbol, 
+                                                    task->task_id, 
+                                                    "UNUSED_FOR_NOW", 
+                                                    task->function->arg_signature, 
+                                                    &ctx.return_arg);
+
+        assert(res_cmd->length <= MAX_COMMAND_SIZE);
+        multicast_copy_send(get_device_cnode()->tboard->dispatcher, res_cmd->buffer, res_cmd->length);
+        command_free(res_cmd);
+    }
+
     task->completed = true;
+
+    task_destroy(get_device_cnode()->tboard, task);
     vTaskDelete(0);
 }
 
@@ -200,7 +221,39 @@ task_t* task_create(tboard_t *tboard, function_t* function, arg_t* query_args)
     xSemaphoreGive(tboard->task_management_mutex);
 
     task->function = function;
-    task->query_args = query_args;
+    task->query_args = command_args_clone(query_args);
+
+    int core = 1;
+    if (function->task_type==SEC_BATCH_TASK)
+        core = 0;
+
+    xTaskCreatePinnedToCore(_task_freertos_entrypoint_wrapper, 
+                            "UNUSED", 
+                            STACK_SIZE, 
+                            task, 
+                            1,
+                            &task->internal_handle, 
+                            core);
+    return task;
+}
+
+
+task_t* task_create_from_remote(tboard_t* tboard, function_t* function, arg_t* query_args)
+{
+    task_t* task = (task_t*) calloc(1, sizeof(task_t));
+
+    assert(xSemaphoreTake(tboard->task_management_mutex, MAX_SEMAPHORE_WAIT) == pdTRUE);
+
+    task->index = _tboard_get_next_task_index(tboard);
+    tboard->tasks[task->index] = task;
+
+    task->task_id = mysnowflake_id();
+
+    xSemaphoreGive(tboard->task_management_mutex);
+
+    task->function = function;
+    task->query_args = command_args_clone(query_args);
+    task->return_hook = true;
 
     int core = 1;
     if (function->task_type==SEC_BATCH_TASK)
@@ -228,6 +281,7 @@ void task_destroy(tboard_t *tboard, task_t* task)
     tboard->num_dead_tasks++;
     xSemaphoreGive(tboard->task_management_mutex);
 
+    command_args_free(task->query_args);
     free(task);
 }
 
@@ -342,8 +396,6 @@ arg_t* remote_task_start_sync(tboard_t* tboard, char* symbol, int32_t level,
     command_t* command = command_new_using_arg(CmdNames_REXEC, 0, symbol,
                                                task_id,
                                                "temp_device_id", arg_sig, args);
-    
-    //_debug_print_command_cbor(command);
 
     remote_task_t rtask_builder = {0};
     rtask_builder.status = REMOTE_TASK_STATUS_WAITING_ACK;
@@ -396,19 +448,10 @@ arg_t* remote_task_start_sync(tboard_t* tboard, char* symbol, int32_t level,
     
     arg_t* rargs = rtask->return_arg;
     remote_task_destroy(tboard, rtask);
-    if(notification == 0)
-    {
-        arg_t* args = calloc(1, sizeof(arg_t));
-        args->nargs = 1;
-        args->type = STRING_TYPE;
-        args->val.sval = strdup("ERR");
-        return args;
-    }
-
+    
     return rargs;
 }
 
-// @Unimplemented
 arg_t* remote_task_start_async(tboard_t* tboard, char* symbol, int32_t level,
                                char* arg_sig, arg_t* args, uint32_t size)
 {

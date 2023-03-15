@@ -32,7 +32,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <assert.h>
 #include <cbor.h>
-#include <pthread.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -70,7 +70,7 @@ void internal_command_free(internal_command_t* ic)
  * Return a command that includes a CBOR representation that can be sent out (a
  * byte string) It reuses the command_new_using_arg() function
  */
-command_t* command_new(int cmd, int subcmd, char* fn_name, uint32_t task_id,
+command_t* command_new(int cmd, int subcmd, char* fn_name, uint64_t task_id,
                        char* node_id, char* fn_argsig, ...)
 {
     va_list args;
@@ -117,11 +117,14 @@ command_t* command_new(int cmd, int subcmd, char* fn_name, uint32_t task_id,
     command_t* c = command_new_using_arg(cmd, subcmd, fn_name, 
                                          task_id, node_id, fn_argsig, 
                                          qargs);
+
+    if(qargs!=NULL)
+        command_args_free(qargs);
     return c;
 }
 
 command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name,
-                                 uint32_t taskid, char* node_id,
+                                 uint64_t taskid, char* node_id,
                                  char* fn_argsig, arg_t* args)
 {
     command_t* cmdo = (command_t*)calloc(1, sizeof(command_t));
@@ -150,7 +153,8 @@ command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name,
     // store and encode task_id
     cmdo->task_id = taskid;
     cbor_encode_text_stringz(&mapEncoder, "taskid");
-    cbor_encode_uint(&mapEncoder, taskid);
+    //cbor_encode_uint(&mapEncoder, taskid);
+    cbor_encode_double(&mapEncoder, taskid);
 
     // store and encode node_id
     COPY_STRING(cmdo->node_id, node_id, LARGE_CMD_STR_LEN);
@@ -205,7 +209,7 @@ command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name,
     cbor_encoder_close_container(&encoder, &mapEncoder);
     cmdo->id       = id++;
     cmdo->refcount = 1;
-    pthread_mutex_init(&cmdo->lock, NULL);
+    //pthread_mutex_init(&cmdo->lock, NULL);
     cmdo->length = cbor_encoder_get_buffer_size(&encoder, cmdo->buffer);
     return cmdo;
 }
@@ -343,25 +347,25 @@ command_t* command_from_data(char* fmt, void* data, int len)
         cbor_value_advance(&map);
     }
     cmd->refcount = 1;
-    pthread_mutex_init(&cmd->lock, NULL);
+    //pthread_mutex_init(&cmd->lock, NULL);
     cmd->id = id++;
     return cmd;
 }
 
 void command_hold(command_t* cmd)
 {
-    pthread_mutex_lock(&cmd->lock);
+    //pthread_mutex_lock(&cmd->lock);
     cmd->refcount++;
-    pthread_mutex_unlock(&cmd->lock);
+    //pthread_mutex_unlock(&cmd->lock);
 }
 
 void command_free(command_t* cmd)
 {
     int nargs;
     int rc;
-    pthread_mutex_lock(&cmd->lock);
+    //pthread_mutex_lock(&cmd->lock);
     rc = --cmd->refcount;
-    pthread_mutex_unlock(&cmd->lock);
+    //pthread_mutex_unlock(&cmd->lock);
 
     // don't free the structure if some other thread could be referring to it.
     if (rc > 0)
@@ -396,7 +400,9 @@ bool command_qargs_alloc(const char* fmt, arg_t** rargs, va_list args)
     int flen = strlen(fmt);
 
     if (flen > 0)
+    {
         qargs = (arg_t*)calloc(flen, sizeof(arg_t));
+    }
     else
         return false;
 
@@ -530,7 +536,7 @@ void command_print(command_t* cmd)
     printf("\nCommand subcmd: %d\n", cmd->subcmd);
 
     printf("\nCommand fn_name: %s\n", cmd->fn_name);
-    printf("\nCommand taskid : %lu\n", cmd->task_id);
+    printf("\nCommand taskid : %llu\n", cmd->task_id);
     printf("\nCommand node_id: %s\n", cmd->node_id);
     printf("\nCommand fn_argsig: %s\n", cmd->fn_argsig);
 

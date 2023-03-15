@@ -22,6 +22,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifndef __NVOID_H__
 #define __NVOID_H__
+#include "util.h"
 
 typedef struct _nvoid_t
 {

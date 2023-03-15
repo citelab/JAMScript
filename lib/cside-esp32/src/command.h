@@ -28,8 +28,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "nvoid.h"
 #include <cbor.h>
-#include <pthread.h>
 #include <stdint.h>
+#include "util.h"
 
 #define CmdNames_REGISTER 1001
 #define CmdNames_REGISTER_ACK 1002
@@ -112,7 +112,7 @@ typedef struct _command_t
     int cmd;
     int subcmd;
     char fn_name[SMALL_CMD_STR_LEN]; // Function name
-    long int task_id; // Task identifier (a function in execution)
+    uint64_t task_id; // Task identifier (a function in execution)
     char node_id[LARGE_CMD_STR_LEN];        // this can be the UUID4 of the node
     char fn_argsig[SMALL_CMD_STR_LEN];      // Argument signature of the
                                             // functions - use fmask format
@@ -122,7 +122,6 @@ typedef struct _command_t
     arg_t* args; // List of args
 
     int refcount; // Deallocation control
-    pthread_mutex_t lock;
     long id;
 } command_t;
 
@@ -137,10 +136,10 @@ internal_command_t* internal_command_new(command_t* cmd);
 void internal_command_free(internal_command_t* ic);
 
 // Constructors
-command_t* command_new(int cmd, int subcmd, char* fn_name, uint32_t task_id,
+command_t* command_new(int cmd, int subcmd, char* fn_name, uint64_t task_id,
                        char* node_id, char* fn_argsig, ...);
 command_t* command_new_using_arg(int cmd, int opt, char* fn_name,
-                                 uint32_t taskid, char* node_id,
+                                 uint64_t taskid, char* node_id,
                                  char* fn_argsig, arg_t* args);
 command_t* command_from_data(char* fn_argsig, void* data, int len);
 

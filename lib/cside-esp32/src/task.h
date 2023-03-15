@@ -8,6 +8,8 @@
 #include <freertos/task.h>
 #include <freertos/semphr.h>
 #include "multicast.h"
+#include "util.h"
+
 
 // Perhaps all of this should just be put into the task.h file...
 
@@ -41,6 +43,8 @@ typedef struct _task_t
 
     bool completed;
 
+    bool return_hook;
+
     volatile bool safe_to_delete;
     
 } task_t;
@@ -51,6 +55,7 @@ typedef struct _task_t
 #define REMOTE_TASK_STATUS_COMPLETE     3
 #define REMOTE_TASK_STATUS_ERROR        4
 
+// Record of task running on controller
 typedef struct _remote_task_t
 {
     int status;
@@ -65,9 +70,10 @@ typedef struct _remote_task_t
 
     bool destroyed;
 } remote_task_t;
-
+    
 
 task_t* task_create(tboard_t* tboard, function_t* function, arg_t* args);
+task_t* task_create_from_remote(tboard_t* tboard, function_t* function, arg_t* args);
 void    task_destroy(tboard_t* tboard, task_t* task);
 
 arg_t*  task_get_args(task_t* task); 

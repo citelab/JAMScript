@@ -1,6 +1,7 @@
 #ifndef __SYSTEM_MANAGER_H__
 #define __SYSTEM_MANAGER_H__
 #include <stdbool.h>
+#include "util.h"
 
 #include <esp_event.h>
 #include <esp_netif_types.h>

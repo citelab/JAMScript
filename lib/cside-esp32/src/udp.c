@@ -237,9 +237,18 @@ jam_error_t udp_packet_init(udp_packet_t* packet,
     return JAM_OK;
 }
 
-jam_error_t udp_packet_package(udp_packet_t* packet, uint32_t buffer_size)
+jam_error_t udp_packet_package(udp_packet_t* packet, uint32_t raw_buffer_size)
 {
-    packet->frame_udp.length = bswap16(sizeof(frame_udp_t) + buffer_size);
+    uint32_t buffer_size = raw_buffer_size + (raw_buffer_size%2);
+
+    // This is kind of dumb
+    if(raw_buffer_size%2 == 1)
+    {
+        // maybe the worst line of code ive seen
+        *((uint8_t*)(&packet->frame_udp) + sizeof(frame_udp_t) + buffer_size - 1) = 0;
+    }
+
+    packet->frame_udp.length = bswap16(sizeof(frame_udp_t) + raw_buffer_size);
     packet->frame_ip.total_length = bswap16(sizeof(frame_ip_t) + sizeof(frame_udp_t) + buffer_size);
 
     frame_ip_calculate_checksum(&packet->frame_ip);

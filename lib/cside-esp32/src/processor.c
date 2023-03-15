@@ -5,42 +5,55 @@
 #include <freertos/task.h>
 #include <constants.h>
 
-void execute_cmd(tboard_t* tboard, function_t* f, command_t* cmd)
+void execute_cmd(tboard_t *tboard, function_t *f, command_t *cmd)
 {
+    // Send Ack
+
+    // Queue Task
     if (cmd->subcmd == 0)
-        task_create(tboard, f, cmd->args); // no return value
-    else {
+    {
+        task_t* task = task_create_from_remote(tboard, f, cmd->args); // no return value
+
+        command_t* ack_cmd = command_new(CmdNames_REXEC_ACK, 0, cmd->fn_name, cmd->task_id, cmd->node_id, "i", 20);
+        
+        assert(ack_cmd->length <= MAX_COMMAND_SIZE);
+        multicast_copy_send(tboard->dispatcher, ack_cmd->buffer, ack_cmd->length);
+        command_free(ack_cmd); 
+
+    }
+    else
+    {
         assert(0 && "UNIMPLEMENTED");
 
-        //arg_t *a = command_arg_clone_special(cmd->args, cmd->fn_name, cmd->task_id, cmd->node_id, s);
-        // TODO: maybe replace task allocation with a fixed size buffer and queue
-        // commands when buffer reaches capacity
-        //task_create(tboard, esync, a);
+        // arg_t *a = command_arg_clone_special(cmd->args, cmd->fn_name, cmd->task_id, cmd->node_id, s);
+        //  TODO: maybe replace task allocation with a fixed size buffer and queue
+        //  commands when buffer reaches capacity
+        // task_create(tboard, esync, a);
     }
 }
 #define TEMP_ID 12
-void process_message(tboard_t* tboard, command_t* cmd)
+void process_message(tboard_t *tboard, command_t *cmd)
 {
     command_t *rcmd;
-    cnode_t* cnode = get_device_cnode();
-    remote_task_t* rtask;
-    switch(cmd->cmd)
+    cnode_t *cnode = get_device_cnode();
+    remote_task_t *rtask;
+    switch (cmd->cmd)
     {
     case CmdNames_PING:
         rcmd = command_new(CmdNames_PONG, 0, "", 0, TEMP_ID, "");
-        //multicast_copy_send(multicast, rmd->buffer, rcmd->length);
+        // multicast_copy_send(multicast, rmd->buffer, rcmd->length);
 
         printf("Received ping!\n");
-        
+
         command_free(rcmd);
-        //TODO: implement return ping send
+        // TODO: implement return ping send
         return;
     case CmdNames_REXEC:
-        function_t* func = tboard_find_func(tboard, cmd->fn_name);
-        if(func==NULL)
+        function_t *func = tboard_find_func(tboard, cmd->fn_name);
+        if (func == NULL)
         {
             printf("Couldn't find function '%s'\n", cmd->fn_name);
-            //TODO: send error response
+            // TODO: send error response
             return;
         }
         execute_cmd(tboard, func, cmd);
@@ -50,7 +63,7 @@ void process_message(tboard_t* tboard, command_t* cmd)
         rtask->status = REMOTE_TASK_STATUS_ACKED;
         rtask->timeout = cmd->args[0].val.ival;
 
-        // TODO: consider if this task notify really needs to be here.        
+        // TODO: consider if this task notify really needs to be here.
         xTaskNotify(rtask->parent_task->internal_handle,
                     RTASK_ACK_BITS,
                     eSetBits);
@@ -68,5 +81,5 @@ void process_message(tboard_t* tboard, command_t* cmd)
         printf("Finished rexec res\n");
 
         return;
-    }   
+    }
 }

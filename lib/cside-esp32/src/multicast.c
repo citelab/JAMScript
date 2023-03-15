@@ -66,6 +66,8 @@ jam_error_t multicast_copy_send(multicast_t* multicast, void* buf, uint32_t buf_
     if(multicast->thread_safe)
         assert(xSemaphoreTake(multicast->buffer_access, MAX_SEMAPHORE_WAIT) == pdTRUE);
 
+    //dump_bufer_hex(buf, buf_size);
+
     memcpy(_multicast_get_internal_buffer(multicast), buf, buf_size);
 
     ERR_PROP(multicast_send(multicast, buf_size));
@@ -80,6 +82,7 @@ jam_error_t multicast_copy_send(multicast_t* multicast, void* buf, uint32_t buf_
 // 
 jam_error_t multicast_send(multicast_t* multicast, uint32_t buf_size)
 {
+    //uint32_t buf_size = factor_two_round_up(raw_buf_size);
     multicast->occupied_packet_buffer_size = buf_size;
     
     udp_packet_package(&multicast->packet_template, buf_size);

@@ -12,4 +12,13 @@ typedef uint32_t jam_error_t;
 
 void dump_bufer_hex(uint8_t* buffer, uint32_t size);
 
+//#define MEMORY_DEBUG
+#ifdef MEMORY_DEBUG
+#include <stdio.h>
+#include <stdint.h>
+#define calloc(x,y) calloc(x,y); printf("calloc: %lu  " __FILE__ ":%d\n", (uint32_t) y*x, __LINE__)
+#define malloc(x) malloc(x); printf("malloc: %lu"  __FILE__ ":%d\n", (uint32_t) x, __LINE__)
+#define free(x) {free(x); printf("Freed a " #x " " __FILE__ ":%d\n", __LINE__);}
+#endif
+
 #endif
