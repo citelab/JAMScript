@@ -10,8 +10,8 @@ JAMJS <: ES6 {
 
     Jrequire        = jrequire identifier as identifier at ("fog" | "cloud" | "device") ";"
 
-    jdata_type      = broadcaster
-                    | logger
+    jdata_type      = dflow
+                    | uflow
 
     C_type          = "struct" identifier "{" Struct_entry* "}"     -- struct
                     | "char" "*"                                    -- pointer
@@ -80,8 +80,8 @@ JAMJS <: ES6 {
     as = "as" ~identifierPart
     at = "at" ~identifierPart
     beat = "beat" ~identifierPart
-    broadcaster = "broadcaster" ~identifierPart
     controller = "controller" ~identifierPart
+    dflow = "dflow" ~identifierPart
     flow = "flow" ~identifierPart
     is = "is" ~identifierPart
     inflow = "inflow" ~identifierPart
@@ -93,7 +93,6 @@ JAMJS <: ES6 {
     jexport = "jexport" ~identifierPart
     jrequire = "jrequire" ~identifierPart
     linegraph = "linegraph" ~identifierPart
-    logger = "logger" ~identifierPart
     name = "name" ~identifierPart
     of = "of" ~identifierPart
     outflow = "outflow" ~identifierPart
@@ -105,4 +104,5 @@ JAMJS <: ES6 {
     reuse_limit = "reuse_limit" ~identifierPart
     reuse_argdev = "reuse_argdev" ~identifierPart
     max_rate = "max_rate" ~identifierPart
+    uflow = "uflow" ~identifierPart
 }
