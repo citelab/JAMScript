@@ -277,6 +277,7 @@ const DRAM_ATTR uint8_t FreeRTOS_openocd_params[ESP_FREERTOS_DEBUG_TABLE_END]  =
  * ------------------------------------------------------------------------------------------------------------------ */
 
 #if CONFIG_FREERTOS_SMP
+#include <stdio.h>
 _Static_assert(tskNO_AFFINITY == CONFIG_FREERTOS_NO_AFFINITY, "CONFIG_FREERTOS_NO_AFFINITY must be the same as tskNO_AFFINITY");
 
 BaseType_t xTaskCreatePinnedToCore( TaskFunction_t pxTaskCode,
@@ -287,6 +288,9 @@ BaseType_t xTaskCreatePinnedToCore( TaskFunction_t pxTaskCode,
                                     TaskHandle_t * const pxCreatedTask,
                                     const BaseType_t xCoreID)
 {
+
+    printf("started a thing.\n");
+
     BaseType_t ret;
     #if ( ( configUSE_CORE_AFFINITY == 1 ) && ( configNUM_CORES > 1 ) )
         {

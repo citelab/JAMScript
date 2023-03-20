@@ -1,6 +1,6 @@
 #include "util.h"
 #include <stdio.h>
-
+#include "esp_heap_caps.h"
 void mco_push(void*, void*, void*) {}
 void* mco_running() {return 0;}
 
@@ -20,4 +20,9 @@ void dump_bufer_hex(uint8_t* buffer, uint32_t size)
     }
 
     printf("\n");
+}
+
+void dump_heap_left()
+{
+    printf("Heap size left: %u\n\n", heap_caps_get_free_size(MALLOC_CAP_8BIT));
 }

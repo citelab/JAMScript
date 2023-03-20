@@ -9,7 +9,10 @@
 #include "constants.h"
 #include <processor.h>
 #include <command.h>
+#include <esp_timer.h>
 #include <util.h>
+
+#include <lwip/stats.h>
 
 void receiver_thread(void* raw_ctx)
 {
@@ -35,26 +38,46 @@ void receiver_thread(void* raw_ctx)
 
 
     int status;
+    int64_t start_time, proc_start_time;
+    int64_t cummulative_processing = 0;
+    start_time = esp_timer_get_time();
+    int count = 0;
+    int count_limit = 10000;
+    
     while(1)
     {
         status = netconn_recv(ctx->conn, &buffer);
         if(status == ERR_OK)
         {
+            if(count == count_limit)
+            {
+                printf("Processing %d messages took %lld time spent processing was: %lld\n", count_limit, esp_timer_get_time() - start_time, cummulative_processing);
+                cummulative_processing = 0;
+                count = 0;
+                start_time = esp_timer_get_time();
+
+                stats_display();
+            }
+
+            proc_start_time = esp_timer_get_time();
             do
-            {            
+            {       
+                count++;     
                 //printf("Received: Buffer of length %d\n", buffer->p->len);
 
                 //dump_bufer_hex(buffer->p->payload, buffer->p->len);
 
-                command_t* cmd = command_from_data(NULL, buffer->p->payload, buffer->p->len);
+                //command_t* cmd = command_from_data(NULL, buffer->p->payload, buffer->p->len);
 
-                process_message(tboard, cmd);
+                //process_message(tboard, cmd);
                 
-                command_free(cmd);
-        
+                //command_free(cmd);
+
             } while (netbuf_next(buffer) > 0);
 
             netbuf_delete(buffer);
+
+            cummulative_processing += esp_timer_get_time() - proc_start_time;
         }
         else
         {

@@ -64,16 +64,17 @@ jam_error_t multicast_copy_send(multicast_t* multicast, void* buf, uint32_t buf_
     assert(buf_size <= multicast->packet_buffer_size);
 
     if(multicast->thread_safe)
-        assert(xSemaphoreTake(multicast->buffer_access, MAX_SEMAPHORE_WAIT) == pdTRUE);
+        assert(xSemaphoreTake(multicast->buffer_access, 200) == pdTRUE);
 
     //dump_bufer_hex(buf, buf_size);
 
     memcpy(_multicast_get_internal_buffer(multicast), buf, buf_size);
 
-    ERR_PROP(multicast_send(multicast, buf_size));
+    multicast_send(multicast, buf_size);
 
     if(multicast->thread_safe)
         xSemaphoreGive(multicast->buffer_access);
+
 
     return JAM_OK;
 }
@@ -87,9 +88,18 @@ jam_error_t multicast_send(multicast_t* multicast, uint32_t buf_size)
     
     udp_packet_package(&multicast->packet_template, buf_size);
 
-    int status = esp_wifi_80211_tx(WIFI_IF_STA, &multicast->packet_template, udp_packet_size(buf_size), 1);
-    if(status == ESP_ERR_NO_MEM)
-        return JAM_MEMORY_ERR;
+    int status;
+    do
+    {
+        status = esp_wifi_80211_tx(WIFI_IF_STA, &multicast->packet_template, udp_packet_size(buf_size), 1);
+        if(status == ESP_ERR_NO_MEM)
+        {
+            //printf("Ran out of wifi memory.\n");
+            //printf("M\n");
+            vTaskDelay(5);
+        }
+    } while (status == ESP_ERR_NO_MEM);
+    
     return JAM_OK;
 }
 

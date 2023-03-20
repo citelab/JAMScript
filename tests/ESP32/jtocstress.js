@@ -2,12 +2,12 @@ let count = 10;
 let test_amount = 5000;
 let i = 0;
 
-async function tests()
+function tests()
 {
     while(true)
     {
 	espcount();
-	await new Promise(resolve => setTimeout(resolve, 1));
+	new Promise(resolve => setTimeout(resolve, 1));
     }
 }
 
@@ -17,5 +17,5 @@ clear_counter();
 
 while(true)
 {
-    let x = espcountret();    
+    let x = espcountret();
 }

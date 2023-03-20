@@ -11,6 +11,7 @@ typedef uint32_t jam_error_t;
 
 
 void dump_bufer_hex(uint8_t* buffer, uint32_t size);
+void dump_heap_left();
 
 //#define MEMORY_DEBUG
 #ifdef MEMORY_DEBUG

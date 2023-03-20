@@ -9,7 +9,9 @@
 #include "util.h"
 #include "multicast.h"
 #include "cnode.h"
-#include "esp_heap_caps.h"
+
+
+#define MUTEX_WAIT 500
 
 
 
@@ -96,7 +98,7 @@ uint32_t _tboard_get_next_task_index(tboard_t* tboard)
         //TODO: double check
         assert(tboard->num_tasks+1 < MAX_TASKS);
 
-        assert(xSemaphoreTake(tboard->task_management_mutex, MAX_SEMAPHORE_WAIT) == pdTRUE);
+        assert(xSemaphoreTake(tboard->task_management_mutex, MUTEX_WAIT) == pdTRUE);
         int indx = tboard->num_tasks++;
         xSemaphoreGive(tboard->task_management_mutex);
 
@@ -107,7 +109,7 @@ uint32_t _tboard_get_next_task_index(tboard_t* tboard)
     {
         if(tboard->tasks[i] == NULL)
         {
-            assert(xSemaphoreTake(tboard->task_management_mutex, MAX_SEMAPHORE_WAIT) == pdTRUE);
+            assert(xSemaphoreTake(tboard->task_management_mutex, MUTEX_WAIT) == pdTRUE);
             if(tboard->tasks[i] != NULL)
                 continue;
 
@@ -208,6 +210,7 @@ void _task_freertos_entrypoint_wrapper(void* param)
                                                     return_arg);
 
         assert(res_cmd->length <= MAX_COMMAND_SIZE);
+            printf("-----a\n");
         multicast_copy_send(get_device_cnode()->tboard->dispatcher, 
                             res_cmd->buffer, 
                             res_cmd->length);
@@ -294,14 +297,14 @@ task_t* tboard_find_task(tboard_t* tboard, uint64_t task_id)
             return indx;
         }
     }
-    printf("Couldn't find remote task with id %llu\n", task_id);
+    printf("Couldn't find task with id %llu\n", task_id);
     assert(0 && "Couldn't find task with id");
     return NULL;
 }
 
 void task_destroy(tboard_t *tboard, task_t* task)
 {
-    assert(xSemaphoreTake(tboard->task_management_mutex, MAX_SEMAPHORE_WAIT) == pdTRUE);
+    assert(xSemaphoreTake(tboard->task_management_mutex, MUTEX_WAIT) == pdTRUE);
 
     tboard->tasks[task->index] = NULL;
 
@@ -325,14 +328,19 @@ task_t* get_current_task()
 // TODO: maybe rename to make it clear that this also kind of allocates the task
 uint32_t _tboard_alloc_next_remote_task(tboard_t* tboard)
 {
+    assert(xSemaphoreTake(tboard->remote_task_management_mutex, MUTEX_WAIT) == pdTRUE);
+
     if(!tboard->num_dead_remote_tasks)
     {
-        assert(tboard->num_remote_tasks+1 < MAX_TASKS );
+        // At capacity (should maybe enable a flag?)
+        if(tboard->num_remote_tasks >= MAX_RTASKS)
+        {
+            xSemaphoreGive(tboard->remote_task_management_mutex);
+            return RTASK_ALLOC_FAIL;
+        }
 
-        assert(xSemaphoreTake(tboard->remote_task_management_mutex, MAX_SEMAPHORE_WAIT) == pdTRUE);
         int indx = tboard->num_remote_tasks++;
         xSemaphoreGive(tboard->remote_task_management_mutex);
-
         return indx;
     }
 
@@ -340,40 +348,51 @@ uint32_t _tboard_alloc_next_remote_task(tboard_t* tboard)
     {
         if(tboard->remote_tasks[i].destroyed)
         {
-            assert(xSemaphoreTake(tboard->remote_task_management_mutex, MAX_SEMAPHORE_WAIT) == pdTRUE);
-            if(!tboard->remote_tasks[i].destroyed)
-                continue;
-
             // next search should start at the next index after this
-            tboard->last_dead_remote_task = i+1;
+            tboard->last_dead_remote_task = i;
             tboard->num_dead_remote_tasks--;
+            
             xSemaphoreGive(tboard->remote_task_management_mutex);
-
             return i;
         }
     }
 
+    printf("\nDead Remote taks: %d, Num Tasks: %d, Last dead Task %d\n\n", 
+    (int) tboard->num_dead_remote_tasks, 
+    (int) tboard->num_remote_tasks, 
+    (int) tboard->last_dead_remote_task);
+
     assert(0 && "Corrupted remote task array.");
-    
+            xSemaphoreGive(tboard->remote_task_management_mutex);
+
     return 0;
 }
 
 // TODO: Double check for copy errors
 void remote_task_destroy(tboard_t *tboard, remote_task_t* rtask)
 {
-    assert(xSemaphoreTake(tboard->remote_task_management_mutex, MAX_SEMAPHORE_WAIT) == pdTRUE);
+    assert(xSemaphoreTakeRecursive(tboard->remote_task_management_mutex, MUTEX_WAIT) == pdTRUE);
 
-    tboard->remote_tasks[rtask->index].destroyed = true;
+    remote_task_t* live_task = tboard->remote_tasks + rtask->index;
+    if(live_task->destroyed)
+    {
+        xSemaphoreGiveRecursive(tboard->remote_task_management_mutex);
+        return;
+    }
+
+    live_task->destroyed = true;
 
     if(tboard->last_dead_remote_task > rtask->index || tboard->num_dead_remote_tasks == 0)
         tboard->last_dead_remote_task = rtask->index;
     
     tboard->num_dead_remote_tasks++;
-    xSemaphoreGive(tboard->remote_task_management_mutex);
+    xSemaphoreGiveRecursive(tboard->remote_task_management_mutex);
 }
 
 remote_task_t* tboard_find_remote_task(tboard_t* tboard, uint64_t task_id)
 {
+    assert(xSemaphoreTake(tboard->remote_task_management_mutex, MUTEX_WAIT) == pdTRUE);
+    
     for(int i = 0; i < tboard->num_remote_tasks; i++)
     {
         remote_task_t* indx = &tboard->remote_tasks[i];
@@ -382,11 +401,13 @@ remote_task_t* tboard_find_remote_task(tboard_t* tboard, uint64_t task_id)
 
         if(indx->task_id==task_id)
         {
+            xSemaphoreGive(tboard->remote_task_management_mutex);
             return indx;
         }
     }
-    printf("Couldn't find remote task with id %llu\n", task_id);
-    assert(0 && "Couldn't find remote task with id");
+    //printf("Couldn't find remote task with id %llu\n", task_id);
+    xSemaphoreGive(tboard->remote_task_management_mutex);
+    //assert(0 && "Couldn't find remote task with id");
     return NULL;
 }
 
@@ -406,6 +427,8 @@ jam_error_t remote_command_send_basic_command(tboard_t* tboard, remote_task_t* r
     assert(command->length <= MAX_COMMAND_SIZE);
     multicast_copy_send(tboard->dispatcher, command->buffer, command->length);
     
+    command_free(command);
+    
     return JAM_OK;
 }
 
@@ -415,7 +438,8 @@ jam_error_t remote_command_disaptch(tboard_t* tboard, command_t* command)
     // Dispatch REXEC
     assert(command->length <= MAX_COMMAND_SIZE);
     multicast_copy_send(tboard->dispatcher, command->buffer, command->length);
-    printf("\nSending tasks.\n\n");
+    //printf("\nSending tasks.\n\n");
+    //printf("n\n");
     return JAM_OK;
 }
 
@@ -436,6 +460,8 @@ arg_t* remote_task_start_sync(tboard_t* tboard, char* symbol, int32_t level,
     rtask_builder.task_id = task_id;
     rtask_builder.symbol = symbol;
     rtask_builder.timeout = 10; //This is a default as there is
+    rtask_builder.ignore_return = false;
+    rtask_builder.destroyed = false;
 
     // Store record of remote task
     rtask_builder.index = _tboard_alloc_next_remote_task(tboard);
@@ -485,18 +511,59 @@ arg_t* remote_task_start_sync(tboard_t* tboard, char* symbol, int32_t level,
     return rargs;
 }
 
-arg_t* remote_task_start_async(tboard_t* tboard, char* symbol, int32_t level,
+void remote_task_aggressive_cull(tboard_t* tboard)
+{
+    remote_task_t* rt;
+    assert(xSemaphoreTakeRecursive(tboard->remote_task_management_mutex, MUTEX_WAIT)==pdTRUE);
+    for(int i = 0; i < tboard->num_remote_tasks; i++)
+    {
+        rt = tboard->remote_tasks + i;
+
+        if(rt->ignore_return && !rt->destroyed)
+        {
+            remote_task_destroy(tboard, rt);
+        }
+    }
+    xSemaphoreGiveRecursive(tboard->remote_task_management_mutex);
+}
+
+jam_error_t remote_task_start_async(tboard_t* tboard, char* symbol, int32_t level,
                                char* arg_sig, arg_t* args, uint32_t size)
 {
-    printf("Task Start Remote Async - called '%s'\n", symbol);
+   //printf("Task Start Remote Async - called '%s'\n", symbol);
+    uint32_t task_id = mysnowflake_id();
 
     command_t* command = command_new_using_arg(CmdNames_REXEC, 0, symbol,
-                                               mysnowflake_id(),
+                                               task_id,
                                                "temp_device_id", arg_sig, args);
-	
-    _debug_print_command_cbor(command);
 
-    assert(0 && "Unimplemented");
+    remote_task_t rtask_builder = {0};
+    rtask_builder.status = REMOTE_TASK_STATUS_WAITING_ACK;
+    rtask_builder.parent_task = get_current_task();
+    rtask_builder.task_id = task_id;
+    rtask_builder.symbol = symbol;
+    rtask_builder.timeout = 10; //This is a default as there is
+    rtask_builder.ignore_return = true;
+    rtask_builder.destroyed = false;
 
-    return calloc(1, sizeof(arg_t));
+    // Store record of remote task
+    do
+    {
+        rtask_builder.index = _tboard_alloc_next_remote_task(tboard);
+        if(rtask_builder.index==RTASK_ALLOC_FAIL)
+        {
+                printf("WARNING: No more space for additional remote tasks. Trying to free space\n");
+            remote_task_aggressive_cull(tboard);
+        }
+    } while (rtask_builder.index==RTASK_ALLOC_FAIL);
+    
+
+    remote_task_t* rtask = tboard->remote_tasks + rtask_builder.index;
+    *rtask = rtask_builder;
+
+    remote_command_disaptch(tboard, command);
+
+    command_free(command);
+
+    return JAM_OK;
 }

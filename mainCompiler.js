@@ -165,8 +165,12 @@ function esp32Compile(code, cargs) {
     }
 
     // Copy idf-project template and cside to tmp/build dir. This could be replaced later with generated references
-    if (!fs.existsSync(`${idfBuildPath}/cside-esp32`) || cargs.esp32.flush_cside) {
+    if (!fs.existsSync(`${idfBuildPath}/cside-esp32`)) {
         fs.cpSync("lib/cside-esp32", `${idfBuildPath}/cside-esp32`, { recursive: true });
+    }
+    if(cargs.esp32.flush_cside)
+    {
+        fs.cpSync("lib/cside-esp32/src", `${idfBuildPath}/cside-esp32/src`, { recursive: true });
     }
 
     // Write out jam-c code

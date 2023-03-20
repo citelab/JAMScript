@@ -16,7 +16,9 @@
 // This is low for now.. 
 // TODO: consider option of generating this at compile time.
 #define MAX_FUNCS 64 
-#define MAX_TASKS 32
+#define MAX_TASKS 256
+#define MAX_RTASKS 3072
+#define RTASK_ALLOC_FAIL MAX_RTASKS+100
 
 typedef struct _tboard_t tboard_t;
 typedef struct _function_t function_t;
@@ -61,15 +63,16 @@ typedef struct _remote_task_t
     int index;
     arg_t*   return_arg;
     char*   symbol;
-
     uint64_t task_id;
     uint32_t timeout;
-
     task_t* parent_task;
 
+    // TODO: replcae this with a flag in the function to remove rtask lookup
+    bool ignore_return;
     bool destroyed;
 } remote_task_t;
-    
+
+void remote_task_destroy(tboard_t *tboard, remote_task_t* rtask);
 
 task_t* task_create(tboard_t* tboard, function_t* function, arg_t* args);
 task_t* task_create_from_remote(tboard_t* tboard, function_t* function, uint64_t task_id, arg_t* args, bool remote_hook);
@@ -87,7 +90,7 @@ arg_t* remote_task_start_sync(tboard_t* tboard,
     arg_t* args, 
     uint32_t size); 
 
-arg_t* remote_task_start_async(tboard_t* tboard, 
+jam_error_t remote_task_start_async(tboard_t* tboard, 
     char* symbol, 
     int32_t level,
     char* arg_sig, 
@@ -138,7 +141,7 @@ struct _tboard_t
     StaticSemaphore_t task_management_mutex_data;
 
     // No indirection for faster iterations.
-    remote_task_t   remote_tasks[MAX_TASKS];
+    remote_task_t   remote_tasks[MAX_RTASKS];
     uint32_t        num_remote_tasks;
     uint32_t        num_dead_remote_tasks;
     uint32_t        last_dead_remote_task; //rename to be clearer. Destroyed index search start.

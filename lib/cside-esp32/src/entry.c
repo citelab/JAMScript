@@ -57,15 +57,16 @@ void app_main(void)
 {
     printf("ESP32 cside entry point.\n");
 
-    jam_component_wrap_main(0, NULL);
+    TaskHandle_t handle;
+    xTaskCreatePinnedToCore(jam_component_wrap_main, 
+                            "Entry Task", 
+                            STACK_SIZE*4, 
+                            NULL, 
+                            1,
+                            &handle, 
+                            1);
 
-    //tests();
-    while (1)
-    {
-        // Feed watchdog.
-        vTaskDelay(10);
-    }
+    printf("Should have started the task...\n");
 
-    assert(0 && "JAMScript program exited");
-    while(1) {}
+    vTaskDelete(0);
 }

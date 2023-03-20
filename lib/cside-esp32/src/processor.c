@@ -56,9 +56,16 @@ void process_message(tboard_t *tboard, command_t *cmd)
         return;
     case CmdNames_REXEC_ACK:
         rtask = tboard_find_remote_task(tboard, cmd->task_id);
+        if(rtask==NULL)
+            return;
         rtask->status = REMOTE_TASK_STATUS_ACKED;
         rtask->timeout = cmd->args[0].val.ival;
 
+        if(rtask->ignore_return)
+        {
+            remote_task_destroy(tboard, rtask);
+            return;
+        }
         // TODO: consider if this task notify really needs to be here.
         xTaskNotify(rtask->parent_task->internal_handle,
                     RTASK_ACK_BITS,
@@ -66,10 +73,23 @@ void process_message(tboard_t *tboard, command_t *cmd)
         printf("Acknowledgement \n");
         return;
     case CmdNames_REXEC_RES:
-        rtask = tboard_find_remote_task(tboard, cmd->task_id);
-
+        rtask = tboard_find_remote_task(tboard, cmd->task_id); 
+        // This is temporary for now!
+        if(rtask==NULL)
+        {
+            return;
+        }
+        //assert(rtask!=NULL);
         rtask->return_arg = command_args_clone(cmd->args);
         rtask->status = REMOTE_TASK_STATUS_COMPLETE;
+
+
+        if(rtask->ignore_return)
+        {
+            remote_task_destroy(tboard, rtask);
+            return;
+        }
+
         xTaskNotify(rtask->parent_task->internal_handle,
                     RTASK_RES_BITS,
                     eSetBits);
