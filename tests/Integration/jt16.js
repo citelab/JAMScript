@@ -10,6 +10,7 @@ jdata {
 	float y;
     } loc as uflow;
     int qq as uflow;
+    int ppp as uflow;
     float xx as dflow;
 }
 
@@ -36,15 +37,49 @@ async function sleep(x) {
     });
 }
 
-let count = 10;
-
 async function runloop() {
     while(true) {
         await sleep(1000);
-        console.log("Logging...", count);
+        console.log("Writing to uflow -- qq ", count);
         qq.write(count++);
-
     }
 }
 
-await runloop();
+async function runloop2() {
+    while(true) {
+        await sleep(1000);
+        console.log("Writing to uflow -- pp ", count);
+        ppp.write(count++);
+    }
+}
+
+async function toploop() {
+    runloop();
+    runloop2();    
+}
+
+
+async function getloop() {
+    let x;
+    while(true) {
+        x = await ppp.readLast();
+        console.log("Value received... ", x);
+    }
+}
+
+
+if (jsys.machtype == "fog") {
+    console.log("I am in the fog....");
+
+    await getloop();
+
+
+} else {
+    console.log("I an in the device...");
+
+    let count = 10;
+
+    await toploop();
+
+}
+

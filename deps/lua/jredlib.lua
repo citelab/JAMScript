@@ -101,10 +101,9 @@ local function uf_write(keys, args)
     local kpend = k..'###pending'
     local clock = args[1]
     local id = args[2]
-    local scope = args[3]
-    local xcoord = args[4]
-    local ycoord = args[5]
-    local value = args[6]
+    local xcoord = args[3]
+    local ycoord = args[4]
+    local value = args[5]
     if (clock > clkat_wcount) then 
         get_writer_count(ksset, clock)
     end
@@ -112,7 +111,7 @@ local function uf_write(keys, args)
     if (#ssres == 0) then 
         local hindx = redis.call('HINCRBY', khash, 'counter', 1)
         local ssres = redis.call('ZADD', ksset, clock, k..'###'..hindx)
-        redis.call('HSET', k..'###'..hindx, 'expected', writer_count, 'count', 1, 'id###'..id, id, 'scope###'..id, scope, 'xcoord###'..id, xcoord, 'ycoord###'..id, ycoord, 'value###'..id, value)
+        redis.call('HSET', k..'###'..hindx, 'expected', writer_count, 'count', 1, 'id###'..id, id, 'xcoord###'..id, xcoord, 'ycoord###'..id, ycoord, 'value###'..id, value)
         if (writer_count == 1) then 
             -- put it in the completed list.. there is nothing more to expect
             redis.call('RPUSH', kcomp, k..'###'..hindx)
@@ -121,7 +120,7 @@ local function uf_write(keys, args)
             redis.call('RPUSH', kpend, k..'###'..hindx)
         end
     else
-        redis.call('HSET', ssres[1], 'id###'..id, id, 'scope###'..id, scope, 'xcoord###'..id, xcoord, 'ycoord###'..id, ycoord, 'value###'..id, value)
+        redis.call('HSET', ssres[1], 'id###'..id, id, 'xcoord###'..id, xcoord, 'ycoord###'..id, ycoord, 'value###'..id, value)
         redis.call('HINCRBY', ssres[1], 'count', 1)
         local tcount = redis.call('HGET', ssres[1], 'count')
         local texpect = redis.call('HGET', ssres[1], 'expected')
@@ -219,14 +218,13 @@ local function df_write(keys, args)
     local khash = k..'###hash'
     local clock = args[1]
     local id = args[2]
-    local scope = args[3]
-    local xcoord = args[4]
-    local ycoord = args[5]
-    local value = args[6]
+    local xcoord = args[3]
+    local ycoord = args[4]
+    local value = args[5]
 
     local hindx = redis.call('HINCRBY', khash, 'counter', 1)
     local ssres = redis.call('ZADD', kcomp, clock, k..'###'..hindx)
-    redis.call('HSET', k..'###'..hindx, 'id###'..id, id, 'scope###'..id, scope, 'xcoord###'..id, xcoord, 'ycoord###'..id, ycoord, 'value###'..id, value)
+    redis.call('HSET', k..'###'..hindx, 'id###'..id, id, 'xcoord###'..id, xcoord, 'ycoord###'..id, ycoord, 'value###'..id, value)
 
     local size = redis.call('ZCARD', kcomp)
     if (size > DFLOW_SIZE) then 
