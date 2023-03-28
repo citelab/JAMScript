@@ -46,15 +46,15 @@ async function runloop() {
 }
 
 async function runloop2() {
-    while(true) {
+  //  while(true) {
         await sleep(1000);
         console.log("Writing to uflow -- pp ", count);
         ppp.write(count++);
-    }
+  //  }
 }
 
 async function toploop() {
-    runloop();
+//    runloop();
     runloop2();    
 }
 

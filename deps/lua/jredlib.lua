@@ -1,15 +1,17 @@
 #!lua name=jredlib
 
 -- ASSUMPTION: All keys are unique - the compiler is responsible for this check
---
+-- The keys are the variable names - so we need to have unique names
 
 -- configuration variables - these can changed by the config function
 local DFLOW_BUFFER_SIZE = 200
 local UFLOW_BUFFER_SIZE = 200
 local DFLOW_SIZE = 2000
 local UFLOW_SIZE = 2000
-local CLOCK_WINDOW = 50
-local UWRITER_COUNT = 10
+local UWRITER_COUNT = 1000
+
+-- non configuration variables
+local MAX_CLOCK_AGE = 5
 
 -- configure the "global" variables (these variables are not in Redis)
 local function config(keys, args)
@@ -18,37 +20,31 @@ local function config(keys, args)
         if (arg[2] == nil) then 
             return DFLOW_BUFFER_SIZE
         else
-            DFLOW_BUFFER_SIZE = args[2]
+            DFLOW_BUFFER_SIZE = tonumber(args[2])
         end
     elseif (cmd == "uflow_buffer") then
         if (arg[2] == nil) then 
             return UFLOW_BUFFER_SIZE
         else 
-            UFLOW_BUFFER_SIZE = args[2]
+            UFLOW_BUFFER_SIZE = tonumber(args[2])
         end
     elseif (cmd == "uflow") then 
         if (arg[2] == nil) then 
             return UFLOW_SIZE
         else 
-            UFLOW_SIZE = args[2]
+            UFLOW_SIZE = tonumber(args[2])
         end
     elseif (cmd == "dflow") then
         if (arg[2] == nil) then 
             return DFLOW_SIZE
         else 
-            DFLOW_SIZE = args[2]
-        end
-    elseif (cmd == "clock_window") then
-        if (arg[2] == nil) then 
-            return CLOCK_WINDOW
-        else 
-            CLOCK_WINDOW = args[2]
+            DFLOW_SIZE = tonumber(args[2])
         end
     elseif (cmd == "uwriter_count") then 
         if (arg[2] == nil) then 
             return UWRITER_COUNT
         else 
-            UWRITER_COUNT = args[2]
+            UWRITER_COUNT = tonumber(args[2])
         end
     end
 end
@@ -68,6 +64,18 @@ local function get_id(keys, args)
         return tonumber(v)
     end 
 end
+
+--
+-- Main State Table
+-- This is used to maintain global state about the uflows (here we have multiple writers)
+-- We want to avoid doing a redis call (this somewhat expensive) so we are keeping soft state 
+-- in a Lua table
+--
+-- One entry for each flow (we use the key - variable name - to index)
+--
+-- The entry for the flow will have the following information: number of elements, 
+
+
 
 -- 
 -- INSERT ISSUE
@@ -99,71 +107,137 @@ local function uf_write(keys, args)
     local khash = k..'###hash'
     local kcomp = k..'###complete'
     local kpend = k..'###pending'
-    local clock = args[1]
+    local clock = tonumber(args[1])
     local id = args[2]
-    local xcoord = args[3]
-    local ycoord = args[4]
-    local value = args[5]
-    if (clock > clkat_wcount) then 
-        get_writer_count(ksset, clock)
+    local width = tonumber(args[3])
+    local xcoord = args[4]
+    local ycoord = args[5]
+    local value = args[6]
+    -- get expected writers - if width is 0, we set the number of active writers as expected
+    -- NOTE: the width specification solves an important problem - we can materialize streams that have irregular width 
+    -- we expect the outside program to specify what the width should be
+    local expected
+    if (width > 0) then 
+        expected = width
+    else
+        expected = get_expected()
     end
     local ssres = redis.call('ZRANGE', ksset, clock, clock, 'BYSCORE')
     if (#ssres == 0) then 
         local hindx = redis.call('HINCRBY', khash, 'counter', 1)
         local ssres = redis.call('ZADD', ksset, clock, k..'###'..hindx)
-        redis.call('HSET', k..'###'..hindx, 'expected', writer_count, 'count', 1, 'id###'..id, id, 'xcoord###'..id, xcoord, 'ycoord###'..id, ycoord, 'value###'..id, value)
+        redis.call('HSET', k..'###'..hindx, 'expected', expected, 'count', 1, 'id###'..id, id, 'xcoord###'..id, xcoord, 'ycoord###'..id, ycoord, 'value###'..id, value)
         if (writer_count == 1) then 
-            -- put it in the completed list.. there is nothing more to expect
+            -- put it in the completed list and signal.. there is nothing more to expect
             redis.call('RPUSH', kcomp, k..'###'..hindx)
+            redis.call('PUBLISH', "__keycompleted", k)
         else
             -- put it in the expected list.. we have more writers to come
             redis.call('RPUSH', kpend, k..'###'..hindx)
+            set_pending(k, clock)
         end
     else
         redis.call('HSET', ssres[1], 'id###'..id, id, 'xcoord###'..id, xcoord, 'ycoord###'..id, ycoord, 'value###'..id, value)
-        redis.call('HINCRBY', ssres[1], 'count', 1)
-        local tcount = redis.call('HGET', ssres[1], 'count')
+        local tcount = redis.call('HINCRBY', ssres[1], 'count', 1)
         local texpect = redis.call('HGET', ssres[1], 'expected')
+        texpect =tonumber(texpect)
         -- we have all writers arrived (the expected number), now we move the element from expected to completed 
         -- the signalling is implicit.. we are watching for 'completed' key modifications..
         if (tcount >= texpect) then 
-            redis.call('LREM', kpend, 1, k..'###'..hindx)
-            redis.call('RPUSH', kcomp, k..'###'..hindx)
+            redis.call('LREM', kpend, 1, ssres[1]) 
+            redis.call('RPUSH', kcomp, ssres[1])
+            redis.call('PUBLISH', "__keycompleted", k)
         end
     end
-    local size = redis.call('ZCARD', ksset)
-    if (size > UFLOW_SIZE) then 
-        trim_flow(ksset, UFLOW_BUFFER_SIZE)
-    end
+    -- update the size of the flow
+    local fsize = update_size(k)
+    -- if the size is too large, trim the flow
+    if (fsize > UFLOW_SIZE) then trim_flow(ksset, UFLOW_BUFFER_SIZE) end
+    if (is_pending(clock)) then  flush_pending(clock) end
 end
 
 
--- SUB FUNCTIONS used by fl_write
+local function log(value) 
+    redis.call('SET', 'log', value)
+end
+
+--
+-- SUB FUNCTIONS used by uf_write
 -- 
 
--- get_writer_count: look at the previous rows of the stream and figure out the number of writers
--- we get 
+local pending_clk = 0
+local pending_writes = {}
 
 
-local function get_writer_count(ks, clk)
-    local res = redis.call('ZRANGE', ks, clk - CLOCK_WINDOW, clk-1, 'BYSCORE')
-    local mvalue = 1
-    local smvalue = 1
-    clkat_wcount = clk
-    if (#res > 0) then 
-        local count = math.min(#res, UWRITER_COUNT)
-        for i = 1, count do
-            local val = redis.call('HGET', res[#res - i], 'count')
-            if (val > mvalue) then 
-                mvalue = val
-                smvalue = mvalue
-            elseif (val > smvalue) then 
-                smvalue = val 
-            end 
-        end
-    end 
-    writer_count = smvalue
+local function set_pending(key, newclk) 
+    if (pending_clk == 0) then pending_clk = newclk end 
+    if (pending_writes[key] == nil) then 
+        local ptab = {}
+        ptab[#ptab + 1] = newclk
+        pending_writes[key] = ptab 
+    else 
+        local ptab = pending_writes[key]
+        ptab[#ptab + 1] = newclk
+    end
 end
+
+local function flush_pending(clk) 
+    for key, pt in pairs(pending_writes) do 
+        if (clk - pt[1] > PENDING_TOO_OLD) then 
+            table.remove(pt, 1)
+            local kpend = key..'###pending'
+            local kcomp = key..'###complete'
+            local rec = redis.call('LPOP', kpend, 1)
+            redis.call('RPUSH', kcomp, rec)
+            redis.call('PUBLISH', "__keycompleted", key)
+        end
+    end
+    local pclk = clk
+    for key, pt in pairs(pending_writes) do 
+        if (#pt > 0 and pt[1] < pclk) then
+            pclk = pt[1]
+        end 
+    end 
+    pending_clk = pclk
+end
+
+-- calculate the pending_age
+--
+local function is_pending(newclk)
+    if (newclk - pending_clk) > PENDING_TOO_OLD then 
+        return true
+    else 
+        return false
+    end
+end
+
+
+local active_writers = {}
+local max_clock = 0
+
+--
+-- get_expected: return the number of writers we can expect
+-- we are counting the unique writers that showed up in the last MAX_CLOCK_AGE
+-- time window
+--
+local function get_expected(id, clk)
+    active_writers[id] = clk
+    max_clock = math.max(clk, max_clock)
+    local count = 0
+    for wid, clk in pairs(active_writers) do
+        if (max_clock - clk) < MAX_CLOCK_AGE then
+            count = count + 1
+        else
+            active_writers[wid] = nil
+        end
+    end
+    return count;
+end
+
+local function testme() 
+end
+
+
 
 local function trim_flow(ks, count)
     local pelems = redis.call('ZPOPMIN', ksset, count)
@@ -180,7 +254,7 @@ local function uf_randread(keys, args)
     local k = keys[1]
     local ksset = k..'###sset'
     local khash = k..'###hash'
-    local clock = args[1]
+    local clock = tonumber(args[1])
     local ssres = redis.call('ZRANGE', ksset, clock, clock, 'BYSCORE')
     if (#ssres == 0) then 
         return ssres
@@ -192,17 +266,26 @@ end
 -- get the last element of the completed list
 local function uf_lread(keys, args) 
     local k = keys[1]
-    local klist = k..'###list'
-    local ssres = redis.call('RPOP', klist, 1)
-    return redis.call('HGETALL', ssres[1])
+    local klist = k..'###complete'
+    local len = redis.call('LLEN', klist)
+    if (len > 0) then 
+        local ssres = redis.call('RPOP', klist, 1)
+        return redis.call('HGETALL', ssres[1])
+    else 
+        return {}
+    end
 end 
 
 -- get the first element of the completed list
 local function uf_fread(keys, args) 
     local k = keys[1]
-    local klist = k..'###list'
+    local klist = k..'###complete'
     local ssres = redis.call('LPOP', klist, 1)
-    return redis.call('HGETALL', ssres[1])
+    if (#ssres == 0) then 
+        return ssres
+    else 
+        return redis.call('HGETALL', ssres[1])
+    end
 end 
 
 -- we just write the new entry. get a new ID by incrementing the counter in the hash table - "k###hash"
@@ -216,15 +299,15 @@ local function df_write(keys, args)
     local k = keys[1]
     local kcomp = k..'###complete'
     local khash = k..'###hash'
-    local clock = args[1]
+    local clock = tonumber(args[1])
     local id = args[2]
     local xcoord = args[3]
     local ycoord = args[4]
     local value = args[5]
-
     local hindx = redis.call('HINCRBY', khash, 'counter', 1)
     local ssres = redis.call('ZADD', kcomp, clock, k..'###'..hindx)
     redis.call('HSET', k..'###'..hindx, 'id###'..id, id, 'xcoord###'..id, xcoord, 'ycoord###'..id, ycoord, 'value###'..id, value)
+    redis.call('PUBLISH', '__keycompleted', k)
 
     local size = redis.call('ZCARD', kcomp)
     if (size > DFLOW_SIZE) then 
@@ -289,6 +372,7 @@ end
 
 
 redis.register_function('config', config)
+redis.register_function('testme', testme)
 redis.register_function('get_id', get_id)
 redis.register_function('uf_write', uf_write)
 redis.register_function('uf_fread', uf_fread)
