@@ -307,7 +307,7 @@ local function df_write(keys, args)
     local hindx = redis.call('HINCRBY', khash, 'counter', 1)
     local ssres = redis.call('ZADD', kcomp, clock, k..'###'..hindx)
     redis.call('HSET', k..'###'..hindx, 'id###'..id, id, 'xcoord###'..id, xcoord, 'ycoord###'..id, ycoord, 'value###'..id, value)
-    redis.call('PUBLISH', '__keycompleted', k)
+    redis.call('PUBLISH', '__d__keycompleted', k)
 
     local size = redis.call('ZCARD', kcomp)
     if (size > DFLOW_SIZE) then 
