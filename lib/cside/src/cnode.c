@@ -169,8 +169,6 @@ cnode_t *cnode_init(int argc, char **argv){
     return cn;
 }
 
-
-
 void cnode_destroy(cnode_t *cn) {
     // check if cnode is a pointer
     if ( cn == NULL ) {
@@ -219,4 +217,15 @@ bool cnode_stop(cnode_t *cn) {
     tboard_shutdown(cn->tboard);
     history_print_records(cn->tboard, stdout);
     return true;
+}
+
+void cnode_setcoords(cnode_t *cn, float xc, float yc)
+{
+    cn->xcoord = xc;
+    cn->ycoord = yc;
+}
+
+void cnode_setwidth(cnode_t *cn, int width) 
+{
+    cn->width = width;
 }

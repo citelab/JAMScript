@@ -150,10 +150,10 @@ local function uf_write(keys, args)
         end
     end
     -- update the size of the flow
-    local fsize = update_size(k)
+    local fsize = upsize(k)
     -- if the size is too large, trim the flow
-    if (fsize > UFLOW_SIZE) then trim_flow(ksset, UFLOW_BUFFER_SIZE) end
-    if (is_pending(clock)) then  flush_pending(clock) end
+    -- if (fsize > UFLOW_SIZE) then trim_flow(ksset, UFLOW_BUFFER_SIZE) end
+    -- if (is_pending(clock)) then  flush_pending(clock) end
 end
 
 
@@ -167,7 +167,6 @@ end
 
 local pending_clk = 0
 local pending_writes = {}
-
 
 local function set_pending(key, newclk) 
     if (pending_clk == 0) then pending_clk = newclk end 
@@ -211,6 +210,18 @@ local function is_pending(newclk)
     end
 end
 
+-- maintain the size of the different uflows 
+
+local uflow_sizes = {}
+
+local function upsize(k) 
+    if (uflow_sizes[k] == nil) then 
+        uflow_sizes[k] = 1
+    else
+        uflow_sizes[k] = uflow_sizes[k] + 1
+    end
+    return uflow_sizes[k]
+end
 
 local active_writers = {}
 local max_clock = 0

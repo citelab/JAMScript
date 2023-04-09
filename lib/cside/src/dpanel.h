@@ -12,40 +12,53 @@
 #include <hiredis/async.h>
 #include <hiredis/adapters/libevent.h>
 
-typedef struct {
-    char *key;
-    char *fmt;
-} uflow_entry_t;
+enum dfstate   {NEW_STATE = 0,
+                PRDY_RECEIVED = 1,
+                CRDY_RECEIVED = 2,
+                BOTH_RECEIVED = 3};
 
 typedef struct {
     char *key;
     char *fmt;
-    struct queue dobjects;
-    
-} dflow_entry_t;
+    uint64_t clock;
+    char *value;
+} uflow_obj_t;
 
 typedef struct {
-    const char *key;
-    dflow_entry_t *entry;
-} dftable_entry_t;
-
-typedef struct {
-    const char *key;
-    uflow_entry_t *entry;
+    char *key;
+    char *fmt;
+    uint64_t lclock;
+    void *dpanel;
+    UT_hash_handle hh;
 } uftable_entry_t;
 
+
+typedef struct {
+    char *key;
+    char *fmt;
+    enum dfstate state;
+    uint64_t taskid;
+    pthread_mutex_t mutex;
+    void *dpanel;
+    UT_hash_handle hh;
+} dftable_entry_t;
 
 enum dpstate_t {
     NEW = 0,
     STARTED = 1,
-    STOPPED = 2
+    STOPPED = 2,
+    REGISTERED =3,
 };
 
 #define  MAX_SERVER_LEN             64
+#define  DP_MAX_ERROR_COUNT         5
 
 typedef struct {
 
     enum dpstate_t state;
+    int ecount;
+    int logical_id;
+    char *uuid;
     char server[MAX_SERVER_LEN];
     int port;
 
@@ -60,7 +73,7 @@ typedef struct {
 
     struct queue ufqueue;
     dftable_entry_t *dftable;
-    uftable_entry_t *uftable;    
+    uftable_entry_t *uftable;
 
     struct event_base *uloop;
     struct event_base *dloop;
@@ -68,16 +81,19 @@ typedef struct {
     redisAsyncContext *uctx;
     redisAsyncContext *dctx;
 
+    void *cnode;
+    void *tboard;
+
 } dpanel_t;
 
-dpanel_t *dpanel_create(char *server, int port);
+dpanel_t *dpanel_create(char *server, int port, char *uuid);
 void dpanel_start(dpanel_t *dp);
 void dpanel_shutdown(dpanel_t *dp);
 
-uflow_t *dp_create_uflow(dpanel_t *dp, char *key, char *fmt);
-dflow_t *dp_create_dflow(dpanel_t *dp, char *key, char *fmt);
+uftable_entry_t *dp_create_uflow(dpanel_t *dp, char *key, char *fmt);
+dftable_entry_t *dp_create_dflow(dpanel_t *dp, char *key, char *fmt);
 
-void ufwrite(uflow_t *uf, ...);
-void dfread(dflow_t *df, void *val);
+void ufwrite(uftable_entry_t *uf, int x);
+void dfread(dftable_entry_t *df, void *val);
 
 #endif

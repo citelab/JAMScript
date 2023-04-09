@@ -8,6 +8,7 @@
 #include "mqtt_adapter.h"
 #include "cnode.h"
 #include "constants.h"
+#include "dpanel.h"
 
 
 long int mysnowflake_id()
@@ -373,6 +374,52 @@ bool sleep_task_create(tboard_t *tboard, int sval)
     }
 }
 
+// This is yet another reuse of remote task - this time to wait on the "broadcaster" or 
+// downward flow (dflow). 
+// 
+void *dflow_task_create(tboard_t *tboard, dftable_entry_t *entry)
+{
+    if (mco_running() == NULL) // must be called from a coroutine!
+        return NULL;
+
+    mco_result res;
+    // create rtask object
+    remote_task_t rtask = {0};
+    rtask.task_id = mysnowflake_id();
+    rtask.status = TASK_INITIALIZED;
+    rtask.mode = TASK_MODE_DFLOW;
+
+    // push rtask into storage. This copies memory in current thread so we dont have
+    // to worry about invalid reads
+    res = mco_push(mco_running(), &rtask, sizeof(remote_task_t));
+    if (res != MCO_SUCCESS) {
+        tboard_err("remote_task_create: Failed to push remote task to mco storage interface.\n");
+        return NULL;
+    }
+    // issued remote task, yield
+    task_yield();
+    // we have resumed the coroutine .. so we have access to the previous values
+
+    // blocking: get if remote_task_t is currently in storage. If so we must parse it
+    if (mco_get_bytes_stored(mco_running()) == sizeof(remote_task_t)) {
+        res = mco_pop(mco_running(), &rtask, sizeof(remote_task_t));
+        if (res != MCO_SUCCESS) {
+            tboard_err("dflow_task_create: Failed to pop mco storage interface.\n");
+            return NULL;
+        }
+        // check if task completed
+        if (rtask.status == DFLOW_TASK_COMPLETED) {
+            remote_task_free(tboard, rtask.task_id);
+            return rtask.data;
+        } else {
+            tboard_err("dflow_task_create: dflow task is not marked as completed: %d.\n",rtask.status);
+            return false;
+        }
+    } else {
+        tboard_err("dflow_task_create: Failed to capture dflow task after termination.\n");
+        return false;
+    }
+}
 
 void remote_task_free(tboard_t *t, long int taskid) 
 {
