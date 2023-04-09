@@ -186,15 +186,10 @@ void dpanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
             uflow_obj_t *uobj = (uflow_obj_t *)next->data;
             if (last) {
                 // send with a callback
-                //redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %lu %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, cn->width, cn->xcoord, cn->ycoord, uobj->value);
-                redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %lu %d %d %f %f %s", uobj->key, 100, 10, 0, 1.0, 2.0, uobj->value);                    
-                //redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall testme 0 ");
-             //   printf("With callback........... +++++++++++++++++++%s\n", uobj->value);
+                redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %lu %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, cn->width, cn->xcoord, cn->ycoord, uobj->value);
             } else {
                 // send without a callback for pipelining.
-                redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %lu %d %d %f %f %s", uobj->key, 100, 10, 0, 1.0, 2.0, uobj->value);                    
-        //        redisAsyncCommand(dp->uctx, NULL, NULL, "fcall uf_write 1 %s %lu %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, cn->width, cn->xcoord, cn->ycoord, uobj->value);
-             //   printf("Without callback........... ---------------------%s\n", uobj->value);
+                redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %lu %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, cn->width, cn->xcoord, cn->ycoord, uobj->value);
             }
             freeUObject(uobj);
             free(next);

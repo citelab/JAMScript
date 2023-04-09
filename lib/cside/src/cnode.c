@@ -17,19 +17,19 @@ topics_t *cnode_create_topics(char *app)
     char sbuf[1024];
     topics_t *t = (topics_t *)calloc(1, sizeof(topics_t));
     int tcnt = 0;
-    sprintf(sbuf, "/%s/replies/down", app);
+    snprintf(sbuf, 1024, "/%s/replies/down", app);
     t->subtopics[tcnt++] = strdup(sbuf);
-    sprintf(sbuf, "/%s/announce/down", app);
+    snprintf(sbuf, 1024, "/%s/announce/down", app);
     t->subtopics[tcnt++] = strdup(sbuf);
-    sprintf(sbuf, "/%s/requests/down/c", app);
+    snprintf(sbuf, 1024, "/%s/requests/down/c", app);
     t->subtopics[tcnt++] = strdup(sbuf);
     t->length = tcnt;
 
-    sprintf(sbuf, "/%s/requests/up", app);
+    snprintf(sbuf, 1024, "/%s/requests/up", app);
     t->requesttopic = strdup(sbuf);
-    sprintf(sbuf, "/%s/requests/down/c", app);
+    snprintf(sbuf,1024, "/%s/requests/down/c", app);
     t->selfrequesttopic = strdup(sbuf);
-    sprintf(sbuf, "/%s/replies/up", app);
+    snprintf(sbuf, 1024, "/%s/replies/up", app);
     t->replytopic = strdup(sbuf);
 
     return t;
@@ -75,7 +75,7 @@ broker_info_t *cnode_scanj(int groupid, int port) {
     int count = 5;
     broker_info_t *bi = NULL;
 
-    sprintf(mgroup, "%s.%d", Multicast_PREFIX, groupid);
+    snprintf(mgroup, 32, "%s.%d", Multicast_PREFIX, groupid);
 
     mcast_t *m = multicast_init(mgroup, Multicast_SENDPORT, Multicast_RECVPORT);
     // TODO: Fix this line.. and make it compatible with the protocol on Notion
@@ -111,7 +111,7 @@ void cnode_setup_jcond(char *dstr) {
 
     if (dstr != NULL && strlen(dstr) > 0)
     {
-        sprintf(tagstr, "jsys.tag = '%s';", dstr);
+        snprintf(tagstr, 1024, "jsys.tag = '%s';", dstr);
         jcond_eval_str(tagstr);
     }
     jcond_eval_str("function jcondContext(a) { return eval(a); }");
