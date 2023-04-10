@@ -6,6 +6,6 @@ jtask function compyou(str) {
     return count * 400;
 }
 
-//setInterval(()=> {
-    //console.log("hello.. main loop ");
-//}, 100);
+setInterval(()=> {
+    console.log("hello.. main loop ");
+}, 1000);

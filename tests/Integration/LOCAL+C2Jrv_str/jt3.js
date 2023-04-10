@@ -3,9 +3,9 @@ let count = 0;
 jtask function compyou(str) {
     count++;
     console.log(count, str);
-    return "hello -- ";
+    return "hello -- " + count;
 }
 
-//setInterval(()=> {
+setInterval(()=> {
     //console.log("hello.. main loop ");
-//}, 100);
+}, 1000);
