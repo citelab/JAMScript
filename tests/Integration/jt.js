@@ -7,4 +7,4 @@ jtask* function you(str) {
 
 setInterval(()=> {
     console.log("hello.. main loop ");
-}, 100);
+}, 1000);

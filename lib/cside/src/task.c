@@ -462,9 +462,10 @@ void remote_task_place(tboard_t *t, remote_task_t *rtask)
     if (t == NULL || rtask == NULL)
         return;
 
-    twheel_add_event(t, TW_EVENT_REXEC_TIMEOUT, clone_taskid(&(rtask->task_id)), REXEC_TIMEOUT);
+    twheel_add_event(t, TW_EVENT_REXEC_TIMEOUT, clone_taskid(&(rtask->task_id)), getcurtime() + REXEC_TIMEOUT);
     switch (rtask->level) {
         case ALL_LEVELS:
+            printf("Sending... to all levels %d ... %ld\n", cn->eservnum, rtask->task_id);
             send_command_to_server(cn->devserv->mqtt);
             for(int i = 0; i < cn->eservnum; i++) 
                 send_command_to_server(cn->edgeserv[i]->mqtt);
@@ -473,10 +474,12 @@ void remote_task_place(tboard_t *t, remote_task_t *rtask)
         break;
 
         case DEVICE_LEVEL:
+            printf("Sedning to device level \n");
             send_command_to_server(cn->devserv->mqtt);
         break;
 
         case EDGE_LEVEL:
+            printf("Sending to edge level\n");
             for(int i = 0; i < cn->eservnum; i++) 
                 send_command_to_server(cn->edgeserv[i]->mqtt);
         break;
