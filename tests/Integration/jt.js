@@ -2,9 +2,7 @@ let count = 0;
 
 jtask* function you(str) {
     count++;
-    if ((count % 1000) === 0) {
-        console.log(count);
-    }
+    console.log("Message received: ", str, " local count ", count);
 }
 
 setInterval(()=> {

@@ -18,6 +18,6 @@ jtask* localyou(int c, char *s) {
 int main(int argc, char *argv[])
 {
     localme(10, "cxxxxyyyy");
-    localyou(10, "cxxxxxxxx");
+    localyou(10, "a-message-for-j");
     return 0;
 }
