@@ -34,7 +34,7 @@ char *jcond_eval_str_str(const char *s)
     char *res;
 
     char buf[strlen(s) + 32];
-    sprintf(buf, "var __jrval = eval(%s)", s);
+    snprintf(buf, strlen(s) + 32, "var __jrval = eval(%s)", s);
     js_dostring(J, buf);
     js_getglobal(J, "__jrval");
     res = strdup((char *)js_tostring(J, -1));
@@ -47,7 +47,7 @@ int jcond_eval_bool(const char *s)
 {
     int res;
     char buf[strlen(s) + 32];
-    sprintf(buf, "var __jrval = eval(%s)", s);
+    snprintf(buf, strlen(s)+ 32, "var __jrval = eval(%s)", s);
     js_dostring(J, buf);
     js_getglobal(J, "__jrval");
     res = js_toboolean(J, -1);
@@ -61,7 +61,7 @@ int jcond_eval_int(const char *s)
     int res;
 
     char buf[strlen(s) + 32];
-    sprintf(buf, "var __jrval = eval(%s)", s);
+    snprintf(buf, strlen(s) + 32, "var __jrval = eval(%s)", s);
     js_dostring(J, buf);
     js_getglobal(J, "__jrval");
     res = js_toint32(J, -1);
@@ -75,7 +75,7 @@ double jcond_eval_double(const char *s)
     double res;
 
     char buf[strlen(s) + 32];
-    sprintf(buf, "var __jrval = eval(%s)", s);
+    snprintf(buf, strlen(s) + 32, "var __jrval = eval(%s)", s);
     js_dostring(J, buf);
     js_getglobal(J, "__jrval");
     res = js_tonumber(J, -1);

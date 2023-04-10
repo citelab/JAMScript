@@ -15,6 +15,22 @@ long int _getcurtime()
     return ts.tv_sec * 1000000000 +  ts.tv_nsec;
 }
 
+// uncomment the line below to do snapshots
+//#define     __INSERT_SNAPSHOT           1
+
+#ifdef __INSERT_SNAPSHOT
+    #define DO_SNAPSHOT(X) do {
+            get_snapshot(X);                       \
+    } while (0);
+
+    #define PRINT_SNAPSHOTS(X) do {
+            print_snapshot_summary(X);             \
+    } while (0);
+#else 
+    #define DO_SNAPSHOT(X) 
+    #define PRINT_SNAPSHOTS(X) 
+#endif
+
 #define MAX_SNAPS               32
 static long int timesnaps[MAX_SNAPS];
 static double timediffs[MAX_SNAPS];

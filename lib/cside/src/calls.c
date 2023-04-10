@@ -74,7 +74,6 @@ bool remote_async_call(tboard_t *t, char *cmd_func, char *fn_sig, ...)
 void *local_sync_call(tboard_t *t, char *cmd_func, ...)
 {
     va_list args;
-    bool res;
     arg_t *qargs;
 
     function_t *f = tboard_find_func(t, cmd_func);
@@ -87,7 +86,7 @@ void *local_sync_call(tboard_t *t, char *cmd_func, ...)
     if (strlen(fmask) > 0)
     {
         va_start(args, cmd_func);
-        res = command_qargs_alloc(fmask, &qargs, args);
+        command_qargs_alloc(fmask, &qargs, args);
         va_end(args);
         return blocking_task_create(t, *f, f->tasktype, qargs, strlen(fmask));
     }
@@ -98,7 +97,6 @@ void *local_sync_call(tboard_t *t, char *cmd_func, ...)
 void local_async_call(tboard_t *t, char *cmd_func, ...)
 {
     va_list args;
-    bool res;
     arg_t *qargs;
 
     function_t *f = tboard_find_func(t, cmd_func);
@@ -111,7 +109,7 @@ void local_async_call(tboard_t *t, char *cmd_func, ...)
         const char *fmask = f->fn_sig;
         if (strlen(fmask) > 0) {
             va_start(args, cmd_func);
-            res = command_qargs_alloc(fmask, &qargs, args);
+            command_qargs_alloc(fmask, &qargs, args);
             va_end(args);
             task_create(t, *f, qargs, NULL);
         }

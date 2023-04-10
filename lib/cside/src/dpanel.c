@@ -406,5 +406,5 @@ dftable_entry_t *dp_create_dflow(dpanel_t *dp, char *key, char *fmt)
 
 void dfread(dftable_entry_t *df, void *val)
 {
-
+    
 }
