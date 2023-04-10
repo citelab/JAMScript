@@ -12,6 +12,7 @@
 #include "timeout.h"
 #include "command.h"
 #include "sleeping.h"
+#include "icache.h"
 
 
 ///////////////////////////////
@@ -337,6 +338,7 @@ typedef struct {
     struct timeouts *twheel;
     sched_t sched;
     sleeper_t sleeper;
+    icache_t *icache;
 
 } tboard_t;
 

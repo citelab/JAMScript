@@ -85,6 +85,8 @@ tboard_t* tboard_create(void *cnode, int secondary_queues)
     tboard->twheel = twheel_init();
     learn_sleeping(&(tboard->sleeper), 1000000);
     install_next_schedule(tboard, 0);
+    tboard->icache = icache_alloc();
+
     return tboard; // return address of tboard in memory
 }
 
