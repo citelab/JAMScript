@@ -53,7 +53,7 @@ function runMain(cargs) {
         if (!cargs.noCompile) {
             let task = nativeCompile(results.C, cargs);
             task.then(function (value) {
-                    results.manifest = createManifest(cargs.outPath, results.maxLevel);
+                    results.manifest = createManifest(cargs.outPath, results.maxLevel, results.hasJdata);
                     createZip(
                         results.JS,
                         results.manifest,
@@ -189,7 +189,7 @@ function createZip(jsout, mout, jstart, tmpDir, cargs) {
         .pipe(fs.createWriteStream(`${cargs.outPath}.jxe`));
 }
 
-function createManifest(cargs, level) {
+function createManifest(cargs, level, hasJ) {
     let mout;
     let ctime = new Date().getTime();
 
@@ -198,6 +198,7 @@ function createManifest(cargs, level) {
     mout += `NAME = ${cargs.outPath}\n`;
     mout += `CREATE-TIME = ${ctime}\n`;
     mout += `MAX-HEIGHT = ${level}\n`;
+    mout += `JDATA = ${hasJ}\n`;
     mout += `C-SIDE-EFFECT = ${JSON.stringify(cargs.cSideEffectTable)}\n`;
     mout += `JS-SIDE-EFFECT = ${JSON.stringify(cargs.jsSideEffectTable)}\n`;
     return mout;
