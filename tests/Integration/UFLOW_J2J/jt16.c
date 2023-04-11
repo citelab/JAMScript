@@ -1,5 +1,3 @@
-char *compyou(char *s);
-
 
 jtask* localyou(int c, char *s) {
     char *y;
@@ -9,14 +7,8 @@ jtask* localyou(int c, char *s) {
     }
 }
 
-jtask int get_a_value(int x) {
-    printf("Value of x %d\n", x);
-    return x;
-}
-
-
 int main(int argc, char *argv[])
 {
-    localyou(10, "cxxxxxxxx");
+    localyou(10, "message-to-local-func");
     return 0;
 }

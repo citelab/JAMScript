@@ -1,15 +1,9 @@
 let count = 10;
 
-jtask function compyou(str) {
-    count++;
-    console.log(count, str);
-    return "hello -- ";
-}
-
 setInterval(()=> {
-    //console.log("hello.. main loop.. calling the C function testfunc..  ");
-    let x = get_a_value(count++);
-    x.then((y)=> {
-        console.log("Return value from the call..", y);
-    })
-}, 100);
+    get_a_value(count++).then((y)=> {
+        console.log("Return value from the call..", y.values());	
+    }).catch(()=> {
+	console.log("Error.....");
+    });
+}, 1000);
