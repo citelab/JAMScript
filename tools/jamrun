@@ -3,6 +3,7 @@
 IDIR="${BASH_SOURCE%/*}"
 if [[ ! -d "$IDIR" ]]; then IDIR="$PWD"; fi
 source "$IDIR/inc/misc_tools.sh"
+REDISFUNCS=`realpath "$IDIR/../deps/lua/jredlib.lua"`
 
 SHELLPID=$$
 trap cleanup SIGTERM SIGINT
@@ -216,7 +217,6 @@ doaout() {
         ((counter++))
         echo ">>> Started a C node"
     done
-
 }
 
 # This is always scanning for a command with 'node'
@@ -240,9 +240,7 @@ portavailable() {
     else
         porttaken=0
     fi
-
 }
-
 
 setuptmux() {
 
@@ -257,7 +255,6 @@ setuptmux() {
 
     trap cleanuptmux SIGINT
 }
-
 
 getappid() {
     local mainf=$1
@@ -276,14 +273,12 @@ getappid() {
     save "$jappid" $appfolder/appid
 }
 
-
 killtmux() {
 
     for q in `tmux ls | grep $1 | cut -d ':' -f 1`; do
         tmux kill-session -t $q
     done
 }
-
 
 cleanuptmux() {
     if [ ! -z $tmuxapp ]; then
@@ -292,11 +287,11 @@ cleanuptmux() {
     exit
 }
 
-
 startredis() {
 
     # Start redis with no protected-mode and at the port
     echo -e "port $1\nprotected-mode no" | redis-server - 1> /dev/null &
+    cat $REDISFUNCS | redis-cli -x FUNCTION LOAD REPLACE > /dev/null
 }
 
 waitforredis() {
@@ -362,6 +357,10 @@ unpack() {
 
 getheight() {
     height=`grep MAX-HEIGHT MANIFEST.txt | awk '{split($0,a, " "); print a[3]}'`
+}
+
+getjdata() {
+    jdata=`grep JDATA MANIFEST.txt | awk '{split($0,a, " "); print a[3]}'`
 }
 
 # set the global longitude and lattitude variables
@@ -600,8 +599,11 @@ if [ -e "$file" ]; then
     unpack $ifile  # We are already in $folder
     # find the machine height
     getheight
+    getjdata
 
-    resolvedata $data
+    if [ "$jdata" = true ]; then 
+        resolvedata $data
+    fi
 
     if [ -e jstart.js ]; then
         # save the current program information for short cut use

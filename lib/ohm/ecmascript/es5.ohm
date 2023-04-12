@@ -271,6 +271,8 @@ ES5 {
                     | ObjectLiteral
                     | "(" Expression<withIn> ")"  -- parenExpr
 
+  MemberLiteral = identifier "#" identifier 
+
   ArrayLiteral = "[" ListOf<AssignmentExpressionOrElision, ","> "]"
   AssignmentExpressionOrElision = AssignmentExpression<withIn>
                                 |                       -- elision

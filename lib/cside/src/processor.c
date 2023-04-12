@@ -9,7 +9,7 @@
 #include "cnode.h"
 #include "tboard.h"
 #include "jcond.h"
-#include <util.h>
+#include "icache.h"
 
 
 arg_t *command_arg_clone_special(arg_t *arg, char *fname, long int taskid, char *nodeid, void *serv) 
@@ -206,7 +206,13 @@ void msg_processor(void *serv, command_t *cmd)
         return;
 
     case CmdNames_REXEC:
-        // find the function
+        // if a duplicate command, silently drop the command
+        if (icache_lookup(t->icache, cmd->task_id, cmd->node_id))
+            return;
+        else
+            icache_insert(t->icache, cmd->task_id, cmd->node_id);
+
+        // otherwise, find the function
         f = tboard_find_func(t, cmd->fn_name);
         if (f == NULL)
         {

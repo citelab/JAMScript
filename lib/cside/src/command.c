@@ -193,7 +193,6 @@ command_t *command_from_data(char *fmt, void *data, int len)
 {
     CborParser parser;
     CborValue it, map, arr;
-    CborError err;
     size_t length;
     int i = 0;
     int ival;
@@ -284,7 +283,7 @@ command_t *command_from_data(char *fmt, void *data, int len)
                         break;
                     }
                     i++;
-                    err = cbor_value_advance(&arr);
+                    cbor_value_advance(&arr);
                 }
             } else 
                 cmd->args = NULL;

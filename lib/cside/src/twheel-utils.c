@@ -39,7 +39,7 @@ bool twheel_add_event(tboard_t *tb, twheel_event_t type, void *arg, long int tva
     struct timeout *t = calloc(1, sizeof(struct timeout));
     timeout_init(t, TIMEOUT_ABS);
     long int atval = tval;
-    
+
     switch (type) {
         case TW_EVENT_INSTALL_SCHEDULE:
             t->callback.fn = dummy_next_schedule;

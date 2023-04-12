@@ -22,7 +22,7 @@ ES6 <: ES5 {
   
   async_function = "async" " "+ "function" ~identifierPart
 
-  MemberExpression += await PrimaryExpression -- awaitCall
+  MemberExpression += await MemberExpression --awaitCall //PrimaryExpression -- awaitCall
 
   await = "await" " "+ 
 }

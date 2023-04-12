@@ -12,6 +12,7 @@
 #include "timeout.h"
 #include "command.h"
 #include "sleeping.h"
+#include "icache.h"
 
 
 ///////////////////////////////
@@ -69,6 +70,7 @@ enum rtask_status_codes_t {
     RTASK_RES_PENDING = 3,
     RTASK_COMPLETED = 4,
     RTASK_ERROR = 5,
+    DFLOW_TASK_COMPLETED = 6
 };
 
 #define TASK_MAX_RETRIES 3
@@ -219,7 +221,8 @@ typedef struct task_t {
 typedef enum {
     TASK_MODE_REMOTE,
     TASK_MODE_REMOTE_NB,
-    TASK_MODE_SLEEPING
+    TASK_MODE_SLEEPING,
+    TASK_MODE_DFLOW
 } remote_task_mode_t;
 
 /**
@@ -335,6 +338,7 @@ typedef struct {
     struct timeouts *twheel;
     sched_t sched;
     sleeper_t sleeper;
+    icache_t *icache;
 
 } tboard_t;
 
