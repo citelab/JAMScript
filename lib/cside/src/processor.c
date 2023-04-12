@@ -9,6 +9,7 @@
 #include "cnode.h"
 #include "tboard.h"
 #include "jcond.h"
+#include <util.h>
 
 
 arg_t *command_arg_clone_special(arg_t *arg, char *fname, long int taskid, char *nodeid, void *serv) 

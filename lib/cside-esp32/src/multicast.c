@@ -8,9 +8,13 @@
 #include <esp_timer.h>
 #include <constants.h>
 #include <udp.h>
-#define DESTINATION_ADDR_IP (ipv4_address_t) {.a1 = 10, .a2 = 0, .a3 = 0, .a4 = 10}
 
+// TODO: seriously clear this up.
+
+#define DESTINATION_ADDR_IP (ipv4_address_t) {.a1 = 10, .a2 = 0, .a3 = 0, .a4 = 10}
 #define DESTINATION_ADDR_IP_STR "10.0.0.10"
+
+
 
 uint32_t factor_two_round_up(uint32_t num)
 {

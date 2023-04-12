@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/poll.h>
+#include <util.h>
 
 #define Multicast_PREFIX "224.1.1"
 #define Multicast_SENDPORT  16000

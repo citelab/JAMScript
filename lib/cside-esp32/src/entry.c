@@ -8,14 +8,8 @@
 #include <constants.h>
 #include <stdlib.h>
 #include <util.h>
-/*
-Interesting Idea:C
-- Could disable os tick on one core use that as primary executor
-- On second core, could handle networking and second executor tasks
-- for those second executor tasks, Could instead assign to either core 1 or core 0 depending on CPU load.
-*/
 
-// NOTE: Args could be a little more memory efficient;
+// NOTE: Args could be a little more memory efficient; TODO: Delete
 void tests()
 {
     cnode_t* device_cnode = get_device_cnode();

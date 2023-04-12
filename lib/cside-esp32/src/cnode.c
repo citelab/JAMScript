@@ -38,6 +38,8 @@ cnode_t* cnode_init(int argc, char** argv)
     return cnode;
 }
 
+
+// NOTE: Incomplete Implementation
 void _cnode_scan_controllers(cnode_t* cnode)
 {
     const uint32_t buffer_size = 256;
@@ -71,12 +73,11 @@ void _cnode_scan_controllers(cnode_t* cnode)
     }
 }
 
+// @Unimplemented
 void cnode_destroy(cnode_t* cnode)
 {
-    // NOTE: very  temp TODO: REMOVE
     return;
-
-
+    
     assert(cnode->initialized);
     free(cnode->node_id);
     tboard_destroy(cnode->tboard);

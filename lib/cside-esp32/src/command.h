@@ -141,7 +141,13 @@ command_t* command_new(int cmd, int subcmd, char* fn_name, uint64_t task_id,
 command_t* command_new_using_arg(int cmd, int opt, char* fn_name,
                                  uint64_t taskid, char* node_id,
                                  char* fn_argsig, arg_t* args);
+
+void command_init_using_arg(command_t* command, int cmd, int opt, char* fn_name,
+                                 uint64_t taskid, char* node_id,
+                                 char* fn_argsig, arg_t* args);
+
 command_t* command_from_data(char* fn_argsig, void* data, int len);
+void command_from_data_inplace(command_t* cmdo, char* fn_argsig, int len);
 
 // Methods
 void command_hold(command_t* cmd);

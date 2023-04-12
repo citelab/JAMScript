@@ -85,14 +85,12 @@ task_t* get_current_task();
 // @Unimplemented
 arg_t* remote_task_start_sync(tboard_t* tboard, 
     char* symbol, 
-    int32_t level, 
     char* arg_sig, 
     arg_t* args, 
     uint32_t size); 
 
 jam_error_t remote_task_start_async(tboard_t* tboard, 
     char* symbol, 
-    int32_t level,
     char* arg_sig, 
     arg_t* args, 
     uint32_t size);

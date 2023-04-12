@@ -178,7 +178,7 @@ command_t *command_new_using_arg(int cmd, int subcmd, char *fn_name, long int ta
     cbor_encoder_close_container(&encoder, &mapEncoder);
     cmdo->id = id++;
     cmdo->refcount = 1;
-    pthread_mutex_init(&cmdo->lock, NULL);
+    pthread_mutex_init(&cmd->lock, NULL);
     cmdo->length = cbor_encoder_get_buffer_size(&encoder, cmdo->buffer);
     return cmdo;
 }

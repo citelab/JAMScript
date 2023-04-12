@@ -4,16 +4,40 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <constants.h>
+#include "endian.h"
 
-void send_ack(tboard_t* tboard, command_t* cmd, int duration)
+static multicast_t* _processor_dispatcher;
+static uint32_t _cached_packet_buffer_size;
+
+static bool initialized = false;
+// This is a temporary solution right now as we don't know node_id at init time.
+void __temporary_dispatcher_init(command_t* cmd)
 {
-    command_t* ack_cmd = command_new(CmdNames_REXEC_ACK, 0, cmd->fn_name, cmd->task_id, cmd->node_id, "i", duration);
-        
-    assert(ack_cmd->length <= MAX_COMMAND_SIZE);
-    multicast_copy_send(tboard->dispatcher, ack_cmd->buffer, ack_cmd->length);
-    command_free(ack_cmd); 
+    if(initialized)
+        return;
+    initialized = true;
+
+    command_t* ack_cmd = command_new(CmdNames_REXEC_ACK, 0, cmd->fn_name, cmd->task_id, cmd->node_id, "i", 20);
+    memcpy(multicast_get_packet_buffer(_processor_dispatcher, NULL), 
+           ack_cmd->buffer, ack_cmd->length);
+    _cached_packet_buffer_size = ack_cmd->length;
+    dump_bufer_hex_raw(ack_cmd->buffer, ack_cmd->length);
+    command_free(ack_cmd);
 }
 
+#define TASKID_OFFSET 41
+void send_ack(tboard_t* tboard, command_t* cmd, int duration)
+{
+    __temporary_dispatcher_init(cmd);
+    double taskid = (double) cmd->task_id;
+    uint64_t task_out = bswap64( *((uint64_t*) &(taskid)) );
+    void* temp = multicast_get_packet_buffer(_processor_dispatcher, NULL);
+
+    memcpy(multicast_get_packet_buffer(_processor_dispatcher, NULL)+TASKID_OFFSET,
+           &task_out, sizeof(double));
+    multicast_send(_processor_dispatcher, _cached_packet_buffer_size);
+}
+void espcount();
 void execute_cmd(tboard_t *tboard, function_t *f, command_t *cmd)
 {
     //This is silly
@@ -23,11 +47,23 @@ void execute_cmd(tboard_t *tboard, function_t *f, command_t *cmd)
     // Ack
     send_ack(tboard, cmd, 20);
 
+    espcount();
     // Queue Task
-    task_t* task = task_create_from_remote(tboard, f, cmd->task_id, cmd->args, true); // no return value
+    //task_t* task = task_create_from_remote(tboard, f, cmd->task_id, cmd->args, true); // no return value
+    
     
 }
-#define TEMP_ID 12
+
+void processor_init()
+{
+    _processor_dispatcher = multicast_create((ipv4_address_t){10,0,0,10}, 
+                            Multicast_RECVPORTBUS, 
+                            Multicast_SENDPORTBUS,
+                            MAX_COMMAND_SIZE);
+    printf("Proc init!\n");
+
+}
+
 void process_message(tboard_t *tboard, command_t *cmd)
 {
     command_t *rcmd;
@@ -36,13 +72,7 @@ void process_message(tboard_t *tboard, command_t *cmd)
     switch (cmd->cmd)
     {
     case CmdNames_PING:
-        rcmd = command_new(CmdNames_PONG, 0, "", 0, TEMP_ID, "");
-        // multicast_copy_send(multicast, rmd->buffer, rcmd->length);
-
-        printf("Received ping!\n");
-
-        command_free(rcmd);
-        // TODO: implement return ping send
+        assert(0 && "unimplemented");
         return;
     case CmdNames_REXEC:
         function_t *func = tboard_find_func(tboard, cmd->fn_name);
@@ -102,6 +132,9 @@ void process_message(tboard_t *tboard, command_t *cmd)
         // TODO: check if task exists
         task_t* task = tboard_find_task(tboard, cmd->task_id);
         send_ack(tboard, cmd, 20);
+        return;
+    default: 
+        printf("Something wrong\n");
         return;
     }
 }

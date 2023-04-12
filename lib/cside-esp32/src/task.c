@@ -20,22 +20,6 @@ tboard_t _global_tboard;
 // This is a totally random guess
 #define TLSTORE_TASK_PTR_IDX 0 
 
-// Wait do we need this...
-void function_dump(function_t* func)
-{
-    if(func == NULL)
-    {
-        printf("Function: Null\n");
-        return;
-    }
-    printf("Function: symbol: '%s' entry_point 0x%08lx task_type: %d arg_sgnature: '%s' condition: '%s'\n",
-           func->symbol,
-           (uint32_t)func->entry_point,
-           func->task_type,
-           func->arg_signature,
-           func->condition);
-}
-
 // This is a misleading name
 tboard_t* tboard_create()
 {
@@ -67,26 +51,6 @@ void tboard_destroy(tboard_t* tboard)
     free(tboard);
 }
 
-function_t* tboard_find_func(tboard_t* tboard, const char* symbol)
-{
-    assert(tboard != NULL);
-
-    //printf("Looking for a symbol %s\n", symbol);
-
-
-    // Should consider using a hash
-    for (int i = 0; i < tboard->num_funcs; i++)
-    {
-        function_t *func = tboard->funcs[i];
-
-        if (!strcmp(func->symbol, symbol))
-        {
-            return func;
-        }
-    }
-
-    return NULL;
-}
 
 // This might be overcomplicating things if this is just an array of pointers.....
 
@@ -95,8 +59,7 @@ uint32_t _tboard_get_next_task_index(tboard_t* tboard)
 {
     if(!tboard->num_dead_tasks)
     {
-        //TODO: double check
-        assert(tboard->num_tasks+1 < MAX_TASKS);
+        assert(tboard->num_tasks+1 < MAX_TASKS && "Ran out of task allocation memory");
 
         assert(xSemaphoreTake(tboard->task_management_mutex, MUTEX_WAIT) == pdTRUE);
         int indx = tboard->num_tasks++;
@@ -121,21 +84,50 @@ uint32_t _tboard_get_next_task_index(tboard_t* tboard)
         }
     }
 
-    //printf("Task list state invalid...\n");
     assert(0 && "Corrupted task array.");
 
-    //TODO: double check
-    assert(tboard->num_tasks < MAX_TASKS);
-    tboard->num_dead_tasks = 0;
-    return tboard->num_tasks;
+    return 0;
 }
 
+
+void function_dump(function_t* func)
+{
+    if(func == NULL)
+    {
+        printf("Function: Null\n");
+        return;
+    }
+    printf("Function: symbol: '%s' entry_point 0x%08lx task_type: %d arg_sgnature: '%s' condition: '%s'\n",
+           func->symbol,
+           (uint32_t)func->entry_point,
+           func->task_type,
+           func->arg_signature,
+           func->condition);
+}
+
+function_t* tboard_find_func(tboard_t* tboard, const char* symbol)
+{
+    assert(tboard != NULL);
+
+    // Should consider using a hash
+    for (int i = 0; i < tboard->num_funcs; i++)
+    {
+        function_t *func = tboard->funcs[i];
+
+        if (!strcmp(func->symbol, symbol))
+        {
+            return func;
+        }
+    }
+
+    return NULL;
+}
 
 void tboard_register_func(tboard_t* tboard, function_t func)
 {
     assert(tboard != NULL);
 
-    // Having this kind of indirection isn't ideal but as all function allocation happens at the same 
+    // NOTE: Having this kind of indirection isn't ideal but as all function allocation happens at the same 
     // all function definitions should be allocated contiguously
     // if there was compile time information on number of functions, would be ideal.
     
@@ -161,8 +153,7 @@ void tboard_dump_funcs(tboard_t* tboard)
  * Task Definitions Here
 */
 
-
-// @Unimplemented TODO: replace
+// TODO: add the funky embedding thing here.
 uint32_t mysnowflake_id()
 {
     static int counter = 0;
@@ -210,7 +201,7 @@ void _task_freertos_entrypoint_wrapper(void* param)
                                                     return_arg);
 
         assert(res_cmd->length <= MAX_COMMAND_SIZE);
-            printf("-----a\n");
+        
         multicast_copy_send(get_device_cnode()->tboard->dispatcher, 
                             res_cmd->buffer, 
                             res_cmd->length);
@@ -357,6 +348,7 @@ uint32_t _tboard_alloc_next_remote_task(tboard_t* tboard)
         }
     }
 
+    //TODO: remove this
     printf("\nDead Remote taks: %d, Num Tasks: %d, Last dead Task %d\n\n", 
     (int) tboard->num_dead_remote_tasks, 
     (int) tboard->num_remote_tasks, 
@@ -392,7 +384,7 @@ void remote_task_destroy(tboard_t *tboard, remote_task_t* rtask)
 remote_task_t* tboard_find_remote_task(tboard_t* tboard, uint64_t task_id)
 {
     assert(xSemaphoreTake(tboard->remote_task_management_mutex, MUTEX_WAIT) == pdTRUE);
-    
+    printf("Too slow!!!!\n");
     for(int i = 0; i < tboard->num_remote_tasks; i++)
     {
         remote_task_t* indx = &tboard->remote_tasks[i];
@@ -405,7 +397,7 @@ remote_task_t* tboard_find_remote_task(tboard_t* tboard, uint64_t task_id)
             return indx;
         }
     }
-    //printf("Couldn't find remote task with id %llu\n", task_id);
+    printf("Couldn't find remote task with id %llu\n", task_id);
     xSemaphoreGive(tboard->remote_task_management_mutex);
     //assert(0 && "Couldn't find remote task with id");
     return NULL;
@@ -444,7 +436,7 @@ jam_error_t remote_command_disaptch(tboard_t* tboard, command_t* command)
 }
 
 // @Unimplemented
-arg_t* remote_task_start_sync(tboard_t* tboard, char* symbol, int32_t level,
+arg_t* remote_task_start_sync(tboard_t* tboard, char* symbol,
                               char* arg_sig, arg_t* args, uint32_t size)
 {
     printf("Task Start Remote Sync - called '%s'\n", symbol);
@@ -527,7 +519,7 @@ void remote_task_aggressive_cull(tboard_t* tboard)
     xSemaphoreGiveRecursive(tboard->remote_task_management_mutex);
 }
 
-jam_error_t remote_task_start_async(tboard_t* tboard, char* symbol, int32_t level,
+jam_error_t remote_task_start_async(tboard_t* tboard, char* symbol,
                                char* arg_sig, arg_t* args, uint32_t size)
 {
    //printf("Task Start Remote Async - called '%s'\n", symbol);

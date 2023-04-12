@@ -2,6 +2,11 @@ int64_t esp_timer_get_time();
 
 uint32_t counter;
 
+jtask int espcountret() 
+{
+    return counter++;
+}
+
 jtask* espcount() 
 {
     counter++;
@@ -12,10 +17,6 @@ jtask* clear_counter()
     counter = 0;
 }
 
-jtask int espcountret() 
-{
-    return counter++;
-}
 
 jtask* localyou() 
 {

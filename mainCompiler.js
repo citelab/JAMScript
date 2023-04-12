@@ -10,6 +10,7 @@ const fs = require("fs"),
     callGraph = require("./lib/ohm/jamscript/callGraph"),
     jam = require("./lib/ohm/jamscript/jam"),
     os = require('os');
+const { relative } = require("path");
 const JSZip = checkedRequire("jszip", "ERROR! jsZip not installed. Install jsZip first using 'npm install jszip'");
 
 // global parameters 
@@ -124,6 +125,45 @@ function nativeCompile(code, cargs) {
     });
 }
 
+function readdirRecursive(file) {
+    if(fs.statSync(`${file}`).isDirectory()) {
+        let children = fs.readdirSync(file);
+        var parentSubchildren = [];
+        for(let child_index in children) {
+            let response = readdirRecursive(`${file}/${children[child_index]}`);
+            if(typeof response === 'string') {
+                parentSubchildren.push(`${response}`)
+            } else {
+                parentSubchildren.push.apply(parentSubchildren, response);
+            }
+        }
+        return parentSubchildren;
+    }
+    return file;
+}
+
+function copyIfNewer(copy_from, copy_to) {
+    let files_from  = readdirRecursive(copy_from);
+    let files_to    = readdirRecursive(copy_to);
+    
+    for(let file_index in files_from) {
+        let file = files_from[file_index];
+
+        let relative_file = file.substring(copy_from.length);
+        let to_contains = files_to.filter(f => (f.substring(copy_to.length) === relative_file));
+        
+        if(to_contains.length==1) {
+            let from_mtime = fs.statSync(file).mtime;
+            let to_mtime = fs.statSync(to_contains[0]).mtime;
+            if(from_mtime > to_mtime) {
+                fs.copyFileSync(file, `${copy_to}${relative_file}`);
+            }
+        } else {
+            fs.copyFileSync(file, `${copy_to}${relative_file}`);
+        }
+    }
+}
+
 function esp32Compile(code, cargs) {
     console.log("Compiling with esp32 backend...");
 
@@ -170,7 +210,8 @@ function esp32Compile(code, cargs) {
     }
     if(cargs.esp32.flush_cside)
     {
-        fs.cpSync("lib/cside-esp32/src", `${idfBuildPath}/cside-esp32/src`, { recursive: true });
+        copyIfNewer("lib/cside-esp32", `${idfBuildPath}/cside-esp32`);
+        //fs.cpSync("lib/cside-esp32/src", `${idfBuildPath}/cside-esp32/src`, { recursive: true });
     }
 
     // Write out jam-c code

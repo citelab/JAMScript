@@ -11,15 +11,11 @@
 #include <nvs_flash.h>
 #include <udp.h>
 #include <receiver.h>
+#include <constants.h>
 #include <stdlib.h>
 
 #define MAX_RECONNECTION_ATTEMPTS 8
-#define PRECONFIG_WIFI_SSID "jamscript_test_network"
-#define PRECONFIG_WIFI_PASS "extremelysecure"
-#define SNTP_SERVER "ca.pool.ntp.org"
-#define WIFI_CONNECTION_NOTIFICATION 0x01
-// Currently set to toronto time
-#define TIMEZONE "EST5EDT,M3.2.0,M11.1.0" 
+
 
 //#define SHOULD_SKIP_WIFI_INIT
 
@@ -53,6 +49,7 @@ system_manager_t* system_manager_init()
     _system_manager_board_init(system_manager);
 
 #ifndef SHOULD_SKIP_WIFI_INIT
+    // Currently skipping ntp because the controller is currently not connected to the internet  
     // _system_manager_rtc_sync_ntp(system_manager);
 #endif
 
@@ -80,7 +77,6 @@ void _system_manager_net_init(system_manager_t* system_manager)
 
     esp_netif_create_default_wifi_sta();
 
-    // TODO: what exactly does this do compared to the above line.
     wifi_init_config_t wifi_init_config = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&wifi_init_config));
 
@@ -94,18 +90,7 @@ void _system_manager_net_init(system_manager_t* system_manager)
                                                         IP_EVENT_STA_GOT_IP,
                                                         &_system_manager_event_handler,
                                                         system_manager,
-                                                        &system_manager->got_ip_event_handle));
-    
-
-    // This is a temporary wifi_config
-    /*wifi_config_t wifi_config = {
-        .sta = {
-            .ssid       = PRECONFIG_WIFI_SSID,
-            .password   = PRECONFIG_WIFI_PASS,
-            .threshold.authmode = WIFI_AUTH_WPA2_PSK,
-            .sae_pwe_h2e        = WPA3_SAE_PWE_BOTH,
-        },
-	};*/
+                                                        &system_manager->got_ip_event_handle));    
     wifi_config_t wifi_config = {
 	.sta = {
 	    .ssid = PRECONFIG_WIFI_SSID,
@@ -158,8 +143,6 @@ void _system_manager_rtc_sync_ntp(system_manager_t* system_manager)
     localtime_r(&now, &timeinfo);
     printf("Current Time %s", asctime(&timeinfo));
 }
-
-// TODO: think about how useful event group bits are...
 
 static void _system_manager_event_handler(void* arg, esp_event_base_t event_base,
                                           int32_t event_id, void* event_data)

@@ -128,6 +128,7 @@ command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name,
                                  char* fn_argsig, arg_t* args)
 {
     command_t* cmdo = (command_t*)calloc(1, sizeof(command_t));
+    
     nvoid_t* nv;
 
     CborEncoder encoder, mapEncoder, arrayEncoder;
@@ -211,6 +212,7 @@ command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name,
     cmdo->refcount = 1;
     //pthread_mutex_init(&cmdo->lock, NULL);
     cmdo->length = cbor_encoder_get_buffer_size(&encoder, cmdo->buffer);
+
     return cmdo;
 }
 
@@ -350,6 +352,136 @@ command_t* command_from_data(char* fmt, void* data, int len)
     //pthread_mutex_init(&cmd->lock, NULL);
     cmd->id = id++;
     return cmd;
+}
+
+void command_from_data_inplace(command_t* cmd, char* fn_argsig, int len)
+{
+    CborParser parser;
+    CborValue it, map, arr;
+    CborError err;
+    size_t length;
+    int i = 0;
+    int ival;
+    double dval;
+    float fval;
+    char bytebuf[LARGE_CMD_STR_LEN];
+    char strbuf[LARGE_CMD_STR_LEN];
+    char keybuf[32];
+    int result;
+    double dresult;
+
+    cmd->length = len;
+    cbor_parser_init(cmd->buffer, len, 0, &parser, &it);
+    cbor_value_enter_container(&it, &map);
+    while (!cbor_value_at_end(&map))
+    {
+        if (cbor_value_get_type(&map) == CborTextStringType)
+        {
+            length = 32;
+            cbor_value_copy_text_string(&map, keybuf, &length, NULL);
+        }
+        cbor_value_advance(&map);
+        if (strcmp(keybuf, "cmd") == 0)
+        {
+            cbor_value_get_int(&map, &result);
+            cmd->cmd = result;
+        }
+        else if (strcmp(keybuf, "subcmd") == 0)
+        {
+            cbor_value_get_int(&map, &result);
+            cmd->subcmd = result;
+        }
+        else if (strcmp(keybuf, "taskid") == 0)
+        {
+            if (cbor_value_get_type(&map) == 251)
+            {
+                cbor_value_get_double(&map, &dresult);
+                cmd->task_id = (uint64_t)dresult;
+            }
+            else
+            {
+                cbor_value_get_int(&map, &result);
+                cmd->task_id = result;
+            }
+        }
+        else if (strcmp(keybuf, "nodeid") == 0)
+        {
+            length = LARGE_CMD_STR_LEN;
+            if (cbor_value_is_text_string(&map))
+                cbor_value_copy_text_string(&map, cmd->node_id, &length, NULL);
+            else
+                strcpy(cmd->node_id, "");
+        }
+        else if (strcmp(keybuf, "fn_name") == 0)
+        {
+            length = SMALL_CMD_STR_LEN;
+            cbor_value_copy_text_string(&map, cmd->fn_name, &length, NULL);
+        }
+        else if (strcmp(keybuf, "fn_argsig") == 0)
+        {
+            length = SMALL_CMD_STR_LEN;
+            if (cbor_value_is_text_string(&map))
+                cbor_value_copy_text_string(
+                    &map, cmd->fn_argsig, &length, NULL);
+            else
+                strcpy(cmd->fn_argsig, "");
+        }
+        else if (strcmp(keybuf, "args") == 0)
+        {
+            cbor_value_enter_container(&map, &arr);
+            size_t nelems = 0;
+            cbor_value_get_array_length(&map, &nelems);
+            if (nelems > 0)
+            {
+                cmd->args = (arg_t*)calloc(nelems, sizeof(arg_t));
+                while (!cbor_value_at_end(&arr))
+                {
+                    CborType ty        = cbor_value_get_type(&arr);
+                    cmd->args[i].nargs = nelems;
+                    switch (ty)
+                    {
+                    case CborIntegerType:
+                        cmd->args[i].type = INT_TYPE;
+                        cbor_value_get_int(&arr, &ival);
+                        cmd->args[i].val.ival = ival;
+                        break;
+                    case CborTextStringType:
+                        cmd->args[i].type = STRING_TYPE;
+                        length            = LARGE_CMD_STR_LEN;
+                        cbor_value_copy_text_string(
+                            &arr, strbuf, &length, NULL);
+                        cmd->args[i].val.sval = strdup(strbuf);
+                        break;
+                    case CborByteStringType:
+                        cmd->args[i].type = NVOID_TYPE;
+                        cbor_value_copy_text_string(
+                            &arr, bytebuf, &length, NULL);
+                        cmd->args[i].val.nval = nvoid_new(bytebuf, length);
+                        break;
+                    case CborFloatType:
+                        cmd->args[i].type = DOUBLE_TYPE;
+                        cbor_value_get_float(&arr, &fval);
+                        cmd->args[i].val.dval = fval;
+                    case CborDoubleType:
+                        cmd->args[i].type = DOUBLE_TYPE;
+                        cbor_value_get_double(&arr, &dval);
+                        cmd->args[i].val.dval = dval;
+                        break;
+                    default:
+                        break;
+                    }
+                    i++;
+                    err = cbor_value_advance(&arr);
+                }
+            }
+            else
+                cmd->args = NULL;
+        }
+        cbor_value_advance(&map);
+    }
+    cmd->refcount = 1;
+    //pthread_mutex_init(&cmd->lock, NULL);
+    cmd->id = id++;
 }
 
 void command_hold(command_t* cmd)

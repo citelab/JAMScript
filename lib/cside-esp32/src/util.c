@@ -21,6 +21,20 @@ void dump_bufer_hex(uint8_t* buffer, uint32_t size)
 
     printf("\n");
 }
+void dump_bufer_hex_raw(uint8_t* buffer, uint32_t size)
+{
+    printf("Dumping buffer (%ld bytes):\n", size);
+    for(int i = 0; i < size; i++)
+    {
+        printf("%02x", buffer[i]);
+        if((i+1)%4==0)
+            printf(" ");
+        if((i+1)%8==0)
+            printf("\n");
+    }
+
+    printf("\n");
+}
 
 void dump_heap_left()
 {

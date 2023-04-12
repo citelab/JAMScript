@@ -59,4 +59,14 @@
 
 #define MAX_COMMAND_SIZE 256
 
+
+#define PRECONFIG_WIFI_SSID "jamscript_test_network"
+
+#define SNTP_SERVER "ca.pool.ntp.org"
+#define WIFI_CONNECTION_NOTIFICATION 0x01
+
+// Currently set to toronto time
+#define TIMEZONE "EST5EDT,M3.2.0,M11.1.0" 
+
+
 #endif

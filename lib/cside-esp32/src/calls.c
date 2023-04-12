@@ -9,10 +9,7 @@ arg_t* remote_sync_call(tboard_t* tboard, char* symbol, char* arg_signature, ...
 
     arg_t* qargs = NULL;
     arg_t* rarg  = NULL;
-    // TODO: figure out what level even does?
-    // TODO: FIX THIS..
-    int level = 0;
-
+    
     if (strlen(arg_signature) > 0)
     {
         va_start(args, arg_signature);
@@ -23,7 +20,7 @@ arg_t* remote_sync_call(tboard_t* tboard, char* symbol, char* arg_signature, ...
 
         if (res)
         {
-            rarg = remote_task_start_sync(tboard, symbol, level, arg_signature,
+            rarg = remote_task_start_sync(tboard, symbol, arg_signature,
                                           qargs, strlen(arg_signature));
         }
         else
@@ -31,7 +28,7 @@ arg_t* remote_sync_call(tboard_t* tboard, char* symbol, char* arg_signature, ...
 
     }
     else
-        rarg = remote_task_start_sync(tboard, symbol, level, "", NULL, 0);
+        rarg = remote_task_start_sync(tboard, symbol, "", NULL, 0);
     return rarg;
 }
 
@@ -41,8 +38,6 @@ bool remote_async_call(tboard_t* tboard, char* symbol, char* arg_signature, ...)
     bool res;
     arg_t* qargs = NULL;
 
-    int level = 0; // compute_level(condvec);
-
     if (strlen(arg_signature) > 0)
     {
         va_start(args, arg_signature);
@@ -53,14 +48,14 @@ bool remote_async_call(tboard_t* tboard, char* symbol, char* arg_signature, ...)
 
         if (res)
         {
-            return remote_task_start_async(tboard, symbol, level, arg_signature,
+            return remote_task_start_async(tboard, symbol, arg_signature,
                                            qargs, strlen(arg_signature));
         }
         else
             return false;
     }
     else
-        return remote_task_start_async(tboard, symbol, level, "", NULL, 0);
+        return remote_task_start_async(tboard, symbol, "", NULL, 0);
 }
 
 void* local_sync_call(tboard_t* tboard, char* symbol, ...)
