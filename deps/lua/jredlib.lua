@@ -97,6 +97,109 @@ end
 -- of elements in those rows - if all the numbers are the same, we wait for that number. Otherwise, we select the second largest 
 -- number among them.
 -- 
+
+-- maintain the size of the different uflows 
+
+local uflow_sizes = {}
+
+local function upsize(k) 
+    if (uflow_sizes[k] == nil) then 
+        uflow_sizes[k] = 1
+    else
+        uflow_sizes[k] = uflow_sizes[k] + 1
+    end
+    return uflow_sizes[k]
+end
+
+--
+-- SUB FUNCTIONS used by uf_write
+-- 
+
+local pending_clk = 0
+local pending_writes = {}
+
+local function set_pending(key, newclk) 
+    if (pending_clk == 0) then pending_clk = newclk end 
+    if (pending_writes[key] == nil) then 
+        local ptab = {}
+        ptab[#ptab + 1] = newclk
+        pending_writes[key] = ptab 
+    else 
+        local ptab = pending_writes[key]
+        ptab[#ptab + 1] = newclk
+    end
+end
+
+
+
+local function flush_pending(clk) 
+    for key, pt in pairs(pending_writes) do 
+        if (clk - pt[1] > PENDING_TOO_OLD) then 
+            table.remove(pt, 1)
+            local kpend = key..'###pending'
+            local kcomp = key..'###complete'
+            local rec = redis.call('LPOP', kpend, 1)
+            redis.call('RPUSH', kcomp, rec)
+            redis.call('PUBLISH', "__keycompleted", key)
+        end
+    end
+    local pclk = clk
+    for key, pt in pairs(pending_writes) do 
+        if (#pt > 0 and pt[1] < pclk) then
+            pclk = pt[1]
+        end 
+    end 
+    pending_clk = pclk
+end
+
+-- calculate the pending_age
+--
+local function is_pending(newclk)
+    if (newclk - pending_clk) > PENDING_TOO_OLD then 
+        return true
+    else 
+        return false
+    end
+end
+
+
+
+local active_writers = {}
+local max_clock = 0
+
+--
+-- get_expected: return the number of writers we can expect
+-- we are counting the unique writers that showed up in the last MAX_CLOCK_AGE
+-- time window
+--
+local function get_expected(id, clk)
+    active_writers[id] = clk
+    max_clock = math.max(clk, max_clock)
+    local count = 0
+    for wid, clk in pairs(active_writers) do
+        if (max_clock - clk) < MAX_CLOCK_AGE then
+            count = count + 1
+        else
+            active_writers[wid] = nil
+        end
+    end
+    return count;
+end
+
+local function testme() 
+end
+
+local function trim_flow(ks, count)
+    local pelems = redis.call('ZPOPMIN', ksset, count)
+    if (#pelems > 0) then 
+        for i = 1, #pelems do 
+            local fields = redis.call('HKEYS', pelems[i])  -- this hack has not problem.. we cannot have large uflow and have ssres nil
+            redis.call('HDEL', pelems[i], fields)
+        end
+    end
+end
+
+
 --
 local clkat_wcount = 0
 local writer_count = 1
@@ -161,104 +264,7 @@ local function log(value)
     redis.call('SET', 'log', value)
 end
 
---
--- SUB FUNCTIONS used by uf_write
--- 
 
-local pending_clk = 0
-local pending_writes = {}
-
-local function set_pending(key, newclk) 
-    if (pending_clk == 0) then pending_clk = newclk end 
-    if (pending_writes[key] == nil) then 
-        local ptab = {}
-        ptab[#ptab + 1] = newclk
-        pending_writes[key] = ptab 
-    else 
-        local ptab = pending_writes[key]
-        ptab[#ptab + 1] = newclk
-    end
-end
-
-local function flush_pending(clk) 
-    for key, pt in pairs(pending_writes) do 
-        if (clk - pt[1] > PENDING_TOO_OLD) then 
-            table.remove(pt, 1)
-            local kpend = key..'###pending'
-            local kcomp = key..'###complete'
-            local rec = redis.call('LPOP', kpend, 1)
-            redis.call('RPUSH', kcomp, rec)
-            redis.call('PUBLISH', "__keycompleted", key)
-        end
-    end
-    local pclk = clk
-    for key, pt in pairs(pending_writes) do 
-        if (#pt > 0 and pt[1] < pclk) then
-            pclk = pt[1]
-        end 
-    end 
-    pending_clk = pclk
-end
-
--- calculate the pending_age
---
-local function is_pending(newclk)
-    if (newclk - pending_clk) > PENDING_TOO_OLD then 
-        return true
-    else 
-        return false
-    end
-end
-
--- maintain the size of the different uflows 
-
-local uflow_sizes = {}
-
-local function upsize(k) 
-    if (uflow_sizes[k] == nil) then 
-        uflow_sizes[k] = 1
-    else
-        uflow_sizes[k] = uflow_sizes[k] + 1
-    end
-    return uflow_sizes[k]
-end
-
-local active_writers = {}
-local max_clock = 0
-
---
--- get_expected: return the number of writers we can expect
--- we are counting the unique writers that showed up in the last MAX_CLOCK_AGE
--- time window
---
-local function get_expected(id, clk)
-    active_writers[id] = clk
-    max_clock = math.max(clk, max_clock)
-    local count = 0
-    for wid, clk in pairs(active_writers) do
-        if (max_clock - clk) < MAX_CLOCK_AGE then
-            count = count + 1
-        else
-            active_writers[wid] = nil
-        end
-    end
-    return count;
-end
-
-local function testme() 
-end
-
-
-
-local function trim_flow(ks, count)
-    local pelems = redis.call('ZPOPMIN', ksset, count)
-    if (#pelems > 0) then 
-        for i = 1, #pelems do 
-            local fields = redis.call('HKEYS', pelems[i])  -- this hack has not problem.. we cannot have large uflow and have ssres nil
-            redis.call('HDEL', pelems[i], fields)
-        end
-    end
-end
 
 -- get the element at a particular score value for a key (variable name)
 local function uf_randread(keys, args) 

@@ -68,18 +68,6 @@ async function getloop() {
 }
 
 
-if (jsys.machtype == "fog") {
-    console.log("I am in the fog....");
-
     await getloop();
 
-
-} else {
-    console.log("I an in the device...");
-
-    let count = 10;
-
-    await toploop();
-
-}
 
