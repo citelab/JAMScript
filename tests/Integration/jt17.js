@@ -61,6 +61,8 @@ async function toploop() {
 
 async function getloop() {
     let x;
+
+    jsys.setLoc({long: 10, lat: 20});
     while(true) {
         x = await ppp.readLast();
         console.log("Value received... ", x);
