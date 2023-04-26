@@ -288,10 +288,10 @@ cleanuptmux() {
 }
 
 startredis() {
+    local port=$1
 
     # Start redis with no protected-mode and at the port
-    echo -e "port $1\nprotected-mode no" | redis-server - 1> /dev/null &
-    cat $REDISFUNCS | redis-cli -x FUNCTION LOAD REPLACE > /dev/null
+    echo -e "port $1\nprotected-mode no" | redis-server  --port $port  - 1> /dev/null &
 }
 
 waitforredis() {
@@ -305,6 +305,7 @@ waitforredis() {
         sleep 1
     done
     echo ">>> Redis running at port: $port"
+    cat $REDISFUNCS | redis-cli -p $port -x FUNCTION LOAD REPLACE > /dev/null
 }
 
 

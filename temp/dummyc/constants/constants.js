@@ -15,7 +15,6 @@ module.exports = Object.freeze({
             APP_LIBRARY: 'app-lib-broadcast'
         },
         EventName: {
-            NONE_UP: 'none_up',
             DATA_UP: 'data_up',
             DATA_DOWN: 'data_down',
             FOG_UP: 'fog_up',
