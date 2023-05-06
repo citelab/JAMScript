@@ -223,7 +223,7 @@ local function uf_write(keys, args)
     if (width > 0) then 
         expected = width
     else
-        expected = get_expected()
+        expected = get_expected(id, clock)
     end
     local ssres = redis.call('ZRANGE', ksset, clock, clock, 'BYSCORE')
     if (#ssres == 0) then 
