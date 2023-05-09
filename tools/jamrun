@@ -25,6 +25,7 @@ esac
 MOSQUITTO=`which mosquitto`
 MOSQUITTO_PUB=`which mosquitto_pub`
 TMUX=`which tmux`
+NOVERBOSE=1
 
 if [ -z $MOSQUITTO ]; then
     die "mosquitto (MQTT broker) not installed. Quitting."
@@ -74,6 +75,8 @@ the C side is crashing at the startup. The tmux console would not run when
 the program crash at startup. So the --log option allows us to see the
 program error messages.
 
+Use the --verb option to turn on verbose messaging.
+
 Usage: jamrun file.jxe 
                 [--app=appl_name] 
                 [--fog|--cloud] 
@@ -85,6 +88,7 @@ Usage: jamrun file.jxe
                 [--iflow=flow_name]
                 [--oflow=flow_name]
                 [--log]
+                [--verb]
                 [--loc=long,lat]
                 [--edge=num_edge_connections]
 
@@ -101,8 +105,10 @@ startmqtt() {
     # Check whether the MQTT server is running.. if not start it
     $MOSQUITTO_PUB -p $port -t "test" -m "hello"
     if [ $? -ne 0 ]; then
-        echo "MQTT is not running at $port"
-        echo "Attempting to start MQTT at $port"
+        if [ -z $NOVERBOSE ]; then 
+            echo "MQTT is not running at $port"
+            echo "Attempting to start MQTT at $port"
+        fi
         if [ $machine = Mac ]; then 
             open -n -a $MOSQUITTO --stdout /dev/null --args -c $cfile
         elif [ $machine = Linux ]; then 
@@ -185,7 +191,9 @@ dojamout_p2_bg() {
         script -a -t 1 log.j node jstart.js $args > /dev/null &
     fi
 
-    echo ">>> Started the J node in background"
+    if [ -z $NOVERBOSE ]; then 
+        echo ">>> Started the J node in background"
+    fi
 }
 
 
@@ -215,7 +223,9 @@ doaout() {
             fi
         fi
         ((counter++))
-        echo ">>> Started a C node"
+        if [ -z $NOVERBOSE ]; then 
+            echo ">>> Started a C node"
+        fi
     done
 }
 
@@ -304,7 +314,9 @@ waitforredis() {
         fi
         sleep 1
     done
-    echo ">>> Redis running at port: $port"
+    if [ -z $NOVERBOSE ]; then 
+        echo ">>> Redis running at port: $port"
+    fi
     cat $REDISFUNCS | redis-cli -p $port -x FUNCTION LOAD REPLACE > /dev/null
 }
 
@@ -544,6 +556,9 @@ while :; do
             ;;
         --bg)
             bg=1
+            ;;
+        --verb)
+            NOVERBOSE=
             ;;
         --log)
             log=1
