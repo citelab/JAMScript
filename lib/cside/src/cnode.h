@@ -143,6 +143,8 @@ bool cnode_stop(cnode_t *cn);
 ////////////////////////////////////////
 //////////////// ARGS //////////////////
 ////////////////////////////////////////
+void print_args(cnode_args_t *a);
+
 cnode_args_t *process_args(int argc, char **argv); // args.c
 /** process_args() - Processes arguments
  * @argc: argument count

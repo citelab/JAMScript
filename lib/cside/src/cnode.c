@@ -75,6 +75,13 @@ broker_info_t *cnode_scanj(int groupid, int port) {
     int count = 5;
     broker_info_t *bi = NULL;
 
+    if (groupid == 0) {
+        bi = (broker_info_t *)calloc(1, sizeof(broker_info_t));
+        strcpy(bi->host, "127.0.0.1");
+        bi->port = port;
+        return bi;
+    }
+
     snprintf(mgroup, 32, "%s.%d", Multicast_PREFIX, groupid);
 
     mcast_t *m = multicast_init(mgroup, Multicast_SENDPORT, Multicast_RECVPORT);
@@ -126,6 +133,8 @@ cnode_t *cnode_init(int argc, char **argv){
         cnode_destroy(cn);
         terminate_error(true, "invalid command line");
     }
+
+    print_args(cn->args);
 
     cn->topics = cnode_create_topics(cn->args->appid);
 
