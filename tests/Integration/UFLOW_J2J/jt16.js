@@ -27,7 +27,7 @@ async function runloop() {
 async function runloop2() {
     while(true) {
         await sleep(1000);
-        console.log("Writing to uflow -- pp ", count);
+        console.log("Writing to uflow -- ppp ", count);
         ppp.write(count++);
     }
 }

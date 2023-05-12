@@ -1,23 +1,24 @@
-char *compyou(char *s);
+int value = 10;
 
-jtask* {typeAonly} localyou(int c, char *s) {
-    char *y;
+jtask* localyou(int c, char *s) {
     while(1) {
         jsleep(100000);
         printf("############-->>> Hello YOU  %d, %s\n", c, s);
-    //    y = compyou(s);
-    //    printf("---->> Value = %s\n", y);
+        ppp.write(value);
     }
 }
 
-jtask int get_a_value(int x) {
-    printf("Value of x %d\n", x);
-    return x;
+jtask* localme(int c, char *s) {
+    while(1) {
+        jsleep(100000);
+        printf("############-->>> Hello ME  %d, %s\n", c, s);
+        qq.write(value);
+    }
 }
 
 int main(int argc, char *argv[])
 {
- //   localme(10, "cxxxxyyyy");
-    localyou(10, "cxxxxxxxx");
+    localme(10, "pushing data to qq");
+    localyou(10, "pushing data to ppp");
     return 0;
 }
