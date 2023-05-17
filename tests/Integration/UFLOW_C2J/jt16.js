@@ -1,7 +1,14 @@
 
 jdata {
+    struct __xx {
+	int yy;
+	double zz;
+    } zzz as uflow;
     int qq as uflow;
     int ppp as uflow;
+    char* qqqq as uflow;
+    float xxxx as uflow;
+    double yyy as uflow;
 }
 
 async function getloop() {
