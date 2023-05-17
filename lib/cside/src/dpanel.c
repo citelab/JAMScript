@@ -24,7 +24,10 @@ void freeUObject(uflow_obj_t *uobj);
  */
 
 /*
- * One data panel connects to a Redis server. 
+ * The data panel connects to a main Redis server. That is, the data panel
+ * is not started without a Redis server (this is the device-level Redis server). 
+ * Once the data panel is running, we can add Redis servers at the fog level and also 
+ * delete fog servers. 
  */
 dpanel_t *dpanel_create(char *server, int port, char *uuid)
 {
