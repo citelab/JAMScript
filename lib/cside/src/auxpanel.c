@@ -144,30 +144,30 @@ void apanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
         return;
     }
 
-    while (ap->state != REGISTERED && reply->integer <= 0 && ap->ecount <= DP_MAX_ERROR_COUNT) {
+    while (ap->state != A_REGISTERED && reply->integer <= 0 && ap->ecount <= DP_MAX_ERROR_COUNT) {
         // retry again... for a registration..
         ap->ecount++;
         redisAsyncCommand(ap->a_uctx, apanel_ucallback, ap, "fcall get_id 0 %s", dp->uuid);
     }
 
-    if (ap->state != REGISTERED && reply->integer <= 0 && ap->ecount > DP_MAX_ERROR_COUNT) {
+    if (ap->state != A_REGISTERED && reply->integer <= 0 && ap->ecount > DP_MAX_ERROR_COUNT) {
         fprintf(stderr, "Unable to register with the data store at %s, %d\n", ap->server, ap->port);
         exit(1);
     }
 
     // do registration..
-    if (ap->state != REGISTERED) {
+    if (ap->state != A_REGISTERED) {
         if (reply->integer > 0) {
-            ap->state = REGISTERED;
+            ap->state = A_REGISTERED;
             ap->logical_id = reply->integer;
         }
     }
 
     // TODO: enable pipelining... for larger write throughout...
     //
-    if (ap->state == REGISTERED) {
+    if (ap->state == A_REGISTERED) {
         // pull data from the queue
-        next = get_uflow_object(ap, &last);
+    //    next = get_uflow_object(ap, &last);
         if (next != NULL) {
             uflow_obj_t *uobj = (uflow_obj_t *)next->data;
             if (last) {
@@ -177,7 +177,7 @@ void apanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
                 // send without a callback for pipelining.
                 redisAsyncCommand(ap->a_uctx, apanel_ucallback, ap, "fcall uf_write 1 %s %lu %d %d %f %f %s", uobj->key, uobj->clock, ap->logical_id, cn->width, cn->xcoord, cn->ycoord, uobj->value);
             }
-            freeUObject(uobj);
+           // freeUObject(uobj);
             free(next);
         }
     }
@@ -203,7 +203,7 @@ void *apanel_dfprocessor(void *arg)
     redisAsyncSetConnectCallback(ap->a_dctx, apanel_connect_dcb);
     redisAsyncSetDisconnectCallback(ap->a_dctx, apanel_disconnect_dcb);
 
-    redisAsyncCommand(ap->a_dctx, apanel_dcallback, ap, "SUBSCRIBE __d__keycompleted");
+   // redisAsyncCommand(ap->a_dctx, apanel_dcallback, ap, "SUBSCRIBE __d__keycompleted");
     event_base_dispatch(ap->a_dloop);
     // the above call is blocking... so we come here after the loop has exited
 
@@ -237,8 +237,8 @@ void apanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
             else if (entry->state == CRDY_RECEIVED) 
                 entry->state = BOTH_RECEIVED;
             pthread_mutex_unlock(&(entry->mutex));
-            if (entry->state == BOTH_RECEIVED && entry->taskid > 0) 
-                redisAsyncCommand(dp->dctx, dflow_callback, dp, "fcall df_lread 1 %s", entry->key);
+         //   if (entry->state == BOTH_RECEIVED && entry->taskid > 0) 
+           //     redisAsyncCommand(dp->dctx, dflow_callback, dp, "fcall df_lread 1 %s", entry->key);
         }
     }
 }

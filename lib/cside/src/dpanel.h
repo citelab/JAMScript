@@ -93,7 +93,13 @@ void dpanel_shutdown(dpanel_t *dp);
 uftable_entry_t *dp_create_uflow(dpanel_t *dp, char *key, char *fmt);
 dftable_entry_t *dp_create_dflow(dpanel_t *dp, char *key, char *fmt);
 
-void ufwrite(uftable_entry_t *uf, int x);
+void ufwrite_int(uftable_entry_t *uf, int x);
+void ufwrite_double(uftable_entry_t *uf, double x);
+void ufwrite_str(uftable_entry_t *uf, char *str);
+void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...);
+
 void dfread(dftable_entry_t *df, void *val);
+
+
 
 #endif

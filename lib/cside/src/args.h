@@ -8,6 +8,10 @@
 #define DEFAULTS_SERIALNUM 1
 #define DEFAULTS_NUMEXECUTORS 0
 
+#define DEFAULTS_HOST "127.0.0.1"
+#define DEFAULTS_REDHOST "127.0.0.1"
+#define DEFAULTS_REDPORT 6379
+
 // arbitrary - the dynamic UDP port range
 #define PORT_MIN 1024
 #define PORT_MAX 65535

@@ -258,7 +258,15 @@ uflow_obj_t *uflow_obj_new(uftable_entry_t *uf, int x)
     uflow_obj_t *uo = (uflow_obj_t *)calloc(sizeof(uflow_obj_t), 1);
     uo->key = uf->key;
     uo->fmt = uf->fmt;
-    uo->clock = 100;        // TODO: Fix this...
+    dpanel_t *dp = uf->dpanel;
+    cnode_t *cn = dp->cnode;
+    uo->clock = get_jamclock(cn);
+    // encode the integer as CBOR
+    
+    // do a base64 transform of the CBOR encoded value
+
+
+
     char xstr[32];
     snprintf(xstr, 32, "%d", x);
     uo->value = strdup(xstr);
@@ -267,7 +275,7 @@ uflow_obj_t *uflow_obj_new(uftable_entry_t *uf, int x)
 }
 
 
-void ufwrite(uftable_entry_t *uf, int x)
+void ufwrite_int(uftable_entry_t *uf, int x)
 {
     dpanel_t *dp = (dpanel_t *)(uf->dpanel);
     struct queue_entry *e = NULL;

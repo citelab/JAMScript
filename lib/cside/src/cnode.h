@@ -49,6 +49,9 @@ typedef struct cnode_args_t {
     int groupid;
     char *appid;
     int port;
+    char *host;
+    int redport;
+    char *redhost;
     int snumber;
     int nexecs;
 } cnode_args_t;
@@ -83,7 +86,7 @@ void cnode_topics_destroy(topics_t *t);
 server_t *cnode_create_mbroker(cnode_t *cn, enum levels level, char *server_id, char *host, int port, char *topics[], int ntopics);
 void cnode_recreate_mbroker(server_t *serv, enum levels level, char *server_id, char *host, int port, char *topics[], int ntopics);
 
-broker_info_t *cnode_scanj(int groupid, int port);
+broker_info_t *cnode_scanj(int groupid, char *host, int port);
 
 void cnode_setcoords(cnode_t *cn, float xc, float yc);
 void cnode_setwidth(cnode_t *cn, int width);

@@ -1,0 +1,24 @@
+#include <stdio.h>
+#include "base64.h"
+#include <tinycbor/cbor.h>
+
+
+int main() {
+
+    int x = 145;
+
+    char buf[64];
+    char out[128];
+
+    CborEncoder encoder;
+    cbor_encoder_init(&encoder, buf, sizeof(buf), 0);
+    cbor_encode_int(&encoder, x);
+
+    int fd = open("data.cbor", O_CREAT|O_RDWR);
+    write(fd, buf, sizeof(buf));
+    close(fd);
+
+
+    Base64encode(out, buf, 10);
+    printf("\n%s\n", out);
+}

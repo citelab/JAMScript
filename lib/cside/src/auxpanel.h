@@ -16,8 +16,16 @@
 #define  MAX_SERVER_LEN             64
 #define  DP_MAX_ERROR_COUNT         5
 
+enum apstate_t {
+    A_NEW = 0,
+    A_STARTED = 1,
+    A_STOPPED = 2,
+    A_REGISTERED =3,
+};
+
 typedef struct {
 
+    enum apstate_t state;
     void *dpanel;
     char server[MAX_SERVER_LEN];
     int port;
