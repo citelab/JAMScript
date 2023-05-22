@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <assert.h>
+
 #include "base64.h"
 #include "cnode.h"
 #include "dpanel.h"
-
 
 /*
  * Some forward declarations
@@ -14,7 +15,6 @@ void dpanel_ucallback(redisAsyncContext *c, void *r, void *privdata);
 void *dpanel_dfprocessor(void *arg);
 void dpanel_dcallback(redisAsyncContext *c, void *r, void *privdata);
 void dflow_callback(redisAsyncContext *c, void *r, void *privdata);
-
 
 struct queue_entry *get_uflow_object(dpanel_t *dp, bool *last);
 void freeUObject(uflow_obj_t *uobj);
@@ -345,6 +345,66 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
     dpanel_t *dp = (dpanel_t *)(uf->dpanel);
     struct queue_entry *e = NULL;
     uflow_obj_t *uobj;
+    va_list args;
+    uarg_t *uargs;
+    char *label;
+    nvoid_t *nv;
+    
+    int len = strlen(fmt);
+    assert(len > 0);
+    
+    uargs = (uarg_t *)calloc(len, sizeof(uarg_t));
+
+    va_start(args, fmt);
+    for (int i = 0; i < len; i++) {
+        label = va_arg(args, char *);
+        uargs[i].label = strdup(label);
+        switch(fmt[i]) {
+            case 'n':
+                nv = va_arg(args, nvoid_t*);
+                uargs[i].val.nval = nv;
+                uargs[i].type = U_NVOID_TYPE;
+                break;
+            case 's':
+                uargs[i].val.sval = strdup(va_arg(args, char *));
+                uargs[i].type = U_STRING_TYPE;
+                break;
+            case 'i':
+                uargs[i].val.ival = va_arg(args, int);
+                uargs[i].type = U_INT_TYPE;
+                break;
+            case 'd':
+            case 'f':                
+                uargs[i].val.dval = va_arg(args, double);
+                uargs[i].type = U_DOUBLE_TYPE;
+                break;
+            default:
+                break;
+        }
+    }
+    va_end(args);
+
+    int buflen = estimate_cbor_buffer_len(uargs, len);
+    uint8_t *buf = (u_int8_t *)calloc(buflen, sizeof(u_int8_t));
+    char *out = (char *)calloc(buflen * (3/2), sizeof(char *));
+
+    CborEncoder encoder;
+    cbor_encoder_init(&encoder, (uint8_t *)&buf, sizeof(buf), 0);
+
+    do_cbor_encoding(&encoder, uargs, len);
+    int clen = cbor_encoder_get_buffer_size(&encoder, (uint8_t *)&buf);
+    Base64encode(out, (char *)buf, clen);
+    uobj = uflow_obj_new(uf, out);
+    free_buffer(uargs, len);
+    e = queue_new_node(uobj);
+    pthread_mutex_lock(&(dp->ufmutex));
+    queue_insert_tail(&(dp->ufqueue), e);
+    pthread_cond_signal(&(dp->ufcond));
+    pthread_mutex_unlock(&(dp->ufmutex));
+    free(buf);
+    free(out);
+}
+
 
 /*
     uint8_t *buf = (uint8_t *)calloc(16 + strlen(str), sizeof(uint8_t));
@@ -357,14 +417,6 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
     Base64encode(out, (char *)buf, len);
     uobj = uflow_obj_new(uf, out);
 */
-    e = queue_new_node(uobj);
-    pthread_mutex_lock(&(dp->ufmutex));
-    queue_insert_tail(&(dp->ufqueue), e);
-    pthread_cond_signal(&(dp->ufcond));
-    pthread_mutex_unlock(&(dp->ufmutex));
-//    free(buf);
-//    free(out);
-}
 
 
 /*

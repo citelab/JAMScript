@@ -2,7 +2,6 @@
 #define __DPANEL_H__
 
 #include <sys/queue.h>
-#include "queue/queue.h"
 #include <pthread.h>
 #include <assert.h>
 #include <string.h>
@@ -11,6 +10,11 @@
 #include <event.h>
 #include <hiredis/async.h>
 #include <hiredis/adapters/libevent.h>
+
+#include <tinycbor/cbor.h>
+
+#include "queue/queue.h"
+#include "nvoid.h"
 
 enum dfstate   {NEW_STATE = 0,
                 PRDY_RECEIVED = 1,
@@ -42,6 +46,30 @@ typedef struct {
     void *dpanel;
     UT_hash_handle hh;
 } dftable_entry_t;
+
+typedef enum {
+    U_NULL_TYPE,
+    U_STRING_TYPE,
+    U_INT_TYPE,
+    U_LONG_TYPE,
+    U_DOUBLE_TYPE,
+    U_NVOID_TYPE,
+    U_VOID_TYPE
+} uargtype_t;
+
+typedef struct {
+    char *label;
+    uargtype_t type;
+    union _uargvalue_t
+    {
+        int ival;
+        long int lval;
+        char *sval;
+        double dval;
+        nvoid_t *nval;
+        void *vval;
+    } val;
+} uarg_t;
 
 enum dpstate_t {
     NEW = 0,
@@ -100,6 +128,9 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...);
 
 void dfread(dftable_entry_t *df, void *val);
 
+int estimate_cbor_buffer_len(uarg_t *u, int len);
+void do_cbor_encoding(CborEncoder *enc, uarg_t *u, int len);
+void free_buffer(uarg_t *u, int len);
 
 
 #endif
