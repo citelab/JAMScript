@@ -2,7 +2,7 @@
 #define __CNODE_H__
 
 #include "tboard.h"
-#include "mqtt_adapter.h"
+#include "mqtt-adapter.h"
 #include "core.h"
 
 #define MAX_EDGE_SERVERS            16

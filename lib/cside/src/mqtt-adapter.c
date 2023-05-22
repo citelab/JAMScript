@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <mosquitto.h>
 #include <pthread.h>
-#include "mqtt_adapter.h"
+#include "mqtt-adapter.h"
 #include "command.h"
 #include "tboard.h"
 #include "cnode.h"

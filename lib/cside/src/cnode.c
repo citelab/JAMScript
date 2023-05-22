@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "tboard.h"
-#include "mqtt_adapter.h"
+#include "mqtt-adapter.h"
 #include "cnode.h"
 #include "utilities.h"
 #include "constants.h"

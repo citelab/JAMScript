@@ -3,7 +3,7 @@
 #include "tboard.h"
 #include "core.h"
 #include "jcond.h"
-#include "mqtt_adapter.h"
+#include "mqtt-adapter.h"
 
 int compute_level(int cv)
 {

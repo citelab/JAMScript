@@ -291,6 +291,80 @@ void ufwrite_int(uftable_entry_t *uf, int x)
     pthread_mutex_unlock(&(dp->ufmutex));
 }
 
+void ufwrite_double(uftable_entry_t *uf, double x)
+{
+    dpanel_t *dp = (dpanel_t *)(uf->dpanel);
+    struct queue_entry *e = NULL;
+    uflow_obj_t *uobj;
+
+    uint8_t buf[16];
+    char out[32];
+
+    CborEncoder encoder;
+    cbor_encoder_init(&encoder, (uint8_t *)&buf, sizeof(buf), 0);
+    cbor_encode_double(&encoder, x);
+    int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t *)&buf);
+    Base64encode(out, (char *)buf, len);
+    uobj = uflow_obj_new(uf, out);
+
+    e = queue_new_node(uobj);
+    pthread_mutex_lock(&(dp->ufmutex));
+    queue_insert_tail(&(dp->ufqueue), e);
+    pthread_cond_signal(&(dp->ufcond));
+    pthread_mutex_unlock(&(dp->ufmutex));
+}
+
+
+void ufwrite_str(uftable_entry_t *uf, char *str)
+{
+    dpanel_t *dp = (dpanel_t *)(uf->dpanel);
+    struct queue_entry *e = NULL;
+    uflow_obj_t *uobj;
+
+    uint8_t *buf = (uint8_t *)calloc(16 + strlen(str), sizeof(uint8_t));
+    char *out = (char *)calloc(16 + (3/2) * strlen(str), sizeof(char));
+
+    CborEncoder encoder;
+    cbor_encoder_init(&encoder, (uint8_t *)&buf, sizeof(buf), 0);
+    cbor_encode_byte_string(&encoder, (uint8_t *)str, strlen(str));
+    int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t *)&buf);
+    Base64encode(out, (char *)buf, len);
+    uobj = uflow_obj_new(uf, out);
+
+    e = queue_new_node(uobj);
+    pthread_mutex_lock(&(dp->ufmutex));
+    queue_insert_tail(&(dp->ufqueue), e);
+    pthread_cond_signal(&(dp->ufcond));
+    pthread_mutex_unlock(&(dp->ufmutex));
+    free(buf);
+    free(out);
+}
+
+void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
+{
+    dpanel_t *dp = (dpanel_t *)(uf->dpanel);
+    struct queue_entry *e = NULL;
+    uflow_obj_t *uobj;
+
+/*
+    uint8_t *buf = (uint8_t *)calloc(16 + strlen(str), sizeof(uint8_t));
+    char *out = (char *)calloc(16 + (3/2) * strlen(str), sizeof(char));
+
+    CborEncoder encoder;
+    cbor_encoder_init(&encoder, (uint8_t *)&buf, sizeof(buf), 0);
+    cbor_encode_byte_string(&encoder, (uint8_t *)str, strlen(str));
+    int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t *)&buf);
+    Base64encode(out, (char *)buf, len);
+    uobj = uflow_obj_new(uf, out);
+*/
+    e = queue_new_node(uobj);
+    pthread_mutex_lock(&(dp->ufmutex));
+    queue_insert_tail(&(dp->ufqueue), e);
+    pthread_cond_signal(&(dp->ufcond));
+    pthread_mutex_unlock(&(dp->ufmutex));
+//    free(buf);
+//    free(out);
+}
 
 
 /*
