@@ -173,10 +173,8 @@ void destroy_args(cnode_args_t *args); // args.c
  * Context: Dellocates cnode_args_t pointer and any other allocations of process_args()
  */
 
-////////////////////////////////////////
-////// CNODE UTILS (for testing)////////
-////////////////////////////////////////
-
-void temp_schedule_inject(cnode_t *cn, int type);
+int get_jamclock(cnode_t *cn) {
+    return 10;
+}
 
 #endif

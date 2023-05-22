@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include "base64.h"
 #include "cnode.h"
 #include "dpanel.h"
 
@@ -253,7 +254,7 @@ void freeUObject(uflow_obj_t *uobj)
 }
 
 
-uflow_obj_t *uflow_obj_new(uftable_entry_t *uf, int x) 
+uflow_obj_t *uflow_obj_new(uftable_entry_t *uf, char *vstr) 
 {
     uflow_obj_t *uo = (uflow_obj_t *)calloc(sizeof(uflow_obj_t), 1);
     uo->key = uf->key;
@@ -261,15 +262,7 @@ uflow_obj_t *uflow_obj_new(uftable_entry_t *uf, int x)
     dpanel_t *dp = uf->dpanel;
     cnode_t *cn = dp->cnode;
     uo->clock = get_jamclock(cn);
-    // encode the integer as CBOR
-    
-    // do a base64 transform of the CBOR encoded value
-
-
-
-    char xstr[32];
-    snprintf(xstr, 32, "%d", x);
-    uo->value = strdup(xstr);
+    uo->value = strdup(vstr);
 
     return uo;
 }
@@ -281,13 +274,24 @@ void ufwrite_int(uftable_entry_t *uf, int x)
     struct queue_entry *e = NULL;
     uflow_obj_t *uobj;
 
-    uobj = uflow_obj_new(uf, x);
+    uint8_t buf[16];
+    char out[32];
+
+    CborEncoder encoder;
+    cbor_encoder_init(&encoder, (uint8_t *)&buf, sizeof(buf), 0);
+    cbor_encode_int(&encoder, x);
+    int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t *)&buf);
+    Base64encode(out, (char *)buf, len);
+    uobj = uflow_obj_new(uf, out);
+
     e = queue_new_node(uobj);
     pthread_mutex_lock(&(dp->ufmutex));
     queue_insert_tail(&(dp->ufqueue), e);
     pthread_cond_signal(&(dp->ufcond));
     pthread_mutex_unlock(&(dp->ufmutex));
 }
+
+
 
 /*
  * DFLOW PROCESSOR FUNCTIONS
