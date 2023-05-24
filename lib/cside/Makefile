@@ -4,14 +4,18 @@
 #
 
 # define the C compiler to use
-CC = clang 
+CC = clang
 
 # defube the archiver
 AR = ar -rc
 
 # define any compile-time flags
-CFLAGS	:= -g -pthread -Wall -fsanitize=address -fno-omit-frame-pointer -O1 
+CFLAGS	:= -g -pthread -Wall -fsanitize=address -fno-omit-frame-pointer -O1
 # -std=c99
+
+ifeq ($(shell getconf LONG_BIT),32)
+CFLAGS := $(CFLAGS) -D SUPPORT_32_BIT
+endif
 
 # define library paths in addition to /usr/lib
 #   if I wanted to include libraries not in /usr/lib I'd specify
@@ -59,11 +63,11 @@ LIBS		:= $(patsubst %,-L%, $(LIBDIRS:%/=%))
 # define the C source files
 SOURCES		:= $(wildcard $(patsubst %,%/*.c, $(SOURCEDIRS)))
 
-# define the C object files 
+# define the C object files
 OBJECTS		:= $(SOURCES:.c=.o)
 
 #
-# The following part of the makefile is generic; it can be used to 
+# The following part of the makefile is generic; it can be used to
 # build any executable just by changing the definitions above and by
 # deleting dependencies appended to the file from 'make depend'
 #
@@ -78,15 +82,15 @@ archive: $(ARCHIVE)
 $(OUTPUT):
 	$(MD) $(OUTPUT)
 
-$(MAIN): $(OBJECTS) 
+$(MAIN): $(OBJECTS)
 	$(CC) $(CFLAGS) $(INCLUDES) -o $(OUTPUTMAIN) $(OBJECTS) $(LFLAGS) $(LIBS)
 
-$(ARCHIVE): $(OBJECTS) 
+$(ARCHIVE): $(OBJECTS)
 	$(AR) libjam.a $(OBJECTS)
 
 # this is a suffix replacement rule for building .o's from .c's
 # it uses automatic variables $<: the name of the prerequisite of
-# the rule(a .c file) and $@: the name of the target of the rule (a .o file) 
+# the rule(a .c file) and $@: the name of the target of the rule (a .o file)
 # (see the gnu make manual section about automatic variables)
 .c.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c $<  -o $@
