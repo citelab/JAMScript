@@ -17,7 +17,7 @@ for CFILE in $(find -name "*.c"); do
 		continue
 	fi
 	echo "Compiling ${JXE}"
-	node ../../mainCompiler.js "$CFILE" "$JFILE" > /dev/null
+	node ../../mainCompiler.js "$CFILE" "$JFILE" --output $(echo "$JXE" | sed -e 's/\.jxe$//') > /dev/null
 	if [ $? -ne 0 ]; then
 		echo "Compile failed... make sure the archive is compilled without asan"
 		continue
