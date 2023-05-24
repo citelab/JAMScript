@@ -106,7 +106,7 @@ broker_info_t *cnode_scanj(int groupid, int port) {
         command_free(rmsg);
     }
     command_free(smsg);
-
+    multicast_destroy(m);
     return bi;
 }
 
