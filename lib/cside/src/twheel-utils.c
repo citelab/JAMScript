@@ -18,14 +18,14 @@ long int getcurtime()
 }
 
 
-struct timeouts *twheel_init() 
+struct timeouts *twheel_init()
 {
     timeout_error_t err;
     struct timeouts *tw = timeouts_open(0, &err);
     return tw;
 }
 
-void *clone_taskid(long int *task_id) 
+void *clone_taskid(long int *task_id)
 {
     long int *t = (long int *)calloc(1, sizeof(long int));
     memcpy(t, task_id, sizeof(long int));
@@ -81,7 +81,7 @@ bool twheel_delete_timeout(tboard_t *tb, long int *id)
 {
     struct timeouts_it it = TIMEOUTS_IT_INITIALIZER(TIMEOUTS_PENDING);
     struct timeout *q;
-    
+
     pthread_mutex_lock(&tb->twmutex);
     while ((q = timeouts_next(tb->twheel, &it)) != NULL) {
         if ((q->callback.fn == dummy_next_timeout_event) && (*(long int *)(q->callback.arg) == *id))
@@ -113,6 +113,3 @@ void twheel_update_to_now(tboard_t *tb)
     timeouts_update(tb->twheel, (timeout_t)getcurtime());
     pthread_mutex_unlock(&tb->twmutex);
 }
-
-
-

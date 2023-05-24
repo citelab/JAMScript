@@ -44,7 +44,7 @@ enum execmodes_t {
     pthread_mutex_unlock(X);                                    \
 } while (0);
 
-void convert_time_to_absolute(struct timespec *t, struct timespec *abt) 
+void convert_time_to_absolute(struct timespec *t, struct timespec *abt)
 {
     struct timeval tnow;
     gettimeofday(&tnow, NULL);
@@ -79,12 +79,13 @@ void process_timing_wheel(tboard_t *tboard, enum execmodes_t *mode)
             } else if (t->callback.fn == dummy_next_timeout_event) {
                 process_timeout_event(tboard, t->callback.arg);
             }
+            free(t->callback.arg);
             free(t);
         }
     } while (t != NULL);
 }
 
-struct queue_entry *get_next_task(tboard_t *tboard, int etype, enum execmodes_t mode, int num, struct queue **q, pthread_mutex_t **mutex, pthread_cond_t **cond) 
+struct queue_entry *get_next_task(tboard_t *tboard, int etype, enum execmodes_t mode, int num, struct queue **q, pthread_mutex_t **mutex, pthread_cond_t **cond)
 {
     struct queue_entry *next = NULL; // queue entry of ready queue
 
@@ -134,11 +135,11 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
     task_t *task = ((task_t *)(next->data));
     task->status = TASK_RUNNING; // update status incase first run
     DO_SNAPSHOT(1);
-    // swap context to task - to start the execution 
+    // swap context to task - to start the execution
     // so.. we start the execution (by default) and then let it yield..
-    // at yield the task would indicate the reason for yielding... which we 
-    // use to process accordingly... 
-    mco_resume(task->ctx); 
+    // at yield the task would indicate the reason for yielding... which we
+    // use to process accordingly...
+    mco_resume(task->ctx);
     DO_SNAPSHOT(2);
     // check status of task
     int status = mco_status(task->ctx);
@@ -198,7 +199,7 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
     } else if (status == MCO_DEAD) { // task has terminated
         task->status = TASK_COMPLETED; // mark task as complete for history hash table
         // record task execution statistics into history hash table
-        history_record_exec(tboard, task, &(task->hist)); 
+        history_record_exec(tboard, task, &(task->hist));
 
         // check if task was blocking, if so we need to resume parent
         if (task->parent != NULL) { // blocking task just terminated, we wish to return parent to queue
@@ -222,8 +223,8 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
             tboard_deinc_concurrent(tboard);
         }
         // if command object is specified, just free it. User data would be deallocated by itself
-        
-        if (task->cmd_obj) 
+
+        if (task->cmd_obj)
             command_free((command_t *)task->cmd_obj);       // FIXME: THis is conflicting with release in the wrapper
         mco_destroy(task->ctx);
         // free task_t object
@@ -258,7 +259,7 @@ void process_internal_command(tboard_t *t, internal_command_t *ic)
         internal_command_free(ic);
         break;
 
-    case CmdNames_REXEC_RES:  
+    case CmdNames_REXEC_RES:
         // find the task
         HASH_FIND_INT(t->task_table, &(ic->task_id), rtask);
         if (rtask != NULL)
@@ -307,8 +308,10 @@ void process_internal_queue(tboard_t *t)
     if (next)
         queue_pop_head(&t->iq);
     pthread_mutex_unlock(&t->iqmutex);
-    if (next) 
+    if (next){
         process_internal_command(t, next->data);
+        free(next);
+    }
 }
 
 
@@ -329,7 +332,7 @@ void *executor(void *arg)
     disable_thread_cancel();
 
     while (true) {
-        // create single cancellation point 
+        // create single cancellation point
         set_thread_cancel_point_here();
         // process the timing wheel events
         process_timing_wheel(tboard, &mode);
@@ -344,7 +347,7 @@ void *executor(void *arg)
         // out of a secondary queue when primary queue is empty
         struct queue *q = NULL; // queue entry to reinsert task into after yielding
         DO_SNAPSHOT(0);
-        // Fetch next task to run 
+        // Fetch next task to run
         next = get_next_task(tboard, type, mode, num, &q, &mutex, &cond);
         DO_SNAPSHOT(1);
         DO_SNAPSHOT(2);
