@@ -164,6 +164,22 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
             rtask->calling_task = task;
             HASH_ADD_INT(tboard->task_table, task_id, rtask);
 
+            switch (rtask->mode) {
+                case TASK_MODE_REMOTE_NB:
+                    e = queue_new_node(task);
+                    remote_task_place(tboard, rtask);
+                break;
+                case TASK_MODE_DFLOW:
+                    // set the task state accordingly in the dftable_entry_t ..
+                    
+                break;
+
+                case TASK_MODE_SLEEPING:
+                    // nothing to do here. the task is already in the task table
+                break;
+                case TASK_MODE_REMOTE:
+                    remote_task_place(tboard, rtask);
+            }
             // if task is not blocking we wish to reinsert issuing task back into ready queue
             if (rtask->mode == TASK_MODE_REMOTE_NB)
                 e = queue_new_node(task);

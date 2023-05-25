@@ -12,6 +12,11 @@
 
 cnode_t *cn;
 
+int get_jamclock(cnode_t *cn)
+{
+    return 0;
+}
+
 topics_t *cnode_create_topics(char *app)
 {
     char sbuf[1024];

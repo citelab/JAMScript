@@ -48,19 +48,20 @@ typedef struct {
 } dftable_entry_t;
 
 typedef enum {
-    U_NULL_TYPE,
-    U_STRING_TYPE,
-    U_INT_TYPE,
-    U_LONG_TYPE,
-    U_DOUBLE_TYPE,
-    U_NVOID_TYPE,
-    U_VOID_TYPE
-} uargtype_t;
+    D_NULL_TYPE,
+    D_STRING_TYPE,
+    D_INT_TYPE,
+    D_LONG_TYPE,
+    D_DOUBLE_TYPE,
+    D_NVOID_TYPE,
+    D_VOID_TYPE
+} dargtype_t;
 
 typedef struct {
+    int nargs;
     char *label;
-    uargtype_t type;
-    union _uargvalue_t
+    dargtype_t type;
+    union _dargvalue_t
     {
         int ival;
         long int lval;
@@ -69,7 +70,7 @@ typedef struct {
         nvoid_t *nval;
         void *vval;
     } val;
-} uarg_t;
+} darg_t;
 
 enum dpstate_t {
     NEW = 0,
@@ -108,6 +109,7 @@ typedef struct {
 
     redisAsyncContext *uctx;
     redisAsyncContext *dctx;
+    redisAsyncContext *dctx2;
 
     void *cnode;
     void *tboard;
@@ -115,6 +117,7 @@ typedef struct {
 } dpanel_t;
 
 dpanel_t *dpanel_create(char *server, int port, char *uuid);
+void dpanel_setcnode(dpanel_t *dp, void *cn);
 void dpanel_start(dpanel_t *dp);
 void dpanel_shutdown(dpanel_t *dp);
 
@@ -128,9 +131,9 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...);
 
 void dfread(dftable_entry_t *df, void *val);
 
-int estimate_cbor_buffer_len(uarg_t *u, int len);
-void do_cbor_encoding(CborEncoder *enc, uarg_t *u, int len);
-void free_buffer(uarg_t *u, int len);
+int estimate_cbor_buffer_len(darg_t *u, int len);
+void do_cbor_encoding(CborEncoder *enc, darg_t *u, int len);
+void free_buffer(darg_t *u, int len);
 
 
 #endif

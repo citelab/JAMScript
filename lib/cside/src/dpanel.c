@@ -19,6 +19,7 @@ void dflow_callback(redisAsyncContext *c, void *r, void *privdata);
 struct queue_entry *get_uflow_object(dpanel_t *dp, bool *last);
 void freeUObject(uflow_obj_t *uobj);
 
+
 /*
  * MAIN DATA PANEL FUNCTIONS
  * For creating, starting, shutting down, etc.
@@ -53,9 +54,9 @@ dpanel_t *dpanel_create(char *server, int port, char *uuid)
     return dp;
 }
 
-void dpanel_setcnode(dpanel_t *dp, cnode_t *cn)
+void dpanel_setcnode(dpanel_t *dp, void *cn)
 {
-    dp->cnode = (void *)cn;
+    dp->cnode = cn;
 }
 
 void dpanel_settboard(dpanel_t *dp, tboard_t *tb) 
@@ -68,8 +69,8 @@ void dpanel_connect_cb(const redisAsyncContext *c, int status) {
         printf("Error: %s\n", c->errstr);
         return;
     }
-    printf("Connected...\n");
-}
+    printf("Connected...1 \n");
+}   
 
 void dpanel_disconnect_cb(const redisAsyncContext *c, int status) {
     if (status != REDIS_OK) {
@@ -82,12 +83,14 @@ void dpanel_disconnect_cb(const redisAsyncContext *c, int status) {
 void dpanel_start(dpanel_t *dp)
 {
     int rval;
+
     rval = pthread_create(&(dp->ufprocessor), NULL, dpanel_ufprocessor, (void *)dp);
     if (rval != 0) {
         perror("ERROR! Unable to start the dpanel ufprocessor thread");
         exit(1);
     }
 
+    printf("Starting... dfprocessor\n");
     rval = pthread_create(&(dp->dfprocessor), NULL, dpanel_dfprocessor, (void *)dp);
     if (rval != 0) {
         perror("ERROR! Unable to start the dpanel dfprocessor thread");
@@ -124,6 +127,7 @@ void *dpanel_ufprocessor(void *arg)
     redisAsyncSetDisconnectCallback(dp->uctx, dpanel_disconnect_cb);
 
     redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall get_id 0 %s", dp->uuid);
+
     event_base_dispatch(dp->uloop);
     // the above call is blocking... so we come here after the loop has exited
 
@@ -135,7 +139,9 @@ void dpanel_connect_dcb(const redisAsyncContext *c, int status) {
         printf("Error: %s\n", c->errstr);
         return;
     }
-    printf("Connected...\n");
+    printf("Connected... 2\n");
+    printf("Doing... subscribe ...\n");
+  
 }
 
 void dpanel_disconnect_dcb(const redisAsyncContext *c, int status) {
@@ -154,14 +160,12 @@ void dpanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
     struct queue_entry *next = NULL; 
     bool last = true;
     cnode_t *cn = (cnode_t *)dp->cnode;
-    
     if (reply == NULL) {
         if (c->errstr) {
             printf("errstr: %s\n", c->errstr);
         }
         return;
     }
-
     while (dp->state != REGISTERED && reply->integer <= 0 && dp->ecount <= DP_MAX_ERROR_COUNT) {
         // retry again... for a registration..
         dp->ecount++;
@@ -188,6 +192,7 @@ void dpanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
         next = get_uflow_object(dp, &last);
         if (next != NULL) {
             uflow_obj_t *uobj = (uflow_obj_t *)next->data;
+
             if (last) {
                 // send with a callback
                 redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %lu %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, cn->width, cn->xcoord, cn->ycoord, uobj->value);
@@ -346,14 +351,14 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
     struct queue_entry *e = NULL;
     uflow_obj_t *uobj;
     va_list args;
-    uarg_t *uargs;
+    darg_t *uargs;
     char *label;
     nvoid_t *nv;
     
     int len = strlen(fmt);
     assert(len > 0);
     
-    uargs = (uarg_t *)calloc(len, sizeof(uarg_t));
+    uargs = (darg_t *)calloc(len, sizeof(darg_t));
 
     va_start(args, fmt);
     for (int i = 0; i < len; i++) {
@@ -363,20 +368,20 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
             case 'n':
                 nv = va_arg(args, nvoid_t*);
                 uargs[i].val.nval = nv;
-                uargs[i].type = U_NVOID_TYPE;
+                uargs[i].type = D_NVOID_TYPE;
                 break;
             case 's':
                 uargs[i].val.sval = strdup(va_arg(args, char *));
-                uargs[i].type = U_STRING_TYPE;
+                uargs[i].type = D_STRING_TYPE;
                 break;
             case 'i':
                 uargs[i].val.ival = va_arg(args, int);
-                uargs[i].type = U_INT_TYPE;
+                uargs[i].type = D_INT_TYPE;
                 break;
             case 'd':
             case 'f':                
                 uargs[i].val.dval = va_arg(args, double);
-                uargs[i].type = U_DOUBLE_TYPE;
+                uargs[i].type = D_DOUBLE_TYPE;
                 break;
             default:
                 break;
@@ -407,19 +412,6 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
 
 
 /*
-    uint8_t *buf = (uint8_t *)calloc(16 + strlen(str), sizeof(uint8_t));
-    char *out = (char *)calloc(16 + (3/2) * strlen(str), sizeof(char));
-
-    CborEncoder encoder;
-    cbor_encoder_init(&encoder, (uint8_t *)&buf, sizeof(buf), 0);
-    cbor_encode_byte_string(&encoder, (uint8_t *)str, strlen(str));
-    int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t *)&buf);
-    Base64encode(out, (char *)buf, len);
-    uobj = uflow_obj_new(uf, out);
-*/
-
-
-/*
  * DFLOW PROCESSOR FUNCTIONS
  */
 void *dpanel_dfprocessor(void *arg) 
@@ -433,12 +425,18 @@ void *dpanel_dfprocessor(void *arg)
         printf("ERROR! Connecting to the Redis server at %s:%d\n", dp->server, dp->port);
         exit(1);
     }
-
+    dp->dctx2 = redisAsyncConnect(dp->server, dp->port);
+    if (dp->dctx2->err) {
+        printf("ERROR! Connecting to the Redis server at %s:%d\n", dp->server, dp->port);
+        exit(1);
+    }
     redisLibeventAttach(dp->dctx, dp->dloop);
     redisAsyncSetConnectCallback(dp->dctx, dpanel_connect_dcb);
     redisAsyncSetDisconnectCallback(dp->dctx, dpanel_disconnect_dcb);
-
-    redisAsyncCommand(dp->dctx, dpanel_dcallback, dp, "SUBSCRIBE __d__keycompleted");
+    redisLibeventAttach(dp->dctx2, dp->dloop);
+    redisAsyncSetConnectCallback(dp->dctx2, dpanel_connect_dcb);
+    redisAsyncSetDisconnectCallback(dp->dctx2, dpanel_disconnect_dcb);
+    redisAsyncCommand(dp->dctx2, dpanel_dcallback, dp, "SUBSCRIBE __d__keycompleted");
     event_base_dispatch(dp->dloop);
     // the above call is blocking... so we come here after the loop has exited
 
@@ -461,7 +459,11 @@ void dpanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
         return;
     }
 
-    if (reply->type == REDIS_REPLY_ARRAY && (strcmp(reply->element[1]->str, "__d__keycompleted") == 0)) {
+    printf("\n ------->> --------------- dcallback received. %zu...%s\n", reply->elements, reply->element[1]->str);
+    printf("\n --hi ----- ..%s\n", reply->element[0]->str);
+    if (reply->type == REDIS_REPLY_ARRAY && 
+        (strcmp(reply->element[1]->str, "__d__keycompleted") == 0) &&
+        (strcmp(reply->element[0]->str, "message") == 0)) {
         // get the dftable entry ... based on key (reply->element[2]->str) 
         HASH_FIND_STR(dp->dftable, reply->element[2]->str, entry);
 
@@ -472,8 +474,11 @@ void dpanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
             else if (entry->state == CRDY_RECEIVED) 
                 entry->state = BOTH_RECEIVED;
             pthread_mutex_unlock(&(entry->mutex));
-            if (entry->state == BOTH_RECEIVED && entry->taskid > 0) 
-                redisAsyncCommand(dp->dctx, dflow_callback, dp, "fcall df_lread 1 %s", entry->key);
+            printf("Trying to read.... %d %s\n", entry->state, entry->key);
+           // if (entry->state == BOTH_RECEIVED && entry->taskid > 0) {
+                printf("Launching....... %llu\n", entry->taskid);
+                redisAsyncCommand(dp->dctx, dflow_callback, entry, "fcall df_lread 1 %s", entry->key);
+           // }
         }
     }
 }
@@ -483,7 +488,6 @@ void dpanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
 //
 void dflow_callback(redisAsyncContext *c, void *r, void *privdata) 
 {
-    
     redisReply *reply = r;
     // the privdata is pointing to the dftable_entry 
     dftable_entry_t *entry = (dftable_entry_t *)privdata;
@@ -497,6 +501,8 @@ void dflow_callback(redisAsyncContext *c, void *r, void *privdata)
         }
         return;
     }
+
+    printf("\n ------------------------------------------- Redis reply type %d\n", reply->type);
 
     HASH_FIND_INT(t->task_table, &(entry->taskid), rtask);
     if (rtask != NULL)
@@ -541,11 +547,31 @@ dftable_entry_t *dp_create_dflow(dpanel_t *dp, char *key, char *fmt)
 }
 
 
-// this invokes the dflow_remote_task() call..
-// So.. we are doing a "blocking" call.. we yield 
-// the executor and 
+/*
+ * Value readers - these are going to block the coroutine by creating a user-level
+ * context switch until the data is ready. The coroutine might still face a queuing
+ * delay before getting activated. We have readers for primitive values (integer,
+ * double, string, etc) and composite values (structures). The sending side (J is
+ * pushing a JSON object with field names in the case of structures. For primitive
+ * values the J side is pushing the values alone. 
+ */
 
-void dfread(dftable_entry_t *df, void *val)
+void dfread_int(dftable_entry_t *df, int *val)
 {
-    
+
+}
+
+void dfread_double(dftable_entry_t *df, double *val)
+{
+
+}
+
+void dfread_string(dftable_entry_t *df, char *val)
+{
+
+}
+
+void dfread_struct(dftable_entry_t *df, char *fmt, ...)
+{
+
 }
