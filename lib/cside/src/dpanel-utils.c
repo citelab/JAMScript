@@ -85,3 +85,14 @@ void free_buffer(darg_t *u, int n)
     }
     free(u);
 }
+
+
+int __extract_int(const uint8_t *buffer, size_t len)
+{
+    CborParser parser;
+    CborValue value;
+    int result;
+    cbor_parser_init(buffer, len, 0, &parser, &value);
+    cbor_value_get_int(&value, &result);
+    return result;
+}

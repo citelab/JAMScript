@@ -432,6 +432,8 @@ void command_args_free(arg_t *arg)
 
 arg_t *command_args_clone(arg_t *arg)
 {
+    printf("Nargs %d\n", arg[0].nargs);
+    
     arg_t *val = (arg_t *)calloc(arg[0].nargs, sizeof(arg_t));
     assert(val != NULL);
     for (int i = 0; i < arg[0].nargs; i++) {

@@ -16,6 +16,8 @@
 #include "queue/queue.h"
 #include "nvoid.h"
 
+extern int derror;
+
 enum dfstate   {NEW_STATE = 0,
                 PRDY_RECEIVED = 1,
                 CRDY_RECEIVED = 2,
@@ -129,11 +131,14 @@ void ufwrite_double(uftable_entry_t *uf, double x);
 void ufwrite_str(uftable_entry_t *uf, char *str);
 void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...);
 
-void dfread(dftable_entry_t *df, void *val);
+void dfread_int(dftable_entry_t *df, int *val);
 
 int estimate_cbor_buffer_len(darg_t *u, int len);
 void do_cbor_encoding(CborEncoder *enc, darg_t *u, int len);
 void free_buffer(darg_t *u, int len);
+
+
+int __extract_int(const uint8_t *buffer, size_t len);
 
 
 #endif

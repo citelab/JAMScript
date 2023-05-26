@@ -1,9 +1,9 @@
 
 jtask* localyou(int c, char *s) {
-    char *y;
+    int x;
     while(1) {
-        jsleep(10000000);
-        printf("############-->>> Hello YOU  %d, %s\n", c, s);
+	xx.read(&x);
+        printf("Value read ... %d\n", x);
     }
 }
 

@@ -6,6 +6,8 @@
 #include "base64.h"
 #include "cnode.h"
 #include "dpanel.h"
+#include "tboard.h"
+
 
 /*
  * Some forward declarations
@@ -19,6 +21,7 @@ void dflow_callback(redisAsyncContext *c, void *r, void *privdata);
 struct queue_entry *get_uflow_object(dpanel_t *dp, bool *last);
 void freeUObject(uflow_obj_t *uobj);
 
+int derror;
 
 /*
  * MAIN DATA PANEL FUNCTIONS
@@ -464,10 +467,12 @@ void dpanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
     if (reply->type == REDIS_REPLY_ARRAY && 
         (strcmp(reply->element[1]->str, "__d__keycompleted") == 0) &&
         (strcmp(reply->element[0]->str, "message") == 0)) {
+            printf("Hi 1\n");
         // get the dftable entry ... based on key (reply->element[2]->str) 
         HASH_FIND_STR(dp->dftable, reply->element[2]->str, entry);
-
+        printf("Hi 2\n");
         if (entry) {
+            printf("Hi 3\n");
             pthread_mutex_lock(&(entry->mutex));
             if (entry->state == NEW_STATE)
                 entry->state = PRDY_RECEIVED;
@@ -475,10 +480,10 @@ void dpanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
                 entry->state = BOTH_RECEIVED;
             pthread_mutex_unlock(&(entry->mutex));
             printf("Trying to read.... %d %s\n", entry->state, entry->key);
-           // if (entry->state == BOTH_RECEIVED && entry->taskid > 0) {
+            if (entry->state == BOTH_RECEIVED && entry->taskid > 0) {
                 printf("Launching....... %llu\n", entry->taskid);
                 redisAsyncCommand(dp->dctx, dflow_callback, entry, "fcall df_lread 1 %s", entry->key);
-           // }
+            }
         }
     }
 }
@@ -558,7 +563,22 @@ dftable_entry_t *dp_create_dflow(dpanel_t *dp, char *key, char *fmt)
 
 void dfread_int(dftable_entry_t *df, int *val)
 {
+    dpanel_t *dp = (dpanel_t *)df->dpanel;
+    cnode_t *cn = (cnode_t *)dp->cnode;
+    tboard_t *tboard = (tboard_t *)cn->tboard;
 
+    uint8_t buf[16];
+
+    void *p = dflow_task_create(tboard, df);
+    if (p != NULL) {
+        derror = 0;
+        printf("Len %d\n", Base64decode_len((char *)p));
+        Base64decode((char *)buf, (char *)p);
+        *val = __extract_int(buf, Base64decode_len((char *)p));
+    } else {
+        derror = -1;
+        *val = 0;
+    }
 }
 
 void dfread_double(dftable_entry_t *df, double *val)

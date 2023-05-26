@@ -618,6 +618,7 @@ arg_t *remote_task_create(tboard_t *tboard, char *cmd_func, int level, char *fn_
 bool remote_task_create_nb(tboard_t *tboard, char *cmd_func, int level, char *fn_argsig, arg_t *qargs, int nargs);
 
 bool sleep_task_create(tboard_t *tboard, int sval);
+void *dflow_task_create(tboard_t *tboard, void *entry);
 
 int preferred_task_level(remote_task_t *rt);
 
