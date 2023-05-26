@@ -297,7 +297,6 @@ command_t *command_from_data(char *fmt, void *data, int len)
     return cmd;
 }
 
-
 void command_hold(command_t *cmd)
 {
     pthread_mutex_lock(&cmd->lock);
@@ -429,7 +428,6 @@ void command_args_free(arg_t *arg)
     }
 }
 
-
 arg_t *command_args_clone(arg_t *arg)
 {
     arg_t *val = (arg_t *)calloc(arg[0].nargs, sizeof(arg_t));
@@ -478,6 +476,5 @@ void command_print(command_t *cmd)
         printf("%x", (int)cmd->buffer[i]);
 
     command_arg_print(cmd->args);
-    
     printf("\n===================================\n");
 }
