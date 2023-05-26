@@ -388,7 +388,7 @@ void *dflow_task_create(tboard_t *tboard, void *entry)
     rtask.task_id = mysnowflake_id();
     rtask.status = TASK_INITIALIZED;
     rtask.mode = TASK_MODE_DFLOW;
-    rtask.data = entry;
+    rtask.entry = entry;
 
     // push rtask into storage. This copies memory in current thread so we dont have
     // to worry about invalid reads

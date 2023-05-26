@@ -246,6 +246,7 @@ typedef struct {
     long int task_id;
     char command[MAX_MSG_LENGTH]; 
     void *data;
+    void *entry;
     size_t data_size;
     task_t *calling_task;
     remote_task_mode_t mode;

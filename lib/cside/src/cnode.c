@@ -139,8 +139,6 @@ cnode_t *cnode_init(int argc, char **argv){
         terminate_error(true, "invalid command line");
     }
 
-    print_args(cn->args);
-
     cn->topics = cnode_create_topics(cn->args->appid);
 
     // generate core

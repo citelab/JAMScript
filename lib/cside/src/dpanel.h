@@ -120,6 +120,7 @@ typedef struct {
 
 dpanel_t *dpanel_create(char *server, int port, char *uuid);
 void dpanel_setcnode(dpanel_t *dp, void *cn);
+void dpanel_settboard(dpanel_t *dp, void *tb);
 void dpanel_start(dpanel_t *dp);
 void dpanel_shutdown(dpanel_t *dp);
 

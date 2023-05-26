@@ -172,14 +172,14 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
                     remote_task_place(tboard, rtask);
                 break;
                 case TASK_MODE_DFLOW:
-                    printf("######################################\n");
-                    entry = (dftable_entry_t *)rtask->data;
+                    entry = (dftable_entry_t *)rtask->entry;
                     // set the task state accordingly in the dftable_entry_t ..
                     pthread_mutex_lock(&(entry->mutex));
                     if (entry->state == NEW_STATE)
                         entry->state = CRDY_RECEIVED;
                     else if (entry->state == PRDY_RECEIVED) 
                         entry->state = BOTH_RECEIVED;
+                    entry->taskid = rtask->task_id;
                     pthread_mutex_unlock(&(entry->mutex));
                 break;
 
@@ -189,12 +189,6 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
                 case TASK_MODE_REMOTE:
                     remote_task_place(tboard, rtask);
             }
-            // if task is not blocking we wish to reinsert issuing task back into ready queue
-            if (rtask->mode == TASK_MODE_REMOTE_NB)
-                e = queue_new_node(task);
-            // place remote task into appropriate message queue
-            if (rtask->mode != TASK_MODE_SLEEPING)
-                remote_task_place(tboard, rtask);
 
         } else { // just a normal yield, so we create node to reinsert task into queue
             DO_SNAPSHOT(4);

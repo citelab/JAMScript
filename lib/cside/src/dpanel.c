@@ -62,7 +62,7 @@ void dpanel_setcnode(dpanel_t *dp, void *cn)
     dp->cnode = cn;
 }
 
-void dpanel_settboard(dpanel_t *dp, tboard_t *tb) 
+void dpanel_settboard(dpanel_t *dp, void *tb) 
 {
     dp->tboard = (void *)tb;
 }
@@ -72,7 +72,6 @@ void dpanel_connect_cb(const redisAsyncContext *c, int status) {
         printf("Error: %s\n", c->errstr);
         return;
     }
-    printf("Connected...1 \n");
 }   
 
 void dpanel_disconnect_cb(const redisAsyncContext *c, int status) {
@@ -80,7 +79,6 @@ void dpanel_disconnect_cb(const redisAsyncContext *c, int status) {
         printf("Error: %s\n", c->errstr);
         return;
     }
-    printf("Disconnected...\n");
 }
 
 void dpanel_start(dpanel_t *dp)
@@ -93,7 +91,6 @@ void dpanel_start(dpanel_t *dp)
         exit(1);
     }
 
-    printf("Starting... dfprocessor\n");
     rval = pthread_create(&(dp->dfprocessor), NULL, dpanel_dfprocessor, (void *)dp);
     if (rval != 0) {
         perror("ERROR! Unable to start the dpanel dfprocessor thread");
@@ -142,9 +139,6 @@ void dpanel_connect_dcb(const redisAsyncContext *c, int status) {
         printf("Error: %s\n", c->errstr);
         return;
     }
-    printf("Connected... 2\n");
-    printf("Doing... subscribe ...\n");
-  
 }
 
 void dpanel_disconnect_dcb(const redisAsyncContext *c, int status) {
@@ -152,7 +146,6 @@ void dpanel_disconnect_dcb(const redisAsyncContext *c, int status) {
         printf("Error: %s\n", c->errstr);
         return;
     }
-    printf("Disconnected...\n");
 }
 
 
@@ -462,26 +455,19 @@ void dpanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
         return;
     }
 
-    printf("\n ------->> --------------- dcallback received. %zu...%s\n", reply->elements, reply->element[1]->str);
-    printf("\n --hi ----- ..%s\n", reply->element[0]->str);
     if (reply->type == REDIS_REPLY_ARRAY && 
         (strcmp(reply->element[1]->str, "__d__keycompleted") == 0) &&
         (strcmp(reply->element[0]->str, "message") == 0)) {
-            printf("Hi 1\n");
-        // get the dftable entry ... based on key (reply->element[2]->str) 
+
         HASH_FIND_STR(dp->dftable, reply->element[2]->str, entry);
-        printf("Hi 2\n");
         if (entry) {
-            printf("Hi 3\n");
             pthread_mutex_lock(&(entry->mutex));
             if (entry->state == NEW_STATE)
                 entry->state = PRDY_RECEIVED;
             else if (entry->state == CRDY_RECEIVED) 
                 entry->state = BOTH_RECEIVED;
             pthread_mutex_unlock(&(entry->mutex));
-            printf("Trying to read.... %d %s\n", entry->state, entry->key);
             if (entry->state == BOTH_RECEIVED && entry->taskid > 0) {
-                printf("Launching....... %llu\n", entry->taskid);
                 redisAsyncCommand(dp->dctx, dflow_callback, entry, "fcall df_lread 1 %s", entry->key);
             }
         }
@@ -507,12 +493,10 @@ void dflow_callback(redisAsyncContext *c, void *r, void *privdata)
         return;
     }
 
-    printf("\n ------------------------------------------- Redis reply type %d\n", reply->type);
-
     HASH_FIND_INT(t->task_table, &(entry->taskid), rtask);
     if (rtask != NULL)
     {
-        rtask->data = strdup("test data"); // TODO: fix this... we need to base64 decode -> CBOR decode -> pass to return value
+        rtask->data = strdup(reply->element[7]->str); 
         rtask->data_size = 1;
         if (rtask->calling_task != NULL)
         {
@@ -572,7 +556,6 @@ void dfread_int(dftable_entry_t *df, int *val)
     void *p = dflow_task_create(tboard, df);
     if (p != NULL) {
         derror = 0;
-        printf("Len %d\n", Base64decode_len((char *)p));
         Base64decode((char *)buf, (char *)p);
         *val = __extract_int(buf, Base64decode_len((char *)p));
     } else {
