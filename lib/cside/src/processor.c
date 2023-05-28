@@ -153,6 +153,7 @@ void msg_processor(void *serv, command_t *cmd)
                 }
             break;
             case CmdNames_FOG_ADD_INFO:
+                printf("+++ ++ ++ +++ Put fog info received.... %s\n", cmd->node_id);
                 // [cmd: PUT_CLOUD_FOG_INFO, subcmd: FOG_ADD_INFO, node_id: "fog-id", args: [IP_addr, port_number]]
                 if (c->eservnum < MAX_EDGE_SERVERS/2) {
                     for (int i = 0; i < MAX_EDGE_SERVERS; i++) {
@@ -169,6 +170,7 @@ void msg_processor(void *serv, command_t *cmd)
                 }
             break;
             case CmdNames_FOG_DEL_INFO:
+                printf("-- -- --- -- -- Delete fog ... %s\n", cmd->node_id);
                 // [cmd: PUT_CLOUD_FOG_INFO, subcmd: FOG_DEL_INFO, node_id: "fog-id"]
                 for (int i = 0; i < MAX_EDGE_SERVERS; i++) {
                     if (c->edgeserv[i] != NULL) {

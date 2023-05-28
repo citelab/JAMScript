@@ -1,16 +1,16 @@
 
 jtask* localyou(int c, char *s) {
-    int x;
+    double x;
     while(1) {
-	xx.read(&x);
-        printf("Value read ... %d\n", x);
+	yy.read(&x);
+        printf("Value read ... %f\n", x);
     }
 }
 
 jtask* localme(int c, char *s) {
     int x;
     while(1) {
-	jsleep(100000);
+	jsleep(1000000);
         printf("This is a message: %s\n", s);
     }
 }

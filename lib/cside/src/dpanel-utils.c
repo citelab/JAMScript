@@ -96,3 +96,24 @@ int __extract_int(const uint8_t *buffer, size_t len)
     cbor_value_get_int(&value, &result);
     return result;
 }
+
+
+double __extract_double(const uint8_t *buffer, size_t len)
+{
+    CborParser parser;
+    CborValue value;
+    double result;
+    cbor_parser_init(buffer, len, 0, &parser, &value);
+    cbor_value_get_double(&value, &result);
+    return result;
+}
+
+char * __extract_str(const uint8_t *buffer, size_t len)
+{
+    CborParser parser;
+    CborValue value;
+    char *result;
+    cbor_parser_init(buffer, len, 0, &parser, &value);
+  //  cbor_value_get_string(&value, &result);
+    return result;
+}

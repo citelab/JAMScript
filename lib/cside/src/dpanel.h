@@ -133,6 +133,8 @@ void ufwrite_str(uftable_entry_t *uf, char *str);
 void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...);
 
 void dfread_int(dftable_entry_t *df, int *val);
+void dfread_double(dftable_entry_t *df, double *val);
+void dfread_string(dftable_entry_t *df, char *val, int len);
 
 int estimate_cbor_buffer_len(darg_t *u, int len);
 void do_cbor_encoding(CborEncoder *enc, darg_t *u, int len);
@@ -140,6 +142,7 @@ void free_buffer(darg_t *u, int len);
 
 
 int __extract_int(const uint8_t *buffer, size_t len);
+double __extract_double(const uint8_t *buffer, size_t len);
 
 
 #endif
