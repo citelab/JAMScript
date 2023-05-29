@@ -5,56 +5,43 @@
 arg_t* remote_sync_call(tboard_t* tboard, char* symbol, char* arg_signature, ...)
 {
     va_list args;
-    bool res;
 
     arg_t* qargs = NULL;
     arg_t* rarg  = NULL;
-    // TODO: figure out what level even does?
-    // TODO: FIX THIS..
-    int level = 0;
-
+    
     if (strlen(arg_signature) > 0)
     {
         va_start(args, arg_signature);
-        res = command_qargs_alloc(arg_signature, &qargs, args);
+        command_qargs_alloc(arg_signature, &qargs, args);
         va_end(args);
 
-        if (res)
-        {
-            rarg = remote_task_start_sync(tboard, symbol, level, arg_signature,
-                                          qargs, strlen(arg_signature));
-        }
-        else
-            rarg = NULL;
+        rarg = remote_task_start_sync(tboard, symbol, arg_signature,
+                                      qargs, strlen(arg_signature));
     }
     else
-        rarg = remote_task_start_sync(tboard, symbol, level, "", NULL, 0);
+        rarg = remote_task_start_sync(tboard, symbol, "", NULL, 0);
     return rarg;
 }
 
 bool remote_async_call(tboard_t* tboard, char* symbol, char* arg_signature, ...)
 {
     va_list args;
-    bool res;
+    bool has_args;
     arg_t* qargs = NULL;
-
-    int level = 0; // compute_level(condvec);
 
     if (strlen(arg_signature) > 0)
     {
         va_start(args, arg_signature);
-        res = command_qargs_alloc(arg_signature, &qargs, args);
+        has_args = command_qargs_alloc(arg_signature, &qargs, args);
         va_end(args);
-        if (res)
-        {
-            return remote_task_start_async(tboard, symbol, level, arg_signature,
-                                           qargs, strlen(arg_signature));
-        }
-        else
-            return false;
+
+        assert(has_args==true);
+
+        return remote_task_start_async(tboard, symbol, arg_signature,
+                                       qargs, strlen(arg_signature));
     }
     else
-        return remote_task_start_async(tboard, symbol, level, "", NULL, 0);
+        return remote_task_start_async(tboard, symbol, "", NULL, 0);
 }
 
 void* local_sync_call(tboard_t* tboard, char* symbol, ...)
@@ -76,7 +63,7 @@ void* local_sync_call(tboard_t* tboard, char* symbol, ...)
 
     execution_context_t ctx;
     ctx.query_args = query_args;
-    ctx.return_arg = return_arg;
+    ctx.return_arg = &return_arg;
 
     func->entry_point(&ctx);
 

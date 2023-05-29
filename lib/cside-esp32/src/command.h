@@ -28,8 +28,43 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "nvoid.h"
 #include <cbor.h>
-#include <pthread.h>
 #include <stdint.h>
+#include "util.h"
+
+#define CmdNames_REGISTER 1001
+#define CmdNames_REGISTER_ACK 1002
+#define CmdNames_NEW_REGISTER 1005
+#define CmdNames_OLD_REGISTER 1006
+#define CmdNames_PING 1020
+#define CmdNames_PONG 1021
+#define CmdNames_GET_CLOUD_FOG_INFO 1100
+#define CmdNames_PUT_CLOUD_FOG_INFO 1101
+#define CmdNames_REF_CLOUD_FOG_INFO 1102
+#define CmdNames_FOG_ADD_INFO 1150
+#define CmdNames_FOG_DEL_INFO 1151
+#define CmdNames_CLOUD_ADD_INFO 1152
+#define CmdNames_CLOUD_DEL_INFO 1153
+#define CmdNames_WHERE_IS_CTRL 1550
+#define CmdNames_HERE_IS_CTRL 1551
+#define CmdNames_PROBE 2020
+#define CmdNames_PROBE_ACK 2110
+#define CmdNames_GET_SCHEDULE 3010
+#define CmdNames_PUT_SCHEDULE 3020
+#define CmdNames_REXEC 5010
+#define CmdNames_REXEC_NAK 5020
+#define CmdNames_REXEC_ACK 5030
+#define CmdNames_REXEC_RES 5040
+#define CmdNames_REXEC_ERR 5045
+#define CmdNames_REXEC_SYN 5050
+#define CmdNames_GET_REXEC_RES 5060
+#define CmdNames_COND_FALSE 5810
+#define CmdNames_FUNC_NOT_FOUND 5820
+#define CmdNames_SET_JSYS 6000
+#define CmdNames_CLOSE_PORT 6200
+
+
+#define CmdNames_STOP 7000
+
 
 typedef enum
 {
@@ -77,7 +112,7 @@ typedef struct _command_t
     int cmd;
     int subcmd;
     char fn_name[SMALL_CMD_STR_LEN]; // Function name
-    long int task_id; // Task identifier (a function in execution)
+    uint64_t task_id; // Task identifier (a function in execution)
     char node_id[LARGE_CMD_STR_LEN];        // this can be the UUID4 of the node
     char fn_argsig[SMALL_CMD_STR_LEN];      // Argument signature of the
                                             // functions - use fmask format
@@ -87,7 +122,6 @@ typedef struct _command_t
     arg_t* args; // List of args
 
     int refcount; // Deallocation control
-    pthread_mutex_t lock;
     long id;
 } command_t;
 
@@ -102,12 +136,18 @@ internal_command_t* internal_command_new(command_t* cmd);
 void internal_command_free(internal_command_t* ic);
 
 // Constructors
-command_t* command_new(int cmd, int subcmd, char* fn_name, uint32_t task_id,
-                       char* node_id, char* fn_argsig, ...);
-command_t* command_new_using_arg(int cmd, int opt, char* fn_name,
-                                 uint32_t taskid, char* node_id,
-                                 char* fn_argsig, arg_t* args);
+command_t* command_new(int cmd, int subcmd, const char* fn_name, uint64_t task_id,
+                       const char* node_id, const char* fn_argsig, ...);
+command_t* command_new_using_arg(int cmd, int opt, const char* fn_name,
+                                 uint64_t taskid, const char* node_id,
+                                 const char* fn_argsig, arg_t* args);
+
+void command_init_using_arg(command_t* command, int cmd, int opt, const char* fn_name,
+                                 uint64_t taskid, const char* node_id,
+                                 const char* fn_argsig, arg_t* args);
+
 command_t* command_from_data(char* fn_argsig, void* data, int len);
+void command_from_data_inplace(command_t* cmdo, const char* fn_argsig, int len);
 
 // Methods
 void command_hold(command_t* cmd);

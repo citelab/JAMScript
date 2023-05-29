@@ -1,0 +1,15 @@
+let count = 10;
+let test_amount = 5000;
+let i = 0;
+while(i < test_amount)
+{
+    let x = await espcount();
+    i++;
+}
+
+await clear_counter();
+
+while(true)
+{
+    let x = await espcountret();    
+}

@@ -76,7 +76,7 @@
  * performed just because a higher priority task has been woken. */
     #define taskYIELD_IF_USING_PREEMPTION()
 #else
-    #define taskYIELD_IF_USING_PREEMPTION()    portYIELD_WITHIN_API()
+    #define taskYIELD_IF_USING_PREEMPTION()    if(xPortGetCoreID()==0){portYIELD_WITHIN_API();}
 #endif
 
 /* Values that can be assigned to the ucNotifyState member of the TCB. */
@@ -4190,6 +4190,8 @@ void vTaskMissedYield( void )
  * void prvIdleTask( void *pvParameters );
  *
  */
+
+#include <stdio.h>
 static portTASK_FUNCTION( prvIdleTask, pvParameters )
 {
     /* Stop warnings. */
@@ -4209,38 +4211,46 @@ static portTASK_FUNCTION( prvIdleTask, pvParameters )
          * is responsible for freeing the deleted task's TCB and stack. */
         prvCheckTasksWaitingTermination();
 
-        #if ( configUSE_PREEMPTION == 0 )
-            {
-                /* If we are not using preemption we keep forcing a task switch to
-                 * see if any other task has become available.  If we are using
-                 * preemption we don't need to do this as any task becoming available
-                 * will automatically get the processor anyway. */
-                taskYIELD();
-            }
-        #endif /* configUSE_PREEMPTION */
+        // JAMScript mod
+        if(xPortGetCoreID()== 1)
+        {
+            taskYIELD();
+        }
+        else
+        {
 
-        #if ( ( configUSE_PREEMPTION == 1 ) && ( configIDLE_SHOULD_YIELD == 1 ) )
-            {
-                /* When using preemption tasks of equal priority will be
-                 * timesliced.  If a task that is sharing the idle priority is ready
-                 * to run then the idle task should yield before the end of the
-                 * timeslice.
-                 *
-                 * A critical region is not required here as we are just reading from
-                 * the list, and an occasional incorrect value will not matter.  If
-                 * the ready list at the idle priority contains more than one task
-                 * then a task other than the idle task is ready to execute. */
-                if( listCURRENT_LIST_LENGTH( &( pxReadyTasksLists[ tskIDLE_PRIORITY ] ) ) > ( UBaseType_t ) 1 )
+            #if ( configUSE_PREEMPTION == 0 )
                 {
+                    /* If we are not using preemption we keep forcing a task switch to
+                    * see if any other task has become available.  If we are using
+                    * preemption we don't need to do this as any task becoming available
+                    * will automatically get the processor anyway. */
                     taskYIELD();
                 }
-                else
-                {
-                    mtCOVERAGE_TEST_MARKER();
-                }
-            }
-        #endif /* ( ( configUSE_PREEMPTION == 1 ) && ( configIDLE_SHOULD_YIELD == 1 ) ) */
+            #endif /* configUSE_PREEMPTION */
 
+            #if ( ( configUSE_PREEMPTION == 1 ) && ( configIDLE_SHOULD_YIELD == 1 ) )
+                {
+                    /* When using preemption tasks of equal priority will be
+                    * timesliced.  If a task that is sharing the idle priority is ready
+                    * to run then the idle task should yield before the end of the
+                    * timeslice.
+                    *
+                    * A critical region is not required here as we are just reading from
+                    * the list, and an occasional incorrect value will not matter.  If
+                    * the ready list at the idle priority contains more than one task
+                    * then a task other than the idle task is ready to execute. */
+                    if( listCURRENT_LIST_LENGTH( &( pxReadyTasksLists[ tskIDLE_PRIORITY ] ) ) > ( UBaseType_t ) 1 )
+                    {
+                        taskYIELD();
+                    }
+                    else
+                    {
+                        mtCOVERAGE_TEST_MARKER();
+                    }
+                }
+            #endif /* ( ( configUSE_PREEMPTION == 1 ) && ( configIDLE_SHOULD_YIELD == 1 ) ) */
+        }
         #if ( configUSE_IDLE_HOOK == 1 )
             {
                 extern void vApplicationIdleHook( void );

@@ -40,6 +40,33 @@
 #define Multicast_SENDPORT  16000
 #define Multicast_RECVPORT  16500
 
+#define Multicast_SENDPORTBUS  16001
+#define Multicast_RECVPORTBUS  16501
+
 #define  globals_Timeout_REXEC_ACK_TIMEOUT 100
+
+// Must be included after FreeRTOS 
+#ifdef INC_FREERTOS_H
+#define MAX_SEMAPHORE_WAIT 1000 * portTICK_PERIOD_MS
+#endif
+
+
+#define RTASK_ACK_BITS (0x01 << 0)
+#define RTASK_RES_BITS (0x01 << 1)
+
+// THIS IS TEMPORARY 
+#define STACK_SIZE 1024*2
+
+#define MAX_COMMAND_SIZE 256
+
+
+#define PRECONFIG_WIFI_SSID "jamscript_test_network"
+
+#define SNTP_SERVER "ca.pool.ntp.org"
+#define WIFI_CONNECTION_NOTIFICATION 0x01
+
+// Currently set to toronto time
+#define TIMEZONE "EST5EDT,M3.2.0,M11.1.0" 
+
 
 #endif

@@ -1,6 +1,7 @@
 #ifndef __SYSTEM_MANAGER_H__
 #define __SYSTEM_MANAGER_H__
 #include <stdbool.h>
+#include "util.h"
 
 #include <esp_event.h>
 #include <esp_netif_types.h>
@@ -22,6 +23,8 @@ typedef struct _system_manager_t
 } system_manager_t;
 
 system_manager_t* system_manager_init();
+
+system_manager_t* system_manager();
 
 void _system_manager_board_init(system_manager_t* system_manager);
 void _system_manager_net_init(system_manager_t* system_manager);    

@@ -32,7 +32,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <assert.h>
 #include <cbor.h>
-#include <pthread.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,7 +44,7 @@ static long id = 1;
     do                                                                         \
     {                                                                          \
         if (y != NULL)                                                         \
-            strncpy(x, y, n);                                                  \
+            strncpy(x, y, n-1);                                                  \
         else                                                                   \
             strcpy(x, "");                                                     \
     } while (0)
@@ -70,8 +70,8 @@ void internal_command_free(internal_command_t* ic)
  * Return a command that includes a CBOR representation that can be sent out (a
  * byte string) It reuses the command_new_using_arg() function
  */
-command_t* command_new(int cmd, int subcmd, char* fn_name, uint32_t task_id,
-                       char* node_id, char* fn_argsig, ...)
+command_t* command_new(int cmd, int subcmd, const char* fn_name, uint64_t task_id,
+                       const char* node_id, const char* fn_argsig, ...)
 {
     va_list args;
     nvoid_t* nv;
@@ -117,14 +117,18 @@ command_t* command_new(int cmd, int subcmd, char* fn_name, uint32_t task_id,
     command_t* c = command_new_using_arg(cmd, subcmd, fn_name, 
                                          task_id, node_id, fn_argsig, 
                                          qargs);
+
+    if(qargs!=NULL)
+        command_args_free(qargs);
     return c;
 }
 
-command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name,
-                                 uint32_t taskid, char* node_id,
-                                 char* fn_argsig, arg_t* args)
+command_t* command_new_using_arg(int cmd, int subcmd, const char* fn_name,
+                                 uint64_t taskid, const char* node_id,
+                                 const char* fn_argsig, arg_t* args)
 {
     command_t* cmdo = (command_t*)calloc(1, sizeof(command_t));
+    
     nvoid_t* nv;
 
     CborEncoder encoder, mapEncoder, arrayEncoder;
@@ -138,7 +142,7 @@ command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name,
     cbor_encode_int(&mapEncoder, cmd);
 
     // store and encode subcmd
-    cmdo->cmd = subcmd;
+    cmdo->subcmd = subcmd;
     cbor_encode_text_stringz(&mapEncoder, "subcmd");
     cbor_encode_int(&mapEncoder, subcmd);
 
@@ -150,7 +154,8 @@ command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name,
     // store and encode task_id
     cmdo->task_id = taskid;
     cbor_encode_text_stringz(&mapEncoder, "taskid");
-    cbor_encode_uint(&mapEncoder, taskid);
+    //cbor_encode_uint(&mapEncoder, taskid);
+    cbor_encode_double(&mapEncoder, taskid);
 
     // store and encode node_id
     COPY_STRING(cmdo->node_id, node_id, LARGE_CMD_STR_LEN);
@@ -205,8 +210,9 @@ command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name,
     cbor_encoder_close_container(&encoder, &mapEncoder);
     cmdo->id       = id++;
     cmdo->refcount = 1;
-    pthread_mutex_init(&cmdo->lock, NULL);
+    
     cmdo->length = cbor_encoder_get_buffer_size(&encoder, cmdo->buffer);
+
     return cmdo;
 }
 
@@ -343,25 +349,149 @@ command_t* command_from_data(char* fmt, void* data, int len)
         cbor_value_advance(&map);
     }
     cmd->refcount = 1;
-    pthread_mutex_init(&cmd->lock, NULL);
     cmd->id = id++;
     return cmd;
 }
 
+void command_from_data_inplace(command_t* cmd, const char* fn_argsig, int len)
+{
+    CborParser parser;
+    CborValue it, map, arr;
+    CborError err;
+    size_t length;
+    int i = 0;
+    int ival;
+    double dval;
+    float fval;
+    char bytebuf[LARGE_CMD_STR_LEN];
+    char strbuf[LARGE_CMD_STR_LEN];
+    char keybuf[32];
+    int result;
+    double dresult;
+
+    cmd->length = len;
+    cbor_parser_init(cmd->buffer, len, 0, &parser, &it);
+    cbor_value_enter_container(&it, &map);
+    while (!cbor_value_at_end(&map))
+    {
+        if (cbor_value_get_type(&map) == CborTextStringType)
+        {
+            length = 32;
+            cbor_value_copy_text_string(&map, keybuf, &length, NULL);
+        }
+        cbor_value_advance(&map);
+        if (strcmp(keybuf, "cmd") == 0)
+        {
+            cbor_value_get_int(&map, &result);
+            cmd->cmd = result;
+        }
+        else if (strcmp(keybuf, "subcmd") == 0)
+        {
+            cbor_value_get_int(&map, &result);
+            cmd->subcmd = result;
+        }
+        else if (strcmp(keybuf, "taskid") == 0)
+        {
+            if (cbor_value_get_type(&map) == 251)
+            {
+                cbor_value_get_double(&map, &dresult);
+                cmd->task_id = (uint64_t)dresult;
+            }
+            else
+            {
+                cbor_value_get_int(&map, &result);
+                cmd->task_id = result;
+            }
+        }
+        else if (strcmp(keybuf, "nodeid") == 0)
+        {
+            length = LARGE_CMD_STR_LEN;
+            if (cbor_value_is_text_string(&map))
+                cbor_value_copy_text_string(&map, cmd->node_id, &length, NULL);
+            else
+                strcpy(cmd->node_id, "");
+        }
+        else if (strcmp(keybuf, "fn_name") == 0)
+        {
+            length = SMALL_CMD_STR_LEN;
+            cbor_value_copy_text_string(&map, cmd->fn_name, &length, NULL);
+        }
+        else if (strcmp(keybuf, "fn_argsig") == 0)
+        {
+            length = SMALL_CMD_STR_LEN;
+            if (cbor_value_is_text_string(&map))
+                cbor_value_copy_text_string(
+                    &map, cmd->fn_argsig, &length, NULL);
+            else
+                strcpy(cmd->fn_argsig, "");
+        }
+        else if (strcmp(keybuf, "args") == 0)
+        {
+            cbor_value_enter_container(&map, &arr);
+            size_t nelems = 0;
+            cbor_value_get_array_length(&map, &nelems);
+            if (nelems > 0)
+            {
+                cmd->args = (arg_t*)calloc(nelems, sizeof(arg_t));
+                while (!cbor_value_at_end(&arr))
+                {
+                    CborType ty        = cbor_value_get_type(&arr);
+                    cmd->args[i].nargs = nelems;
+                    switch (ty)
+                    {
+                    case CborIntegerType:
+                        cmd->args[i].type = INT_TYPE;
+                        cbor_value_get_int(&arr, &ival);
+                        cmd->args[i].val.ival = ival;
+                        break;
+                    case CborTextStringType:
+                        cmd->args[i].type = STRING_TYPE;
+                        length            = LARGE_CMD_STR_LEN;
+                        cbor_value_copy_text_string(
+                            &arr, strbuf, &length, NULL);
+                        cmd->args[i].val.sval = strdup(strbuf);
+                        break;
+                    case CborByteStringType:
+                        cmd->args[i].type = NVOID_TYPE;
+                        cbor_value_copy_text_string(
+                            &arr, bytebuf, &length, NULL);
+                        cmd->args[i].val.nval = nvoid_new(bytebuf, length);
+                        break;
+                    case CborFloatType:
+                        cmd->args[i].type = DOUBLE_TYPE;
+                        cbor_value_get_float(&arr, &fval);
+                        cmd->args[i].val.dval = fval;
+                    case CborDoubleType:
+                        cmd->args[i].type = DOUBLE_TYPE;
+                        cbor_value_get_double(&arr, &dval);
+                        cmd->args[i].val.dval = dval;
+                        break;
+                    default:
+                        break;
+                    }
+                    i++;
+                    err = cbor_value_advance(&arr);
+                }
+            }
+            else
+                cmd->args = NULL;
+        }
+        cbor_value_advance(&map);
+    }
+    cmd->refcount = 1;
+    cmd->id = id++;
+}
+
 void command_hold(command_t* cmd)
 {
-    pthread_mutex_lock(&cmd->lock);
     cmd->refcount++;
-    pthread_mutex_unlock(&cmd->lock);
 }
 
 void command_free(command_t* cmd)
 {
     int nargs;
     int rc;
-    pthread_mutex_lock(&cmd->lock);
     rc = --cmd->refcount;
-    pthread_mutex_unlock(&cmd->lock);
 
     // don't free the structure if some other thread could be referring to it.
     if (rc > 0)
@@ -396,7 +526,9 @@ bool command_qargs_alloc(const char* fmt, arg_t** rargs, va_list args)
     int flen = strlen(fmt);
 
     if (flen > 0)
+    {
         qargs = (arg_t*)calloc(flen, sizeof(arg_t));
+    }
     else
         return false;
 
@@ -490,6 +622,8 @@ void command_args_free(arg_t* arg)
 
 arg_t* command_args_clone(arg_t* arg)
 {
+    if(arg==NULL)
+        return NULL;
     arg_t* val = (arg_t*)calloc(arg[0].nargs, sizeof(arg_t));
     assert(val != NULL);
     for (int i = 0; i < arg[0].nargs; i++)
@@ -530,7 +664,7 @@ void command_print(command_t* cmd)
     printf("\nCommand subcmd: %d\n", cmd->subcmd);
 
     printf("\nCommand fn_name: %s\n", cmd->fn_name);
-    printf("\nCommand taskid : %lu\n", cmd->task_id);
+    printf("\nCommand taskid : %llu\n", cmd->task_id);
     printf("\nCommand node_id: %s\n", cmd->node_id);
     printf("\nCommand fn_argsig: %s\n", cmd->fn_argsig);
 

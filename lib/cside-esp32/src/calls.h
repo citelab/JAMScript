@@ -3,6 +3,7 @@
 
 #include "command.h"
 #include "task.h"
+#include "util.h"
 
 #include <stdbool.h>
 

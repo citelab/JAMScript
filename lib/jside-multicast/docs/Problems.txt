@@ -1,0 +1,2 @@
+We are using publish-subscribe to notify the changes. Also, we expect the workers to respond to the changes.
+What if the workers miss the notifications?

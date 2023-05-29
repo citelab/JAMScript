@@ -5,19 +5,17 @@
 #include <esp_event.h>
 #include <esp_netif_sntp.h>
 #include <esp_sntp.h>
+#include <esp_event.h>
 #include <lwip/ip_addr.h>
 #include <esp_wifi.h>
 #include <nvs_flash.h>
-
+#include <udp.h>
+#include <receiver.h>
+#include <constants.h>
 #include <stdlib.h>
 
 #define MAX_RECONNECTION_ATTEMPTS 8
-#define PRECONFIG_WIFI_SSID "__TEMP__"
-#define PRECONFIG_WIFI_PASS "__TEMP__"
-#define SNTP_SERVER "ca.pool.ntp.org"
-#define WIFI_CONNECTION_NOTIFICATION 0x01
-// Currently set to toronto time
-#define TIMEZONE "EST5EDT,M3.2.0,M11.1.0" 
+
 
 //#define SHOULD_SKIP_WIFI_INIT
 
@@ -26,6 +24,15 @@ static TaskHandle_t _init_task;
 static bool _system_initialized = false;
 static void _system_manager_event_handler(void* arg, esp_event_base_t event_base,
                                           int32_t event_id, void* event_data);
+
+static void _system_manager_event_handler(void* arg, esp_event_base_t event_base,
+                                          int32_t event_id, void* event_data);
+
+system_manager_t* system_manager()
+{
+    return &_global_system_manager;
+}
+
 
 system_manager_t* system_manager_init()
 {
@@ -42,8 +49,11 @@ system_manager_t* system_manager_init()
     _system_manager_board_init(system_manager);
 
 #ifndef SHOULD_SKIP_WIFI_INIT
-    _system_manager_rtc_sync_ntp(system_manager);
+    // Currently skipping ntp because the controller is currently not connected to the internet  
+    // _system_manager_rtc_sync_ntp(system_manager);
 #endif
+
+    udp_init_stack();
 
     _system_initialized = true;
 
@@ -67,7 +77,6 @@ void _system_manager_net_init(system_manager_t* system_manager)
 
     esp_netif_create_default_wifi_sta();
 
-    // TODO: what exactly does this do compared to the above line.
     wifi_init_config_t wifi_init_config = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&wifi_init_config));
 
@@ -81,21 +90,23 @@ void _system_manager_net_init(system_manager_t* system_manager)
                                                         IP_EVENT_STA_GOT_IP,
                                                         &_system_manager_event_handler,
                                                         system_manager,
-                                                        &system_manager->got_ip_event_handle));
-    
-    // This is a temporary wifi_config
+                                                        &system_manager->got_ip_event_handle));    
     wifi_config_t wifi_config = {
-        .sta = {
-            .ssid       = PRECONFIG_WIFI_SSID,
-            .password   = PRECONFIG_WIFI_PASS,
-            .threshold.authmode = WIFI_AUTH_WPA2_PSK,
-            .sae_pwe_h2e        = WPA3_SAE_PWE_BOTH,
-        },
+	.sta = {
+	    .ssid = PRECONFIG_WIFI_SSID,
+	    .threshold.authmode = WIFI_AUTH_OPEN
+	}
     };
 
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
+
+    esp_wifi_config_80211_tx_rate(WIFI_IF_STA, WIFI_PHY_RATE_54M);
+    //esp_wifi_config_80211_tx_rate(WIFI_IF_STA, WIFI_PHY_RATE_MAX);
+
     ESP_ERROR_CHECK(esp_wifi_start());
+
+    esp_wifi_set_ps(WIFI_PS_NONE);
 
     // Wait for wifi connection before continuing init.
     xTaskNotifyWait(0, WIFI_CONNECTION_NOTIFICATION, NULL, portMAX_DELAY);
@@ -133,8 +144,6 @@ void _system_manager_rtc_sync_ntp(system_manager_t* system_manager)
     printf("Current Time %s", asctime(&timeinfo));
 }
 
-// TODO: think about how useful event group bits are...
-
 static void _system_manager_event_handler(void* arg, esp_event_base_t event_base,
                                           int32_t event_id, void* event_data)
 {
@@ -155,7 +164,6 @@ static void _system_manager_event_handler(void* arg, esp_event_base_t event_base
                     system_manager->_connection_attempts++;
                     system_manager->wifi_connection = false;
                     printf("Attempting to reconnect to network...\n");
-                    //TODO: consider setting a wifi fail flag
                 }
                 else
                 {

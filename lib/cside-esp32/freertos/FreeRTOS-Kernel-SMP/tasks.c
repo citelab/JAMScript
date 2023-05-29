@@ -4321,6 +4321,12 @@ void vTaskMissedYield( void )
 
         for( ; ; )
         {
+            // JAMSCRIPT MOD
+            if(portGET_CORE_ID()==1)
+            {
+                taskYIELD();
+                continue;
+            }
             #if ( configUSE_PREEMPTION == 0 )
                 {
                     /* If we are not using preemption we keep forcing a task switch to
@@ -4403,6 +4409,13 @@ static portTASK_FUNCTION( prvIdleTask, pvParameters )
          * is responsible for freeing the deleted task's TCB and stack. */
         prvCheckTasksWaitingTermination();
 
+        // JAMSCRIPT MOD
+        if(portGET_CORE_ID()==1)
+        {
+            taskYIELD();
+            continue;
+        }
+        
         #if ( configUSE_PREEMPTION == 0 )
             {
                 /* If we are not using preemption we keep forcing a task switch to
