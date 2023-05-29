@@ -214,7 +214,8 @@ command_t *command_from_data(char *fmt, void *data, int len)
         if (cbor_value_get_type(&map) == CborTextStringType) {
             length = 32;
             cbor_value_copy_text_string	(&map, keybuf, &length, NULL);
-        }
+        } else
+            continue;
         cbor_value_advance(&map);
         if (strcmp(keybuf, "cmd") == 0) {
             cbor_value_get_int(&map, &result);
@@ -308,7 +309,6 @@ void command_hold(command_t *cmd)
 
 void command_free(command_t *cmd)
 {
-    int nargs;
     int rc;
     pthread_mutex_lock(&cmd->lock);
     rc = --cmd->refcount;
@@ -318,21 +318,7 @@ void command_free(command_t *cmd)
     if (rc > 0)
         return;
 
-    nargs = cmd->args != NULL ? cmd->args[0].nargs : 0;
-    for(int i = 0; i < nargs; i++) {
-        switch(cmd->args[i].type) {
-            case STRING_TYPE:
-                free(cmd->args[i].val.sval);
-                break;
-            case NVOID_TYPE:
-                if(cmd->args[i].val.nval != NULL)
-                    nvoid_free(cmd->args[i].val.nval);
-                    break;
-            default: break;
-        }
-    }
-
-    if (cmd->args != NULL) free(cmd->args);
+    command_args_free(cmd->args);
     free(cmd);
 }
 

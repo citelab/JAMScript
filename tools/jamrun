@@ -21,7 +21,7 @@ case "${unameOut}" in
     *)          machine="UNKNOWN:${unameOut}"
 esac
 
-VALGRIND_OPTS='valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=log_valgrind'
+VALGRIND_OPTS='valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=log_valgrind -s'
 
 MOSQUITTO=`which mosquitto`
 MOSQUITTO_PUB=`which mosquitto_pub`
