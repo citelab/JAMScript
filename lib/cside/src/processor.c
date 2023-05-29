@@ -110,6 +110,7 @@ void execute_cmd(server_t *s, function_t *f, command_t *cmd)
     else {
         arg_t *a = command_arg_clone_special(cmd->args, cmd->fn_name, cmd->task_id, cmd->node_id, s);
         task_create(t, esync, a, NULL);
+        command_free(cmd);
     }
 }
 
