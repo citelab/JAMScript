@@ -10,7 +10,8 @@ CC = clang
 AR = ar -rc
 
 # define any compile-time flags
-CFLAGS	:= -g -pthread -Wall -O1 -D MCO_USE_VALGRIND
+CFLAGS	:= -g -pthread -Wall -O1 -fsanitize=address -fno-omit-frame-pointer
+# -D MCO_USE_VALGRIND
 # -std=c99
 
 ifeq ($(shell getconf LONG_BIT),32)
