@@ -238,12 +238,10 @@ void process_internal_command(tboard_t *t, internal_command_t *ic)
 {
     remote_task_t *rtask = NULL;
 
-    switch (ic->cmd)
-    {
+    switch (ic->cmd) {
     case CmdNames_REXEC_ACK:
         HASH_FIND_INT(t->task_table, &(ic->task_id), rtask);
-        if (rtask != NULL)
-        {
+        if (rtask != NULL) {
             rtask->status = RTASK_ACK_RECEIVED;
             // blocking task - put back the timeout at a future time
             if (rtask->mode == TASK_MODE_REMOTE) {
@@ -262,34 +260,30 @@ void process_internal_command(tboard_t *t, internal_command_t *ic)
     case CmdNames_REXEC_RES:
         // find the task
         HASH_FIND_INT(t->task_table, &(ic->task_id), rtask);
-        if (rtask != NULL)
-        {
-            rtask->data = command_args_clone(ic->args);
+        if (rtask != NULL) {
+            rtask->data = ic->args;
             rtask->data_size = 1;
-            if (rtask->calling_task != NULL)
-            {
+            if (rtask->calling_task != NULL) {
                 rtask->status = RTASK_COMPLETED;
                 assert(mco_push(rtask->calling_task->ctx, rtask, sizeof(remote_task_t)) == MCO_SUCCESS);
                 // place parent task back to appropriate queue
                 task_place(t, rtask->calling_task);
             }
-        }
-        internal_command_free(ic);
+            free(ic);
+        } else
+            internal_command_free(ic);
         break;
 
     case CmdNames_REXEC_ERR:
         // find the task
         HASH_FIND_INT(t->task_table, &(ic->task_id), rtask);
-        if (rtask != NULL)
-        {
-            if (rtask->calling_task != NULL)
-            {
+        if (rtask != NULL) {
+            if (rtask->calling_task != NULL) {
                 rtask->status = RTASK_ERROR;
                 assert(mco_push(rtask->calling_task->ctx, rtask, sizeof(remote_task_t)) == MCO_SUCCESS);
                 // place parent task back to appropriate queue
                 task_place(t, rtask->calling_task);
-            }
-            else {
+            } else {
                 // if not blocking, remove it from the task table and destroy the remote task entry
                 HASH_DEL(t->task_table, rtask);
                 remote_task_destroy(rtask);

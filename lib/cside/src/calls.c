@@ -30,9 +30,10 @@ arg_t *remote_sync_call(tboard_t *t, char *cmd_func, char *fn_sig, ...)
         res = command_qargs_alloc(fn_sig, &qargs, args);
         va_end(args);
 
-        if (res)
+        if (res) {
             rarg = remote_task_create(t, cmd_func, level, fn_sig, qargs, strlen(fn_sig));
-        else
+            command_args_free(qargs);
+        } else
             rarg = NULL;
     }
     else
@@ -58,9 +59,9 @@ bool remote_async_call(tboard_t *t, char *cmd_func, char *fn_sig, ...)
         va_start(args, fn_sig);
         res = command_qargs_alloc(fn_sig, &qargs, args);
         va_end(args);
-        if (res)
+        if (res) {
             return remote_task_create_nb(t, cmd_func, level, fn_sig, qargs, strlen(fn_sig));
-        else
+        } else
             return false;
     }
     else

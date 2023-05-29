@@ -12,8 +12,8 @@
 #include "icache.h"
 
 
-arg_t *command_arg_clone_special(arg_t *arg, char *fname, long int taskid, char *nodeid, void *serv) 
-{   
+arg_t *command_arg_clone_special(arg_t *arg, char *fname, long int taskid, char *nodeid, void *serv)
+{
     arg_t *rl;
     int i = 0;
     if (arg == NULL) {
@@ -140,7 +140,7 @@ void msg_processor(void *serv, command_t *cmd)
         switch (cmd->subcmd) {
             case CmdNames_CLOUD_ADD_INFO:
                 // [cmd: PUT_CLOUD_FOG_INFO, subcmd: CLOUD_ADD_INFO, node_id: "cloud-id", args: [IP_addr, port_number]]
-                if (c->cloudserv == NULL) 
+                if (c->cloudserv == NULL)
                     c->cloudserv = cnode_create_mbroker(c, CLOUD_LEVEL, cmd->node_id, cmd->args[0].val.sval, cmd->args[1].val.ival, c->topics->subtopics, c->topics->length);
                 else if (c->cloudserv->state == SERVER_NOT_REGISTERED)
                     cnode_recreate_mbroker(c->cloudserv, CLOUD_LEVEL, cmd->node_id, cmd->args[0].val.sval, cmd->args[1].val.ival, c->topics->subtopics, c->topics->length);
@@ -189,15 +189,15 @@ void msg_processor(void *serv, command_t *cmd)
         mqtt_publish(s->mqtt, c->topics->requesttopic, rcmd->buffer, rcmd->length, rcmd, 0);
         // we send -- [cmd: PONG node_id: "worker id" ]
 
-        // if the node is not registered, start the count down to registration.. if the 
+        // if the node is not registered, start the count down to registration.. if the
         // count do
-        if (c->cnstate == CNODE_NOT_REGISTERED) 
+        if (c->cnstate == CNODE_NOT_REGISTERED)
             send_reg_msg(c->devserv, c->core->device_id, 0);
 
         return;
 
     case CmdNames_STOP:
-        // Stop the node... 
+        // Stop the node...
         // What do we do with this message?
 
         // kill tboard?
@@ -218,12 +218,12 @@ void msg_processor(void *serv, command_t *cmd)
         {
             send_err_msg(s, cmd->node_id, cmd->task_id);
             // send REXEC_ERR to the controller that sent the request
-            command_free(cmd);
+            //command_free(cmd);
             return;
         } else if (jcond_evaluate(f->cond) != true) {
             send_nak_msg(s, cmd->node_id, cmd->task_id);
             return;
-        } else 
+        } else
             // send the REXEC_ACK to the controller that sent the request
             send_ack_msg(s, cmd->node_id, cmd->task_id, ((cmd->subcmd == 0) ? 0: globals_Timeout_REXEC_ACK_TIMEOUT));
 
@@ -239,14 +239,13 @@ void msg_processor(void *serv, command_t *cmd)
         pthread_mutex_lock(&t->iqmutex);
         queue_insert_tail(&(t->iq), e);
         pthread_mutex_unlock(&t->iqmutex);
-        command_free(cmd);
         return;
 
     case CmdNames_CLOSE_PORT:
         disconnect_mqtt_adapter(s->mqtt);
         return;
 
-    case CmdNames_PUT_SCHEDULE: 
+    case CmdNames_PUT_SCHEDULE:
         k = 0;
         pthread_mutex_lock(&t->schmutex);
         t->sched.len = cmd->args[k].val.lval;
@@ -263,7 +262,7 @@ void msg_processor(void *serv, command_t *cmd)
             t->sched.systarts[i] = cmd->args[k].val.ival;
         }
         pthread_mutex_unlock(&t->schmutex);
-        command_free(cmd);
+        //command_free(cmd);
         return;
     default:
         tboard_err("msg_processor: Invalid message type encountered: %d\n", cmd->cmd);
@@ -303,7 +302,7 @@ void send_nak_msg(void *serv, char *node_id, long int task_id)
     mqtt_publish(s->mqtt, c->topics->replytopic, cmd->buffer, cmd->length, cmd, 0);
 }
 
-void send_reg_msg(void *serv, char *node_id, long int task_id) 
+void send_reg_msg(void *serv, char *node_id, long int task_id)
 {
     server_t *s = (server_t *)serv;
     cnode_t *c = s->cnode;

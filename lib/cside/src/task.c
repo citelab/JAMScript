@@ -448,7 +448,7 @@ void remote_task_destroy(remote_task_t *rtask)
     }
     // free alloc'd data if applicable
     if (rtask->data_size > 0 && rtask->data != NULL)
-        free(rtask->data);
+        command_args_free(rtask->data);
     // free rtask object
     free(rtask);
 }

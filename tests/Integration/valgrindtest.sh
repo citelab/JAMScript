@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TIMEOUT=60
+TIMEOUT=10
 if [ $# -ge 1 ]; then
 	TIMEOUT=$1
 fi
