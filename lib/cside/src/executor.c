@@ -44,7 +44,7 @@ enum execmodes_t {
     pthread_mutex_unlock(X);                                    \
 } while (0);
 
-void convert_time_to_absolute(struct timespec *t, struct timespec *abt) 
+void convert_time_to_absolute(struct timespec *t, struct timespec *abt)
 {
     struct timeval tnow;
     gettimeofday(&tnow, NULL);
@@ -79,12 +79,13 @@ void process_timing_wheel(tboard_t *tboard, enum execmodes_t *mode)
             } else if (t->callback.fn == dummy_next_timeout_event) {
                 process_timeout_event(tboard, t->callback.arg);
             }
+            free(t->callback.arg);
             free(t);
         }
     } while (t != NULL);
 }
 
-struct queue_entry *get_next_task(tboard_t *tboard, int etype, enum execmodes_t mode, int num, struct queue **q, pthread_mutex_t **mutex, pthread_cond_t **cond) 
+struct queue_entry *get_next_task(tboard_t *tboard, int etype, enum execmodes_t mode, int num, struct queue **q, pthread_mutex_t **mutex, pthread_cond_t **cond)
 {
     struct queue_entry *next = NULL; // queue entry of ready queue
 
@@ -129,18 +130,21 @@ struct queue_entry *get_next_task(tboard_t *tboard, int etype, enum execmodes_t 
 
 void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queue_entry *next, pthread_mutex_t *mutex, pthread_cond_t *cond)
 {
-//    get_snapshot(0);
+    DO_SNAPSHOT(0);
     ////////// Get queue data, and swap context to function until task yields ///////////
     task_t *task = ((task_t *)(next->data));
     task->status = TASK_RUNNING; // update status incase first run
-//    get_snapshot(1);
-    mco_resume(task->ctx); // swap context to task
-//    get_snapshot(2);
-
+    DO_SNAPSHOT(1);
+    // swap context to task - to start the execution
+    // so.. we start the execution (by default) and then let it yield..
+    // at yield the task would indicate the reason for yielding... which we
+    // use to process accordingly...
+    mco_resume(task->ctx);
+    DO_SNAPSHOT(2);
     // check status of task
     int status = mco_status(task->ctx);
     if (status == MCO_SUSPENDED) { // task yielded
-  //      get_snapshot(3);
+        DO_SNAPSHOT(3);
         task->yields++; // increment # yields of specific task
         task->hist->yields++; // increment total # yields in history hash table
         struct queue_entry *e = NULL;
@@ -169,13 +173,13 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
                 remote_task_place(tboard, rtask);
 
         } else { // just a normal yield, so we create node to reinsert task into queue
-  //          get_snapshot(4);
+            DO_SNAPSHOT(4);
             e = queue_new_node(task);
-  //          get_snapshot(5);
+            DO_SNAPSHOT(5);
         }
 
         if (e != NULL){
-     //       get_snapshot(6);
+            DO_SNAPSHOT(6);
             // reinsert task into queue it was taken out of
             pthread_mutex_lock(mutex); // lock appropriate mutex
             switch (task->type) {
@@ -190,12 +194,12 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
             }
             if(type == PRIMARY_EXECUTOR) pthread_cond_signal(cond); // we wish to wake secondary executors if they are asleep
             pthread_mutex_unlock(mutex);
-    //        get_snapshot(7);
+            DO_SNAPSHOT(7);
         }
     } else if (status == MCO_DEAD) { // task has terminated
         task->status = TASK_COMPLETED; // mark task as complete for history hash table
         // record task execution statistics into history hash table
-        history_record_exec(tboard, task, &(task->hist)); 
+        history_record_exec(tboard, task, &(task->hist));
 
         // check if task was blocking, if so we need to resume parent
         if (task->parent != NULL) { // blocking task just terminated, we wish to return parent to queue
@@ -219,8 +223,8 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
             tboard_deinc_concurrent(tboard);
         }
         // if command object is specified, just free it. User data would be deallocated by itself
-        
-        if (task->cmd_obj) 
+
+        if (task->cmd_obj)
             command_free((command_t *)task->cmd_obj);       // FIXME: THis is conflicting with release in the wrapper
         mco_destroy(task->ctx);
         // free task_t object
@@ -232,7 +236,7 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
 
 void process_internal_command(tboard_t *t, internal_command_t *ic)
 {
-    remote_task_t *rtask = NULL;    
+    remote_task_t *rtask = NULL;
 
     switch (ic->cmd)
     {
@@ -255,7 +259,7 @@ void process_internal_command(tboard_t *t, internal_command_t *ic)
         internal_command_free(ic);
         break;
 
-    case CmdNames_REXEC_RES:  
+    case CmdNames_REXEC_RES:
         // find the task
         HASH_FIND_INT(t->task_table, &(ic->task_id), rtask);
         if (rtask != NULL)
@@ -304,9 +308,12 @@ void process_internal_queue(tboard_t *t)
     if (next)
         queue_pop_head(&t->iq);
     pthread_mutex_unlock(&t->iqmutex);
-    if (next) 
+    if (next){
         process_internal_command(t, next->data);
+        free(next);
+    }
 }
+
 
 void *executor(void *arg)
 {
@@ -323,9 +330,9 @@ void *executor(void *arg)
 
     // disable premature cancellation by tboard_kill() to ensure graceful terminations
     disable_thread_cancel();
-    
+
     while (true) {
-        // create single cancellation point 
+        // create single cancellation point
         set_thread_cancel_point_here();
         // process the timing wheel events
         process_timing_wheel(tboard, &mode);
@@ -339,17 +346,17 @@ void *executor(void *arg)
         // task is taken out of. This is important to track for pExec after taking a task
         // out of a secondary queue when primary queue is empty
         struct queue *q = NULL; // queue entry to reinsert task into after yielding
-    //    get_snapshot(0);
-        // Fetch next task to run 
+        DO_SNAPSHOT(0);
+        // Fetch next task to run
         next = get_next_task(tboard, type, mode, num, &q, &mutex, &cond);
-    //    get_snapshot(1);
-    //    get_snapshot(2);
+        DO_SNAPSHOT(1);
+        DO_SNAPSHOT(2);
         if (next) { // TExec found a task to run
-    //        get_snapshot(3);
+            DO_SNAPSHOT(3);
             process_next_task(tboard, type, &q, next, mutex, cond);
-    //        get_snapshot(4);
+            DO_SNAPSHOT(4);
             free(next);
-    //        get_snapshot(5);
+            DO_SNAPSHOT(5);
         } else {
             // empty queue, we sleep on appropriate condition variable until signal received
             if (type == PRIMARY_EXECUTOR) {
@@ -357,6 +364,6 @@ void *executor(void *arg)
             } else
                 conditional_wait(&(tboard->smutex[num]), &(tboard->scond[num]));
         }
- //       print_snapshot_summary(100000);
+        PRINT_SNAPSHOTS(10000);
     }
 }

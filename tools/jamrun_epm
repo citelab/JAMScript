@@ -1,0 +1,401 @@
+#!/bin/bash
+
+IDIR="${BASH_SOURCE%/*}"
+if [[ ! -d "$IDIR" ]]; then IDIR="$PWD"; fi
+source "$IDIR/inc/misc_tools.sh"
+REDISFUNCS=`realpath "$IDIR/../deps/lua/jredlib.lua"`
+
+SHELLPID=$$
+trap cleanup SIGTERM SIGINT
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+cleanup() {
+    exit 1
+}
+
+# Determine the platform we are running on
+unameOut="$(uname -s)"
+case "${unameOut}" in
+    Linux*)     machine=Linux;;
+    Darwin*)    machine=Mac;;
+    *)          machine="UNKNOWN:${unameOut}"
+esac
+
+MOSQUITTO=`which mosquitto`
+MOSQUITTO_PUB=`which mosquitto_pub`
+
+
+startmqtt() {
+    local port=$1
+    local cfile=$2
+
+    # Check whether the MQTT server is running.. if not start it
+    $MOSQUITTO_PUB -p $port -t "test" -m "hello"
+    if [ $? -ne 0 ]; then
+        echo "MQTT is not running at $port"
+        echo "Attempting to start MQTT at $port"
+        if [ $machine = Mac ]; then 
+            open -n -a $MOSQUITTO --stdout /dev/null --args -c $cfile
+        elif [ $machine = Linux ]; then 
+            nohup $MOSQUITTO -c $cfile &>/dev/null &
+        fi
+    fi
+}
+
+dojamout() {
+    dojamout_p1 $1 $2 $3
+    dojamout_p2 $1 $2 $3
+}
+
+
+dojamout_p1() {
+    local type=$1
+    local pnum=$2
+    local floc=$3
+
+    startmqtt $pnum "${floc}/${pnum}/mqtt.conf"
+    echo "$data" > $floc/$pnum/dataStore
+    echo "process" > $floc/$pnum/class
+    echo "$SHELLPID" > $floc/$pnum/shellpid
+    echo "new" > $floc/$pnum/processId
+}
+
+
+dojamout_p2() {
+
+    if [ -z $bg ]; then
+        dojamout_p2_fg $1 $2 $3 $4
+    else
+        dojamout_p2_bg $1 $2 $3 $4
+    fi
+}
+
+
+dojamout_p2_fg() {
+    local type=$1
+    local pnum=$2
+    local floc=$3
+    local group=$4
+
+    buildjargs "--app=$app" "--port=$pnum" "--group=$group" "--data=$data" "--tags=$tags" "--iflow=$iflow" "--oflow=$oflow" "--edge=$edge" "--long=$long" "--lat=$lat"
+    local args=$results
+    case $type in
+        cloud)
+            node jstart.js $args
+            ;;
+        fog)
+            node jstart.js $args
+            ;;
+        device)
+            node jstart.js $args
+            ;;
+    esac
+}
+
+
+dojamout_p2_bg() {
+    local type=$1
+    local pnum=$2
+    local floc=$3
+    local group=$4
+
+    buildjargs "--app=$jappid" "--port=$pnum" "--group=$group" "--data=$data" "--tags=$tags" "--iflow=$iflow" "--oflow=$oflow" "--edge=$edge" "--long=$long" "--lat=$lat"
+    local args=$results
+
+    if [ `uname` == "Linux" ]; then
+        script -a -c "node jstart.js $args" -f log.j > /dev/null &
+    else
+        script -a -t 1 log.j node jstart.js $args > /dev/null &
+    fi
+
+    echo ">>> Started the J node in background"
+}
+
+
+# This is always scanning for a command with 'node'
+portavailable() {
+    local folder=$1
+    local port=$2
+
+    if [ -d $folder/$port ]; then
+        if [ -e $folder/$port/processId ]; then
+            local pid=`cat $folder/$port/processId`
+            if [ $pid == "new" ]; then
+                porttaken=1
+            elif [ ! -z $pid ]; then
+                porttaken=`ps -o pid= -p $pid | wc -l | tr -d '[:space:]'`
+            else
+                porttaken=0
+            fi
+        else
+            porttaken=0
+        fi
+    else
+        porttaken=0
+    fi
+}
+
+
+startredis() {
+    local port=$1
+
+    # Start redis with no protected-mode and at the port
+    echo -e "port $1\nprotected-mode no" | redis-server  --port $port  - 1> /dev/null &
+}
+
+waitforredis() {
+    local port=$1
+
+    while : ; do
+        local present=`ps auwwx | grep redis-server | grep $port | wc -l | tr -d '[:space:]'`
+        if [ $present == "1" ]; then
+            break
+        fi
+        sleep 1
+    done
+    echo ">>> Redis running at port: $port"
+    cat $REDISFUNCS | redis-cli -p $port -x FUNCTION LOAD REPLACE > /dev/null
+}
+
+resolvedata() {
+    local name=$1
+
+    local host="${name%:*}"
+    local port="${name##*:}"
+
+    startredis $port
+    waitforredis $port
+
+    if [ $host == "docker" ]; then
+        local ipaddr=`hostname -I`
+        name=$ipaddr:$port
+    fi
+    # trim space left behind by hostname -I
+    data=$(echo $name | tr -d '[:space:]')
+}
+
+getjdata() {
+    jdata=`grep JDATA MANIFEST.txt | awk '{split($0,a, " "); print a[3]}'`
+}
+
+# set the global longitude and lattitude variables
+#
+getlonglat() {
+    local loc=$1
+
+    long="${loc%,*}"
+    lat="${loc##*,}"
+}
+
+# for now, just roam the north-eastern part...
+generatelonglat() {
+    a=$(( $RANDOM % 180 ))
+    b=$(( $RANDOM % 10000 ))
+    long=$a.$b
+    c=$(( $RANDOM % 90 ))
+    d=$(( $RANDOM % 10000 ))
+    lat=$c.$d
+}
+
+###
+# Main script execution begins here...
+#
+
+# Initialize all the option variables.
+app=app-n
+type=fog
+data=127.0.0.1:6379
+num=
+tags=
+bg=
+old=
+porttaken=0
+tmuxid=
+log=
+edge=1
+folder=`pwd`
+
+# generate the random longitude and lattitude values
+# use the --loc option to override these values
+generatelonglat
+
+
+while :; do
+    case $1 in
+        --help)
+            show_usage      # Display a usage synopsis.
+            exit
+            ;;
+        --app)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                app=$2
+                shift
+            else
+                die 'ERROR: "--app" requires a non-empty option argument.'
+            fi
+            ;;
+        --app=?*)
+            app=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --app=)            # Handle the case of an empty
+            die 'ERROR: "--args" requires a non-empty option argument.'
+            ;;
+
+        --tags)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                tags=$2
+                shift
+            else
+                die 'ERROR: "--tags" requires a non-empty option argument.'
+            fi
+            ;;
+        --tags=?*)
+            tags=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --tags=)            # Handle the case of an empty
+            die 'ERROR: "--tags" requires a non-empty option argument.'
+            ;;
+        --tmux)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                tmuxid=$2
+                shift
+            else
+                die 'ERROR: "--tmux" requires a non-empty option argument.'
+            fi
+            ;;
+        --tmux=?*)
+            tmuxid=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --tmux=)            # Handle the case of an empty
+            die 'ERROR: "--tmux" requires a non-empty option argument.'
+            ;;
+        --num)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                num=$2
+                shift
+            else
+                die 'ERROR: "--num" requires a non-empty option argument.'
+            fi
+            ;;
+        --num=?*)
+            num=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --num=)            # Handle the case of an empty
+            die 'ERROR: "--num" requires a non-empty option argument.'
+            ;;
+        --loc)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                getlonglat $2
+                shift
+            else
+                die 'ERROR: "--loc" requires longitude and lattitude specification'
+            fi
+            ;;
+        --loc=?*)
+            loc=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            getlonglat $loc
+            ;;
+        --loc=)            # Handle the case of an empty
+            die 'ERROR: "--loc" requires longitude and lattitude specification'
+            ;;
+        --edge)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                edge=$2
+                shift
+            else
+                die 'ERROR: "--edge" requires a non-empty option argument.'
+            fi
+            ;;
+        --edge=?*)
+            edge=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --edge=)            # Handle the case of an empty
+            die 'ERROR: "--edge" requires a non-empty option argument.'
+            ;;
+        --data)           # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                data=$2
+                shift
+            else
+                die 'ERROR: "--data" requires a non-empty option argument.'
+            fi
+            ;;
+        --data=?*)
+            data=${1#*=}     # Delete everything up to "=" and assign the remainder.
+            ;;
+        --data=)            # Handle the case of an empty
+            die 'ERROR: "--data" requires a non-empty option argument.'
+            ;;
+        --fog)
+            if [ "$type" != "device" ]; then
+                die 'ERROR: "type" cannot be reassigned.'
+            else
+                type="fog"
+                num=
+            fi
+            ;;
+        --cloud)
+            if [ "$type" != "device" ]; then
+                die 'ERROR: "type" cannot be reassigned.'
+            else
+                type="cloud"
+                num=
+            fi
+            ;;
+        --device)
+            ;;
+        --bg)
+            bg=1
+            ;;
+        --log)
+            log=1
+            ;;
+        --old)
+            old=1
+            ;;
+        --)              # End of all options.
+            shift
+            break
+        ;;
+        -?*)
+            printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+            ;;
+        *)               # Default case: No more options, so break out of the loop.
+            break
+    esac
+
+    shift
+done
+
+# Check necessary parameters and set defaults
+
+if [ "$type" != "device" ]; then 
+    edge=
+    if [ -n "$num" ]; then
+        die "number of devices can't be speciied for fog/cloud"
+    fi
+    if [ -n "$edge" ]; then 
+        die "number of edge connections can't be specified for fog/cloud"
+    fi
+fi
+
+# find the machine height
+
+getjdata
+if [ "$jdata" = true ]; then 
+    resolvedata $data
+fi
+
+iport=2883
+while [ : ]; do
+    portavailable $folder $iport
+    [[ $porttaken == 1 ]] || break
+    ((iport++))
+done
+create_missingdir $folder/$iport
+create_conffile "${folder}/${iport}/mqtt.conf"  $iport
+dojamout $type $iport $folder

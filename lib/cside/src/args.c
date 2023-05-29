@@ -20,6 +20,17 @@ bool args_numexecutors_valid(int numexecutors) {
     return (numexecutors >= 0);
 }
 
+void print_args(cnode_args_t *a) {
+    if (a->tags != NULL)
+        printf("Tags: %s\n", a->tags);
+    printf("Group id: %d\n", a->groupid);
+    if (a->appid != NULL)
+        printf("Appid: %s\n", a->appid);
+    printf("Port: %d\n", a->port);
+    printf("Number: %d\n", a->snumber);
+    printf("Execs: %d\n", a->nexecs);
+}
+
 cnode_args_t *process_args(int argc, char **argv) {
     cnode_args_t *args = (cnode_args_t *)malloc(sizeof(cnode_args_t));
 

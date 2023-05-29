@@ -1,3 +1,4 @@
+
 int test(int *a, double c, char *, ...) {
     extern long a =3 ;
     long long a;

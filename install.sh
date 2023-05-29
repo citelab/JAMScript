@@ -20,125 +20,149 @@ case "${unameOut}" in
     *)          machine="UNKNOWN:${unameOut}"
 esac
 
-if [ $machine = Linux ]; then 
-    echo 
-    echo 
+if [ $machine = Linux ]; then
+    echo
+    echo
     echo "Installing JAMScript Version ${VERSION} on Linux....."
-    echo 
-    echo 
-    sudo apt update
+    echo
+    echo
+
+    if [ -f "/etc/arch-release" ]; then
+        echo "Detected Arch"
+        PM_INSTALL="sudo pacman -S --needed"
+        MOSQUITTO="mosquitto"
+        REDIS="redis"
+        LIBEVENT="libevent"
+
+        NODE_SETUP=":"
+        NODE="nodejs-lts-hydrogen"
+
+    else
+        PM_INSTALL="sudo apt-get install -y"
+        MOSQUITTO="mosquitto mosquitto-clients libmosquitto-dev"
+        REDIS="redis-server redis-tools libhiredis-dev"
+        LIBEVENT="libevent-dev"
+
+        NODE_SETUP="curl -sL https://deb.nodesource.com/setup_18.x -o /tmp/nodesource_setup.sh && sudo bash /tmp/nodesource_setup.sh"
+        NODE="nodejs"
+        sudo apt update
+    fi
+
+    # instal libevent
+    eval ${PM_INSTALL} ${LIBEVENT}
+
     # install clang if not found
-    if ! command -v clang &> /dev/null; then 
+    if ! command -v clang &> /dev/null; then
         echo "Clang not found: installing..."
-        sudo apt install -y clang
+        eval ${PM_INSTALL} clang
     fi
     # install mosquitto clients
-    if ! command -v mosquitto_pub &> /dev/null; then 
+    if ! command -v mosquitto_pub &> /dev/null; then
         echo "Mosquitto tools not found: installing..."
-        sudo apt install -y mosquitto-clients
-        sudo apt install -y mosquitto
+        eval ${PM_INSTALL} ${MOSQUITTO}
     fi
     # install unzip
-    if ! command -v unzip &> /dev/null; then 
+    if ! command -v unzip &> /dev/null; then
         echo "Unzip not found: installing..."
-        sudo apt install -y unzip
+        eval ${PM_INSTALL} unzip
     fi
     # install redis
-    if ! command -v redis-cli &> /dev/null; then 
+    if ! command -v redis-cli &> /dev/null; then
         echo "Redis not found: installing..."
-        sudo apt install -y redis-server
-        sudo apt install -y redis-tools
+        eval ${PM_INSTALL} ${REDIS}
     fi
     # install make
-    if ! command -v make &> /dev/null; then 
+    if ! command -v make &> /dev/null; then
         echo "Make not found: installing..."
-        sudo apt install -y make
+        eval ${PM_INSTALL} make
     fi
     # install node
-    if ! command -v node &> /dev/null; then 
+    if ! command -v node &> /dev/null; then
         echo "Node JS not found: install ...."
-        curl -sL https://deb.nodesource.com/setup_18.x -o /tmp/nodesource_setup.sh
-        sudo bash /tmp/nodesource_setup.sh
-        sudo apt install -y nodejs
-    fi 
-    # install some libraries
-    sudo apt install -y libmosquitto-dev
+        eval ${NODE_SETUP}
+        eval ${PM_INSTALL} ${NODE}
+    fi
 
-elif [ $machine = Mac ]; then 
-    echo 
-    echo 
+elif [ $machine = Mac ]; then
+    echo
+    echo
     echo "Installing JAMScript Version ${VERSION} on MacOS....."
-    echo 
+    echo
     echo
 
     # Check for homebrew
-    if ! command -v brew &> /dev/null; then 
+    if ! command -v brew &> /dev/null; then
         echo "JAMScript install needs Homebrew. You can install Homebrew from -- https://brew.sh "
         echo "Rerun JAMScript after installing Homebrew."
         exit 1
     fi
+    # install wget
+    if ! command -v wget &> /dev/null; then
+        echo "Wget not found: installing..."
+        brew install wget
+    fi
     # install node
-    if ! command -v node &> /dev/null; then 
+    if ! command -v node &> /dev/null; then
         echo "Node JS not found: install ..."
         curl "https://nodejs.org/dist/latest/node-${VERSION:-$(wget -qO- https://nodejs.org/dist/latest/ | sed -nE 's|.*>node-(.*)\.pkg</a>.*|\1|p')}.pkg" > "$HOME/Downloads/node-latest.pkg" && sudo installer -store -pkg "$HOME/Downloads/node-latest.pkg" -target "/"
     fi
-    # install clang 
-    if ! command -v clang &> /dev/null; then 
+    # install clang
+    if ! command -v clang &> /dev/null; then
         echo "Clang not found: install ..."
         xcode-select --install
     fi
     # install unzip
-    if ! command -v unzip &> /dev/null; then 
+    if ! command -v unzip &> /dev/null; then
         echo "Unzip not found: installing..."
         brew install unzip
     fi
-    # install mosquitto 
-    if ! command -v mosquitto &> /dev/null; then 
+    # install mosquitto
+    if ! command -v mosquitto &> /dev/null; then
         echo "Mosquitto not found: installing..."
         brew install mosquitto
     fi
     # install make
-    if ! command -v make &> /dev/null; then 
+    if ! command -v make &> /dev/null; then
         echo "Make not found: installing..."
         brew install make
     fi
     # install redis
-    if ! command -v redis-server &> /dev/null; then 
+    if ! command -v redis-server &> /dev/null; then
         echo "Redis not found: installing..."
         brew install redis
     fi
 
-fi 
+fi
 
-#install tiny_cbor
+#install tinycbor
 cd $SCRIPT_DIR/deps/tinycbor
 git clone https://github.com/intel/tinycbor
 cd tinycbor
-make 
-sudo make install 
+make
+sudo make install
 
 #install mujs
 cd $SCRIPT_DIR/deps/mujs2
-make 
+make
 sudo make install
 
 # install the necessary npm packages
 cd $SCRIPT_DIR
-npm install 
+npm install
 
-# compile the cside 
+# compile the cside
 cd $SCRIPT_DIR/lib/cside
-make archive 
-cd $HOME 
+make archive
+cd $HOME
 
-# create .jamruns and make the links 
-if [ ! -d .jamruns ]; then 
+# create .jamruns and make the links
+if [ ! -d .jamruns ]; then
     mkdir .jamruns
 fi
 cd .jamruns
-# relink or link the directories 
+# relink or link the directories
 rm clib
-ln -s $SCRIPT_DIR/lib/cside clib 
+ln -s $SCRIPT_DIR/lib/cside clib
 rm jamhome
 ln -s $SCRIPT_DIR jamhome
 rm node_modules
@@ -148,13 +172,13 @@ ln -s $SCRIPT_DIR/lib/jside node_modules
 cd $SCRIPT_DIR
 
 echo
-echo 
+echo
 echo "====================================================="
-echo 
+echo
 echo "JAMScript Version 2.0 install complete."
-echo 
+echo
 echo "Include ${SCRIPT_DIR}/tools in your executable path."
-echo 
+echo
 echo "Goto https://citelab.github.io/JAMScript for more information on programming in JAMScript"
-echo 
+echo
 echo "====================================================="

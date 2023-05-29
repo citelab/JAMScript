@@ -1,5 +1,5 @@
 /*
- * MQTT Adapter 
+ * MQTT Adapter
  * The header file
  * December 2021
  */
@@ -29,7 +29,7 @@ typedef struct broker_info {
     char host[64];
     int port;
     int keep_alive;
-} broker_info_t; 
+} broker_info_t;
 
 typedef struct mqtt_adapter {
     int mid;
@@ -91,7 +91,7 @@ void mqtt_do_subscribe(struct mqtt_adapter *ma);
 struct mqtt_adapter *create_mqtt_adapter(enum levels level, void *serv);
 bool connect_mqtt_adapter(struct mqtt_adapter *ma, broker_info_t *bi);
 struct mqtt_adapter *setup_mqtt_adapter(void *serv, enum levels level, char *host, int port, char *topics[], int ntopics);
-void destroy_mqtt_adapter(struct mqtt_adapter *ma);
+void destroy_mqtt_adapter(struct mqtt_adapter **ma);
 void disconnect_mqtt_adapter(struct mqtt_adapter *ma);
 void mqtt_publish(struct mqtt_adapter *ma, char *topic, void *msg, int msglen, void *udata, int qos);
 void mqtt_post_subscription(struct mqtt_adapter *ma, char *topic);

@@ -106,6 +106,7 @@ command_t *command_new(int cmd, int subcmd, char *fn_name, long int task_id, cha
         qargs = NULL;
 
     command_t *c = command_new_using_arg(cmd, subcmd, fn_name, task_id, node_id, fn_argsig, qargs);
+    command_args_free(qargs);
     return c;
 }
 
@@ -193,7 +194,6 @@ command_t *command_from_data(char *fmt, void *data, int len)
 {
     CborParser parser;
     CborValue it, map, arr;
-    CborError err;
     size_t length;
     int i = 0;
     int ival;
@@ -232,9 +232,9 @@ command_t *command_from_data(char *fmt, void *data, int len)
             }
         } else if (strcmp(keybuf, "nodeid") == 0) {
             length = LARGE_CMD_STR_LEN;
-            if (cbor_value_is_text_string(&map)) 
+            if (cbor_value_is_text_string(&map))
                 cbor_value_copy_text_string	(&map, cmd->node_id, &length, NULL);
-            else 
+            else
                 strcpy(cmd->node_id, "");
         } else if (strcmp(keybuf, "fn_name") == 0) {
             length = SMALL_CMD_STR_LEN;
@@ -243,7 +243,7 @@ command_t *command_from_data(char *fmt, void *data, int len)
             length = SMALL_CMD_STR_LEN;
             if (cbor_value_is_text_string(&map))
                 cbor_value_copy_text_string	(&map, cmd->fn_argsig, &length, NULL);
-            else 
+            else
                 strcpy(cmd->fn_argsig, "");
         } else if (strcmp(keybuf, "args") == 0) {
             cbor_value_enter_container(&map, &arr);
@@ -284,9 +284,9 @@ command_t *command_from_data(char *fmt, void *data, int len)
                         break;
                     }
                     i++;
-                    err = cbor_value_advance(&arr);
+                    cbor_value_advance(&arr);
                 }
-            } else 
+            } else
                 cmd->args = NULL;
 
         }
@@ -321,7 +321,7 @@ void command_free(command_t *cmd)
     nargs = cmd->args != NULL ? cmd->args[0].nargs : 0;
     for(int i = 0; i < nargs; i++) {
         switch(cmd->args[i].type) {
-            case STRING_TYPE: 
+            case STRING_TYPE:
                 free(cmd->args[i].val.sval);
                 break;
             case NVOID_TYPE:
@@ -422,7 +422,7 @@ void command_arg_inner_free(arg_t *arg)
     }
 }
 
-void command_args_free(arg_t *arg) 
+void command_args_free(arg_t *arg)
 {
     if (arg != NULL) {
         command_arg_inner_free(arg);
@@ -479,6 +479,6 @@ void command_print(command_t *cmd)
         printf("%x", (int)cmd->buffer[i]);
 
     command_arg_print(cmd->args);
-    
+
     printf("\n===================================\n");
 }

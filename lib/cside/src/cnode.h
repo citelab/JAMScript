@@ -65,7 +65,12 @@ typedef struct cnode_t {
     server_t *cloudserv;
     broker_info_t *devinfo;
     int eservnum;
-    void *tboard;    
+    void *tboard;
+    void *dpanel;
+    float xcoord;
+    float ycoord;
+    int width;
+    
 } cnode_t;
 
 
@@ -80,6 +85,8 @@ void cnode_recreate_mbroker(server_t *serv, enum levels level, char *server_id, 
 
 broker_info_t *cnode_scanj(int groupid, int port);
 
+void cnode_setcoords(cnode_t *cn, float xc, float yc);
+void cnode_setwidth(cnode_t *cn, int width);
 
 cnode_t *cnode_init(int argc, char **argv); 
 /** cnode_init() - Initializes CNode
@@ -136,6 +143,8 @@ bool cnode_stop(cnode_t *cn);
 ////////////////////////////////////////
 //////////////// ARGS //////////////////
 ////////////////////////////////////////
+void print_args(cnode_args_t *a);
+
 cnode_args_t *process_args(int argc, char **argv); // args.c
 /** process_args() - Processes arguments
  * @argc: argument count

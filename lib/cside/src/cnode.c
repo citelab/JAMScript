@@ -17,19 +17,19 @@ topics_t *cnode_create_topics(char *app)
     char sbuf[1024];
     topics_t *t = (topics_t *)calloc(1, sizeof(topics_t));
     int tcnt = 0;
-    sprintf(sbuf, "/%s/replies/down", app);
+    snprintf(sbuf, 1024, "/%s/replies/down", app);
     t->subtopics[tcnt++] = strdup(sbuf);
-    sprintf(sbuf, "/%s/announce/down", app);
+    snprintf(sbuf, 1024, "/%s/announce/down", app);
     t->subtopics[tcnt++] = strdup(sbuf);
-    sprintf(sbuf, "/%s/requests/down/c", app);
+    snprintf(sbuf, 1024, "/%s/requests/down/c", app);
     t->subtopics[tcnt++] = strdup(sbuf);
     t->length = tcnt;
 
-    sprintf(sbuf, "/%s/requests/up", app);
+    snprintf(sbuf, 1024, "/%s/requests/up", app);
     t->requesttopic = strdup(sbuf);
-    sprintf(sbuf, "/%s/requests/down/c", app);
+    snprintf(sbuf,1024, "/%s/requests/down/c", app);
     t->selfrequesttopic = strdup(sbuf);
-    sprintf(sbuf, "/%s/replies/up", app);
+    snprintf(sbuf, 1024, "/%s/replies/up", app);
     t->replytopic = strdup(sbuf);
 
     return t;
@@ -37,10 +37,10 @@ topics_t *cnode_create_topics(char *app)
 
 void cnode_topics_destroy(topics_t *t)
 {
-    for (int i = 0; i < t->length; i++) 
+    for (int i = 0; i < t->length; i++)
         free(t->subtopics[i]);
     free(t->requesttopic);
-    free(t->replytopic);    
+    free(t->replytopic);
     free(t);
 }
 
@@ -51,7 +51,7 @@ server_t *cnode_create_mbroker(cnode_t *cn, enum levels level, char *server_id, 
     serv->level = level;
     if (server_id != NULL)
         serv->server_id = strdup(server_id);
-    else 
+    else
         serv->server_id = NULL;
     serv->state = SERVER_NOT_REGISTERED;
     serv->mqtt = setup_mqtt_adapter(serv, level, host, port, topics, ntopics);
@@ -59,12 +59,12 @@ server_t *cnode_create_mbroker(cnode_t *cn, enum levels level, char *server_id, 
     return serv;
 }
 
-void cnode_recreate_mbroker(server_t *serv, enum levels level, char *server_id, char *host, int port, char *topics[], int ntopics) 
+void cnode_recreate_mbroker(server_t *serv, enum levels level, char *server_id, char *host, int port, char *topics[], int ntopics)
 {
     serv->level = level;
     if (server_id != NULL)
         serv->server_id = strdup(server_id);
-    else 
+    else
         serv->server_id = NULL;
     serv->state = SERVER_NOT_REGISTERED;
     serv->mqtt = setup_mqtt_adapter(serv, level, host, port, topics, ntopics);
@@ -75,7 +75,14 @@ broker_info_t *cnode_scanj(int groupid, int port) {
     int count = 5;
     broker_info_t *bi = NULL;
 
-    sprintf(mgroup, "%s.%d", Multicast_PREFIX, groupid);
+    if (groupid == 0) {
+        bi = (broker_info_t *)calloc(1, sizeof(broker_info_t));
+        strcpy(bi->host, "127.0.0.1");
+        bi->port = port;
+        return bi;
+    }
+
+    snprintf(mgroup, 32, "%s.%d", Multicast_PREFIX, groupid);
 
     mcast_t *m = multicast_init(mgroup, Multicast_SENDPORT, Multicast_RECVPORT);
     // TODO: Fix this line.. and make it compatible with the protocol on Notion
@@ -85,6 +92,7 @@ broker_info_t *cnode_scanj(int groupid, int port) {
     while (count > 0 && (multicast_check_receive(m) == 0)) {
         multicast_send(m, smsg->buffer, smsg->length);
         count--;
+        usleep(100000);
     }
     if (count > 0) {
         unsigned char buf[1024];
@@ -98,7 +106,7 @@ broker_info_t *cnode_scanj(int groupid, int port) {
         command_free(rmsg);
     }
     command_free(smsg);
-
+    multicast_destroy(m);
     return bi;
 }
 
@@ -111,7 +119,7 @@ void cnode_setup_jcond(char *dstr) {
 
     if (dstr != NULL && strlen(dstr) > 0)
     {
-        sprintf(tagstr, "jsys.tag = '%s';", dstr);
+        snprintf(tagstr, 1024, "jsys.tag = '%s';", dstr);
         jcond_eval_str(tagstr);
     }
     jcond_eval_str("function jcondContext(a) { return eval(a); }");
@@ -126,6 +134,8 @@ cnode_t *cnode_init(int argc, char **argv){
         cnode_destroy(cn);
         terminate_error(true, "invalid command line");
     }
+
+    print_args(cn->args);
 
     cn->topics = cnode_create_topics(cn->args->appid);
 
@@ -142,13 +152,13 @@ cnode_t *cnode_init(int argc, char **argv){
         cnode_destroy(cn);
         terminate_error(true, "cannot find the device j server");
     }
-    // Start the taskboard 
+    // Start the taskboard
     cn->tboard = tboard_create(cn, cn->args->nexecs);
     if ( cn->tboard == NULL ) {
         cnode_destroy(cn);
         terminate_error(true, "cannot create the task board");
     }
-    
+
     mqtt_lib_init();
 
     // Connect to the J server (MQTT), we don't have a server_id for the device, which is fine.
@@ -162,14 +172,12 @@ cnode_t *cnode_init(int argc, char **argv){
     cn->cnstate = CNODE_NOT_REGISTERED;
     // Do the initial registeration - it could fail and we resend on the next PING
     send_reg_msg(cn->devserv, cn->core->device_id, 0);
-    
+
     cnode_setup_jcond(cn->args->tags);
     tboard_start(cn->tboard);
-    
+
     return cn;
 }
-
-
 
 void cnode_destroy(cnode_t *cn) {
     // check if cnode is a pointer
@@ -183,7 +191,7 @@ void cnode_destroy(cnode_t *cn) {
     }
 
     // free topics
-    if (cn->topics != NULL) 
+    if (cn->topics != NULL)
         cnode_topics_destroy(cn->topics);
 
     // free core
@@ -219,4 +227,15 @@ bool cnode_stop(cnode_t *cn) {
     tboard_shutdown(cn->tboard);
     history_print_records(cn->tboard, stdout);
     return true;
+}
+
+void cnode_setcoords(cnode_t *cn, float xc, float yc)
+{
+    cn->xcoord = xc;
+    cn->ycoord = yc;
+}
+
+void cnode_setwidth(cnode_t *cn, int width)
+{
+    cn->width = width;
 }

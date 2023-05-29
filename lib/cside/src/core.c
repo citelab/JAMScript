@@ -35,11 +35,11 @@ void core_setup(corestate_t *cs)
     char portstr[64];
     char fname[64];
 
-    sprintf(portstr, "%d", cs->default_mqtt_port);
+    snprintf(portstr, 64, "%d", cs->default_mqtt_port);
     // Create the directory if it is not there already
     // No check necessary, just create it.
     mkdir(portstr, 0700); 
-    sprintf(fname, "./%d/cdevId.%d", cs->default_mqtt_port, cs->serial_num);
+    snprintf(fname, 64, "./%d/cdevId.%d", cs->default_mqtt_port, cs->serial_num);
     if (access(fname, F_OK) != -1) {
         char devid[UUID4_LEN+1];
         // Get the device ID from the file... check for consistency..
@@ -74,7 +74,7 @@ void core_setup(corestate_t *cs)
         fclose(fp);
     }
 
-    sprintf(fname, "./%d/cdevProcessId.%d", cs->default_mqtt_port, cs->serial_num);
+    snprintf(fname, 64, "./%d/cdevProcessId.%d", cs->default_mqtt_port, cs->serial_num);
     fp = fopen(fname, "w");
     if (fp == NULL)
     {

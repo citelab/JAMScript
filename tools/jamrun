@@ -3,6 +3,7 @@
 IDIR="${BASH_SOURCE%/*}"
 if [[ ! -d "$IDIR" ]]; then IDIR="$PWD"; fi
 source "$IDIR/inc/misc_tools.sh"
+REDISFUNCS=`realpath "$IDIR/../deps/lua/jredlib.lua"`
 
 SHELLPID=$$
 trap cleanup SIGTERM SIGINT
@@ -20,10 +21,12 @@ case "${unameOut}" in
     *)          machine="UNKNOWN:${unameOut}"
 esac
 
+VALGRIND_OPTS='valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=log_valgrind'
 
 MOSQUITTO=`which mosquitto`
 MOSQUITTO_PUB=`which mosquitto_pub`
 TMUX=`which tmux`
+NOVERBOSE=1
 
 if [ -z $MOSQUITTO ]; then
     die "mosquitto (MQTT broker) not installed. Quitting."
@@ -73,9 +76,13 @@ the C side is crashing at the startup. The tmux console would not run when
 the program crash at startup. So the --log option allows us to see the
 program error messages.
 
-Usage: jamrun file.jxe 
-                [--app=appl_name] 
-                [--fog|--cloud] 
+Use the --verb option to turn on verbose messaging.
+
+Use --valgrind to run the cside with valgrind for leak checking.
+
+Usage: jamrun file.jxe
+                [--app=appl_name]
+                [--fog|--cloud]
                 [--num=num_c_devs]
                 [--data=data-url]
                 [--tags=quoted_list_of_tags]
@@ -84,8 +91,10 @@ Usage: jamrun file.jxe
                 [--iflow=flow_name]
                 [--oflow=flow_name]
                 [--log]
+                [--verb]
                 [--loc=long,lat]
                 [--edge=num_edge_connections]
+                [--valgrind]
 
 
 The jamrun command creates a run state in the $HOME/.jamruns folder.
@@ -100,11 +109,13 @@ startmqtt() {
     # Check whether the MQTT server is running.. if not start it
     $MOSQUITTO_PUB -p $port -t "test" -m "hello"
     if [ $? -ne 0 ]; then
-        echo "MQTT is not running at $port"
-        echo "Attempting to start MQTT at $port"
-        if [ $machine = Mac ]; then 
+        if [ -z $NOVERBOSE ]; then
+            echo "MQTT is not running at $port"
+            echo "Attempting to start MQTT at $port"
+        fi
+        if [ $machine = Mac ]; then
             open -n -a $MOSQUITTO --stdout /dev/null --args -c $cfile
-        elif [ $machine = Linux ]; then 
+        elif [ $machine = Linux ]; then
             nohup $MOSQUITTO -c $cfile &>/dev/null &
         fi
     fi
@@ -184,7 +195,9 @@ dojamout_p2_bg() {
         script -a -t 1 log.j node jstart.js $args > /dev/null &
     fi
 
-    echo ">>> Started the J node in background"
+    if [ -z $NOVERBOSE ]; then
+        echo ">>> Started the J node in background"
+    fi
 }
 
 
@@ -201,22 +214,23 @@ doaout() {
     while [ $counter -le $num ]; do
         if [ -e a.out ]; then
             # execute the program.. we are in the folder..
-            buildcargs "-a=$jappid" "-p=$port" "-n=$counter" "-g=$group" "-t=$tags" 
+            buildcargs "-a=$jappid" "-p=$port" "-n=$counter" "-g=$group" "-t=$tags"
             local cargs=$results
             if [ -z $log ]; then
-                $TMUX new-session -s $tmuxapp-$counter -d  "./a.out $cargs"
+                $TMUX new-session -s $tmuxapp-$counter -d  "$VALGRIND ./a.out $cargs"
             else
                 if [ `uname` == "Linux" ]; then
-                    $TMUX new-session -s $tmuxapp-$counter -d  script -a -c "./a.out $cargs" -f log
+                    $TMUX new-session -s $tmuxapp-$counter -d  script -a -c "$VALGRIND ./a.out $cargs" -f log
                 else
                     $TMUX new-session -s $tmuxapp-$counter -d  "script -a -t 1 log ./a.out $cargs"
                 fi
             fi
         fi
         ((counter++))
-        echo ">>> Started a C node"
+        if [ -z $NOVERBOSE ]; then
+            echo ">>> Started a C node"
+        fi
     done
-
 }
 
 # This is always scanning for a command with 'node'
@@ -240,9 +254,7 @@ portavailable() {
     else
         porttaken=0
     fi
-
 }
-
 
 setuptmux() {
 
@@ -257,7 +269,6 @@ setuptmux() {
 
     trap cleanuptmux SIGINT
 }
-
 
 getappid() {
     local mainf=$1
@@ -276,14 +287,12 @@ getappid() {
     save "$jappid" $appfolder/appid
 }
 
-
 killtmux() {
 
     for q in `tmux ls | grep $1 | cut -d ':' -f 1`; do
         tmux kill-session -t $q
     done
 }
-
 
 cleanuptmux() {
     if [ ! -z $tmuxapp ]; then
@@ -292,11 +301,11 @@ cleanuptmux() {
     exit
 }
 
-
 startredis() {
+    local port=$1
 
     # Start redis with no protected-mode and at the port
-    echo -e "port $1\nprotected-mode no" | redis-server - 1> /dev/null &
+    echo -e "port $1\nprotected-mode no" | redis-server  --port $port  - 1> /dev/null &
 }
 
 waitforredis() {
@@ -309,7 +318,10 @@ waitforredis() {
         fi
         sleep 1
     done
-    echo ">>> Redis running at port: $port"
+    if [ -z $NOVERBOSE ]; then
+        echo ">>> Redis running at port: $port"
+    fi
+    cat $REDISFUNCS | redis-cli -p $port -x FUNCTION LOAD REPLACE > /dev/null
 }
 
 
@@ -362,6 +374,10 @@ unpack() {
 
 getheight() {
     height=`grep MAX-HEIGHT MANIFEST.txt | awk '{split($0,a, " "); print a[3]}'`
+}
+
+getjdata() {
+    jdata=`grep JDATA MANIFEST.txt | awk '{split($0,a, " "); print a[3]}'`
 }
 
 # set the global longitude and lattitude variables
@@ -545,12 +561,18 @@ while :; do
         --bg)
             bg=1
             ;;
+        --verb)
+            NOVERBOSE=
+            ;;
         --log)
             log=1
             ;;
         --old)
             old=1
             ;;
+		--valgrind)
+			VALGRIND="$VALGRIND_OPTS"
+			;;
         --)              # End of all options.
             shift
             break
@@ -567,12 +589,12 @@ done
 
 # Check necessary parameters and set defaults
 
-if [ "$type" != "device" ]; then 
+if [ "$type" != "device" ]; then
     edge=
     if [ -n "$num" ]; then
         die "number of devices can't be speciied for fog/cloud"
     fi
-    if [ -n "$edge" ]; then 
+    if [ -n "$edge" ]; then
         die "number of edge connections can't be specified for fog/cloud"
     fi
 fi
@@ -600,8 +622,11 @@ if [ -e "$file" ]; then
     unpack $ifile  # We are already in $folder
     # find the machine height
     getheight
+    getjdata
 
-    resolvedata $data
+    if [ "$jdata" = true ]; then
+        resolvedata $data
+    fi
 
     if [ -e jstart.js ]; then
         # save the current program information for short cut use

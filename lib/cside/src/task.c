@@ -8,7 +8,13 @@
 #include "mqtt_adapter.h"
 #include "cnode.h"
 #include "constants.h"
+#include "dpanel.h"
 
+#ifdef SUPPORT_32_BIT
+#define SNOWFLAKE_ID_FROM_TIME(ts) ts.tv_sec * 1000000 +  ts.tv_nsec / 1000;
+#else
+#define SNOWFLAKE_ID_FROM_TIME(ts) ts.tv_sec * 1000000000 +  ts.tv_nsec;
+#endif
 
 long int mysnowflake_id()
 {
@@ -17,7 +23,7 @@ long int mysnowflake_id()
     long int x;
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
-    x = ts.tv_sec * 1000000000 +  ts.tv_nsec;
+    x = SNOWFLAKE_ID_FROM_TIME(ts);
     return x/100 + counter;
 }
 
@@ -115,7 +121,7 @@ void task_place(tboard_t *t, task_t *task)
             case PRI_BATCH_TASK:
                 queue_insert_tail(&(t->pqueue_ba), task_q);
         }
-        pthread_cond_signal(&(t->pcond)); // signal primary condition variable as only one 
+        pthread_cond_signal(&(t->pcond)); // signal primary condition variable as only one
                                           // thread will ever wait for pcond
         pthread_mutex_unlock(&(t->pmutex)); // unlock mutex
     } else {
@@ -136,7 +142,7 @@ bool task_add(tboard_t *t, task_t *task)
 {
     if (t == NULL || task == NULL)
         return false;
-    
+
     // check if we have reached maximum concurrent tasks
     if(tboard_add_concurrent(t) == 0)
         return false;
@@ -163,7 +169,7 @@ void *blocking_task_create(tboard_t *t, function_t fn, int type, void *args, siz
 {
     if (mco_running() == NULL) // must be called from a coroutine!
         return NULL;
-    
+
     mco_result res;
 
     // create task object
@@ -210,7 +216,7 @@ void *blocking_task_create(tboard_t *t, function_t fn, int type, void *args, siz
                 if (mco_get_bytes_stored(mco_running()) == sizeof(arg_t)) {
                     res = mco_pop(mco_running(), retarg, sizeof(arg_t));
                     return retarg;
-                } else 
+                } else
                     return NULL;
             } else {
                 tboard_err("blocking_task_create: Blocking task is not marked as completed: %d.\n", task.status);
@@ -227,10 +233,10 @@ void *blocking_task_create(tboard_t *t, function_t fn, int type, void *args, siz
 /////////// REMOTE TASK FUNCTIONS /////////////
 ///////////////////////////////////////////////
 
-/* 
+/*
  * This call does not take task board as the first argument
- * Returns true on successful call and false otherwise. The actual remote call 
- * is running asynchronously from the execution of the local task. We don't get 
+ * Returns true on successful call and false otherwise. The actual remote call
+ * is running asynchronously from the execution of the local task. We don't get
  * any return value from the remote side.
  */
 bool remote_task_create_nb(tboard_t *tboard, char *command, int level, char *fn_argsig, arg_t *args, int sizeof_args)
@@ -290,7 +296,7 @@ arg_t *remote_task_create(tboard_t *tboard, char *command, int level, char *fn_a
         tboard_err("remote_task_create: Command length exceeds maximum supported value (%d > %d).\n",length, MAX_MSG_LENGTH);
         return NULL;
     }
-    
+
     // copy command to rtask object
     memcpy(rtask.command, command, length);
     // push rtask into storage. This copies memory in current thread so we dont have
@@ -323,10 +329,10 @@ arg_t *remote_task_create(tboard_t *tboard, char *command, int level, char *fn_a
         tboard_err("remote_task_create: Failed to capture blocking remote task after termination.\n");
         return NULL;
     }
-    
+
 }
 
-// We are using the remote task for the sleep task create and management 
+// We are using the remote task for the sleep task create and management
 bool sleep_task_create(tboard_t *tboard, int sval)
 {
     if (mco_running() == NULL) // must be called from a coroutine!
@@ -373,8 +379,54 @@ bool sleep_task_create(tboard_t *tboard, int sval)
     }
 }
 
+// This is yet another reuse of remote task - this time to wait on the "broadcaster" or
+// downward flow (dflow).
+//
+void *dflow_task_create(tboard_t *tboard, dftable_entry_t *entry)
+{
+    if (mco_running() == NULL) // must be called from a coroutine!
+        return NULL;
 
-void remote_task_free(tboard_t *t, long int taskid) 
+    mco_result res;
+    // create rtask object
+    remote_task_t rtask = {0};
+    rtask.task_id = mysnowflake_id();
+    rtask.status = TASK_INITIALIZED;
+    rtask.mode = TASK_MODE_DFLOW;
+
+    // push rtask into storage. This copies memory in current thread so we dont have
+    // to worry about invalid reads
+    res = mco_push(mco_running(), &rtask, sizeof(remote_task_t));
+    if (res != MCO_SUCCESS) {
+        tboard_err("remote_task_create: Failed to push remote task to mco storage interface.\n");
+        return NULL;
+    }
+    // issued remote task, yield
+    task_yield();
+    // we have resumed the coroutine .. so we have access to the previous values
+
+    // blocking: get if remote_task_t is currently in storage. If so we must parse it
+    if (mco_get_bytes_stored(mco_running()) == sizeof(remote_task_t)) {
+        res = mco_pop(mco_running(), &rtask, sizeof(remote_task_t));
+        if (res != MCO_SUCCESS) {
+            tboard_err("dflow_task_create: Failed to pop mco storage interface.\n");
+            return NULL;
+        }
+        // check if task completed
+        if (rtask.status == DFLOW_TASK_COMPLETED) {
+            remote_task_free(tboard, rtask.task_id);
+            return rtask.data;
+        } else {
+            tboard_err("dflow_task_create: dflow task is not marked as completed: %d.\n",rtask.status);
+            return false;
+        }
+    } else {
+        tboard_err("dflow_task_create: Failed to capture dflow task after termination.\n");
+        return false;
+    }
+}
+
+void remote_task_free(tboard_t *t, long int taskid)
 {
     remote_task_t *rtask = NULL;
         HASH_FIND_INT(t->task_table, &(taskid), rtask);
@@ -396,7 +448,7 @@ void remote_task_destroy(remote_task_t *rtask)
     }
     // free alloc'd data if applicable
     if (rtask->data_size > 0 && rtask->data != NULL)
-        free(rtask->data);    
+        free(rtask->data);
     // free rtask object
     free(rtask);
 }
@@ -415,11 +467,11 @@ void remote_task_place(tboard_t *t, remote_task_t *rtask)
     if (t == NULL || rtask == NULL)
         return;
 
-    twheel_add_event(t, TW_EVENT_REXEC_TIMEOUT, clone_taskid(&(rtask->task_id)), REXEC_TIMEOUT);
+    twheel_add_event(t, TW_EVENT_REXEC_TIMEOUT, clone_taskid(&(rtask->task_id)), getcurtime() + REXEC_TIMEOUT);
     switch (rtask->level) {
         case ALL_LEVELS:
             send_command_to_server(cn->devserv->mqtt);
-            for(int i = 0; i < cn->eservnum; i++) 
+            for(int i = 0; i < cn->eservnum; i++)
                 send_command_to_server(cn->edgeserv[i]->mqtt);
             if (cn->cloudserv != NULL)
                 send_command_to_server(cn->cloudserv->mqtt);
@@ -430,7 +482,7 @@ void remote_task_place(tboard_t *t, remote_task_t *rtask)
         break;
 
         case EDGE_LEVEL:
-            for(int i = 0; i < cn->eservnum; i++) 
+            for(int i = 0; i < cn->eservnum; i++)
                 send_command_to_server(cn->edgeserv[i]->mqtt);
         break;
 
@@ -440,9 +492,8 @@ void remote_task_place(tboard_t *t, remote_task_t *rtask)
         break;
     }
     /*
-     * The rtask was freed here.. not anymore we wait for the response to come from 
-     * the remote side. Then the entry should be removed from the task list and it 
+     * The rtask was freed here.. not anymore we wait for the response to come from
+     * the remote side. Then the entry should be removed from the task list and it
      * should be freed.
      */
 }
-

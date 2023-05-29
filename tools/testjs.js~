@@ -1,0 +1,8 @@
+
+process.on('SIGUSR2', function(x) {
+    console.log(x);
+});
+
+setInterval(()=> {
+    console.log("hi..");
+}, 100);
