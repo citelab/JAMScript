@@ -14,7 +14,7 @@
 // Perhaps all of this should just be put into the task.h file...
 
 // This is low for now.. 
-// TODO: consider option of generating this at compile time.
+// NOTE: consider generating this at compile time based on jamscript program.
 #define MAX_FUNCS 64 
 #define MAX_TASKS 256
 #define MAX_RTASKS 3072
@@ -38,8 +38,7 @@ typedef struct _task_t
     TaskHandle_t internal_handle; //@Refactor
 
     // Depending on how frequently this is accessed should maybe make it stored in struct.
-    // TODO: refactor to func.
-    function_t* function; 
+    function_t* func; 
     arg_t*  query_args;
 
     bool completed;
@@ -67,15 +66,15 @@ typedef struct _remote_task_t
     uint32_t timeout;
     task_t* parent_task;
 
-    // TODO: replcae this with a flag in the function to remove rtask lookup
+    // Potentially replace this with a flag in the function to remove rtask lookup
     bool ignore_return;
     bool destroyed;
 } remote_task_t;
 
 void remote_task_destroy(tboard_t *tboard, remote_task_t* rtask);
 
-task_t* task_create(tboard_t* tboard, function_t* function, arg_t* args);
-task_t* task_create_from_remote(tboard_t* tboard, function_t* function, uint64_t task_id, arg_t* args, bool remote_hook);
+task_t* task_create(tboard_t* tboard, function_t* func, arg_t* args);
+task_t* task_create_from_remote(tboard_t* tboard, function_t* func, uint64_t task_id, arg_t* args, bool remote_hook);
 void    task_destroy(tboard_t* tboard, task_t* task);
 arg_t*  task_get_args(task_t* task); 
 void    task_set_return_arg(task_t* task, arg_t* return_arg);
@@ -124,9 +123,7 @@ struct _function_t
 
 struct _tboard_t
 {
-    // TODO: add conditions.
-
-    // TODO: Determine number of functions at compile time
+    // NOTE: Should determine number of functions at compile time
     function_t* funcs[MAX_FUNCS];
     uint32_t    num_funcs;
 

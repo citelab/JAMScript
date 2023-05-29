@@ -9,6 +9,14 @@
 // Using fixed sized multicast buffers for now
 // Ideas: could do some crazy stuff with cached partially computed checksums?
 
+
+/* ====================================================== */
+/* ===================== IMPORTANT! ===================== */
+/* ====================================================== */
+// For now, there isn't any actual multicast implementation. This is somewhat like a unicast udp socket.
+// The goal will be to add support of IGMP groups when necessary. The exposed interface should remain
+// the same.. hopefully no refactoring.
+
 typedef struct _multicast_t 
 {
     uint32_t sent_packets;

@@ -23,26 +23,19 @@ void receiver_thread(void* raw_ctx)
 
     printf("Starting Receiver/Processor Thread...\n");
 
-
-    //TODO: change this.
-    while(!get_device_cnode_initialized())
-    {
-        vTaskDelay(200);
-    }
+    // NOTE: just deleted a thing to wait for cnode initialization... Seems to not be relevant anymore...
 
     processor_init();
 
     printf("Starting Receiver/Processor Loop...\n");
 
 
-    struct netbuf* buffer;
-    //uint8_t raw_buffer[256];
-    uint16_t buffer_length;
-
     tboard_t* tboard = get_device_cnode()->tboard;
 
-
     int status;
+    struct netbuf* buffer;
+
+    // This is for performance measurements and should not be kept around for any official release.
     int64_t start_time, proc_start_time, command_start_time, netconn_recv_start;
     int64_t cummulative_processing = 0, cummulative_recv = 0, command_processing = 0;
     start_time = esp_timer_get_time();
@@ -71,12 +64,10 @@ void receiver_thread(void* raw_ctx)
                 cummulative_recv = 0;
                 count = 0;
                 start_time = esp_timer_get_time();
-                //stats_display();
             }
 
             proc_start_time = esp_timer_get_time();
 
-            //espcount();
             do
             {       
                 count++;     
@@ -103,7 +94,7 @@ void receiver_thread(void* raw_ctx)
         }
         else
         {
-            printf("Somethign happened here!!!\n\n\n\n");
+            printf("Error while processing incoming network traffic!\n");
         }
     }
 }
@@ -117,14 +108,13 @@ void receiver_init()
 {
     receiver_context_t* ctx = calloc(1, sizeof(receiver_context_t));
 
-
     // Configure UDP listiner
     ctx->conn = netconn_new(NETCONN_UDP);
     assert(ctx->conn != NULL);
 
     assert(netconn_bind(ctx->conn, NULL, 16501)==ERR_OK);
 
-    //netconn_join_leave_group();
+    // Should use netconn_join_leave_group(); for IGMP when we use it.
 
     // Start receiving/processing thread
     xTaskCreatePinnedToCore(receiver_thread, 

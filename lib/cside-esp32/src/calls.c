@@ -5,7 +5,6 @@
 arg_t* remote_sync_call(tboard_t* tboard, char* symbol, char* arg_signature, ...)
 {
     va_list args;
-    bool res;
 
     arg_t* qargs = NULL;
     arg_t* rarg  = NULL;
@@ -13,19 +12,11 @@ arg_t* remote_sync_call(tboard_t* tboard, char* symbol, char* arg_signature, ...
     if (strlen(arg_signature) > 0)
     {
         va_start(args, arg_signature);
-        res = command_qargs_alloc(arg_signature, &qargs, args);
+        command_qargs_alloc(arg_signature, &qargs, args);
         va_end(args);
 
-        assert(res!=NULL);
-
-        if (res)
-        {
-            rarg = remote_task_start_sync(tboard, symbol, arg_signature,
-                                          qargs, strlen(arg_signature));
-        }
-        else
-            rarg = NULL; //TODO: This is an error state I believe..
-
+        rarg = remote_task_start_sync(tboard, symbol, arg_signature,
+                                      qargs, strlen(arg_signature));
     }
     else
         rarg = remote_task_start_sync(tboard, symbol, "", NULL, 0);
@@ -35,24 +26,19 @@ arg_t* remote_sync_call(tboard_t* tboard, char* symbol, char* arg_signature, ...
 bool remote_async_call(tboard_t* tboard, char* symbol, char* arg_signature, ...)
 {
     va_list args;
-    bool res;
+    bool has_args;
     arg_t* qargs = NULL;
 
     if (strlen(arg_signature) > 0)
     {
         va_start(args, arg_signature);
-        res = command_qargs_alloc(arg_signature, &qargs, args);
+        has_args = command_qargs_alloc(arg_signature, &qargs, args);
         va_end(args);
 
-        assert(res!=NULL);
+        assert(has_args==true);
 
-        if (res)
-        {
-            return remote_task_start_async(tboard, symbol, arg_signature,
-                                           qargs, strlen(arg_signature));
-        }
-        else
-            return false;
+        return remote_task_start_async(tboard, symbol, arg_signature,
+                                       qargs, strlen(arg_signature));
     }
     else
         return remote_task_start_async(tboard, symbol, "", NULL, 0);
@@ -77,7 +63,7 @@ void* local_sync_call(tboard_t* tboard, char* symbol, ...)
 
     execution_context_t ctx;
     ctx.query_args = query_args;
-    ctx.return_arg = return_arg;
+    ctx.return_arg = &return_arg;
 
     func->entry_point(&ctx);
 

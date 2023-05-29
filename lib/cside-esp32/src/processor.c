@@ -10,6 +10,7 @@ static multicast_t* _processor_dispatcher;
 static uint32_t _cached_packet_buffer_size;
 
 static bool initialized = false;
+
 // This is a temporary solution right now as we don't know node_id at init time.
 void __temporary_dispatcher_init(command_t* cmd)
 {
@@ -25,31 +26,64 @@ void __temporary_dispatcher_init(command_t* cmd)
     command_free(ack_cmd);
 }
 
-#define TASKID_OFFSET 41
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+
+#define COMMAND_OFFSET 1
+#define ACK_TASKID_OFFSET 41
 void send_ack(tboard_t* tboard, command_t* cmd, int duration)
 {
     __temporary_dispatcher_init(cmd);
     double taskid = (double) cmd->task_id;
     uint64_t task_out = bswap64( *((uint64_t*) &(taskid)) );
-    void* temp = multicast_get_packet_buffer(_processor_dispatcher, NULL);
 
-    memcpy(multicast_get_packet_buffer(_processor_dispatcher, NULL)+TASKID_OFFSET,
+    static int COMMAND = bswap32(CmdNames_REXEC_ACK);
+    memcpy(multicast_get_packet_buffer(_processor_dispatcher, NULL)+COMMAND_OFFSET,
+           &COMMAND, sizeof(int));
+
+    memcpy(multicast_get_packet_buffer(_processor_dispatcher, NULL)+ACK_TASKID_OFFSET,
+           &task_out, sizeof(double));
+
+    multicast_send(_processor_dispatcher, _cached_packet_buffer_size);
+}
+
+#define ERR_TASKID_OFFSET 41
+void send_err(tboard_t* tboard, command_t* cmd, int error)
+{
+    // The JAMScript error system isn't universally implemented yet.. currently skipping errors...
+    return;
+
+    //TODO: FINISH IMPLEMENTATION
+    __temporary_dispatcher_init(cmd);
+    double taskid = (double) cmd->task_id;
+    uint64_t task_out = bswap64( *((uint64_t*) &(taskid)) );
+    
+    //void* temp = multicast_get_packet_buffer(_processor_dispatcher, NULL);
+
+    static int COMMAND = bswap32(CmdNames_REXEC_ERR);
+    memcpy(multicast_get_packet_buffer(_processor_dispatcher, NULL)+COMMAND_OFFSET,
+           &COMMAND, sizeof(int));
+
+    memcpy(multicast_get_packet_buffer(_processor_dispatcher, NULL)+ERR_TASKID_OFFSET,
            &task_out, sizeof(double));
     multicast_send(_processor_dispatcher, _cached_packet_buffer_size);
 }
+#pragma GCC diagnostic pop
+
+
 void espcount();
 void execute_cmd(tboard_t *tboard, function_t *f, command_t *cmd)
 {
-    //This is silly
+    // This is silly for now... We don't have a persistent device id so we take the 
+    // generated device id from controller.
     if(get_device_cnode()->node_id==NULL)
         get_device_cnode()->node_id = strdup(cmd->node_id);
 
     // Ack
     send_ack(tboard, cmd, 20);
 
-    espcount();
     // Queue Task
-    //task_t* task = task_create_from_remote(tboard, f, cmd->task_id, cmd->args, true); // no return value
+    task_create_from_remote(tboard, f, cmd->task_id, cmd->args, true); // no return value
     
     
 }
@@ -60,14 +94,13 @@ void processor_init()
                             Multicast_RECVPORTBUS, 
                             Multicast_SENDPORTBUS,
                             MAX_COMMAND_SIZE);
-    printf("Proc init!\n");
+    printf("Processor initialized.\n");
 
 }
 
 void process_message(tboard_t *tboard, command_t *cmd)
 {
-    command_t *rcmd;
-    cnode_t *cnode = get_device_cnode();
+    
     remote_task_t *rtask;
     switch (cmd->cmd)
     {
@@ -79,7 +112,8 @@ void process_message(tboard_t *tboard, command_t *cmd)
         if (func == NULL)
         {
             printf("Couldn't find function '%s'\n", cmd->fn_name);
-            // TODO: send error response
+            // TODO: Use Correct Error Code
+            send_err(tboard, cmd, 0);
             return;
         }
         execute_cmd(tboard, func, cmd);
@@ -87,7 +121,11 @@ void process_message(tboard_t *tboard, command_t *cmd)
     case CmdNames_REXEC_ACK:
         rtask = tboard_find_remote_task(tboard, cmd->task_id);
         if(rtask==NULL)
+        {
+            // TODO: Use Correct Error Code
+            send_err(tboard, cmd, 0);
             return;
+        }
         rtask->status = REMOTE_TASK_STATUS_ACKED;
         rtask->timeout = cmd->args[0].val.ival;
 
@@ -96,7 +134,7 @@ void process_message(tboard_t *tboard, command_t *cmd)
             remote_task_destroy(tboard, rtask);
             return;
         }
-        // TODO: consider if this task notify really needs to be here.
+        // NOTE: Task notifications might not be the most efficient way of implementing this.
         xTaskNotify(rtask->parent_task->internal_handle,
                     RTASK_ACK_BITS,
                     eSetBits);
@@ -107,12 +145,13 @@ void process_message(tboard_t *tboard, command_t *cmd)
         // This is temporary for now!
         if(rtask==NULL)
         {
+            // TODO: Use Correct Error Code
+            send_err(tboard, cmd, 0);
             return;
         }
-        //assert(rtask!=NULL);
+
         rtask->return_arg = command_args_clone(cmd->args);
         rtask->status = REMOTE_TASK_STATUS_COMPLETE;
-
 
         if(rtask->ignore_return)
         {
@@ -128,13 +167,20 @@ void process_message(tboard_t *tboard, command_t *cmd)
 
         return;
     case CmdNames_GET_REXEC_RES:
+        // For now, this is only going to be increasing the wait counter on the controller.
         printf("Requesting response\n");
-        // TODO: check if task exists
         task_t* task = tboard_find_task(tboard, cmd->task_id);
+        if(task==NULL)
+        {
+            // TODO: Use Correct Error Code
+            send_err(tboard, cmd, 0);
+            return;
+        }
+       
         send_ack(tboard, cmd, 20);
         return;
     default: 
-        printf("Something wrong\n");
+        printf("Unknown Command! (%d)\n", cmd->cmd);
         return;
     }
 }

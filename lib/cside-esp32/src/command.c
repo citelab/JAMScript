@@ -70,8 +70,8 @@ void internal_command_free(internal_command_t* ic)
  * Return a command that includes a CBOR representation that can be sent out (a
  * byte string) It reuses the command_new_using_arg() function
  */
-command_t* command_new(int cmd, int subcmd, char* fn_name, uint64_t task_id,
-                       char* node_id, char* fn_argsig, ...)
+command_t* command_new(int cmd, int subcmd, const char* fn_name, uint64_t task_id,
+                       const char* node_id, const char* fn_argsig, ...)
 {
     va_list args;
     nvoid_t* nv;
@@ -123,9 +123,9 @@ command_t* command_new(int cmd, int subcmd, char* fn_name, uint64_t task_id,
     return c;
 }
 
-command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name,
-                                 uint64_t taskid, char* node_id,
-                                 char* fn_argsig, arg_t* args)
+command_t* command_new_using_arg(int cmd, int subcmd, const char* fn_name,
+                                 uint64_t taskid, const char* node_id,
+                                 const char* fn_argsig, arg_t* args)
 {
     command_t* cmdo = (command_t*)calloc(1, sizeof(command_t));
     
@@ -137,7 +137,7 @@ command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name,
 
     // store the fields into the structure and encode into the CBOR
     // store and encode cmd
-    cmdo->cmd = cmd; //TODO: FOUND AN ERROR REPORT TO MAHESH
+    cmdo->cmd = cmd;
     cbor_encode_text_stringz(&mapEncoder, "cmd");
     cbor_encode_int(&mapEncoder, cmd);
 
@@ -210,7 +210,7 @@ command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name,
     cbor_encoder_close_container(&encoder, &mapEncoder);
     cmdo->id       = id++;
     cmdo->refcount = 1;
-    //pthread_mutex_init(&cmdo->lock, NULL);
+    
     cmdo->length = cbor_encoder_get_buffer_size(&encoder, cmdo->buffer);
 
     return cmdo;
@@ -349,12 +349,11 @@ command_t* command_from_data(char* fmt, void* data, int len)
         cbor_value_advance(&map);
     }
     cmd->refcount = 1;
-    //pthread_mutex_init(&cmd->lock, NULL);
     cmd->id = id++;
     return cmd;
 }
 
-void command_from_data_inplace(command_t* cmd, char* fn_argsig, int len)
+void command_from_data_inplace(command_t* cmd, const char* fn_argsig, int len)
 {
     CborParser parser;
     CborValue it, map, arr;
@@ -480,24 +479,19 @@ void command_from_data_inplace(command_t* cmd, char* fn_argsig, int len)
         cbor_value_advance(&map);
     }
     cmd->refcount = 1;
-    //pthread_mutex_init(&cmd->lock, NULL);
     cmd->id = id++;
 }
 
 void command_hold(command_t* cmd)
 {
-    //pthread_mutex_lock(&cmd->lock);
     cmd->refcount++;
-    //pthread_mutex_unlock(&cmd->lock);
 }
 
 void command_free(command_t* cmd)
 {
     int nargs;
     int rc;
-    //pthread_mutex_lock(&cmd->lock);
     rc = --cmd->refcount;
-    //pthread_mutex_unlock(&cmd->lock);
 
     // don't free the structure if some other thread could be referring to it.
     if (rc > 0)

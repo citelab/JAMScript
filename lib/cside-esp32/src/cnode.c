@@ -24,7 +24,7 @@ cnode_t* cnode_init(int argc, char** argv)
 
     cnode->system_manager = system_manager_init();
 
-    _cnode_scan_controllers(cnode);
+    // JAMScript Network Scan should happen here.
 
     cnode->tboard = tboard_create();
 
@@ -32,55 +32,22 @@ cnode_t* cnode_init(int argc, char** argv)
 
     cnode->node_id = NULL;
 
-    // Must happen postinit
+    // Must happen post-core-init
     receiver_init();
 
     return cnode;
 }
 
+// Many of the cnode start/stop/destryo commands aren't necessary to use on the esp32 as we have our
+// own boot phase before the user program executes.
 
-// NOTE: Incomplete Implementation
-void _cnode_scan_controllers(cnode_t* cnode)
-{
-    const uint32_t buffer_size = 256;
-
-    if(cnode->discovery_multicast==NULL)
-    {
-        ipv4_address_t igmp_group = {0};
-        uint16_t incoming_port = 0, outgoing_port = 0;
-
-        cnode->discovery_multicast = multicast_create(igmp_group, outgoing_port, incoming_port, buffer_size);
-    }
-
-
-    // This is not in spec!!!
-    command_t *smsg = command_new(CmdNames_WHERE_IS_CTRL, 0, "", 0, "", "si", "127.0.0.1", TEMP_PORT);
-    assert(buffer_size >= smsg->length);
-    
-    void* internal_buf = multicast_get_packet_buffer(cnode->discovery_multicast, NULL);
-    memcpy(internal_buf, smsg->buffer, smsg->length);
-
-    multicast_send(cnode->discovery_multicast, smsg->length);
-
-    //TODO: handle received
-    jnode_record_t new_record;
-    new_record.port = 125;
-    for(int i = 0; i < MAX_JNODES; i++)
-    {
-        //TODO: make sure this is actually always an invalid ip
-        if(cnode->jnode_records[i].ip.a1==0) 
-            cnode->jnode_records[i] = new_record;
-    }
-}
-
-// @Unimplemented
+// @Unimplemented TODO
 void cnode_destroy(cnode_t* cnode)
 {
-    return;
-    
     assert(cnode->initialized);
-    free(cnode->node_id);
-    tboard_destroy(cnode->tboard);
+    return;
+    // free(cnode->node_id);
+    // tboard_destroy(cnode->tboard);
 }
 
 // @Unimplemented
@@ -88,17 +55,14 @@ bool cnode_start(cnode_t* cn)
 {
     assert(cn->initialized);
     // Nothing for now
-
     return true;
 }
-
 
 // @Unimplemented
 bool cnode_stop(cnode_t* cn)
 {
     assert(cn->initialized);
     // Nothing for now
-
     return true;
 }
 

@@ -51,10 +51,8 @@ void tboard_destroy(tboard_t* tboard)
     free(tboard);
 }
 
-
-// This might be overcomplicating things if this is just an array of pointers.....
-
-// TODO: this makes no sense rewrite. 
+// NOTE: current implementation of task storage isn't a true memory pool.
+//       This makes this seem a little overcomplicated.
 uint32_t _tboard_get_next_task_index(tboard_t* tboard)
 {
     if(!tboard->num_dead_tasks)
@@ -88,7 +86,6 @@ uint32_t _tboard_get_next_task_index(tboard_t* tboard)
 
     return 0;
 }
-
 
 void function_dump(function_t* func)
 {
@@ -153,7 +150,10 @@ void tboard_dump_funcs(tboard_t* tboard)
  * Task Definitions Here
 */
 
-// TODO: add the funky embedding thing here.
+// Eventually it would be useful to be able to encode the memory pool index into the task_id (snowflake)
+// This would remove the need to perform a search when processing task-related commands.
+
+// Generates Task IDs
 uint32_t mysnowflake_id()
 {
     static int counter = 0;
@@ -181,23 +181,21 @@ void _task_freertos_entrypoint_wrapper(void* param)
     ctx.query_args = task->query_args;
     ctx.return_arg = &return_arg;
 
-    //printf("Heap size left: %u\n\n", heap_caps_get_free_size(MALLOC_CAP_8BIT) );
-
     vTaskSetThreadLocalStoragePointer( NULL,  
                                        TLSTORE_TASK_PTR_IDX,     
                                        param );
 
 
-    task->function->entry_point(&ctx);
+    task->func->entry_point(&ctx);
 
     if(return_arg != NULL && task->return_hook)
     {    
         command_t* res_cmd = command_new_using_arg(CmdNames_REXEC_RES, 
                                                     0, 
-                                                    task->function->symbol, 
+                                                    task->func->symbol, 
                                                     task->task_id, 
                                                     get_device_cnode()->node_id, 
-                                                    task->function->arg_signature, 
+                                                    task->func->arg_signature, 
                                                     return_arg);
 
         assert(res_cmd->length <= MAX_COMMAND_SIZE);
@@ -216,7 +214,7 @@ void _task_freertos_entrypoint_wrapper(void* param)
     vTaskDelete(0);
 }
 
-task_t* task_create(tboard_t *tboard, function_t* function, arg_t* query_args)
+task_t* task_create(tboard_t *tboard, function_t* func, arg_t* query_args)
 {
     task_t* task = (task_t*) calloc(1, sizeof(task_t));
 
@@ -225,11 +223,11 @@ task_t* task_create(tboard_t *tboard, function_t* function, arg_t* query_args)
 
     task->task_id = mysnowflake_id();
 
-    task->function = function;
+    task->func = func;
     task->query_args = command_args_clone(query_args);
 
     int core = 1;
-    if (function->task_type==SEC_BATCH_TASK)
+    if (func->task_type==SEC_BATCH_TASK)
         core = 0;
 
     xTaskCreatePinnedToCore(_task_freertos_entrypoint_wrapper, 
@@ -243,7 +241,7 @@ task_t* task_create(tboard_t *tboard, function_t* function, arg_t* query_args)
 }
 
 
-task_t* task_create_from_remote(tboard_t* tboard, function_t* function, uint64_t task_id, arg_t* query_args, bool return_hook)
+task_t* task_create_from_remote(tboard_t* tboard, function_t* func, uint64_t task_id, arg_t* query_args, bool return_hook)
 {
     task_t* task = (task_t*) calloc(1, sizeof(task_t));
     task->index = _tboard_get_next_task_index(tboard);
@@ -251,14 +249,13 @@ task_t* task_create_from_remote(tboard_t* tboard, function_t* function, uint64_t
 
     task->task_id = task_id;
     
-    task->function = function;
+    task->func = func;
     task->query_args = command_args_clone(query_args);
 
-    //TODO: disable this if return val is not used
     task->return_hook = return_hook;
 
     int core = 1;
-    if (function->task_type==SEC_BATCH_TASK)
+    if (func->task_type==SEC_BATCH_TASK)
     {
         printf("Warning: Starting Task on core 0\n");
         core = 0;
@@ -315,8 +312,6 @@ task_t* get_current_task()
     return (task_t*) pvTaskGetThreadLocalStoragePointer(NULL, TLSTORE_TASK_PTR_IDX);
 }
 
-// TODO: consider defining my own compact array definition.... to avoid all the copy paste
-// TODO: maybe rename to make it clear that this also kind of allocates the task
 uint32_t _tboard_alloc_next_remote_task(tboard_t* tboard)
 {
     assert(xSemaphoreTake(tboard->remote_task_management_mutex, MUTEX_WAIT) == pdTRUE);
@@ -348,11 +343,10 @@ uint32_t _tboard_alloc_next_remote_task(tboard_t* tboard)
         }
     }
 
-    //TODO: remove this
-    printf("\nDead Remote taks: %d, Num Tasks: %d, Last dead Task %d\n\n", 
-    (int) tboard->num_dead_remote_tasks, 
-    (int) tboard->num_remote_tasks, 
-    (int) tboard->last_dead_remote_task);
+    // printf("\nDead Remote taks: %d, Num Tasks: %d, Last dead Task %d\n\n", 
+    //     (int) tboard->num_dead_remote_tasks, 
+    //     (int) tboard->num_remote_tasks, 
+    //     (int) tboard->last_dead_remote_task);
 
     assert(0 && "Corrupted remote task array.");
             xSemaphoreGive(tboard->remote_task_management_mutex);
@@ -360,7 +354,6 @@ uint32_t _tboard_alloc_next_remote_task(tboard_t* tboard)
     return 0;
 }
 
-// TODO: Double check for copy errors
 void remote_task_destroy(tboard_t *tboard, remote_task_t* rtask)
 {
     assert(xSemaphoreTakeRecursive(tboard->remote_task_management_mutex, MUTEX_WAIT) == pdTRUE);
@@ -381,10 +374,11 @@ void remote_task_destroy(tboard_t *tboard, remote_task_t* rtask)
     xSemaphoreGiveRecursive(tboard->remote_task_management_mutex);
 }
 
+// This becomes a major bottleneck when there is a heavy load. The snowflake generator modification proposed 
+// above would be a good solution.
 remote_task_t* tboard_find_remote_task(tboard_t* tboard, uint64_t task_id)
 {
     assert(xSemaphoreTake(tboard->remote_task_management_mutex, MUTEX_WAIT) == pdTRUE);
-    printf("Too slow!!!!\n");
     for(int i = 0; i < tboard->num_remote_tasks; i++)
     {
         remote_task_t* indx = &tboard->remote_tasks[i];
@@ -399,7 +393,6 @@ remote_task_t* tboard_find_remote_task(tboard_t* tboard, uint64_t task_id)
     }
     printf("Couldn't find remote task with id %llu\n", task_id);
     xSemaphoreGive(tboard->remote_task_management_mutex);
-    //assert(0 && "Couldn't find remote task with id");
     return NULL;
 }
 
@@ -426,12 +419,10 @@ jam_error_t remote_command_send_basic_command(tboard_t* tboard, remote_task_t* r
 
 jam_error_t remote_command_disaptch(tboard_t* tboard, command_t* command)
 {
-
     // Dispatch REXEC
     assert(command->length <= MAX_COMMAND_SIZE);
     multicast_copy_send(tboard->dispatcher, command->buffer, command->length);
-    //printf("\nSending tasks.\n\n");
-    //printf("n\n");
+    
     return JAM_OK;
 }
 
@@ -451,7 +442,7 @@ arg_t* remote_task_start_sync(tboard_t* tboard, char* symbol,
     rtask_builder.parent_task = get_current_task();
     rtask_builder.task_id = task_id;
     rtask_builder.symbol = symbol;
-    rtask_builder.timeout = 10; //This is a default as there is
+    rtask_builder.timeout = 10; //This is a default 
     rtask_builder.ignore_return = false;
     rtask_builder.destroyed = false;
 
@@ -468,7 +459,6 @@ arg_t* remote_task_start_sync(tboard_t* tboard, char* symbol,
     uint32_t notification = 0;
     int response;
     bool got_ack = 0;
-    bool sent_get_rexec_res = 0;
     while(1)
     {
         response = xTaskNotifyWait(RTASK_RES_BITS | RTASK_ACK_BITS, 
@@ -491,8 +481,9 @@ arg_t* remote_task_start_sync(tboard_t* tboard, char* symbol,
             }
 
             remote_command_send_basic_command(tboard, rtask, CmdNames_GET_REXEC_RES);
-            sent_get_rexec_res = true;
-            got_ack = false; // Wait for either deadline extension or response
+            
+            // Wait for either deadline extension or response
+            got_ack = false; 
         }
         
     }
@@ -522,7 +513,6 @@ void remote_task_aggressive_cull(tboard_t* tboard)
 jam_error_t remote_task_start_async(tboard_t* tboard, char* symbol,
                                char* arg_sig, arg_t* args, uint32_t size)
 {
-   //printf("Task Start Remote Async - called '%s'\n", symbol);
     uint32_t task_id = mysnowflake_id();
 
     command_t* command = command_new_using_arg(CmdNames_REXEC, 0, symbol,
@@ -534,7 +524,7 @@ jam_error_t remote_task_start_async(tboard_t* tboard, char* symbol,
     rtask_builder.parent_task = get_current_task();
     rtask_builder.task_id = task_id;
     rtask_builder.symbol = symbol;
-    rtask_builder.timeout = 10; //This is a default as there is
+    rtask_builder.timeout = 10; //This is a default 
     rtask_builder.ignore_return = true;
     rtask_builder.destroyed = false;
 
@@ -544,11 +534,10 @@ jam_error_t remote_task_start_async(tboard_t* tboard, char* symbol,
         rtask_builder.index = _tboard_alloc_next_remote_task(tboard);
         if(rtask_builder.index==RTASK_ALLOC_FAIL)
         {
-                printf("WARNING: No more space for additional remote tasks. Trying to free space\n");
+            printf("WARNING: No more space for additional remote tasks. Trying to free space\n");
             remote_task_aggressive_cull(tboard);
         }
     } while (rtask_builder.index==RTASK_ALLOC_FAIL);
-    
 
     remote_task_t* rtask = tboard->remote_tasks + rtask_builder.index;
     *rtask = rtask_builder;

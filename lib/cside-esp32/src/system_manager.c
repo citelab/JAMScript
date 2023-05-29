@@ -164,7 +164,6 @@ static void _system_manager_event_handler(void* arg, esp_event_base_t event_base
                     system_manager->_connection_attempts++;
                     system_manager->wifi_connection = false;
                     printf("Attempting to reconnect to network...\n");
-                    //TODO: consider setting a wifi fail flag
                 }
                 else
                 {
