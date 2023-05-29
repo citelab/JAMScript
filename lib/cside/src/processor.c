@@ -90,6 +90,8 @@ void exec_sync(context_t ctx)
                 break;
             default:;
             }
+            free(rv);
+            free(node_id);
             mqtt_publish(s->mqtt, c->topics->replytopic, cmd->buffer, cmd->length, cmd, 0);
         }
     }
@@ -133,6 +135,7 @@ void msg_processor(void *serv, command_t *cmd)
             rcmd = command_new(CmdNames_GET_CLOUD_FOG_INFO, 0, "", 0, c->core->device_id, "i", 0);
             mqtt_publish(s->mqtt, c->topics->requesttopic, rcmd->buffer, rcmd->length, rcmd, 0);
         }
+        command_free(cmd);
         return;
 
     case CmdNames_PUT_CLOUD_FOG_INFO:
@@ -180,6 +183,7 @@ void msg_processor(void *serv, command_t *cmd)
                 }
             break;
         }
+        command_free(cmd);
         return;
 
     case CmdNames_PING:
@@ -193,7 +197,7 @@ void msg_processor(void *serv, command_t *cmd)
         // count do
         if (c->cnstate == CNODE_NOT_REGISTERED)
             send_reg_msg(c->devserv, c->core->device_id, 0);
-
+        command_free(cmd);
         return;
 
     case CmdNames_STOP:
@@ -202,26 +206,27 @@ void msg_processor(void *serv, command_t *cmd)
 
         // kill tboard?
         // Do some memory release?
-
+        command_free(cmd);
         return;
 
     case CmdNames_REXEC:
         // if a duplicate command, silently drop the command
-        if (icache_lookup(t->icache, cmd->task_id, cmd->node_id))
+        if (icache_lookup(t->icache, cmd->task_id, cmd->node_id)) {
+            command_free(cmd);
             return;
-        else
+        } else
             icache_insert(t->icache, cmd->task_id, cmd->node_id);
 
         // otherwise, find the function
         f = tboard_find_func(t, cmd->fn_name);
-        if (f == NULL)
-        {
+        if (f == NULL) {
             send_err_msg(s, cmd->node_id, cmd->task_id);
             // send REXEC_ERR to the controller that sent the request
-            //command_free(cmd);
+            command_free(cmd);
             return;
         } else if (jcond_evaluate(f->cond) != true) {
             send_nak_msg(s, cmd->node_id, cmd->task_id);
+            command_free(cmd);
             return;
         } else
             // send the REXEC_ACK to the controller that sent the request
@@ -239,10 +244,12 @@ void msg_processor(void *serv, command_t *cmd)
         pthread_mutex_lock(&t->iqmutex);
         queue_insert_tail(&(t->iq), e);
         pthread_mutex_unlock(&t->iqmutex);
+        command_free(cmd);
         return;
 
     case CmdNames_CLOSE_PORT:
         disconnect_mqtt_adapter(s->mqtt);
+        command_free(cmd);
         return;
 
     case CmdNames_PUT_SCHEDULE:
@@ -262,10 +269,11 @@ void msg_processor(void *serv, command_t *cmd)
             t->sched.systarts[i] = cmd->args[k].val.ival;
         }
         pthread_mutex_unlock(&t->schmutex);
-        //command_free(cmd);
+        command_free(cmd);
         return;
     default:
         tboard_err("msg_processor: Invalid message type encountered: %d\n", cmd->cmd);
+        command_free(cmd);
         return;
     }
 }

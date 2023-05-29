@@ -52,7 +52,6 @@ internal_command_t *internal_command_new(command_t *cmd)
 
     icmd->cmd = cmd->cmd;
     icmd->task_id = cmd->task_id;
-    printf("clonging from internal_comand_new\n");
     icmd->args = command_args_clone(cmd->args);
     return icmd;
 }
@@ -149,7 +148,6 @@ command_t *command_new_using_arg(int cmd, int subcmd, char *fn_name, long int ta
         cmdo->args = NULL;
         cbor_encoder_create_array(&mapEncoder, &arrayEncoder, 0);
     } else {
-        printf("cloning from command_new_using_arg");
         cmdo->args = command_args_clone(args);
         cbor_encoder_create_array(&mapEncoder, &arrayEncoder, args[0].nargs);
         for (int i = 0; i < args[0].nargs; i++) {
@@ -159,7 +157,6 @@ command_t *command_new_using_arg(int cmd, int subcmd, char *fn_name, long int ta
                     cbor_encode_byte_string(&arrayEncoder, nv->data, nv->len);
                     break;
                 case STRING_TYPE:
-                    printf("cbor encoding string %x\n",args[i].val.sval);
                     cbor_encode_text_stringz(&arrayEncoder, args[i].val.sval);
                     break;
                 case INT_TYPE:
@@ -205,7 +202,6 @@ command_t *command_from_data(char *fmt, void *data, int len)
     char bytebuf[LARGE_CMD_STR_LEN];
     char strbuf[LARGE_CMD_STR_LEN];
     char keybuf[32];
-    strcpy(keybuf, "NONE");
     int result;
     double dresult;
 
@@ -270,7 +266,6 @@ command_t *command_from_data(char *fmt, void *data, int len)
                             length = LARGE_CMD_STR_LEN;
                             cbor_value_copy_text_string(&arr, strbuf, &length, NULL);
                             cmd->args[i].val.sval = strdup(strbuf);
-                            printf("strduping %x into %x\n",strbuf,cmd->args[i].val.sval);
                         break;
                         case CborByteStringType:
                             cmd->args[i].type = NVOID_TYPE;
@@ -347,8 +342,6 @@ bool command_qargs_alloc(const char *fmt, arg_t **rargs, va_list args)
                 break;
             case 's':
                 qargs[i].val.sval = strdup(va_arg(args, char *));
-                //qargs[i].val.sval = va_arg(args, char *);
-                printf("created arg %s at %x\n", qargs[i].val.sval, qargs[i].val.sval);
                 qargs[i].type = STRING_TYPE;
                 break;
             case 'i':
@@ -404,7 +397,6 @@ void command_arg_inner_free(arg_t *arg)
         switch (arg[i].type)
         {
             case STRING_TYPE:
-                printf("freed command argument %s at address %x\n", arg[i].val.sval, arg[i].val.sval);
                 free(arg[i].val.sval);
                 break;
             case NVOID_TYPE:
@@ -427,7 +419,6 @@ void command_args_free(arg_t *arg)
 
 arg_t *command_args_clone(arg_t *arg)
 {
-    printf("cloning args\n");
     arg_t *val = (arg_t *)calloc(arg[0].nargs, sizeof(arg_t));
     assert(val != NULL);
     for (int i = 0; i < arg[0].nargs; i++) {
@@ -443,7 +434,6 @@ arg_t *command_args_clone(arg_t *arg)
                 break;
             case STRING_TYPE:
                 val[i].val.sval = strdup(arg[i].val.sval);
-                printf("command_args_clone cloned %x into %x\n",arg[i].val.sval,val[i].val.sval);
                 break;
             case NVOID_TYPE:
                 val[i].val.nval = nvoid_new(arg[i].val.nval->data, arg[i].val.nval->len);
