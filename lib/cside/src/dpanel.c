@@ -46,6 +46,7 @@ dpanel_t *dpanel_create(char *server, int port, char *uuid)
     strcpy(dp->server, server);
     dp->port = port;
     dp->uuid = uuid;
+    dp->use_apanel = false;
 
     assert(pthread_mutex_init(&(dp->mutex), NULL) == 0);  
 
@@ -116,6 +117,7 @@ void dpanel_add_apanel(dpanel_t *dp, char *nid, void *a)
     strncpy(arec->key, nid, MAX_NAME_LEN);
     pthread_mutex_lock(&(dp->mutex));
     HASH_ADD_STR(dp->apanels, key, arec);
+    dp->use_apanel = true;
     pthread_mutex_unlock(&(dp->mutex));
 }
 
@@ -133,6 +135,13 @@ void dpanel_del_apanel(dpanel_t *dp, char *nid)
         apanel_shutdown(ap);
         apanel_free(ap);
     }
+    pthread_mutex_lock(&(dp->mutex));
+    int cnt = HASH_COUNT(dp->apanels);
+    if (cnt == 0)
+        dp->use_apanel = false;
+    pthread_mutex_unlock(&(dp->mutex));
+
+
 }
 
 
@@ -488,6 +497,8 @@ void dpanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
         }
         return;
     }
+
+    if (dp->use_apanel) return;         // the dpanel callback disabled - using the apanel cb
 
     if (reply->type == REDIS_REPLY_ARRAY && 
         (strcmp(reply->element[1]->str, "__d__keycompleted") == 0) &&

@@ -411,6 +411,13 @@ void *dflow_task_create(tboard_t *tboard, void *entry)
         // check if task completed
         if (rtask.status == DFLOW_TASK_COMPLETED) {
             remote_task_free(tboard, rtask.task_id);
+
+            // reset the state of the entry..
+            dftable_entry_t *dfentry = (dftable_entry_t *)entry;
+            pthread_mutex_lock(&(dfentry->mutex));
+            dfentry->state = NEW_STATE;
+            pthread_mutex_unlock(&(dfentry->mutex));
+
             return rtask.data;
         } else {
             tboard_err("dflow_task_create: dflow task is not marked as completed: %d.\n",rtask.status);

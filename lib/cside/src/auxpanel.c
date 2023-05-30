@@ -186,7 +186,7 @@ void apanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
                 // send without a callback for pipelining.
                 redisAsyncCommand(ap->a_uctx, apanel_ucallback, ap, "fcall uf_write 1 %s %lu %d %d %f %f %s", uobj->key, uobj->clock, ap->logical_id, cn->width, cn->xcoord, cn->ycoord, uobj->value);
             }
-           // freeUObject(uobj);
+            freeUObject(uobj);
             free(next);
         }
     }
@@ -274,45 +274,8 @@ void apanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
         HASH_FIND_STR(dp->dftable, reply->element[2]->str, entry);
 
         if (entry) {
-         //   if (entry->state == CLIENT_READY && entry->taskid > 0) 
-           //     redisAsyncCommand(dp->dctx, dflow_callback, dp, "fcall df_lread 1 %s", entry->key);
+            if (entry->state == CLIENT_READY && entry->taskid > 0) 
+                redisAsyncCommand(dp->dctx, dflow_callback, dp, "fcall df_lread 1 %s", entry->key);
         }
     }
 }
-
-// this is callback used by the actual reading function for the data in dflow
-// so.. here we need to 
-//
-/*
-void dflow_callback(redisAsyncContext *c, void *r, void *privdata) 
-{
-    
-    redisReply *reply = r;
-    // the privdata is pointing to the dftable_entry 
-    dftable_entry_t *entry = (dftable_entry_t *)privdata;
-    dpanel_t *dp = entry->dpanel;
-    tboard_t *t = dp->tboard;
-    remote_task_t *rtask = NULL;
-    
-    if (reply == NULL) {
-        if (c->errstr) {
-            printf("errstr: %s\n", c->errstr);
-        }
-        return;
-    }
-
-    HASH_FIND_INT(t->task_table, &(entry->taskid), rtask);
-    if (rtask != NULL)
-    {
-        rtask->data = strdup("test data"); // TODO: fix this... we need to base64 decode -> CBOR decode -> pass to return value
-        rtask->data_size = 1;
-        if (rtask->calling_task != NULL)
-        {
-            rtask->status = DFLOW_TASK_COMPLETED;
-            assert(mco_push(rtask->calling_task->ctx, rtask, sizeof(remote_task_t)) == MCO_SUCCESS);
-            // place parent task back to appropriate queue - should be batch
-            task_place(t, rtask->calling_task);
-        }
-    }
-}
-*/

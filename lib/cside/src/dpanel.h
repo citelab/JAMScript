@@ -92,6 +92,7 @@ typedef struct {
     char *uuid;
     char server[MAX_SERVER_LEN];
     int port;
+    bool use_apanel;
 
     pthread_t ufprocessor;
     pthread_t dfprocessor;
@@ -134,6 +135,10 @@ void dpanel_del_apanel(dpanel_t *dp, char *nid);
 uftable_entry_t *dp_create_uflow(dpanel_t *dp, char *key, char *fmt);
 struct queue_entry *get_uflow_object(dpanel_t *dp, bool *last);
 dftable_entry_t *dp_create_dflow(dpanel_t *dp, char *key, char *fmt);
+void freeUObject(uflow_obj_t *uobj);
+
+void dflow_callback(redisAsyncContext *c, void *r, void *privdata);
+
 
 void ufwrite_int(uftable_entry_t *uf, int x);
 void ufwrite_double(uftable_entry_t *uf, double x);
