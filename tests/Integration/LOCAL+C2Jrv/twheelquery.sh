@@ -13,11 +13,12 @@ fi
 while :
 do
 	rm -rf "$JAMLOG"
+	killall -9 a.out
 	echo "running"
 	timeout 10 jam run "jt2.jxe" --app=twheelquery --verb --log > "autotest_twheel/log_j" 2>&1
 	result=$(grep "message-to-j" "autotest_twheel/log_j")
 	if [ ! -n "$result" ]; then
-		head -n -1 "autotest_twheel/log_j" > "autotest_twheel/log_j"
+		head -n -2 "autotest_twheel/log_j" > "autotest_twheel/log_j"
 		cp "$JAMLOG" "autotest_twheel/log_c"
 		exit
 	fi
