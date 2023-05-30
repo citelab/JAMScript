@@ -495,13 +495,7 @@ void dpanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
 
         HASH_FIND_STR(dp->dftable, reply->element[2]->str, entry);
         if (entry) {
-            pthread_mutex_lock(&(entry->mutex));
-            if (entry->state == NEW_STATE)
-                entry->state = PRDY_RECEIVED;
-            else if (entry->state == CRDY_RECEIVED) 
-                entry->state = BOTH_RECEIVED;
-            pthread_mutex_unlock(&(entry->mutex));
-            if (entry->state == BOTH_RECEIVED && entry->taskid > 0) {
+            if (entry->state == CLIENT_READY && entry->taskid > 0) {
                 redisAsyncCommand(dp->dctx, dflow_callback, entry, "fcall df_lread 1 %s", entry->key);
             }
         }

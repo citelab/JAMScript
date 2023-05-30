@@ -12,6 +12,14 @@
 #include <hiredis/async.h>
 #include <hiredis/adapters/libevent.h>
 
+#define MAX_NAME_LEN                64
+
+typedef struct {
+    char key[MAX_NAME_LEN];
+    void *apanel;
+    UT_hash_handle hh;
+} arecord_t;
+
 
 #define  MAX_SERVER_LEN             64
 #define  DP_MAX_ERROR_COUNT         5
@@ -55,5 +63,6 @@ auxpanel_t *apanel_create(void *dp, char *server, int port);
 void apanel_free(auxpanel_t *ap);
 void apanel_start(auxpanel_t *ap);
 void apanel_shutdown(auxpanel_t *ap);
+void apanel_send_to_fogs(arecord_t *ar, void *u);
 
 #endif

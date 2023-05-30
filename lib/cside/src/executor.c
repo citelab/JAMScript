@@ -176,9 +176,7 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
                     // set the task state accordingly in the dftable_entry_t ..
                     pthread_mutex_lock(&(entry->mutex));
                     if (entry->state == NEW_STATE)
-                        entry->state = CRDY_RECEIVED;
-                    else if (entry->state == PRDY_RECEIVED) 
-                        entry->state = BOTH_RECEIVED;
+                        entry->state = CLIENT_READY;
                     entry->taskid = rtask->task_id;
                     pthread_mutex_unlock(&(entry->mutex));
                 break;

@@ -15,13 +15,12 @@
 
 #include "queue/queue.h"
 #include "nvoid.h"
+#include "auxpanel.h"
 
 extern int derror;
 
 enum dfstate   {NEW_STATE = 0,
-                PRDY_RECEIVED = 1,
-                CRDY_RECEIVED = 2,
-                BOTH_RECEIVED = 3};
+                CLIENT_READY = 1};
 
 typedef struct {
     char *key;
@@ -81,14 +80,6 @@ enum dpstate_t {
     REGISTERED = 3,
 };
 
-#define MAX_NAME_LEN                64
-
-typedef struct {
-    char key[MAX_NAME_LEN];
-    void *apanel;
-    UT_hash_handle hh;
-} arecord_t;
-
 
 #define  MAX_SERVER_LEN             64
 #define  DP_MAX_ERROR_COUNT         5
@@ -141,6 +132,7 @@ void dpanel_add_apanel(dpanel_t *dp, char *nid, void *a);
 void dpanel_del_apanel(dpanel_t *dp, char *nid);
 
 uftable_entry_t *dp_create_uflow(dpanel_t *dp, char *key, char *fmt);
+struct queue_entry *get_uflow_object(dpanel_t *dp, bool *last);
 dftable_entry_t *dp_create_dflow(dpanel_t *dp, char *key, char *fmt);
 
 void ufwrite_int(uftable_entry_t *uf, int x);
@@ -158,6 +150,5 @@ void free_buffer(darg_t *u, int len);
 
 int __extract_int(const uint8_t *buffer, size_t len);
 double __extract_double(const uint8_t *buffer, size_t len);
-
 
 #endif

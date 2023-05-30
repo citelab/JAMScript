@@ -176,7 +176,7 @@ void apanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
     //
     if (ap->state == A_REGISTERED) {
         // pull data from the queue
-    //    next = get_uflow_object(ap, &last);
+        next = get_uflow_object(ap, &last);
         if (next != NULL) {
             uflow_obj_t *uobj = (uflow_obj_t *)next->data;
             if (last) {
@@ -189,6 +189,40 @@ void apanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
            // freeUObject(uobj);
             free(next);
         }
+    }
+}
+
+uflow_obj_t *uflow_obj_clone(uflow_obj_t *u)
+{
+    uflow_obj_t *uo = (uflow_obj_t *)calloc(sizeof(uflow_obj_t), 1);
+    uo->key = u->key;
+    uo->fmt = u->fmt;
+    uo->clock = u->clock;
+    uo->value = strdup(u->value);
+
+    return uo;
+}
+
+void apanel_ufwrite(auxpanel_t *ap, uflow_obj_t *u)
+{
+    uflow_obj_t *uobj = uflow_obj_clone(u);
+    struct queue_entry *e = queue_new_node(uobj);
+    pthread_mutex_lock(&(ap->a_ufmutex));
+    queue_insert_tail(&(ap->a_ufqueue), e);
+    pthread_cond_signal(&(ap->a_ufcond));
+    pthread_mutex_unlock(&(ap->a_ufmutex));
+}
+
+void apanel_send_to_fogs(arecord_t *ar, void *u)
+{
+    int nfogs = HASH_COUNT(ar);
+    if (nfogs == 0) return;
+
+    uflow_obj_t *uo = (uflow_obj_t *)u;
+
+    arecord_t *cur, *tmp;
+    HASH_ITER(hh, ar, cur, tmp) {
+        apanel_ufwrite(cur->apanel, uo);
     }
 }
 
@@ -240,13 +274,7 @@ void apanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
         HASH_FIND_STR(dp->dftable, reply->element[2]->str, entry);
 
         if (entry) {
-            pthread_mutex_lock(&(entry->mutex));
-            if (entry->state == NEW_STATE)
-                entry->state = PRDY_RECEIVED;
-            else if (entry->state == CRDY_RECEIVED) 
-                entry->state = BOTH_RECEIVED;
-            pthread_mutex_unlock(&(entry->mutex));
-         //   if (entry->state == BOTH_RECEIVED && entry->taskid > 0) 
+         //   if (entry->state == CLIENT_READY && entry->taskid > 0) 
            //     redisAsyncCommand(dp->dctx, dflow_callback, dp, "fcall df_lread 1 %s", entry->key);
         }
     }
@@ -288,9 +316,3 @@ void dflow_callback(redisAsyncContext *c, void *r, void *privdata)
     }
 }
 */
-
-void apanel_send_to_fogs(arecord_t *aps, uflow_obj_t *uobj)
-{
-    
-
-}
