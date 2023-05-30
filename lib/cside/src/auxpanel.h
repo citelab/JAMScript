@@ -52,6 +52,7 @@ typedef struct {
 } auxpanel_t;
 
 auxpanel_t *apanel_create(void *dp, char *server, int port);
+void apanel_free(auxpanel_t *ap);
 void apanel_start(auxpanel_t *ap);
 void apanel_shutdown(auxpanel_t *ap);
 

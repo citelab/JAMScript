@@ -7,6 +7,7 @@
 #include "cnode.h"
 #include "dpanel.h"
 #include "tboard.h"
+#include "auxpanel.h"
 
 
 /*
@@ -46,6 +47,8 @@ dpanel_t *dpanel_create(char *server, int port, char *uuid)
     dp->port = port;
     dp->uuid = uuid;
 
+    assert(pthread_mutex_init(&(dp->mutex), NULL) == 0);  
+
     assert(pthread_mutex_init(&(dp->ufmutex), NULL) == 0);
     assert(pthread_mutex_init(&(dp->dfmutex), NULL) == 0);
     assert(pthread_cond_init(&(dp->ufcond), NULL) == 0);
@@ -72,7 +75,7 @@ void dpanel_connect_cb(const redisAsyncContext *c, int status) {
         printf("Error: %s\n", c->errstr);
         return;
     }
-}   
+}
 
 void dpanel_disconnect_cb(const redisAsyncContext *c, int status) {
     if (status != REDIS_OK) {
@@ -103,6 +106,35 @@ void dpanel_shutdown(dpanel_t *dp)
     pthread_join(dp->ufprocessor, NULL);
     pthread_join(dp->dfprocessor, NULL);
 }
+
+void dpanel_add_apanel(dpanel_t *dp, char *nid, void *a)
+{
+    auxpanel_t *ap = (auxpanel_t *)a;
+
+    arecord_t *arec = (arecord_t *)calloc(1, sizeof(arecord_t));
+    arec->apanel = ap;
+    strncpy(arec->key, nid, MAX_NAME_LEN);
+    pthread_mutex_lock(&(dp->mutex));
+    HASH_ADD_STR(dp->apanels, key, arec);
+    pthread_mutex_unlock(&(dp->mutex));
+}
+
+void dpanel_del_apanel(dpanel_t *dp, char *nid)
+{
+    arecord_t *arec;
+
+    pthread_mutex_lock(&(dp->mutex));
+    HASH_FIND_STR(dp->apanels, nid, arec);
+    pthread_mutex_unlock(&(dp->mutex));
+    if (arec) {
+        auxpanel_t *ap = arec->apanel;
+        HASH_DEL(dp->apanels, arec);
+        free(arec);
+        apanel_shutdown(ap);
+        apanel_free(ap);
+    }
+}
+
 
 /*
  * UFLOW PROCESSOR FUNCTIONS
@@ -188,7 +220,9 @@ void dpanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
         next = get_uflow_object(dp, &last);
         if (next != NULL) {
             uflow_obj_t *uobj = (uflow_obj_t *)next->data;
-
+            pthread_mutex_lock(&(dp->mutex));
+            apanel_send_to_fogs(dp->apanels, uobj);
+            pthread_mutex_unlock(&(dp->mutex));
             if (last) {
                 // send with a callback
                 redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %lu %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, cn->width, cn->xcoord, cn->ycoord, uobj->value);

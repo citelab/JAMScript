@@ -78,8 +78,17 @@ enum dpstate_t {
     NEW = 0,
     STARTED = 1,
     STOPPED = 2,
-    REGISTERED =3,
+    REGISTERED = 3,
 };
+
+#define MAX_NAME_LEN                64
+
+typedef struct {
+    char key[MAX_NAME_LEN];
+    void *apanel;
+    UT_hash_handle hh;
+} arecord_t;
+
 
 #define  MAX_SERVER_LEN             64
 #define  DP_MAX_ERROR_COUNT         5
@@ -99,6 +108,8 @@ typedef struct {
     pthread_cond_t ufcond;
     pthread_cond_t dfcond;
 
+    pthread_mutex_t mutex;
+
     pthread_mutex_t ufmutex;
     pthread_mutex_t dfmutex;
 
@@ -113,6 +124,8 @@ typedef struct {
     redisAsyncContext *dctx;
     redisAsyncContext *dctx2;
 
+    arecord_t *apanels;
+
     void *cnode;
     void *tboard;
 
@@ -123,6 +136,9 @@ void dpanel_setcnode(dpanel_t *dp, void *cn);
 void dpanel_settboard(dpanel_t *dp, void *tb);
 void dpanel_start(dpanel_t *dp);
 void dpanel_shutdown(dpanel_t *dp);
+
+void dpanel_add_apanel(dpanel_t *dp, char *nid, void *a);
+void dpanel_del_apanel(dpanel_t *dp, char *nid);
 
 uftable_entry_t *dp_create_uflow(dpanel_t *dp, char *key, char *fmt);
 dftable_entry_t *dp_create_dflow(dpanel_t *dp, char *key, char *fmt);
@@ -139,7 +155,6 @@ void dfread_string(dftable_entry_t *df, char *val, int len);
 int estimate_cbor_buffer_len(darg_t *u, int len);
 void do_cbor_encoding(CborEncoder *enc, darg_t *u, int len);
 void free_buffer(darg_t *u, int len);
-
 
 int __extract_int(const uint8_t *buffer, size_t len);
 double __extract_double(const uint8_t *buffer, size_t len);

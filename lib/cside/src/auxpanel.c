@@ -43,6 +43,15 @@ auxpanel_t *apanel_create(void *dpanel, char *server, int port)
     return ap;
 }
 
+void apanel_free(auxpanel_t *ap)
+{
+
+    // TODO: Need to destroy mutexes and free queue entries..
+    // Need lots of cleaning up before releasing the auxpanel...
+    // Also, auxpanel needs to be locked while being cleaned up
+    free(ap);
+}
+
 void apanel_connect_cb(const redisAsyncContext *c, int status) {
     if (status != REDIS_OK) {
         printf("Error: %s\n", c->errstr);
@@ -246,6 +255,7 @@ void apanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
 // this is callback used by the actual reading function for the data in dflow
 // so.. here we need to 
 //
+/*
 void dflow_callback(redisAsyncContext *c, void *r, void *privdata) 
 {
     
@@ -276,4 +286,11 @@ void dflow_callback(redisAsyncContext *c, void *r, void *privdata)
             task_place(t, rtask->calling_task);
         }
     }
+}
+*/
+
+void apanel_send_to_fogs(arecord_t *aps, uflow_obj_t *uobj)
+{
+    
+
 }
