@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <time.h>
 #include "cnode.h"
 #include "timeout.h"
@@ -10,11 +11,11 @@
 
 
 
-long int getcurtime()
+timeout_t getcurtime()
 {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
-    return ts.tv_sec * 1000000 +  ts.tv_nsec/1000;
+    return (timeout_t)ts.tv_sec * (timeout_t)1000000 +  (timeout_t)ts.tv_nsec/(timeout_t)1000;
 }
 
 
@@ -33,12 +34,12 @@ void *clone_taskid(long int *task_id)
 }
 
 
-bool twheel_add_event(tboard_t *tb, twheel_event_t type, void *arg, long int tval)
+bool twheel_add_event(tboard_t *tb, twheel_event_t type, void *arg, timeout_t tval)
 {
     // create an timeout event entry - note that just the entry is initialized
     struct timeout *t = calloc(1, sizeof(struct timeout));
     timeout_init(t, TIMEOUT_ABS);
-    long int atval = tval;
+    timeout_t atval = tval;
 
     switch (type) {
         case TW_EVENT_INSTALL_SCHEDULE:
