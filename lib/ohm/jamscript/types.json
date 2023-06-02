@@ -17,6 +17,15 @@
         "caster": "get_bcast_float",
         "jbroadcast": "JBROADCAST_FLOAT"
     },
+    "double": {
+        "c_pattern": "%lf",
+        "jamlib": "dval",
+        "js_type": "number",
+        "c_code": "d",
+        "js_code": "n",
+        "caster": "get_bcast_double",
+        "jbroadcast": "JBROADCAST_DOUBLE"       
+    },
     "string": {
         "c_pattern": "\\\"%s\\\"",
         "jamlib": "sval",

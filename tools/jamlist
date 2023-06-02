@@ -72,9 +72,21 @@ saveapplinfo() {
 
 printnodeinfo() {
     local port=$1
-    local mtype=`cat $2/machType`
-    local appid=`cat $2/appid`
-    local dstore=`cat $2/dataStore`
+    if [ -e $2/machType ]; then
+        local mtype=`cat $2/machType`
+    else
+        local mtype="-"
+    fi
+    if [ -e $2/appid ]; then 
+        local appid=`cat $2/appid`
+    else 
+        local appid="-"
+    fi 
+    if [ -e $2/dataStore ]; then
+        local dstore=`cat $2/dataStore`
+    else 
+        local dstore="-"
+    fi
     if [ -e $2/tmuxid ]; then
         local tmuxid=`cat $2/tmuxid`
     else
@@ -180,7 +192,7 @@ while :; do
 done
 
 
-appsfolder=$HOME"/__jamruns/apps"
+appsfolder=$HOME"/.jamruns/apps"
 if [ ! -d $appsfolder ]; then
     echo "No running instances of JAMScript."
     exit 0

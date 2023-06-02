@@ -1,0 +1,1 @@
+double continue = 1.0;

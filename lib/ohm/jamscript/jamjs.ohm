@@ -1,12 +1,17 @@
 JAMJS <: ES6 {
-    Declaration     += Jconditional
+    Declaration     += Jexport 
+                    | Jrequire
+                    | Jconditional
                     | Jdata_decl
                     | Activity_def
-                    | Jview_decl
 
-    jdata_type      = broadcaster
-                    | logger
-                    | shuffler
+    Jexport         = jexport identifier at ("device" | "fog" | "cloud") ";"        -- specified
+                    | jexport identifier ";"                                       -- default
+
+    Jrequire        = jrequire identifier as identifier at ("fog" | "cloud" | "device") ";"
+
+    jdata_type      = dflow
+                    | uflow
 
     C_type          = "struct" identifier "{" Struct_entry* "}"     -- struct
                     | "char" "*"                                    -- pointer
@@ -27,39 +32,6 @@ JAMJS <: ES6 {
 
 
     Jdata_decl (a jdata declaration) = jdata "{" Jdata_spec* "}"
-
-    Jview_spec      = beat ":" identifier ";"                       -- beat
-                    | Jview_page
-
-    Jview_page      = identifier as page "{" Page_elem+ "}"
-
-    Page_elem       = Display_elem
-                    | Control_elem
-                    | Page_name
-
-    Display_elem    = identifier is display "{" Disp_spec+ "}"
-
-    Control_elem    = identifier is controller "{" Ctrl_spec+ "}"
-
-    Page_name       = name ":" identifier ";"
-
-    Disp_spec       = type ":" display_type ";"
-                    | title ":" stringLiteral ";"
-                    | options ":" stringLiteral ";"
-                    | source ":" identifier ";"
-                    | refresh ":" decimalIntegerLiteral ";"
-
-    display_type    = graph | scatter | stackedgraph
-
-    Ctrl_spec       = type ":" control_type ";"
-                    | title ":" stringLiteral ";"
-                    | options ":" stringLiteral ";"
-                    | sink ":" identifier ";"
-
-    control_type    = slider | terminal | button
-
-
-    Jview_decl (a jview declaration) = jview "{" Jview_spec* "}"
 
     Jconditional (a jconditional declaration) = jcond identifier? "{" Jcond_entry* "}"
 
@@ -89,41 +61,48 @@ JAMJS <: ES6 {
                     | identifier                                    -- id
 
     jcond_expr_op   = "&&" | "||"
+    
+    Jtask_attr_spec = "[" ListOf<Jtask_attr, ",">  "]"
+    
+    Jtask_attr      = reuse "=" booleanLiteral
+                    | reuse_limit "=" numericLiteral
+                    | reuse_argdev "=" percentage
+                    | max_rate "=" numericLiteral
+                    
+   	percentage 	    = numericLiteral "%"
+    
+    Jtask_activity  = function jtask Jcond_specifier? Jtask_attr_spec? identifier "(" FormalParameterList ")" "{" FunctionBody "}"
 
     Activity_def (a activity definition)  = Sync_activity
-                                        | Async_activity
+                                          | Async_activity
+                                          | Jtask_activity
 
     as = "as" ~identifierPart
+    at = "at" ~identifierPart
     beat = "beat" ~identifierPart
-    broadcaster = "broadcaster" ~identifierPart
-    button = "button" ~identifierPart
     controller = "controller" ~identifierPart
-    display = "display" ~identifierPart
+    dflow = "dflow" ~identifierPart
     flow = "flow" ~identifierPart
-    graph = "graph" ~identifierPart
     is = "is" ~identifierPart
     inflow = "inflow" ~identifierPart
     jamtask = "jamtask" ~identifierPart
-    jasync = "jasync" ~identifierPart
+    jasync = "jtask*" ~identifierPart
     jcond = "jcond" ~identifierPart
     jdata = "jdata" ~identifierPart
-    jview = "jview" ~identifierPart
-    jsync = "jsync" ~identifierPart
+    jsync = "jtask" ~identifierPart
+    jexport = "jexport" ~identifierPart
+    jrequire = "jrequire" ~identifierPart
     linegraph = "linegraph" ~identifierPart
-    logger = "logger" ~identifierPart
     name = "name" ~identifierPart
     of = "of" ~identifierPart
-    options = "options" ~identifierPart
     outflow = "outflow" ~identifierPart
-    page = "page" ~identifierPart
-    refresh = "refresh" ~identifierPart
-    scatter = "scatter" ~identifierPart
-    sink = "sink" ~identifierPart
-    slider = "slider" ~identifierPart
-    shuffler = "shuffler" ~identifierPart
     source = "source" ~identifierPart
-    stackedgraph = "stackedgraph" ~identifierPart
     terminal = "terminal" ~identifierPart
-    title = "title" ~identifierPart
     type = "type" ~identifierPart
+    jtask = "jtask" ~identifierPart
+    reuse = "reuse" ~identifierPart
+    reuse_limit = "reuse_limit" ~identifierPart
+    reuse_argdev = "reuse_argdev" ~identifierPart
+    max_rate = "max_rate" ~identifierPart
+    uflow = "uflow" ~identifierPart
 }

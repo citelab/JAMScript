@@ -1,5 +1,0 @@
-VERSION = 1.0
-DESCRIPTION = JAMScript executable file
-NAME = callj
-CREATE-TIME = 1565941125645
-MAX-HEIGHT = 1

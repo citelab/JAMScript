@@ -28,12 +28,10 @@ Usage: jamexec file.jxe [--app=appl_name] [--fog|--cloud] [--num=num_c_devs]
 EOF
 }
 
-
 dojamout() {
     dojamout_p1 $1 $2 $3
     dojamout_p2 $1 $2 $3
 }
-
 
 dojamout_p1() {
     local type=$1
@@ -46,7 +44,6 @@ dojamout_p1() {
     echo "new" > $floc/$pnum/processId
 }
 
-
 dojamout_p2() {
 
     if [ -z $bg ]; then
@@ -56,21 +53,10 @@ dojamout_p2() {
     fi
 }
 
-
 cleanup() {
     reset
     cleanuptmux
     exit 1
-}
-
-
-check_jamhome() {
-
-    if [ -e jview.json ]; then
-        if [ -z `printenv JAMHOME` ]; then
-            die "JAMHOME not set. Point JAMHOME to JAMScript installation and restart."
-        fi
-    fi
 }
 
 dojamout_p2_fg() {
@@ -89,31 +75,11 @@ dojamout_p2_fg() {
             node jamout.js $args
             ;;
         device)
-            check_jamhome
-            (
-                if [ -e jview.json ]; then
-                    node $JAMHOME/lib/jview/Compiler.js jview.json
-                    cp -R $JAMHOME/lib/jview/templates/electron electron
-                    cd app
-                    node index.js &
-                    sleep 2
-                    cd ../electron
-                    electron .
-                fi
-            ) &
-            echo $! > $floc/$pnum/jviewshell
             node jamout.js $args
-            vpid=`cat $floc/$pnum/jviewshell`
-            local pid=`ps -o pid= -p $vpid`
-            if [ ! -z $pid ]; then
-                kill $pid
-            fi
             ;;
     esac
     echo ">>> Started the J node at port $pnum"
 }
-
-
 
 dojamout_p2_bg() {
     local type=$1
@@ -124,7 +90,6 @@ dojamout_p2_bg() {
     node jamout.js $results &
     jpid=$!
 }
-
 
 doaout() {
     local counter=1
@@ -154,7 +119,6 @@ doaout() {
     done
 }
 
-
 setuptmux() {
 
     if [ -z $tmuxid ]; then
@@ -168,7 +132,6 @@ setuptmux() {
 
     trap cleanuptmux SIGINT
 }
-
 
 getappid() {
     local mainf=$1
@@ -185,15 +148,12 @@ getappid() {
     jappid=`cat $localf/appid`
 }
 
-
 cleanuptmux() {
     if [ ! -z $tmuxapp ]; then
         $TMUX kill-session -t $tmuxapp
     fi
     exit
 }
-
-
 
 # We are already in the correct foldler
 # We should find MANIFEST if there is a previous version in the current folder
@@ -416,7 +376,7 @@ done
 
 if [ -e "$file" ]; then
 
-    jamfolder=$HOME"/__jamruns"
+    jamfolder=$HOME"/.jamruns"
     appfolder=$jamfolder/apps
 
     # Get the folder

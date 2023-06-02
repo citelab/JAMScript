@@ -1,0 +1,3 @@
+jasync {someCond} test() {
+	
+}

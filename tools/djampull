@@ -18,7 +18,7 @@ it pulls the last one.
 EOF
 }
 
-jamfolder=$HOME"/__jamruns"
+jamfolder=$HOME"/.jamruns"
 if [ ! -d $jamfolder ]; then
     mkdir $jamfolder
 fi

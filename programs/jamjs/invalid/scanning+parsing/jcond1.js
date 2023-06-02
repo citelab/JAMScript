@@ -1,0 +1,3 @@
+jcond {
+	test: ;
+}

@@ -323,8 +323,8 @@ resolvedocker $data
 
 if [ -e "$file" ]; then
 
-    # Check whether the global __jamruns folder is there
-    jamfolder=$HOME"/__jamruns"
+    # Check whether the global .jamruns folder is there
+    jamfolder=$HOME"/.jamruns"
     create_missingdir $jamfolder
 
     appfolder=$jamfolder/apps

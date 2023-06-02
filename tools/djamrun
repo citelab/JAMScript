@@ -514,8 +514,8 @@ check_prog docker "Docker not installed. Exiting."
 #check_prog pumba "Pumba not installed. Download it from https://github.com/gaia-adm/pumba/releases"
 check_prog tmux "tmux not installed. Exiting."
 
-# Check whether the global __jamruns folder is there
-jamfolder=$HOME"/__jamruns"
+# Check whether the global .jamruns folder is there
+jamfolder=$HOME"/.jamruns"
 exit_missingdir $jamfolder "__jamdir directory not found. Run djam pull first. "
 exit_missingdir $jamfolder/zones "zones not setup. Run djam init first"
 exit_missingfile $jamfolder/dockerImage "DockerImage not setup. Run djam pull first."

@@ -1,6 +1,3 @@
-[submodule "deps/paho"]
-	path = deps/paho
-	url = https://github.com/anrl/paho.mqtt.c.git
-[submodule "samples"]
-	path = samples
-	url = https://github.com/citelab/JAMSamples
+[submodule "lib/cside/include/carapi"]
+	path = lib/cside/include/carapi
+	url = https://github.com/anrl/carapi.git

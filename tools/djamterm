@@ -65,7 +65,7 @@ dockertmux() {
     local tmuxapp=$1
     local termno=$2
 
-    appsfolder=$HOME"/__jamruns/apps"
+    appsfolder=$HOME"/.jamruns/apps"
     cd $appsfolder
 
     for jruns in */; do
@@ -95,11 +95,11 @@ dockertmux() {
 # Main script execution begins here...
 #
 
-jamfolder=$HOME"/__jamruns"
-exit_missingdir $jamfolder "__jamruns folder missing. JAMScript tools not setup?"
+jamfolder=$HOME"/.jamruns"
+exit_missingdir $jamfolder ".jamruns folder missing. JAMScript tools not setup?"
 
 appsfolder=$jamfolder/apps
-exit_missingdir $appsfolder "__jamruns/apps folder missing. JAMScript tools not setup?"
+exit_missingdir $appsfolder ".jamruns/apps folder missing. JAMScript tools not setup?"
 
 cd $appsfolder
 

@@ -1,0 +1,22 @@
+module.exports = Object.freeze({
+  executionErrorCode: 2,
+  executionFunctionSansResName: "testFunctionSansResult",
+  executionFunctionWithResName: "testFunctionWithResult",
+  executionNodeId: 555534324,
+  executionResult: 3432,
+  executionTaskId: 12123,
+  jamAppName: "app-1",
+  mqttConnectionOptions: {
+    clientId: "worker",
+    keepalive: 10,
+    clean: false,
+    connectionTimeout: 10000,
+  },
+  mqttMulticastAddr: "224.1.1.1",
+  mqttMulticastPort: 35600,
+  mqttServerIpAddress: "127.0.0.1",
+  mqttServerTagName: "tag-1",
+  registerId: "xxxx-11",
+  responseSampleInterval: 1000,
+  responseSampleMaxTimes: 5,
+});

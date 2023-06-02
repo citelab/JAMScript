@@ -7,6 +7,8 @@ node_modules/*
 
 *.db
 
+.DS_Store
+
 *.out
 **/jamout.js
 **/jamout.c
@@ -16,17 +18,30 @@ node_modules/*
 **/*.conf/*
 **/dump.rdb
 **/errlog
-lib/jdiscovery/mdns/build
-lib/jdiscovery/app.js
 
-.vscode/c_cpp_properties.json
+/.vscode
+/.idea
 .sconsign.dblite
 .sconf_temp
 config.log
 
-node_modules/
+idf_build/
+package-lock.json
 
-
+**/output/main
 build/
 *.jxe
 **/errlog
+1883/*
+1884/*
+1885/*
+1886/*
+3883/*
+3884/*
+3885/*
+5883/*
+5884/*
+9883/*
+18830/*
+18831/*
+18832/*
