@@ -8,7 +8,7 @@ jtask* carping(int x) {
 }
 
 jtask* localme(int dec) {
-    struct Car car = setup_new_car()
+    struct Car car = setup_default_car();
     int motor_away = 0;
     while(1) {
         jsleep(10000000);
