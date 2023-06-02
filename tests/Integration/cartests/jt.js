@@ -1,8 +1,8 @@
 if(jsys.type == "fog") {
 	setInterval(()=> {
 		console.log("pinging cars");
-		carping(10).catch(()=> {
-			console.log("Error in calling carping...");
+		carping(10).catch((e)=> {
+			console.log("Error in calling carping: " + e);
 		});
-	}, 4000);
+	}, 1000);
 }
