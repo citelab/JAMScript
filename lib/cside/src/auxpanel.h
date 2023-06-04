@@ -39,6 +39,7 @@ typedef struct {
     int port;
     int ecount;
     int logical_id;
+    int logical_appid;
 
     pthread_t a_ufprocessor;
     pthread_t a_dfprocessor;
@@ -64,6 +65,9 @@ void apanel_free(auxpanel_t *ap);
 void apanel_start(auxpanel_t *ap);
 void apanel_shutdown(auxpanel_t *ap);
 void apanel_send_to_fogs(arecord_t *ar, void *u);
+
+void apanel_ucallback2(redisAsyncContext *c, void *r, void *privdata);
+
 
 void apanel_dcallback(redisAsyncContext *c, void *r, void *privdata);
 

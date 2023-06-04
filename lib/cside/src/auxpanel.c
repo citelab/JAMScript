@@ -27,8 +27,9 @@ auxpanel_t *apanel_create(void *dpanel, char *server, int port)
     assert(port != 0);
     strcpy(ap->server, server);
     ap->port = port;
+    ap->logical_appid = -1;
 
-    printf("Server %s, port %d\n", server, port);
+    printf(">>>>>>>>>>>>>>>>>>>>>>> . Server %s, port %d\n", server, port);
 
     assert(pthread_mutex_init(&(ap->a_ufmutex), NULL) == 0);
     assert(pthread_mutex_init(&(ap->a_dfmutex), NULL) == 0);
@@ -169,10 +170,10 @@ void apanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
 {
     redisReply *reply = r;
     auxpanel_t *ap = (auxpanel_t *)privdata;
-    struct queue_entry *next = NULL; 
-    bool last = true;
     dpanel_t *dp = (dpanel_t *)ap->dpanel;
     cnode_t *cn = (cnode_t *)dp->cnode;
+    bool last = true;
+    struct queue_entry *next = NULL; 
     
     if (reply == NULL) {
         if (c->errstr) {
@@ -200,6 +201,46 @@ void apanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
         }
     }
 
+    if (ap->logical_appid < 0) 
+        redisAsyncCommand(ap->a_uctx, apanel_ucallback2, ap, "fcall app_id 0 %s", cn->args->appid);
+    else {
+        if (ap->state == A_REGISTERED) {
+            // pull data from the queue
+            next = a_get_uflow_object(ap, &last);
+            if (next != NULL) {
+                uflow_obj_t *uobj = (uflow_obj_t *)next->data;
+                if (last) {
+                    // send with a callback
+                    redisAsyncCommand(ap->a_uctx, apanel_ucallback, ap, "fcall uf_write 1 %s %lu %d %d %d %f %f %s", uobj->key, uobj->clock, ap->logical_id, ap->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
+                } else {
+                    // send without a callback for pipelining.
+                    redisAsyncCommand(ap->a_uctx, apanel_ucallback, ap, "fcall uf_write 1 %s %lu %d %d %d %f %f %s", uobj->key, uobj->clock, ap->logical_id, ap->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
+                }
+                freeUObject(uobj);
+                free(next);
+            }
+        }
+    }
+}
+
+void apanel_ucallback2(redisAsyncContext *c, void *r, void *privdata) 
+{
+    redisReply *reply = r;
+    auxpanel_t *ap = (auxpanel_t *)privdata;
+    struct queue_entry *next = NULL; 
+    bool last = true;
+    dpanel_t *dp = (dpanel_t *)ap->dpanel;
+    cnode_t *cn = (cnode_t *)dp->cnode;
+    
+    if (reply == NULL) {
+        if (c->errstr) {
+            printf("errstr: %s\n", c->errstr);
+        }
+        return;
+    }
+
+    ap->logical_appid = reply->integer;
+
     // TODO: enable pipelining... for larger write throughout...
     //
     if (ap->state == A_REGISTERED) {
@@ -218,6 +259,7 @@ void apanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
             free(next);
         }
     }
+
 }
 
 uflow_obj_t *uflow_obj_clone(uflow_obj_t *u)

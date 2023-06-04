@@ -203,9 +203,8 @@ void dpanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
 {
     redisReply *reply = r;
     dpanel_t *dp = (dpanel_t *)privdata;
-    struct queue_entry *next = NULL; 
-    bool last = true;
     cnode_t *cn = (cnode_t *)dp->cnode;
+
     if (reply == NULL) {
         if (c->errstr) {
             printf("errstr: %s\n", c->errstr);
@@ -242,6 +241,7 @@ void dpanel_ucallback2(redisAsyncContext *c, void *r, void *privdata)
     struct queue_entry *next = NULL; 
     bool last = true;
     cnode_t *cn = (cnode_t *)dp->cnode;
+
     if (reply == NULL) {
         if (c->errstr) {
             printf("errstr: %s\n", c->errstr);
