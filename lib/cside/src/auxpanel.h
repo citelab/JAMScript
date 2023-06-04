@@ -65,4 +65,6 @@ void apanel_start(auxpanel_t *ap);
 void apanel_shutdown(auxpanel_t *ap);
 void apanel_send_to_fogs(arecord_t *ar, void *u);
 
+void apanel_dcallback(redisAsyncContext *c, void *r, void *privdata);
+
 #endif

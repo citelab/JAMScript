@@ -64,6 +64,7 @@ dpanel_t *dpanel_create(char *server, int port, char *uuid)
 void dpanel_setcnode(dpanel_t *dp, void *cn)
 {
     dp->cnode = cn;
+    ((cnode_t *)cn)->dpanel = dp;
 }
 
 void dpanel_settboard(dpanel_t *dp, void *tb) 
@@ -73,14 +74,14 @@ void dpanel_settboard(dpanel_t *dp, void *tb)
 
 void dpanel_connect_cb(const redisAsyncContext *c, int status) {
     if (status != REDIS_OK) {
-        printf("Error: %s\n", c->errstr);
+        printf("Dpanel_connect_cb Error: %s\n", c->errstr);
         return;
     }
 }
 
 void dpanel_disconnect_cb(const redisAsyncContext *c, int status) {
     if (status != REDIS_OK) {
-        printf("Error: %s\n", c->errstr);
+        printf("Dpanel_discconnect_cb Error: %s\n", c->errstr);
         return;
     }
 }
@@ -125,22 +126,30 @@ void dpanel_del_apanel(dpanel_t *dp, char *nid)
 {
     arecord_t *arec;
 
+    printf("Deleting..... apanel...\n");
     pthread_mutex_lock(&(dp->mutex));
     HASH_FIND_STR(dp->apanels, nid, arec);
     pthread_mutex_unlock(&(dp->mutex));
+    printf("Hi 1\n");
     if (arec) {
+        printf("Hi 1.1\n");
         auxpanel_t *ap = arec->apanel;
         HASH_DEL(dp->apanels, arec);
         free(arec);
+        printf("Hi 1.2\n");
         apanel_shutdown(ap);
-        apanel_free(ap);
+        printf("Hi 1.3\n");
+       // apanel_free(ap);
+        printf("Hi 1.4\n");
     }
+    printf("Hi 2\n");
     pthread_mutex_lock(&(dp->mutex));
     int cnt = HASH_COUNT(dp->apanels);
     if (cnt == 0)
         dp->use_apanel = false;
     pthread_mutex_unlock(&(dp->mutex));
-
+    
+    printf("Deleting..... apanel.. done.\n");
 
 }
 
@@ -222,6 +231,26 @@ void dpanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
         }
     }
 
+    redisAsyncCommand(dp->uctx, dpanel_ucallback2, dp, "fcall app_id 0 %s", cn->args->appid);
+}
+
+
+void dpanel_ucallback2(redisAsyncContext *c, void *r, void *privdata) 
+{
+    redisReply *reply = r;
+    dpanel_t *dp = (dpanel_t *)privdata;
+    struct queue_entry *next = NULL; 
+    bool last = true;
+    cnode_t *cn = (cnode_t *)dp->cnode;
+    if (reply == NULL) {
+        if (c->errstr) {
+            printf("errstr: %s\n", c->errstr);
+        }
+        return;
+    }
+
+    dp->logical_appid = reply->integer;
+
     // TODO: enable pipelining... for larger write throughout...
     //
     if (dp->state == REGISTERED) {
@@ -234,10 +263,10 @@ void dpanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
             pthread_mutex_unlock(&(dp->mutex));
             if (last) {
                 // send with a callback
-                redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %lu %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, cn->width, cn->xcoord, cn->ycoord, uobj->value);
+                redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %lu %d %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
             } else {
                 // send without a callback for pipelining.
-                redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %lu %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, cn->width, cn->xcoord, cn->ycoord, uobj->value);
+                redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %lu %d %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
             }
             freeUObject(uobj);
             free(next);

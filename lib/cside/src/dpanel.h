@@ -89,6 +89,7 @@ typedef struct {
     enum dpstate_t state;
     int ecount;
     int logical_id;
+    int logical_appid;
     char *uuid;
     char server[MAX_SERVER_LEN];
     int port;
@@ -138,7 +139,7 @@ dftable_entry_t *dp_create_dflow(dpanel_t *dp, char *key, char *fmt);
 void freeUObject(uflow_obj_t *uobj);
 
 void dflow_callback(redisAsyncContext *c, void *r, void *privdata);
-
+void dpanel_ucallback2(redisAsyncContext *c, void *r, void *privdata);
 
 void ufwrite_int(uftable_entry_t *uf, int x);
 void ufwrite_double(uftable_entry_t *uf, double x);

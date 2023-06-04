@@ -164,7 +164,7 @@ cnode_t *cnode_init(int argc, char **argv){
     mqtt_lib_init();
 
     // Connect to the J server (MQTT), we don't have a server_id for the device, which is fine.
-    cn->devserv = cnode_create_mbroker(cn, DEVICE_LEVEL, "", cn->devinfo->host, cn->devinfo->port, cn->topics->subtopics, cn->topics->length);
+    cn->devserv = cnode_create_mbroker(cn, DEVICE_LEVEL, cn->core->device_id, cn->devinfo->host, cn->devinfo->port, cn->topics->subtopics, cn->topics->length);
     if ( cn->devserv == NULL) {
         cnode_destroy(cn);
         terminate_error(true, "cannot create MQTT broker");

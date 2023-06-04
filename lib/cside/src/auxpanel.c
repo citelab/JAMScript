@@ -13,8 +13,6 @@ void *apanel_dfprocessor(void *arg);
 void apanel_ucallback(redisAsyncContext *c, void *r, void *privdata);
 
 
-
-
 /*
  * AUX DATA PANEL FUNCTIONS
  * For creating, starting, shutting down, etc.
@@ -29,6 +27,8 @@ auxpanel_t *apanel_create(void *dpanel, char *server, int port)
     assert(port != 0);
     strcpy(ap->server, server);
     ap->port = port;
+
+    printf("Server %s, port %d\n", server, port);
 
     assert(pthread_mutex_init(&(ap->a_ufmutex), NULL) == 0);
     assert(pthread_mutex_init(&(ap->a_dfmutex), NULL) == 0);
@@ -54,7 +54,7 @@ void apanel_free(auxpanel_t *ap)
 
 void apanel_connect_cb(const redisAsyncContext *c, int status) {
     if (status != REDIS_OK) {
-        printf("Error: %s\n", c->errstr);
+        printf("Apanel_connect_cb Error: %s\n", c->errstr);
         return;
     }
     printf("Connected...\n");
@@ -62,7 +62,7 @@ void apanel_connect_cb(const redisAsyncContext *c, int status) {
 
 void apanel_disconnect_cb(const redisAsyncContext *c, int status) {
     if (status != REDIS_OK) {
-        printf("Error: %s\n", c->errstr);
+        printf("Apanel_disconnect_cb Error: %s\n", c->errstr);
         return;
     }
     printf("Disconnected...\n");
@@ -86,8 +86,8 @@ void apanel_start(auxpanel_t *ap)
 
 void apanel_shutdown(auxpanel_t *ap)
 {
-    pthread_join(ap->a_ufprocessor, NULL);
-    pthread_join(ap->a_dfprocessor, NULL);
+    //pthread_join(ap->a_ufprocessor, NULL);
+    //pthread_join(ap->a_dfprocessor, NULL);
 }
 
 /*
@@ -115,6 +115,7 @@ void *apanel_ufprocessor(void *arg)
 
     redisAsyncCommand(ap->a_uctx, apanel_ucallback, ap, "fcall get_id 0 %s", dp->uuid);
     event_base_dispatch(ap->a_uloop);
+    printf("After uloop in apanel..\n");
     // the above call is blocking... so we come here after the loop has exited
 
     return NULL;
@@ -122,7 +123,7 @@ void *apanel_ufprocessor(void *arg)
 
 void apanel_connect_dcb(const redisAsyncContext *c, int status) {
     if (status != REDIS_OK) {
-        printf("Error: %s\n", c->errstr);
+        printf("Apanel_connect_dcb Error: %s\n", c->errstr);
         return;
     }
     printf("Connected...\n");
@@ -130,12 +131,39 @@ void apanel_connect_dcb(const redisAsyncContext *c, int status) {
 
 void apanel_disconnect_dcb(const redisAsyncContext *c, int status) {
     if (status != REDIS_OK) {
-        printf("Error: %s\n", c->errstr);
+        printf("Apanel_disconnect_dcb Error: %s\n", c->errstr);
         return;
     }
     printf("Disconnected...\n");
 }
 
+struct queue_entry *a_get_uflow_object(auxpanel_t *ap, bool *last) 
+{
+    struct queue_entry *next = NULL;
+    struct queue_entry *nnext;
+
+    while (next == NULL) {
+        pthread_mutex_lock(&(ap->a_ufmutex));
+        next = queue_peek_front(&(ap->a_ufqueue));
+        if (next) {
+            queue_pop_head(&(ap->a_ufqueue));
+            nnext = queue_peek_front(&(ap->a_ufqueue));
+            if (nnext)
+                *last = false;
+            else 
+                *last = true;
+        } else 
+            *last = false;
+        pthread_mutex_unlock(&(ap->a_ufmutex));
+
+        if (next == NULL) {
+            pthread_mutex_lock(&(ap->a_ufmutex));
+            pthread_cond_wait(&(ap->a_ufcond), &(ap->a_ufmutex));
+            pthread_mutex_unlock(&(ap->a_ufmutex));
+        }
+    }
+    return next;
+}
 
 void apanel_ucallback(redisAsyncContext *c, void *r, void *privdata) 
 {
@@ -176,7 +204,7 @@ void apanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
     //
     if (ap->state == A_REGISTERED) {
         // pull data from the queue
-        next = get_uflow_object(ap, &last);
+        next = a_get_uflow_object(ap, &last);
         if (next != NULL) {
             uflow_obj_t *uobj = (uflow_obj_t *)next->data;
             if (last) {
@@ -246,8 +274,9 @@ void *apanel_dfprocessor(void *arg)
     redisAsyncSetConnectCallback(ap->a_dctx, apanel_connect_dcb);
     redisAsyncSetDisconnectCallback(ap->a_dctx, apanel_disconnect_dcb);
 
-   // redisAsyncCommand(ap->a_dctx, apanel_dcallback, ap, "SUBSCRIBE __d__keycompleted");
+    redisAsyncCommand(ap->a_dctx, apanel_dcallback, ap, "SUBSCRIBE __d__keycompleted");
     event_base_dispatch(ap->a_dloop);
+    printf("After dloop callback ..\n");
     // the above call is blocking... so we come here after the loop has exited
 
     return NULL;
@@ -259,6 +288,9 @@ void apanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
 {
     redisReply *reply = r;
     auxpanel_t *ap = (auxpanel_t *)privdata;
+    if (ap == NULL) return;
+    if (reply == NULL)
+        printf("NULL ---------->>>--------------------------%d---%s---\n", c->err, c->errstr);
     dpanel_t *dp = (dpanel_t *)ap->dpanel;
     dftable_entry_t *entry;
     
@@ -269,7 +301,9 @@ void apanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
         return;
     }
 
-    if (reply->type == REDIS_REPLY_ARRAY && (strcmp(reply->element[1]->str, "__d__keycompleted") == 0)) {
+    if (reply->type == REDIS_REPLY_ARRAY && 
+        (strcmp(reply->element[1]->str, "__d__keycompleted") == 0) &&
+        (strcmp(reply->element[0]->str, "message") == 0)) {
         // get the dftable entry ... based on key (reply->element[2]->str) 
         HASH_FIND_STR(dp->dftable, reply->element[2]->str, entry);
 
@@ -279,3 +313,4 @@ void apanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
         }
     }
 }
+

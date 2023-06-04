@@ -128,6 +128,7 @@ void msg_processor(void *serv, command_t *cmd)
     struct queue_entry *e = NULL;
     internal_command_t *ic;
     // when a message is received, it interprets message and adds to respective queue
+    printf("Command .... %d\n", cmd->cmd);
     switch (cmd->cmd)
     {
     case CmdNames_REGISTER_ACK:
@@ -175,6 +176,7 @@ void msg_processor(void *serv, command_t *cmd)
                 }
             break;
             case CmdNames_FOG_DATA_UP:
+                printf("Server %s.... port %d\n", cmd->args[0].val.sval, cmd->args[1].val.ival);
                 a = apanel_create(dp, cmd->args[0].val.sval, cmd->args[1].val.ival);
                 apanel_start(a);
                 dpanel_add_apanel(dp, cmd->node_id, a);
