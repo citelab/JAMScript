@@ -46,11 +46,17 @@ auxpanel_t *apanel_create(void *dpanel, char *server, int port)
 
 void apanel_free(auxpanel_t *ap)
 {
+    // this marks the panel as free.. does not do the actual free.
+    ap->state = A_FREED;
+}
 
-    // TODO: Need to destroy mutexes and free queue entries..
-    // Need lots of cleaning up before releasing the auxpanel...
-    // Also, auxpanel needs to be locked while being cleaned up
-    free(ap);
+void apanel_do_free(auxpanel_t *ap)
+{
+    pthread_mutex_destroy(&(ap->a_ufmutex));
+    pthread_mutex_destroy(&(ap->a_dfmutex));
+    pthread_cond_destroy(&(ap->a_ufcond));
+    pthread_cond_destroy(&(ap->a_dfcond));
+
 }
 
 void apanel_connect_cb(const redisAsyncContext *c, int status) {
@@ -87,8 +93,13 @@ void apanel_start(auxpanel_t *ap)
 
 void apanel_shutdown(auxpanel_t *ap)
 {
-    //pthread_join(ap->a_ufprocessor, NULL);
-    //pthread_join(ap->a_dfprocessor, NULL);
+    pthread_mutex_lock(&(ap->a_ufmutex));
+    pthread_cond_signal(&(ap->a_ufcond));
+    pthread_mutex_unlock(&(ap->a_ufmutex));
+    
+    pthread_join(ap->a_ufprocessor, NULL);
+    pthread_join(ap->a_dfprocessor, NULL);
+    printf("######################### shutdown END ############\n");
 }
 
 /*
@@ -116,7 +127,6 @@ void *apanel_ufprocessor(void *arg)
 
     redisAsyncCommand(ap->a_uctx, apanel_ucallback, ap, "fcall get_id 0 %s", dp->uuid);
     event_base_dispatch(ap->a_uloop);
-    printf("After uloop in apanel..\n");
     // the above call is blocking... so we come here after the loop has exited
 
     return NULL;
@@ -162,6 +172,9 @@ struct queue_entry *a_get_uflow_object(auxpanel_t *ap, bool *last)
             pthread_cond_wait(&(ap->a_ufcond), &(ap->a_ufmutex));
             pthread_mutex_unlock(&(ap->a_ufmutex));
         }
+
+        if (ap->state == A_FREED)
+            return NULL;
     }
     return next;
 }
@@ -318,7 +331,6 @@ void *apanel_dfprocessor(void *arg)
 
     redisAsyncCommand(ap->a_dctx, apanel_dcallback, ap, "SUBSCRIBE __d__keycompleted");
     event_base_dispatch(ap->a_dloop);
-    printf("After dloop callback ..\n");
     // the above call is blocking... so we come here after the loop has exited
 
     return NULL;
@@ -329,29 +341,22 @@ void *apanel_dfprocessor(void *arg)
 void apanel_dcallback(redisAsyncContext *c, void *r, void *privdata) 
 {
     redisReply *reply = r;
-    auxpanel_t *ap = (auxpanel_t *)privdata;
-    if (ap == NULL) return;
-    if (reply == NULL)
-        printf("NULL ---------->>>--------------------------%d---%s---\n", c->err, c->errstr);
-    dpanel_t *dp = (dpanel_t *)ap->dpanel;
-    dftable_entry_t *entry;
-    
-    if (reply == NULL) {
-        if (c->errstr) {
-            printf("errstr: %s\n", c->errstr);
-        }
-        return;
-    }
+    if (reply != NULL) {
+        auxpanel_t *ap = (auxpanel_t *)privdata;
+        if (ap == NULL || ap->state == A_FREED) return;
+        dpanel_t *dp = (dpanel_t *)ap->dpanel;
+        dftable_entry_t *entry;
 
-    if (reply->type == REDIS_REPLY_ARRAY && 
-        (strcmp(reply->element[1]->str, "__d__keycompleted") == 0) &&
-        (strcmp(reply->element[0]->str, "message") == 0)) {
-        // get the dftable entry ... based on key (reply->element[2]->str) 
-        HASH_FIND_STR(dp->dftable, reply->element[2]->str, entry);
+        if (reply->type == REDIS_REPLY_ARRAY && 
+            (strcmp(reply->element[1]->str, "__d__keycompleted") == 0) &&
+            (strcmp(reply->element[0]->str, "message") == 0)) {
+            // get the dftable entry ... based on key (reply->element[2]->str) 
+            HASH_FIND_STR(dp->dftable, reply->element[2]->str, entry);
 
-        if (entry) {
-            if (entry->state == CLIENT_READY && entry->taskid > 0) 
-                redisAsyncCommand(dp->dctx, dflow_callback, dp, "fcall df_lread 1 %s", entry->key);
+            if (entry) {
+                if (entry->state == CLIENT_READY && entry->taskid > 0) 
+                    redisAsyncCommand(dp->dctx, dflow_callback, dp, "fcall df_lread 1 %s", entry->key);
+            }
         }
     }
 }

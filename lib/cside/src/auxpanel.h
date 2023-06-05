@@ -29,6 +29,7 @@ enum apstate_t {
     A_STARTED = 1,
     A_STOPPED = 2,
     A_REGISTERED =3,
+    A_FREED=4
 };
 
 typedef struct {

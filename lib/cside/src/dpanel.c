@@ -126,31 +126,21 @@ void dpanel_del_apanel(dpanel_t *dp, char *nid)
 {
     arecord_t *arec;
 
-    printf("Deleting..... apanel...\n");
     pthread_mutex_lock(&(dp->mutex));
     HASH_FIND_STR(dp->apanels, nid, arec);
     pthread_mutex_unlock(&(dp->mutex));
-    printf("Hi 1\n");
     if (arec) {
-        printf("Hi 1.1\n");
         auxpanel_t *ap = arec->apanel;
         HASH_DEL(dp->apanels, arec);
         free(arec);
-        printf("Hi 1.2\n");
+        apanel_free(ap);
         apanel_shutdown(ap);
-        printf("Hi 1.3\n");
-       // apanel_free(ap);
-        printf("Hi 1.4\n");
     }
-    printf("Hi 2\n");
     pthread_mutex_lock(&(dp->mutex));
     int cnt = HASH_COUNT(dp->apanels);
     if (cnt == 0)
         dp->use_apanel = false;
     pthread_mutex_unlock(&(dp->mutex));
-    
-    printf("Deleting..... apanel.. done.\n");
-
 }
 
 
@@ -394,23 +384,20 @@ void ufwrite_str(uftable_entry_t *uf, char *str)
     struct queue_entry *e = NULL;
     uflow_obj_t *uobj;
 
-    uint8_t *buf = (uint8_t *)calloc(16 + strlen(str), sizeof(uint8_t));
-    char *out = (char *)calloc(16 + (3/2) * strlen(str), sizeof(char));
+    uint8_t buf[4096];
+    char out[8192];
 
     CborEncoder encoder;
     cbor_encoder_init(&encoder, (uint8_t *)&buf, sizeof(buf), 0);
-    cbor_encode_byte_string(&encoder, (uint8_t *)str, strlen(str));
+    cbor_encode_text_string(&encoder, str, strlen(str));
     int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t *)&buf);
     Base64encode(out, (char *)buf, len);
     uobj = uflow_obj_new(uf, out);
-
     e = queue_new_node(uobj);
     pthread_mutex_lock(&(dp->ufmutex));
     queue_insert_tail(&(dp->ufqueue), e);
     pthread_cond_signal(&(dp->ufcond));
     pthread_mutex_unlock(&(dp->ufmutex));
-    free(buf);
-    free(out);
 }
 
 void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
@@ -457,12 +444,29 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
     }
     va_end(args);
 
-    int buflen = estimate_cbor_buffer_len(uargs, len);
-    uint8_t *buf = (u_int8_t *)calloc(buflen, sizeof(u_int8_t));
-    char *out = (char *)calloc(buflen * (3/2), sizeof(char *));
+    uint8_t buf[4096];
+    char out[8192];
 
     CborEncoder encoder;
     cbor_encoder_init(&encoder, (uint8_t *)&buf, sizeof(buf), 0);
+
+    printf("Len %d\n", len);
+    for (int i = 0; i < len; i++) {
+        printf("Label %s\n", uargs[i].label);
+        switch (uargs[i].type) {
+            case D_INT_TYPE:
+                printf("Value %d\n", uargs[i].val.ival);
+                break;
+            case D_STRING_TYPE:
+                printf("Value %s\n", uargs[i].val.sval);
+                break;
+            case D_DOUBLE_TYPE:
+                printf("Value %f\n", uargs[i].val.dval);
+                break;
+            default:
+                break;
+        }
+    }
 
     do_cbor_encoding(&encoder, uargs, len);
     int clen = cbor_encoder_get_buffer_size(&encoder, (uint8_t *)&buf);
@@ -474,8 +478,6 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
     queue_insert_tail(&(dp->ufqueue), e);
     pthread_cond_signal(&(dp->ufcond));
     pthread_mutex_unlock(&(dp->ufmutex));
-    free(buf);
-    free(out);
 }
 
 
