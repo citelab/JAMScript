@@ -176,6 +176,7 @@ void msg_processor(void *serv, command_t *cmd)
                 }
             break;
             case CmdNames_FOG_DATA_UP:
+                printf("======================== data up =========== %s %d\n", cmd->args[0].val.sval, cmd->args[1].val.ival);
                 a = apanel_create(dp, cmd->args[0].val.sval, cmd->args[1].val.ival);
                 apanel_start(a);
                 dpanel_add_apanel(dp, cmd->node_id, a);

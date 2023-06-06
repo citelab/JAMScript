@@ -58,7 +58,7 @@ Runs program.jxe and connects it to an already running Redis server at
 port 7000 of the local host. Redis server can run outside the
 local host (Redis needs to the configured to accept outside
 connections).
-
+  
 To start more than one C node at a device use the following command.
 jamrun program.jxe --num=4
 
@@ -77,9 +77,9 @@ program error messages.
 
 Use the --verb option to turn on verbose messaging.
 
-Usage: jamrun file.jxe 
-                [--app=appl_name] 
-                [--fog|--cloud] 
+Usage: jamrun file.jxe
+                [--app=appl_name]
+                [--fog|--cloud]
                 [--num=num_c_devs]
                 [--data=data-url]
                 [--tags=quoted_list_of_tags]

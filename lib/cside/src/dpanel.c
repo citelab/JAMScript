@@ -619,7 +619,6 @@ void dflow_callback(redisAsyncContext *c, void *r, void *privdata)
     HASH_FIND_INT(t->task_table, &(entry->taskid), rtask);
     if (rtask != NULL)
     {
-
         rtask->data = strdup(reply->element[7]->str); 
         rtask->data_size = 1;
         if (rtask->calling_task != NULL)
