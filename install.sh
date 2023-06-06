@@ -134,6 +134,10 @@ elif [ $machine = Mac ]; then
 
 fi
 
+#intialize carapi submmodule
+cd $SCRIPT_DIR
+git submodule update --init --recursive lib/
+
 #install tinycbor
 cd $SCRIPT_DIR/deps/tinycbor
 git clone https://github.com/intel/tinycbor
