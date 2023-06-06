@@ -157,5 +157,6 @@ void free_buffer(darg_t *u, int len);
 
 int __extract_int(const uint8_t *buffer, size_t len);
 double __extract_double(const uint8_t *buffer, size_t len);
+char * __extract_str(const uint8_t *buffer, size_t len);
 
 #endif

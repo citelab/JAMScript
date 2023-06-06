@@ -114,6 +114,9 @@ char * __extract_str(const uint8_t *buffer, size_t len)
     CborValue value;
     char *result;
     cbor_parser_init(buffer, len, 0, &parser, &value);
-  //  cbor_value_get_string(&value, &result);
-    return result;
+    int n, m;
+    cbor_value_calculate_string_length(&value, &n);
+    char *x = calloc(n+1, sizeof(char));
+    cbor_value_copy_text_string(&value, x, &m, NULL);
+    return x;
 }

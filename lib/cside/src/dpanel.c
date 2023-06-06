@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <assert.h>
+#include <string.h>
 
 #include "base64.h"
 #include "cnode.h"
@@ -714,13 +715,15 @@ void dfread_string(dftable_entry_t *df, char *val, int maxlen)
     cnode_t *cn = (cnode_t *)dp->cnode;
     tboard_t *tboard = (tboard_t *)cn->tboard;
 
-    uint8_t buf[16];
+    uint8_t buf[4096];
 
     void *p = dflow_task_create(tboard, df);
     if (p != NULL) {
         derror = 0;
         Base64decode((char *)buf, (char *)p);
-      //  *val = __extract_str(buf, Base64decode_len((char *)p));
+        char *x = __extract_str(buf, Base64decode_len((char *)p));
+        strncpy(val, x, maxlen);
+        free(x);
     } else {
         derror = -1;
         *val = 0;
@@ -730,5 +733,22 @@ void dfread_string(dftable_entry_t *df, char *val, int maxlen)
 
 void dfread_struct(dftable_entry_t *df, char *fmt, ...)
 {
+    dpanel_t *dp = (dpanel_t *)df->dpanel;
+    cnode_t *cn = (cnode_t *)dp->cnode;
+    tboard_t *tboard = (tboard_t *)cn->tboard;
 
+    uint8_t buf[4096];
+
+    void *p = dflow_task_create(tboard, df);
+    if (p != NULL) {
+        derror = 0;
+        Base64decode((char *)buf, (char *)p);
+        char *x = __extract_str(buf, Base64decode_len((char *)p));
+ //       strncpy(val, x, maxlen);
+        free(x);
+    } else {
+        derror = -1;
+ //       *val = 0;
+    }
+    free(p);
 }

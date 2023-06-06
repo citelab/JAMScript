@@ -128,7 +128,6 @@ void msg_processor(void *serv, command_t *cmd)
     struct queue_entry *e = NULL;
     internal_command_t *ic;
     // when a message is received, it interprets message and adds to respective queue
-    printf("Command .... %d\n", cmd->cmd);
     switch (cmd->cmd)
     {
     case CmdNames_REGISTER_ACK:
