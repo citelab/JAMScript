@@ -15,7 +15,7 @@ async function sleep(x) {
 
 async function runloop() {
     while(true) {
-        await sleep(1000);
+        await sleep(30);
         console.log("Writing to dflow -- xx ", count);
         xx.write(count++);
     }

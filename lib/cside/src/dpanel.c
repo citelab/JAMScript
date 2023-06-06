@@ -46,6 +46,7 @@ dpanel_t *dpanel_create(char *server, int port, char *uuid)
     strcpy(dp->server, server);
     dp->port = port;
     dp->uuid = uuid;
+    dp->logical_appid = -1;
     dp->use_apanel = false;
 
     assert(pthread_mutex_init(&(dp->mutex), NULL) == 0);  
@@ -194,6 +195,8 @@ void dpanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
     redisReply *reply = r;
     dpanel_t *dp = (dpanel_t *)privdata;
     cnode_t *cn = (cnode_t *)dp->cnode;
+    struct queue_entry *next = NULL; 
+    bool last = true;
 
     if (reply == NULL) {
         if (c->errstr) {
@@ -220,7 +223,29 @@ void dpanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
         }
     }
 
-    redisAsyncCommand(dp->uctx, dpanel_ucallback2, dp, "fcall app_id 0 %s", cn->args->appid);
+    if (dp->logical_appid < 0)
+        redisAsyncCommand(dp->uctx, dpanel_ucallback2, dp, "fcall app_id 0 %s", cn->args->appid);
+    else {
+        if (dp->state == REGISTERED) {
+            // pull data from the queue
+            next = get_uflow_object(dp, &last);
+            if (next != NULL) {
+                uflow_obj_t *uobj = (uflow_obj_t *)next->data;
+                pthread_mutex_lock(&(dp->mutex));
+                apanel_send_to_fogs(dp->apanels, uobj);
+                pthread_mutex_unlock(&(dp->mutex));
+                if (last) {
+                    // send with a callback
+                    redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %lu %d %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
+                } else {
+                    // send without a callback for pipelining.
+                    redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %lu %d %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
+                }
+                freeUObject(uobj);
+                free(next);
+            }
+        }
+    }
 }
 
 
@@ -450,9 +475,7 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
     CborEncoder encoder;
     cbor_encoder_init(&encoder, (uint8_t *)&buf, sizeof(buf), 0);
 
-    printf("Len %d\n", len);
     for (int i = 0; i < len; i++) {
-        printf("Label %s\n", uargs[i].label);
         switch (uargs[i].type) {
             case D_INT_TYPE:
                 printf("Value %d\n", uargs[i].val.ival);
@@ -487,6 +510,8 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
 void *dpanel_dfprocessor(void *arg) 
 {
     dpanel_t *dp = (dpanel_t *)arg;
+    cnode_t *cn = (cnode_t *)dp->cnode;
+
     // Initialize the event loop
     dp->dloop = event_base_new();
 
@@ -500,28 +525,32 @@ void *dpanel_dfprocessor(void *arg)
         printf("ERROR! Connecting to the Redis server at %s:%d\n", dp->server, dp->port);
         exit(1);
     }
+
     redisLibeventAttach(dp->dctx, dp->dloop);
     redisAsyncSetConnectCallback(dp->dctx, dpanel_connect_dcb);
     redisAsyncSetDisconnectCallback(dp->dctx, dpanel_disconnect_dcb);
     redisLibeventAttach(dp->dctx2, dp->dloop);
     redisAsyncSetConnectCallback(dp->dctx2, dpanel_connect_dcb);
     redisAsyncSetDisconnectCallback(dp->dctx2, dpanel_disconnect_dcb);
-    redisAsyncCommand(dp->dctx2, dpanel_dcallback, dp, "SUBSCRIBE __d__keycompleted");
+    if (dp->logical_appid < 0)
+        redisAsyncCommand(dp->dctx, dpanel_dcallback2, dp, "fcall app_id 0 %s", cn->args->appid);
+    else
+        redisAsyncCommand(dp->dctx2, dpanel_dcallback, dp, "SUBSCRIBE %d__d__keycompleted", dp->logical_appid);
+
     event_base_dispatch(dp->dloop);
     // the above call is blocking... so we come here after the loop has exited
 
     return NULL;
 }
 
+
 // this callback is triggered when a broadcast message is sent by the data store
 //
-void dpanel_dcallback(redisAsyncContext *c, void *r, void *privdata) 
+void dpanel_dcallback2(redisAsyncContext *c, void *r, void *privdata) 
 {
-    
     redisReply *reply = r;
     dpanel_t *dp = (dpanel_t *)privdata;
-    dftable_entry_t *entry;
-    
+
     if (reply == NULL) {
         if (c->errstr) {
             printf("errstr: %s\n", c->errstr);
@@ -529,16 +558,40 @@ void dpanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
         return;
     }
 
+    dp->logical_appid = reply->integer;
+
+    redisAsyncCommand(dp->dctx2, dpanel_dcallback, dp, "SUBSCRIBE %d__d__keycompleted", dp->logical_appid);
+}
+
+
+// this callback is triggered when a broadcast message is sent by the data store
+//
+void dpanel_dcallback(redisAsyncContext *c, void *r, void *privdata) 
+{
+    redisReply *reply = r;
+    dpanel_t *dp = (dpanel_t *)privdata;
+    dftable_entry_t *entry;
+
+    if (reply == NULL) {
+        if (c->errstr) {
+            printf("errstr: %s\n", c->errstr);
+        }
+        return;
+    }
+
+    char keymsg[64];
+    snprintf(keymsg, 64, "%d__d__keycompleted", dp->logical_appid);
+
     if (dp->use_apanel) return;         // the dpanel callback disabled - using the apanel cb
 
     if (reply->type == REDIS_REPLY_ARRAY && 
-        (strcmp(reply->element[1]->str, "__d__keycompleted") == 0) &&
+        (strcmp(reply->element[1]->str, keymsg) == 0) &&
         (strcmp(reply->element[0]->str, "message") == 0)) {
 
         HASH_FIND_STR(dp->dftable, reply->element[2]->str, entry);
         if (entry) {
             if (entry->state == CLIENT_READY && entry->taskid > 0) {
-                redisAsyncCommand(dp->dctx, dflow_callback, entry, "fcall df_lread 1 %s", entry->key);
+                redisAsyncCommand(dp->dctx, dflow_callback, entry, "fcall df_lread 1 %s %d", entry->key, dp->logical_appid);
             }
         }
     }
@@ -566,6 +619,7 @@ void dflow_callback(redisAsyncContext *c, void *r, void *privdata)
     HASH_FIND_INT(t->task_table, &(entry->taskid), rtask);
     if (rtask != NULL)
     {
+
         rtask->data = strdup(reply->element[7]->str); 
         rtask->data_size = 1;
         if (rtask->calling_task != NULL)

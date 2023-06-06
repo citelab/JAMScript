@@ -140,6 +140,7 @@ void freeUObject(uflow_obj_t *uobj);
 
 void dflow_callback(redisAsyncContext *c, void *r, void *privdata);
 void dpanel_ucallback2(redisAsyncContext *c, void *r, void *privdata);
+void dpanel_dcallback2(redisAsyncContext *c, void *r, void *privdata);
 
 void ufwrite_int(uftable_entry_t *uf, int x);
 void ufwrite_double(uftable_entry_t *uf, double x);

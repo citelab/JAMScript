@@ -58,6 +58,8 @@ typedef struct {
 
     redisAsyncContext *a_uctx;
     redisAsyncContext *a_dctx;
+    redisAsyncContext *a_dctx2;
+
 
 } auxpanel_t;
 
@@ -68,6 +70,7 @@ void apanel_shutdown(auxpanel_t *ap);
 void apanel_send_to_fogs(arecord_t *ar, void *u);
 
 void apanel_ucallback2(redisAsyncContext *c, void *r, void *privdata);
+void apanel_dcallback2(redisAsyncContext *c, void *r, void *privdata);
 
 
 void apanel_dcallback(redisAsyncContext *c, void *r, void *privdata);

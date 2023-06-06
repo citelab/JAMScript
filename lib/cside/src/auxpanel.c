@@ -29,7 +29,7 @@ auxpanel_t *apanel_create(void *dpanel, char *server, int port)
     ap->port = port;
     ap->logical_appid = -1;
 
-    printf(">>>>>>>>>>>>>>>>>>>>>>> . Server %s, port %d\n", server, port);
+    printf(">>>>>>>>>>>>>>>>>>>>>>> . Server %s, port %d logical appid %d\n", server, port, ap->logical_appid);
 
     assert(pthread_mutex_init(&(ap->a_ufmutex), NULL) == 0);
     assert(pthread_mutex_init(&(ap->a_dfmutex), NULL) == 0);
@@ -316,6 +316,9 @@ void apanel_send_to_fogs(arecord_t *ar, void *u)
 void *apanel_dfprocessor(void *arg) 
 {
     auxpanel_t *ap = (auxpanel_t *)arg;
+    dpanel_t *dp = (dpanel_t *)ap->dpanel;
+    cnode_t *cn = (cnode_t *)dp->cnode;
+
     // Initialize the event loop
     ap->a_dloop = event_base_new();
 
@@ -324,38 +327,73 @@ void *apanel_dfprocessor(void *arg)
         printf("ERROR! Connecting to the Redis server at %s:%d\n", ap->server, ap->port);
         exit(1);
     }
+    ap->a_dctx2 = redisAsyncConnect(ap->server, ap->port);
+    if (ap->a_dctx2->err) {
+        printf("ERROR! Connecting to the Redis server at %s:%d\n", ap->server, ap->port);
+        exit(1);
+    }
 
     redisLibeventAttach(ap->a_dctx, ap->a_dloop);
     redisAsyncSetConnectCallback(ap->a_dctx, apanel_connect_dcb);
     redisAsyncSetDisconnectCallback(ap->a_dctx, apanel_disconnect_dcb);
+    redisLibeventAttach(ap->a_dctx2, ap->a_dloop);
+    redisAsyncSetConnectCallback(ap->a_dctx2, apanel_connect_dcb);
+    redisAsyncSetDisconnectCallback(ap->a_dctx2, apanel_disconnect_dcb);
 
-    redisAsyncCommand(ap->a_dctx, apanel_dcallback, ap, "SUBSCRIBE __d__keycompleted");
+    if (ap->logical_appid < 0)
+        redisAsyncCommand(ap->a_dctx, apanel_dcallback2, ap, "fcall app_id 0 %s", cn->args->appid);
+    else
+        redisAsyncCommand(ap->a_dctx2, apanel_dcallback, ap, "SUBSCRIBE %d__d__keycompleted", ap->logical_appid);
     event_base_dispatch(ap->a_dloop);
     // the above call is blocking... so we come here after the loop has exited
 
     return NULL;
 }
 
+
+// this callback is triggered when a broadcast message is sent by the data store
+//
+void apanel_dcallback2(redisAsyncContext *c, void *r, void *privdata) 
+{
+    redisReply *reply = r;
+    auxpanel_t *ap = (auxpanel_t *)privdata;
+
+    if (reply == NULL) {
+        if (c->errstr) {
+            printf("errstr: %s\n", c->errstr);
+        }
+        return;
+    }
+
+    ap->logical_appid = reply->integer;
+
+    redisAsyncCommand(ap->a_dctx2, apanel_dcallback, ap, "SUBSCRIBE %d__d__keycompleted", ap->logical_appid);
+}
+
+
 // this callback is triggered when a broadcast message is sent by the data store
 //
 void apanel_dcallback(redisAsyncContext *c, void *r, void *privdata) 
 {
     redisReply *reply = r;
+    char keymsg[64];
+    
     if (reply != NULL) {
         auxpanel_t *ap = (auxpanel_t *)privdata;
         if (ap == NULL || ap->state == A_FREED) return;
         dpanel_t *dp = (dpanel_t *)ap->dpanel;
         dftable_entry_t *entry;
+        snprintf(keymsg, 64, "%d__d__keycompleted", ap->logical_appid);
 
         if (reply->type == REDIS_REPLY_ARRAY && 
-            (strcmp(reply->element[1]->str, "__d__keycompleted") == 0) &&
+            (strcmp(reply->element[1]->str, keymsg) == 0) &&
             (strcmp(reply->element[0]->str, "message") == 0)) {
             // get the dftable entry ... based on key (reply->element[2]->str) 
             HASH_FIND_STR(dp->dftable, reply->element[2]->str, entry);
 
             if (entry) {
                 if (entry->state == CLIENT_READY && entry->taskid > 0) 
-                    redisAsyncCommand(dp->dctx, dflow_callback, dp, "fcall df_lread 1 %s", entry->key);
+                    redisAsyncCommand(ap->a_dctx, dflow_callback, entry, "fcall df_lread 1 %s %d", entry->key, ap->logical_appid);
             }
         }
     }
