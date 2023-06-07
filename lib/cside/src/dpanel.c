@@ -736,19 +736,25 @@ void dfread_struct(dftable_entry_t *df, char *fmt, ...)
     dpanel_t *dp = (dpanel_t *)df->dpanel;
     cnode_t *cn = (cnode_t *)dp->cnode;
     tboard_t *tboard = (tboard_t *)cn->tboard;
-
-    uint8_t buf[4096];
+    va_list args;
+    darg_t *uargs;
+    char *label;
+    nvoid_t *nv;
+    
+    int len = strlen(fmt);
+    assert(len > 0);
 
     void *p = dflow_task_create(tboard, df);
     if (p != NULL) {
         derror = 0;
-        Base64decode((char *)buf, (char *)p);
-        char *x = __extract_str(buf, Base64decode_len((char *)p));
+  //      Base64decode((char *)buf, (char *)p);
+        //char *x = __extract_str(buf, Base64decode_len((char *)p));
  //       strncpy(val, x, maxlen);
-        free(x);
+  //      free(x);
     } else {
         derror = -1;
  //       *val = 0;
     }
     free(p);
 }
+

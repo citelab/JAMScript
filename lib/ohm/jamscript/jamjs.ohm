@@ -15,12 +15,13 @@ JAMJS <: ES6 {
 
     C_type          = "struct" identifier "{" Struct_entry* "}"     -- struct
                     | "char" "*"                                    -- pointer
-                    | "char"
+                    | "char" 
                     | "double"
                     | "int"
                     | "float"
 
-    Struct_entry    = C_type identifier ";"
+    Struct_entry    = C_type identifier ";"                                 
+
 
     Jdata_spec      = C_type identifier as jdata_type "(" ("fog"|"cloud") ")" ";"   -- specified
                     | C_type identifier as jdata_type ";"                           -- default
