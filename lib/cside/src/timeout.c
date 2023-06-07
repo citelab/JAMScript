@@ -281,7 +281,7 @@ static void timeouts_reset(struct timeouts *T) {
 
 TIMEOUT_PUBLIC void timeouts_close(struct timeouts *T) {
 	/*
-	 * NOTE: Delete installed timeouts so timeout_pending() and
+	 * NOTE: Delete installed timeouts so timeout_pending_tlib() and
 	 * timeout_expired() worked as expected.
 	 */
 	timeouts_reset(T);
@@ -705,9 +705,9 @@ TIMEOUT_PUBLIC struct timeout *timeout_init(struct timeout *to, int flags) {
 
 
 #ifndef TIMEOUT_DISABLE_RELATIVE_ACCESS
-TIMEOUT_PUBLIC bool timeout_pending(struct timeout *to) {
+TIMEOUT_PUBLIC bool timeout_pending_tlib(struct timeout *to) {
 	return to->pending && to->pending != &to->timeouts->expired;
-} /* timeout_pending() */
+} /* timeout_pending_tlib() */
 
 
 TIMEOUT_PUBLIC bool timeout_expired(struct timeout *to) {
@@ -715,9 +715,9 @@ TIMEOUT_PUBLIC bool timeout_expired(struct timeout *to) {
 } /* timeout_expired() */
 
 
-TIMEOUT_PUBLIC void timeout_del(struct timeout *to) {
+TIMEOUT_PUBLIC void timeout_del_tlib(struct timeout *to) {
 	timeouts_del(to->timeouts, to);
-} /* timeout_del() */
+} /* timeout_del_tlib() */
 #endif
 
 

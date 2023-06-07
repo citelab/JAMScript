@@ -14,10 +14,11 @@ jtask* localyou(int c, char *s) {
 }
 
 jtask* localme(int c, char *s) {
+    struct __xx q = {.yy=2, .zz=2.3};
     while(1) {
         jsleep(100000);
         printf("############-->>> Hello ME  %d, %s\n", c, s);
-	zzz.write(value);
+	//	zzz.write(&q);
     }
 }
 

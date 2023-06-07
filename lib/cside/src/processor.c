@@ -10,6 +10,8 @@
 #include "tboard.h"
 #include "jcond.h"
 #include "icache.h"
+#include "dpanel.h"
+#include "auxpanel.h"
 
 
 arg_t *command_arg_clone_special(arg_t *arg, char *fname, long int taskid, char *nodeid, void *serv)
@@ -121,6 +123,9 @@ void msg_processor(void *serv, command_t *cmd)
     server_t *s = (server_t *)serv;
     cnode_t *c = s->cnode;
     tboard_t *t = (tboard_t *)(c->tboard);
+    dpanel_t *dp = (dpanel_t *)c->dpanel;
+    auxpanel_t *a;
+
     command_t *rcmd;
     int k;
     struct queue_entry *e = NULL;
@@ -157,6 +162,7 @@ void msg_processor(void *serv, command_t *cmd)
                 }
             break;
             case CmdNames_FOG_ADD_INFO:
+                printf("+++ ++ ++ +++ Put fog info received.... %s\n", cmd->node_id);
                 // [cmd: PUT_CLOUD_FOG_INFO, subcmd: FOG_ADD_INFO, node_id: "fog-id", args: [IP_addr, port_number]]
                 if (c->eservnum < MAX_EDGE_SERVERS/2) {
                     for (int i = 0; i < MAX_EDGE_SERVERS; i++) {
@@ -172,7 +178,18 @@ void msg_processor(void *serv, command_t *cmd)
                     }
                 }
             break;
+            case CmdNames_FOG_DATA_UP:
+                printf("======================== data up =========== %s %d\n", cmd->args[0].val.sval, cmd->args[1].val.ival);
+                a = apanel_create(dp, cmd->args[0].val.sval, cmd->args[1].val.ival);
+                apanel_start(a);
+                dpanel_add_apanel(dp, cmd->node_id, a);
+            break;
+            case CmdNames_FOG_DATA_DOWN:
+                dpanel_del_apanel(dp, cmd->node_id);
+            break;
+
             case CmdNames_FOG_DEL_INFO:
+                printf("-- -- --- -- -- Delete fog ... %s\n", cmd->node_id);
                 // [cmd: PUT_CLOUD_FOG_INFO, subcmd: FOG_DEL_INFO, node_id: "fog-id"]
                 for (int i = 0; i < MAX_EDGE_SERVERS; i++) {
                     if (c->edgeserv[i] != NULL) {
@@ -183,6 +200,7 @@ void msg_processor(void *serv, command_t *cmd)
                     }
                 }
             break;
+
         }
         command_free(cmd);
         return;

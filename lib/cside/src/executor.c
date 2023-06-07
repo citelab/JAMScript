@@ -1,14 +1,15 @@
 /* This controls the primary executor and secondary executor */
 
 #include <sys/time.h>
+#include <pthread.h>
+#include <assert.h> 
+
 #include "tboard.h"
 #include "queue/queue.h"
 #include "executor.h"
-#include <pthread.h>
 #include "constants.h"
-#include <assert.h> // assert()
-
 #include "tprofiler.h"
+#include "dpanel.h"
 
 enum execmodes_t {
     BATCH_MODE_EXEC = 1,
@@ -132,6 +133,7 @@ struct queue_entry *get_next_task(tboard_t *tboard, int etype, enum execmodes_t 
 
 void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queue_entry *next, pthread_mutex_t *mutex, pthread_cond_t *cond)
 {
+    dftable_entry_t *entry;
     DO_SNAPSHOT(0);
     ////////// Get queue data, and swap context to function until task yields ///////////
     task_t *task = ((task_t *)(next->data));
@@ -167,12 +169,27 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
             rtask->calling_task = task;
             HASH_ADD_INT(tboard->task_table, task_id, rtask);
 
-            // if task is not blocking we wish to reinsert issuing task back into ready queue
-            if (rtask->mode == TASK_MODE_REMOTE_NB)
-                e = queue_new_node(task);
-            // place remote task into appropriate message queue
-            if (rtask->mode != TASK_MODE_SLEEPING)
-                remote_task_place(tboard, rtask);
+            switch (rtask->mode) {
+                case TASK_MODE_REMOTE_NB:
+                    e = queue_new_node(task);
+                    remote_task_place(tboard, rtask);
+                break;
+                case TASK_MODE_DFLOW:
+                    entry = (dftable_entry_t *)rtask->entry;
+                    // set the task state accordingly in the dftable_entry_t ..
+                    pthread_mutex_lock(&(entry->mutex));
+                    if (entry->state == NEW_STATE)
+                        entry->state = CLIENT_READY;
+                    entry->taskid = rtask->task_id;
+                    pthread_mutex_unlock(&(entry->mutex));
+                break;
+
+                case TASK_MODE_SLEEPING:
+                    // nothing to do here. the task is already in the task table
+                break;
+                case TASK_MODE_REMOTE:
+                    remote_task_place(tboard, rtask);
+            }
 
         } else { // just a normal yield, so we create node to reinsert task into queue
             DO_SNAPSHOT(4);

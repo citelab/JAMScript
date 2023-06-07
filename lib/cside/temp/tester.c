@@ -1,4 +1,4 @@
-#include "mqtt_adapter.h"
+#include "mqtt-adapter.h"
 #include <unistd.h>
 #include <stdio.h>
 #include "command.h"

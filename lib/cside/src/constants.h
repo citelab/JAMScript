@@ -31,7 +31,10 @@
 #define CmdNames_FUNC_NOT_FOUND 5820
 #define CmdNames_SET_JSYS 6000
 #define CmdNames_CLOSE_PORT 6200
-
+#define CmdNames_FOG_DATA_UP 6601
+#define CmdNames_FOG_DATA_DOWN 6602
+#define CmdNames_CLOUD_DATA_UP 6603
+#define CmdNames_CLOUD_DATA_DOWN 6604
 
 #define CmdNames_STOP 7000
 
