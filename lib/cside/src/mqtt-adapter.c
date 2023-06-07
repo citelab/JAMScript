@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <mosquitto.h>
 #include <pthread.h>
-#include "mqtt_adapter.h"
+#include "mqtt-adapter.h"
 #include "command.h"
 #include "tboard.h"
 #include "cnode.h"
@@ -27,6 +27,7 @@ void mqtt_connect_callback(struct mosquitto *mosq, void *udata, int res)
 {
     (void)mosq;
     server_t *serv = (server_t *)udata;
+
     serv->state = SERVER_REGISTERED;
     if (!res)
         mqtt_do_subscribe(serv->mqtt);
@@ -38,6 +39,9 @@ void mqtt_disconnect_callback(struct mosquitto *mosq, void *udata, int res)
     (void)mosq;
     server_t *serv = (server_t *)udata;
 
+    printf("Disconnect.......%s\n", serv->server_id);
+    disconnect_mqtt_adapter(serv->mqtt);
+
     cnode_t *c = (cnode_t *)serv->cnode;
     if (serv != NULL)
         serv->state = SERVER_NOT_REGISTERED;
@@ -45,7 +49,7 @@ void mqtt_disconnect_callback(struct mosquitto *mosq, void *udata, int res)
         terminate_error(false, "MQTT disconnect callback gave unexpected res: %d", res);
     }
 
-    mosquitto_loop_stop(serv->mqtt->mosq, false);
+    mosquitto_loop_stop(serv->mqtt->mosq, true);
 
     // add stuff maybe for udata
     if (serv->mqtt != NULL)
@@ -157,7 +161,10 @@ struct mqtt_adapter *setup_mqtt_adapter(void *serv, enum levels level, char *hos
     broker_info_t b = {.keep_alive = 60};
     strcpy(b.host, host);
     b.port = port;
-    connect_mqtt_adapter(ma, &b);
+    if (connect_mqtt_adapter(ma, &b) == false) {
+        ((server_t *)serv)->state = SERVER_UNUSED;
+        free(ma);
+    }
     return ma;
 }
 

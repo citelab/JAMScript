@@ -5,7 +5,7 @@
 #include <string.h>
 #include "tboard.h"
 #include "command.h"
-#include "mqtt_adapter.h"
+#include "mqtt-adapter.h"
 #include "cnode.h"
 #include "constants.h"
 #include "dpanel.h"
@@ -381,8 +381,7 @@ bool sleep_task_create(tboard_t *tboard, int sval)
 
 // This is yet another reuse of remote task - this time to wait on the "broadcaster" or
 // downward flow (dflow).
-//
-void *dflow_task_create(tboard_t *tboard, dftable_entry_t *entry)
+void *dflow_task_create(tboard_t *tboard, void *entry)
 {
     if (mco_running() == NULL) // must be called from a coroutine!
         return NULL;
@@ -393,6 +392,7 @@ void *dflow_task_create(tboard_t *tboard, dftable_entry_t *entry)
     rtask.task_id = mysnowflake_id();
     rtask.status = TASK_INITIALIZED;
     rtask.mode = TASK_MODE_DFLOW;
+    rtask.entry = entry;
 
     // push rtask into storage. This copies memory in current thread so we dont have
     // to worry about invalid reads
@@ -415,14 +415,21 @@ void *dflow_task_create(tboard_t *tboard, dftable_entry_t *entry)
         // check if task completed
         if (rtask.status == DFLOW_TASK_COMPLETED) {
             remote_task_free(tboard, rtask.task_id);
+
+            // reset the state of the entry..
+            dftable_entry_t *dfentry = (dftable_entry_t *)entry;
+            pthread_mutex_lock(&(dfentry->mutex));
+            dfentry->state = NEW_STATE;
+            pthread_mutex_unlock(&(dfentry->mutex));
+
             return rtask.data;
         } else {
             tboard_err("dflow_task_create: dflow task is not marked as completed: %d.\n",rtask.status);
-            return false;
+            return NULL;
         }
     } else {
         tboard_err("dflow_task_create: Failed to capture dflow task after termination.\n");
-        return false;
+        return NULL;
     }
 }
 

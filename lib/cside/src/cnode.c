@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "tboard.h"
-#include "mqtt_adapter.h"
+#include "mqtt-adapter.h"
 #include "cnode.h"
 #include "utilities.h"
 #include "constants.h"
@@ -11,6 +11,11 @@
 #include <unistd.h>
 
 cnode_t *cn;
+
+int get_jamclock(cnode_t *cn)
+{
+    return 0;
+}
 
 topics_t *cnode_create_topics(char *app)
 {
@@ -70,14 +75,14 @@ void cnode_recreate_mbroker(server_t *serv, enum levels level, char *server_id, 
     serv->mqtt = setup_mqtt_adapter(serv, level, host, port, topics, ntopics);
 }
 
-broker_info_t *cnode_scanj(int groupid, int port) {
+broker_info_t *cnode_scanj(int groupid, char *host, int port) {
     char mgroup[32];
     int count = 5;
     broker_info_t *bi = NULL;
 
     if (groupid == 0) {
         bi = (broker_info_t *)calloc(1, sizeof(broker_info_t));
-        strcpy(bi->host, "127.0.0.1");
+        strcpy(bi->host, host);
         bi->port = port;
         return bi;
     }
@@ -135,8 +140,6 @@ cnode_t *cnode_init(int argc, char **argv){
         terminate_error(true, "invalid command line");
     }
 
-    print_args(cn->args);
-
     cn->topics = cnode_create_topics(cn->args->appid);
 
     // generate core
@@ -147,7 +150,7 @@ cnode_t *cnode_init(int argc, char **argv){
     }
 
     // find the J node info by UDP scanning
-    cn->devinfo = cnode_scanj(cn->args->groupid, cn->args->port);
+    cn->devinfo = cnode_scanj(cn->args->groupid, cn->args->host, cn->args->port);
     if (cn->devinfo == NULL ) {
         cnode_destroy(cn);
         terminate_error(true, "cannot find the device j server");
@@ -162,7 +165,7 @@ cnode_t *cnode_init(int argc, char **argv){
     mqtt_lib_init();
 
     // Connect to the J server (MQTT), we don't have a server_id for the device, which is fine.
-    cn->devserv = cnode_create_mbroker(cn, DEVICE_LEVEL, "", cn->devinfo->host, cn->devinfo->port, cn->topics->subtopics, cn->topics->length);
+    cn->devserv = cnode_create_mbroker(cn, DEVICE_LEVEL, cn->core->device_id, cn->devinfo->host, cn->devinfo->port, cn->topics->subtopics, cn->topics->length);
     if ( cn->devserv == NULL) {
         cnode_destroy(cn);
         terminate_error(true, "cannot create MQTT broker");

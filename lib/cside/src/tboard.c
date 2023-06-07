@@ -5,7 +5,7 @@
 #include <string.h>
 #include "tboard.h"
 #include "command.h"
-#include "mqtt_adapter.h"
+#include "mqtt-adapter.h"
 #include "core.h"
 
 #define MINICORO_IMPL
