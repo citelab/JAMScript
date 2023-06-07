@@ -664,7 +664,7 @@ dftable_entry_t *dp_create_dflow(dpanel_t *dp, char *key, char *fmt)
  * Value readers - these are going to block the coroutine by creating a user-level
  * context switch until the data is ready. The coroutine might still face a queuing
  * delay before getting activated. We have readers for primitive values (integer,
- * double, string, etc) and composite values (structures). The sending side (J is
+ * double, string, etc) and composite values (structures). The sending side (J) is
  * pushing a JSON object with field names in the case of structures. For primitive
  * values the J side is pushing the values alone.
  */
