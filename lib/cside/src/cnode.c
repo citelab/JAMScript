@@ -42,10 +42,10 @@ topics_t *cnode_create_topics(char *app)
 
 void cnode_topics_destroy(topics_t *t)
 {
-    for (int i = 0; i < t->length; i++) 
+    for (int i = 0; i < t->length; i++)
         free(t->subtopics[i]);
     free(t->requesttopic);
-    free(t->replytopic);    
+    free(t->replytopic);
     free(t);
 }
 
@@ -56,7 +56,7 @@ server_t *cnode_create_mbroker(cnode_t *cn, enum levels level, char *server_id, 
     serv->level = level;
     if (server_id != NULL)
         serv->server_id = strdup(server_id);
-    else 
+    else
         serv->server_id = NULL;
     serv->state = SERVER_NOT_REGISTERED;
     serv->mqtt = setup_mqtt_adapter(serv, level, host, port, topics, ntopics);
@@ -64,12 +64,12 @@ server_t *cnode_create_mbroker(cnode_t *cn, enum levels level, char *server_id, 
     return serv;
 }
 
-void cnode_recreate_mbroker(server_t *serv, enum levels level, char *server_id, char *host, int port, char *topics[], int ntopics) 
+void cnode_recreate_mbroker(server_t *serv, enum levels level, char *server_id, char *host, int port, char *topics[], int ntopics)
 {
     serv->level = level;
     if (server_id != NULL)
         serv->server_id = strdup(server_id);
-    else 
+    else
         serv->server_id = NULL;
     serv->state = SERVER_NOT_REGISTERED;
     serv->mqtt = setup_mqtt_adapter(serv, level, host, port, topics, ntopics);
@@ -97,6 +97,7 @@ broker_info_t *cnode_scanj(int groupid, char *host, int port) {
     while (count > 0 && (multicast_check_receive(m) == 0)) {
         multicast_send(m, smsg->buffer, smsg->length);
         count--;
+        usleep(100000);
     }
     if (count > 0) {
         unsigned char buf[1024];
@@ -110,7 +111,7 @@ broker_info_t *cnode_scanj(int groupid, char *host, int port) {
         command_free(rmsg);
     }
     command_free(smsg);
-
+    multicast_destroy(m);
     return bi;
 }
 
@@ -154,13 +155,13 @@ cnode_t *cnode_init(int argc, char **argv){
         cnode_destroy(cn);
         terminate_error(true, "cannot find the device j server");
     }
-    // Start the taskboard 
+    // Start the taskboard
     cn->tboard = tboard_create(cn, cn->args->nexecs);
     if ( cn->tboard == NULL ) {
         cnode_destroy(cn);
         terminate_error(true, "cannot create the task board");
     }
-    
+
     mqtt_lib_init();
 
     // Connect to the J server (MQTT), we don't have a server_id for the device, which is fine.
@@ -174,10 +175,10 @@ cnode_t *cnode_init(int argc, char **argv){
     cn->cnstate = CNODE_NOT_REGISTERED;
     // Do the initial registeration - it could fail and we resend on the next PING
     send_reg_msg(cn->devserv, cn->core->device_id, 0);
-    
+
     cnode_setup_jcond(cn->args->tags);
     tboard_start(cn->tboard);
-    
+
     return cn;
 }
 
@@ -193,7 +194,7 @@ void cnode_destroy(cnode_t *cn) {
     }
 
     // free topics
-    if (cn->topics != NULL) 
+    if (cn->topics != NULL)
         cnode_topics_destroy(cn->topics);
 
     // free core
@@ -237,7 +238,7 @@ void cnode_setcoords(cnode_t *cn, float xc, float yc)
     cn->ycoord = yc;
 }
 
-void cnode_setwidth(cnode_t *cn, int width) 
+void cnode_setwidth(cnode_t *cn, int width)
 {
     cn->width = width;
 }

@@ -122,11 +122,19 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #if !defined WHEEL_BIT
+#ifdef SUPPORT_32_BIT
+#define WHEEL_BIT 5
+#else
 #define WHEEL_BIT 6
+#endif
 #endif
 
 #if !defined WHEEL_NUM
+#ifdef SUPPORT_32_BIT
+#define WHEEL_NUM 5
+#else
 #define WHEEL_NUM 4
+#endif
 #endif
 
 #define WHEEL_LEN (1U << WHEEL_BIT)
@@ -521,7 +529,7 @@ static timeout_t timeouts_int(struct timeouts *T) {
 			timeout = MIN(_timeout, timeout);
 		}
 
-		relmask <<= WHEEL_BIT; 
+		relmask <<= WHEEL_BIT;
 		relmask |= WHEEL_MASK;
 	}
 
@@ -741,4 +749,3 @@ TIMEOUT_PUBLIC int timeout_v_abi(void) {
 TIMEOUT_PUBLIC int timeout_v_api(void) {
 	return TIMEOUT_V_API;
 } /* timeout_version() */
-

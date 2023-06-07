@@ -1,0 +1,3 @@
+[submodule "lib/cside/include/carapi"]
+	path = lib/cside/include/carapi
+	url = https://github.com/anrl/carapi.git
