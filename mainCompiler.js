@@ -109,7 +109,7 @@ function nativeCompile(code, cargs) {
             var command = `clang -g ${tmpDir}/jamout.c -o ${tmpDir}/a.out -I/usr/local/include -I${homeDir}/.jamruns/clib/include -I${homeDir}/.jamruns/clib/src ${options} -pthread -ltinycbor -lmosquitto -lmujs ${homeDir}/.jamruns/clib/libjam.a  ${homeDir}/.jamruns/jamhome/deps/mujs2/build/release/libmujs.a -L/usr/local/lib`;
 
             let err = child_process.spawnSync('ld', ['-lwiringPi']).stderr;
-            if(err == null || !err.includes("cannot find -lwiringPi"))
+            if(err == null || !err.includes("-lwiringPi"))
                 command += " -lwiringPi";
 
             console.log("Compiling C code...");
