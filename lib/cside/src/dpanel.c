@@ -32,9 +32,9 @@ int derror;
 
 /*
  * The data panel connects to a main Redis server. That is, the data panel
- * is not started without a Redis server (this is the device-level Redis server). 
- * Once the data panel is running, we can add Redis servers at the fog level and also 
- * delete fog servers. 
+ * is not started without a Redis server (this is the device-level Redis server).
+ * Once the data panel is running, we can add Redis servers at the fog level and also
+ * delete fog servers.
  */
 dpanel_t *dpanel_create(char *server, int port, char *uuid)
 {
@@ -50,7 +50,7 @@ dpanel_t *dpanel_create(char *server, int port, char *uuid)
     dp->logical_appid = -1;
     dp->use_apanel = false;
 
-    assert(pthread_mutex_init(&(dp->mutex), NULL) == 0);  
+    assert(pthread_mutex_init(&(dp->mutex), NULL) == 0);
 
     assert(pthread_mutex_init(&(dp->ufmutex), NULL) == 0);
     assert(pthread_mutex_init(&(dp->dfmutex), NULL) == 0);
@@ -69,7 +69,7 @@ void dpanel_setcnode(dpanel_t *dp, void *cn)
     ((cnode_t *)cn)->dpanel = dp;
 }
 
-void dpanel_settboard(dpanel_t *dp, void *tb) 
+void dpanel_settboard(dpanel_t *dp, void *tb)
 {
     dp->tboard = (void *)tb;
 }
@@ -150,7 +150,7 @@ void dpanel_del_apanel(dpanel_t *dp, char *nid)
  * UFLOW PROCESSOR FUNCTIONS
  *
  */
-void *dpanel_ufprocessor(void *arg) 
+void *dpanel_ufprocessor(void *arg)
 {
     dpanel_t *dp = (dpanel_t *)arg;
 
@@ -191,12 +191,12 @@ void dpanel_disconnect_dcb(const redisAsyncContext *c, int status) {
 }
 
 
-void dpanel_ucallback(redisAsyncContext *c, void *r, void *privdata) 
+void dpanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
 {
     redisReply *reply = r;
     dpanel_t *dp = (dpanel_t *)privdata;
     cnode_t *cn = (cnode_t *)dp->cnode;
-    struct queue_entry *next = NULL; 
+    struct queue_entry *next = NULL;
     bool last = true;
 
     if (reply == NULL) {
@@ -250,11 +250,11 @@ void dpanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
 }
 
 
-void dpanel_ucallback2(redisAsyncContext *c, void *r, void *privdata) 
+void dpanel_ucallback2(redisAsyncContext *c, void *r, void *privdata)
 {
     redisReply *reply = r;
     dpanel_t *dp = (dpanel_t *)privdata;
-    struct queue_entry *next = NULL; 
+    struct queue_entry *next = NULL;
     bool last = true;
     cnode_t *cn = (cnode_t *)dp->cnode;
 
@@ -308,7 +308,7 @@ uftable_entry_t *dp_create_uflow(dpanel_t *dp, char *key, char *fmt)
 }
 
 
-struct queue_entry *get_uflow_object(dpanel_t *dp, bool *last) 
+struct queue_entry *get_uflow_object(dpanel_t *dp, bool *last)
 {
     struct queue_entry *next = NULL;
     struct queue_entry *nnext;
@@ -321,9 +321,9 @@ struct queue_entry *get_uflow_object(dpanel_t *dp, bool *last)
             nnext = queue_peek_front(&(dp->ufqueue));
             if (nnext)
                 *last = false;
-            else 
+            else
                 *last = true;
-        } else 
+        } else
             *last = false;
         pthread_mutex_unlock(&(dp->ufmutex));
 
@@ -343,7 +343,7 @@ void freeUObject(uflow_obj_t *uobj)
 }
 
 
-uflow_obj_t *uflow_obj_new(uftable_entry_t *uf, char *vstr) 
+uflow_obj_t *uflow_obj_new(uftable_entry_t *uf, char *vstr)
 {
     uflow_obj_t *uo = (uflow_obj_t *)calloc(sizeof(uflow_obj_t), 1);
     uo->key = uf->key;
@@ -435,10 +435,10 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
     darg_t *uargs;
     char *label;
     nvoid_t *nv;
-    
+
     int len = strlen(fmt);
     assert(len > 0);
-    
+
     uargs = (darg_t *)calloc(len, sizeof(darg_t));
 
     va_start(args, fmt);
@@ -460,7 +460,7 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
                 uargs[i].type = D_INT_TYPE;
                 break;
             case 'd':
-            case 'f':                
+            case 'f':
                 uargs[i].val.dval = va_arg(args, double);
                 uargs[i].type = D_DOUBLE_TYPE;
                 break;
@@ -508,7 +508,7 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
 /*
  * DFLOW PROCESSOR FUNCTIONS
  */
-void *dpanel_dfprocessor(void *arg) 
+void *dpanel_dfprocessor(void *arg)
 {
     dpanel_t *dp = (dpanel_t *)arg;
     cnode_t *cn = (cnode_t *)dp->cnode;
@@ -547,7 +547,7 @@ void *dpanel_dfprocessor(void *arg)
 
 // this callback is triggered when a broadcast message is sent by the data store
 //
-void dpanel_dcallback2(redisAsyncContext *c, void *r, void *privdata) 
+void dpanel_dcallback2(redisAsyncContext *c, void *r, void *privdata)
 {
     redisReply *reply = r;
     dpanel_t *dp = (dpanel_t *)privdata;
@@ -567,7 +567,7 @@ void dpanel_dcallback2(redisAsyncContext *c, void *r, void *privdata)
 
 // this callback is triggered when a broadcast message is sent by the data store
 //
-void dpanel_dcallback(redisAsyncContext *c, void *r, void *privdata) 
+void dpanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
 {
     redisReply *reply = r;
     dpanel_t *dp = (dpanel_t *)privdata;
@@ -585,7 +585,7 @@ void dpanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
 
     if (dp->use_apanel) return;         // the dpanel callback disabled - using the apanel cb
 
-    if (reply->type == REDIS_REPLY_ARRAY && 
+    if (reply->type == REDIS_REPLY_ARRAY &&
         (strcmp(reply->element[1]->str, keymsg) == 0) &&
         (strcmp(reply->element[0]->str, "message") == 0)) {
 
@@ -599,17 +599,17 @@ void dpanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
 }
 
 // this is callback used by the actual reading function for the data in dflow
-// so.. here we need to 
+// so.. here we need to
 //
-void dflow_callback(redisAsyncContext *c, void *r, void *privdata) 
+void dflow_callback(redisAsyncContext *c, void *r, void *privdata)
 {
     redisReply *reply = r;
-    // the privdata is pointing to the dftable_entry 
+    // the privdata is pointing to the dftable_entry
     dftable_entry_t *entry = (dftable_entry_t *)privdata;
     dpanel_t *dp = entry->dpanel;
     tboard_t *t = dp->tboard;
     remote_task_t *rtask = NULL;
-    
+
     if (reply == NULL) {
         if (c->errstr) {
             printf("errstr: %s\n", c->errstr);
@@ -620,7 +620,7 @@ void dflow_callback(redisAsyncContext *c, void *r, void *privdata)
     HASH_FIND_INT(t->task_table, &(entry->taskid), rtask);
     if (rtask != NULL)
     {
-        rtask->data = strdup(reply->element[7]->str); 
+        rtask->data = strdup(reply->element[7]->str);
         rtask->data_size = 1;
         if (rtask->calling_task != NULL)
         {
@@ -666,7 +666,7 @@ dftable_entry_t *dp_create_dflow(dpanel_t *dp, char *key, char *fmt)
  * delay before getting activated. We have readers for primitive values (integer,
  * double, string, etc) and composite values (structures). The sending side (J is
  * pushing a JSON object with field names in the case of structures. For primitive
- * values the J side is pushing the values alone. 
+ * values the J side is pushing the values alone.
  */
 
 void dfread_int(dftable_entry_t *df, int *val)
@@ -736,25 +736,24 @@ void dfread_struct(dftable_entry_t *df, char *fmt, ...)
     dpanel_t *dp = (dpanel_t *)df->dpanel;
     cnode_t *cn = (cnode_t *)dp->cnode;
     tboard_t *tboard = (tboard_t *)cn->tboard;
-    va_list args;
-    darg_t *uargs;
-    char *label;
-    nvoid_t *nv;
-    
+    // va_list args;
+    // darg_t *uargs;
+    // char *label;
+    // nvoid_t *nv;
+
     int len = strlen(fmt);
     assert(len > 0);
 
     void *p = dflow_task_create(tboard, df);
     if (p != NULL) {
         derror = 0;
-  //      Base64decode((char *)buf, (char *)p);
-        //char *x = __extract_str(buf, Base64decode_len((char *)p));
- //       strncpy(val, x, maxlen);
-  //      free(x);
+        // Base64decode((char *)buf, (char *)p);
+        // char *x = __extract_str(buf, Base64decode_len((char *)p));
+        // strncpy(val, x, maxlen);
+        // free(x);
     } else {
         derror = -1;
- //       *val = 0;
+        // *val = 0;
     }
     free(p);
 }
-

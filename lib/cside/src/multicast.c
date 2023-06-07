@@ -1,8 +1,8 @@
-
 #include <time.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
 #include <strings.h>
 #include "multicast.h"
 
@@ -80,7 +80,7 @@ int multicast_receive(mcast_t *m, void *buf, int bufsize)
 
 int multicast_check_receive(mcast_t *m)
 {
-    
+
     int rc = poll(m->fds, m->nfds, 1000);
     if (rc < 0) {
         perror("poll");
@@ -89,7 +89,7 @@ int multicast_check_receive(mcast_t *m)
     return rc;
 }
 
-void multicast_destroy(mcast_t *m) 
+void multicast_destroy(mcast_t *m)
 {
     close(m->sock);
     free(m);

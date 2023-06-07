@@ -34,7 +34,7 @@ int estimate_cbor_buffer_len(darg_t *u, int n)
         }
 
     }
-    
+
     return len;
 }
 
@@ -112,9 +112,8 @@ char * __extract_str(const uint8_t *buffer, size_t len)
 {
     CborParser parser;
     CborValue value;
-    char *result;
     cbor_parser_init(buffer, len, 0, &parser, &value);
-    int n, m;
+    size_t n, m;
     cbor_value_calculate_string_length(&value, &n);
     char *x = calloc(n+1, sizeof(char));
     cbor_value_copy_text_string(&value, x, &m, NULL);
