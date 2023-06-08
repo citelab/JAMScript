@@ -20,13 +20,12 @@ let count = 0;
 async function runloop() {
     while(true) {
         await sleep(1000);
-        console.log("Writing to dflow -- ", values[count]);
-        qq.write({x: 12, yy: 5.67});
+        let values = {x: count, yy: 5.67, u: "hello"};
+        console.log("Writing to dflow -- ", values);
+        qq.write(values);
+        count += 1;
     }
 }
 
 
 await runloop();
-
-
-

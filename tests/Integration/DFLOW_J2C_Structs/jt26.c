@@ -1,8 +1,9 @@
 jtask* localyou(int c, char *s) {
     struct __zz tt;
     while(1) {
-	qq.read(&tt);
-        printf("Value read x: %d, yy: %f\n", tt.x, tt.yy);
+        qq.read(&tt);
+        printf("Value read x: %d, yy: %f, u: %s\n", tt.x, tt.yy, tt.u);
+        free(tt.u);
     }
 }
 
