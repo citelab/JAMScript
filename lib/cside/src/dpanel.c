@@ -415,7 +415,7 @@ void ufwrite_str(uftable_entry_t *uf, char *str)
 
     CborEncoder encoder;
     cbor_encoder_init(&encoder, (uint8_t *)&buf, sizeof(buf), 0);
-    cbor_encode_text_string(&encoder, str, strlen(str));
+    cbor_encode_text_stringz(&encoder, str);
     int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t *)&buf);
     Base64encode(out, (char *)buf, len);
     uobj = uflow_obj_new(uf, out);
@@ -446,7 +446,7 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
         label = va_arg(args, char *);
         uargs[i].label = strdup(label);
         switch(fmt[i]) {
-            case 'n':
+            case 'n': // TODO this isn't actually getting transmitted at all right now
                 nv = va_arg(args, nvoid_t*);
                 uargs[i].val.nval = nv;
                 uargs[i].type = D_NVOID_TYPE;

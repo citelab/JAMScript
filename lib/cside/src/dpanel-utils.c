@@ -47,7 +47,7 @@ void do_cbor_encoding(CborEncoder *enc, darg_t *u, int n)
         cbor_encode_text_stringz(&mapEncoder, u[i].label);
         switch(u[i].type) {
             case D_STRING_TYPE:
-                cbor_encode_byte_string(&mapEncoder, (uint8_t *)u[i].val.sval, sizeof(u[i].val.sval));
+                cbor_encode_text_stringz(&mapEncoder, u[i].val.sval);
             break;
             case D_INT_TYPE:
             case D_LONG_TYPE:
@@ -56,6 +56,7 @@ void do_cbor_encoding(CborEncoder *enc, darg_t *u, int n)
             case D_DOUBLE_TYPE:
                 cbor_encode_double(&mapEncoder, u[i].val.dval);
             break;
+            // TODO NVOID types &c..
             default:
             break;
         }
