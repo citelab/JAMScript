@@ -76,15 +76,7 @@ typedef struct {
 typedef struct {
     char* label;
     dargtype_t type;
-    union __dargvalue_t
-    {
-        int ival;
-        long int lval;
-        char* sval;
-        double dval;
-        nvoid_t* nval;
-        void* vval;
-    } val;
+    union _dargvalue_t val;
     UT_hash_handle hh;
 } darg_entry_t;
 
