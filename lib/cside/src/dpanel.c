@@ -475,23 +475,6 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
 
     CborEncoder encoder;
     cbor_encoder_init(&encoder, (uint8_t*)&buf, sizeof(buf), 0);
-
-    for (int i = 0; i < len; i++) {
-        switch (uargs[i].type) {
-            case D_INT_TYPE:
-                printf("Value %d\n", uargs[i].val.ival);
-                break;
-            case D_STRING_TYPE:
-                printf("Value %s\n", uargs[i].val.sval);
-                break;
-            case D_DOUBLE_TYPE:
-                printf("Value %f\n", uargs[i].val.dval);
-                break;
-            default:
-                break;
-        }
-    }
-
     do_cbor_encoding(&encoder, uargs, len);
     int clen = cbor_encoder_get_buffer_size(&encoder, (uint8_t*)&buf);
     Base64encode(out, (char*)buf, clen);
