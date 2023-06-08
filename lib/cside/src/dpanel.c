@@ -428,13 +428,13 @@ void ufwrite_str(uftable_entry_t *uf, char *str)
 
 void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
 {
-    dpanel_t *dp = (dpanel_t *)(uf->dpanel);
-    struct queue_entry *e = NULL;
-    uflow_obj_t *uobj;
+    dpanel_t* dp = (dpanel_t *)(uf->dpanel);
+    struct queue_entry* e = NULL;
+    uflow_obj_t* uobj;
     va_list args;
-    darg_t *uargs;
-    char *label;
-    nvoid_t *nv;
+    darg_t* uargs;
+    char* label;
+    nvoid_t* nv;
 
     int len = strlen(fmt);
     assert(len > 0);
@@ -443,7 +443,7 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
 
     va_start(args, fmt);
     for (int i = 0; i < len; i++) {
-        label = va_arg(args, char *);
+        label = va_arg(args, char*);
         uargs[i].label = strdup(label);
         switch(fmt[i]) {
             case 'n': // TODO this isn't actually getting transmitted at all right now
@@ -452,7 +452,7 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
                 uargs[i].type = D_NVOID_TYPE;
                 break;
             case 's':
-                uargs[i].val.sval = strdup(va_arg(args, char *));
+                uargs[i].val.sval = strdup(va_arg(args, char*));
                 uargs[i].type = D_STRING_TYPE;
                 break;
             case 'i':
@@ -474,7 +474,7 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
     char out[8192];
 
     CborEncoder encoder;
-    cbor_encoder_init(&encoder, (uint8_t *)&buf, sizeof(buf), 0);
+    cbor_encoder_init(&encoder, (uint8_t*)&buf, sizeof(buf), 0);
 
     for (int i = 0; i < len; i++) {
         switch (uargs[i].type) {
@@ -493,8 +493,8 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
     }
 
     do_cbor_encoding(&encoder, uargs, len);
-    int clen = cbor_encoder_get_buffer_size(&encoder, (uint8_t *)&buf);
-    Base64encode(out, (char *)buf, clen);
+    int clen = cbor_encoder_get_buffer_size(&encoder, (uint8_t*)&buf);
+    Base64encode(out, (char*)buf, clen);
     uobj = uflow_obj_new(uf, out);
     free_buffer(uargs, len);
     e = queue_new_node(uobj);
@@ -731,29 +731,73 @@ void dfread_string(dftable_entry_t *df, char *val, int maxlen)
     free(p);
 }
 
-void dfread_struct(dftable_entry_t *df, char *fmt, ...)
-{
+void dfread_struct(dftable_entry_t *df, char *fmt, ...) {
     dpanel_t *dp = (dpanel_t *)df->dpanel;
     cnode_t *cn = (cnode_t *)dp->cnode;
     tboard_t *tboard = (tboard_t *)cn->tboard;
-    // va_list args;
-    // darg_t *uargs;
-    // char *label;
-    // nvoid_t *nv;
-
-    int len = strlen(fmt);
-    assert(len > 0);
 
     void *p = dflow_task_create(tboard, df);
     if (p != NULL) {
         derror = 0;
-        // Base64decode((char *)buf, (char *)p);
-        // char *x = __extract_str(buf, Base64decode_len((char *)p));
-        // strncpy(val, x, maxlen);
-        // free(x);
-    } else {
+        uint8_t buf[4096];
+        Base64decode((char *)buf, (char *)p);
+        darg_entry_t* dargs = __extract_map(buf, Base64decode_len((char*)p)),* darg,* tmp;
+
+        int len = strlen(fmt);
+        assert(len > 0);
+        va_list args;
+        char* label;
+
+        va_start(args, fmt);
+        for(int i=0; i<len; i++){
+            label = va_arg(args, char*);
+            HASH_FIND_STR(dargs, label, darg);
+            if(!darg){
+                printf("CBOR could not find field %s\n", label);
+                va_arg(args, void*);
+                continue;
+            }
+            switch(fmt[i]){
+            case 's':
+                if(darg->type == D_STRING_TYPE)
+                    *va_arg(args, char**) = darg->val.sval;
+                else
+                    printf("CBOR type mismatch at %s, excpected s\n", label);
+                break;
+            case 'i':
+                if(darg->type == D_INT_TYPE)
+                    *va_arg(args, int*) = darg->val.ival;
+                else
+                    printf("CBOR type mismatch at %s, excpected i\n", label);
+                break;
+            case 'd':
+                if(darg->type == D_DOUBLE_TYPE)
+                    *va_arg(args, double*) = darg->val.dval;
+                else
+                    printf("CBOR type mismatch at %s, excpected d\n", label);
+                break;
+            case 'f':
+                if(darg->type == D_DOUBLE_TYPE)
+                    *va_arg(args, float*) = (float)darg->val.dval;
+                else
+                    printf("CBOR type mismatch at %s, excpected f\n", label);
+                break;
+            default:
+                printf("CBOR unrecognized format option %c for %s\n", fmt[i], label);
+                va_arg(args, void*);
+            }
+            HASH_DEL(dargs, darg);
+            free(darg->label);
+            free(darg);
+        }
+        va_end(args);
+        HASH_ITER(hh, dargs, darg, tmp){
+            printf("CBOR recieved unused struct field %s\n", darg->label);
+            HASH_DEL(dargs, darg);
+            free(darg->label);
+            free(darg);
+        }
+    } else // Just ignore when error? or could nullify all struct fields
         derror = -1;
-        // *val = 0;
-    }
     free(p);
 }

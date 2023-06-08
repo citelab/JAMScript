@@ -88,7 +88,7 @@ void free_buffer(darg_t *u, int n)
 }
 
 
-int __extract_int(const uint8_t *buffer, size_t len)
+int __extract_int(const uint8_t* buffer, size_t len)
 {
     CborParser parser;
     CborValue value;
@@ -99,7 +99,7 @@ int __extract_int(const uint8_t *buffer, size_t len)
 }
 
 
-double __extract_double(const uint8_t *buffer, size_t len)
+double __extract_double(const uint8_t* buffer, size_t len)
 {
     CborParser parser;
     CborValue value;
@@ -109,14 +109,60 @@ double __extract_double(const uint8_t *buffer, size_t len)
     return result;
 }
 
-char * __extract_str(const uint8_t *buffer, size_t len)
+char* __extract_str(const uint8_t* buffer, size_t len)
 {
     CborParser parser;
     CborValue value;
     cbor_parser_init(buffer, len, 0, &parser, &value);
     size_t n, m;
     cbor_value_calculate_string_length(&value, &n);
-    char *x = calloc(n+1, sizeof(char));
+    char* x = calloc(n+1, sizeof(char));
     cbor_value_copy_text_string(&value, x, &m, NULL);
     return x;
+}
+
+darg_entry_t* __extract_map(const uint8_t* buffer, size_t len)
+{
+    CborParser parser;
+    CborValue value, map;
+    cbor_parser_init(buffer, len, 0, &parser, &value);
+    darg_entry_t* dargs = NULL,* darg;
+    assert(cbor_value_is_map(&value));
+    cbor_value_enter_container(&value, &map);
+    while(!cbor_value_at_end(&map)){
+        size_t n;
+        assert(cbor_value_is_text_string(&map));
+        cbor_value_calculate_string_length(&map, &n);
+        char* field = calloc(n+1, sizeof(char));
+        cbor_value_copy_text_string(&map, field, &n, &map);
+        switch(cbor_value_get_type(&map)){
+        case CborIntegerType:
+            darg = (darg_entry_t*)malloc(sizeof(darg_entry_t));
+            darg->type = D_INT_TYPE;
+            cbor_value_get_int(&map, &darg->val.ival);
+            cbor_value_advance(&map);
+            break;
+        case CborTextStringType:
+            darg = (darg_entry_t*)malloc(sizeof(darg_entry_t));
+            darg->type = D_STRING_TYPE;
+            cbor_value_calculate_string_length(&map, &n);
+            darg->val.sval = calloc(n+1, sizeof(char));
+            cbor_value_copy_text_string(&map, darg->val.sval, &n, &map);
+            break;
+        case CborDoubleType:
+            darg = (darg_entry_t*)malloc(sizeof(darg_entry_t));
+            darg->type = D_DOUBLE_TYPE;
+            cbor_value_get_double(&map, &darg->val.dval);
+            cbor_value_advance(&map);
+            break;
+        default:
+            printf("CBOR unknown type with key %s\n", field);
+            free(field);
+            cbor_value_advance(&map);
+            continue;
+        }
+        darg->label = field;
+        HASH_ADD_STR(dargs, label, darg); // do cbor maps have unique keys? anyways name analyzer should ensure
+    }
+    return dargs;
 }
