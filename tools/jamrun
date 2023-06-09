@@ -152,7 +152,7 @@ dojamout_p2() {
 
 
 cleanup() {
-    reset
+    #reset
     cleanuptmux
     exit 1
 }
@@ -164,8 +164,9 @@ dojamout_p2_fg() {
     local floc=$3
     local group=$4
 
-    buildjargs "--app=$jappid" "--port=$pnum" "--group=$group" "--data=$data" "--tags=$tags" "--iflow=$iflow" "--oflow=$oflow" "--edge=$edge" "--long=$long" "--lat=$lat"
+    buildjargs "--app=$jappid" "--port=$pnum" "--group=$group" "--data=$data" "--tags=$tags" "--iflow=$iflow" "--oflow=$oflow" "--edge=$edge" "--long=$long" "--lat=$lat" "--localregistryhost=$localregistryhost"
     local args=$results
+    echo $args
     case $type in
         cloud)
             node jstart.js $args
@@ -415,6 +416,7 @@ porttaken=0
 tmuxid=
 log=
 edge=1
+localregistryhost=0
 
 # generate the random longitude and lattitude values
 # use the --loc option to override these values
@@ -557,6 +559,9 @@ while :; do
             fi
             ;;
         --device)
+            ;;
+        --local_registry)
+            localregistryhost=1
             ;;
         --bg)
             bg=1
