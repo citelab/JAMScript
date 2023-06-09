@@ -1,8 +1,9 @@
 /* This controls the primary executor and secondary executor */
 
+#include <time.h>
 #include <sys/time.h>
 #include <pthread.h>
-#include <assert.h> 
+#include <assert.h>
 
 #include "tboard.h"
 #include "queue/queue.h"
@@ -134,21 +135,21 @@ struct queue_entry *get_next_task(tboard_t *tboard, int etype, enum execmodes_t 
 void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queue_entry *next, pthread_mutex_t *mutex, pthread_cond_t *cond)
 {
     dftable_entry_t *entry;
-    DO_SNAPSHOT(0);
+    // DO_SNAPSHOT(0);
     ////////// Get queue data, and swap context to function until task yields ///////////
     task_t *task = ((task_t *)(next->data));
     task->status = TASK_RUNNING; // update status incase first run
-    DO_SNAPSHOT(1);
+    // DO_SNAPSHOT(1);
     // swap context to task - to start the execution
     // so.. we start the execution (by default) and then let it yield..
     // at yield the task would indicate the reason for yielding... which we
     // use to process accordingly...
     mco_resume(task->ctx);
-    DO_SNAPSHOT(2);
+    // DO_SNAPSHOT(2);
     // check status of task
     int status = mco_status(task->ctx);
     if (status == MCO_SUSPENDED) { // task yielded
-        DO_SNAPSHOT(3);
+        // DO_SNAPSHOT(3);
         task->yields++; // increment # yields of specific task
         task->hist->yields++; // increment total # yields in history hash table
         struct queue_entry *e = NULL;
@@ -192,13 +193,13 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
             }
 
         } else { // just a normal yield, so we create node to reinsert task into queue
-            DO_SNAPSHOT(4);
+            // DO_SNAPSHOT(4);
             e = queue_new_node(task);
-            DO_SNAPSHOT(5);
+            // DO_SNAPSHOT(5);
         }
 
         if (e != NULL){
-            DO_SNAPSHOT(6);
+            // DO_SNAPSHOT(6);
             // reinsert task into queue it was taken out of
             pthread_mutex_lock(mutex); // lock appropriate mutex
             switch (task->type) {
@@ -213,7 +214,7 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
             }
             if(type == PRIMARY_EXECUTOR) pthread_cond_signal(cond); // we wish to wake secondary executors if they are asleep
             pthread_mutex_unlock(mutex);
-            DO_SNAPSHOT(7);
+            // DO_SNAPSHOT(7);
         }
     } else if (status == MCO_DEAD) { // task has terminated
         task->status = TASK_COMPLETED; // mark task as complete for history hash table
@@ -345,11 +346,14 @@ void *executor(void *arg)
     disable_thread_cancel();
 
     while (true) {
+        DO_SNAPSHOT(0);
         // create single cancellation point
         set_thread_cancel_point_here();
         // process the timing wheel events
+        DO_SNAPSHOT(1);
         process_timing_wheel(tboard, &mode);
-    //    mode = BATCH_MODE_EXEC;
+        DO_SNAPSHOT(2);
+        // mode = BATCH_MODE_EXEC;
         if (mode == BATCH_MODE_EXEC)
             process_internal_queue(tboard);
 
@@ -359,24 +363,30 @@ void *executor(void *arg)
         // task is taken out of. This is important to track for pExec after taking a task
         // out of a secondary queue when primary queue is empty
         struct queue *q = NULL; // queue entry to reinsert task into after yielding
-        DO_SNAPSHOT(0);
+        DO_SNAPSHOT(3);
         // Fetch next task to run
         next = get_next_task(tboard, type, mode, num, &q, &mutex, &cond);
-        DO_SNAPSHOT(1);
-        DO_SNAPSHOT(2);
+        DO_SNAPSHOT(4);
         if (next) { // TExec found a task to run
-            DO_SNAPSHOT(3);
-            process_next_task(tboard, type, &q, next, mutex, cond);
-            DO_SNAPSHOT(4);
-            free(next);
             DO_SNAPSHOT(5);
+            process_next_task(tboard, type, &q, next, mutex, cond);
+            DO_SNAPSHOT(6);
+            free(next);
+            PRINT_SNAPSHOTS(1);
         } else {
             // empty queue, we sleep on appropriate condition variable until signal received
             if (type == PRIMARY_EXECUTOR) {
-                conditional_timedwait(&(tboard->pmutex), &(tboard->pcond), &(pexec_timeout));
+                DO_SNAPSHOT(7);
+                timeout_t sleep_micros = twheel_get_sleep_duration(tboard, pexec_max_sleep);
+                DO_SNAPSHOT(8);
+                if(sleep_micros > 0) {
+                    struct timespec pexec_timeout = {.tv_sec = 0, .tv_nsec = sleep_micros * 1000}; // NOTE: assumes max sleep is less than a second
+                    conditional_timedwait(&(tboard->pmutex), &(tboard->pcond), &(pexec_timeout));
+                }
+                DO_SNAPSHOT(9);
             } else
                 conditional_wait(&(tboard->smutex[num]), &(tboard->scond[num]));
         }
-        PRINT_SNAPSHOTS(10000);
+        // PRINT_SNAPSHOTS(10000);
     }
 }
