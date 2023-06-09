@@ -171,6 +171,9 @@ TIMEOUT_PUBLIC void timeouts_close(struct timeouts *);
 TIMEOUT_PUBLIC timeout_t timeouts_hz(struct timeouts *);
 /* return HZ setting (for float conversions) */
 
+TIMEOUT_PUBLIC timeout_t timeouts_curtime(struct timeouts *);
+/* return timing wheel's current time */
+
 TIMEOUT_PUBLIC void timeouts_update(struct timeouts *, timeout_t);
 /* update timing wheel with current absolute time */
 

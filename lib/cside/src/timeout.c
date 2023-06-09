@@ -294,6 +294,10 @@ TIMEOUT_PUBLIC timeout_t timeouts_hz(struct timeouts *T) {
 	return T->hertz;
 } /* timeouts_hz() */
 
+TIMEOUT_PUBLIC timeout_t timeouts_curtime(struct timeouts* T) {
+    return T->curtime;
+} /* timeouts_curtime() */
+
 
 TIMEOUT_PUBLIC void timeouts_del(struct timeouts *T, struct timeout *to) {
 	if (to->pending) {
@@ -489,7 +493,7 @@ TIMEOUT_PUBLIC reltime_t timeouts_scan(struct timeouts *T, reltime_t elapsed, vo
                 if (to->expires<=curtime)
                     for(int i=0; i<fnn; i++)
                         if(to->callback.fn==fns[i]){
-                            minsleep = MIN(minsleep, T->curtime - to->expires);
+                            minsleep = MIN(minsleep, timeout_rem(T, to));
                             break;
                         }
             wp &= ~(UINT64_C(1) << slot);

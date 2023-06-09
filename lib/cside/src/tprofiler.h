@@ -1,4 +1,3 @@
-
 #ifndef __TPROFILER_H__
 #define __TPROFILER_H__
 
@@ -12,23 +11,23 @@ long int _getcurtime()
 {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
-    return ts.tv_sec * 1000000000 +  ts.tv_nsec;
+    return ts.tv_sec * 1000000 +  ts.tv_nsec/1000;
 }
 
 // uncomment the line below to do snapshots
-//#define     __INSERT_SNAPSHOT           1
+// #define     __INSERT_SNAPSHOT           1
 
 #ifdef __INSERT_SNAPSHOT
-    #define DO_SNAPSHOT(X) do {
+#define DO_SNAPSHOT(X) do {                        \
             get_snapshot(X);                       \
     } while (0);
 
-    #define PRINT_SNAPSHOTS(X) do {
+#define PRINT_SNAPSHOTS(X) do {                    \
             print_snapshot_summary(X);             \
     } while (0);
-#else 
-    #define DO_SNAPSHOT(X) 
-    #define PRINT_SNAPSHOTS(X) 
+#else
+    #define DO_SNAPSHOT(X)
+    #define PRINT_SNAPSHOTS(X)
 #endif
 
 #define MAX_SNAPS               32
@@ -49,12 +48,13 @@ void get_snapshot(int i)
     if (maxi < i) maxi = i;
 }
 
-void print_snapshot_summary(int n) 
+void print_snapshot_summary(int n)
 {
     if (count % n == 0) {
         printf("\n");
-        for (int i = 0; i <= maxi; i++)
-            printf("\t %f", timediffs[i]/count);
+        for (int i = 0; i <= maxi; i++){
+            printf("\t %ld", timesnaps[i]);
+        }
         printf("\n");
     }
 }
