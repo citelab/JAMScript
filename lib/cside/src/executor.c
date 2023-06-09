@@ -1,8 +1,9 @@
 /* This controls the primary executor and secondary executor */
 
+#include <time.h>
 #include <sys/time.h>
 #include <pthread.h>
-#include <assert.h> 
+#include <assert.h>
 
 #include "tboard.h"
 #include "queue/queue.h"
@@ -349,7 +350,7 @@ void *executor(void *arg)
         set_thread_cancel_point_here();
         // process the timing wheel events
         process_timing_wheel(tboard, &mode);
-    //    mode = BATCH_MODE_EXEC;
+        // mode = BATCH_MODE_EXEC;
         if (mode == BATCH_MODE_EXEC)
             process_internal_queue(tboard);
 
@@ -373,6 +374,9 @@ void *executor(void *arg)
         } else {
             // empty queue, we sleep on appropriate condition variable until signal received
             if (type == PRIMARY_EXECUTOR) {
+                timeout_t sleep_micros = twheel_get_sleep_duration(tboard, pexec_max_sleep);
+                struct timespec pexec_timeout = {.tv_sec = 0, // NOTE: assumes max sleep is less than a second
+                                                 .tv_nsec = sleep_micros * 1000};
                 conditional_timedwait(&(tboard->pmutex), &(tboard->pcond), &(pexec_timeout));
             } else
                 conditional_wait(&(tboard->smutex[num]), &(tboard->scond[num]));

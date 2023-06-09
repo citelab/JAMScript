@@ -147,7 +147,7 @@ TIMEOUT_PUBLIC struct timeout *timeout_init(struct timeout *, int);
 #ifndef TIMEOUT_DISABLE_RELATIVE_ACCESS
 TIMEOUT_PUBLIC bool timeout_pending_tlib(struct timeout *);
 /* true if on timing wheel, false otherwise */
- 
+
 TIMEOUT_PUBLIC bool timeout_expired(struct timeout *);
 /* true if on expired queue, false otherwise */
 
@@ -173,6 +173,9 @@ TIMEOUT_PUBLIC timeout_t timeouts_hz(struct timeouts *);
 
 TIMEOUT_PUBLIC void timeouts_update(struct timeouts *, timeout_t);
 /* update timing wheel with current absolute time */
+
+TIMEOUT_PUBLIC timeout_t timeouts_scan(struct timeouts *T, timeout_t elapsed, void (**fns)(void*), int fnn);
+/* check timeouts occuring in the given interval for against a task list for if sleep time need be reduced */
 
 TIMEOUT_PUBLIC void timeouts_step(struct timeouts *, timeout_t);
 /* step timing wheel by relative time */
@@ -205,7 +208,7 @@ TIMEOUT_PUBLIC bool timeouts_check(struct timeouts *, FILE *);
 
 #define TIMEOUTS_IT_INITIALIZER(flags) { (flags), 0, 0, 0, 0 }
 
-#define TIMEOUTS_IT_INIT(cur, _flags) do {                              \
+#define TIMEOUTS_IT_INIT(cur, _flags) do {                          \
 	(cur)->flags = (_flags);                                        \
 	(cur)->pc = 0;                                                  \
 } while (0)
@@ -223,7 +226,7 @@ TIMEOUT_PUBLIC struct timeout *timeouts_next(struct timeouts *, struct timeouts_
  * could invalidate cursor state and trigger a use-after-free.
  */
 
-#define TIMEOUTS_FOREACH(var, T, flags)                                 \
+#define TIMEOUTS_FOREACH(var, T, flags)                             \
 	struct timeouts_it _it = TIMEOUTS_IT_INITIALIZER((flags));      \
 	while (((var) = timeouts_next((T), &_it)))
 

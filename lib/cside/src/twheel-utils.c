@@ -114,3 +114,11 @@ void twheel_update_to_now(tboard_t *tb)
     timeouts_update(tb->twheel, (timeout_t)getcurtime());
     pthread_mutex_unlock(&tb->twmutex);
 }
+
+timeout_t twheel_get_sleep_duration(tboard_t* tb, timeout_t max_sleep) {
+    void (*alarm_tasks[3])(void*) = {dummy_next_sy_slot, dummy_next_rt_slot, dummy_next_sleep_event};
+    pthread_mutex_lock(&tb->twmutex);
+    max_sleep = timeouts_scan(tb->twheel, max_sleep, alarm_tasks, 3);
+    pthread_mutex_unlock(&tb->twmutex);
+    return max_sleep;
+}

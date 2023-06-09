@@ -937,6 +937,7 @@ void *clone_taskid(long int *task_id);
 bool twheel_add_event(tboard_t *tb, twheel_event_t type, void *arg, timeout_t tval);
 bool twheel_delete_timeout(tboard_t *tb, long int *id);
 void twheel_update_to_now(tboard_t *tb);
+timeout_t twheel_get_sleep_duration(tboard_t* tb, timeout_t max_sleep);
 
 
 ////////////////////////////////////////////////////////////////
