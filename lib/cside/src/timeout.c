@@ -122,11 +122,19 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #if !defined WHEEL_BIT
+#ifdef SUPPORT_32_BIT
+#define WHEEL_BIT 5
+#else
 #define WHEEL_BIT 6
+#endif
 #endif
 
 #if !defined WHEEL_NUM
+#ifdef SUPPORT_32_BIT
+#define WHEEL_NUM 5
+#else
 #define WHEEL_NUM 4
+#endif
 #endif
 
 #define WHEEL_LEN (1U << WHEEL_BIT)
@@ -273,7 +281,7 @@ static void timeouts_reset(struct timeouts *T) {
 
 TIMEOUT_PUBLIC void timeouts_close(struct timeouts *T) {
 	/*
-	 * NOTE: Delete installed timeouts so timeout_pending() and
+	 * NOTE: Delete installed timeouts so timeout_pending_tlib() and
 	 * timeout_expired() worked as expected.
 	 */
 	timeouts_reset(T);
@@ -521,7 +529,7 @@ static timeout_t timeouts_int(struct timeouts *T) {
 			timeout = MIN(_timeout, timeout);
 		}
 
-		relmask <<= WHEEL_BIT; 
+		relmask <<= WHEEL_BIT;
 		relmask |= WHEEL_MASK;
 	}
 
@@ -697,9 +705,9 @@ TIMEOUT_PUBLIC struct timeout *timeout_init(struct timeout *to, int flags) {
 
 
 #ifndef TIMEOUT_DISABLE_RELATIVE_ACCESS
-TIMEOUT_PUBLIC bool timeout_pending(struct timeout *to) {
+TIMEOUT_PUBLIC bool timeout_pending_tlib(struct timeout *to) {
 	return to->pending && to->pending != &to->timeouts->expired;
-} /* timeout_pending() */
+} /* timeout_pending_tlib() */
 
 
 TIMEOUT_PUBLIC bool timeout_expired(struct timeout *to) {
@@ -707,9 +715,9 @@ TIMEOUT_PUBLIC bool timeout_expired(struct timeout *to) {
 } /* timeout_expired() */
 
 
-TIMEOUT_PUBLIC void timeout_del(struct timeout *to) {
+TIMEOUT_PUBLIC void timeout_del_tlib(struct timeout *to) {
 	timeouts_del(to->timeouts, to);
-} /* timeout_del() */
+} /* timeout_del_tlib() */
 #endif
 
 
@@ -741,4 +749,3 @@ TIMEOUT_PUBLIC int timeout_v_abi(void) {
 TIMEOUT_PUBLIC int timeout_v_api(void) {
 	return TIMEOUT_V_API;
 } /* timeout_version() */
-

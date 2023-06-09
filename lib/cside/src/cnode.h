@@ -2,7 +2,7 @@
 #define __CNODE_H__
 
 #include "tboard.h"
-#include "mqtt_adapter.h"
+#include "mqtt-adapter.h"
 #include "core.h"
 
 #define MAX_EDGE_SERVERS            16
@@ -49,6 +49,9 @@ typedef struct cnode_args_t {
     int groupid;
     char *appid;
     int port;
+    char *host;
+    int redport;
+    char *redhost;
     int snumber;
     int nexecs;
 } cnode_args_t;
@@ -83,7 +86,7 @@ void cnode_topics_destroy(topics_t *t);
 server_t *cnode_create_mbroker(cnode_t *cn, enum levels level, char *server_id, char *host, int port, char *topics[], int ntopics);
 void cnode_recreate_mbroker(server_t *serv, enum levels level, char *server_id, char *host, int port, char *topics[], int ntopics);
 
-broker_info_t *cnode_scanj(int groupid, int port);
+broker_info_t *cnode_scanj(int groupid, char *host, int port);
 
 void cnode_setcoords(cnode_t *cn, float xc, float yc);
 void cnode_setwidth(cnode_t *cn, int width);
@@ -170,10 +173,7 @@ void destroy_args(cnode_args_t *args); // args.c
  * Context: Dellocates cnode_args_t pointer and any other allocations of process_args()
  */
 
-////////////////////////////////////////
-////// CNODE UTILS (for testing)////////
-////////////////////////////////////////
+int get_jamclock(cnode_t *cn);
 
-void temp_schedule_inject(cnode_t *cn, int type);
 
 #endif

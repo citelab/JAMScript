@@ -9,6 +9,7 @@
 #include "../src/constants.h"
 #include "../src/tboard.h"
 #include "../src/jcond.h"
+#include "../src/dpanel.h"
 
 #include "minicoro.h"
 #include "utarray.h"

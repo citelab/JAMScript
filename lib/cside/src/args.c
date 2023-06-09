@@ -35,7 +35,10 @@ cnode_args_t *process_args(int argc, char **argv) {
     cnode_args_t *args = (cnode_args_t *)malloc(sizeof(cnode_args_t));
 
     // set default values (e.g., port number)
+    args->redport = DEFAULTS_REDPORT;
+    args->redhost = DEFAULTS_REDHOST;
     args->port = DEFAULTS_PORT;
+    args->host = strdup(DEFAULTS_HOST);
     args->nexecs = DEFAULTS_NUMEXECUTORS;
     args->snumber = DEFAULTS_SERIALNUM;
     args->appid = NULL;
@@ -45,7 +48,7 @@ cnode_args_t *process_args(int argc, char **argv) {
     int c;
 
     // parse the arguments..
-    while ((c = getopt (argc, argv, "p:a:n:g:t:x:")) != -1)
+    while ((c = getopt (argc, argv, "h:r:o:p:a:n:g:t:x:")) != -1)
     switch (c)
     {
         case 'a':
@@ -60,6 +63,15 @@ cnode_args_t *process_args(int argc, char **argv) {
         case 't':
             args->tags = optarg;
         break;
+        case 'h':
+            args->host = optarg;
+        break;
+        case 'r':
+            args->redhost = optarg;
+        break;
+        case 'o':
+            args->redport = atoi(optarg);
+        break;
         case 'p':
             args->port = atoi(optarg);
         break;
@@ -67,7 +79,7 @@ cnode_args_t *process_args(int argc, char **argv) {
             args->nexecs = atoi(optarg);
         break;
         default:
-            terminate_error(true, "Unknown input option\nUsage: program -a app_id [-t tag] [-g groupid] [-n num] [-p port] [-x executors]\n");
+            terminate_error(true, "Unknown input option\nUsage: program -a app_id [-t tag] [-g groupid] [-n num] [-p port] [-h host] [-r redhost] [-o redport] [-x executors]\n");
     }
 
     // check validity

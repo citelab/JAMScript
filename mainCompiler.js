@@ -12,12 +12,12 @@ const fs = require("fs"),
     os = require('os');
 const JSZip = checkedRequire("jszip", "ERROR! jsZip not installed. Install jsZip first using 'npm install jszip'");
 
-// global parameters 
+// global parameters
 let preprocessDecls;
 let tmpDir = "/tmp/jam-" + randomValueHex(20);
 let homeDir = os.homedir();
 
-// Core of the compiler 
+// Core of the compiler
 let args = processArgs();
 validateArgs(args);
 runMain(args);
@@ -32,16 +32,17 @@ function runMain(cargs) {
         try {
             var preprocessedOutput = preprocess(cargs.cPath, cargs);
             preprocessed = preprocessedOutput.program;
-            lineNumber = preprocessedOutput.lineNumber;
-        } catch (e) { 
+			lineNumber = preprocessedOutput.lineNumber;
+        } catch (e) {
             printAndExit("Exiting with preprocessor error");
         }
-        
-        if (cargs.preprocessOnly) 
+
+        if (cargs.preprocessOnly)
             printAndExit(preprocessed);
 
         let results = jam.compile(preprocessed, fs.readFileSync(cargs.jsPath).toString(),
-                                    lineNumber, cargs.yieldPoint);
+                                  lineNumber, cargs.yieldPoint);
+
         cargs.cSideEffectTable = results.C_SideEffectTable;
         cargs.jsSideEffectTable = results.JS_SideEffectTable;
 
@@ -103,8 +104,14 @@ function nativeCompile(code, cargs) {
             includes + preprocessDecls.join("\n") + "\n" + code
         );
 
+
         try {
-            var command = `clang -g ${tmpDir}/jamout.c -o ${tmpDir}/a.out -I/usr/local/include -I${homeDir}/.jamruns/clib/include -I${homeDir}/.jamruns/clib/src ${options} -pthread -ltinycbor -lmosquitto -lmujs  ${homeDir}/.jamruns/clib/libjam.a  ${homeDir}/.jamruns/jamhome/deps/mujs2/build/release/libmujs.a -L/usr/local/lib`;
+            var command = `clang -g ${tmpDir}/jamout.c -o ${tmpDir}/a.out -I/usr/local/include -I${homeDir}/.jamruns/clib/include -I${homeDir}/.jamruns/clib/src ${options} -pthread -ltinycbor -lmosquitto -lhiredis -levent  ${homeDir}/.jamruns/clib/libjam.a  ${homeDir}/.jamruns/jamhome/deps/mujs2/build/release/libmujs.a -L/usr/local/lib`;
+
+            let err = child_process.spawnSync('ld', ['-lwiringPi']).stderr;
+            if(err == null || !err.includes("-lwiringPi"))
+                command += " -lwiringPi";
+
             console.log("Compiling C code...");
             if (cargs.verbose) {
                 console.log(command);
@@ -140,7 +147,7 @@ function preprocess(file, cargs) {
     fs.writeFileSync(`${tmpDir}/pre.c`, contents);
     let command = `clang -E -P -I/usr/local/include -I${homeDir}/.jamruns/jamhome/deps/fake_libc_include -I${homeDir}/.jamruns/clib/include ${tmpDir}/pre.c`;
 
-    if (cargs.verbose) 
+    if (cargs.verbose)
         console.log(command);
 
     let preprocessedProg = child_process.execSync(command).toString();

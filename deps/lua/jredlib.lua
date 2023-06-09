@@ -1,5 +1,11 @@
 #!lua name=jredlib
 
+
+-- this is for debugging purposes
+local function log(value) 
+    redis.call('PUBLISH', 'logger', value)
+end
+
 -- ASSUMPTION: All keys are unique - the compiler is responsible for this check
 -- The keys are the variable names - so we need to have unique names
 
@@ -49,16 +55,37 @@ local function config(keys, args)
     end
 end
 
+
 -- this is maintaining a persistent table for the connected nodes and maintaining 
 -- an entry for each node. the node-counter would give us the total number of 
 -- that got connected to the system. it won't be the current number of nodes
 -- at any given time
+-- NOTE: in this function, the key is hardcoded - we are not passing as arguments
+-- syntax::  fcall get_id 0 node-name --> index (> 0)
 local function get_id(keys, args)
     local s = args[1]
     local v = redis.call('HGET', 'node-ids', s)
     if (v == false) then 
         local cntr = redis.call('HINCRBY', 'node-ids', 'node-counter', 1)
         redis.call('HSET', 'node-ids', s, cntr)
+        return tonumber(cntr)
+    else 
+        return tonumber(v)
+    end 
+end
+
+-- this is maintaining a persistent table for the applications running on the store
+-- an entry for each application. the app-counter would give us the total number of 
+-- running applications. it won't be the current active applications (includes all inactive
+-- applications as well.
+-- NOTE: in this function, the key is hardcoded - we are not passing as arguments
+-- syntax::  fcall app_id 0 app-name --> index (> 0)
+local function app_id(keys, args)
+    local s = args[1]
+    local v = redis.call('HGET', 'app-ids', s)
+    if (v == false) then 
+        local cntr = redis.call('HINCRBY', 'app-ids', 'app-counter', 1)
+        redis.call('HSET', 'app-ids', s, cntr)
         return tonumber(cntr)
     else 
         return tonumber(v)
@@ -74,8 +101,6 @@ end
 -- One entry for each flow (we use the key - variable name - to index)
 --
 -- The entry for the flow will have the following information: number of elements, 
-
-
 
 -- 
 -- INSERT ISSUE
@@ -130,17 +155,15 @@ local function set_pending(key, newclk)
     end
 end
 
-
-
 local function flush_pending(clk) 
-    for key, pt in pairs(pending_writes) do 
+    for akey, pt in pairs(pending_writes) do 
         if (clk - pt[1] > PENDING_TOO_OLD) then 
             table.remove(pt, 1)
-            local kpend = key..'###pending'
-            local kcomp = key..'###complete'
+            local kpend = akey..'###pending'
+            local kcomp = akey..'###complete'
             local rec = redis.call('LPOP', kpend, 1)
             redis.call('RPUSH', kcomp, rec)
-            redis.call('PUBLISH', "__keycompleted", key)
+            redis.call('PUBLISH', "__keycompleted", akey)
         end
     end
     local pclk = clk
@@ -161,8 +184,6 @@ local function is_pending(newclk)
         return false
     end
 end
-
-
 
 local active_writers = {}
 local max_clock = 0
@@ -190,7 +211,7 @@ local function testme()
 end
 
 local function trim_flow(ks, count)
-    local pelems = redis.call('ZPOPMIN', ksset, count)
+    local pelems = redis.call('ZPOPMIN', ks, count)
     if (#pelems > 0) then 
         for i = 1, #pelems do 
             local fields = redis.call('HKEYS', pelems[i])  -- this hack has not problem.. we cannot have large uflow and have ssres nil
@@ -204,18 +225,21 @@ end
 local clkat_wcount = 0
 local writer_count = 1
 
+-- main writing function for uflow
+-- syntax: fcall uf_write 1 key, clock, node-id, app-id, width, xcoord, ycoord, value
 local function uf_write(keys, args) 
     local k = keys[1]
-    local ksset = k..'###sset'
-    local khash = k..'###hash'
-    local kcomp = k..'###complete'
-    local kpend = k..'###pending'
     local clock = tonumber(args[1])
     local id = args[2]
-    local width = tonumber(args[3])
-    local xcoord = args[4]
-    local ycoord = args[5]
-    local value = args[6]
+    local appid = args[3]
+    local width = tonumber(args[4])
+    local xcoord = args[5]
+    local ycoord = args[6]
+    local value = args[7]
+    local ksset = appid..'###'..k..'###sset'
+    local khash = appid..'###'..k..'###hash'
+    local kcomp = appid..'###'..k..'###complete'
+    local kpend = appid..'###'..k..'###pending'
     -- get expected writers - if width is 0, we set the number of active writers as expected
     -- NOTE: the width specification solves an important problem - we can materialize streams that have irregular width 
     -- we expect the outside program to specify what the width should be
@@ -228,16 +252,16 @@ local function uf_write(keys, args)
     local ssres = redis.call('ZRANGE', ksset, clock, clock, 'BYSCORE')
     if (#ssres == 0) then 
         local hindx = redis.call('HINCRBY', khash, 'counter', 1)
-        local ssres = redis.call('ZADD', ksset, clock, k..'###'..hindx)
-        redis.call('HSET', k..'###'..hindx, 'expected', expected, 'count', 1, 'id###'..id, id, 'xcoord###'..id, xcoord, 'ycoord###'..id, ycoord, 'value###'..id, value)
+        local ssres = redis.call('ZADD', ksset, clock, appid..'###'..k..'###'..hindx)
+        redis.call('HSET', appid..'###'..k..'###'..hindx, 'expected', expected, 'count', 1, 'id###'..id, id, 'xcoord###'..id, xcoord, 'ycoord###'..id, ycoord, 'value###'..id, value)
         if (writer_count == 1) then 
             -- put it in the completed list and signal.. there is nothing more to expect
-            redis.call('RPUSH', kcomp, k..'###'..hindx)
-            redis.call('PUBLISH', "__keycompleted", k)
+            redis.call('RPUSH', kcomp, appid..'###'..k..'###'..hindx)
+            redis.call('PUBLISH', appid.."__keycompleted", k)
         else
             -- put it in the expected list.. we have more writers to come
-            redis.call('RPUSH', kpend, k..'###'..hindx)
-            set_pending(k, clock)
+            redis.call('RPUSH', kpend, appid..'###'..k..'###'..hindx)
+            set_pending(appid..'###'..k, clock)
         end
     else
         redis.call('HSET', ssres[1], 'id###'..id, id, 'xcoord###'..id, xcoord, 'ycoord###'..id, ycoord, 'value###'..id, value)
@@ -249,7 +273,7 @@ local function uf_write(keys, args)
         if (tcount >= texpect) then 
             redis.call('LREM', kpend, 1, ssres[1]) 
             redis.call('RPUSH', kcomp, ssres[1])
-            redis.call('PUBLISH', "__keycompleted", k)
+            redis.call('PUBLISH', appid.."__keycompleted", k)
         end
     end
     -- update the size of the flow
@@ -260,18 +284,17 @@ local function uf_write(keys, args)
 end
 
 
-local function log(value) 
-    redis.call('SET', 'log', value)
-end
 
 
 
 -- get the element at a particular score value for a key (variable name)
+-- syntax:: fcall uf_randread 1 key appid clock --> value at the clock
 local function uf_randread(keys, args) 
     local k = keys[1]
-    local ksset = k..'###sset'
-    local khash = k..'###hash'
-    local clock = tonumber(args[1])
+    local appid = args[1]
+    local clock = tonumber(args[2])
+    local ksset = appid..'###'..k..'###sset'
+    local khash = appid..'###'..k..'###hash'    
     local ssres = redis.call('ZRANGE', ksset, clock, clock, 'BYSCORE')
     if (#ssres == 0) then 
         return ssres
@@ -281,9 +304,11 @@ local function uf_randread(keys, args)
 end 
 
 -- get the last element of the completed list
+-- syntax:: fcall uf_lread 1 key appid --> value at the end
 local function uf_lread(keys, args) 
     local k = keys[1]
-    local klist = k..'###complete'
+    local appid = args[1]
+    local klist = appid..'###'..k..'###complete'
     local len = redis.call('LLEN', klist)
     if (len > 0) then 
         local ssres = redis.call('RPOP', klist, 1)
@@ -294,9 +319,11 @@ local function uf_lread(keys, args)
 end 
 
 -- get the first element of the completed list
+-- syntax:: fcall uf_fread 1 key appid --> value at the front
 local function uf_fread(keys, args) 
     local k = keys[1]
-    local klist = k..'###complete'
+    local appid = args[1]
+    local klist = appid..'###'..k..'###complete'
     local ssres = redis.call('LPOP', klist, 1)
     if (#ssres == 0) then 
         return ssres
@@ -312,19 +339,22 @@ end
 -- there is a slight complication here. we assume that the different fogs have their own data stores.
 -- otherwise, we will have multiple writers to the dflow which would break our assumption over here.
 --
+-- syntax:: fcall df_write 1 key clock nodeid appid xcoord ycoord value
+--
 local function df_write(keys, args) 
     local k = keys[1]
-    local kcomp = k..'###complete'
-    local khash = k..'###hash'
     local clock = tonumber(args[1])
     local id = args[2]
-    local xcoord = args[3]
-    local ycoord = args[4]
-    local value = args[5]
+    local appid = args[3]
+    local xcoord = args[4]
+    local ycoord = args[5]
+    local value = args[6]
+    local kcomp = appid..'###'..k..'###complete'
+    local khash = appid..'###'..k..'###hash'
     local hindx = redis.call('HINCRBY', khash, 'counter', 1)
-    local ssres = redis.call('ZADD', kcomp, clock, k..'###'..hindx)
-    redis.call('HSET', k..'###'..hindx, 'id###'..id, id, 'xcoord###'..id, xcoord, 'ycoord###'..id, ycoord, 'value###'..id, value)
-    redis.call('PUBLISH', '__d__keycompleted', k)
+    local ssres = redis.call('ZADD', kcomp, clock, appid..'###'..k..'###'..hindx)
+    redis.call('HSET', appid..'###'..k..'###'..hindx, 'id###'..id, id, 'xcoord###'..id, xcoord, 'ycoord###'..id, ycoord, 'value###'..id, value)
+    redis.call('PUBLISH', appid..'__d__keycompleted', k)
 
     local size = redis.call('ZCARD', kcomp)
     if (size > DFLOW_SIZE) then 
@@ -335,10 +365,12 @@ end
 -- always go to the end of the dflow. So, a slow reader can skip many elements in the stream. 
 -- the reader is trying to keep up with the stream. no need to maintain the read pointer for this mode of reading.
 --
+-- syntax:: fcall df_lread 1 key appid --> read the last value in down flow
 --
 local function df_lread(keys, args) 
     local k = keys[1]
-    local kcomp = k..'###complete'
+    local appid = args[1]
+    local kcomp = appid..'###'..k..'###complete'
     local ssres = redis.call('ZRANGE', kcomp, 0, 0, 'REV')
     return redis.call('HGETALL', ssres[1])
 end 
@@ -350,11 +382,13 @@ end
 -- goes to sleep - in that case, the writer would have advanced the stream by too much so that the reader misses some of the 
 -- rows - data items.
 --
-
+-- syntax:: fcall df_fread 1 key nodeid appid --> read the first value in down flow
+--
 local function df_fread(keys, args) 
     local k = keys[1]
     local id = args[1]
-    local kcomp = k..'###complete'
+    local appid = args[2]
+    local kcomp = appid..'###'..k..'###complete'
     -- check the cursorget cursor for the key and if it is nil
     local record = nil
     if (dflows[kcomp] == nil) then 
@@ -391,6 +425,7 @@ end
 redis.register_function('config', config)
 redis.register_function('testme', testme)
 redis.register_function('get_id', get_id)
+redis.register_function('app_id', app_id)
 redis.register_function('uf_write', uf_write)
 redis.register_function('uf_fread', uf_fread)
 redis.register_function('uf_lread', uf_lread)

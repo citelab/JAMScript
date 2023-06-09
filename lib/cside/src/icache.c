@@ -15,7 +15,7 @@ void clean_icache(struct id_entry *t)
 void switch_icache(icache_t *ic)
 {
     ic->curtab = (ic->curtab + 1) % 3;
-    int cleantab = (ic->curtab - 2) % 3;
+    int cleantab = (ic->curtab + 1) % 3;
     clean_icache(ic->tables[cleantab]);
     ic->tables[cleantab] = NULL;
 }
@@ -58,14 +58,14 @@ bool icache_lookup(icache_t *ic, long int task_id, char *node_id)
     char buf[1024];
     snprintf(buf, 1024, "%lu%s", task_id, node_id);
     HASH_FIND_STR(ic->tables[ic->curtab], buf, entry);
-    if (entry) 
+    if (entry)
         return true;
     else {
-        int prevtab = (ic->curtab - 1) % 3;
+        int prevtab = (ic->curtab + 2) % 3;
         HASH_FIND_STR(ic->tables[prevtab], buf, entry);
         if (entry)
             return true;
-        else 
+        else
             return false;
     }
 }

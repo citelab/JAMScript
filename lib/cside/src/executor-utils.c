@@ -1,8 +1,8 @@
 #include "tboard.h"
 #include "sleeping.h"
 
-/* 
- * Dummy functions.. these are just name holders. The real operations are 
+/*
+ * Dummy functions.. these are just name holders. The real operations are
  * done by another set of functions.
  */
 void dummy_next_schedule(void *arg)
@@ -36,18 +36,18 @@ void dummy_next_timeout_event(void *arg)
 }
 
 /*
- * This function is run to make a new schedule - from the one that is found 
- * in the taskboard - schedule object. The schedule has a specific length. 
- * At the end of the schedule - we put a TW_EVENT_INSTALL_SCHEDULE. For other 
- * types we install the proper event: TW_EVENT_RT_SCHEDULE, etc. 
+ * This function is run to make a new schedule - from the one that is found
+ * in the taskboard - schedule object. The schedule has a specific length.
+ * At the end of the schedule - we put a TW_EVENT_INSTALL_SCHEDULE. For other
+ * types we install the proper event: TW_EVENT_RT_SCHEDULE, etc.
  *
- * IMPORTANT: at bootstrap, we install a default schedule. if the schedule is 
- * received from the controller, then we install it. 
+ * IMPORTANT: at bootstrap, we install a default schedule. if the schedule is
+ * received from the controller, then we install it.
  * PARAMS: taskboard and end time
  */
-void install_next_schedule(tboard_t *tb, long int etime)
+void install_next_schedule(tboard_t *tb, timeout_t etime)
 {
-    long int stime = getcurtime();
+    timeout_t stime = getcurtime();
     stime = etime > stime ? etime : stime;
 
     pthread_mutex_lock(&tb->schmutex);
@@ -61,12 +61,12 @@ void install_next_schedule(tboard_t *tb, long int etime)
 
 /*
  * This function waits for the SY slot time.. using busy waiting.. so we can
- * precisely start the SY task at that point. This function does not start the task 
- * or even set the execution mode. We just wait until the correct time. 
+ * precisely start the SY task at that point. This function does not start the task
+ * or even set the execution mode. We just wait until the correct time.
  */
-void wait_to_sy_slot(tboard_t *tb, void *arg, long int stime)
+void wait_to_sy_slot(tboard_t *tb, void *arg, timeout_t stime)
 {
-    long int tremain = stime - getcurtime();
+    timeout_t tremain = stime - getcurtime();
     if (tremain > 0)
         smart_sleep(&(tb->sleeper), tremain);
 }
@@ -101,7 +101,7 @@ void process_timeout_event(tboard_t *t, void *arg)
         {
             if (rtask->status == RTASK_ACK_PENDING || rtask->status == RTASK_RES_PENDING) {
                 rtask->retries--;
-                if (rtask->retries > 0) 
+                if (rtask->retries > 0)
                     remote_task_place(t, rtask);
             }
         }
