@@ -80,6 +80,8 @@ Use the --verb option to turn on verbose messaging.
 
 Use --valgrind to run the cside with valgrind for leak checking.
 
+Use --local to disable multicast discovery of the J node. The C node assumes that the J node in the local loopback.
+
 Usage: jamrun file.jxe
                 [--app=appl_name]
                 [--fog|--cloud]
@@ -95,6 +97,7 @@ Usage: jamrun file.jxe
                 [--loc=long,lat]
                 [--edge=num_edge_connections]
                 [--valgrind]
+                [--local]
 
 
 The jamrun command creates a run state in the $HOME/.jamruns folder.
@@ -411,6 +414,7 @@ num=1
 tags=
 bg=
 old=
+local=
 porttaken=0
 tmuxid=
 log=
@@ -570,6 +574,9 @@ while :; do
         --old)
             old=1
             ;;
+        --local)
+            local=1
+            ;;
 		--valgrind)
 			VALGRIND="$VALGRIND_OPTS"
 			;;
@@ -666,7 +673,11 @@ if [ -e "$file" ]; then
                     [[ $porttaken == 1 ]] || break
                     ((iport++))
                 done
-                group="$((iport-1882))"
+                if [ -z $local ]; then
+                    group="$((iport-1882))"
+                else 
+                    group=0
+                fi
                 create_missingdir $folder/$iport
                 create_conffile "${folder}/${iport}/mqtt.conf"  $iport
                 getappid $jamfolder $folder/$iport $app
