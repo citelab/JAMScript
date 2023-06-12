@@ -190,104 +190,86 @@ void dpanel_disconnect_dcb(const redisAsyncContext *c, int status) {
     }
 }
 
-
-void dpanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
-{
-    redisReply *reply = r;
-    dpanel_t *dp = (dpanel_t *)privdata;
-    cnode_t *cn = (cnode_t *)dp->cnode;
-    struct queue_entry *next = NULL;
-    bool last = true;
-
-    if (reply == NULL) {
-        if (c->errstr) {
-            printf("errstr: %s\n", c->errstr);
-        }
-        return;
-    }
-    while (dp->state != REGISTERED && reply->integer <= 0 && dp->ecount <= DP_MAX_ERROR_COUNT) {
-        // retry again... for a registration..
-        dp->ecount++;
-        redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall get_id 0 %s", dp->uuid);
-    }
-
-    if (dp->state != REGISTERED && reply->integer <= 0 && dp->ecount > DP_MAX_ERROR_COUNT) {
-        fprintf(stderr, "Unable to register with the data store at %s, %d\n", dp->server, dp->port);
-        exit(1);
-    }
-
-    // do registration..
-    if (dp->state != REGISTERED) {
-        if (reply->integer > 0) {
-            dp->state = REGISTERED;
-            dp->logical_id = reply->integer;
-        }
-    }
-
-    if (dp->logical_appid < 0)
-        redisAsyncCommand(dp->uctx, dpanel_ucallback2, dp, "fcall app_id 0 %s", cn->args->appid);
-    else {
-        if (dp->state == REGISTERED) {
-            // pull data from the queue
-            next = get_uflow_object(dp, &last);
-            if (next != NULL) {
-                uflow_obj_t *uobj = (uflow_obj_t *)next->data;
-                pthread_mutex_lock(&(dp->mutex));
-                apanel_send_to_fogs(dp->apanels, uobj);
-                pthread_mutex_unlock(&(dp->mutex));
-                if (last) {
-                    // send with a callback
-                    redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %lu %d %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
-                } else {
-                    // send without a callback for pipelining.
-                    redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %lu %d %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
-                }
-                freeUObject(uobj);
-                free(next);
-            }
-        }
-    }
+void dpanel_uerrorcheck(redisAsyncContext* c, void* r, void* privdata) {
+    if (r == NULL && c->errstr)
+        printf("errstr: %s\n", c->errstr);
 }
 
+void dpanel_uaddall(dpanel_t* dp) { // add all pending uflow objects to outgoing redis queue
+    struct queue_entry* next = NULL;
+    bool last = false;
+    cnode_t* cn = (cnode_t*)dp->cnode;
+    int overrun = 100; // number of times to batch before detecting an overrun and send everything -- only relevant if we are absolutely spamming queue
 
-void dpanel_ucallback2(redisAsyncContext *c, void *r, void *privdata)
-{
-    redisReply *reply = r;
-    dpanel_t *dp = (dpanel_t *)privdata;
-    struct queue_entry *next = NULL;
-    bool last = true;
-    cnode_t *cn = (cnode_t *)dp->cnode;
-
-    if (reply == NULL) {
-        if (c->errstr) {
-            printf("errstr: %s\n", c->errstr);
-        }
-        return;
-    }
-
-    dp->logical_appid = reply->integer;
-
-    // TODO: enable pipelining... for larger write throughout...
-    //
     if (dp->state == REGISTERED) {
-        // pull data from the queue
-        next = get_uflow_object(dp, &last);
-        if (next != NULL) {
+        while (!last && overrun) {
+            next = get_uflow_object(dp, &last); // pull data from the queue
+            if (next == NULL)
+                return;
             uflow_obj_t *uobj = (uflow_obj_t *)next->data;
             pthread_mutex_lock(&(dp->mutex));
             apanel_send_to_fogs(dp->apanels, uobj);
             pthread_mutex_unlock(&(dp->mutex));
-            if (last) {
+            if (last || !--overrun) {
                 // send with a callback
                 redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %lu %d %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
             } else {
                 // send without a callback for pipelining.
-                redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %lu %d %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
+                redisAsyncCommand(dp->uctx, dpanel_uerrorcheck, NULL, "fcall uf_write 1 %s %lu %d %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
             }
             freeUObject(uobj);
             free(next);
         }
     }
+}
+
+void dpanel_ucallback(redisAsyncContext *c, void *r, void *privdata) {
+    redisReply *reply = r;
+    dpanel_t *dp = (dpanel_t *)privdata;
+
+    if (reply == NULL) {
+        if (c->errstr)
+            printf("errstr: %s\n", c->errstr);
+        return;
+    }
+
+    if (dp->state != REGISTERED && reply->integer <= 0) {
+        if (dp->ecount <= DP_MAX_ERROR_COUNT) { // retry again... for a registration..
+            dp->ecount++;
+            redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall get_id 0 %s", dp->uuid);
+            return;
+        } else {
+            fprintf(stderr, "Unable to register with the data store at %s, %d\n", dp->server, dp->port);
+            exit(1);
+        }
+    }
+    // do registration..
+    if (dp->state != REGISTERED) {
+        dp->state = REGISTERED;
+        dp->logical_id = reply->integer;
+    }
+
+    if (dp->logical_appid < 0) {
+        cnode_t* cn = (cnode_t*)dp->cnode;
+        redisAsyncCommand(dp->uctx, dpanel_ucallback2, dp, "fcall app_id 0 %s", cn->args->appid);
+    } else
+        dpanel_uaddall(dp);
+}
+
+
+void dpanel_ucallback2(redisAsyncContext *c, void *r, void *privdata) {
+    redisReply *reply = r;
+    dpanel_t *dp = (dpanel_t *)privdata;
+
+    if (reply == NULL) {
+        if (c->errstr)
+            printf("errstr: %s\n", c->errstr);
+        return;
+    }
+
+    dp->logical_appid = reply->integer;
+
+    dpanel_uaddall(dp);
 }
 
 
