@@ -423,7 +423,7 @@ void command_args_copy_elements(arg_t *arg_from, arg_t *arg_to, size_t nargs_fro
     
     for (int i = 0; i < nargs_from; i++) {
         arg_to[i].type = arg_from[i].type;
-        arg_to[i].nargs = arg_from[i].nargs;
+        arg_to[i].nargs = nargs_to;
         switch (arg_from[i].type) {
             case INT_TYPE:
             case LONG_TYPE:
@@ -451,7 +451,7 @@ arg_t *command_args_clone(arg_t *arg)
     arg_t *val = (arg_t *)calloc(arg[0].nargs, sizeof(arg_t));
     assert(val != NULL);
     
-    command_args_copy_elements(arg, val, arg->nargs, arg->nargs);
+    command_args_copy_elements(arg, val, arg[0].nargs, arg[0].nargs);
 
     return val;
 }
