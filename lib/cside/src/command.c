@@ -415,33 +415,44 @@ void command_args_free(arg_t *arg)
     }
 }
 
-arg_t *command_args_clone(arg_t *arg)
+void command_args_copy_elements(arg_t *arg_from, arg_t *arg_to, size_t nargs_from, size_t nargs_to) 
 {
-    arg_t *val = (arg_t *)calloc(arg[0].nargs, sizeof(arg_t));
-    assert(val != NULL);
-    for (int i = 0; i < arg[0].nargs; i++) {
-        val[i].type = arg[i].type;
-        val[i].nargs = arg[i].nargs;
-        switch (arg[i].type) {
+    assert(nargs_from <= nargs_to);
+    assert(arg_from != NULL);
+    assert(arg_to != NULL);
+    
+    for (int i = 0; i < nargs_from; i++) {
+        arg_to[i].type = arg_from[i].type;
+        arg_to[i].nargs = arg_from[i].nargs;
+        switch (arg_from[i].type) {
             case INT_TYPE:
             case LONG_TYPE:
-                val[i].val.ival = arg[i].val.ival;
+                arg_to[i].val.ival = arg_from[i].val.ival;
                 break;
             case DOUBLE_TYPE:
-                val[i].val.dval = arg[i].val.dval;
+                arg_to[i].val.dval = arg_from[i].val.dval;
                 break;
             case STRING_TYPE:
-                val[i].val.sval = strdup(arg[i].val.sval);
+                arg_to[i].val.sval = strdup(arg_from[i].val.sval);
                 break;
             case NVOID_TYPE:
-                val[i].val.nval = nvoid_new(arg[i].val.nval->data, arg[i].val.nval->len);
+                arg_to[i].val.nval = nvoid_new(arg_from[i].val.nval->data, arg_from[i].val.nval->len);
                 break;
             case NULL_TYPE:
-                val[i].val.ival = 0;
+                arg_to[i].val.ival = 0;
                 break;
             default:;
         }
     }
+}
+
+arg_t *command_args_clone(arg_t *arg)
+{
+    arg_t *val = (arg_t *)calloc(arg[0].nargs, sizeof(arg_t));
+    assert(val != NULL);
+    
+    command_args_copy_elements(arg, val, arg->nargs, arg->nargs);
+
     return val;
 }
 

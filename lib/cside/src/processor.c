@@ -37,10 +37,9 @@ arg_t *command_arg_clone_special(arg_t *arg, char *fname, long int taskid, char 
         rl[i].nargs = 4;
     } else {
         rl = (arg_t *)calloc(arg->nargs + 4, sizeof(arg_t));
-        for(i = 0; i < arg->nargs; i++) {
-            rl[i] = arg[i];
-            rl[i].nargs = arg->nargs + 4;
-        }
+
+        command_args_copy_elements(arg, rl, arg->nargs, arg->nargs+4);
+
         rl[i].type = STRING_TYPE;
         rl[i].val.sval = strdup(fname);
         rl[i].nargs = arg->nargs + 4;
