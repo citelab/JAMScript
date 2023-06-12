@@ -7,7 +7,7 @@ struct _ppp {
 
 jtask* localyou(int c, char *s) {
     while(1) {
-        jsleep(100000);
+        //jsleep(100);
         printf("############-->>> Hello YOU  %d, %s\n", c, s);
 	ppp.write(value);
     }
