@@ -1,5 +1,0 @@
-VERSION = 1.0
-DESCRIPTION = JAMScript executable file
-NAME = simple
-CREATE-TIME = 1592330610969
-MAX-HEIGHT = 1

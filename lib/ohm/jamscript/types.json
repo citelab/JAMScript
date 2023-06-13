@@ -5,8 +5,7 @@
         "js_type": "number",
         "c_code": "i",
         "js_code": "n",
-        "caster": "get_bcast_int",
-        "jbroadcast": "JBROADCAST_INT"
+        "caster": "get_bcast_int"
     },
     "float": {
         "c_pattern": "%f",
@@ -14,8 +13,7 @@
         "js_type": "number",
         "c_code": "f",
         "js_code": "n",
-        "caster": "get_bcast_float",
-        "jbroadcast": "JBROADCAST_FLOAT"
+        "caster": "get_bcast_float"
     },
     "double": {
         "c_pattern": "%lf",
@@ -23,8 +21,7 @@
         "js_type": "number",
         "c_code": "d",
         "js_code": "n",
-        "caster": "get_bcast_double",
-        "jbroadcast": "JBROADCAST_DOUBLE"       
+        "caster": "get_bcast_double"
     },
     "string": {
         "c_pattern": "\\\"%s\\\"",
@@ -32,8 +29,7 @@
         "js_type": "string",
         "c_code": "s",
         "js_code": "s",
-        "caster": "",
-        "jbroadcast": "JBROADCAST_STRING"
+        "caster": ""
     },
     "char*": {
         "c_pattern": "\\\"%s\\\"",
@@ -41,8 +37,7 @@
         "js_type": "string",
         "c_code": "s",
         "js_code": "s",
-        "caster": "get_bcast_char",
-        "jbroadcast": "JBROADCAST_STRING"
+        "caster": "get_bcast_char"
     },
     "char": {
         "c_pattern": "\\\"%s\\\"",
@@ -50,8 +45,7 @@
         "js_type": "string",
         "c_code": "s",
         "js_code": "s",
-        "caster": "",
-        "jbroadcast": "JBROADCAST_STRING"
+        "caster": ""
     },
     "jamtask": {
         "c_pattern": "\\\"%s\\\"",
@@ -59,7 +53,6 @@
         "js_type": "string",
         "c_code": "s",
         "js_code": "s",
-        "caster": null,
-        "jbroadcast": null
+        "caster": null
     }
 }

@@ -49,9 +49,9 @@ JAMJS <: ES6 {
 
     jcond_joiner    = "&&" | "||"
 
-    Async_activity  = jasync Jcond_specifier? FunctionDeclaration
+    Async_activity  = jasync Jcond_specifier? Jtask_attr_spec? FunctionDeclaration
 
-    Sync_activity   = jsync Jcond_specifier? FunctionDeclaration
+    Sync_activity   = jsync Jcond_specifier? Jtask_attr_spec? FunctionDeclaration
 
     Jcond_specifier = "{" Jcond_expr "}"
 
@@ -71,36 +71,28 @@ JAMJS <: ES6 {
                     | max_rate "=" numericLiteral
                     
    	percentage 	    = numericLiteral "%"
-    
-    Jtask_activity  = function jtask Jcond_specifier? Jtask_attr_spec? identifier "(" FormalParameterList ")" "{" FunctionBody "}"
 
     Activity_def (a activity definition)  = Sync_activity
                                           | Async_activity
-                                          | Jtask_activity
 
     as = "as" ~identifierPart
     at = "at" ~identifierPart
-    beat = "beat" ~identifierPart
     controller = "controller" ~identifierPart
     dflow = "dflow" ~identifierPart
     flow = "flow" ~identifierPart
     is = "is" ~identifierPart
     inflow = "inflow" ~identifierPart
-    jamtask = "jamtask" ~identifierPart
     jasync = "jtask*" ~identifierPart
     jcond = "jcond" ~identifierPart
     jdata = "jdata" ~identifierPart
     jsync = "jtask" ~identifierPart
     jexport = "jexport" ~identifierPart
     jrequire = "jrequire" ~identifierPart
-    linegraph = "linegraph" ~identifierPart
     name = "name" ~identifierPart
     of = "of" ~identifierPart
     outflow = "outflow" ~identifierPart
     source = "source" ~identifierPart
-    terminal = "terminal" ~identifierPart
     type = "type" ~identifierPart
-    jtask = "jtask" ~identifierPart
     reuse = "reuse" ~identifierPart
     reuse_limit = "reuse_limit" ~identifierPart
     reuse_argdev = "reuse_argdev" ~identifierPart

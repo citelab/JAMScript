@@ -75,20 +75,20 @@
 
 #if !defined TAILQ_CONCAT
 #define TAILQ_CONCAT(head1, head2, field) do {                          \
-	if (!TAILQ_EMPTY(head2)) {                                      \
-		*(head1)->tqh_last = (head2)->tqh_first;                \
-		(head2)->tqh_first->field.tqe_prev = (head1)->tqh_last; \
-		(head1)->tqh_last = (head2)->tqh_last;                  \
-		TAILQ_INIT((head2));                                    \
-	}                                                               \
-} while (0)
+        if (!TAILQ_EMPTY(head2)) {                                      \
+            *(head1)->tqh_last = (head2)->tqh_first;                    \
+            (head2)->tqh_first->field.tqe_prev = (head1)->tqh_last;     \
+            (head1)->tqh_last = (head2)->tqh_last;                      \
+            TAILQ_INIT((head2));                                        \
+        }                                                               \
+    } while (0)
 #endif
 
 #if !defined TAILQ_FOREACH_SAFE
-#define TAILQ_FOREACH_SAFE(var, head, field, tvar)                      \
+#define TAILQ_FOREACH_SAFE(var, head, field, tvar)                  \
 	for ((var) = TAILQ_FIRST(head);                                 \
-	    (var) && ((tvar) = TAILQ_NEXT(var, field), 1);              \
-	    (var) = (tvar))
+         (var) && ((tvar) = TAILQ_NEXT(var, field), 1);             \
+         (var) = (tvar))
 #endif
 
 
@@ -294,6 +294,10 @@ TIMEOUT_PUBLIC timeout_t timeouts_hz(struct timeouts *T) {
 	return T->hertz;
 } /* timeouts_hz() */
 
+TIMEOUT_PUBLIC timeout_t timeouts_curtime(struct timeouts* T) {
+    return T->curtime;
+} /* timeouts_curtime() */
+
 
 TIMEOUT_PUBLIC void timeouts_del(struct timeouts *T, struct timeout *to) {
 	if (to->pending) {
@@ -468,6 +472,38 @@ TIMEOUT_PUBLIC void timeouts_update(struct timeouts *T, abstime_t curtime) {
 	return;
 } /* timeouts_update() */
 
+TIMEOUT_PUBLIC reltime_t timeouts_scan(struct timeouts *T, reltime_t elapsed, void (**fns)(void*), int fnn) {
+    abstime_t curtime = elapsed + T->curtime;
+    reltime_t minsleep = elapsed;
+	for (int wheel = 0; wheel < WHEEL_NUM; wheel++) {
+		wheel_t pending, wp = T->pending[wheel];
+		if ((elapsed >> (wheel * WHEEL_BIT)) <= WHEEL_MAX) {
+			wheel_t _elapsed = WHEEL_MASK & (elapsed >> (wheel * WHEEL_BIT));
+			int oslot = WHEEL_MASK & (T->curtime >> (wheel * WHEEL_BIT));
+			pending = rotl(((UINT64_C(1) << _elapsed) - 1), oslot);
+			int nslot = WHEEL_MASK & (curtime >> (wheel * WHEEL_BIT));
+			pending |= rotr(rotl(((WHEEL_C(1) << _elapsed) - 1), nslot), _elapsed);
+			pending |= WHEEL_C(1) << nslot;
+		} else
+            pending = (wheel_t)~WHEEL_C(0);
+        struct timeout* to;
+		while (pending & wp) {
+			int slot = ctz(pending & wp);
+            TAILQ_FOREACH(to, &T->wheel[wheel][slot], tqe)
+                if (to->expires<=curtime)
+                    for(int i=0; i<fnn; i++)
+                        if(to->callback.fn==fns[i]){
+                            minsleep = MIN(minsleep, timeout_rem(T, to));
+                            break;
+                        }
+            wp &= ~(UINT64_C(1) << slot);
+        }
+        if (!(0x1 & pending))
+			break;
+        elapsed = MAX(elapsed, (WHEEL_LEN << (wheel * WHEEL_BIT)));
+    }
+    return minsleep;
+} /* timeouts_scan() */
 
 TIMEOUT_PUBLIC void timeouts_step(struct timeouts *T, reltime_t elapsed) {
 	timeouts_update(T, T->curtime + elapsed);
