@@ -53,7 +53,7 @@ MD	:= mkdir
 else
 MAIN	:= main
 SOURCEDIRS	:= $(shell find $(SRC) -type d)
-INCLUDEDIRS	:= $(shell find $(INCLUDE) -type d)
+INCLUDEDIRS	:= $(shell find $(INCLUDE) -maxdepth 0 -type d)
 LIBDIRS		:= $(shell find $(LIB) -type d)
 FIXPATH = $1
 RM = rm -f
