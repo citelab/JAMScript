@@ -120,6 +120,7 @@ void command_arg_print(arg_t *arg);
 void command_arg_inner_free(arg_t *arg);
 void command_args_free(arg_t *arg);
 arg_t *command_args_clone(arg_t *arg);
+void command_args_copy_elements(arg_t *arg_from, arg_t *arg_to, size_t nargs_from, size_t nargs_to);
 void command_print(command_t *cmd);
 #ifdef __cplusplus
 }
