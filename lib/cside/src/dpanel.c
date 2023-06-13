@@ -93,13 +93,13 @@ void dpanel_start(dpanel_t *dp)
     int rval;
 
     rval = pthread_create(&(dp->ufprocessor), NULL, dpanel_ufprocessor, (void *)dp);
-    if (rval != 0) {
+    if (rval) {
         perror("ERROR! Unable to start the dpanel ufprocessor thread");
         exit(1);
     }
 
     rval = pthread_create(&(dp->dfprocessor), NULL, dpanel_dfprocessor, (void *)dp);
-    if (rval != 0) {
+    if (rval) {
         perror("ERROR! Unable to start the dpanel dfprocessor thread");
         exit(1);
     }
