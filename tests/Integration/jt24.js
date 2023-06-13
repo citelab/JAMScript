@@ -26,7 +26,7 @@ let long = jsys.long;
 let lat = jsys.lat;
 
 setInterval(()=> {
-    console.log("Tag..... ", jsys.tags);
+    console.log("Tag..... ", jsys.tags, "device type ", jsys.type);
     if (jsys.type === 'device') {
         long = (long + 5) % 170;
         jsys.setLoc({long: long, lat: lat});
