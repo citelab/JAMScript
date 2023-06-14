@@ -64,29 +64,23 @@ dpanel_t *dpanel_create(char *server, int port, char *uuid)
     return dp;
 }
 
-void dpanel_setcnode(dpanel_t *dp, void *cn)
-{
+void dpanel_setcnode(dpanel_t *dp, void *cn) {
     dp->cnode = cn;
     ((cnode_t *)cn)->dpanel = dp;
 }
 
-void dpanel_settboard(dpanel_t *dp, void *tb)
-{
+void dpanel_settboard(dpanel_t *dp, void *tb) {
     dp->tboard = (void *)tb;
 }
 
 void dpanel_connect_cb(const redisAsyncContext *c, int status) {
-    if (status != REDIS_OK) {
+    if (status != REDIS_OK)
         printf("Dpanel_connect_cb Error: %s\n", c->errstr);
-        return;
-    }
 }
 
 void dpanel_disconnect_cb(const redisAsyncContext *c, int status) {
-    if (status != REDIS_OK) {
+    if (status != REDIS_OK)
         printf("Dpanel_discconnect_cb Error: %s\n", c->errstr);
-        return;
-    }
 }
 
 void dpanel_start(dpanel_t *dp)
@@ -178,17 +172,13 @@ void *dpanel_ufprocessor(void *arg)
 }
 
 void dpanel_connect_dcb(const redisAsyncContext *c, int status) {
-    if (status != REDIS_OK) {
+    if (status != REDIS_OK)
         printf("Error: %s\n", c->errstr);
-        return;
-    }
 }
 
 void dpanel_disconnect_dcb(const redisAsyncContext *c, int status) {
-    if (status != REDIS_OK) {
+    if (status != REDIS_OK)
         printf("Error: %s\n", c->errstr);
-        return;
-    }
 }
 
 void dpanel_uerrorcheck(redisAsyncContext* c, void* r, void* privdata) {
@@ -224,9 +214,9 @@ void dpanel_uaddall(dpanel_t* dp) { // add all pending uflow objects to outgoing
     }
 }
 
-void dpanel_ucallback(redisAsyncContext *c, void *r, void *privdata) {
-    redisReply *reply = r;
-    dpanel_t *dp = (dpanel_t *)privdata;
+void dpanel_ucallback(redisAsyncContext* c, void* r, void* privdata) {
+    redisReply* reply = r;
+    dpanel_t* dp = (dpanel_t*)privdata;
 
     if (reply == NULL) {
         if (c->errstr)
@@ -244,8 +234,8 @@ void dpanel_ucallback(redisAsyncContext *c, void *r, void *privdata) {
             exit(1);
         }
     }
-    // do registration..
-    if (dp->state != REGISTERED) {
+
+    if (dp->state != REGISTERED) { // do registration..
         dp->state = REGISTERED;
         dp->logical_id = reply->integer;
     }
@@ -258,9 +248,9 @@ void dpanel_ucallback(redisAsyncContext *c, void *r, void *privdata) {
 }
 
 
-void dpanel_ucallback2(redisAsyncContext *c, void *r, void *privdata) {
-    redisReply *reply = r;
-    dpanel_t *dp = (dpanel_t *)privdata;
+void dpanel_ucallback2(redisAsyncContext* c, void* r, void* privdata) {
+    redisReply* reply = r;
+    dpanel_t *dp = (dpanel_t*)privdata;
 
     if (reply == NULL) {
         if (c->errstr)
@@ -291,10 +281,8 @@ uftable_entry_t *dp_create_uflow(dpanel_t *dp, char *key, char *fmt)
 }
 
 
-struct queue_entry *get_uflow_object(dpanel_t *dp, bool *last)
-{
-    struct queue_entry *next = NULL;
-    struct queue_entry *nnext;
+struct queue_entry* get_uflow_object(dpanel_t* dp, bool* last) {
+    struct queue_entry* next = NULL,* nnext;
 
     while (next == NULL) {
         pthread_mutex_lock(&(dp->ufmutex));
@@ -302,10 +290,7 @@ struct queue_entry *get_uflow_object(dpanel_t *dp, bool *last)
         if (next) {
             queue_pop_head(&(dp->ufqueue));
             nnext = queue_peek_front(&(dp->ufqueue));
-            if (nnext)
-                *last = false;
-            else
-                *last = true;
+            *last = !nnext;
         } else
             *last = false;
         pthread_mutex_unlock(&(dp->ufmutex));
@@ -319,8 +304,7 @@ struct queue_entry *get_uflow_object(dpanel_t *dp, bool *last)
     return next;
 }
 
-void freeUObject(uflow_obj_t *uobj)
-{
+void freeUObject(uflow_obj_t* uobj) {
     free(uobj->value);
     free(uobj);
 }
