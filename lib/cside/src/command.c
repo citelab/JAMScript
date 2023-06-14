@@ -370,8 +370,7 @@ void command_arg_print(arg_t *arg)
 {
     int i;
     for (i = 0; i < arg[0].nargs; i++) {
-        switch(arg[i].type)
-        {
+        switch(arg[i].type) {
             case INT_TYPE:
                 printf("Int: %d ", arg[i].val.ival);
                 break;
@@ -382,7 +381,7 @@ void command_arg_print(arg_t *arg)
                 printf("Double: %f ", arg[i].val.dval);
                 break;
             default:
-                printf("Sussy Type %d index: %d\n", arg[i].type, i);
+                printf("Other type: %d ", arg[i].type);
                 break;
         }
     }
@@ -417,13 +416,12 @@ void command_args_free(arg_t *arg)
     }
 }
 
-void command_args_copy_elements(arg_t* arg_from, arg_t* arg_to, size_t nargs_from, size_t nargs_to) 
+void command_args_copy_elements(arg_t* arg_from, arg_t* arg_to, size_t nargs_from, size_t nargs_to)
 {
-    command_arg_print(arg_from);
     assert(nargs_from <= nargs_to);
     assert(arg_from != NULL);
     assert(arg_to != NULL);
-    
+
     for (int i = 0; i < nargs_from; i++) {
         arg_to[i].type = arg_from[i].type;
         arg_to[i].nargs = nargs_to;
@@ -449,17 +447,17 @@ void command_args_copy_elements(arg_t* arg_from, arg_t* arg_to, size_t nargs_fro
     }
 }
 
-arg_t *command_args_clone(arg_t* arg)
+arg_t* command_args_clone(arg_t* arg)
 {
-    arg_t *val = (arg_t *)calloc(arg[0].nargs, sizeof(arg_t));
+    arg_t* val = (arg_t*)calloc(arg[0].nargs, sizeof(arg_t));
     assert(val != NULL);
-    
+
     command_args_copy_elements(arg, val, arg[0].nargs, arg[0].nargs);
 
     return val;
 }
 
-void command_print(command_t *cmd)
+void command_print(command_t* cmd)
 {
     int i;
 
@@ -473,7 +471,7 @@ void command_print(command_t *cmd)
     printf("\nCommand fn_argsig: %s\n", cmd->fn_argsig);
 
     printf("\nCommand buffer: ");
-    for (i = 0; i < (int)strlen((char *)cmd->buffer); i++)
+    for (i = 0; i < (int)strlen((char*)cmd->buffer); i++)
         printf("%x", (int)cmd->buffer[i]);
 
     command_arg_print(cmd->args);

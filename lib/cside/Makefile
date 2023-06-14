@@ -10,13 +10,13 @@ CC = clang
 AR = ar -rc
 
 # define any compile-time flags
-CFLAGS	:= -g -pthread -Wall -Wcast-align -O1 -fno-omit-frame-pointer
+CFLAGS	:= -g -pthread -Wall -Wcast-align -fno-omit-frame-pointer
 # -std=c99
 
 ifdef valgrind
-CFLAGS	:= $(CFLAGS) -D MCO_USE_VALGRIND
+CFLAGS	:= $(CFLAGS) -D MCO_USE_VALGRIND -O0
 else
-CFLAGS	:= $(CFLAGS) -fsanitize=address
+CFLAGS	:= $(CFLAGS) -fsanitize=address -O1
 endif
 
 ifeq ($(shell getconf LONG_BIT),32)

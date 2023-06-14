@@ -93,13 +93,13 @@ void dpanel_start(dpanel_t *dp)
     int rval;
 
     rval = pthread_create(&(dp->ufprocessor), NULL, dpanel_ufprocessor, (void *)dp);
-    if (rval != 0) {
+    if (rval) {
         perror("ERROR! Unable to start the dpanel ufprocessor thread");
         exit(1);
     }
 
     rval = pthread_create(&(dp->dfprocessor), NULL, dpanel_dfprocessor, (void *)dp);
-    if (rval != 0) {
+    if (rval) {
         perror("ERROR! Unable to start the dpanel dfprocessor thread");
         exit(1);
     }
@@ -206,7 +206,7 @@ void dpanel_uaddall(dpanel_t* dp) { // add all pending uflow objects to outgoing
             next = get_uflow_object(dp, &last); // pull data from the queue
             if (next == NULL)
                 return;
-            uflow_obj_t *uobj = (uflow_obj_t *)next->data;
+            uflow_obj_t* uobj = (uflow_obj_t*)next->data;
             pthread_mutex_lock(&(dp->mutex));
             apanel_send_to_fogs(dp->apanels, uobj);
             pthread_mutex_unlock(&(dp->mutex));
