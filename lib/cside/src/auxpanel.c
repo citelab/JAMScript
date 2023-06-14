@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <inttypes.h>
+
 #include "auxpanel.h"
 #include "dpanel.h"
 #include "cnode.h"
@@ -96,7 +98,7 @@ void apanel_shutdown(auxpanel_t *ap)
     pthread_mutex_lock(&(ap->a_ufmutex));
     pthread_cond_signal(&(ap->a_ufcond));
     pthread_mutex_unlock(&(ap->a_ufmutex));
-    
+
     pthread_join(ap->a_ufprocessor, NULL);
     pthread_join(ap->a_dfprocessor, NULL);
     printf("######################### shutdown END ############\n");
@@ -106,7 +108,7 @@ void apanel_shutdown(auxpanel_t *ap)
  * UFLOW PROCESSOR FUNCTIONS
  *
  */
-void *apanel_ufprocessor(void *arg) 
+void *apanel_ufprocessor(void *arg)
 {
     auxpanel_t *ap = (auxpanel_t *)arg;
     dpanel_t *dp = (dpanel_t *)ap->dpanel;
@@ -148,7 +150,7 @@ void apanel_disconnect_dcb(const redisAsyncContext *c, int status) {
     printf("Disconnected...\n");
 }
 
-struct queue_entry *a_get_uflow_object(auxpanel_t *ap, bool *last) 
+struct queue_entry *a_get_uflow_object(auxpanel_t *ap, bool *last)
 {
     struct queue_entry *next = NULL;
     struct queue_entry *nnext;
@@ -161,9 +163,9 @@ struct queue_entry *a_get_uflow_object(auxpanel_t *ap, bool *last)
             nnext = queue_peek_front(&(ap->a_ufqueue));
             if (nnext)
                 *last = false;
-            else 
+            else
                 *last = true;
-        } else 
+        } else
             *last = false;
         pthread_mutex_unlock(&(ap->a_ufmutex));
 
@@ -179,15 +181,15 @@ struct queue_entry *a_get_uflow_object(auxpanel_t *ap, bool *last)
     return next;
 }
 
-void apanel_ucallback(redisAsyncContext *c, void *r, void *privdata) 
+void apanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
 {
     redisReply *reply = r;
     auxpanel_t *ap = (auxpanel_t *)privdata;
     dpanel_t *dp = (dpanel_t *)ap->dpanel;
     cnode_t *cn = (cnode_t *)dp->cnode;
     bool last = true;
-    struct queue_entry *next = NULL; 
-    
+    struct queue_entry *next = NULL;
+
     if (reply == NULL) {
         if (c->errstr) {
             printf("errstr: %s\n", c->errstr);
@@ -214,7 +216,7 @@ void apanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
         }
     }
 
-    if (ap->logical_appid < 0) 
+    if (ap->logical_appid < 0)
         redisAsyncCommand(ap->a_uctx, apanel_ucallback2, ap, "fcall app_id 0 %s", cn->args->appid);
     else {
         if (ap->state == A_REGISTERED) {
@@ -224,10 +226,10 @@ void apanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
                 uflow_obj_t *uobj = (uflow_obj_t *)next->data;
                 if (last) {
                     // send with a callback
-                    redisAsyncCommand(ap->a_uctx, apanel_ucallback, ap, "fcall uf_write 1 %s %lu %d %d %d %f %f %s", uobj->key, uobj->clock, ap->logical_id, ap->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
+                    redisAsyncCommand(ap->a_uctx, apanel_ucallback, ap, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %s", uobj->key, uobj->clock, ap->logical_id, ap->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
                 } else {
                     // send without a callback for pipelining.
-                    redisAsyncCommand(ap->a_uctx, apanel_ucallback, ap, "fcall uf_write 1 %s %lu %d %d %d %f %f %s", uobj->key, uobj->clock, ap->logical_id, ap->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
+                    redisAsyncCommand(ap->a_uctx, apanel_ucallback, ap, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %s", uobj->key, uobj->clock, ap->logical_id, ap->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
                 }
                 freeUObject(uobj);
                 free(next);
@@ -236,15 +238,15 @@ void apanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
     }
 }
 
-void apanel_ucallback2(redisAsyncContext *c, void *r, void *privdata) 
+void apanel_ucallback2(redisAsyncContext *c, void *r, void *privdata)
 {
     redisReply *reply = r;
     auxpanel_t *ap = (auxpanel_t *)privdata;
-    struct queue_entry *next = NULL; 
+    struct queue_entry *next = NULL;
     bool last = true;
     dpanel_t *dp = (dpanel_t *)ap->dpanel;
     cnode_t *cn = (cnode_t *)dp->cnode;
-    
+
     if (reply == NULL) {
         if (c->errstr) {
             printf("errstr: %s\n", c->errstr);
@@ -263,10 +265,10 @@ void apanel_ucallback2(redisAsyncContext *c, void *r, void *privdata)
             uflow_obj_t *uobj = (uflow_obj_t *)next->data;
             if (last) {
                 // send with a callback
-                redisAsyncCommand(ap->a_uctx, apanel_ucallback, ap, "fcall uf_write 1 %s %lu %d %d %f %f %s", uobj->key, uobj->clock, ap->logical_id, cn->width, cn->xcoord, cn->ycoord, uobj->value);
+                redisAsyncCommand(ap->a_uctx, apanel_ucallback, ap, "fcall uf_write 1 %s %" PRIu64 " %d %d %f %f %s", uobj->key, uobj->clock, ap->logical_id, cn->width, cn->xcoord, cn->ycoord, uobj->value);
             } else {
                 // send without a callback for pipelining.
-                redisAsyncCommand(ap->a_uctx, apanel_ucallback, ap, "fcall uf_write 1 %s %lu %d %d %f %f %s", uobj->key, uobj->clock, ap->logical_id, cn->width, cn->xcoord, cn->ycoord, uobj->value);
+                redisAsyncCommand(ap->a_uctx, apanel_ucallback, ap, "fcall uf_write 1 %s %" PRIu64 " %d %d %f %f %s", uobj->key, uobj->clock, ap->logical_id, cn->width, cn->xcoord, cn->ycoord, uobj->value);
             }
             freeUObject(uobj);
             free(next);
@@ -313,7 +315,7 @@ void apanel_send_to_fogs(arecord_t *ar, void *u)
 /*
  * DFLOW PROCESSOR FUNCTIONS
  */
-void *apanel_dfprocessor(void *arg) 
+void *apanel_dfprocessor(void *arg)
 {
     auxpanel_t *ap = (auxpanel_t *)arg;
     dpanel_t *dp = (dpanel_t *)ap->dpanel;
@@ -353,7 +355,7 @@ void *apanel_dfprocessor(void *arg)
 
 // this callback is triggered when a broadcast message is sent by the data store
 //
-void apanel_dcallback2(redisAsyncContext *c, void *r, void *privdata) 
+void apanel_dcallback2(redisAsyncContext *c, void *r, void *privdata)
 {
     redisReply *reply = r;
     auxpanel_t *ap = (auxpanel_t *)privdata;
@@ -373,11 +375,11 @@ void apanel_dcallback2(redisAsyncContext *c, void *r, void *privdata)
 
 // this callback is triggered when a broadcast message is sent by the data store
 //
-void apanel_dcallback(redisAsyncContext *c, void *r, void *privdata) 
+void apanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
 {
     redisReply *reply = r;
     char keymsg[64];
-    
+
     if (reply != NULL) {
         auxpanel_t *ap = (auxpanel_t *)privdata;
         if (ap == NULL || ap->state == A_FREED) return;
@@ -385,17 +387,16 @@ void apanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
         dftable_entry_t *entry;
         snprintf(keymsg, 64, "%d__d__keycompleted", ap->logical_appid);
 
-        if (reply->type == REDIS_REPLY_ARRAY && 
+        if (reply->type == REDIS_REPLY_ARRAY &&
             (strcmp(reply->element[1]->str, keymsg) == 0) &&
             (strcmp(reply->element[0]->str, "message") == 0)) {
-            // get the dftable entry ... based on key (reply->element[2]->str) 
+            // get the dftable entry ... based on key (reply->element[2]->str)
             HASH_FIND_STR(dp->dftable, reply->element[2]->str, entry);
 
             if (entry) {
-                if (entry->state == CLIENT_READY && entry->taskid > 0) 
+                if (entry->state == CLIENT_READY && entry->taskid > 0)
                     redisAsyncCommand(ap->a_dctx, dflow_callback, entry, "fcall df_lread 1 %s %d", entry->key, ap->logical_appid);
             }
         }
     }
 }
-
