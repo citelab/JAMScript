@@ -206,7 +206,7 @@ void dpanel_uaddall(dpanel_t* dp) { // add all pending uflow objects to outgoing
             next = get_uflow_object(dp, &last); // pull data from the queue
             if (next == NULL)
                 return;
-            uflow_obj_t *uobj = (uflow_obj_t *)next->data;
+            uflow_obj_t* uobj = (uflow_obj_t*)next->data;
             pthread_mutex_lock(&(dp->mutex));
             apanel_send_to_fogs(dp->apanels, uobj);
             pthread_mutex_unlock(&(dp->mutex));
