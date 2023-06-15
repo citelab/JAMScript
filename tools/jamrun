@@ -6,7 +6,7 @@ source "$IDIR/inc/misc_tools.sh"
 REDISFUNCS=`realpath "$IDIR/../deps/lua/jredlib.lua"`
 
 SHELLPID=$$
-trap cleanup SIGTERM SIGINT
+trap cleanup SIGTERM SIGINT SIGKILL
 
 die() {
     printf '%s\n' "$1" >&2
@@ -108,6 +108,7 @@ startmqtt() {
 
     # Check whether the MQTT server is running.. if not start it
     $MOSQUITTO_PUB -p $port -t "test" -m "hello"
+
     if [ $? -ne 0 ]; then
         if [ -z $NOVERBOSE ]; then
             echo "MQTT is not running at $port"
@@ -118,7 +119,7 @@ startmqtt() {
             MOSQUITTO_PID=$!
         elif [ $machine = Linux ]; then
             nohup $MOSQUITTO -c $cfile &>/dev/null & MOSQUITTO_PID=$!
-            
+            echo asdkjasldkjaslkdjasl
         fi
     fi
 }
@@ -184,6 +185,8 @@ dojamout_p2_fg() {
             node jstart.js $args
             ;;
     esac
+
+    cleanup
 }
 
 
