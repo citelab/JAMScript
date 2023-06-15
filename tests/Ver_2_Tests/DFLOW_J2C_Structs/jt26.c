@@ -1,4 +1,4 @@
-jtask* localyou(int c, char *s) {
+jtask* localyou(int c, char* s) {
     struct __zz tt;
     while(1) {
         qq.read(&tt);
@@ -8,8 +8,7 @@ jtask* localyou(int c, char *s) {
 }
 
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char* argv[]) {
     localyou(10, "cxxxxxxxx");
     return 0;
 }

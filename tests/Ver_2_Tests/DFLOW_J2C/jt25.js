@@ -1,6 +1,5 @@
-
 jdata {
-    char * qq as dflow;
+    char* qq as dflow;
 }
 
 async function sleep(x) {
@@ -19,12 +18,8 @@ async function runloop() {
         await sleep(1000);
         console.log("Writing to dflow -- ", values[count]);
         qq.write(values[count]);
-	count = (count + 1) % 6;
+	    count = (count + 1) % 6;
     }
 }
 
-
 await runloop();
-
-
-

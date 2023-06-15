@@ -114,10 +114,10 @@ char* __extract_str(const uint8_t* buffer, size_t len)
     CborParser parser;
     CborValue value;
     cbor_parser_init(buffer, len, 0, &parser, &value);
-    size_t n, m;
+    size_t n;
     cbor_value_calculate_string_length(&value, &n);
     char* x = calloc(n+1, sizeof(char));
-    cbor_value_copy_text_string(&value, x, &m, NULL);
+    cbor_value_copy_text_string(&value, x, &n, NULL);
     return x;
 }
 

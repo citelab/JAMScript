@@ -659,19 +659,18 @@ void dfread_double(dftable_entry_t *df, double *val)
     free(p);
 }
 
-void dfread_string(dftable_entry_t *df, char *val, int maxlen)
-{
-    dpanel_t *dp = (dpanel_t *)df->dpanel;
-    cnode_t *cn = (cnode_t *)dp->cnode;
-    tboard_t *tboard = (tboard_t *)cn->tboard;
+void dfread_string(dftable_entry_t* df, char* val, int maxlen) {
+    dpanel_t* dp = (dpanel_t*)df->dpanel;
+    cnode_t* cn = (cnode_t*)dp->cnode;
+    tboard_t* tboard = (tboard_t*)cn->tboard;
 
     uint8_t buf[4096];
 
-    void *p = dflow_task_create(tboard, df);
+    void* p = dflow_task_create(tboard, df);
     if (p != NULL) {
         derror = 0;
-        Base64decode((char *)buf, (char *)p);
-        char *x = __extract_str(buf, Base64decode_len((char *)p));
+        Base64decode((char*)buf, (char*)p);
+        char* x = __extract_str(buf, Base64decode_len((char*)p));
         strncpy(val, x, maxlen);
         free(x);
     } else {
