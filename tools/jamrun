@@ -119,10 +119,9 @@ startmqtt() {
         fi
         if [ $machine = Mac ]; then
             open -n -a $MOSQUITTO --stdout /dev/null --args -c $cfile 
-            MOSQUITTO_PID=$!
+            #MOSQUITTO_PID=$! # Currently Broken
         elif [ $machine = Linux ]; then
             nohup $MOSQUITTO -c $cfile &>/dev/null & MOSQUITTO_PID=$!
-            echo asdkjasldkjaslkdjasl
         fi
     fi
 }
