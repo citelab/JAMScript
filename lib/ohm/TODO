@@ -5,5 +5,7 @@
 (2) The yield point insertion method is putting "jsleep" into the source code.
     This should be changed.
 
+(3) Remove the regex inserted by Ing into the semantic processing functions.
+
 
 

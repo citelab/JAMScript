@@ -1,6 +1,7 @@
-
 jdata {
-    char * qq as dflow;
+    struct __zz {
+        char* u;
+    } qq as dflow;
 }
 
 async function sleep(x) {
@@ -17,14 +18,12 @@ let values = ['honda', 'nissan', 'tesla', 'mini', 'morris', 'vauxhall'];
 async function runloop() {
     while(true) {
         await sleep(1000);
-        console.log("Writing to dflow -- ", values[count]);
-        qq.write(values[count]);
-	count = (count + 1) % 6;
+        let struct = {u: values[count]};
+        console.log("Writing to dflow -- ", struct);
+        qq.write(struct);
+	    count = (count + 1) % 6;
     }
 }
 
 
 await runloop();
-
-
-

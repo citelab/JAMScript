@@ -13,7 +13,6 @@
 #include "dpanel.h"
 #include "auxpanel.h"
 
-
 arg_t *command_arg_clone_special(arg_t *arg, char *fname, long int taskid, char *nodeid, void *serv)
 {
     arg_t *rl;
@@ -80,16 +79,16 @@ void exec_sync(context_t ctx)
             command_t *cmd = NULL;
             switch (rv->type) {
             case INT_TYPE:
-                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, node_id, "i", rv->val.ival);
+                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, "i", rv->val.ival);
                 break;
             case LONG_TYPE:
-                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, node_id, "i", rv->val.lval);
+                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, "i", rv->val.lval);
                 break;
             case STRING_TYPE:
-                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, node_id, "s", rv->val.sval);
+                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, "s", rv->val.sval);
                 break;
             case DOUBLE_TYPE:
-                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, node_id, "d", rv->val.dval);
+                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, "d", rv->val.dval);
                 break;
             default:;
             }
@@ -139,7 +138,7 @@ void msg_processor(void *serv, command_t *cmd)
         if (c->cnstate == CNODE_NOT_REGISTERED) {
             c->cnstate = CNODE_REGISTERED;
             // send a GET_CLOUD_FOG_INFO request to the device J
-            rcmd = command_new(CmdNames_GET_CLOUD_FOG_INFO, 0, "", 0, c->core->device_id, "i", 0);
+            rcmd = command_new(CmdNames_GET_CLOUD_FOG_INFO, 0, "", 0, c->core->device_id, "", "i", 0);
             mqtt_publish(s->mqtt, c->topics->requesttopic, rcmd->buffer, rcmd->length, rcmd, 0);
         }
         command_free(cmd);
@@ -209,7 +208,7 @@ void msg_processor(void *serv, command_t *cmd)
     case CmdNames_PING:
         // send the PONG back to device J
         // we received -- [cmd: PING node_id: "controller id" ]
-        rcmd = command_new(CmdNames_PONG, 0, "", 0, c->core->device_id, "");
+        rcmd = command_new(CmdNames_PONG, 0, "", 0, c->core->device_id, "", "");
         mqtt_publish(s->mqtt, c->topics->requesttopic, rcmd->buffer, rcmd->length, rcmd, 0);
         // we send -- [cmd: PONG node_id: "worker id" ]
 
@@ -302,7 +301,7 @@ void send_close_msg(void *serv, char *node_id, long int task_id)
 {
     server_t *s = (server_t *)serv;
     cnode_t *c = s->cnode;
-    command_t *cmd = command_new(CmdNames_CLOSE_PORT, 0, "", task_id, node_id, "");
+    command_t *cmd = command_new(CmdNames_CLOSE_PORT, 0, "", task_id, c->core->device_id, node_id, "");
     mqtt_publish(s->mqtt, c->topics->selfrequesttopic, cmd->buffer, cmd->length, cmd, 0);
 }
 
@@ -310,7 +309,7 @@ void send_err_msg(void *serv, char *node_id, long int task_id)
 {
     server_t *s = (server_t *)serv;
     cnode_t *c = s->cnode;
-    command_t *cmd = command_new(CmdNames_REXEC_ERR, 0, "", task_id, node_id, "i", CmdNames_FUNC_NOT_FOUND);
+    command_t *cmd = command_new(CmdNames_REXEC_ERR, 0, "", task_id, c->core->device_id, node_id, "i", CmdNames_FUNC_NOT_FOUND);
     mqtt_publish(s->mqtt, c->topics->replytopic, cmd->buffer, cmd->length, cmd, 0);
 }
 
@@ -318,7 +317,7 @@ void send_ack_msg(void *serv, char *node_id, long int task_id, int timeout)
 {
     server_t *s = (server_t *)serv;
     cnode_t *c = s->cnode;
-    command_t *cmd = command_new(CmdNames_REXEC_ACK, 0, "", task_id, node_id, "i", timeout);
+    command_t *cmd = command_new(CmdNames_REXEC_ACK, 0, "", task_id, c->core->device_id, node_id, "i", timeout);
     mqtt_publish(s->mqtt, c->topics->replytopic, cmd->buffer, cmd->length, cmd, 0);
 }
 
@@ -326,7 +325,7 @@ void send_nak_msg(void *serv, char *node_id, long int task_id)
 {
     server_t *s = (server_t *)serv;
     cnode_t *c = s->cnode;
-    command_t *cmd = command_new(CmdNames_REXEC_NAK, 0, "", task_id, node_id, "i", CmdNames_COND_FALSE);
+    command_t *cmd = command_new(CmdNames_REXEC_NAK, 0, "", task_id, c->core->device_id, node_id, "i", CmdNames_COND_FALSE);
     mqtt_publish(s->mqtt, c->topics->replytopic, cmd->buffer, cmd->length, cmd, 0);
 }
 
@@ -334,6 +333,6 @@ void send_reg_msg(void *serv, char *node_id, long int task_id)
 {
     server_t *s = (server_t *)serv;
     cnode_t *c = s->cnode;
-    command_t *cmd = command_new(CmdNames_REGISTER, 0, "", task_id, node_id, "");
+    command_t *cmd = command_new(CmdNames_REGISTER, 0, "", task_id, c->core->device_id, node_id, "");
     mqtt_publish(s->mqtt, c->topics->requesttopic, cmd->buffer, cmd->length, cmd, 0);
 }

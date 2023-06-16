@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <assert.h>
 #include <string.h>
+#include <inttypes.h>
 
 #include "base64.h"
 #include "cnode.h"
@@ -63,29 +64,23 @@ dpanel_t *dpanel_create(char *server, int port, char *uuid)
     return dp;
 }
 
-void dpanel_setcnode(dpanel_t *dp, void *cn)
-{
+void dpanel_setcnode(dpanel_t *dp, void *cn) {
     dp->cnode = cn;
     ((cnode_t *)cn)->dpanel = dp;
 }
 
-void dpanel_settboard(dpanel_t *dp, void *tb)
-{
+void dpanel_settboard(dpanel_t *dp, void *tb) {
     dp->tboard = (void *)tb;
 }
 
 void dpanel_connect_cb(const redisAsyncContext *c, int status) {
-    if (status != REDIS_OK) {
+    if (status != REDIS_OK)
         printf("Dpanel_connect_cb Error: %s\n", c->errstr);
-        return;
-    }
 }
 
 void dpanel_disconnect_cb(const redisAsyncContext *c, int status) {
-    if (status != REDIS_OK) {
+    if (status != REDIS_OK)
         printf("Dpanel_discconnect_cb Error: %s\n", c->errstr);
-        return;
-    }
 }
 
 void dpanel_start(dpanel_t *dp)
@@ -93,13 +88,13 @@ void dpanel_start(dpanel_t *dp)
     int rval;
 
     rval = pthread_create(&(dp->ufprocessor), NULL, dpanel_ufprocessor, (void *)dp);
-    if (rval != 0) {
+    if (rval) {
         perror("ERROR! Unable to start the dpanel ufprocessor thread");
         exit(1);
     }
 
     rval = pthread_create(&(dp->dfprocessor), NULL, dpanel_dfprocessor, (void *)dp);
-    if (rval != 0) {
+    if (rval) {
         perror("ERROR! Unable to start the dpanel dfprocessor thread");
         exit(1);
     }
@@ -177,117 +172,95 @@ void *dpanel_ufprocessor(void *arg)
 }
 
 void dpanel_connect_dcb(const redisAsyncContext *c, int status) {
-    if (status != REDIS_OK) {
+    if (status != REDIS_OK)
         printf("Error: %s\n", c->errstr);
-        return;
-    }
 }
 
 void dpanel_disconnect_dcb(const redisAsyncContext *c, int status) {
-    if (status != REDIS_OK) {
+    if (status != REDIS_OK)
         printf("Error: %s\n", c->errstr);
-        return;
-    }
 }
 
-
-void dpanel_ucallback(redisAsyncContext *c, void *r, void *privdata)
-{
-    redisReply *reply = r;
-    dpanel_t *dp = (dpanel_t *)privdata;
-    cnode_t *cn = (cnode_t *)dp->cnode;
-    struct queue_entry *next = NULL;
-    bool last = true;
-
-    if (reply == NULL) {
-        if (c->errstr) {
-            printf("errstr: %s\n", c->errstr);
-        }
-        return;
-    }
-    while (dp->state != REGISTERED && reply->integer <= 0 && dp->ecount <= DP_MAX_ERROR_COUNT) {
-        // retry again... for a registration..
-        dp->ecount++;
-        redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall get_id 0 %s", dp->uuid);
-    }
-
-    if (dp->state != REGISTERED && reply->integer <= 0 && dp->ecount > DP_MAX_ERROR_COUNT) {
-        fprintf(stderr, "Unable to register with the data store at %s, %d\n", dp->server, dp->port);
-        exit(1);
-    }
-
-    // do registration..
-    if (dp->state != REGISTERED) {
-        if (reply->integer > 0) {
-            dp->state = REGISTERED;
-            dp->logical_id = reply->integer;
-        }
-    }
-
-    if (dp->logical_appid < 0)
-        redisAsyncCommand(dp->uctx, dpanel_ucallback2, dp, "fcall app_id 0 %s", cn->args->appid);
-    else {
-        if (dp->state == REGISTERED) {
-            // pull data from the queue
-            next = get_uflow_object(dp, &last);
-            if (next != NULL) {
-                uflow_obj_t *uobj = (uflow_obj_t *)next->data;
-                pthread_mutex_lock(&(dp->mutex));
-                apanel_send_to_fogs(dp->apanels, uobj);
-                pthread_mutex_unlock(&(dp->mutex));
-                if (last) {
-                    // send with a callback
-                    redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %lu %d %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
-                } else {
-                    // send without a callback for pipelining.
-                    redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %lu %d %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
-                }
-                freeUObject(uobj);
-                free(next);
-            }
-        }
-    }
+void dpanel_uerrorcheck(redisAsyncContext* c, void* r, void* privdata) {
+    if (r == NULL && c->errstr)
+        printf("errstr: %s\n", c->errstr);
 }
 
+void dpanel_uaddall(dpanel_t* dp) { // add all pending uflow objects to outgoing redis queue
+    struct queue_entry* next = NULL;
+    bool last = false;
+    cnode_t* cn = (cnode_t*)dp->cnode;
+    int overrun = 100; // number of times to batch before detecting an overrun and send everything -- only relevant if we are absolutely spamming queue
 
-void dpanel_ucallback2(redisAsyncContext *c, void *r, void *privdata)
-{
-    redisReply *reply = r;
-    dpanel_t *dp = (dpanel_t *)privdata;
-    struct queue_entry *next = NULL;
-    bool last = true;
-    cnode_t *cn = (cnode_t *)dp->cnode;
-
-    if (reply == NULL) {
-        if (c->errstr) {
-            printf("errstr: %s\n", c->errstr);
-        }
-        return;
-    }
-
-    dp->logical_appid = reply->integer;
-
-    // TODO: enable pipelining... for larger write throughout...
-    //
     if (dp->state == REGISTERED) {
-        // pull data from the queue
-        next = get_uflow_object(dp, &last);
-        if (next != NULL) {
-            uflow_obj_t *uobj = (uflow_obj_t *)next->data;
+        while (!last && overrun) {
+            next = get_uflow_object(dp, &last); // pull data from the queue
+            if (next == NULL)
+                return;
+            uflow_obj_t* uobj = (uflow_obj_t*)next->data;
             pthread_mutex_lock(&(dp->mutex));
             apanel_send_to_fogs(dp->apanels, uobj);
             pthread_mutex_unlock(&(dp->mutex));
-            if (last) {
+            if (last || !--overrun) {
                 // send with a callback
-                redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %lu %d %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
+                redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
             } else {
                 // send without a callback for pipelining.
-                redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %lu %d %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
+                redisAsyncCommand(dp->uctx, dpanel_uerrorcheck, NULL, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
             }
             freeUObject(uobj);
             free(next);
         }
     }
+}
+
+void dpanel_ucallback(redisAsyncContext* c, void* r, void* privdata) {
+    redisReply* reply = r;
+    dpanel_t* dp = (dpanel_t*)privdata;
+
+    if (reply == NULL) {
+        if (c->errstr)
+            printf("errstr: %s\n", c->errstr);
+        return;
+    }
+
+    if (dp->state != REGISTERED && reply->integer <= 0) {
+        if (dp->ecount <= DP_MAX_ERROR_COUNT) { // retry again... for a registration..
+            dp->ecount++;
+            redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall get_id 0 %s", dp->uuid);
+            return;
+        } else {
+            fprintf(stderr, "Unable to register with the data store at %s, %d\n", dp->server, dp->port);
+            exit(1);
+        }
+    }
+
+    if (dp->state != REGISTERED) { // do registration..
+        dp->state = REGISTERED;
+        dp->logical_id = reply->integer;
+    }
+
+    if (dp->logical_appid < 0) {
+        cnode_t* cn = (cnode_t*)dp->cnode;
+        redisAsyncCommand(dp->uctx, dpanel_ucallback2, dp, "fcall app_id 0 %s", cn->args->appid);
+    } else
+        dpanel_uaddall(dp);
+}
+
+
+void dpanel_ucallback2(redisAsyncContext* c, void* r, void* privdata) {
+    redisReply* reply = r;
+    dpanel_t *dp = (dpanel_t*)privdata;
+
+    if (reply == NULL) {
+        if (c->errstr)
+            printf("errstr: %s\n", c->errstr);
+        return;
+    }
+
+    dp->logical_appid = reply->integer;
+
+    dpanel_uaddall(dp);
 }
 
 
@@ -308,10 +281,8 @@ uftable_entry_t *dp_create_uflow(dpanel_t *dp, char *key, char *fmt)
 }
 
 
-struct queue_entry *get_uflow_object(dpanel_t *dp, bool *last)
-{
-    struct queue_entry *next = NULL;
-    struct queue_entry *nnext;
+struct queue_entry* get_uflow_object(dpanel_t* dp, bool* last) {
+    struct queue_entry* next = NULL,* nnext;
 
     while (next == NULL) {
         pthread_mutex_lock(&(dp->ufmutex));
@@ -319,10 +290,7 @@ struct queue_entry *get_uflow_object(dpanel_t *dp, bool *last)
         if (next) {
             queue_pop_head(&(dp->ufqueue));
             nnext = queue_peek_front(&(dp->ufqueue));
-            if (nnext)
-                *last = false;
-            else
-                *last = true;
+            *last = !nnext;
         } else
             *last = false;
         pthread_mutex_unlock(&(dp->ufmutex));
@@ -336,8 +304,7 @@ struct queue_entry *get_uflow_object(dpanel_t *dp, bool *last)
     return next;
 }
 
-void freeUObject(uflow_obj_t *uobj)
-{
+void freeUObject(uflow_obj_t* uobj) {
     free(uobj->value);
     free(uobj);
 }
@@ -692,19 +659,18 @@ void dfread_double(dftable_entry_t *df, double *val)
     free(p);
 }
 
-void dfread_string(dftable_entry_t *df, char *val, int maxlen)
-{
-    dpanel_t *dp = (dpanel_t *)df->dpanel;
-    cnode_t *cn = (cnode_t *)dp->cnode;
-    tboard_t *tboard = (tboard_t *)cn->tboard;
+void dfread_string(dftable_entry_t* df, char* val, int maxlen) {
+    dpanel_t* dp = (dpanel_t*)df->dpanel;
+    cnode_t* cn = (cnode_t*)dp->cnode;
+    tboard_t* tboard = (tboard_t*)cn->tboard;
 
     uint8_t buf[4096];
 
-    void *p = dflow_task_create(tboard, df);
+    void* p = dflow_task_create(tboard, df);
     if (p != NULL) {
         derror = 0;
-        Base64decode((char *)buf, (char *)p);
-        char *x = __extract_str(buf, Base64decode_len((char *)p));
+        Base64decode((char*)buf, (char*)p);
+        char* x = __extract_str(buf, Base64decode_len((char*)p));
         strncpy(val, x, maxlen);
         free(x);
     } else {

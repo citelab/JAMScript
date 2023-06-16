@@ -1,9 +1,8 @@
-
 jdata {
     struct __zz {
-	int x;
-	char* u;
-	double yy;
+	    int x;
+	    char* u;
+	    double yy;
     } qq as dflow;
 }
 

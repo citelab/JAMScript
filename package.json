@@ -43,5 +43,8 @@
         "darwin",
         "linux"
     ],
-    "preferGlobal": true
+    "preferGlobal": true,
+    "devDependencies": {
+        "eslint": "^8.42.0"
+    }
 }

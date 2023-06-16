@@ -66,7 +66,7 @@ void internal_command_free(internal_command_t *ic)
  * Return a command that includes a CBOR representation that can be sent out (a byte string)
  * It reuses the command_new_using_arg() function
  */
-command_t *command_new(int cmd, int subcmd, char *fn_name, long int task_id, char *node_id, char *fn_argsig, ...)
+command_t *command_new(int cmd, int subcmd, char *fn_name, long int task_id, char *node_id, char *old_id, char *fn_argsig, ...)
 {
     va_list args;
     nvoid_t *nv;
@@ -105,18 +105,18 @@ command_t *command_new(int cmd, int subcmd, char *fn_name, long int task_id, cha
     } else
         qargs = NULL;
 
-    command_t *c = command_new_using_arg(cmd, subcmd, fn_name, task_id, node_id, fn_argsig, qargs);
+    command_t *c = command_new_using_arg(cmd, subcmd, fn_name, task_id, node_id, old_id, fn_argsig, qargs);
     command_args_free(qargs);
     return c;
 }
 
-command_t *command_new_using_arg(int cmd, int subcmd, char *fn_name, long int taskid, char *node_id, char *fn_argsig, arg_t *args)
+command_t *command_new_using_arg(int cmd, int subcmd, char *fn_name, long int taskid, char *node_id, char *old_id, char *fn_argsig, arg_t *args)
 {
     command_t *cmdo = (command_t *)calloc(1, sizeof(command_t));
     nvoid_t *nv;
     CborEncoder encoder, mapEncoder, arrayEncoder;
     cbor_encoder_init(&encoder, cmdo->buffer, HUGE_CMD_STR_LEN, 0);
-    cbor_encoder_create_map(&encoder, &mapEncoder, 7);
+    cbor_encoder_create_map(&encoder, &mapEncoder, 8);
     // store the fields into the structure and encode into the CBOR
     // store and encode cmd
     cmdo->cmd = cmd;
@@ -138,6 +138,10 @@ command_t *command_new_using_arg(int cmd, int subcmd, char *fn_name, long int ta
     COPY_STRING(cmdo->node_id, node_id, LARGE_CMD_STR_LEN);
     cbor_encode_text_stringz(&mapEncoder, "nodeid");
     cbor_encode_text_stringz(&mapEncoder, node_id);
+    // store and encode old_id
+    COPY_STRING(cmdo->old_id, old_id, LARGE_CMD_STR_LEN);
+    cbor_encode_text_stringz(&mapEncoder, "oldid");
+    cbor_encode_text_stringz(&mapEncoder, old_id);
     // store and encode fn_argsig
     COPY_STRING(cmdo->fn_argsig, fn_argsig, SMALL_CMD_STR_LEN);
     cbor_encode_text_stringz(&mapEncoder, "fn_argsig");
@@ -237,6 +241,12 @@ command_t *command_from_data(char *fmt, void *data, int len)
                 cbor_value_copy_text_string	(&map, cmd->node_id, &length, NULL);
             else
                 strcpy(cmd->node_id, "");
+        } else if (strcmp(keybuf, "oldid") == 0) {
+            length = LARGE_CMD_STR_LEN;
+            if (cbor_value_is_text_string(&map))
+                cbor_value_copy_text_string	(&map, cmd->old_id, &length, NULL);
+            else
+                strcpy(cmd->old_id, "");
         } else if (strcmp(keybuf, "fn_name") == 0) {
             length = SMALL_CMD_STR_LEN;
             cbor_value_copy_text_string	(&map, cmd->fn_name, &length, NULL);
@@ -370,8 +380,7 @@ void command_arg_print(arg_t *arg)
 {
     int i;
     for (i = 0; i < arg[0].nargs; i++) {
-        switch(arg[i].type)
-        {
+        switch(arg[i].type) {
             case INT_TYPE:
                 printf("Int: %d ", arg[i].val.ival);
                 break;
@@ -382,9 +391,11 @@ void command_arg_print(arg_t *arg)
                 printf("Double: %f ", arg[i].val.dval);
                 break;
             default:
+                printf("Other type: %d ", arg[i].type);
                 break;
         }
     }
+    fflush(stdout);
 }
 
 //empty the memory space pointer to by arg
@@ -420,7 +431,7 @@ void command_args_copy_elements(arg_t *arg_from, arg_t *arg_to, size_t nargs_fro
     assert(nargs_from <= nargs_to);
     assert(arg_from != NULL);
     assert(arg_to != NULL);
-    
+
     for (int i = 0; i < nargs_from; i++) {
         arg_to[i].type = arg_from[i].type;
         arg_to[i].nargs = nargs_to;
@@ -446,17 +457,17 @@ void command_args_copy_elements(arg_t *arg_from, arg_t *arg_to, size_t nargs_fro
     }
 }
 
-arg_t *command_args_clone(arg_t *arg)
+arg_t* command_args_clone(arg_t* arg)
 {
-    arg_t *val = (arg_t *)calloc(arg[0].nargs, sizeof(arg_t));
+    arg_t* val = (arg_t*)calloc(arg[0].nargs, sizeof(arg_t));
     assert(val != NULL);
-    
+
     command_args_copy_elements(arg, val, arg[0].nargs, arg[0].nargs);
 
     return val;
 }
 
-void command_print(command_t *cmd)
+void command_print(command_t* cmd)
 {
     int i;
 
@@ -467,10 +478,11 @@ void command_print(command_t *cmd)
     printf("\nCommand fn_name: %s\n", cmd->fn_name);
     printf("\nCommand taskid : %lu\n", cmd->task_id);
     printf("\nCommand node_id: %s\n", cmd->node_id);
+    printf("\nCommand old_id: %s\n", cmd->old_id);
     printf("\nCommand fn_argsig: %s\n", cmd->fn_argsig);
 
     printf("\nCommand buffer: ");
-    for (i = 0; i < (int)strlen((char *)cmd->buffer); i++)
+    for (i = 0; i < (int)strlen((char*)cmd->buffer); i++)
         printf("%x", (int)cmd->buffer[i]);
 
     command_arg_print(cmd->args);
