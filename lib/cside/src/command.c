@@ -116,7 +116,7 @@ command_t *command_new_using_arg(int cmd, int subcmd, char *fn_name, long int ta
     nvoid_t *nv;
     CborEncoder encoder, mapEncoder, arrayEncoder;
     cbor_encoder_init(&encoder, cmdo->buffer, HUGE_CMD_STR_LEN, 0);
-    cbor_encoder_create_map(&encoder, &mapEncoder, 7);
+    cbor_encoder_create_map(&encoder, &mapEncoder, 8);
     // store the fields into the structure and encode into the CBOR
     // store and encode cmd
     cmdo->cmd = cmd;

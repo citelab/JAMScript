@@ -138,7 +138,7 @@ void msg_processor(void *serv, command_t *cmd)
         if (c->cnstate == CNODE_NOT_REGISTERED) {
             c->cnstate = CNODE_REGISTERED;
             // send a GET_CLOUD_FOG_INFO request to the device J
-            rcmd = command_new(CmdNames_GET_CLOUD_FOG_INFO, 0, "", 0, c->core->device_id, "i", 0);
+            rcmd = command_new(CmdNames_GET_CLOUD_FOG_INFO, 0, "", 0, c->core->device_id, "", "i", 0);
             mqtt_publish(s->mqtt, c->topics->requesttopic, rcmd->buffer, rcmd->length, rcmd, 0);
         }
         command_free(cmd);
