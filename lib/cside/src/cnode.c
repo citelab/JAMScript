@@ -91,7 +91,7 @@ broker_info_t *cnode_scanj(int groupid, char *host, int port) {
 
     mcast_t *m = multicast_init(mgroup, Multicast_SENDPORT, Multicast_RECVPORT);
     // TODO: Fix this line.. and make it compatible with the protocol on Notion
-    command_t *smsg = command_new(CmdNames_WHERE_IS_CTRL, 0, "", 0, "", "si", "127.0.0.1", port);
+    command_t *smsg = command_new(CmdNames_WHERE_IS_CTRL, 0, "", 0, "", "", "si", "127.0.0.1", port);
     multicast_setup_recv(m);
     multicast_send(m, smsg->buffer, smsg->length);
     while (count > 0 && (multicast_check_receive(m) == 0)) {

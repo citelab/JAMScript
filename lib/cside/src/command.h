@@ -83,7 +83,8 @@ typedef struct _command_t
     int subcmd;
     char fn_name[SMALL_CMD_STR_LEN];            // Function name
     long int task_id;                           // Task identifier (a function in execution)
-    char node_id[LARGE_CMD_STR_LEN];            // this can be the UUID4 of the node
+    char node_id[LARGE_CMD_STR_LEN];            // this can be the UUID4 of the source of the message
+    char old_id[LARGE_CMD_STR_LEN];             // this can be the UUID4 of the original message (only valid in a "reply")
     char fn_argsig[SMALL_CMD_STR_LEN];          // Argument signature of the functions - use fmask format
     unsigned char buffer[HUGE_CMD_STR_LEN];     // CBOR byte array in raw byte form
     int length;                                 // length of the raw CBOR data
@@ -110,8 +111,8 @@ internal_command_t *internal_command_new(command_t *cmd);
 void internal_command_free(internal_command_t *ic);
 
 command_t *command_new(int cmd, int subcmd, char *fn_name, 
-                    long int task_id, char *node_id, char *fn_argsig, ...);
-command_t *command_new_using_arg(int cmd, int opt, char *fn_name, long int taskid, char *node_id, char *fn_argsig, arg_t *args);
+                    long int task_id, char *node_id, char *old_id, char *fn_argsig, ...);
+command_t *command_new_using_arg(int cmd, int opt, char *fn_name, long int taskid, char *node_id, char *old_id, char *fn_argsig, arg_t *args);
 command_t *command_from_data(char *fn_argsig, void *data, int len);
 void command_hold(command_t *cmd);
 void command_free(command_t *cmd);
