@@ -426,7 +426,7 @@ void command_args_free(arg_t *arg)
     }
 }
 
-void command_args_copy_elements(arg_t* arg_from, arg_t* arg_to, size_t nargs_from, size_t nargs_to)
+void command_args_copy_elements(arg_t *arg_from, arg_t *arg_to, size_t nargs_from, size_t nargs_to) 
 {
     assert(nargs_from <= nargs_to);
     assert(arg_from != NULL);
