@@ -243,7 +243,7 @@ typedef enum {
  */
 typedef struct {
     int status;
-    long int task_id;
+    uint64_t task_id;
     char command[MAX_MSG_LENGTH];
     void *data;
     void *entry;
@@ -602,7 +602,7 @@ function_t *tboard_find_func(tboard_t *t, char *fname);
 ////////////// Task Functions //////////////////
 ////////////////////////////////////////////////
 
-void remote_task_free(tboard_t *t, long int taskid);
+void remote_task_free(tboard_t *t, uint64_t taskid);
 void remote_task_place(tboard_t *t, remote_task_t *rtask);
 /**
  * remote_task_place() - Places remote task into appropriate queue
@@ -810,11 +810,11 @@ void msg_processor(void *serv, command_t *cmd);
  * indicate that @msg should be returned to the message queue.
  */
 
-void send_close_msg(void *serv, char *node_id, long int task_id);
-void send_err_msg(void *serv, char *node_id, long int task_id);
-void send_ack_msg(void *serv, char *node_id, long int task_id, int timeout);
-void send_nak_msg(void *serv, char *node_id, long int task_id);
-void send_reg_msg(void *serv, char *node_id, long int task_id);
+void send_close_msg(void *serv, char *node_id, uint64_t task_id);
+void send_err_msg(void *serv, char *node_id, uint64_t task_id);
+void send_ack_msg(void *serv, char *node_id, uint64_t task_id, int timeout);
+void send_nak_msg(void *serv, char *node_id, uint64_t task_id);
+void send_reg_msg(void *serv, char *node_id, uint64_t task_id);
 
 ////////////////////////////////////////////////////////////////
 /////////////////// Task history functionality /////////////////
@@ -933,9 +933,9 @@ void destroy_func_registry(tboard_t *t);
 timeout_t getcurtime();
 struct timeouts *twheel_init();
 struct timeout *twheel_get_next(tboard_t *tb);
-void *clone_taskid(long int *task_id);
+void *clone_taskid(uint64_t *task_id);
 bool twheel_add_event(tboard_t *tb, twheel_event_t type, void *arg, timeout_t tval);
-bool twheel_delete_timeout(tboard_t *tb, long int *id);
+bool twheel_delete_timeout(tboard_t *tb, uint64_t *id);
 void twheel_update_to_now(tboard_t *tb);
 timeout_t twheel_get_sleep_duration(tboard_t* tb, timeout_t max_sleep);
 

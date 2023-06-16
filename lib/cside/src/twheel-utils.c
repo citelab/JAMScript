@@ -26,10 +26,10 @@ struct timeouts *twheel_init()
     return tw;
 }
 
-void *clone_taskid(long int *task_id)
+void *clone_taskid(uint64_t *task_id)
 {
-    long int *t = (long int *)calloc(1, sizeof(long int));
-    memcpy(t, task_id, sizeof(long int));
+    uint64_t *t = (uint64_t *)calloc(1, sizeof(uint64_t));
+    memcpy(t, task_id, sizeof(uint64_t));
     return t;
 }
 
@@ -78,14 +78,14 @@ bool twheel_add_event(tboard_t *tb, twheel_event_t type, void *arg, timeout_t tv
     return true;
 }
 
-bool twheel_delete_timeout(tboard_t *tb, long int *id)
+bool twheel_delete_timeout(tboard_t *tb, uint64_t *id)
 {
     struct timeouts_it it = TIMEOUTS_IT_INITIALIZER(TIMEOUTS_PENDING);
     struct timeout *q;
 
     pthread_mutex_lock(&tb->twmutex);
     while ((q = timeouts_next(tb->twheel, &it)) != NULL) {
-        if ((q->callback.fn == dummy_next_timeout_event) && (*(long int *)(q->callback.arg) == *id))
+        if ((q->callback.fn == dummy_next_timeout_event) && (*(uint64_t*)(q->callback.arg) == *id))
             break;
     }
     if (q != NULL) {

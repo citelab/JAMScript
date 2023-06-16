@@ -23,13 +23,14 @@ THE SOFTWARE.
 #include "stats.h"
 #include "snowflake.h"
 #include <sys/time.h>
+#include <stdint.h>
 #include <stdio.h>
 
-long int snowflake_id() {
+int64_t snowflake_id() {
     struct timeval tp;
     gettimeofday(&tp, NULL);
-    long int millisecs = tp.tv_sec * 1000 + tp.tv_usec / 1000 - SNOWFLAKE_EPOCH;
-    long int id = 0L;
+    int64_t millisecs = tp.tv_sec * 1000 + tp.tv_usec / 1000 - SNOWFLAKE_EPOCH;
+    int64_t id = 0L;
 
     // Catch NTP clock adjustment that rolls time backwards and sequence number overflow
     if ((snowflake_global_state.seq > snowflake_global_state.seq_max ) || snowflake_global_state.time > millisecs) {
@@ -44,16 +45,16 @@ long int snowflake_id() {
         snowflake_global_state.time = millisecs;
         snowflake_global_state.seq = 0L;
     }
-    
-    
-    id = (millisecs << snowflake_global_state.time_shift_bits) 
-            | (snowflake_global_state.region_id << snowflake_global_state.region_shift_bits) 
-            | (snowflake_global_state.worker_id << snowflake_global_state.worker_shift_bits) 
-            | (snowflake_global_state.seq++); 
+
+
+    id = (millisecs << snowflake_global_state.time_shift_bits)
+            | (snowflake_global_state.region_id << snowflake_global_state.region_shift_bits)
+            | (snowflake_global_state.worker_id << snowflake_global_state.worker_shift_bits)
+            | (snowflake_global_state.seq++);
 
     if (app_stats.seq_max < snowflake_global_state.seq)
         app_stats.seq_max = snowflake_global_state.seq;
-    
+
     ++app_stats.ids;
     return id;
 }
@@ -69,11 +70,11 @@ int snowflake_init(int region_id, int worker_id) {
         printf("Worker ID must be in the range: 0-%d\n", max_worker_id);
         return -1;
     }
-    
+
     snowflake_global_state.time_shift_bits   = SNOWFLAKE_REGIONID_BITS + SNOWFLAKE_WORKERID_BITS + SNOWFLAKE_SEQUENCE_BITS;
     snowflake_global_state.region_shift_bits = SNOWFLAKE_WORKERID_BITS + SNOWFLAKE_SEQUENCE_BITS;
     snowflake_global_state.worker_shift_bits = SNOWFLAKE_SEQUENCE_BITS;
-    
+
     snowflake_global_state.worker_id    = worker_id;
     snowflake_global_state.region_id    = region_id;
     snowflake_global_state.seq_max      = (1L << SNOWFLAKE_SEQUENCE_BITS) - 1;
@@ -87,6 +88,3 @@ int snowflake_init(int region_id, int worker_id) {
     app_stats.worker_id                 = worker_id;
     return 1;
 }
-
-
-

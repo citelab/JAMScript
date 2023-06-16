@@ -36,8 +36,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdlib.h>
 #include "command.h"
 #include <assert.h>
+#include <inttypes.h>
 
-static long id = 1;
+static uint64_t id = 1;
 
 #define COPY_STRING(x, y, n)  do {       \
     if (y != NULL)                      \
@@ -66,7 +67,7 @@ void internal_command_free(internal_command_t *ic)
  * Return a command that includes a CBOR representation that can be sent out (a byte string)
  * It reuses the command_new_using_arg() function
  */
-command_t *command_new(int cmd, int subcmd, char *fn_name, long int task_id, char *node_id, char *old_id, char *fn_argsig, ...)
+command_t *command_new(int cmd, int subcmd, char *fn_name, uint64_t task_id, char *node_id, char *old_id, char *fn_argsig, ...)
 {
     va_list args;
     nvoid_t *nv;
@@ -110,7 +111,7 @@ command_t *command_new(int cmd, int subcmd, char *fn_name, long int task_id, cha
     return c;
 }
 
-command_t *command_new_using_arg(int cmd, int subcmd, char *fn_name, long int taskid, char *node_id, char *old_id, char *fn_argsig, arg_t *args)
+command_t *command_new_using_arg(int cmd, int subcmd, char *fn_name, uint64_t taskid, char *node_id, char *old_id, char *fn_argsig, arg_t *args)
 {
     command_t *cmdo = (command_t *)calloc(1, sizeof(command_t));
     nvoid_t *nv;
@@ -426,7 +427,7 @@ void command_args_free(arg_t *arg)
     }
 }
 
-void command_args_copy_elements(arg_t *arg_from, arg_t *arg_to, size_t nargs_from, size_t nargs_to) 
+void command_args_copy_elements(arg_t *arg_from, arg_t *arg_to, size_t nargs_from, size_t nargs_to)
 {
     assert(nargs_from <= nargs_to);
     assert(arg_from != NULL);
@@ -476,7 +477,7 @@ void command_print(command_t* cmd)
     printf("\nCommand subcmd: %d\n", cmd->subcmd);
 
     printf("\nCommand fn_name: %s\n", cmd->fn_name);
-    printf("\nCommand taskid : %lu\n", cmd->task_id);
+    printf("\nCommand taskid : %" PRIu64 "\n", cmd->task_id);
     printf("\nCommand node_id: %s\n", cmd->node_id);
     printf("\nCommand old_id: %s\n", cmd->old_id);
     printf("\nCommand fn_argsig: %s\n", cmd->fn_argsig);

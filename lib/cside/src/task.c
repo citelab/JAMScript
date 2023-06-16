@@ -16,14 +16,14 @@
 #define SNOWFLAKE_ID_FROM_TIME(ts) ts.tv_sec * 1000000000 +  ts.tv_nsec;
 #endif
 
-long int mysnowflake_id()
+uint64_t mysnowflake_id()
 {
     static int counter = 0;
     counter = (counter + 1) % 10000;
-    long int x;
+    uint64_t x;
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
-    x = SNOWFLAKE_ID_FROM_TIME(ts);
+    x = (uint64_t)SNOWFLAKE_ID_FROM_TIME(ts);
     return x/100 + counter;
 }
 
@@ -433,10 +433,10 @@ void *dflow_task_create(tboard_t *tboard, void *entry)
     }
 }
 
-void remote_task_free(tboard_t *t, long int taskid)
+void remote_task_free(tboard_t *t, uint64_t taskid)
 {
     remote_task_t *rtask = NULL;
-        HASH_FIND_INT(t->task_table, &(taskid), rtask);
+    HASH_FIND(hh, t->task_table, &(taskid), sizeof(uint64_t), rtask);
     if (rtask != NULL) {
         HASH_DEL(t->task_table, rtask);
         free(rtask);

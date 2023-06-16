@@ -7,7 +7,7 @@
 #include <time.h>
 #include <stdio.h>
 
-long int _getcurtime()
+uint64_t _getcurtime()
 {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -31,7 +31,7 @@ long int _getcurtime()
 #endif
 
 #define MAX_SNAPS               32
-static long int timesnaps[MAX_SNAPS];
+static uint64_t timesnaps[MAX_SNAPS];
 static double timediffs[MAX_SNAPS];
 static int count = 0;
 static int maxi = 0;
