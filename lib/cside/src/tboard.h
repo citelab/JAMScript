@@ -917,7 +917,7 @@ void history_print_records(tboard_t *t, FILE *fptr);
  * @fptr is assumed opened, and is assumed to be closed. Default value should be stdout.
  * format will print as:
  *
- * "task 'func_name' completed %d/%d times, yielding %ld times with mean execution time %ld"\
+ * "task 'func_name' completed %d/%d times, yielding %f times with mean execution time %f"\
  *
  * Context: locks @t->hmutex in order to access hash table
  */

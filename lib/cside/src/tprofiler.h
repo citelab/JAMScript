@@ -53,7 +53,7 @@ void print_snapshot_summary(int n)
     if (count % n == 0) {
         printf("\n");
         for (int i = 0; i <= maxi; i++){
-            printf("\t %ld", timesnaps[i]);
+            printf("\t %" PRIu64, timesnaps[i]);
         }
         printf("\n");
     }
