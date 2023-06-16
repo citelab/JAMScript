@@ -57,7 +57,7 @@ typedef struct _arg_t
     union _argvalue_t
     {
         int ival;
-        long int lval;
+        uint64_t lval;
         char *sval;
         double dval;
         nvoid_t *nval;
@@ -76,13 +76,13 @@ typedef struct _arg_t
  */
 typedef struct _command_t
 {
-    // Command object is going to hold truncated versions of the parameters 
+    // Command object is going to hold truncated versions of the parameters
     // in case longer strings are passed at creation
     // CBOR object is going to hold all the data
     int cmd;
     int subcmd;
     char fn_name[SMALL_CMD_STR_LEN];            // Function name
-    long int task_id;                           // Task identifier (a function in execution)
+    uint64_t task_id;                           // Task identifier (a function in execution)
     char node_id[LARGE_CMD_STR_LEN];            // this can be the UUID4 of the source of the message
     char old_id[LARGE_CMD_STR_LEN];             // this can be the UUID4 of the original message (only valid in a "reply")
     char fn_argsig[SMALL_CMD_STR_LEN];          // Argument signature of the functions - use fmask format
@@ -93,26 +93,26 @@ typedef struct _command_t
 
     int refcount;                               // Deallocation control
     pthread_mutex_t lock;
-    long id;
+    uint64_t id;
 } command_t;
 
 
-/* 
+/*
  * Structure for hold internal commands - from the message processor to the executor.
  */
 typedef struct _internal_command_t
 {
     int cmd;
-    long int task_id;
+    uint64_t task_id;
     arg_t *args;
 } internal_command_t;
 
 internal_command_t *internal_command_new(command_t *cmd);
 void internal_command_free(internal_command_t *ic);
 
-command_t *command_new(int cmd, int subcmd, char *fn_name, 
-                    long int task_id, char *node_id, char *old_id, char *fn_argsig, ...);
-command_t *command_new_using_arg(int cmd, int opt, char *fn_name, long int taskid, char *node_id, char *old_id, char *fn_argsig, arg_t *args);
+command_t *command_new(int cmd, int subcmd, char *fn_name,
+                    uint64_t task_id, char *node_id, char *old_id, char *fn_argsig, ...);
+command_t *command_new_using_arg(int cmd, int opt, char *fn_name, uint64_t taskid, char *node_id, char *old_id, char *fn_argsig, arg_t *args);
 command_t *command_from_data(char *fn_argsig, void *data, int len);
 void command_hold(command_t *cmd);
 void command_free(command_t *cmd);

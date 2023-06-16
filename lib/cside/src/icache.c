@@ -1,6 +1,7 @@
 #include "icache.h"
 #include <stdio.h>
 #include <stdbool.h>
+#include <inttypes.h>
 #include "uthash.h"
 
 void clean_icache(struct id_entry *t)
@@ -37,10 +38,10 @@ icache_t *icache_alloc()
     return ic;
 }
 
-bool icache_insert(icache_t *ic, long int task_id, char *node_id)
+bool icache_insert(icache_t *ic, uint64_t task_id, char *node_id)
 {
     char buf[1024];
-    snprintf(buf, 1024, "%lu%s", task_id, node_id);
+    snprintf(buf, 1024, "%" PRIu64 "%s", task_id, node_id);
     struct id_entry *entry = (struct id_entry *)calloc(1, sizeof(struct id_entry));
     strncpy(entry->id, buf, 128);
     HASH_ADD_STR(ic->tables[ic->curtab], id, entry);
@@ -52,11 +53,11 @@ bool icache_insert(icache_t *ic, long int task_id, char *node_id)
     return true;
 }
 
-bool icache_lookup(icache_t *ic, long int task_id, char *node_id)
+bool icache_lookup(icache_t *ic, uint64_t task_id, char *node_id)
 {
     struct id_entry *entry = NULL;
     char buf[1024];
-    snprintf(buf, 1024, "%lu%s", task_id, node_id);
+    snprintf(buf, 1024, "%" PRIu64 "%s", task_id, node_id);
     HASH_FIND_STR(ic->tables[ic->curtab], buf, entry);
     if (entry)
         return true;

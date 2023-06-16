@@ -78,7 +78,7 @@ void process_sleep_event(tboard_t *t, void *arg)
 {
     remote_task_t *rtask = NULL;
 
-    HASH_FIND_INT(t->task_table, ((long int *)arg), rtask);
+    HASH_FIND(hh, t->task_table, ((uint64_t*)arg), sizeof(uint64_t), rtask);
     if (rtask != NULL)
     {
         if (rtask->calling_task != NULL)
@@ -96,7 +96,7 @@ void process_timeout_event(tboard_t *t, void *arg)
     remote_task_t *rtask = NULL;
 
     if (arg != NULL) {
-        HASH_FIND_INT(t->task_table, ((long int *)arg), rtask);
+        HASH_FIND(hh, t->task_table, ((uint64_t*)arg), sizeof(uint64_t), rtask);
         if (rtask != NULL)
         {
             if (rtask->status == RTASK_ACK_PENDING || rtask->status == RTASK_RES_PENDING) {

@@ -19,8 +19,8 @@ typedef struct _icache_t
 } icache_t;
 
 icache_t *icache_alloc();
-bool icache_insert(icache_t *ic, long int task_id, char *node_id);
-bool icache_lookup(icache_t *ic, long int task_id, char *node_id);
+bool icache_insert(icache_t *ic, uint64_t task_id, char *node_id);
+bool icache_lookup(icache_t *ic, uint64_t task_id, char *node_id);
 void icache_free(icache_t *ic);
 
 #endif

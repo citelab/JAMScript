@@ -168,7 +168,7 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
             assert(mco_pop(task->ctx, rtask, sizeof(remote_task_t)) == MCO_SUCCESS);
             // task issuing task_t object in remote task object
             rtask->calling_task = task;
-            HASH_ADD_INT(tboard->task_table, task_id, rtask);
+            HASH_ADD(hh, tboard->task_table, task_id, sizeof(uint64_t), rtask);
 
             switch (rtask->mode) {
                 case TASK_MODE_REMOTE_NB:
@@ -260,7 +260,7 @@ void process_internal_command(tboard_t *t, internal_command_t *ic)
 
     switch (ic->cmd) {
     case CmdNames_REXEC_ACK:
-        HASH_FIND_INT(t->task_table, &(ic->task_id), rtask);
+        HASH_FIND(hh, t->task_table, &(ic->task_id), sizeof(uint64_t), rtask);
         if (rtask != NULL) {
             rtask->status = RTASK_ACK_RECEIVED;
             // blocking task - put back the timeout at a future time
@@ -279,7 +279,7 @@ void process_internal_command(tboard_t *t, internal_command_t *ic)
 
     case CmdNames_REXEC_RES:
         // find the task
-        HASH_FIND_INT(t->task_table, &(ic->task_id), rtask);
+        HASH_FIND(hh, t->task_table, &(ic->task_id), sizeof(uint64_t), rtask);
         if (rtask != NULL) {
             rtask->data = ic->args;
             rtask->data_size = 1;
@@ -296,7 +296,7 @@ void process_internal_command(tboard_t *t, internal_command_t *ic)
 
     case CmdNames_REXEC_ERR:
         // find the task
-        HASH_FIND_INT(t->task_table, &(ic->task_id), rtask);
+        HASH_FIND(hh, t->task_table, &(ic->task_id), sizeof(uint64_t), rtask);
         if (rtask != NULL) {
             if (rtask->calling_task != NULL) {
                 rtask->status = RTASK_ERROR;
