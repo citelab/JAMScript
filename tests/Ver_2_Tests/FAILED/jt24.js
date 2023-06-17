@@ -1,6 +1,6 @@
 
 jdata {
-    struct {
+    struct _zz {
 	int x;
 	double yy;
     } zz as uflow;
