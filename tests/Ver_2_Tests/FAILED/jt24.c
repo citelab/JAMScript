@@ -1,7 +1,7 @@
 
 
 jtask* localyou(int c, char *s) {
-    struct zz = {.x = 10, .yy = 2.56};
+//    struct zz = {.x = 10, .yy = 2.56};
 
     while(1) {
         jsleep(1000000);
