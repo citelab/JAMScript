@@ -6,6 +6,8 @@ node_modules/*
 *.gch
 /tmp
 *.db
+*.dot
+dot.pdf
 
 .DS_Store
 
