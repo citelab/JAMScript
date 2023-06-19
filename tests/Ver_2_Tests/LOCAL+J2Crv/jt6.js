@@ -7,4 +7,4 @@ setInterval(()=> {
 	}).catch(()=> {
 	    console.log("Error.....");
 	});
-}, 2000);
+}, 200);
