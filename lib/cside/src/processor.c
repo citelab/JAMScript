@@ -226,6 +226,7 @@ void msg_processor(void *serv, command_t *cmd)
         // kill tboard?
         // Do some memory release?
         command_free(cmd);
+        exit(0);
         return;
 
     case CmdNames_REXEC:
