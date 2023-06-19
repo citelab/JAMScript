@@ -155,12 +155,14 @@ dojamout_p2() {
     fi
 }
 
-
 cleanup() {
      if [ $killbroker == "1" ]; then
         echo Killing broker with PID: $MOSQUITTO_PID
         kill -9 $MOSQUITTO_PID
     fi
+    #echo ${AOUT_PIDS[@]}
+    #kill -9 ${AOUT_PIDS[@]}
+
     #reset
     cleanuptmux
     exit 1
@@ -229,6 +231,7 @@ doaout() {
             buildcargs "-a=$jappid" "-p=$port" "-n=$counter" "-g=$group" "-t=$tags"
             local cargs=$results
             if [ -z $log ]; then
+                echo tESTSETSE
                 $TMUX new-session -s $tmuxapp-$counter -d  "$VALGRIND ./a.out $cargs"
             else
                 if [ `uname` == "Linux" ]; then
@@ -300,8 +303,8 @@ getappid() {
 }
 
 killtmux() {
-
     for q in `tmux ls | grep $1 | cut -d ':' -f 1`; do
+        echo $q
         tmux kill-session -t $q
     done
 }
