@@ -24,17 +24,17 @@ THE SOFTWARE.
 #define __SNOWFLAKED_STATS__
 
 #include <time.h>
-
+#include <stdint.h>
 
 struct _app_stats {
     time_t started_at;
     char *version;
-    long int ids;
-    long int waits;
-    long int seq_max;
+    int64_t ids;
+    int64_t waits;
+    int64_t seq_max;
     int region_id;
     int worker_id;
-    long int seq_cap;
+    int64_t seq_cap;
 } app_stats;
 
 

@@ -64,8 +64,8 @@ typedef struct {
     dargtype_t type;
     union _dargvalue_t
     {
-        int ival;
-        long int lval;
+        int32_t ival;
+        int64_t lval;
         char* sval;
         double dval;
         nvoid_t* nval;

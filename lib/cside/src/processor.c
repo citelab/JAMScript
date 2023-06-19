@@ -13,7 +13,7 @@
 #include "dpanel.h"
 #include "auxpanel.h"
 
-arg_t *command_arg_clone_special(arg_t *arg, char *fname, long int taskid, char *nodeid, void *serv)
+arg_t *command_arg_clone_special(arg_t *arg, char *fname, uint64_t taskid, char *nodeid, void *serv)
 {
     arg_t *rl;
     int i = 0;
@@ -67,7 +67,7 @@ void exec_sync(context_t ctx)
     arg_t *t = (arg_t *)(task_get_args());
     int nargs = t->nargs;
     char *fn_name = t[nargs - 4].val.sval;
-    long int task_id = t[nargs - 3].val.lval;
+    uint64_t task_id = t[nargs - 3].val.lval;
     char *node_id = strdup(t[nargs - 2].val.sval);
     server_t *s = (server_t *)t[nargs - 1].val.vval;
     cnode_t *c = s->cnode;
@@ -298,7 +298,7 @@ void msg_processor(void *serv, command_t *cmd)
     }
 }
 
-void send_close_msg(void *serv, char *node_id, long int task_id)
+void send_close_msg(void *serv, char *node_id, uint64_t task_id)
 {
     server_t *s = (server_t *)serv;
     cnode_t *c = s->cnode;
@@ -306,7 +306,7 @@ void send_close_msg(void *serv, char *node_id, long int task_id)
     mqtt_publish(s->mqtt, c->topics->selfrequesttopic, cmd->buffer, cmd->length, cmd, 0);
 }
 
-void send_err_msg(void *serv, char *node_id, long int task_id)
+void send_err_msg(void *serv, char *node_id, uint64_t task_id)
 {
     server_t *s = (server_t *)serv;
     cnode_t *c = s->cnode;
@@ -314,7 +314,7 @@ void send_err_msg(void *serv, char *node_id, long int task_id)
     mqtt_publish(s->mqtt, c->topics->replytopic, cmd->buffer, cmd->length, cmd, 0);
 }
 
-void send_ack_msg(void *serv, char *node_id, long int task_id, int timeout)
+void send_ack_msg(void *serv, char *node_id, uint64_t task_id, int timeout)
 {
     server_t *s = (server_t *)serv;
     cnode_t *c = s->cnode;
@@ -322,7 +322,7 @@ void send_ack_msg(void *serv, char *node_id, long int task_id, int timeout)
     mqtt_publish(s->mqtt, c->topics->replytopic, cmd->buffer, cmd->length, cmd, 0);
 }
 
-void send_nak_msg(void *serv, char *node_id, long int task_id)
+void send_nak_msg(void *serv, char *node_id, uint64_t task_id)
 {
     server_t *s = (server_t *)serv;
     cnode_t *c = s->cnode;
@@ -330,7 +330,7 @@ void send_nak_msg(void *serv, char *node_id, long int task_id)
     mqtt_publish(s->mqtt, c->topics->replytopic, cmd->buffer, cmd->length, cmd, 0);
 }
 
-void send_reg_msg(void *serv, char *node_id, long int task_id)
+void send_reg_msg(void *serv, char *node_id, uint64_t task_id)
 {
     server_t *s = (server_t *)serv;
     cnode_t *c = s->cnode;

@@ -6,7 +6,7 @@ source "$IDIR/inc/misc_tools.sh"
 REDISFUNCS=`realpath "$IDIR/../deps/lua/jredlib.lua"`
 
 SHELLPID=$$
-trap cleanup SIGTERM SIGINT
+trap cleanup SIGTERM SIGINT SIGKILL
 
 die() {
     printf '%s\n' "$1" >&2
@@ -111,15 +111,17 @@ startmqtt() {
 
     # Check whether the MQTT server is running.. if not start it
     $MOSQUITTO_PUB -p $port -t "test" -m "hello"
+
     if [ $? -ne 0 ]; then
         if [ -z $NOVERBOSE ]; then
             echo "MQTT is not running at $port"
             echo "Attempting to start MQTT at $port"
         fi
         if [ $machine = Mac ]; then
-            open -n -a $MOSQUITTO --stdout /dev/null --args -c $cfile
+            open -n -a $MOSQUITTO --stdout /dev/null --args -c $cfile 
+            #MOSQUITTO_PID=$! # Currently Broken
         elif [ $machine = Linux ]; then
-            nohup $MOSQUITTO -c $cfile &>/dev/null &
+            nohup $MOSQUITTO -c $cfile &>/dev/null & MOSQUITTO_PID=$!
         fi
     fi
 }
@@ -155,7 +157,11 @@ dojamout_p2() {
 
 
 cleanup() {
-    reset
+     if [ $killbroker == "1" ]; then
+        echo Killing broker with PID: $MOSQUITTO_PID
+        kill -9 $MOSQUITTO_PID
+    fi
+    #reset
     cleanuptmux
     exit 1
 }
@@ -167,8 +173,9 @@ dojamout_p2_fg() {
     local floc=$3
     local group=$4
 
-    buildjargs "--app=$jappid" "--port=$pnum" "--group=$group" "--data=$data" "--tags=$tags" "--iflow=$iflow" "--oflow=$oflow" "--edge=$edge" "--long=$long" "--lat=$lat"
+    buildjargs "--app=$jappid" "--port=$pnum" "--group=$group" "--data=$data" "--tags=$tags" "--iflow=$iflow" "--oflow=$oflow" "--edge=$edge" "--long=$long" "--lat=$lat" "--localregistryhost=$localregistryhost"
     local args=$results
+    echo $args
     case $type in
         cloud)
             node jstart.js $args
@@ -180,6 +187,8 @@ dojamout_p2_fg() {
             node jstart.js $args
             ;;
     esac
+
+    cleanup
 }
 
 
@@ -419,6 +428,8 @@ porttaken=0
 tmuxid=
 log=
 edge=1
+localregistryhost=0
+killbroker=0
 
 # generate the random longitude and lattitude values
 # use the --loc option to override these values
@@ -561,6 +572,12 @@ while :; do
             fi
             ;;
         --device)
+            ;;
+        --local_registry)
+            localregistryhost=1
+            ;;
+        --temp_broker)
+            killbroker=1
             ;;
         --bg)
             bg=1
