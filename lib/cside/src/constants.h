@@ -7,7 +7,7 @@
 #define CmdNames_OLD_REGISTER 1006
 #define CmdNames_PING 1020
 #define CmdNames_PONG 1021
-#define CmdNames_EXIT 1022
+
 #define CmdNames_GET_CLOUD_FOG_INFO 1100
 #define CmdNames_PUT_CLOUD_FOG_INFO 1101
 #define CmdNames_REF_CLOUD_FOG_INFO 1102

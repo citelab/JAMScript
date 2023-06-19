@@ -16,4 +16,4 @@ setInterval(()=> {
     } else 
 	console.log("Nothing to call...");
 
-}, 2000);
+}, 20);
