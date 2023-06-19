@@ -4,6 +4,7 @@
  * JAMSCRIPT TESTING FRAMEWORK *
  *******************************/
 const fs      = require('fs'),
+      os      = require('os'),
       path    = require('path'),
       process = require('process'),
       child_process = require('child_process');
@@ -44,7 +45,7 @@ Toaster.prototype._walkTestDir = function (folder) {
   let that = this;
   var tests = [];
   for(let file of fs.readdirSync(folder)) {
-    let completePath = `${folder}/${file}`
+    let completePath = `${folder}/${file}`;
 
     if(fs.lstatSync(completePath).isDirectory()) {
       tests.push(...that._walkTestDir(completePath));
@@ -57,6 +58,7 @@ Toaster.prototype._walkTestDir = function (folder) {
         let testName = `${folder}/${basename}`.substring(this.testDirectory.length+1);
         tests.push({
           testName: testName,
+          baseName: basename,
           cFile: `${folder}/${basename}.c`,
           jsFile: `${folder}/${basename}.js`,
           testResultDirectory: `${that.resultDirectory}/${testName}`
@@ -86,21 +88,36 @@ function killGroup(pgid) {
   child_process.execSync(`kill -- -${pgid}`);
 }
 
+Toaster.prototype.getWorkerPids = function(test) {
+  const searchDir = `${os.homedir()}/.jamruns/apps/test_${this.testDirectory}`;
+
+  let pids = [];
+
+  for(let file of fs.readdirSync(searchDir)) {
+    let completePath = `${searchDir}/${file}`;
+    if(fs.lstatSync(completePath).isDirectory()) {
+      pids.push(fs.readFileSync(`${completePath}/processId`));
+    }
+  }
+  
+  console.log(pids);
+}
+
 Toaster.prototype.executeTest = function(test, testResultDirectory) {
   let command = `jamrun`
   let args =  [
     `${test.testResultDirectory}/test.jxe`,
-    "--app=qwe",
+    `--app=${this.testDirectoryName}`,
     //"--log",
     "--temp_broker"];
 
-    // Loop through process ID files
-    // 
+    // Loop through process ID files (use this)
 
   // We should log compiler output in the event of a compiler error.
   let testProcess = child_process.spawn(command, args, {shell: true, detached: true});
   let timeout = setTimeout(()=>{
     console.log("Trying to kill thing");
+    this.getWorkerPids(test);
     killGroup(testProcess.pid); // This works fo now but is likely not portable
   }, 4000);
 
