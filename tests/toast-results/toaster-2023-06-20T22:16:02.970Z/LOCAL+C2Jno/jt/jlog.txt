@@ -1,0 +1,85 @@
+Preprocessing...
+Side effect checking enabled
+########################################
+[JS] RUNNING PRE COMPILATION CHECK
+REGULAR FUNCTION [JS] --> NAME: testing
+REGULAR FUNCTION [JS] --> NAME: you
+ASYNC FUNCTION [JS] --> NAME: you
+Parsing JS Files...
+Generating JavaScript Code...
+you
+you
+Parsing C Files...
+Generating C code...
+setting....  c   to value =  int
+setting....  s   to value =  char*
+setting....  c   to value =  int
+setting....  s   to value =  char*
+setting....  argc   to value =  int
+setting....  *argv[]   to value =  char
+Compiling C code...
+Stderr Follows: 
+Warning: primitiveValue is deprecated and will be removed in a future version of Ohm. Use sourceString instead.
+/tmp/jam-479351b88283c7496712/jamout.c:59:4: warning: logical not is only applied to the left hand side of this comparison [-Wlogical-not-parentheses]
+if(!12 == 13) {
+   ^   ~~
+/tmp/jam-479351b88283c7496712/jamout.c:59:4: note: add parentheses after the '!' to evaluate the comparison first
+if(!12 == 13) {
+   ^
+    (       )
+/tmp/jam-479351b88283c7496712/jamout.c:59:4: note: add parentheses around left hand side expression to silence this warning
+if(!12 == 13) {
+   ^
+   (  )
+1 warning generated.
+--app=toaster --port=1883 --group=1 --data=127.0.0.1:6379 --edge=1 --long=5.842 --lat=63.3360 --localregistryhost=0 --device
+------
+Current Device Node Id: cfdfd7ff-7132-4713-9f44-21f43e0f36a3
+Starting App..
+Program completed.
+Message received:  a-message-for-j  local count  1
+This doesn't work?
+
+WARNING: There are no Local Registries listed on the network!
+
+Doing multicast search for local registries
+hello.. main loop 
+Message received:  a-message-for-j  local count  2
+This doesn't work?
+Couldn't find any new local registries through multicast.
+hello.. main loop 
+Message received:  a-message-for-j  local count  3
+This doesn't work?
+Message received:  a-message-for-j  local count  4
+This doesn't work?
+hello.. main loop 
+Message received:  a-message-for-j  local count  5
+This doesn't work?
+Message received:  a-message-for-j  local count  6
+This doesn't work?
+hello.. main loop 
+Message received:  a-message-for-j  local count  7
+This doesn't work?
+Message received:  a-message-for-j  local count  8
+This doesn't work?
+hello.. main loop 
+Message received:  a-message-for-j  local count  9
+This doesn't work?
+Message received:  a-message-for-j  local count  10
+This doesn't work?
+hello.. main loop 
+Message received:  a-message-for-j  local count  11
+This doesn't work?
+Message received:  a-message-for-j  local count  12
+This doesn't work?
+hello.. main loop 
+Message received:  a-message-for-j  local count  13
+This doesn't work?
+Message received:  a-message-for-j  local count  14
+This doesn't work?
+hello.. main loop 
+Message received:  a-message-for-j  local count  15
+This doesn't work?
+Message received:  a-message-for-j  local count  16
+This doesn't work?
+Killing broker with PID:

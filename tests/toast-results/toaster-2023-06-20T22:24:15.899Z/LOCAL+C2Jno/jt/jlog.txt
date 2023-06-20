@@ -1,0 +1,25 @@
+Preprocessing...
+Side effect checking enabled
+########################################
+[JS] RUNNING PRE COMPILATION CHECK
+REGULAR FUNCTION [JS] --> NAME: buggy
+REGULAR FUNCTION [JS] --> NAME: you
+ASYNC FUNCTION [JS] --> NAME: you
+Parsing JS Files...
+Generating JavaScript Code...
+buggy
+ERROR:
+TypeError: Cannot read properties of undefined (reading 'tag')
+    at /home/pi/Desktop/JAMScript/lib/ohm/jamscript/activities.js:12:218
+    at Array.map (<anonymous>)
+    at Object.generateMbox (/home/pi/Desktop/JAMScript/lib/ohm/jamscript/activities.js:8:43)
+    at Semantics.Wrapper.Program (/home/pi/Desktop/JAMScript/lib/ohm/jamscript/jamJSTranslator.js:109:27)
+    at Attribute.execute (/home/pi/Desktop/JAMScript/node_modules/ohm-js/src/Semantics.js:660:25)
+    at Attribute.execute (/home/pi/Desktop/JAMScript/node_modules/ohm-js/src/Semantics.js:699:47)
+    at Semantics.Wrapper.doIt (/home/pi/Desktop/JAMScript/node_modules/ohm-js/src/Semantics.js:438:27)
+    at translate (/home/pi/Desktop/JAMScript/lib/ohm/jamscript/jamJSTranslator.js:1059:24)
+    at Object.compile (/home/pi/Desktop/JAMScript/lib/ohm/jamscript/jamJSTranslator.js:1158:10)
+    at Object.compile (/home/pi/Desktop/JAMScript/lib/ohm/jamscript/jam.js:26:34)
+Stderr Follows: 
+Warning: primitiveValue is deprecated and will be removed in a future version of Ohm. Use sourceString instead.
+STDERR: File: toast-results/toaster-2023-06-20T22:24:15.899Z/LOCAL+C2Jno/jt/test.jxe not found
