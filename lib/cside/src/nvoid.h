@@ -25,7 +25,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 typedef struct _nvoid_t
 {
-    int len;    
+    int len;
     void *data;
 } nvoid_t;
 
