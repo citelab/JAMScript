@@ -1,7 +1,5 @@
 let count = 0;
 
-
-
 jtask* function you(str) {
     assert(12==12);
     count++;

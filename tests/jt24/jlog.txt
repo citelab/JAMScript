@@ -1,0 +1,79 @@
+--app=jt24 --port=1883 --group=1 --data=127.0.0.1:6379 --edge=1 --long=28.6888 --lat=68.7910 --localregistryhost=0 --device
+------
+Current Device Node Id: 818c73a4-ec9b-4ec9-89cb-d09c473b820a
+Starting App..
+Program completed.
+
+WARNING: There are no Local Registries listed on the network!
+
+Doing multicast search for local registries
+Couldn't find any new local registries through multicast.
+Tag.....  undefined device type  device
+@ToasterCoverage#{2}#
+Longitude and Latitude ....  33.6888 68.791
+@ToasterCoverage#{3}#
+Calling compyou.. 
+Received an echo!
+Device to worker communication 19
+@ToasterCoverage#{0}#
+Received an echo!
+Device to worker communication 11
+@ToasterCoverage#{0}#
+Received an echo!
+Device to worker communication 0
+@ToasterCoverage#{0}#
+{ completed: 0, error: 0 } []
+================= Retry called................ 818c73a4-ec9b-4ec9-89cb-d09c473b820a1687365239490002
+Tag.....  undefined device type  device
+@ToasterCoverage#{2}#
+Longitude and Latitude ....  38.6888 68.791
+@ToasterCoverage#{3}#
+Calling compyou.. 
+Received an echo!
+Device to worker communication 20
+@ToasterCoverage#{0}#
+Received an echo!
+Device to worker communication 12
+@ToasterCoverage#{0}#
+Received an echo!
+Device to worker communication 1
+@ToasterCoverage#{0}#
+{ completed: 0, error: 0 } []
+================= Retry called................ 818c73a4-ec9b-4ec9-89cb-d09c473b820a1687365239490002
+================= Retry called................ 818c73a4-ec9b-4ec9-89cb-d09c473b820a1687365242488004
+================= Retry called................ 818c73a4-ec9b-4ec9-89cb-d09c473b820a1687365239490002
+Tag.....  undefined device type  device
+@ToasterCoverage#{2}#
+Longitude and Latitude ....  43.6888 68.791
+@ToasterCoverage#{3}#
+Calling compyou.. 
+Received an echo!
+Device to worker communication 21
+@ToasterCoverage#{0}#
+Received an echo!
+Device to worker communication 13
+@ToasterCoverage#{0}#
+Received an echo!
+Device to worker communication 2
+@ToasterCoverage#{0}#
+{ completed: 0, error: 0 } []
+================= Retry called................ 818c73a4-ec9b-4ec9-89cb-d09c473b820a1687365242488004
+================= Retry called................ 818c73a4-ec9b-4ec9-89cb-d09c473b820a1687365245489006
+================= Retry called................ 818c73a4-ec9b-4ec9-89cb-d09c473b820a1687365242488004
+Tag.....  undefined device type  device
+@ToasterCoverage#{2}#
+Longitude and Latitude ....  48.6888 68.791
+@ToasterCoverage#{3}#
+Calling compyou.. 
+Received an echo!
+Device to worker communication 14
+@ToasterCoverage#{0}#
+Received an echo!
+Device to worker communication 3
+@ToasterCoverage#{0}#
+Received an echo!
+Device to worker communication 22
+@ToasterCoverage#{0}#
+{ completed: 0, error: 0 } []
+================= Retry called................ 818c73a4-ec9b-4ec9-89cb-d09c473b820a1687365245489006
+================= Retry called................ 818c73a4-ec9b-4ec9-89cb-d09c473b820a1687365248488008
