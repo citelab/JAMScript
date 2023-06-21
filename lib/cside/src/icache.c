@@ -8,7 +8,6 @@ void clean_icache(struct id_entry *t)
 {
     struct id_entry *cur, *tmp;
     HASH_ITER(hh, t, cur, tmp) {
-        HASH_DEL(t, cur);
         free(cur);
     }
 }
