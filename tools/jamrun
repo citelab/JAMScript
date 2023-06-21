@@ -230,15 +230,20 @@ doaout() {
             # execute the program.. we are in the folder..
             buildcargs "-a=$jappid" "-p=$port" "-n=$counter" "-g=$group" "-t=$tags"
             local cargs=$results
-            if [ -z $log ]; then
-                echo tESTSETSE
-                $TMUX new-session -s $tmuxapp-$counter -d  "$VALGRIND ./a.out $cargs"
-            else
-                if [ `uname` == "Linux" ]; then
-                    $TMUX new-session -s $tmuxapp-$counter -d  script -a -c "$VALGRIND ./a.out $cargs" -f log
+
+            if [ -z $DISABLE_STDOUT_REDIRECT ]; then
+                if [ -z $log ]; then
+                    $TMUX new-session -s $tmuxapp-$counter -d  "$VALGRIND ./a.out $cargs"
                 else
-                    $TMUX new-session -s $tmuxapp-$counter -d  "script -a -t 1 log ./a.out $cargs"
+                    if [ `uname` == "Linux" ]; then
+                        $TMUX new-session -s $tmuxapp-$counter -d  script -a -c "$VALGRIND ./a.out $cargs" -f log
+                    else
+                        $TMUX new-session -s $tmuxapp-$counter -d  "script -a -t 1 log ./a.out $cargs"
+                    fi
                 fi
+            else 
+                # As simple as can be
+                ./a.out $cargs &
             fi
         fi
         ((counter++))
@@ -310,9 +315,9 @@ killtmux() {
 }
 
 cleanuptmux() {
-    if [ ! -z $tmuxapp ]; then
-        killtmux $tmuxapp
-    fi
+    #if [ ! -z $tmuxapp ]; then
+        #killtmux $tmuxapp
+    #fi
     exit
 }
 
@@ -600,6 +605,9 @@ while :; do
 		--valgrind)
 			VALGRIND="$VALGRIND_OPTS"
 			;;
+        --disable-stdout-redirect)
+            DISABLE_STDOUT_REDIRECT=1
+            ;;
         --)              # End of all options.
             shift
             break
