@@ -1,0 +1,750 @@
+--app=Ver_2_Tests --port=1883 --group=1 --data=127.0.0.1:6379 --edge=1 --long=71.7183 --lat=60.1271 --localregistryhost=0 --device
+
+------
+
+Current Device Node Id: ca1d0d70-7b19-47b1-a863-aa868a4126f2
+
+Starting App..
+
+Program completed.
+
+Writing to dflow -- xx  10
+
+Writing to dflow -- xx  11
+
+Writing to dflow -- xx  12
+
+Writing to dflow -- xx  13
+
+Writing to dflow -- xx  14
+
+Writing to dflow -- xx  15
+
+Writing to dflow -- xx  16
+
+Writing to dflow -- xx  17
+
+Writing to dflow -- xx  18
+
+Writing to dflow -- xx  19
+
+Writing to dflow -- xx  20
+
+Writing to dflow -- xx  21
+
+Writing to dflow -- xx  22
+
+Writing to dflow -- xx  23
+
+Writing to dflow -- xx  24
+
+Writing to dflow -- xx  25
+
+Writing to dflow -- xx  26
+
+Writing to dflow -- xx  27
+
+Writing to dflow -- xx  28
+
+Writing to dflow -- xx  29
+
+Writing to dflow -- xx  30
+
+Writing to dflow -- xx  31
+
+Writing to dflow -- xx  32
+
+Writing to dflow -- xx  33
+
+Writing to dflow -- xx  34
+
+Writing to dflow -- xx  35
+
+Writing to dflow -- xx  36
+
+Writing to dflow -- xx  37
+
+
+WARNING: There are no Local Registries listed on the network!
+
+
+Doing multicast search for local registries
+
+Writing to dflow -- xx  38
+
+Writing to dflow -- xx  39
+
+Writing to dflow -- xx  40
+
+Writing to dflow -- xx  41
+
+Writing to dflow -- xx  42
+
+Writing to dflow -- xx  43
+
+Writing to dflow -- xx  44
+
+Writing to dflow -- xx  45
+
+Writing to dflow -- xx  46
+
+Writing to dflow -- xx  47
+
+Writing to dflow -- xx  48
+
+Writing to dflow -- xx  49
+
+Writing to dflow -- xx  50
+
+Writing to dflow -- xx  51
+
+Writing to dflow -- xx  52
+
+Writing to dflow -- xx  53
+
+Writing to dflow -- xx  54
+
+Writing to dflow -- xx  55
+
+Writing to dflow -- xx  56
+
+Writing to dflow -- xx  57
+
+Writing to dflow -- xx  58
+
+Writing to dflow -- xx  59
+
+Writing to dflow -- xx  60
+
+Writing to dflow -- xx  61
+
+Writing to dflow -- xx  62
+
+Writing to dflow -- xx  63
+
+Writing to dflow -- xx  64
+
+Writing to dflow -- xx  65
+
+Writing to dflow -- xx  66
+
+Writing to dflow -- xx  67
+
+Writing to dflow -- xx  68
+
+Writing to dflow -- xx  69
+
+Couldn't find any new local registries through multicast.
+
+Writing to dflow -- xx  70
+
+Writing to dflow -- xx  71
+
+Writing to dflow -- xx  72
+
+Writing to dflow -- xx  73
+
+Writing to dflow -- xx  74
+
+Writing to dflow -- xx  75
+
+Writing to dflow -- xx  76
+
+Writing to dflow -- xx  77
+
+Writing to dflow -- xx  78
+
+Writing to dflow -- xx  79
+
+Writing to dflow -- xx  80
+
+Writing to dflow -- xx  81
+
+Writing to dflow -- xx  82
+
+Writing to dflow -- xx  83
+
+Writing to dflow -- xx  84
+
+Writing to dflow -- xx  85
+
+Writing to dflow -- xx  86
+
+Writing to dflow -- xx  87
+
+Writing to dflow -- xx  88
+
+Writing to dflow -- xx  89
+
+Writing to dflow -- xx  90
+
+Writing to dflow -- xx  91
+
+Writing to dflow -- xx  92
+
+Writing to dflow -- xx  93
+
+Writing to dflow -- xx  94
+
+Writing to dflow -- xx  95
+
+Writing to dflow -- xx  96
+
+Writing to dflow -- xx  97
+
+Writing to dflow -- xx  98
+
+Writing to dflow -- xx  99
+
+Writing to dflow -- xx  100
+
+Writing to dflow -- xx  101
+
+Writing to dflow -- xx  102
+
+Writing to dflow -- xx  103
+
+Writing to dflow -- xx  104
+
+Writing to dflow -- xx  105
+
+Writing to dflow -- xx  106
+
+Writing to dflow -- xx  107
+
+Writing to dflow -- xx  108
+
+Writing to dflow -- xx  109
+
+Writing to dflow -- xx  110
+
+Writing to dflow -- xx  111
+
+Writing to dflow -- xx  112
+
+Writing to dflow -- xx  113
+
+Writing to dflow -- xx  114
+
+Writing to dflow -- xx  115
+
+Writing to dflow -- xx  116
+
+Writing to dflow -- xx  117
+
+Writing to dflow -- xx  118
+
+Writing to dflow -- xx  119
+
+Writing to dflow -- xx  120
+
+Writing to dflow -- xx  121
+
+Writing to dflow -- xx  122
+
+Writing to dflow -- xx  123
+
+Writing to dflow -- xx  124
+
+Writing to dflow -- xx  125
+
+Writing to dflow -- xx  126
+
+Writing to dflow -- xx  127
+
+Writing to dflow -- xx  128
+
+Writing to dflow -- xx  129
+
+Writing to dflow -- xx  130
+
+Writing to dflow -- xx  131
+
+Writing to dflow -- xx  132
+
+Writing to dflow -- xx  133
+
+Writing to dflow -- xx  134
+
+Writing to dflow -- xx  135
+
+Writing to dflow -- xx  136
+
+Writing to dflow -- xx  137
+
+Writing to dflow -- xx  138
+
+Writing to dflow -- xx  139
+
+Writing to dflow -- xx  140
+
+Writing to dflow -- xx  141
+
+Writing to dflow -- xx  142
+
+Writing to dflow -- xx  143
+
+Writing to dflow -- xx  144
+
+Writing to dflow -- xx  145
+
+Writing to dflow -- xx  146
+
+Writing to dflow -- xx  147
+
+Writing to dflow -- xx  148
+
+Writing to dflow -- xx  149
+
+Writing to dflow -- xx  150
+
+Writing to dflow -- xx  151
+
+Writing to dflow -- xx  152
+
+Writing to dflow -- xx  153
+
+Writing to dflow -- xx  154
+
+Writing to dflow -- xx  155
+
+Writing to dflow -- xx  156
+
+Writing to dflow -- xx  157
+
+Writing to dflow -- xx  158
+
+Writing to dflow -- xx  159
+
+Writing to dflow -- xx  160
+
+Writing to dflow -- xx  161
+
+Writing to dflow -- xx  162
+
+Writing to dflow -- xx  163
+
+Writing to dflow -- xx  164
+
+Writing to dflow -- xx  165
+
+Writing to dflow -- xx  166
+
+Writing to dflow -- xx  167
+
+Writing to dflow -- xx  168
+
+Writing to dflow -- xx  169
+
+Writing to dflow -- xx  170
+
+Writing to dflow -- xx  171
+
+Writing to dflow -- xx  172
+
+Writing to dflow -- xx  173
+
+Writing to dflow -- xx  174
+
+Writing to dflow -- xx  175
+
+Writing to dflow -- xx  176
+
+Writing to dflow -- xx  177
+
+Writing to dflow -- xx  178
+
+Writing to dflow -- xx  179
+
+Writing to dflow -- xx  180
+
+Writing to dflow -- xx  181
+
+Writing to dflow -- xx  182
+
+Writing to dflow -- xx  183
+
+Writing to dflow -- xx  184
+
+Writing to dflow -- xx  185
+
+Writing to dflow -- xx  186
+
+Writing to dflow -- xx  187
+
+Writing to dflow -- xx  188
+
+Writing to dflow -- xx  189
+
+Writing to dflow -- xx  190
+
+Writing to dflow -- xx  191
+
+Writing to dflow -- xx  192
+
+Writing to dflow -- xx  193
+
+Writing to dflow -- xx  194
+
+Writing to dflow -- xx  195
+
+Writing to dflow -- xx  196
+
+Writing to dflow -- xx  197
+
+Writing to dflow -- xx  198
+
+Writing to dflow -- xx  199
+
+Writing to dflow -- xx  200
+
+Writing to dflow -- xx  201
+
+Writing to dflow -- xx  202
+
+Writing to dflow -- xx  203
+
+Writing to dflow -- xx  204
+
+Writing to dflow -- xx  205
+
+Writing to dflow -- xx  206
+
+Writing to dflow -- xx  207
+
+Writing to dflow -- xx  208
+
+Writing to dflow -- xx  209
+
+Writing to dflow -- xx  210
+
+Writing to dflow -- xx  211
+
+Writing to dflow -- xx  212
+
+Writing to dflow -- xx  213
+
+Writing to dflow -- xx  214
+
+Writing to dflow -- xx  215
+
+Writing to dflow -- xx  216
+
+Writing to dflow -- xx  217
+
+Writing to dflow -- xx  218
+
+Writing to dflow -- xx  219
+
+Writing to dflow -- xx  220
+
+Writing to dflow -- xx  221
+
+Writing to dflow -- xx  222
+
+Writing to dflow -- xx  223
+
+Writing to dflow -- xx  224
+
+Writing to dflow -- xx  225
+
+Writing to dflow -- xx  226
+
+Writing to dflow -- xx  227
+
+Writing to dflow -- xx  228
+
+Writing to dflow -- xx  229
+
+Writing to dflow -- xx  230
+
+Writing to dflow -- xx  231
+
+Writing to dflow -- xx  232
+
+Writing to dflow -- xx  233
+
+Writing to dflow -- xx  234
+
+Writing to dflow -- xx  235
+
+Writing to dflow -- xx  236
+
+Writing to dflow -- xx  237
+
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+This is a message: hi.. this is local
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+This is a message: hi.. this is local
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+This is a message: hi.. this is local
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+This is a message: hi.. this is local
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+This is a message: hi.. this is local
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+This is a message: hi.. this is local
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read ... 274
+Value read 
+Writing to dflow -- xx  238
+
+Writing to dflow -- xx  239
+
+Writing to dflow -- xx  240
+
+Writing to dflow -- xx  241
+
+Writing to dflow -- xx  242
+
+Writing to dflow -- xx  243
+
+Writing to dflow -- xx  244
+
+Writing to dflow -- xx  245
+
+Writing to dflow -- xx  246
+
+Writing to dflow -- xx  247
+
+Writing to dflow -- xx  248
+
+Writing to dflow -- xx  249
+
+Writing to dflow -- xx  250
+
+Writing to dflow -- xx  251
+
+Writing to dflow -- xx  252
+
+Writing to dflow -- xx  253
+
+Writing to dflow -- xx  254
+
+Writing to dflow -- xx  255
+
+Writing to dflow -- xx  256
+
+Writing to dflow -- xx  257
+
+Writing to dflow -- xx  258
+
+Writing to dflow -- xx  259
+
+Writing to dflow -- xx  260
+
+Writing to dflow -- xx  261
+
+Writing to dflow -- xx  262
+
+Writing to dflow -- xx  263
+
+Writing to dflow -- xx  264
+
+Writing to dflow -- xx  265
+
+Writing to dflow -- xx  266
+
+Writing to dflow -- xx  267
+
+
+
+
+Test: DFLOW_J2C/jt19 Completed Succesfully
+Time to Compile: 11.319s
+Time to Run Test: 10.015s

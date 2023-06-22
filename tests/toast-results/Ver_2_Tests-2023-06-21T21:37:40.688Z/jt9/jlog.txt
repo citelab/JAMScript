@@ -1,0 +1,123 @@
+--app=Ver_2_Tests --port=1886 --group=4 --data=127.0.0.1:6379 --edge=1 --long=15.9394 --lat=49.2638 --localregistryhost=0 --device
+
+------
+
+Current Device Node Id: e5e05664-f45b-4f45-b65d-9765da01f6d6
+
+Starting App..
+
+Program completed.
+
+
+WARNING: There are no Local Registries listed on the network!
+
+
+Doing multicast search for local registries
+
+Couldn't find any new local registries through multicast.
+
+Tag.....  undefined
+
+Longitude and Latitude ....  20.9394 49.2638
+
+STDERR: =================================================================
+STDERR: ==112039==ERROR: AddressSanitizer: heap-use-after-free on address 0x007fb9400e50 at pc 0x0000004c4b08 bp 0x007fb6dfe580 sp 0x007fb6dfe578
+STDERR: READ of size 4 at 0x007fb9400e50 thread T2
+Tag.....  undefined
+
+Longitude and Latitude ....  25.9394 49.2638
+
+STDERR:     #0 0x4c4b04 in command_arg_inner_free /home/pi/Desktop/JAMScript/lib/cside/src/command.c:406:32
+STDERR:     #1 0x4c2158 in command_args_free /home/pi/Desktop/JAMScript/lib/cside/src/command.c:424:9
+STDERR:     #2 0x4c4200 in command_free /home/pi/Desktop/JAMScript/lib/cside/src/command.c:330:5
+STDERR:     #3 0x4e820c in process_next_task /home/pi/Desktop/JAMScript/lib/cside/src/executor.c:248:13
+STDERR:     #4 0x4ea79c in executor /home/pi/Desktop/JAMScript/lib/cside/src/executor.c:372:13
+STDERR:     #5 0x7fbdb59644 in start_thread nptl/pthread_create.c:477:8
+STDERR:     #6 0x7fbda5fc18  misc/../sysdeps/unix/sysv/linux/aarch64/clone.S:78
+STDERR: 
+0x007fb9400e50 is located 0 bytes inside of 16-byte region [0x007fb9400e50,0x007fb9400e60)
+STDERR: freed by thread T2 here:
+STDERR:     #0 0x493464 in free (/home/pi/.jamruns/apps/test_Ver_2_Tests/a.out+0x493464)
+STDERR:     #1 0x4c2160 in command_args_free /home/pi/Desktop/JAMScript/lib/cside/src/command.c:425:9
+STDERR:     #2 0x4bfa2c in call_answerme /tmp/jam-682842b538aaf98926f6/jamout.c:37:1
+STDERR:     #3 0x4d6f78 in _mco_main /home/pi/Desktop/JAMScript/lib/cside/include/minicoro.h:516:3
+STDERR:     #4 0xdeaddeaddeaddea9  (<unknown module>)
+
+STDERR: previously allocated by thread T1 here:
+STDERR:     #0 0x493834 in calloc (/home/pi/.jamruns/apps/test_Ver_2_Tests/a.out+0x493834)
+STDERR:     #1 0x4c353c in command_from_data /home/pi/Desktop/JAMScript/lib/cside/src/command.c:264:38
+STDERR:     #2 0x4ca234 in mqtt_message_callback /home/pi/Desktop/JAMScript/lib/cside/src/mqtt-adapter.c:18:26
+STDERR:     #3 0x7fbdc12628  (/lib/aarch64-linux-gnu/libmosquitto.so.1+0x7628)
+STDERR:     #4 0x7fbdc186f4  (/lib/aarch64-linux-gnu/libmosquitto.so.1+0xd6f4)
+STDERR:     #5 0x7fbdc13730 in mosquitto_loop_read (/lib/aarch64-linux-gnu/libmosquitto.so.1+0x8730)
+STDERR:     #6 0x7fbdc13b70 in mosquitto_loop (/lib/aarch64-linux-gnu/libmosquitto.so.1+0x8b70)
+STDERR:     #7 0x7fbdc13d50 in mosquitto_loop_forever (/lib/aarch64-linux-gnu/libmosquitto.so.1+0x8d50)
+STDERR:     #8 0x7fbdc1c73c  (/lib/aarch64-linux-gnu/libmosquitto.so.1+0x1173c)
+STDERR:     #9 0x7fbdb59644 in start_thread nptl/pthread_create.c:477:8
+STDERR:     #10 0x7fbda5fc18  misc/../sysdeps/unix/sysv/linux/aarch64/clone.S:78
+
+Thread T2 created by T0 here:
+STDERR:     #0 0x47e8ec in pthread_create (/home/pi/.jamruns/apps/test_Ver_2_Tests/a.out+0x47e8ec)
+STDERR:     #1 0x4d424c in tboard_start /home/pi/Desktop/JAMScript/lib/cside/src/tboard.c:106:5
+STDERR:     #2 0x4c1b44 in cnode_init /home/pi/Desktop/JAMScript/lib/cside/src/cnode.c:180:5
+STDERR:     #3 0x4c0010 in main /tmp/jam-682842b538aaf98926f6/jamout.c:55:13
+STDERR:     #4 0x7fbd9ade14 in __libc_start_main csu/../csu/libc-start.c:308:16
+STDERR:     #5 0x4255f0 in _start (/home/pi/.jamruns/apps/test_Ver_2_Tests/a.out+0x4255f0)
+
+STDERR: Thread T1 created by T0 here:
+    #0 0x47e8ec in pthread_create (/home/pi/.jamruns/apps/test_Ver_2_Tests/a.out+0x47e8ec)
+STDERR:     #1 0x7fbdc1c78c in mosquitto_loop_start (/lib/aarch64-linux-gnu/libmosquitto.so.1+0x1178c)
+STDERR:     #2 0x4cbb80 in connect_mqtt_adapter /home/pi/Desktop/JAMScript/lib/cside/src/mqtt-adapter.c:144:5
+STDERR:     #3 0x4cbde8 in setup_mqtt_adapter /home/pi/Desktop/JAMScript/lib/cside/src/mqtt-adapter.c:164:9
+STDERR:     #4 0x4c10c8 in cnode_create_mbroker /home/pi/Desktop/JAMScript/lib/cside/src/cnode.c:62:18
+STDERR:     #5 0x4c1a5c in cnode_init /home/pi/Desktop/JAMScript/lib/cside/src/cnode.c:168:19
+STDERR:     #6 0x4c0010 in main /tmp/jam-682842b538aaf98926f6/jamout.c:55:13
+    #7 0x7fbd9ade14 in __libc_start_main csu/../csu/libc-start.c:308:16
+STDERR:     #8 0x4255f0 in _start (/home/pi/.jamruns/apps/test_Ver_2_Tests/a.out+0x4255f0)
+STDERR: 
+STDERR: SUMMARY: AddressSanitizer: heap-use-after-free /home/pi/Desktop/JAMScript/lib/cside/src/command.c:406:32 in command_arg_inner_free
+STDERR: Shadow bytes around the buggy address:
+  0x001ff7280170: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x001ff7280180: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x001ff7280190: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x001ff72801a0: fa fa 00 00 fa fa fd fd fa fa fd fd fa fa 00 05
+  0x001ff72801b0: fa fa 00 00 fa fa 00 00 fa fa 00 01 fa fa fd fd
+=>0x001ff72801c0: fa fa fd fd fa fa fd fd fa fa[fd]fd fa fa fd fd
+  0x001ff72801d0: fa fa fd fd fa fa fd fa fa fa fd fa fa fa fd fa
+  0x001ff72801e0: fa fa fd fa fa fa fd fa fa fa fd fa fa fa fd fa
+  0x001ff72801f0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x001ff7280200: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x001ff7280210: fa fa fa fa fa fa fa fa fa fa 00 fa fa fa fd fd
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+  Shadow gap:              cc
+STDERR: ==112039==ABORTING
+Tag.....  undefined
+
+Longitude and Latitude ....  30.9394 49.2638
+
+Received...  network error
+
+
+
+Test: jt9 Failed
+Time to Compile: 14.284s
+Time to Run Test: 8.811s
+Reached 0 coverage markers out of 0

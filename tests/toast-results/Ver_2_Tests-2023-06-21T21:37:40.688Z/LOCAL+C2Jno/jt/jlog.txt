@@ -1,0 +1,2327 @@
+--app=Ver_2_Tests --port=1883 --group=1 --data=127.0.0.1:6379 --edge=1 --long=62.5492 --lat=0.6178 --localregistryhost=0 --device
+------
+Current Device Node Id: ca1d0d70-7b19-47b1-a863-aa868a4126f2
+Starting App..
+Program completed.
+
+WARNING: There are no Local Registries listed on the network!
+
+Doing multicast search for local registries
+hello.. main loop 
+Message received:  a-message-for-j  local count  1
+Couldn't find any new local registries through multicast.
+hello.. main loop 
+Message received:  a-message-for-j  local count  2
+hello.. main loop 
+Message received:  a-message-for-j  local count  3
+hello.. main loop 
+Message received:  a-message-for-j  local count  4
+hello.. main loop 
+Message received:  a-message-for-j  local count  5
+hello.. main loop 
+Message received:  a-message-for-j  local count  6
+hello.. main loop 
+Message received:  a-message-for-j  local count  7
+hello.. main loop 
+Message received:  a-message-for-j  local count  8
+hello.. main loop 
+Message received:  a-message-for-j  local count  9
+hello.. main loop 
+Message received:  a-message-for-j  local count  10
+hello.. main loop 
+Message received:  a-message-for-j  local count  11
+hello.. main loop 
+Message received:  a-message-for-j  local count  12
+hello.. main loop 
+Message received:  a-message-for-j  local count  13
+hello.. main loop 
+Message received:  a-message-for-j  local count  14
+hello.. main loop 
+Message received:  a-message-for-j  local count  15
+hello.. main loop 
+Message received:  a-message-for-j  local count  16
+hello.. main loop 
+Message received:  a-message-for-j  local count  17
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  18
+hello.. main loop 
+Message received:  a-message-for-j  local count  19
+hello.. main loop 
+Message received:  a-message-for-j  local count  20
+hello.. main loop 
+Message received:  a-message-for-j  local count  21
+hello.. main loop 
+Message received:  a-message-for-j  local count  22
+hello.. main loop 
+Message received:  a-message-for-j  local count  23
+hello.. main loop 
+Message received:  a-message-for-j  local count  24
+hello.. main loop 
+Message received:  a-message-for-j  local count  25
+hello.. main loop 
+Message received:  a-message-for-j  local count  26
+hello.. main loop 
+Message received:  a-message-for-j  local count  27
+hello.. main loop 
+Message received:  a-message-for-j  local count  28
+hello.. main loop 
+Message received:  a-message-for-j  local count  29
+hello.. main loop 
+Message received:  a-message-for-j  local count  30
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  31
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  32
+
+hello.. main loop 
+Message received:  a-message-for-j  local count  33
+hello.. main loop 
+Message received:  a-message-for-j  local count  34
+hello.. main loop 
+Message received:  a-message-for-j  local count  35
+hello.. main loop 
+Message received:  a-message-for-j  local count  36
+hello.. main loop 
+Message received:  a-message-for-j  local count  37
+hello.. main loop 
+Message received:  a-message-for-j  local count  38
+hello.. main loop 
+Message received:  a-message-for-j  local count  39
+hello.. main loop 
+Message received:  a-message-for-j  local count  40
+hello.. main loop 
+Message received:  a-message-for-j  local count  41
+hello.. main loop 
+Message received:  a-message-for-j  local count  42
+hello.. main loop 
+Message received:  a-message-for-j  local count  43
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  44
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  45
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  46
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  47
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  48
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  49
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  50
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  51
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  52
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  53
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  54
+hello.. main loop 
+Message received:  a-message-for-j  local count  55
+hello.. main loop 
+Message received:  a-message-for-j  local count  56
+hello.. main loop 
+Message received:  a-message-for-j  local count  57
+hello.. main loop 
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyMessage received:  a-message-for-j  local count  58
+hello.. main loop 
+Message received:  a-message-for-j  local count  59
+hello.. main loop 
+Message received:  a-message-for-j  local count  60
+hello.. main loop 
+Message received:  a-message-for-j  local count  61
+hello.. main loop 
+Message received:  a-message-for-j  local count  62
+hello.. main loop 
+Message received:  a-message-for-j  local count  63
+hello.. main loop 
+Message received:  a-message-for-j  local count  64
+hello.. main loop 
+Message received:  a-message-for-j  local count  65
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  66
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  67
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  68
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  69
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  70
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  71
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  72
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  73
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  74
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  75
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  76
+hello.. main loop 
+Message received:  a-message-for-j  local count  77
+hello.. main loop 
+Message received:  a-message-for-j  local count  78
+hello.. main loop 
+Message received:  a-message-for-j  local count  79
+hello.. main loop 
+Message received:  a-message-for-j  local count  80
+hello.. main loop 
+Message received:  a-message-for-j  local count  81
+hello.. main loop 
+Message received:  a-message-for-j  local count  82
+hello.. main loop 
+Message received:  a-message-for-j  local count  83
+hello.. main loop 
+Message received:  a-message-for-j  local count  84
+hello.. main loop 
+Message received:  a-message-for-j  local count  85
+hello.. main loop 
+Message received:  a-message-for-j  local count  86
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  87
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  88
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  89
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  90
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  91
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  92
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  93
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  94
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  95
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  96
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  97
+hello.. main loop 
+Message received:  a-message-for-j  local count  98
+hello.. main loop 
+Message received:  a-message-for-j  local count  99
+hello.. main loop 
+Message received:  a-message-for-j  local count  100
+hello.. main loop 
+Message received:  a-message-for-j  local count  101
+hello.. main loop 
+Message received:  a-message-for-j  local count  102
+hello.. main loop 
+Message received:  a-message-for-j  local count  103
+hello.. main loop 
+Message received:  a-message-for-j  local count  104
+hello.. main loop 
+Message received:  a-message-for-j  local count  105
+hello.. main loop 
+Message received:  a-message-for-j  local count  106
+hello.. main loop 
+Message received:  a-message-for-j  local count  107
+hello.. main loop 
+Message received:  a-message-for-j  local count  108
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  109
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  110
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  111
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  112
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  113
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  114
+
+hello.. main loop 
+
+y
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-messag
+Message received:  a-message-for-j  local count  115
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  116
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  117
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  118
+
+hello.. main loop 
+Message received:  a-message-for-j  local count  119
+hello.. main loop 
+Message received:  a-message-for-j  local count  120
+hello.. main loop 
+Message received:  a-message-for-j  local count  121
+hello.. main loop 
+Message received:  a-message-for-j  local count  122
+hello.. main loop 
+Message received:  a-message-for-j  local count  123
+hello.. main loop 
+Message received:  a-message-for-j  local count  124
+hello.. main loop 
+Message received:  a-message-for-j  local count  125
+hello.. main loop 
+Message received:  a-message-for-j  local count  126
+hello.. main loop 
+Message received:  a-message-for-j  local count  127
+hello.. main loop 
+Message received:  a-message-for-j  local count  128
+hello.. main loop 
+Message received:  a-message-for-j  local count  129
+hello.. main loop 
+Message received:  a-message-for-j  local count  130
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  131
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  132
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  133
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  134
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  135
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  136
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  137
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  138
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  139
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  140
+
+hello.. main loop 
+Message received:  a-message-for-j  local count  141
+hello.. main loop 
+Message received:  a-message-for-j  local count  142
+hello.. main loop 
+Message received:  a-message-for-j  local count  143
+hello.. main loop 
+Message received:  a-message-for-j  local count  144
+hello.. main loop 
+Message received:  a-message-for-j  local count  145
+hello.. main loop 
+Message received:  a-message-for-j  local count  146
+hello.. main loop 
+Message received:  a-message-for-j  local count  147
+hello.. main loop 
+Message received:  a-message-for-j  local count  148
+hello.. main loop 
+Message received:  a-message-for-j  local count  149
+hello.. main loop 
+Message received:  a-message-for-j  local count  150
+hello.. main loop 
+Message received:  a-message-for-j  local count  151
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  152
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  153
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  154
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  155
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  156
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  157
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  158
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  159
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  160
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  161
+
+hello.. main loop 
+Message received:  a-message-for-j  local count  162
+hello.. main loop 
+Message received:  a-message-for-j  local count  163
+hello.. main loop 
+Message received:  a-message-for-j  local count  164
+hello.. main loop 
+Message received:  a-message-for-j  local count  165
+hello.. main loop 
+Message received:  a-message-for-j  local count  166
+hello.. main loop 
+Message received:  a-message-for-j  local count  167
+hello.. main loop 
+Message received:  a-message-for-j  local count  168
+hello.. main loop 
+Message received:  a-message-for-j  local count  169
+hello.. main loop 
+Message received:  a-message-for-j  local count  170
+hello.. main loop 
+Message received:  a-message-for-j  local count  171
+hello.. main loop 
+e-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-messMessage received:  a-message-for-j  local count  172
+hello.. main loop 
+Message received:  a-message-for-j  local count  173
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  174
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  175
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  176
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  177
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  178
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  179
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  180
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  181
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  182
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  183
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  184
+hello.. main loop 
+Message received:  a-message-for-j  local count  185
+hello.. main loop 
+Message received:  a-message-for-j  local count  186
+hello.. main loop 
+Message received:  a-message-for-j  local count  187
+hello.. main loop 
+Message received:  a-message-for-j  local count  188
+hello.. main loop 
+Message received:  a-message-for-j  local count  189
+hello.. main loop 
+Message received:  a-message-for-j  local count  190
+hello.. main loop 
+Message received:  a-message-for-j  local count  191
+hello.. main loop 
+Message received:  a-message-for-j  local count  192
+hello.. main loop 
+Message received:  a-message-for-j  local count  193
+hello.. main loop 
+Message received:  a-message-for-j  local count  194
+hello.. main loop 
+Message received:  a-message-for-j  local count  195
+hello.. main loop 
+Message received:  a-message-for-j  local count  196
+hello.. main loop 
+Message received:  a-message-for-j  local count  197
+hello.. main loop 
+Message received:  a-message-for-j  local count  198
+hello.. main loop 
+Message received:  a-message-for-j  local count  199
+hello.. main loop 
+Message received:  a-message-for-j  local count  200
+hello.. main loop 
+Message received:  a-message-for-j  local count  201
+hello.. main loop 
+Message received:  a-message-for-j  local count  202
+hello.. main loop 
+Message received:  a-message-for-j  local count  203
+hello.. main loop 
+Message received:  a-message-for-j  local count  204
+hello.. main loop 
+Message received:  a-message-for-j  local count  205
+hello.. main loop 
+Message received:  a-message-for-j  local count  206
+
+hello.. main loop 
+Message received:  a-message-for-j  local count  207
+hello.. main loop 
+Message received:  a-message-for-j  local count  208
+hello.. main loop 
+Message received:  a-message-for-j  local count  209
+hello.. main loop 
+Message received:  a-message-for-j  local count  210
+hello.. main loop 
+Message received:  a-message-for-j  local count  211
+hello.. main loop 
+Message received:  a-message-for-j  local count  212
+hello.. main loop 
+Message received:  a-message-for-j  local count  213
+hello.. main loop 
+Message received:  a-message-for-j  local count  214
+hello.. main loop 
+Message received:  a-message-for-j  local count  215
+hello.. main loop 
+Message received:  a-message-for-j  local count  216
+hello.. main loop 
+Message received:  a-message-for-j  local count  217
+hello.. main loop 
+Message received:  a-message-for-j  local count  218
+hello.. main loop 
+Message received:  a-message-for-j  local count  219
+hello.. main loop 
+Message received:  a-message-for-j  local count  220
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  221
+hello.. main loop 
+Message received:  a-message-for-j  local count  222
+hello.. main loop 
+Message received:  a-message-for-j  local count  223
+hello.. main loop 
+Message received:  a-message-for-j  local count  224
+hello.. main loop 
+Message received:  a-message-for-j  local count  225
+hello.. main loop 
+Message received:  a-message-for-j  local count  226
+hello.. main loop 
+Message received:  a-message-for-j  local count  227
+hello.. main loop 
+Message received:  a-message-for-j  local count  228
+hello.. main loop 
+Message received:  a-message-for-j  local count  229
+hello.. main loop 
+age-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10..Message received:  a-message-for-j  local count  230
+hello.. main loop 
+Message received:  a-message-for-j  local count  231
+hello.. main loop 
+Message received:  a-message-for-j  local count  232
+hello.. main loop 
+Message received:  a-message-for-j  local count  233
+hello.. main loop 
+Message received:  a-message-for-j  local count  234
+
+hello.. main loop 
+Message received:  a-message-for-j  local count  235
+hello.. main loop 
+Message received:  a-message-for-j  local count  236
+hello.. main loop 
+Message received:  a-message-for-j  local count  237
+hello.. main loop 
+Message received:  a-message-for-j  local count  238
+hello.. main loop 
+Message received:  a-message-for-j  local count  239
+hello.. main loop 
+Message received:  a-message-for-j  local count  240
+hello.. main loop 
+Message received:  a-message-for-j  local count  241
+hello.. main loop 
+Message received:  a-message-for-j  local count  242
+hello.. main loop 
+Message received:  a-message-for-j  local count  243
+hello.. main loop 
+Message received:  a-message-for-j  local count  244
+hello.. main loop 
+Message received:  a-message-for-j  local count  245
+hello.. main loop 
+Message received:  a-message-for-j  local count  246
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  247
+hello.. main loop 
+Message received:  a-message-for-j  local count  248
+hello.. main loop 
+Message received:  a-message-for-j  local count  249
+hello.. main loop 
+Message received:  a-message-for-j  local count  250
+hello.. main loop 
+Message received:  a-message-for-j  local count  251
+hello.. main loop 
+Message received:  a-message-for-j  local count  252
+hello.. main loop 
+Message received:  a-message-for-j  local count  253
+hello.. main loop 
+Message received:  a-message-for-j  local count  254
+hello.. main loop 
+Message received:  a-message-for-j  local count  255
+hello.. main loop 
+Message received:  a-message-for-j  local count  256
+hello.. main loop 
+Message received:  a-message-for-j  local count  257
+hello.. main loop 
+Message received:  a-message-for-j  local count  258
+hello.. main loop 
+Message received:  a-message-for-j  local count  259
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  260
+hello.. main loop 
+Message received:  a-message-for-j  local count  261
+hello.. main loop 
+Message received:  a-message-for-j  local count  262
+hello.. main loop 
+Message received:  a-message-for-j  local count  263
+hello.. main loop 
+Message received:  a-message-for-j  local count  264
+hello.. main loop 
+Message received:  a-message-for-j  local count  265
+hello.. main loop 
+Message received:  a-message-for-j  local count  266
+hello.. main loop 
+Message received:  a-message-for-j  local count  267
+hello.. main loop 
+Message received:  a-message-for-j  local count  268
+hello.. main loop 
+Message received:  a-message-for-j  local count  269
+hello.. main loop 
+Message received:  a-message-for-j  local count  270
+hello.. main loop 
+Message received:  a-message-for-j  local count  271
+hello.. main loop 
+Message received:  a-message-for-j  local count  272
+hello.. main loop 
+Message received:  a-message-for-j  local count  273
+hello.. main loop 
+Message received:  a-message-for-j  local count  274
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  275
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  276
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  277
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  278
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  279
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  280
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  281
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  282
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  283
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  284
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  285
+hello.. main loop 
+Message received:  a-message-for-j  local count  286
+hello.. main loop 
+. cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10Message received:  a-message-for-j  local count  287
+hello.. main loop 
+Message received:  a-message-for-j  local count  288
+hello.. main loop 
+Message received:  a-message-for-j  local count  289
+hello.. main loop 
+Message received:  a-message-for-j  local count  290
+hello.. main loop 
+Message received:  a-message-for-j  local count  291
+hello.. main loop 
+Message received:  a-message-for-j  local count  292
+hello.. main loop 
+Message received:  a-message-for-j  local count  293
+hello.. main loop 
+Message received:  a-message-for-j  local count  294
+hello.. main loop 
+Message received:  a-message-for-j  local count  295
+hello.. main loop 
+Message received:  a-message-for-j  local count  296
+hello.. main loop 
+Message received:  a-message-for-j  local count  297
+hello.. main loop 
+Message received:  a-message-for-j  local count  298
+hello.. main loop 
+Message received:  a-message-for-j  local count  299
+hello.. main loop 
+Message received:  a-message-for-j  local count  300
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  301
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  302
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  303
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  304
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  305
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  306
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  307
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  308
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  309
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  310
+
+hello.. main loop 
+Message received:  a-message-for-j  local count  311
+hello.. main loop 
+Message received:  a-message-for-j  local count  312
+hello.. main loop 
+Message received:  a-message-for-j  local count  313
+hello.. main loop 
+Message received:  a-message-for-j  local count  314
+hello.. main loop 
+Message received:  a-message-for-j  local count  315
+hello.. main loop 
+Message received:  a-message-for-j  local count  316
+hello.. main loop 
+Message received:  a-message-for-j  local count  317
+hello.. main loop 
+Message received:  a-message-for-j  local count  318
+hello.. main loop 
+Message received:  a-message-for-j  local count  319
+hello.. main loop 
+Message received:  a-message-for-j  local count  320
+hello.. main loop 
+Message received:  a-message-for-j  local count  321
+hello.. main loop 
+Message received:  a-message-for-j  local count  322
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  323
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  324
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  325
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  326
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  327
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  328
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  329
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  330
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  331
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  332
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  333
+
+hello.. main loop 
+Message received:  a-message-for-j  local count  334
+hello.. main loop 
+Message received:  a-message-for-j  local count  335
+hello.. main loop 
+Message received:  a-message-for-j  local count  336
+hello.. main loop 
+Message received:  a-message-for-j  local count  337
+hello.. main loop 
+Message received:  a-message-for-j  local count  338
+hello.. main loop 
+Message received:  a-message-for-j  local count  339
+hello.. main loop 
+Message received:  a-message-for-j  local count  340
+hello.. main loop 
+Message received:  a-message-for-j  local count  341
+hello.. main loop 
+Message received:  a-message-for-j  local count  342
+hello.. main loop 
+Message received:  a-message-for-j  local count  343
+hello.. main loop 
+, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  Message received:  a-message-for-j  local count  344
+hello.. main loop 
+Message received:  a-message-for-j  local count  345
+hello.. main loop 
+Message received:  a-message-for-j  local count  346
+hello.. main loop 
+Message received:  a-message-for-j  local count  347
+hello.. main loop 
+Message received:  a-message-for-j  local count  348
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  349
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  350
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  351
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  352
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  353
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  354
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  355
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  356
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  357
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  358
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  359
+hello.. main loop 
+Message received:  a-message-for-j  local count  360
+hello.. main loop 
+Message received:  a-message-for-j  local count  361
+hello.. main loop 
+Message received:  a-message-for-j  local count  362
+hello.. main loop 
+Message received:  a-message-for-j  local count  363
+hello.. main loop 
+Message received:  a-message-for-j  local count  364
+hello.. main loop 
+Message received:  a-message-for-j  local count  365
+hello.. main loop 
+Message received:  a-message-for-j  local count  366
+hello.. main loop 
+Message received:  a-message-for-j  local count  367
+hello.. main loop 
+Message received:  a-message-for-j  local count  368
+hello.. main loop 
+Message received:  a-message-for-j  local count  369
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  370
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  371
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  372
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  373
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  374
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  375
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  376
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  377
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  378
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  379
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  380
+hello.. main loop 
+Message received:  a-message-for-j  local count  381
+hello.. main loop 
+Message received:  a-message-for-j  local count  382
+hello.. main loop 
+Message received:  a-message-for-j  local count  383
+hello.. main loop 
+Message received:  a-message-for-j  local count  384
+hello.. main loop 
+Message received:  a-message-for-j  local count  385
+hello.. main loop 
+Message received:  a-message-for-j  local count  386
+hello.. main loop 
+Message received:  a-message-for-j  local count  387
+hello.. main loop 
+Message received:  a-message-for-j  local count  388
+hello.. main loop 
+Message received:  a-message-for-j  local count  389
+hello.. main loop 
+Message received:  a-message-for-j  local count  390
+hello.. main loop 
+Message received:  a-message-for-j  local count  391
+hello.. main loop 
+Message received:  a-message-for-j  local count  392
+hello.. main loop 
+Message received:  a-message-for-j  local count  393
+hello.. main loop 
+Message received:  a-message-for-j  local count  394
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  395
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  396
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  397
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  398
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  399
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  400
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  401
+
+hello.. main loop 
+
+10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello
+Message received:  a-message-for-j  local count  402
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  403
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  404
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  405
+hello.. main loop 
+Message received:  a-message-for-j  local count  406
+hello.. main loop 
+Message received:  a-message-for-j  local count  407
+hello.. main loop 
+Message received:  a-message-for-j  local count  408
+hello.. main loop 
+Message received:  a-message-for-j  local count  409
+hello.. main loop 
+Message received:  a-message-for-j  local count  410
+hello.. main loop 
+Message received:  a-message-for-j  local count  411
+hello.. main loop 
+Message received:  a-message-for-j  local count  412
+hello.. main loop 
+Message received:  a-message-for-j  local count  413
+hello.. main loop 
+Message received:  a-message-for-j  local count  414
+hello.. main loop 
+Message received:  a-message-for-j  local count  415
+hello.. main loop 
+Message received:  a-message-for-j  local count  416
+hello.. main loop 
+Message received:  a-message-for-j  local count  417
+hello.. main loop 
+Message received:  a-message-for-j  local count  418
+hello.. main loop 
+Message received:  a-message-for-j  local count  419
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  420
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  421
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  422
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  423
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  424
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  425
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  426
+
+hello.. main loop 
+Message received:  a-message-for-j  local count  427
+hello.. main loop 
+Message received:  a-message-for-j  local count  428
+hello.. main loop 
+Message received:  a-message-for-j  local count  429
+hello.. main loop 
+Message received:  a-message-for-j  local count  430
+hello.. main loop 
+Message received:  a-message-for-j  local count  431
+hello.. main loop 
+Message received:  a-message-for-j  local count  432
+hello.. main loop 
+Message received:  a-message-for-j  local count  433
+hello.. main loop 
+Message received:  a-message-for-j  local count  434
+hello.. main loop 
+Message received:  a-message-for-j  local count  435
+hello.. main loop 
+Message received:  a-message-for-j  local count  436
+hello.. main loop 
+Message received:  a-message-for-j  local count  437
+hello.. main loop 
+Message received:  a-message-for-j  local count  438
+hello.. main loop 
+Message received:  a-message-for-j  local count  439
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  440
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  441
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  442
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  443
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  444
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  445
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  446
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  447
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  448
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  449
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  450
+hello.. main loop 
+Message received:  a-message-for-j  local count  451
+hello.. main loop 
+Message received:  a-message-for-j  local count  452
+hello.. main loop 
+Message received:  a-message-for-j  local count  453
+hello.. main loop 
+Message received:  a-message-for-j  local count  454
+hello.. main loop 
+Message received:  a-message-for-j  local count  455
+hello.. main loop 
+Message received:  a-message-for-j  local count  456
+hello.. main loop 
+Message received:  a-message-for-j  local count  457
+hello.. main loop 
+Message received:  a-message-for-j  local count  458
+hello.. main loop 
+  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> HelMessage received:  a-message-for-j  local count  459
+hello.. main loop 
+Message received:  a-message-for-j  local count  460
+hello.. main loop 
+Message received:  a-message-for-j  local count  461
+hello.. main loop 
+Message received:  a-message-for-j  local count  462
+hello.. main loop 
+Message received:  a-message-for-j  local count  463
+hello.. main loop 
+Message received:  a-message-for-j  local count  464
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  465
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  466
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  467
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  468
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  469
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  470
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  471
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  472
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  473
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  474
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  475
+hello.. main loop 
+Message received:  a-message-for-j  local count  476
+hello.. main loop 
+Message received:  a-message-for-j  local count  477
+hello.. main loop 
+Message received:  a-message-for-j  local count  478
+hello.. main loop 
+Message received:  a-message-for-j  local count  479
+hello.. main loop 
+Message received:  a-message-for-j  local count  480
+hello.. main loop 
+Message received:  a-message-for-j  local count  481
+hello.. main loop 
+Message received:  a-message-for-j  local count  482
+hello.. main loop 
+Message received:  a-message-for-j  local count  483
+hello.. main loop 
+Message received:  a-message-for-j  local count  484
+hello.. main loop 
+Message received:  a-message-for-j  local count  485
+hello.. main loop 
+Message received:  a-message-for-j  local count  486
+hello.. main loop 
+Message received:  a-message-for-j  local count  487
+hello.. main loop 
+Message received:  a-message-for-j  local count  488
+hello.. main loop 
+Message received:  a-message-for-j  local count  489
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  490
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  491
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  492
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  493
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  494
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  495
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  496
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  497
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  498
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  499
+
+hello.. main loop 
+Message received:  a-message-for-j  local count  500
+hello.. main loop 
+Message received:  a-message-for-j  local count  501
+hello.. main loop 
+Message received:  a-message-for-j  local count  502
+hello.. main loop 
+Message received:  a-message-for-j  local count  503
+hello.. main loop 
+Message received:  a-message-for-j  local count  504
+hello.. main loop 
+Message received:  a-message-for-j  local count  505
+hello.. main loop 
+Message received:  a-message-for-j  local count  506
+hello.. main loop 
+Message received:  a-message-for-j  local count  507
+hello.. main loop 
+Message received:  a-message-for-j  local count  508
+hello.. main loop 
+Message received:  a-message-for-j  local count  509
+hello.. main loop 
+Message received:  a-message-for-j  local count  510
+hello.. main loop 
+Message received:  a-message-for-j  local count  511
+hello.. main loop 
+Message received:  a-message-for-j  local count  512
+hello.. main loop 
+Message received:  a-message-for-j  local count  513
+hello.. main loop 
+Message received:  a-message-for-j  local count  514
+hello.. main loop 
+Message received:  a-message-for-j  local count  515
+
+hello.. main loop 
+
+lo YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello YOU  10, a-message-for-j
+############-->>> Hello  ME  10... cxxxxyyyy
+############-->>> H
+Message received:  a-message-for-j  local count  516
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  517
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  518
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  519
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  520
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  521
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  522
+hello.. main loop 
+Message received:  a-message-for-j  local count  523
+hello.. main loop 
+Message received:  a-message-for-j  local count  524
+hello.. main loop 
+Message received:  a-message-for-j  local count  525
+hello.. main loop 
+Message received:  a-message-for-j  local count  526
+hello.. main loop 
+Message received:  a-message-for-j  local count  527
+hello.. main loop 
+Message received:  a-message-for-j  local count  528
+hello.. main loop 
+Message received:  a-message-for-j  local count  529
+hello.. main loop 
+Message received:  a-message-for-j  local count  530
+hello.. main loop 
+Message received:  a-message-for-j  local count  531
+hello.. main loop 
+Message received:  a-message-for-j  local count  532
+hello.. main loop 
+Message received:  a-message-for-j  local count  533
+hello.. main loop 
+Message received:  a-message-for-j  local count  534
+hello.. main loop 
+Message received:  a-message-for-j  local count  535
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  536
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  537
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  538
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  539
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  540
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  541
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  542
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  543
+hello.. main loop 
+Message received:  a-message-for-j  local count  544
+hello.. main loop 
+Message received:  a-message-for-j  local count  545
+hello.. main loop 
+Message received:  a-message-for-j  local count  546
+hello.. main loop 
+Message received:  a-message-for-j  local count  547
+hello.. main loop 
+Message received:  a-message-for-j  local count  548
+hello.. main loop 
+Message received:  a-message-for-j  local count  549
+hello.. main loop 
+Message received:  a-message-for-j  local count  550
+hello.. main loop 
+Message received:  a-message-for-j  local count  551
+hello.. main loop 
+Message received:  a-message-for-j  local count  552
+hello.. main loop 
+Message received:  a-message-for-j  local count  553
+hello.. main loop 
+Message received:  a-message-for-j  local count  554
+hello.. main loop 
+Message received:  a-message-for-j  local count  555
+hello.. main loop 
+Message received:  a-message-for-j  local count  556
+hello.. main loop 
+Message received:  a-message-for-j  local count  557
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  558
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  559
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  560
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  561
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  562
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  563
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  564
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  565
+
+hello.. main loop 
+

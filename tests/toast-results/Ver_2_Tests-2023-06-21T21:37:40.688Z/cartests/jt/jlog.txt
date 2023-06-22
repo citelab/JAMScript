@@ -1,0 +1,24 @@
+Preprocessing...
+Side effect checking enabled
+########################################
+[JS] RUNNING PRE COMPILATION CHECK
+Parsing JS Files...
+Generating JavaScript Code...
+Parsing C Files...
+Generating C code...
+setting....  x   to value =  int
+setting....  dec   to value =  int
+Lefside .. ping_iterations
+setting....  argc   to value =  int
+setting....  *argv[]   to value =  char
+Compiling C code...
+Compilation failed
+Stderr Follows: 
+Warning: primitiveValue is deprecated and will be removed in a future version of Ohm. Use sourceString instead.
+/tmp/jam-2df13f089bd60c8f7e65/jamout.c:5:10: fatal error: 'carapi/car_api.h' file not found
+#include "carapi/car_api.h"
+         ^~~~~~~~~~~~~~~~~~
+1 error generated.
+
+
+

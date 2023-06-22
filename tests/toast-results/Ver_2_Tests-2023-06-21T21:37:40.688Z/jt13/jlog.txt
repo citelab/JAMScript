@@ -1,0 +1,15 @@
+--app=Ver_2_Tests --port=1885 --group=3 --data=127.0.0.1:6379 --edge=1 --long=132.1240 --lat=24.5074 --localregistryhost=0 --device
+------
+Current Device Node Id: 263eb4d1-9690-4969-9887-b988a1de2f30
+Starting App..
+Program completed.
+Tag.....  undefined
+Longitude and Latitude ....  137.124 24.5074
+Received...  network error
+
+
+
+Test: jt13 Failed
+Time to Compile: 12.568s
+Time to Run Test: 12.858s
+Reached 0 coverage markers out of 0

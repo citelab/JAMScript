@@ -1,0 +1,36 @@
+--app=Ver_2_Tests --port=1886 --group=4 --data=127.0.0.1:6379 --edge=1 --long=27.4538 --lat=32.773 --localregistryhost=0 --device
+
+------
+
+Current Device Node Id: e5e05664-f45b-4f45-b65d-9765da01f6d6
+
+Starting App..
+
+Program completed.
+
+
+WARNING: There are no Local Registries listed on the network!
+
+Doing multicast search for local registries
+
+Couldn't find any new local registries through multicast.
+
+Tag.....  undefined device type  device
+
+STDERR: Error: blocking_task_create: Failed to capture blocking task after termination.
+Longitude and Latitude ....  32.4538 32.773
+
+Calling compyou.. 
+
+Received an echo!
+
+Device to worker communication 0
+
+{ completed: 0, error: 0 } []
+
+
+
+Test: jt24 Failed
+Time to Compile: 14.869s
+Time to Run Test: 6.681s
+Reached 0 coverage markers out of 0

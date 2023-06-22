@@ -1,0 +1,23 @@
+--app=Ver_2_Tests --port=1885 --group=3 --data=127.0.0.1:6379 --edge=1 --long=78.118 --lat=51.7002 --localregistryhost=0 --device
+------
+Current Device Node Id: 263eb4d1-9690-4969-9887-b988a1de2f30
+Starting App..
+Program completed.
+Tag.....  undefined
+Longitude and Latitude ....  83.118 51.7002
+Tag.....  undefined
+Longitude and Latitude ....  88.118 51.7002
+Tag.....  undefined
+Longitude and Latitude ....  93.118 51.7002
+Tag.....  undefined
+Longitude and Latitude ....  98.118 51.7002
+Tag.....  undefined
+Longitude and Latitude ....  103.118 51.7002
+Received...  network error
+
+
+
+Test: jt10 Failed
+Time to Compile: 11.716s
+Time to Run Test: 14.579s
+Reached 0 coverage markers out of 0
