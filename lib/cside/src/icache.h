@@ -3,6 +3,7 @@
 
 #include "uthash.h"
 #include <stdbool.h>
+#include <pthread.h>
 
 #define MAX_ICACHE_ELEMS            512
 
@@ -13,6 +14,7 @@ struct id_entry {
 
 typedef struct _icache_t
 {
+    pthread_mutex_t iclock;
     int curtab;
     struct id_entry *tables[3];
     int nelems;
