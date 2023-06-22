@@ -1,0 +1,140 @@
+--app=Ver_2_Tests --port=1890 --group=8 --data=127.0.0.1:6379 --edge=1 --long=142.8317 --lat=20.1693 --localregistryhost=0 --device
+
+------
+
+Current Device Node Id: 97049b44-2636-4263-9d11-0dd132f60da4
+
+Starting App..
+
+Program completed.
+
+Return value from the call.. []
+
+Return value from the call.. []
+
+Return value from the call.. []
+Return value from the call.. []
+
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+
+Return value from the call.. []
+Return value from the call.. []
+
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+
+Return value from the call.. []
+
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+
+Return value from the call.. []
+Return value from the call.. []
+Return value from the call.. []
+
+WARNING: mqtt client received an error: AggregateError
+
+
+
+Test: LOCAL+J2Crv/jt5 Failed
+Time to Compile: 1.835s
+Time to Run Test: 1.126s
+Reached 0 coverage markers out of 0

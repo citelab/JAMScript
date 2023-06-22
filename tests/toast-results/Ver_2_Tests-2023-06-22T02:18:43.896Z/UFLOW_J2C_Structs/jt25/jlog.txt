@@ -1,0 +1,12 @@
+--app=Ver_2_Tests --port=1885 --group=3 --data=127.0.0.1:6379 --edge=1 --long=46.5539 --lat=60.8228 --localregistryhost=0 --device
+------
+Current Device Node Id: 6b1097e8-94ed-494e-8220-2c226fbc202d
+Starting App..
+WARNING: mqtt client received an error: AggregateError
+
+
+
+Test: UFLOW_J2C_Structs/jt25 Failed
+Time to Compile: 1.531s
+Time to Run Test: 1.612s
+Reached 0 coverage markers out of 0

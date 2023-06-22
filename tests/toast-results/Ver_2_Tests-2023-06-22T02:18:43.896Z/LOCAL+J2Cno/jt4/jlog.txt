@@ -1,0 +1,18 @@
+--app=Ver_2_Tests --port=1887 --group=5 --data=127.0.0.1:6379 --edge=1 --long=60.40 --lat=18.3229 --localregistryhost=0 --device
+
+------
+
+Current Device Node Id: b8989d26-034f-4034-87e2-147e054d67ea
+
+Starting App..
+
+Program completed.
+
+WARNING: mqtt client received an error: AggregateError
+
+
+
+Test: LOCAL+J2Cno/jt4 Failed
+Time to Compile: 1.536s
+Time to Run Test: 0.938s
+Reached 0 coverage markers out of 0

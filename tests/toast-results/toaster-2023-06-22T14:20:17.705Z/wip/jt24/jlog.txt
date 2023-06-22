@@ -1,0 +1,42 @@
+--app=toaster --port=1883 --group=1 --data=127.0.0.1:6379 --edge=1 --long=69.2427 --lat=35.486 --localregistryhost=0 --device
+
+------
+
+Current Device Node Id: d3c947d2-cb52-4cb5-923e-6d23cbc264aa
+
+Starting App..
+
+Program completed.
+
+
+WARNING: There are no Local Registries listed on the network!
+
+
+Doing multicast search for local registries
+
+Couldn't find any new local registries through multicast.
+
+Tag.....  undefined device type  device
+
+@ToasterCoverage#{2}#
+
+Longitude and Latitude ....  74.2427 35.486
+@ToasterCoverage#{3}#
+Calling compyou.. 
+
+STDERR: Error: blocking_task_create: Failed to capture blocking task after termination.
+Received an echo!
+
+Device to worker communication 0
+
+@ToasterCoverage#{0}#
+
+{ completed: 0, error: 0 } []
+
+
+
+Test: wip/jt24 Failed
+Time to Compile: 1.67s
+Time to Run Test: 3.942s
+Reached 3 coverage markers out of 4
+  Missed coverage marker on line 29

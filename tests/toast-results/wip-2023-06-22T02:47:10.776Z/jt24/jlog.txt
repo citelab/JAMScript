@@ -1,0 +1,2 @@
+--app=wip --port=1883 --group=1 --data=127.0.0.1:6379 --edge=1 --long=74.2227 --lat=43.1330 --localregistryhost=0 --device
+

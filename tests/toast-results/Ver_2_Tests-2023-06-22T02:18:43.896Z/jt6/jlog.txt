@@ -1,0 +1,28 @@
+--app=Ver_2_Tests --port=1885 --group=3 --data=127.0.0.1:6379 --edge=1 --long=28.4838 --lat=6.3870 --localregistryhost=0 --device
+------
+Current Device Node Id: 6b1097e8-94ed-494e-8220-2c226fbc202d
+Starting App..
+Program completed.
+
+WARNING: There are no Local Registries listed on the network!
+
+Doing multicast search for local registries
+Calling compyou.. 
+Killing broker with PID:
+
+STDERR: 
+node:internal/event_target:1037
+  process.nextTick(() => { throw err; });
+                           ^
+UnhandledPromiseRejection: This error originated either by throwing inside of an async function without a catch block, or by rejecting a promise which was not handled with .catch(). The promise rejected with the reason "network error".
+Emitted 'error' event on Worker instance at:
+    at [kOnErrorMessage] (node:internal/worker:323:10)
+    at [kOnMessage] (node:internal/worker:334:37)
+    at MessagePort.<anonymous> (node:internal/worker:229:57)
+    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:762:20)
+    at exports.emitMessage (node:internal/per_context/messageport:23:28) {
+  code: 'ERR_UNHANDLED_REJECTION'
+}
+
+Node.js v20.2.0
+kill: usage: kill [-s sigspec | -n signum | -sigspec] pid | jobspec ... or kill -l [sigspec]

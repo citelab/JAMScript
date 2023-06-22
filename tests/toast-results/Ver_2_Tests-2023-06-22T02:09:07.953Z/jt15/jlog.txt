@@ -1,0 +1,18 @@
+--app=Ver_2_Tests --port=1884 --group=2 --data=127.0.0.1:6379 --edge=1 --long=103.5132 --lat=40.4794 --localregistryhost=0 --device
+------
+Current Device Node Id: c8358bea-5e74-45e7-84fe-744fd41579e0
+Starting App..
+Program completed.
+
+WARNING: There are no Local Registries listed on the network!
+
+Doing multicast search for local registries
+
+Couldn't find any new local registries through multicast.
+
+
+
+
+Test: jt15 Completed Succesfully
+Time to Compile: 1.627s
+Time to Run Test: 10.002s

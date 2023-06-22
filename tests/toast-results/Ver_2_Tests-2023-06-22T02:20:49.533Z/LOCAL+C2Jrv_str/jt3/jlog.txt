@@ -1,0 +1,358 @@
+--app=Ver_2_Tests --port=1887 --group=5 --data=127.0.0.1:6379 --edge=1 --long=0.4352 --lat=52.6318 --localregistryhost=0 --device
+------
+Current Device Node Id: b8989d26-034f-4034-87e2-147e054d67ea
+Starting App..
+Program completed.
+
+WARNING: There are no Local Registries listed on the network!
+
+Doing multicast search for local registries
+1 message-to-j
+
+2 message-to-j
+
+3 message-to-j
+
+4 message-to-j
+
+5 message-to-j
+
+6 message-to-j
+
+7 message-to-j
+
+8 message-to-j
+
+9 message-to-j
+
+10 message-to-j
+
+Couldn't find any new local registries through multicast.
+
+11 message-to-j
+
+12 message-to-j
+13 message-to-j
+14 message-to-j
+15 message-to-j
+16 message-to-j
+17 message-to-j
+18 message-to-j
+19 message-to-j
+20 message-to-j
+21 message-to-j
+22 message-to-j
+23 message-to-j
+24 message-to-j
+25 message-to-j
+26 message-to-j
+
+27 message-to-j
+
+28 message-to-j
+
+29 message-to-j
+
+30 message-to-j
+
+31 message-to-j
+
+32 message-to-j
+
+33 message-to-j
+
+34 message-to-j
+
+35 message-to-j
+
+36 message-to-j
+
+37 message-to-j
+
+38 message-to-j
+
+39 message-to-j
+
+40 message-to-j
+
+41 message-to-j
+
+42 message-to-j
+
+43 message-to-j
+
+44 message-to-j
+
+45 message-to-j
+
+46 message-to-j
+
+47 message-to-j
+
+48 message-to-j
+
+49 message-to-j
+
+50 message-to-j
+
+51 message-to-j
+
+52 message-to-j
+
+53 message-to-j
+
+54 message-to-j
+
+55 message-to-j
+
+56 message-to-j
+
+57 message-to-j
+
+58 message-to-j
+59 message-to-j
+60 message-to-j
+61 message-to-j
+62 message-to-j
+63 message-to-j
+64 message-to-j
+65 message-to-j
+66 message-to-j
+67 message-to-j
+68 message-to-j
+69 message-to-j
+70 message-to-j
+71 message-to-j
+72 message-to-j
+73 message-to-j
+74 message-to-j
+
+75 message-to-j
+
+76 message-to-j
+
+77 message-to-j
+
+78 message-to-j
+
+79 message-to-j
+
+80 message-to-j
+
+81 message-to-j
+
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 1
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 2
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 3
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 4
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 5
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 6
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 7
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 8
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 9
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 10
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 11
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 12
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 13
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 14
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 15
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 16
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 17
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 18
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 19
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 20
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 21
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 22
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 23
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 24
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 25
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 26
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 27
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 28
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 29
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 30
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 31
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 32
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 33
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 34
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 35
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 36
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 37
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 38
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 39
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 40
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 41
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 42
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 43
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 44
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 45
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 46
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 47
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 48
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 49
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 50
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 51
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 52
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 53
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 54
+############-->>> Hello YOU  10, message-to-j
+############-->>> Hello  ME  10... message-from-local-c
+---->> Value = hello -- 55
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 56
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 57
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 58
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 59
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 60
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 61
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 62
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 63
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 64
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 65
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 66
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 67
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 68
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 69
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 70
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 71
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 72
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 73
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 74
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 75
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 76
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 77
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 78
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 79
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hello -- 80
+############-->>> Hello  ME  10... message-from-local-c
+############-->>> Hello YOU  10, message-to-j
+---->> Value = hell
+82 message-to-j
+
+83 message-to-j
+
+84 message-to-j
+
+
+
+
+Test: LOCAL+C2Jrv_str/jt3 Completed Succesfully
+Time to Compile: 1.519s
+Time to Run Test: 9.998s

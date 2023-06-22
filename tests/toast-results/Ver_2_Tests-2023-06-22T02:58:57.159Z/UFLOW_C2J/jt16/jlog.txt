@@ -1,0 +1,12 @@
+--app=Ver_2_Tests --port=1886 --group=4 --data=127.0.0.1:6379 --edge=1 --long=171.1759 --lat=12.1249 --localregistryhost=0 --device
+------
+Current Device Node Id: 668ab824-b1c1-4b1c-846a-544659a69843
+Starting App..
+WARNING: mqtt client received an error: AggregateError
+
+
+
+Test: UFLOW_C2J/jt16 Failed
+Time to Compile: 1.85s
+Time to Run Test: 1.931s
+Reached 0 coverage markers out of 0

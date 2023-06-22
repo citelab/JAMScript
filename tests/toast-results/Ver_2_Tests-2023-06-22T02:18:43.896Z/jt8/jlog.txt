@@ -1,0 +1,109 @@
+--app=Ver_2_Tests --port=1886 --group=4 --data=127.0.0.1:6379 --edge=1 --long=39.8612 --lat=79.8222 --localregistryhost=0 --device
+
+------
+
+Current Device Node Id: 668ab824-b1c1-4b1c-846a-544659a69843
+
+Starting App..
+
+Program completed.
+
+
+WARNING: There are no Local Registries listed on the network!
+
+
+Doing multicast search for local registries
+
+Calling answer me ....  undefined
+
+Calling answer me ....  39.8612 79.8222
+
+STDERR: =================================================================
+STDERR: ==70870==ERROR: AddressSanitizer: heap-use-after-free on address 0x602000001130 at pc 0x0001019e41e1 bp 0x700000817bf0 sp 0x700000817be8
+STDERR: READ of size 4 at 0x602000001130 thread T2
+STDERR:     #0 0x1019e41e0 in command_arg_inner_free command.c:407
+
+0x602000001130 is located 0 bytes inside of 16-byte region [0x602000001130,0x602000001140)
+STDERR: freed by thread T2 here:
+STDERR:     #0 0x101f5c019 in wrap_free+0xa9 (libclang_rt.asan_osx_dynamic.dylib:x86_64h+0x4b019)
+    #1 0x1019e0e8a in command_args_free command.c:426
+    #2 0x1019da8ac in call_answerme+0x5c (a.out:x86_64+0x1000028ac)
+    #3 0x101a02efc in _mco_main minicoro.h:516
+    #4 0xdeaddeaddeaddeac  (<unknown module>)
+
+STDERR: previously allocated by thread T1 here:
+STDERR:     #0 0x101f5c2a5 in wrap_calloc+0xa5 (libclang_rt.asan_osx_dynamic.dylib:x86_64h+0x4b2a5)
+    #1 0x1019e2838 in command_from_data command.c:265
+    #2 0x1019f3a6c in mqtt_message_callback mqtt_adapter.c:18
+    #3 0x101b22a99 in handle__publish+0x254 (libmosquitto.2.0.15.dylib:x86_64+0x4a99)
+    #4 0x101b2797a in packet__read+0x9c (libmosquitto.2.0.15.dylib:x86_64+0x997a)
+    #5 0x101b23bf7 in mosquitto_loop_read+0x98 (libmosquitto.2.0.15.dylib:x86_64+0x5bf7)
+    #6 0x101b23a4d in mosquitto_loop+0x2e2 (libmosquitto.2.0.15.dylib:x86_64+0x5a4d)
+    #7 0x101b23d02 in mosquitto_loop_forever+0x46 (libmosquitto.2.0.15.dylib:x86_64+0x5d02)
+    #8 0x101b2b361 in mosquitto__thread_main+0x64 (libmosquitto.2.0.15.dylib:x86_64+0xd361)
+    #9 0x7ff81489f258 in _pthread_start+0x7c (libsystem_pthread.dylib:x86_64+0x6258)
+    #10 0x7ff81489ac7a in thread_start+0xe (libsystem_pthread.dylib:x86_64+0x1c7a)
+
+STDERR: Thread T2 created by T0 here:
+STDERR:     #0 0x101f5599c in wrap_pthread_create+0x5c (libclang_rt.asan_osx_dynamic.dylib:x86_64h+0x4499c)
+    #1 0x1019ff5c9 in tboard_start tboard.c:106
+    #2 0x1019e078f in cnode_init cnode.c:180
+    #3 0x1019db0ba in main+0x1a (a.out:x86_64+0x1000030ba)
+    #4 0x7ff81456c30f  (<unknown module>)
+
+Thread T1 created by T0 here:
+STDERR:     #0 0x101f5599c in wrap_pthread_create+0x5c (libclang_rt.asan_osx_dynamic.dylib:x86_64h+0x4499c)
+    #1 0x101b2b2ee in mosquitto_loop_start+0x35 (libmosquitto.2.0.15.dylib:x86_64+0xd2ee)
+    #2 0x1019f567b in connect_mqtt_adapter mqtt_adapter.c:139
+    #3 0x1019f5954 in setup_mqtt_adapter mqtt_adapter.c:159
+    #4 0x1019dfabf in cnode_create_mbroker cnode.c:62
+    #5 0x1019e064d in cnode_init cnode.c:168
+    #6 0x1019db0ba in main+0x1a (a.out:x86_64+0x1000030ba)
+    #7 0x7ff81456c30f  (<unknown module>)
+
+STDERR: SUMMARY: AddressSanitizer: heap-use-after-free command.c:407 in command_arg_inner_free
+STDERR: Shadow bytes around the buggy address:
+  0x1c04000001d0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x1c04000001e0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x1c04000001f0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x1c0400000200: fa fa fd fa fa fa fd fa fa fa fd fa fa fa fd fa
+  0x1c0400000210: fa fa fd fa fa fa fd fa fa fa fd fa fa fa fd fd
+=>0x1c0400000220: fa fa fd fd fa fa[fd]fd fa fa fd fd fa fa fd fd
+  0x1c0400000230: fa fa fd fd fa fa 00 01 fa fa 00 00 fa fa fa fa
+  0x1c0400000240: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x1c0400000250: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x1c0400000260: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x1c0400000270: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+STDERR: ==70870==ABORTING
+Value string String -- 10
+
+Couldn't find any new local registries through multicast.
+Calling answer me ....  undefined
+Calling answer me ....  39.8612 79.8222
+Received...  network error
+
+
+
+Test: jt8 Failed
+Time to Compile: 1.696s
+Time to Run Test: 3.846s
+Reached 0 coverage markers out of 0

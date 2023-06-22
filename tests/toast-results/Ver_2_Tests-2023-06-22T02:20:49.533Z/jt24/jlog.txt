@@ -1,0 +1,25 @@
+--app=Ver_2_Tests --port=1886 --group=4 --data=127.0.0.1:6379 --edge=1 --long=54.6869 --lat=31.195 --localregistryhost=0 --device
+------
+Current Device Node Id: 668ab824-b1c1-4b1c-846a-544659a69843
+Starting App..
+Program completed.
+
+WARNING: There are no Local Registries listed on the network!
+
+Doing multicast search for local registries
+
+Couldn't find any new local registries through multicast.
+
+Tag.....  undefined device type  device
+Longitude and Latitude ....  59.6869 31.195
+Calling compyou.. 
+Received an echo!
+Device to worker communication 0
+{ completed: 0, error: 0 } []
+
+
+
+Test: jt24 Failed
+Time to Compile: 1.589s
+Time to Run Test: 3.91s
+Reached 0 coverage markers out of 0

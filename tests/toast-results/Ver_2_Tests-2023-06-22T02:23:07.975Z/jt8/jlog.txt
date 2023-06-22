@@ -1,0 +1,94 @@
+--app=Ver_2_Tests --port=1888 --group=6 --data=127.0.0.1:6379 --edge=1 --long=17.5881 --lat=69.1936 --localregistryhost=0 --device
+
+------
+
+Current Device Node Id: 61270286-d9c5-4d9c-bf5f-83f5b85fc5dd
+
+Starting App..
+
+Program completed.
+
+
+WARNING: There are no Local Registries listed on the network!
+
+Doing multicast search for local registries
+Calling answer me ....  undefined
+Calling answer me ....  17.5881 69.1936
+Value string String -- 10
+
+STDERR: =================================================================
+==79882==ERROR: AddressSanitizer: heap-use-after-free on address 0x602000001130 at pc 0x00010a1be1e1 bp 0x70000367bbf0 sp 0x70000367bbe8
+READ of size 4 at 0x602000001130 thread T2
+    #0 0x10a1be1e0 in command_arg_inner_free command.c:407
+
+0x602000001130 is located 0 bytes inside of 16-byte region [0x602000001130,0x602000001140)
+freed by thread T2 here:
+    #0 0x10a736019 in wrap_free+0xa9 (libclang_rt.asan_osx_dynamic.dylib:x86_64h+0x4b019)
+    #1 0x10a1bae8a in command_args_free command.c:426
+    #2 0x10a1b48ac in call_answerme+0x5c (a.out:x86_64+0x1000028ac)
+    #3 0x10a1dcefc in _mco_main minicoro.h:516
+    #4 0xdeaddeaddeaddeac  (<unknown module>)
+
+previously allocated by thread T1 here:
+    #0 0x10a7362a5 in wrap_calloc+0xa5 (libclang_rt.asan_osx_dynamic.dylib:x86_64h+0x4b2a5)
+    #1 0x10a1bc838 in command_from_data command.c:265
+    #2 0x10a1cda6c in mqtt_message_callback mqtt_adapter.c:18
+    #3 0x10a2fca99 in handle__publish+0x254 (libmosquitto.2.0.15.dylib:x86_64+0x4a99)
+    #4 0x10a30197a in packet__read+0x9c (libmosquitto.2.0.15.dylib:x86_64+0x997a)
+    #5 0x10a2fdbf7 in mosquitto_loop_read+0x98 (libmosquitto.2.0.15.dylib:x86_64+0x5bf7)
+    #6 0x10a2fda4d in mosquitto_loop+0x2e2 (libmosquitto.2.0.15.dylib:x86_64+0x5a4d)
+    #7 0x10a2fdd02 in mosquitto_loop_forever+0x46 (libmosquitto.2.0.15.dylib:x86_64+0x5d02)
+    #8 0x10a305361 in mosquitto__thread_main+0x64 (libmosquitto.2.0.15.dylib:x86_64+0xd361)
+    #9 0x7ff81489f258 in _pthread_start+0x7c (libsystem_pthread.dylib:x86_64+0x6258)
+    #10 0x7ff81489ac7a in thread_start+0xe (libsystem_pthread.dylib:x86_64+0x1c7a)
+
+Thread T2 created by T0 here:
+    #0 0x10a72f99c in wrap_pthread_create+0x5c (libclang_rt.asan_osx_dynamic.dylib:x86_64h+0x4499c)
+    #1 0x10a1d95c9 in tboard_start tboard.c:106
+    #2 0x10a1ba78f in cnode_init cnode.c:180
+    #3 0x10a1b50ba in main+0x1a (a.out:x86_64+0x1000030ba)
+    #4 0x7ff81456c30f  (<unknown module>)
+
+Thread T1 created by T0 here:
+    #0 0x10a72f99c in wrap_pthread_create+0x5c (libclang_rt.asan_osx_dynamic.dylib:x86_64h+0x4499c)
+    #1 0x10a3052ee in mosquitto_loop_start+0x35 (libmosquitto.2.0.15.dylib:x86_64+0xd2ee)
+    #2 0x10a1cf67b in connect_mqtt_adapter mqtt_adapter.c:139
+    #3 0x10a1cf954 in setup_mqtt_adapter mqtt_adapter.c:159
+    #4 0x10a1b9abf in cnode_create_mbroker cnode.c:62
+    #5 0x10a1ba64d in cnode_init cnode.c:168
+    #6 0x10a1b50ba in main+0x1a (a.out:x86_64+0x1000030ba)
+    #7 0x7ff81456c30f  (<unknown module>)
+
+SUMMARY: AddressSanitizer: heap-use-after-free command.c:407 in command_arg_inner_free
+Shadow bytes around the buggy address:
+  0x1c04000001d0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x1c04000001e0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x1c04000001f0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x1c0400000200: fa fa fd fa fa fa fd fa fa fa fd fa fa fa fd fa
+  0x1c0400000210: fa fa fd fa fa fa fd fa fa fa fd fa fa fa fd fd
+=>0x1c0400000220: fa fa fd fd fa fa[fd]fd fa fa fd fd fa fa fd fd
+  0x1c0400000230: fa fa fd fd fa fa 00 01 fa fa 00 00 fa fa fa fa
+  0x1c0400000240: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x1c0400000250: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x1c0400000260: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x1c0400000270: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==79882==ABORTING

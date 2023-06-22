@@ -1,0 +1,32 @@
+--app=toaster --port=1890 --group=8 --data=127.0.0.1:6379 --edge=1 --long=81.158 --lat=5.5097 --localregistryhost=0 --device
+
+--app=toaster --port=5883 --data=127.0.0.1:6379 --long=179.7216 --lat=41.495 --localregistryhost=0 --fog
+
+------
+
+Current Device Node Id: 127a17f9-5398-4539-92b9-012b250dcf66
+
+------
+
+Starting App..
+
+Program completed.
+
+Current Device Node Id: fccf7021-d999-4d99-b948-a3943af73620
+
+Starting App..
+
+Program completed.
+
+WARNING: mqtt client received an error: AggregateError
+
+
+
+Test: wip/jt24 Failed
+Time to Compile: 1.592s
+Time to Run Test: 0.984s
+Reached 0 coverage markers out of 4
+  Missed coverage marker on line 17
+  Missed coverage marker on line 29
+  Missed coverage marker on line 41
+  Missed coverage marker on line 47

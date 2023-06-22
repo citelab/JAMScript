@@ -1,0 +1,34 @@
+--app=Ver_2_Tests --port=1885 --group=3 --data=127.0.0.1:6379 --edge=1 --long=128.6620 --lat=17.2413 --localregistryhost=0 --device
+
+------
+
+Current Device Node Id: 6b1097e8-94ed-494e-8220-2c226fbc202d
+
+Starting App..
+
+{ cmd: 6700, opt: 6701, data: { lifetime: 3000, k: 3 } }
+
+STDERR: node:internal/event_target:1037
+  process.nextTick(() => { throw err; });
+                           ^
+
+TypeError: this.ncache.getNumofFogs is not a function
+    at JAMCore.hoistFog (/Users/ethanbreit/work/JAMScript/lib/jside/core/jamcore.js:370:29)
+    at JAMCore.processWorkerMsg (/Users/ethanbreit/work/JAMScript/lib/jside/core/jamcore.js:167:22)
+    at MessagePort.<anonymous> (/Users/ethanbreit/work/JAMScript/lib/jside/core/jamcore.js:100:22)
+    at [nodejs.internal.kHybridDispatch] (node:internal/event_target:762:20)
+    at exports.emitMessage (node:internal/per_context/messageport:23:28)
+
+Node.js v20.2.0
+Killing broker with PID:
+
+STDERR: kill: usage: kill [-s sigspec | -n signum | -sigspec] pid | jobspec ... or kill -l [sigspec]
+ERROR!: cannot find the device j server
+
+
+
+
+Test: jt18 Failed
+Time to Compile: 1.533s
+Time to Run Test: 0s
+Reached 0 coverage markers out of 0

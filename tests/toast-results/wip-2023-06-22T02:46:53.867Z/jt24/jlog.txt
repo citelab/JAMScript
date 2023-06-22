@@ -1,0 +1,17 @@
+--app=wip --port=1883 --group=1 --data=127.0.0.1:6379 --edge=1 --long=147.8061 --lat=48.8268 --localregistryhost=0 --device
+
+------
+
+Current Device Node Id: 2b508fe8-46c4-446c-9be2-a9bed256b507
+
+Starting App..
+
+Program completed.
+
+
+WARNING: There are no Local Registries listed on the network!
+
+Doing multicast search for local registries
+
+Couldn't find any new local registries through multicast.
+

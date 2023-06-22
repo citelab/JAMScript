@@ -1,0 +1,91 @@
+--app=Ver_2_Tests --port=1886 --group=4 --data=127.0.0.1:6379 --edge=1 --long=0.6926 --lat=73.5325 --localregistryhost=0 --device
+
+------
+
+Current Device Node Id: 668ab824-b1c1-4b1c-846a-544659a69843
+
+Starting App..
+
+Program completed.
+
+Tag.....  undefined
+
+Longitude and Latitude ....  5.6926 73.5325
+Tag.....  undefined
+
+Longitude and Latitude ....  10.692599999999999 73.5325
+
+Tag.....  undefined
+Longitude and Latitude ....  15.692599999999999 73.5325
+Tag.....  undefined
+Longitude and Latitude ....  20.6926 73.5325
+Tag.....  undefined
+Longitude and Latitude ....  25.6926 73.5325
+Tag.....  undefined
+
+Longitude and Latitude ....  30.6926 73.5325
+
+Tag.....  undefined
+Longitude and Latitude ....  35.6926 73.5325
+
+Tag.....  undefined
+
+Longitude and Latitude ....  40.6926 73.5325
+Tag.....  undefined
+
+Longitude and Latitude ....  45.6926 73.5325
+Tag.....  undefined
+Longitude and Latitude ....  50.6926 73.5325
+
+Tag.....  undefined
+Longitude and Latitude ....  55.6926 73.5325
+Tag.....  undefined
+
+Longitude and Latitude ....  60.6926 73.5325
+Tag.....  undefined
+Longitude and Latitude ....  65.6926 73.5325
+
+Tag.....  undefined
+Longitude and Latitude ....  70.6926 73.5325
+Tag.....  undefined
+
+Longitude and Latitude ....  75.6926 73.5325
+Tag.....  undefined
+Longitude and Latitude ....  80.6926 73.5325
+Tag.....  undefined
+
+Longitude and Latitude ....  85.6926 73.5325
+Tag.....  undefined
+
+Longitude and Latitude ....  90.6926 73.5325
+
+Tag.....  undefined
+Longitude and Latitude ....  95.6926 73.5325
+Tag.....  undefined
+
+Longitude and Latitude ....  100.6926 73.5325
+Tag.....  undefined
+
+Longitude and Latitude ....  105.6926 73.5325
+Tag.....  undefined
+Longitude and Latitude ....  110.6926 73.5325
+Tag.....  undefined
+
+Longitude and Latitude ....  115.6926 73.5325
+
+Tag.....  undefined
+
+Longitude and Latitude ....  120.6926 73.5325
+
+Tag.....  undefined
+
+Longitude and Latitude ....  125.6926 73.5325
+
+Received...  timeout error
+
+
+
+Test: jt10 Failed
+Time to Compile: 1.61s
+Time to Run Test: 0.93s
+Reached 0 coverage markers out of 0

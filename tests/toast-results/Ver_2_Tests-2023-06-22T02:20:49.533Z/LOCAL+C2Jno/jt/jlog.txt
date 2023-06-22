@@ -1,0 +1,44 @@
+--app=Ver_2_Tests --port=1886 --group=4 --data=127.0.0.1:6379 --edge=1 --long=116.5513 --lat=36.3574 --localregistryhost=0 --device
+------
+Current Device Node Id: 668ab824-b1c1-4b1c-846a-544659a69843
+Starting App..
+Program completed.
+
+WARNING: There are no Local Registries listed on the network!
+
+Doing multicast search for local registries
+hello.. main loop 
+Message received:  a-message-for-j  local count  1
+Couldn't find any new local registries through multicast.
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  2
+hello.. main loop 
+Message received:  a-message-for-j  local count  3
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  4
+
+hello.. main loop 
+Message received:  a-message-for-j  local count  5
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  6
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  7
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  8
+
+hello.. main loop 
+
+
+
+
+Test: LOCAL+C2Jno/jt Completed Succesfully
+Time to Compile: 1.508s
+Time to Run Test: 9.996s

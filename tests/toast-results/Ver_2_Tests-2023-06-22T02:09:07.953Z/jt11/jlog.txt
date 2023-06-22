@@ -1,0 +1,34 @@
+--app=Ver_2_Tests --port=1885 --group=3 --data=127.0.0.1:6379 --edge=1 --long=102.3849 --lat=78.2344 --localregistryhost=0 --device
+
+------
+
+Current Device Node Id: 6b1097e8-94ed-494e-8220-2c226fbc202d
+
+Starting App..
+
+Program completed.
+
+Tag.....  undefined
+
+Tag.....  undefined
+Tag.....  undefined
+Tag.....  undefined
+Tag.....  undefined
+
+Tag.....  undefined
+
+Tag.....  undefined
+Tag.....  undefined
+
+Tag.....  undefined
+
+Tag.....  undefined
+
+Received...  timeout error
+
+
+
+Test: jt11 Failed
+Time to Compile: 1.524s
+Time to Run Test: 0.949s
+Reached 0 coverage markers out of 0

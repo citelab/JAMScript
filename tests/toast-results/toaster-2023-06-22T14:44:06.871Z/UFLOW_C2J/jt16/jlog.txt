@@ -1,0 +1,19 @@
+--app=toaster --port=1890 --group=8 --data=127.0.0.1:6379 --edge=1 --long=129.5316 --lat=21.9404 --localregistryhost=0 --device
+
+------
+
+Current Device Node Id: 127a17f9-5398-4539-92b9-012b250dcf66
+
+Starting App..
+
+WARNING: mqtt client received an error: AggregateError
+
+
+
+Test: UFLOW_C2J/jt16 Failed
+Time to Compile: 1.455s
+Time to Run Test: 0.968s
+Reached 0 coverage markers out of 3
+  Missed coverage marker on line 9
+  Missed coverage marker on line 19
+  Missed coverage marker on line 17

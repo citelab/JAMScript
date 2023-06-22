@@ -1,0 +1,12 @@
+--app=Ver_2_Tests --port=1884 --group=2 --data=127.0.0.1:6379 --edge=1 --long=152.7899 --lat=26.1968 --localregistryhost=0 --device
+------
+Current Device Node Id: c8358bea-5e74-45e7-84fe-744fd41579e0
+Starting App..
+WARNING: mqtt client received an error: AggregateError
+
+
+
+Test: jt23 Failed
+Time to Compile: 1.689s
+Time to Run Test: 1.65s
+Reached 0 coverage markers out of 0

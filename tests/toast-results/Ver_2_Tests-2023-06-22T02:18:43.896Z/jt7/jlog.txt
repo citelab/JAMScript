@@ -1,0 +1,26 @@
+--app=Ver_2_Tests --port=1885 --group=3 --data=127.0.0.1:6379 --edge=1 --long=160.8905 --lat=75.7948 --localregistryhost=0 --device
+------
+Current Device Node Id: 6b1097e8-94ed-494e-8220-2c226fbc202d
+Starting App..
+Program completed.
+
+WARNING: There are no Local Registries listed on the network!
+
+Doing multicast search for local registries
+
+Couldn't find any new local registries through multicast.
+
+Tag.....  undefined
+
+Longitude and Latitude ....  165.8905 75.7948
+
+Calling compyou.. 
+
+{ completed: 0, error: 0 } []
+
+
+
+Test: jt7 Failed
+Time to Compile: 1.707s
+Time to Run Test: 3.988s
+Reached 0 coverage markers out of 0

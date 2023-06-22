@@ -1,0 +1,18 @@
+--app=Ver_2_Tests --port=1885 --group=3 --data=127.0.0.1:6379 --edge=1 --long=104.4520 --lat=16.689 --localregistryhost=0 --device
+------
+Current Device Node Id: 6b1097e8-94ed-494e-8220-2c226fbc202d
+Starting App..
+Program completed.
+
+WARNING: There are no Local Registries listed on the network!
+
+Doing multicast search for local registries
+
+Couldn't find any new local registries through multicast.
+
+
+
+
+Test: cartests/jt Completed Succesfully
+Time to Compile: 1.606s
+Time to Run Test: 10.014s

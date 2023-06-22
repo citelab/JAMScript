@@ -1,0 +1,120 @@
+--app=Ver_2_Tests --port=1888 --group=6 --data=127.0.0.1:6379 --edge=1 --long=84.3530 --lat=16.5377 --localregistryhost=0 --device
+------
+Current Device Node Id: 61270286-d9c5-4d9c-bf5f-83f5b85fc5dd
+Starting App..
+Program completed.
+
+WARNING: There are no Local Registries listed on the network!
+
+Doing multicast search for local registries
+1 message-to-j
+2 message-to-j
+
+3 message-to-j
+
+4 message-to-j
+
+5 message-to-j
+
+6 message-to-j
+
+7 message-to-j
+
+8 message-to-j
+
+9 message-to-j
+
+10 message-to-j
+
+Couldn't find any new local registries through multicast.
+
+11 message-to-j
+
+12 message-to-j
+13 message-to-j
+14 message-to-j
+15 message-to-j
+16 message-to-j
+17 message-to-j
+18 message-to-j
+19 message-to-j
+20 message-to-j
+21 message-to-j
+22 message-to-j
+23 message-to-j
+24 message-to-j
+25 message-to-j
+26 message-to-j
+
+27 message-to-j
+
+28 message-to-j
+
+29 message-to-j
+
+30 message-to-j
+
+31 message-to-j
+
+32 message-to-j
+
+33 message-to-j
+
+34 message-to-j
+
+35 message-to-j
+
+36 message-to-j
+37 message-to-j
+38 message-to-j
+39 message-to-j
+40 message-to-j
+41 message-to-j
+42 message-to-j
+43 message-to-j
+44 message-to-j
+45 message-to-j
+46 message-to-j
+47 message-to-j
+48 message-to-j
+49 message-to-j
+50 message-to-j
+
+51 message-to-j
+
+52 message-to-j
+
+53 message-to-j
+
+54 message-to-j
+
+55 message-to-j
+
+56 message-to-j
+
+57 message-to-j
+
+58 message-to-j
+59 message-to-j
+60 message-to-j
+61 message-to-j
+62 message-to-j
+63 message-to-j
+64 message-to-j
+65 message-to-j
+66 message-to-j
+67 message-to-j
+68 message-to-j
+69 message-to-j
+70 message-to-j
+71 message-to-j
+72 message-to-j
+
+73 message-to-j
+
+
+
+
+Test: LOCAL+C2Jrv_str/jt3 Completed Succesfully
+Time to Compile: 1.515s
+Time to Run Test: 10.357s

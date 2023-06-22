@@ -1,0 +1,34 @@
+--app=toaster --port=1883 --group=1 --data=127.0.0.1:6379 --edge=1 --long=152.7929 --lat=57.9859 --localregistryhost=0 --device
+
+------
+
+Current Device Node Id: d3c947d2-cb52-4cb5-923e-6d23cbc264aa
+
+Starting App..
+
+Program completed.
+
+
+WARNING: There are no Local Registries listed on the network!
+
+Doing multicast search for local registries
+
+@ToasterCoverage#{1}#
+
+hello.. main loop 
+
+Couldn't find any new local registries through multicast.
+
+@ToasterCoverage#{1}#
+
+hello.. main loop 
+
+Message received:  a-message-for-j  local count  1
+
+@ToasterCoverage#{0}#
+
+
+
+Test: LOCAL+C2Jno/jt Completed Succesfully
+Time to Compile: 2.101s
+Time to Run Test: 2.549s

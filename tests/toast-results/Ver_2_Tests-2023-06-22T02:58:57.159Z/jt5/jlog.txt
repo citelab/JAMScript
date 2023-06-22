@@ -1,0 +1,179 @@
+--app=Ver_2_Tests --port=1888 --group=6 --data=127.0.0.1:6379 --edge=1 --long=109.7604 --lat=40.8456 --localregistryhost=0 --device
+
+------
+
+Current Device Node Id: 61270286-d9c5-4d9c-bf5f-83f5b85fc5dd
+Starting App..
+Program completed.
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+WARNING: There are no Local Registries listed on the network!
+
+Doing multicast search for local registries
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Couldn't find any new local registries through multicast.
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+================= Retry called................ 61270286-d9c5-4d9c-bf5f-83f5b85fc5dd1687402812297001
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+Return value from the call.. { status: [Function: status], values: [Function: values] }
+
+
+
+
+Test: jt5 Completed Succesfully
+Time to Compile: 1.802s
+Time to Run Test: 10.001s
