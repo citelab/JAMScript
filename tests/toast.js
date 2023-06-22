@@ -64,8 +64,11 @@ const TestState = {
   RUNTIME_FAILED: 7,
 };
 
+const NODETYPE_DEVICE = "device";
+const NODETYPE_FOG = "fog";
+
 Toaster.prototype.updateTestState = function (test) {
-  let completeStr = `${this.currentTest+1}`;
+  let completeStr = `${this.currentTest}`;
   let totalStr = `${this.tests.length}`;
 
   // Magic characters clear line
@@ -140,6 +143,7 @@ function Toaster(conf) {
 
   this.testDirectoryName = path.basename(this.testDirectory);
   this.currentTest = 0;
+  this.testProcesses = new Set();
 }
 
 
@@ -486,7 +490,7 @@ function extractOutputKeywordData(text){
   return text.substring(start, end);
 }
 
-Toaster.prototype.processStdout = function (test, data) {
+Toaster.prototype.processOutput = function (test, data) {
   for(let line of data.split('\n')) {
     if(test.state == TestState.STARTING) {
       this.setTestState(test, TestState.RUNNING);
@@ -533,7 +537,14 @@ Toaster.prototype.processStdout = function (test, data) {
   return false;
 }
 
-Toaster.prototype.executeTest = function(test, testResultDirectory) {
+Toaster.prototype.cleanupResidualTests = function() {
+  for(let pid of this.testProcesses) {
+    killGroup(pid);
+  }
+  this.testProcesses.clear();
+}
+
+Toaster.prototype.executeTest = async function(test, machType) {
   let command = `jamrun`
   let args =  [
     `${test.testResultDirectory}/test.jxe`,
@@ -542,16 +553,19 @@ Toaster.prototype.executeTest = function(test, testResultDirectory) {
     "--disable-stdout-redirect",
     "--temp_broker"];
 
-  var processComplete = false; //TODO: replace with test.state
-  
+  if(machType==NODETYPE_FOG) {
+    args.push("--fog");
+  }
+
   let that = this;
-  // This works for now but is likely not portable
+
   function cleanup() {
     clearTimeout(timeout);
     const testEndTime = Date.now();
     test.runDuration = testEndTime-testStartTime;
     try {
       killGroup(testProcess.pid); // Not entirely sure why this works...
+      that.testProcesses.delete(testProcess.pid);
       //that.killWorkerTmuxSessions(test);
     }catch(e){console.log(e)}
   }
@@ -560,6 +574,8 @@ Toaster.prototype.executeTest = function(test, testResultDirectory) {
 
   // We should log compiler output in the event of a compiler error.
   let testProcess = child_process.spawn(command, args, {shell: true, detached: true});
+  this.testProcesses.add(testProcess.pid);
+
   let timeout = setTimeout(()=>{
     if(test.state == TestState.STARTING) {
       that.setTestState(test, TestState.LAUNCH_FAILED);
@@ -577,30 +593,34 @@ Toaster.prototype.executeTest = function(test, testResultDirectory) {
   testProcess.stdout.setEncoding('utf-8');
 
   testProcess.stdout.on('data', (data) => {
-    if(that.processStdout(test, data)) {
+    if(that.processOutput(test, data)) {
       cleanup();
     }
   });
 
   testProcess.stderr.on('data', (data) => {
     if(test.state == TestState.RUNNING) {
+      if(that.processOutput(test, data)) {
+        cleanup();
+      }
       test.output.write(`STDERR: ${data}`);
-      //console.error(`stderr: ${data}`);
     }
   });
 
-  testProcess.on('close', (exit) => {
-    if(test.state == TestState.RUNNING) {
-      that.setTestState(test, TestState.FAILED);
-    } else if(test.state == TestState.STARTING) {
-      that.setTestState(test, TestState.LAUNCH_FAILED);
-    } else {
-      that.updateTestState(test);
-    }
-    let report = that.generateReport(test);
-    test.output.write(`\n\n\n${report}`);
-    test.output.close();
-    that.runNextTest();
+  await new Promise((resolve, reject) => {
+    testProcess.on('close', (exit) => {
+      if(test.state == TestState.RUNNING) {
+        that.setTestState(test, TestState.FAILED);
+      } else if(test.state == TestState.STARTING) {
+        that.setTestState(test, TestState.LAUNCH_FAILED);
+      } else {
+        that.updateTestState(test);
+      }
+      let report = that.generateReport(test);
+      test.output.write(`\n\n\n${report}`);
+      test.output.close();
+      resolve();
+    });
   });
 }
 
@@ -615,23 +635,33 @@ Toaster.prototype.generateReport = function(test) {
       `Time to Compile: ${test.compilationDuration/1000.0}s\n` +
       `Time to Run Test: ${test.runDuration/1000.0}s\n` + 
       `Reached ${test.completedCoverageMarkers} coverage markers out of ${test.coverageMarkers.length}\n`;
-      if(test.completedCoverageMarkers != test.coverageMarkers.length) {
-        for(let marker of test.coverageMarkers) {
-          if(!marker.covered) {
-            reportMessage += `  Missed coverage marker on line ${marker.line}\n`
-          }
+    if(test.completedCoverageMarkers != test.coverageMarkers.length) {
+      for(let marker of test.coverageMarkers) {
+        if(!marker.covered) {
+          reportMessage += `  Missed coverage marker on line ${marker.line}\n`
         }
       }
+    }
   }
 
   return reportMessage;
 }
 
-// For now running sequentially
-Toaster.prototype.runTest = function () {
-  let test = this.tests[this.currentTest];
+Toaster.prototype.testAll = async function () {
+  let startTime = Date.now();
 
-  //Just a newline..
+  for(let test of this.tests) {
+    this.currentTest++;
+
+    await this.runTest(test);
+  }
+
+  let endTime = Date.now();
+  
+  this.finalReport(endTime-startTime);
+}
+
+Toaster.prototype.runTest = async function (test) {
   process.stdout.write('\n');
 
   fs.mkdirSync(test.testResultDirectory, {recursive: true});
@@ -640,12 +670,25 @@ Toaster.prototype.runTest = function () {
 
   // The directory could be included in the test object, that would make more sense
   if(!this.compileTest(test)) {
-    this.runNextTest(); // should not be recursive but for now...
+    return;
   }
-  this.executeTest(test);
+
+
+  // Resume as soon as one of these exits.
+  await new Promise( (resolve, reject) => {
+    for(let _ = 0; _ < test.networkConfig.devices; _++){
+      this.executeTest(test, NODETYPE_DEVICE).then(()=>{resolve()});
+    }
+  
+    for(let _ = 0; _ < test.networkConfig.fogs; _++){
+      this.executeTest(test, NODETYPE_FOG).then(()=>{resolve()});
+    }
+  });
+  this.cleanupResidualTests();
+  
 }
 
-Toaster.prototype.finalReport = function() {
+Toaster.prototype.finalReport = function(duration) {
   const total = this.tests.length;
   let passed = 0;
 
@@ -655,7 +698,7 @@ Toaster.prototype.finalReport = function() {
     }
   }
 
-  let exitText = `\n\nAll Tests Finished (${passed}/${total})`;
+  let exitText = `\n\nAll Tests Finished (${passed}/${total}) in ${duration/1000}s`;
   if(passed == total) {
     exitText = ansiiGreen(exitText);
   } else if (!passed) { 
@@ -667,16 +710,6 @@ Toaster.prototype.finalReport = function() {
 
   console.log(`Complete Logs: ${this.resultDirectory}`);
   process.exit();
-}
-
-// TODO: restructure like everything here....
-Toaster.prototype.runNextTest = function() {
-  this.currentTest++;
-  if(this.currentTest == this.tests.length) {
-    this.finalReport();
-  }
-
-  this.runTest();
 }
 
 function processArgs() {
@@ -694,7 +727,7 @@ function processArgs() {
       let inputPath = args[i];
       if(conf.testDirectory != undefined) {
         console.log("Can only provide one test folder!");
-        process.exit(0xBADBAD);
+        process.exit();
       }
 
       if(fs.existsSync(inputPath)) {
@@ -713,4 +746,4 @@ function processArgs() {
 let toaster = new Toaster(processArgs());
 toaster.setupTestingEnvironment();
 toaster.scanTests();
-toaster.runTest();
+toaster.testAll();
