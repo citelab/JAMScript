@@ -59,26 +59,37 @@ const TestState = {
   RUNNING:    2,
   PASSED:  3,
   FAILED:     4,
-  COMPILE_FAILED: 5
+  COMPILE_FAILED: 5,
+  LAUNCH_FAILED: 6,
+  RUNTIME_FAILED: 7,
 };
 
-function updateTestState(test) {
+Toaster.prototype.updateTestState = function (test) {
+  let completeStr = `${this.currentTest+1}`;
+  let totalStr = `${this.tests.length}`;
+
+  // Magic characters clear line
+  let prefix = `\x1b[2K\r(${completeStr}/${totalStr}) `;
+  let padding = totalStr.length - completeStr.length;
+  prefix += " ".repeat(padding);
   if(test.state==TestState.COMPILING) {
-    process.stdout.write(`\x1b[2K\r${ansiiYellow(test.testName)} ${ansiiYellow("Compiling")} `);
+    process.stdout.write(`${prefix}${ansiiYellow(test.testName)} ${ansiiYellow("Compiling")} `);
   } else if (test.state == TestState.STARTING) {
     let beginning = `${ansiiYellow(test.testName)} ${ansiiGreen("Compiled")}`;
-    process.stdout.write(`\x1b[2K\r${beginning} Starting...`)
+    process.stdout.write(`${prefix}${beginning} Starting...`)
   } else if (test.state == TestState.RUNNING) {
     let beginning = `${ansiiYellow(test.testName)} ${ansiiGreen("Compiled")}`;
     let coverageStatus = "";
     if(test.coverageMarkers.length) {
       coverageStatus = `(${test.completedCoverageMarkers}/${test.coverageMarkers.length})`;
     }
-    process.stdout.write(`\x1b[2K\r${beginning} ${ansiiYellow("Running")} ${coverageStatus}`)
+    process.stdout.write(`${prefix}${beginning} ${ansiiYellow("Running")} ${coverageStatus}`)
   } else if (test.state == TestState.PASSED) {
-    process.stdout.write(`\x1b[2K\r${ansiiGreen(test.testName + " Passed")}`)
+    process.stdout.write(`${prefix}${ansiiGreen(test.testName + " Passed")}`)
   } else if (test.state ==TestState.COMPILE_FAILED) {
-    process.stdout.write(`\x1b[2K\r${ansiiRed(test.testName + " Failed to Compile")}`);
+    process.stdout.write(`${prefix}${ansiiRed(test.testName + " Failed to compile")}`);
+  } else if (test.state ==TestState.LAUNCH_FAILED) {
+    process.stdout.write(`${prefix}${ansiiRed(test.testName + " Failed to start test")}`);
   } else if (test.state == TestState.FAILED) {
     // Provide some context as to why
     let reason = "";
@@ -91,19 +102,25 @@ function updateTestState(test) {
       }
       reason += "Failed Assert";
     }
-    
+    if(test.runtimeError) {
+      if(reason!="") {
+        reason += ", ";
+      }
+      reason += "JAMScript Runtime Error";
+
+    }
     if(reason == "") {
       reason = "!INTERNAL!";
       console.trace();
     }
 
-    process.stdout.write(`\x1b[2K\r${ansiiRed(test.testName + " Failed")} (${reason})`)
+    process.stdout.write(`${prefix}${ansiiRed(test.testName + " Failed")} (${reason})`)
   }
 }
 
-function setTestState(test, state) {
+Toaster.prototype.setTestState = function(test, state) {
   test.state = state;
-  updateTestState(test);
+  this.updateTestState(test);
 }
 
 function Toaster(conf) {
@@ -134,21 +151,22 @@ Toaster.prototype.setupTestingEnvironment = function () {
   fs.mkdirSync(this.resultDirectory);
 }
 
-Toaster.prototype._walkTestDir = function (folder) {
+Toaster.prototype.walkTestDir = function (folder) {
   let that = this;
   var tests = [];
   for(let file of fs.readdirSync(folder)) {
     let completePath = `${folder}/${file}`;
 
     if(fs.lstatSync(completePath).isDirectory()) {
-      tests.push(...that._walkTestDir(completePath));
+      tests.push(...that.walkTestDir(completePath));
     }
-
+    
     let extension = path.extname(file);
     if(extension === ".c") {
       let baseName = file.substring(0, file.length-2);
       if(fs.existsSync(`${folder}/${baseName}.js`)){
         let testName = `${folder}/${baseName}`.substring(this.testDirectory.length+1);
+        
         tests.push({
           testName: testName,
           baseName: baseName,
@@ -160,8 +178,12 @@ Toaster.prototype._walkTestDir = function (folder) {
           completedCoverageMarkers: 0,
           compilationDuration: 0,
           runDuration: 0,
-          assertMessage: undefined
-        });
+          assertMessage: undefined,
+          runtimeError: false,
+          networkConfig: {
+            devices: 1,
+            fogs: 0
+        }});
       }
     }
   }
@@ -188,7 +210,7 @@ Toaster.prototype.scanTests = function () {
       assertMessage: undefined
     });
   } else {
-    this.tests = this._walkTestDir(this.testDirectory);
+    this.tests = this.walkTestDir(this.testDirectory);
   }
   console.log(`Found ${this.tests.length} tests.`);
 }
@@ -227,13 +249,46 @@ function findClosingParen(text, start) {
   return end;
 }
 
+const FOGS_KEYWORD = "fogs:";
+const DEVICES_KEYWORD = "devices:";
+
+Toaster.prototype.scanForToasterConfig = function(test, line, lineIter) {
+  const keywords = [FOGS_KEYWORD, DEVICES_KEYWORD];
+  if(line.includes("@ToasterConfig")) {
+    let lineResult;
+    while(!(lineResult = lineIter.next()).done) {
+      line = lineResult.value.toLowerCase();
+
+      let keywordFound = false;
+      for(let keyword of keywords) {
+        if(line.includes(keyword)) {
+          keywordFound = true;
+          let start = line.indexOf(keyword) + keyword.length;
+          let value = line.substring(start).trim();
+
+          if(keyword == FOGS_KEYWORD) {
+            test.networkConfig.fogs = parseInt(value);
+            //TODO; check if this is correct!
+          } else if (keyword == DEVICES_KEYWORD) {
+            test.networkConfig.fogs = parseInt(value);
+          }
+        }
+      }
+
+      if(!keywordFound) {
+        return;
+      }
+    }
+  }
+}
+
 Toaster.prototype.compileTest = function(test, testResultDirectory) {
   const buildEnv = `${JAMRUNS_DIR}/_toaster_build_env`;
   if(!fs.existsSync(buildEnv)) {
     fs.mkdirSync(buildEnv);
   }
   
-  updateTestState(test);
+  this.updateTestState(test);
 
   let cTestPath = `${buildEnv}/${test.baseName}.c`;
   let jsTestPath = `${buildEnv}/${test.baseName}.js`;
@@ -250,9 +305,19 @@ Toaster.prototype.compileTest = function(test, testResultDirectory) {
 
   // Process c-side
   fs.writeSync(cTestOutput, TOASTER_C_HOOKS);
-  for(let line of cFileContents.split(/\r?\n/)) {
+
+  let lines = cFileContents.split(/\r?\n/);
+  let lineIter = lines[Symbol.iterator]();
+
+  var lineResult;
+  while(!(lineResult = lineIter.next()).done) {
+    let line = lineResult.value;
+
     lineCount++;
     let regularLine = true;
+
+    this.scanForToasterConfig(test, line, lineIter);
+
     if(line.includes(ASSERT_IDENTIFIER)) {
       regularLine = false;
       let start = line.indexOf(ASSERT_IDENTIFIER);
@@ -285,10 +350,16 @@ Toaster.prototype.compileTest = function(test, testResultDirectory) {
 
   // Process c-side
   lineCount = 0;
-  //fs.writeSync(jsTestOutput, TOASTER_JS_HOOKS);
-  for(let line of jsFileContents.split(/\r?\n/)) {
+
+  lines = jsFileContents.split(/\r?\n/);
+  lineIter = lines[Symbol.iterator]();
+  while(!(lineResult = lineIter.next()).done) {
+    let line = lineResult.value;
+
     lineCount++;
     let regularLine = true;
+
+    this.scanForToasterConfig(test, line, lineIter);
 
     // TODO: remove this when compiler bug is fixed
     if(line.includes(ASSERT_IDENTIFIER)) {
@@ -361,7 +432,7 @@ Toaster.prototype.compileTest = function(test, testResultDirectory) {
     const compilationEnd = Date.now();
     test.compilationDuration = compilationEnd-compilationStart;
 
-    setTestState(test,TestState.STARTING);
+    this.setTestState(test,TestState.STARTING);
 
     /*console.log("Success");  
     test.output.write(proc.stdout);
@@ -371,12 +442,13 @@ Toaster.prototype.compileTest = function(test, testResultDirectory) {
     return true;
   } catch(err) {
 
-    setTestState(test,TestState.COMPILE_FAILED);
-    console.log("Failed!");
+    this.setTestState(test,TestState.COMPILE_FAILED);
+    /*console.log("Failed!");
+    
     test.output.write(proc.stdout);
     test.output.write("Stderr Follows: \n");
     test.output.write(proc.stderr);
-    console.log(`Full log can be found at ${test.logFile}`);
+    console.log(`Full log can be found at ${test.logFile}`);*/
 
     return false;
   }
@@ -414,10 +486,10 @@ function extractOutputKeywordData(text){
   return text.substring(start, end);
 }
 
-function processStdout(test, data) {
+Toaster.prototype.processStdout = function (test, data) {
   for(let line of data.split('\n')) {
     if(test.state == TestState.STARTING) {
-      setTestState(test, TestState.RUNNING);
+      this.setTestState(test, TestState.RUNNING);
     } else if (test.state == TestState.PASSED ||
               test.state == TestState.FAILED) {
       return false;
@@ -427,7 +499,8 @@ function processStdout(test, data) {
 
     // Try to pick up any spurrious errors we may have missed otherwise.
     if(line.includes("error") || line.includes("Error")) {
-      setTestState(test, TestState.FAILED);
+      test.runtimeError = true;
+      this.setTestState(test, TestState.FAILED);
       return true;
     }
 
@@ -436,7 +509,7 @@ function processStdout(test, data) {
 
       if((keywordIndex = line.indexOf(TOASTER_ASSERT_KEYWORD)) != -1) {
         test.assertMessage = extractOutputKeywordData(line);
-        setTestState(test, TestState.FAILED);
+        this.setTestState(test, TestState.FAILED);
         return true
       } else if ((keywordIndex = line.indexOf(TOASTER_COVERAGE_KEYWORD)) != -1) {
         let coverageId = extractOutputKeywordData(line);
@@ -445,13 +518,13 @@ function processStdout(test, data) {
             marker.covered == false) {
             test.completedCoverageMarkers++;
             marker.covered = true;
-            updateTestState(test);
+            this.updateTestState(test);
           }
         }
       }
       // Test is complete
       if(test.completedCoverageMarkers == test.coverageMarkers.length) {
-        setTestState(test,TestState.PASSED);
+        this.setTestState(test,TestState.PASSED);
         return true;
       }
     }
@@ -488,11 +561,14 @@ Toaster.prototype.executeTest = function(test, testResultDirectory) {
   // We should log compiler output in the event of a compiler error.
   let testProcess = child_process.spawn(command, args, {shell: true, detached: true});
   let timeout = setTimeout(()=>{
+    if(test.state == TestState.STARTING) {
+      that.setTestState(test, TestState.LAUNCH_FAILED);
+    }
     if(test.state == TestState.RUNNING) {
       if(test.coverageMarkers.length) {
-        setTestState(test, TestState.FAILED);
+        that.setTestState(test, TestState.FAILED);
       } else {
-        setTestState(test, TestState.PASSED);
+        that.setTestState(test, TestState.PASSED);
       }
       cleanup();
     }
@@ -501,26 +577,30 @@ Toaster.prototype.executeTest = function(test, testResultDirectory) {
   testProcess.stdout.setEncoding('utf-8');
 
   testProcess.stdout.on('data', (data) => {
-    if(processStdout(test, data)) {
+    if(that.processStdout(test, data)) {
       cleanup();
     }
   });
 
   testProcess.stderr.on('data', (data) => {
-    if(test.state==TestState.RUNNING) {
+    if(test.state == TestState.RUNNING) {
       test.output.write(`STDERR: ${data}`);
       //console.error(`stderr: ${data}`);
     }
   });
 
   testProcess.on('close', (exit) => {
-    if(test.state === TestState.RUNNING) {
-      setTestState(test, TestState.FAILED);
+    if(test.state == TestState.RUNNING) {
+      that.setTestState(test, TestState.FAILED);
+    } else if(test.state == TestState.STARTING) {
+      that.setTestState(test, TestState.LAUNCH_FAILED);
+    } else {
+      that.updateTestState(test);
     }
-    let report = this.generateReport(test);
+    let report = that.generateReport(test);
     test.output.write(`\n\n\n${report}`);
     test.output.close();
-    this.runNextTest();
+    that.runNextTest();
   });
 }
 
@@ -565,11 +645,35 @@ Toaster.prototype.runTest = function () {
   this.executeTest(test);
 }
 
+Toaster.prototype.finalReport = function() {
+  const total = this.tests.length;
+  let passed = 0;
+
+  for(let test of this.tests) {
+    if(test.state == TestState.PASSED) {
+      passed++;
+    }
+  }
+
+  let exitText = `\n\nAll Tests Finished (${passed}/${total})`;
+  if(passed == total) {
+    exitText = ansiiGreen(exitText);
+  } else if (!passed) { 
+    // oopsies...
+    exitText = ansiiRed(exitText);
+  }
+
+  console.log(exitText);
+
+  console.log(`Complete Logs: ${this.resultDirectory}`);
+  process.exit();
+}
+
+// TODO: restructure like everything here....
 Toaster.prototype.runNextTest = function() {
   this.currentTest++;
   if(this.currentTest == this.tests.length) {
-    console.log(ansiiGreen("\n\nCompleted All Tests"));
-    process.exit();
+    this.finalReport();
   }
 
   this.runTest();

@@ -1,3 +1,7 @@
+// @ToasterConfig
+// Fogs: 1
+// Devices: 1
+
 
 jcond {
     typeAonly: jsys.tag == "typeA";
