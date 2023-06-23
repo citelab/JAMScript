@@ -17,12 +17,12 @@ JAMC <: C {
 
     jcond_expr_op   = "&&" | "||"
 
-    Async_activity  = jtaskAsync Jcond_specifier? Jtask_attr_spec? Declarator Namespace_spec? Compound_stmt
+    Async_activity  = jtaskAsync Jcond_specifier? Jtask_attr_spec? id "(" Param_type_lst? ")" Namespace_spec? Compound_stmt
 
-    Sync_activity   = jtaskSync Decl_specs Jcond_specifier? Jtask_attr_spec? Declarator Namespace_spec? Compound_stmt
-    
+    Sync_activity   = jtaskSync Decl_specs Pointer_list? Jcond_specifier? Jtask_attr_spec? id "(" Param_type_lst? ")" Namespace_spec? Compound_stmt
+
     Jtask_attr_spec = "[" ListOf<Jtask_attr, ",">  "]"
-    
+
     Jtask_attr      = type "=" (sync | realtime | batch)
                     | period "=" number
                     | jitter "=" number
@@ -30,14 +30,14 @@ JAMC <: C {
                     | reuse_limit "=" number
                     | reuse_argdev "=" percentage
                     | max_controllers "=" number
-                    
+
    	percentage 	    = number "%"
-    
+
 
     Activity_def    = Sync_activity
                     | Async_activity
 
-    External_decl   :=  Jexport 
+    External_decl   :=  Jexport
                     | Jrequire
                     | Activity_def
                     | Prototype

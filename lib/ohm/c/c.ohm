@@ -75,6 +75,7 @@ C {
 
 
     Assign_expr     = Unary_expr Assign_op Assign_expr                                  -- assign
+                    | Unary_expr "=" "{" ListOf<Struct_access, ","> "}"                 -- Struct
                     | Cond_expr
 
     Cond_expr       = Lor_expr "?" Expr ":" Cond_expr                                   -- cond
@@ -125,19 +126,16 @@ C {
     Cast_expr       = "(" Type_name ")" Cast_expr                                       -- Cast
                     | Unary_expr
 
-    Postfix_expr    = Left_expr spacesNoNl "++"                                         -- Increment
-                    | Left_expr spacesNoNl "--"                                         -- Decrement
+    Postfix_expr    = Left_expr spacesNoNl ( "++" | "--" )                              -- Postfix
                     | Left_expr
 
     Left_expr       = Left_expr Call_expr                                               -- Call
-                    | Left_expr Member_expr                                             -- Member
+                    | Left_expr "[" Expr "]"                                            -- Array
+                    | Left_expr "." id                                                  -- Struct
+                    | Left_expr "->" id                                                 -- Pointer
                     | Primary_expr
 
     Call_expr       = "(" ListOf<Assign_expr, ","> ")"
-
-    Member_expr     = "[" Expr "]"                                                      -- Array
-                    | "." id                                                            -- Struct
-                    | "->" id                                                           -- Pointer
 
     Primary_expr    = id
                     | number
@@ -278,8 +276,7 @@ C {
     // C Statements
     //
 
-    Stmt            = Assign_stmt
-                    | Labeled_stmt
+    Stmt            = Labeled_stmt
                     | Compound_stmt
                     | Selection_stmt
                     | Iteration_stmt
@@ -291,28 +288,29 @@ C {
     struct_id       = ("." id)+
     Struct_access   = struct_id ":" Expr
 
-    Assign_stmt     = id "=" "{" ListOf<Struct_access, ","> "}" ";"                     -- Struct
-                    | id "=" Expr ";"                                                   -- Expr
+    Expr_stmt       = Expr? ";"
 
-    Expr_stmt       = Expr? ";"                                                         -- ExprStmt
-
-    Labeled_stmt    = id ":" Stmt                                                       -- LabeledStmt
-                    | case Const_expr ":" Stmt                                          -- CaseStmt
-                    | default ":" Stmt                                                  -- DefaultStmt
+    Labeled_stmt    = Label_stmt | Case_stmt | Default_stmt
+    Label_stmt      = id ":" Stmt
+    Case_stmt       = case Const_expr ":" Stmt
+    Default_stmt    = default ":" Stmt
 
     Compound_stmt   =  "{" (Stmt|Decl)* "}" ";"?
 
-    Selection_stmt  = if "(" Expr ")" Stmt (else Stmt)?                                 -- IfStmt
-                    | switch "(" Expr ")" Stmt                                          -- SwitchStmt
+    Selection_stmt  = If_stmt | Switch_stmt
+    If_stmt         = if "(" Expr ")" Stmt (else Stmt)?
+    Switch_stmt     = switch "(" Expr ")" Stmt
 
-    Iteration_stmt  = while "(" Expr ")" Stmt                                           -- WhileStmt
-                    | do Stmt while "(" Expr ")" ";"                                    -- DoWhileStmt
-                    | for "(" (Decl | Expr_stmt) Expr_stmt Expr ")" Stmt                -- ForStmt
+    Iteration_stmt  = While_stmt | DoWhile_stmt | Switch_stmt
+    While_stmt      = while "(" Expr ")" Stmt
+    DoWhile_stmt    = do Stmt while "(" Expr ")" ";"
+    For_stmt        = for "(" (Decl | Expr_stmt) Expr_stmt Expr ")" Stmt
 
-    Jump_stmt       = goto id ";"                                                       -- GotoStmt
-                    | continue ";"                                                      -- ContinueStmt
-                    | break ";"                                                         -- BreakStmt
-                    | return Expr? ";"                                                  -- ReturnStmt
+    Jump_stmt       = Goto_stmt | Continue_stmt | Break_stmt | Return_stmt
+    Goto_stmt       = goto id ";"
+    Continue_stmt   = continue ";"
+    Break_stmt      = break ";"
+    Return_stmt     = return Expr? ";"
 
     External_decl   = Function_def
                     | Prototype
