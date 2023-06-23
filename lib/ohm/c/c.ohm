@@ -74,7 +74,7 @@ C {
     Expr            = NonemptyListOf<Assign_expr, ",">
 
 
-    Assign_expr     = Unary_expr Assign_op Assign_expr                                  -- assign
+    Assign_expr     = Unary_expr ( "=" | "*=" | "/=" | ">>=" | "<<=" | "+=" | "-="| "%=" | "&=" | "|=" | "^=" ) Assign_expr          -- assign
                     | Unary_expr "=" "{" ListOf<Struct_access, ","> "}"                 -- Struct
                     | Cond_expr
 
@@ -104,9 +104,6 @@ C {
                     | Mult_expr
     Mult_expr       = Mult_expr ( "*" | "/" | "%" ) Prefix_expr                         -- mult
                     | Prefix_expr
-
-    Assign_op       = "=" | "*=" | "/=" | ">>=" | "<<=" | "+=" | "-="
-                    | "%=" | "&=" | "|=" | "^="
 
 
     // Unary operators

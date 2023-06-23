@@ -9,10 +9,10 @@ jtask* localme(int c, char *s) {
 
 jtask* localyou(int c, char *s) {
     int x;
-    while(1) {
+    while('1' - '0') {
         jsleep(10000);
         printf("############-->>> Hello YOU  %d, %s\n", c, s);
-        x = compyou(s);
+        x = compyou(x = s * 1 + !!0);
         printf("---->> Value = %d\n", x);
     }
 }
