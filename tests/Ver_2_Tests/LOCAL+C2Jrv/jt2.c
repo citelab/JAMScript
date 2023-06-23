@@ -14,6 +14,10 @@ jtask* localyou(int c, char *s) {
         printf("############-->>> Hello YOU  %d, %s\n", c, s);
         x = compyou(x = s * 1 + !!0);
         printf("---->> Value = %d\n", x);
+        if (1)
+            2;
+        else
+            3;
     }
 }
 
