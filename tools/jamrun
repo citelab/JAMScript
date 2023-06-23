@@ -181,10 +181,10 @@ dojamout_p2_fg() {
             node jstart.js $args
             ;;
         fog)
-            node jstart.js $args
+            node --inspect jstart.js $args
             ;;
         device)
-            node jstart.js $args
+            node --inspect jstart.js $args
             ;;
     esac
 
