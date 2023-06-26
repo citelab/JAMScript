@@ -20,7 +20,7 @@ setInterval(()=> {
         console.log("Longitude and Latitude .... ", jsys.long, jsys.lat);
     }
 
-    answerme_ctl(jsys.tags, "String -- " + count, 100, 1050).catch((e)=> { console.log("Received... ", e)});
+    answerme_ctl(jsys.tags, "String -- " + count, 100, 1050).then(()=>{console.log("good")}).catch((e)=> { console.log("Received... ", e)});
     count++;
 }, 20);
 
