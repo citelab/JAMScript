@@ -16,6 +16,7 @@ C {
     space           += comment
     spacesNoNl      = (~linebreak space)*
 
+	// Preprocessor will output line markers when compiled with debug options
     Preprocess_line = "#" decimalInt "\"" (~"\"" any)* "\"" decimalInt*
 
     // Identifiers and Names
@@ -196,6 +197,7 @@ C {
 
     Enumerator      = Preprocess_line? id "=" Const_expr                                -- IdExpr
                     | Preprocess_line? id                                               -- Id
+					| Preprocess_line  													-- Preprocess
 
 
     type_qualifier  = const
@@ -210,18 +212,15 @@ C {
                     | id                                                                -- Id
 
 
-    Abs_declarator  = Pointer_list Dir_abs_declarator Gcc_asm_expr? Gcc_attribute*      -- PointerListDirAbsDeclarator
-                    | Pointer_list                                                      -- PointerList
-                    | Dir_abs_declarator Gcc_asm_expr? Gcc_attribute*                   -- DirAbsDeclarator
+    Abs_declarator  = Pointer_list Dir_abs_declarator Gcc_asm_expr? Gcc_attribute*      -- PointerListDADecl
+                    | Pointer_list Gcc_asm_expr? Gcc_attribute*                         -- PointerList
+                    | Dir_abs_declarator Gcc_asm_expr? Gcc_attribute*                   -- DADecl
 
-    Dir_abs_declarator  = Dir_abs_declarator "[" Const_expr? "]"                        -- DirAbsDeclaratorConstExpr
-                        | "[" Const_expr? "]"                                           -- ConstExpr
-                        | Dir_abs_declarator "(" Param_type_lst? ")"                    -- DirAbsDeclaratorParamTypeList
-                        | "(" Param_type_lst? ")"                                       -- ParamTypeList
-                        | "(" Gcc_attribute* Abs_declarator ")"                         -- AbsDeclarator
+    Dir_abs_declarator  = Dir_abs_declarator? "[" Const_expr? "]"                       -- ConstExpr
+                        | Dir_abs_declarator? "(" Param_type_lst? ")"                   -- ParamTypeList
+                        | "(" Gcc_attribute* Abs_declarator ")"                         -- AbsDecl
 
-    Pmember_decl    = "[" Gcc_array_type_modifier* Const_expr "]"                       -- ConstExpr
-                    | "[" Gcc_array_type_modifier* "]"                                  -- Empty
+    Pmember_decl    = "[" Gcc_array_type_modifier* Const_expr? "]"
 
     Pcall_decl      = "(" Param_type_lst ")"                                            -- ParamTypeList
                     | "(" Ident_list ")"                                                -- IdentList
@@ -233,8 +232,8 @@ C {
 
     Ident_list      = NonemptyListOf<id, ",">
 
-    Param_type_lst  = NonemptyListOf<Param_decl, ","> "," var_args                      -- List
-                    | NonemptyListOf<Param_decl, ",">
+    Param_type_lst  = NonemptyListOf<Param_decl, ","> "," var_args                      -- VarArgs
+                    | NonemptyListOf<Param_decl, ","> 	  								-- ConArgs
 
     var_args        = "..."
 
@@ -247,6 +246,10 @@ C {
                     | Assign_expr
 
     Designator      = "." Assign_expr
+
+	//JAM Additions
+	struct_id       = ("." id)+
+	Struct_access   = struct_id ":" Expr
 
     // GCC Statements
     //
@@ -280,10 +283,6 @@ C {
                     | Jump_stmt
                     | Expr_stmt
                     | Gcc_asm_stmt
-
-    //JAM Addition
-    struct_id       = ("." id)+
-    Struct_access   = struct_id ":" Expr
 
     Expr_stmt       = Expr? ";"
 
