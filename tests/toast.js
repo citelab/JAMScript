@@ -60,9 +60,14 @@ const TestState = {
   PASSED:  3,
   FAILED:     4,
   COMPILE_FAILED: 5,
-  LAUNCH_FAILED: 6,
-  RUNTIME_FAILED: 7,
 };
+
+const FailDetails = {
+  TEST_FAILED: 0,
+  LAUNCH_FAILED: 1,
+  RUNTIME_FAILED: 2,
+  CRASH_FAILED: 3,
+}
 
 const NODETYPE_DEVICE = "device";
 const NODETYPE_FOG = "fog";
@@ -89,35 +94,51 @@ Toaster.prototype.updateTestState = function (test) {
     process.stdout.write(`${prefix}${beginning} ${ansiiYellow("Running")} ${coverageStatus}`)
   } else if (test.state == TestState.PASSED) {
     process.stdout.write(`${prefix}${ansiiGreen(test.testName + " Passed")}`)
-  } else if (test.state ==TestState.COMPILE_FAILED) {
-    process.stdout.write(`${prefix}${ansiiRed(test.testName + " Failed to compile")}`);
-  } else if (test.state ==TestState.LAUNCH_FAILED) {
-    process.stdout.write(`${prefix}${ansiiRed(test.testName + " Failed to start test")}`);
   } else if (test.state == TestState.FAILED) {
-    // Provide some context as to why
-    let reason = "";
-    if(test.completedCoverageMarkers != test.coverageMarkers.length) {
-      reason += `${test.completedCoverageMarkers}/${test.coverageMarkers.length} Coverage Markers`
+    if(test.compilerWarnings != "") {
+      process.stdout.write(`${prefix}${test.compilerWarnings}`);
     }
-    if(test.assertMessage) {
-      if(reason!="") {
-        reason += ", ";
-      }
-      reason += "Failed Assert";
-    }
-    if(test.runtimeError) {
-      if(reason!="") {
-        reason += ", ";
-      }
-      reason += "JAMScript Runtime Error";
 
-    }
-    if(reason == "") {
-      reason = "!INTERNAL!";
+    if (test.failDetails == FailDetails.TEST_FAILED || 
+        test.failDetails == FailDetails.RUNTIME_FAILED || 
+        test.failDetails == FailDetails.CRASH_FAILED)  {
+      // Provide some context as to why
+      let reason = "";
+      if(test.completedCoverageMarkers != test.coverageMarkers.length) {
+        reason += `${test.completedCoverageMarkers}/${test.coverageMarkers.length} Coverage Markers`
+      }
+      if(test.assertMessage) {
+        if(reason!="") {
+          reason += ", ";
+        }
+        reason += "Failed Assert";
+      }
+      if(test.failDetails == FailDetails.RUNTIME_FAILED) {
+        if(reason!="") {
+          reason += ", ";
+        }
+        reason += "JAMScript Runtime Error";
+      } else if (test.failDetails == FailDetails.CRASH_FAILED) {
+        if(reason!="") {
+          reason += ", ";
+        }
+        reason += "Test Crashed";
+      }
+
+      if(reason == "") {
+        reason = "!INTERNAL!";
+        console.trace();
+      }
+
+      process.stdout.write(`${prefix}${ansiiRed(test.testName + " Failed")} (${reason}) `)
+    } else if (test.failDetails == FailDetails.COMPILE_FAILED) {
+      process.stdout.write(`${prefix}${ansiiRed(test.testName + " Failed to compile")}`);
+    } else if (test.failDetails == FailDetails.LAUNCH_FAILED) {
+      process.stdout.write(`${prefix}${ansiiRed(test.testName + " Failed to start test")}`); 
+    } else {
+      console.error("Mistakes were made while programming this.");
       console.trace();
     }
-
-    process.stdout.write(`${prefix}${ansiiRed(test.testName + " Failed")} (${reason})`)
   }
 }
 
@@ -144,6 +165,17 @@ function Toaster(conf) {
   this.testDirectoryName = path.basename(this.testDirectory);
   this.currentTest = 0;
   this.testProcesses = new Set();
+
+  let that = this;
+  process.on("SIGINT", ()=>that.exitHook());
+  //process.on("exit", ()=>that.exitHook());
+}
+
+
+Toaster.prototype.exitHook = function() {
+  let endTime = Date.now();
+  this.finalReport(endTime-this.startTime);
+  process.exit();
 }
 
 
@@ -181,9 +213,10 @@ Toaster.prototype.walkTestDir = function (folder) {
           state: TestState.COMPILING,
           completedCoverageMarkers: 0,
           compilationDuration: 0,
+          compilerWarnings: "",
           runDuration: 0,
           assertMessage: undefined,
-          runtimeError: false,
+          failDetails: undefined, 
           networkConfig: {
             devices: 1,
             fogs: 0
@@ -222,6 +255,7 @@ Toaster.prototype.scanTests = function () {
 const ASSERT_IDENTIFIER = "assert(";
 const COVERAGE_IDENTIFIER = "coverage(";
 
+//TODO: refactor be more clearer about what this does
 function findClosingParen(text, start) {
   var end = -1;
   var lastIndex = start;
@@ -322,6 +356,11 @@ Toaster.prototype.compileTest = function(test, testResultDirectory) {
 
     this.scanForToasterConfig(test, line, lineIter);
 
+    if(line.toLowerCase().includes("error")) {
+      test.compilerWarnings +=`WARNING: Printing 'Error' to standard out will mark the test as failed! (${lineCount})\n`;
+      test.compilerWarnings += `--> ${line}\n`;
+    }
+
     if(line.includes(ASSERT_IDENTIFIER)) {
       regularLine = false;
       let start = line.indexOf(ASSERT_IDENTIFIER);
@@ -365,6 +404,11 @@ Toaster.prototype.compileTest = function(test, testResultDirectory) {
 
     this.scanForToasterConfig(test, line, lineIter);
 
+    if(line.toLowerCase().includes("error")) {
+      test.compilerWarnings +=`WARNING: Printing 'Error' to standard out will mark the test as failed! (${lineCount})\n`;
+      test.compilerWarnings += `--> ${line}\n`;
+    }
+
     // TODO: remove this when compiler bug is fixed
     if(line.includes(ASSERT_IDENTIFIER)) {
       regularLine = false;
@@ -372,7 +416,9 @@ Toaster.prototype.compileTest = function(test, testResultDirectory) {
       let end = findClosingParen(line, start);
 
       let condition = line.substring(start + ASSERT_IDENTIFIER.length, end);
-
+      if(condition=="") {
+        console.log(`\nAssert is missing condition! \\/ (${lineCount})\n--> ${line}`);
+      }
       fs.writeSync(jsTestOutput, line.substring(0, start));
       fs.writeSync(jsTestOutput, TOASTER_JS_HOOK_ASSERT_L);
       fs.writeSync(jsTestOutput, condition);
@@ -446,13 +492,15 @@ Toaster.prototype.compileTest = function(test, testResultDirectory) {
     return true;
   } catch(err) {
 
-    this.setTestState(test,TestState.COMPILE_FAILED);
-    /*console.log("Failed!");
+    test.failDetails = FailDetails.COMPILE_FAILED;
+    this.setTestState(test,TestState.FAILED);
+    /*console.log("Failed!");*/
     
     test.output.write(proc.stdout);
     test.output.write("Stderr Follows: \n");
     test.output.write(proc.stderr);
-    console.log(`Full log can be found at ${test.logFile}`);*/
+    test.output.close();
+    //console.log(` Full log can be found at ${test.logFile}`);
 
     return false;
   }
@@ -461,7 +509,11 @@ Toaster.prototype.compileTest = function(test, testResultDirectory) {
 
 // Built in kill not working.
 function killGroup(pgid) {
-  child_process.execSync(`kill -- -${pgid}`, {stdio:'ignore'});
+  try {
+    child_process.execSync(`kill -- -${pgid}`, {stdio:'ignore'}); 
+  } catch (err) {
+    console.log("Failed to terminate test process.");
+  }
 }
 // Built in kill not working.
 function kill(pid) {
@@ -491,6 +543,9 @@ function extractOutputKeywordData(text){
 }
 
 Toaster.prototype.processOutput = function (test, data) {
+  if(typeof data != 'string') {
+    return;
+  }
   for(let line of data.split('\n')) {
     if(test.state == TestState.STARTING) {
       this.setTestState(test, TestState.RUNNING);
@@ -503,7 +558,12 @@ Toaster.prototype.processOutput = function (test, data) {
 
     // Try to pick up any spurrious errors we may have missed otherwise.
     if(line.includes("error") || line.includes("Error")) {
-      test.runtimeError = true;
+      // NOTE: this is super hacky edge case handling for an already hacky
+      // way of detecting errors!
+      if(line.includes("error: 0")) {
+        continue;
+      }
+      test.failDetails = FailDetails.RUNTIME_FAILED;
       this.setTestState(test, TestState.FAILED);
       return true;
     }
@@ -513,6 +573,7 @@ Toaster.prototype.processOutput = function (test, data) {
 
       if((keywordIndex = line.indexOf(TOASTER_ASSERT_KEYWORD)) != -1) {
         test.assertMessage = extractOutputKeywordData(line);
+        test.failDetails = FailDetails.TEST_FAILED;
         this.setTestState(test, TestState.FAILED);
         return true
       } else if ((keywordIndex = line.indexOf(TOASTER_COVERAGE_KEYWORD)) != -1) {
@@ -564,7 +625,9 @@ Toaster.prototype.executeTest = async function(test, machType) {
     const testEndTime = Date.now();
     test.runDuration = testEndTime-testStartTime;
     try {
-      killGroup(testProcess.pid); // Not entirely sure why this works...
+      if(test.failDetails != FailDetails.CRASH_FAILED) {
+        killGroup(testProcess.pid); // Not entirely sure why this works...
+      }
       that.testProcesses.delete(testProcess.pid);
       //that.killWorkerTmuxSessions(test);
     }catch(e){console.log(e)}
@@ -578,10 +641,12 @@ Toaster.prototype.executeTest = async function(test, machType) {
 
   let timeout = setTimeout(()=>{
     if(test.state == TestState.STARTING) {
-      that.setTestState(test, TestState.LAUNCH_FAILED);
+      test.failDetails = FailDetails.LAUNCH_FAILED;
+      that.setTestState(test, TestState.FAILED);
     }
     if(test.state == TestState.RUNNING) {
       if(test.coverageMarkers.length) {
+        test.failDetails = FailDetails.TEST_FAILED;
         that.setTestState(test, TestState.FAILED);
       } else {
         that.setTestState(test, TestState.PASSED);
@@ -609,13 +674,16 @@ Toaster.prototype.executeTest = async function(test, machType) {
 
   await new Promise((resolve, reject) => {
     testProcess.on('close', (exit) => {
+
       if(test.state == TestState.RUNNING) {
+        // Crash
+        test.failDetails = FailDetails.CRASH_FAILED;
         that.setTestState(test, TestState.FAILED);
       } else if(test.state == TestState.STARTING) {
-        that.setTestState(test, TestState.LAUNCH_FAILED);
-      } else {
-        that.updateTestState(test);
+        test.failDetails = FailDetails.LAUNCH_FAILED
+        that.setTestState(test, TestState.FAILED);
       }
+
       let report = that.generateReport(test);
       test.output.write(`\n\n\n${report}`);
       test.output.close();
@@ -648,7 +716,7 @@ Toaster.prototype.generateReport = function(test) {
 }
 
 Toaster.prototype.testAll = async function () {
-  let startTime = Date.now();
+  this.startTime = Date.now();
 
   for(let test of this.tests) {
     this.currentTest++;
@@ -657,8 +725,7 @@ Toaster.prototype.testAll = async function () {
   }
 
   let endTime = Date.now();
-  
-  this.finalReport(endTime-startTime);
+  this.finalReport(endTime-this.startTime);
 }
 
 Toaster.prototype.runTest = async function (test) {
@@ -692,13 +759,19 @@ Toaster.prototype.finalReport = function(duration) {
   const total = this.tests.length;
   let passed = 0;
 
+  let allTestsFinished = true;
+
   for(let test of this.tests) {
     if(test.state == TestState.PASSED) {
       passed++;
     }
+    if(test.state == undefined) {
+      allTestsFinished = false;
+    }
   }
 
-  let exitText = `\n\nAll Tests Finished (${passed}/${total}) in ${duration/1000}s`;
+  let exitText = `\n\n${testsAllFinished ? "All Tests Finished" : "Not All Tests Finished"} (${passed}/${total}) in ${duration/1000}s`;
+
   if(passed == total) {
     exitText = ansiiGreen(exitText);
   } else if (!passed) { 
@@ -709,7 +782,15 @@ Toaster.prototype.finalReport = function(duration) {
   console.log(exitText);
 
   console.log(`Complete Logs: ${this.resultDirectory}`);
-  process.exit();
+
+  if(passed != total) {
+    console.log("Logs of Failed Tests:");
+    for(let test of this.tests) {
+      if(test.state == TestState.FAILED) {
+        console.log(`${test.testName}    --    ${test.logFile}`);
+      }
+    }
+  }
 }
 
 function processArgs() {

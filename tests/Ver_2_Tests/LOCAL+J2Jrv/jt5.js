@@ -1,13 +1,12 @@
 let count = 10;
 
-// @Test()
+// @ToasterConfig
+// Fogs: 1
+// Devices: 1
 
 jtask function abc(hello) {
     console.log("Message from controller ...", hello);
-
 	coverage();
-	assert();
-
     count++;
     return count * count;
 }
