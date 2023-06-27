@@ -300,7 +300,7 @@ C {
     Iteration_stmt  = While_stmt | DoWhile_stmt | Switch_stmt
     While_stmt      = while "(" Expr ")" Stmt
     DoWhile_stmt    = do Stmt while "(" Expr ")" ";"
-    For_stmt        = for "(" (Decl | Expr_stmt) Expr_stmt Expr ")" Stmt
+    For_stmt        = for "(" (Decl | Expr_stmt) Expr_stmt Expr? ")" Stmt
 
     Jump_stmt       = Goto_stmt | Continue_stmt | Break_stmt | Return_stmt
     Goto_stmt       = goto id ";"
