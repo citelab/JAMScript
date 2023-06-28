@@ -37,10 +37,6 @@ const TOASTER_JS_HOOK_COVERAGE_R = `}#");`
 const TOASTER_ASSERT_KEYWORD = "@ToasterAssert";
 const TOASTER_COVERAGE_KEYWORD = "@ToasterCoverage";
 
-function ansiiPurple(text) {
-    return `\x1b[35m${text}\x1b[0m`;
-}
-
 function ansiiGreen(text) {
   return `\x1b[32m${text}\x1b[0m`;
 }
@@ -134,7 +130,7 @@ Toaster.prototype.updateTestState = function (test) {
     } else if (test.failDetails == FailDetails.COMPILE_FAILED) {
       process.stdout.write(`${prefix}${ansiiRed(test.testName + " Failed to compile")}`);
     } else if (test.failDetails == FailDetails.LAUNCH_FAILED) {
-      process.stdout.write(`${prefix}${ansiiRed(test.testName + " Failed to start test")}`);
+      process.stdout.write(`${prefix}${ansiiRed(test.testName + " Failed to start test")} `);
     } else {
       console.error("Mistakes were made while programming this.");
       console.trace();
@@ -162,8 +158,9 @@ function Toaster(conf) {
     this.testDirectory = conf.testDirectory;
   }
 
+  this.timeoutAmount = conf.timeoutAmount || 10000;
+
   this.testDirectoryName = path.basename(this.testDirectory);
-  console.log(this.testDirectoryName);
   this.currentTest = 0;
   this.testProcesses = new Set();
 
@@ -492,10 +489,11 @@ Toaster.prototype.compileTest = async function(test) {
       stdoutLog += data;
     });
 
+    let shouldFail = false;
     proc.stderr.on('data', (data)=> {
       stderrLog += data;
       if(data.toLowerCase().includes("error")) {
-        throw new Error();
+        shouldFail = true;
       }
     });
 
@@ -503,7 +501,8 @@ Toaster.prototype.compileTest = async function(test) {
       proc.stderr.on('close', ()=>{resolve()});
     });
 
-    if(!fs.existsSync(`${test.testResultDirectory}/test.jxe`)) {
+    if(!fs.existsSync(`${test.testResultDirectory}/test.jxe`) ||
+       shouldFail) {
       throw new Error();
     }
 
@@ -518,7 +517,6 @@ Toaster.prototype.compileTest = async function(test) {
 
     return true;
   } catch(err) {
-    console.log(err);
 
     test.failDetails = FailDetails.COMPILE_FAILED;
     this.setTestState(test,TestState.FAILED);
@@ -655,7 +653,8 @@ Toaster.prototype.executeTest = async function(test, machType) {
     const testEndTime = Date.now();
     test.runDuration = testEndTime-testStartTime;
     try {
-      if(test.failDetails != FailDetails.CRASH_FAILED) {
+      if(test.failDetails != FailDetails.CRASH_FAILED ||
+         test.failDetails != FailDetails.LAUNCH_FAILED) {
         killGroup(testProcess.pid); // Not entirely sure why this works...
       }
       that.testProcesses.delete(testProcess.pid);
@@ -673,6 +672,7 @@ Toaster.prototype.executeTest = async function(test, machType) {
     if(test.state == TestState.STARTING) {
       test.failDetails = FailDetails.LAUNCH_FAILED;
       that.setTestState(test, TestState.FAILED);
+      this.testProcesses.delete(testProcess.pid);
     }
     if(test.state == TestState.RUNNING) {
       if(test.coverageMarkers.length) {
@@ -683,7 +683,7 @@ Toaster.prototype.executeTest = async function(test, machType) {
       }
       cleanup();
     }
-  }, 10*1000);
+  }, this.timeoutAmount);
 
   testProcess.stdout.setEncoding('utf-8');
 
@@ -709,6 +709,7 @@ Toaster.prototype.executeTest = async function(test, machType) {
         // Crash
         test.failDetails = FailDetails.CRASH_FAILED;
         that.setTestState(test, TestState.FAILED);
+        that.testProcesses.delete(testProcess.pid);
       } else if(test.state == TestState.STARTING) {
         test.failDetails = FailDetails.LAUNCH_FAILED
         that.setTestState(test, TestState.FAILED);
@@ -796,6 +797,7 @@ Toaster.prototype.finalReport = function(duration) {
       passed++;
     }
     // COMPILING is the initial state.
+    // Could refactor to make that more clear to be honest.
     if(test.state == TestState.COMPILING) {
       allTestsFinished = false;
     }
@@ -818,7 +820,7 @@ Toaster.prototype.finalReport = function(duration) {
     console.log("Logs of Failed Tests:");
     for(let test of this.tests) {
       if(test.state == TestState.FAILED) {
-        console.log(`${test.testName}    --    ${test.logFile}`);
+        console.log(`${ansiiRed(test.testName)} ${" ".repeat(20-test.testName.length)} ${test.logFile}`);
       }
     }
   }
@@ -828,13 +830,22 @@ function processArgs() {
   let args = process.argv.slice(2);
   let conf = {
     testDirectory: undefined,
-    singleTest: false
+    singleTest: false,
+    timeoutAmount: undefined
   };
 
   for (var i = 0; i < args.length; i++) {
     if (args[i].charAt(0) === "-") {
       if (args[i] === "-g" || args[i] === "--grape") {
         console.log("GRAPES!");
+      }
+      if (args[i] === "-t" || args[i] === "--timeout") {
+        conf.timeoutAmount = parseInt(args[i+1]);
+        if(Number.isNaN(conf.timeoutAmount)) {
+          console.error("Unable to parse timeout duration: "+args[i+1]);
+          conf.timeoutAmount = undefined;
+        }
+        i++;
       }
     } else {
       let inputPath = args[i];
