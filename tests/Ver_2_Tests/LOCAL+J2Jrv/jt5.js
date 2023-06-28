@@ -1,5 +1,9 @@
 let count = 10;
 
+// @ToasterConfig
+// Fogs: 1
+// Devices: 1
+
 jtask function abc(hello) {
     console.log("Message from controller ...", hello);
     count++;
@@ -13,7 +17,7 @@ setInterval(()=> {
 	}).catch(()=> {
 	    console.log("Error... ");
 	});
-    } else 
-	console.log("Nothing to call...");
+    } else
+		console.log("Nothing to call...");
 
 }, 20);

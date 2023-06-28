@@ -9,6 +9,8 @@ node_modules/*
 
 .DS_Store
 
+**/toast-results
+
 *.out
 **/jamout.js
 **/jamout.c
