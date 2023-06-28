@@ -1,17 +1,18 @@
 
-
 jtask* localyou(int c, char *s) {
-//    struct zz = {.x = 10, .yy = 2.56};
-
     while(1) {
         jsleep(1000000);
         printf("############-->>> Hello YOU  %d, %s\n", c, s);
-	xx.write(&zz);
     }
+}
+
+jtask int get_a_value(int x) {
+    printf("Value of x %d\n", x);
+    return x;
 }
 
 int main(int argc, char *argv[])
 {
-    localyou(10, "message-to-local-task");
+    localyou(10, "cxxxxxxxx");
     return 0;
 }

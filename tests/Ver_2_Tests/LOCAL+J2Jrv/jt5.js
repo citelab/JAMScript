@@ -6,7 +6,6 @@ let count = 10;
 
 jtask function abc(hello) {
     console.log("Message from controller ...", hello);
-	coverage();
     count++;
     return count * count;
 }
