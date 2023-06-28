@@ -22,6 +22,6 @@ setInterval(()=> {
 
     answerme_ctl(jsys.tags, "String -- " + count, 100, 1050).then(()=>{console.log("good")}).catch((e)=> { console.log("Received... ", e)});
     count++;
-}, 20);
+}, 200);
 
 

@@ -1,0 +1,115 @@
+--app=qwe --port=5886 --data=127.0.0.1:6379 --long=2.52 --lat=12.5659 --localregistryhost=1 --fog
+------
+Current Device Node Id: abccc6c3-d16c-4d16-9540-59541a419d29
+
+################################
+ Fog Now Hosting Local Registry 
+################################
+
+Starting App..
+Program completed.
+Cancelling connection to mqtt://127.0.0.1:18830
+Intentional Reconnection: Connecting to Registry
+Hopefully local registry map state should have settled down by now!
+Map(3) {
+  'b97437b6-985a-4985-a0d4-ea0dd9d8cd81' => {
+    url: 'mqtt://10.217.66.123:5883',
+    port: 5883,
+    ip: '10.217.66.123',
+    loc: { long: 55.2187, lat: 64.6541 },
+    redis: undefined,
+    timestamp: 1687899299675
+  },
+  'c8040f5e-acc4-4acc-bcf8-63cf7fa04051' => {
+    url: 'mqtt://10.217.66.123:5884',
+    port: 5884,
+    ip: '10.217.66.123',
+    loc: { long: 75.7365, lat: 32.5622 },
+    redis: undefined,
+    timestamp: 1687899302646
+  },
+  '2490d697-4db9-44db-a6ac-b66acc827dbc' => {
+    url: 'mqtt://10.217.66.123:5885',
+    port: 5885,
+    ip: '10.217.66.123',
+    loc: { long: 22.23, lat: 7.7231 },
+    redis: undefined,
+    timestamp: 1687899305277
+  }
+}
+
+######################################
+ Connected To New Local Registry
+ mqtt://10.217.66.123:5885
+ undefined
+######################################
+
+
+######################################
+ Connected To New Local Registry
+ mqtt://10.217.66.123:5884
+ undefined
+######################################
+
+Tag.....  undefined
+Tag.....  undefined
+Tag.....  undefined
+Received...  network error
+Received...  network error
+Received...  network error
+Tag.....  undefined
+Received...  network error
+Tag.....  undefined
+Received...  network error
+Tag.....  undefined
+Received...  network error
+Tag.....  undefined
+Received...  network error
+Tag.....  undefined
+Received...  network error
+Tag.....  undefined
+Received...  network error
+Tag.....  undefined
+Received...  network error
+Tag.....  undefined
+Received...  network error
+Tag.....  undefined
+Received...  network error
+Tag.....  undefined
+Received...  network error
+Tag.....  undefined
+Received...  network error
+Tag.....  undefined
+Received...  network error
+Tag.....  undefined
+Doing multicast search for local registries
+Received...  network error
+Tag.....  undefined
+Received...  network error
+Tag.....  undefined
+Received...  network error
+Tag.....  undefined
+Received...  network error
+Tag.....  undefined
+Received...  network error
+Tag.....  undefined
+Couldn't find any new local registries through multicast.
+Received...  network error
+Tag.....  undefined
+Received...  network error
+Doing multicast search for local registries
+Tag.....  undefined
+Received...  network error
+Tag.....  undefined
+Received...  network error
+Tag.....  undefined
+Received...  network error
+Tag.....  undefined
+Received...  network error
+Tag.....  undefined
+Couldn't find any new local registries through multicast.
+Tag.....  undefined
+Received...  network error
+Received...  network error
+Tag.....  undefined
+Killing broker with PID:
