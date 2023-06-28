@@ -770,7 +770,7 @@ Toaster.prototype.finalReport = function(duration) {
     }
   }
 
-  let exitText = `\n\n${testsAllFinished ? "All Tests Finished" : "Not All Tests Finished"} (${passed}/${total}) in ${duration/1000}s`;
+  let exitText = `\n\n${allTestsFinished ? "All Tests Finished" : "Not All Tests Finished"} (${passed}/${total}) in ${duration/1000}s`;
 
   if(passed == total) {
     exitText = ansiiGreen(exitText);
