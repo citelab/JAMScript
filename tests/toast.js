@@ -16,10 +16,10 @@ const DEFAULT_TEST_DIR = "toaster"
 
 const JAMRUNS_DIR = `${os.homedir()}/.jamruns`;
 
-const TOASTER_JS_HOOKS = 
+const TOASTER_JS_HOOKS =
 `jtask function assert(cond){if(!cond){let _err = new Error(); console.log("\\n@ToasterAssert#{"+_err.stack+"}#");}}
 jtask function coverage(_id){console.log("\\n@ToasterCoverage#{"+_id+"}#");}\n`;
-const TOASTER_C_HOOKS = 
+const TOASTER_C_HOOKS =
 `#undef assert
 #define assert(cond, line) {if(!cond){printf("\\n@ToasterAssert#{%d, %s}#\\n", line, #cond);}}
 #define coverage(_id){printf("\\n@ToasterCoverage#{%d}#\\n", _id);}\n`;
@@ -99,8 +99,8 @@ Toaster.prototype.updateTestState = function (test) {
       process.stdout.write(`${prefix}${test.compilerWarnings}`);
     }
 
-    if (test.failDetails == FailDetails.TEST_FAILED || 
-        test.failDetails == FailDetails.RUNTIME_FAILED || 
+    if (test.failDetails == FailDetails.TEST_FAILED ||
+        test.failDetails == FailDetails.RUNTIME_FAILED ||
         test.failDetails == FailDetails.CRASH_FAILED)  {
       // Provide some context as to why
       let reason = "";
@@ -134,7 +134,7 @@ Toaster.prototype.updateTestState = function (test) {
     } else if (test.failDetails == FailDetails.COMPILE_FAILED) {
       process.stdout.write(`${prefix}${ansiiRed(test.testName + " Failed to compile")}`);
     } else if (test.failDetails == FailDetails.LAUNCH_FAILED) {
-      process.stdout.write(`${prefix}${ansiiRed(test.testName + " Failed to start test")}`); 
+      process.stdout.write(`${prefix}${ansiiRed(test.testName + " Failed to start test")}`);
     } else {
       console.error("Mistakes were made while programming this.");
       console.trace();
@@ -163,6 +163,7 @@ function Toaster(conf) {
   }
 
   this.testDirectoryName = path.basename(this.testDirectory);
+  console.log(this.testDirectoryName);
   this.currentTest = 0;
   this.testProcesses = new Set();
 
@@ -196,13 +197,13 @@ Toaster.prototype.walkTestDir = function (folder) {
     if(fs.lstatSync(completePath).isDirectory()) {
       tests.push(...that.walkTestDir(completePath));
     }
-    
+
     let extension = path.extname(file);
     if(extension === ".c") {
       let baseName = file.substring(0, file.length-2);
       if(fs.existsSync(`${folder}/${baseName}.js`)){
         let testName = `${folder}/${baseName}`.substring(this.testDirectory.length+1);
-        
+
         tests.push({
           testName: testName,
           baseName: baseName,
@@ -216,7 +217,7 @@ Toaster.prototype.walkTestDir = function (folder) {
           compilerWarnings: "",
           runDuration: 0,
           assertMessage: undefined,
-          failDetails: undefined, 
+          failDetails: undefined,
           networkConfig: {
             devices: 1,
             fogs: 0
@@ -229,8 +230,7 @@ Toaster.prototype.walkTestDir = function (folder) {
 
 
 Toaster.prototype.scanTests = function () {
-  // TODO: refactor
-  if(fs.existsSync(this.testDirectory+".js")) {
+  if(this.conf.singleTest) {
     let basename = path.basename(this.testDirectory);
     this.tests = [];
     this.tests.push({
@@ -238,13 +238,19 @@ Toaster.prototype.scanTests = function () {
       baseName: basename,
       cFile: `${this.testDirectory}.c`,
       jsFile: `${this.testDirectory}.js`,
-      testResultDirectory: basename,
-      logFile: `${basename}/jlog.txt`,
+      testResultDirectory: `${this.resultDirectory}/${basename}`,
+      logFile: `${this.resultDirectory}/${basename}/jlog.txt`,
       state: TestState.COMPILING,
       completedCoverageMarkers: 0,
       compilationDuration: 0,
+      compilerWarnings: "",
       runDuration: 0,
-      assertMessage: undefined
+      assertMessage: undefined,
+      failDetails: undefined,
+      networkConfig: {
+        devices: 1,
+        fogs: 0
+      }
     });
   } else {
     this.tests = this.walkTestDir(this.testDirectory);
@@ -255,17 +261,18 @@ Toaster.prototype.scanTests = function () {
 const ASSERT_IDENTIFIER = "assert(";
 const COVERAGE_IDENTIFIER = "coverage(";
 
-//TODO: refactor be more clearer about what this does
-function findClosingParen(text, start) {
+function findMatchingParens(text, start) {
   var end = -1;
   var lastIndex = start;
   var depth = 0;
+
   while(true) {
     let nextOpen = text.indexOf('(', lastIndex);
     let nextClose = text.indexOf(')', lastIndex);
 
     if(nextOpen == -1 && nextClose == -1) {
-      console.log(`Error: was unable to find matching closing paren for \'${text}\'`);
+      console.error(`Error: was unable to find matching closing paren for '${text}'`);
+      process.exit();
     }
 
     if(nextOpen == -1 || nextClose < nextOpen) {
@@ -279,7 +286,7 @@ function findClosingParen(text, start) {
       }
     }
 
-    if(nextOpen != -1 && nextOpen < nextClose) {  
+    if(nextOpen != -1 && nextOpen < nextClose) {
       depth++;
       lastIndex = nextOpen + 1;
     }
@@ -320,12 +327,12 @@ Toaster.prototype.scanForToasterConfig = function(test, line, lineIter) {
   }
 }
 
-Toaster.prototype.compileTest = function(test, testResultDirectory) {
+Toaster.prototype.compileTest = async function(test) {
   const buildEnv = `${JAMRUNS_DIR}/_toaster_build_env`;
   if(!fs.existsSync(buildEnv)) {
     fs.mkdirSync(buildEnv);
   }
-  
+
   this.updateTestState(test);
 
   let cTestPath = `${buildEnv}/${test.baseName}.c`;
@@ -364,7 +371,7 @@ Toaster.prototype.compileTest = function(test, testResultDirectory) {
     if(line.includes(ASSERT_IDENTIFIER)) {
       regularLine = false;
       let start = line.indexOf(ASSERT_IDENTIFIER);
-      let end = findClosingParen(line, start);
+      let end = findMatchingParens(line, start);
       fs.writeSync(cTestOutput, line.substring(0, end));
       fs.writeSync(cTestOutput, `,${lineCount}`);
       fs.writeSync(cTestOutput, line.substring(end) + "\n");
@@ -372,7 +379,7 @@ Toaster.prototype.compileTest = function(test, testResultDirectory) {
     if(line.includes(COVERAGE_IDENTIFIER)) {
       regularLine = false;
       let start = line.indexOf(COVERAGE_IDENTIFIER);
-      let end = findClosingParen(line, start);
+      let end = findMatchingParens(line, start);
 
       let currentCoverageID = coverageUID++;
 
@@ -413,7 +420,7 @@ Toaster.prototype.compileTest = function(test, testResultDirectory) {
     if(line.includes(ASSERT_IDENTIFIER)) {
       regularLine = false;
       let start = line.indexOf(ASSERT_IDENTIFIER);
-      let end = findClosingParen(line, start);
+      let end = findMatchingParens(line, start);
 
       let condition = line.substring(start + ASSERT_IDENTIFIER.length, end);
       if(condition=="") {
@@ -429,7 +436,7 @@ Toaster.prototype.compileTest = function(test, testResultDirectory) {
     if(line.includes(COVERAGE_IDENTIFIER)) {
       regularLine = false;
       let start = line.indexOf(COVERAGE_IDENTIFIER);
-      let end = findClosingParen(line, start);
+      let end = findMatchingParens(line, start);
 
       let currentCoverageID = coverageUID++;
 
@@ -461,21 +468,42 @@ Toaster.prototype.compileTest = function(test, testResultDirectory) {
 
   let command = 'jamc';
   let args = [
-    '-d', 
-    cTestPath, 
+    '-d',
+    cTestPath,
     jsTestPath,
-    '-o', 
+    '-o',
     `${test.testResultDirectory}/test`];
 
   // We should log compiler output in the event of a compiler error.
-  
+
   //process.stdout.write("Compiling... ");
   var proc = undefined;
-  try{
-    proc = child_process.spawnSync(command,args, {encoding: 'utf-8'});//, {stdio: [0,test.output,test.output]});
-    if(proc.stderr.includes("error") != 0 ||
-      !fs.existsSync(`${test.testResultDirectory}/test.jxe`)
-    ) {
+  let stdoutLog = "";
+  let stderrLog = "";
+
+  try {
+    proc = child_process.spawn(command,args, {detached: true});//, {stdio: [0,test.output,test.output]});
+    proc.stderr.setEncoding('utf-8');
+    proc.stdout.setEncoding('utf-8');
+
+
+
+    proc.stdout.on('data', (data)=> {
+      stdoutLog += data;
+    });
+
+    proc.stderr.on('data', (data)=> {
+      stderrLog += data;
+      if(data.toLowerCase().includes("error")) {
+        throw new Error();
+      }
+    });
+
+    await new Promise((resolve)=>{
+      proc.stderr.on('close', ()=>{resolve()});
+    });
+
+    if(!fs.existsSync(`${test.testResultDirectory}/test.jxe`)) {
       throw new Error();
     }
 
@@ -484,21 +512,21 @@ Toaster.prototype.compileTest = function(test, testResultDirectory) {
 
     this.setTestState(test,TestState.STARTING);
 
-    /*console.log("Success");  
-    test.output.write(proc.stdout);
+    test.output.write(stdoutLog);
     test.output.write("Stderr Follows: \n");
-    test.output.write(proc.stderr);*/
-    
+    test.output.write(stderrLog);
+
     return true;
   } catch(err) {
+    console.log(err);
 
     test.failDetails = FailDetails.COMPILE_FAILED;
     this.setTestState(test,TestState.FAILED);
     /*console.log("Failed!");*/
-    
-    test.output.write(proc.stdout);
+
+    test.output.write(stdoutLog);
     test.output.write("Stderr Follows: \n");
-    test.output.write(proc.stderr);
+    test.output.write(stderrLog);
     test.output.close();
     //console.log(` Full log can be found at ${test.logFile}`);
 
@@ -507,21 +535,24 @@ Toaster.prototype.compileTest = function(test, testResultDirectory) {
 
 }
 
-// Built in kill not working.
+// NOTE: this a bit hacky at the moment, we are killing the group of the same pid
+// as our initial process. Works well consistently so far... Should come back and
+// figure out a cleaner way of getting this done.
 function killGroup(pgid) {
   try {
-    child_process.execSync(`kill -- -${pgid}`, {stdio:'ignore'}); 
+    child_process.execSync(`kill -- -${pgid}`, {stdio:'ignore'});
   } catch (err) {
     console.log("Failed to terminate test process.");
   }
 }
-// Built in kill not working.
+
+// Built in process kill not working.
 function kill(pid) {
   child_process.execSync(`kill -- ${pid}`, {stdio:'ignore'});
 }
 
   // Loop through process ID files (use this)
-Toaster.prototype.killWorkerTmuxSessions = function(test) {
+Toaster.prototype.killWorkerTmuxSessions = function() {
 
   const searchDir = `${os.homedir()}/.jamruns/apps/test_${this.testDirectory}`;
 
@@ -535,7 +566,6 @@ Toaster.prototype.killWorkerTmuxSessions = function(test) {
 
 }
 
-//TODO: refactor with better name
 function extractOutputKeywordData(text){
   let start = text.indexOf("#{")+2;
   let end = text.indexOf("}#");
@@ -672,8 +702,8 @@ Toaster.prototype.executeTest = async function(test, machType) {
     }
   });
 
-  await new Promise((resolve, reject) => {
-    testProcess.on('close', (exit) => {
+  await new Promise((resolve) => {
+    testProcess.on('close', () => {
 
       if(test.state == TestState.RUNNING) {
         // Crash
@@ -701,7 +731,7 @@ Toaster.prototype.generateReport = function(test) {
   } else if (test.state == TestState.FAILED) {
     reportMessage = `Test: ${test.testName} Failed\n`+
       `Time to Compile: ${test.compilationDuration/1000.0}s\n` +
-      `Time to Run Test: ${test.runDuration/1000.0}s\n` + 
+      `Time to Run Test: ${test.runDuration/1000.0}s\n` +
       `Reached ${test.completedCoverageMarkers} coverage markers out of ${test.coverageMarkers.length}\n`;
     if(test.completedCoverageMarkers != test.coverageMarkers.length) {
       for(let marker of test.coverageMarkers) {
@@ -736,23 +766,23 @@ Toaster.prototype.runTest = async function (test) {
   test.output = fs.createWriteStream(`${test.testResultDirectory}/jlog.txt`);
 
   // The directory could be included in the test object, that would make more sense
-  if(!this.compileTest(test)) {
+  if(!await this.compileTest(test)) {
     return;
   }
 
 
   // Resume as soon as one of these exits.
-  await new Promise( (resolve, reject) => {
+  await new Promise( (resolve) => {
     for(let _ = 0; _ < test.networkConfig.devices; _++){
       this.executeTest(test, NODETYPE_DEVICE).then(()=>{resolve()});
     }
-  
+
     for(let _ = 0; _ < test.networkConfig.fogs; _++){
       this.executeTest(test, NODETYPE_FOG).then(()=>{resolve()});
     }
   });
   this.cleanupResidualTests();
-  
+
 }
 
 Toaster.prototype.finalReport = function(duration) {
@@ -765,7 +795,8 @@ Toaster.prototype.finalReport = function(duration) {
     if(test.state == TestState.PASSED) {
       passed++;
     }
-    if(test.state == undefined) {
+    // COMPILING is the initial state.
+    if(test.state == TestState.COMPILING) {
       allTestsFinished = false;
     }
   }
@@ -774,7 +805,7 @@ Toaster.prototype.finalReport = function(duration) {
 
   if(passed == total) {
     exitText = ansiiGreen(exitText);
-  } else if (!passed) { 
+  } else if (!passed) {
     // oopsies...
     exitText = ansiiRed(exitText);
   }
@@ -796,14 +827,15 @@ Toaster.prototype.finalReport = function(duration) {
 function processArgs() {
   let args = process.argv.slice(2);
   let conf = {
-    testDirectory: undefined
+    testDirectory: undefined,
+    singleTest: false
   };
 
   for (var i = 0; i < args.length; i++) {
     if (args[i].charAt(0) === "-") {
       if (args[i] === "-g" || args[i] === "--grape") {
         console.log("GRAPES!");
-      } 
+      }
     } else {
       let inputPath = args[i];
       if(conf.testDirectory != undefined) {
@@ -815,6 +847,7 @@ function processArgs() {
         conf.testDirectory = inputPath;
       } else if (fs.existsSync(inputPath + ".js")){
         conf.testDirectory = inputPath;
+        conf.singleTest = true;
       } else {
         console.log(`Folder/Test '${inputPath}' Doesn't Exist.`);
       }
