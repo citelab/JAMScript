@@ -820,7 +820,7 @@ Toaster.prototype.finalReport = function(duration) {
     console.log("Logs of Failed Tests:");
     for(let test of this.tests) {
       if(test.state == TestState.FAILED) {
-        console.log(`${ansiiRed(test.testName)} ${" ".repeat(20-test.testName.length)} ${test.logFile}`);
+        console.log(`${ansiiRed(test.testName)} ${" ".repeat(Math.max(0,20-test.testName.length))} ${test.logFile}`);
       }
     }
   }
@@ -836,9 +836,6 @@ function processArgs() {
 
   for (var i = 0; i < args.length; i++) {
     if (args[i].charAt(0) === "-") {
-      if (args[i] === "-g" || args[i] === "--grape") {
-        console.log("GRAPES!");
-      }
       if (args[i] === "-t" || args[i] === "--timeout") {
         conf.timeoutAmount = parseInt(args[i+1]);
         if(Number.isNaN(conf.timeoutAmount)) {
