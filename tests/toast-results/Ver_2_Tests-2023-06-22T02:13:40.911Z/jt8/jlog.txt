@@ -1,6 +1,0 @@
---app=Ver_2_Tests --port=1884 --group=2 --data=127.0.0.1:6379 --edge=1 --long=13.6453 --lat=66.9490 --localregistryhost=0 --device
-------
-Current Device Node Id: c8358bea-5e74-45e7-84fe-744fd41579e0
-Starting App..
-Program completed.
-WARNING: mqtt client received an error: AggregateError
