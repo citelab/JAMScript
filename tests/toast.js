@@ -235,6 +235,7 @@ Toaster.prototype.walkTestDir = function (folder) {
           failDetails: undefined,
           networkConfig: {
             devices: 1,
+            workers: 1,
             fogs: 0
         }});
       }
@@ -264,6 +265,7 @@ Toaster.prototype.scanTests = function () {
       failDetails: undefined,
       networkConfig: {
         devices: 1,
+        workers: 1,
         fogs: 0
       }
     });
@@ -311,9 +313,9 @@ function findMatchingParens(text, start) {
 
 const FOGS_KEYWORD = "fogs:";
 const DEVICES_KEYWORD = "devices:";
-
+const WORKERS_KEYWORD = "workers:";
 Toaster.prototype.scanForToasterConfig = function(test, line, lineIter) {
-  const keywords = [FOGS_KEYWORD, DEVICES_KEYWORD];
+  const keywords = [FOGS_KEYWORD, DEVICES_KEYWORD, WORKERS_KEYWORD];
   if(line.includes("@ToasterConfig")) {
     let lineResult;
     while(!(lineResult = lineIter.next()).done) {
@@ -331,6 +333,8 @@ Toaster.prototype.scanForToasterConfig = function(test, line, lineIter) {
             //TODO; check if this is correct!
           } else if (keyword == DEVICES_KEYWORD) {
             test.networkConfig.fogs = parseInt(value);
+          } else if (keyword == WORKERS_KEYWORD) {
+            test.networkConfig.workers = parseInt(value);
           }
         }
       }
@@ -656,6 +660,8 @@ Toaster.prototype.executeTest = async function(test, machType) {
 
   if(machType==NODETYPE_FOG) {
     args.push("--fog");
+  } else if (machType==NODETYPE_DEVICE){
+    args.push(`--num=${test.networkConfig.workers}`);
   }
 
   let that = this;
@@ -769,6 +775,7 @@ Toaster.prototype.testAll = async function () {
 
   let endTime = Date.now();
   this.finalReport(endTime-this.startTime);
+  process.exit(1);
 }
 
 Toaster.prototype.runTest = async function (test) {
