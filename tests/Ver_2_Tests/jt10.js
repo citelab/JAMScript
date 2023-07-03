@@ -12,10 +12,12 @@ jtask* function answerme_ctl(t, s, x, y) {
     console.log("Answer me called: ", s, " -- by -- ", t, x, y);
 }
 
+let speed = Math.random() * 5 + 3;
+
 setInterval(()=> {
     console.log("Tag..... ", jsys.tags);
     if (jsys.type === 'device') {
-        long = (long + 5) % 170;
+        long = (long + speed) % 170;
         jsys.setLoc({long: long, lat: lat});
         console.log("Longitude and Latitude .... ", jsys.long, jsys.lat);
     }
