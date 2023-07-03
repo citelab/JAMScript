@@ -20,7 +20,7 @@ node_modules/*
 **/*.conf/*
 **/dump.rdb
 **/errlog
-
+**/toast-results
 /.vscode
 /.idea
 .sconsign.dblite

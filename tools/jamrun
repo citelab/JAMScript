@@ -118,7 +118,8 @@ startmqtt() {
             echo "Attempting to start MQTT at $port"
         fi
         if [ $machine = Mac ]; then
-            open -n -a $MOSQUITTO --stdout /dev/null --args -c $cfile 
+            #open -n -a $MOSQUITTO --stdout /dev/null --args -c $cfile
+	    $MOSQUITTO -c $cfile &>/dev/null & MOSQUITTO_PID=$!
             #MOSQUITTO_PID=$! # Currently Broken
         elif [ $machine = Linux ]; then
             nohup $MOSQUITTO -c $cfile &>/dev/null & MOSQUITTO_PID=$!
@@ -183,10 +184,10 @@ dojamout_p2_fg() {
             node jstart.js $args
             ;;
         fog)
-            node jstart.js $args
+            node --inspect jstart.js $args
             ;;
         device)
-            node jstart.js $args
+            node --inspect jstart.js $args
             ;;
     esac
 
