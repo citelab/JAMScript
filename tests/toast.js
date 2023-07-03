@@ -37,6 +37,8 @@ const TOASTER_JS_HOOK_COVERAGE_R = `}#");`
 const TOASTER_ASSERT_KEYWORD = "@ToasterAssert";
 const TOASTER_COVERAGE_KEYWORD = "@ToasterCoverage";
 
+const MAGIC_ANSI_REMOVAL_REGEX = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
+
 function ansiiGreen(text) {
   return `\x1b[32m${text}\x1b[0m`;
 }
@@ -71,7 +73,8 @@ const NODETYPE_FOG = "fog";
 Toaster.prototype.writeLog = function(text) {
   process.stdout.write(text);
   if(this.logFile) {
-    fs.writeSync(this.logFile, text);
+    let prunedText = text.replace(MAGIC_ANSI_REMOVAL_REGEX,"");
+    fs.writeSync(this.logFile, prunedText);
   }
 }
 
@@ -559,11 +562,6 @@ function killGroup(pgid) {
   }
 }
 
-// Built in process kill not working.
-function kill(pid) {
-  child_process.execSync(`kill -- ${pid}`, {stdio:'ignore'});
-}
-
   // Loop through process ID files (use this)
 Toaster.prototype.killWorkerTmuxSessions = function() {
 
@@ -612,14 +610,13 @@ Toaster.prototype.processOutput = function (test, data) {
     }
 
     if(line.includes('@')) {
-      let keywordIndex = -1;
 
-      if((keywordIndex = line.indexOf(TOASTER_ASSERT_KEYWORD)) != -1) {
+      if(line.includes(TOASTER_ASSERT_KEYWORD)) {
         test.assertMessage = extractOutputKeywordData(line);
         test.failDetails = FailDetails.TEST_FAILED;
         this.setTestState(test, TestState.FAILED);
         return true
-      } else if ((keywordIndex = line.indexOf(TOASTER_COVERAGE_KEYWORD)) != -1) {
+      } else if (line.includes(TOASTER_COVERAGE_KEYWORD)) {
         let coverageId = extractOutputKeywordData(line);
         for(let marker of test.coverageMarkers) {
           if(marker.id == coverageId &&
@@ -829,7 +826,7 @@ Toaster.prototype.finalReport = function(duration) {
 
   this.log(exitText);
 
-  this.log(`Complete Logs: ${this.resultDirectory}`);
+  this.log(`Toaster Log: ${this.resultDirectory}/log.txt`);
 
   if(passed != total) {
     this.log("Logs of Failed Tests:");
