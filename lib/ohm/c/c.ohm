@@ -2,14 +2,12 @@ C {
     Source         = External_decl*
 
     // Helper Rules
-    //
     identStart      = letter | "_"
     identPart       = identStart | decimalDigit
     linebreak       = "\n"
 
 
     // Comments
-    //
     comment         = "//" (~linebreak any)* &linebreak
                     | "/*" (~"*/" any)* "*/"
 
@@ -20,12 +18,10 @@ C {
     Preprocess_line = "#" decimalInt "\"" (~"\"" any)* "\"" decimalInt*
 
     // Identifiers and Names
-    //
     identName       = identStart identPart*
     id              = ~keyword identName
 
     // Numeric Literals
-    //
     hex             = ( "0x" | "0X" ) hexDigit+ ("u"|"U")? ("l"|"L")? ("l"|"L")?
 
     // hexDigit defined in Ohm"s built-in rules (otherwise: hexDigit = "0".."9" | "a".."f" | "A".."F")
@@ -60,7 +56,6 @@ C {
     number (a number) = charLit | hex | octal | decimal | integer
 
     // String Literals
-    //
     escapeChar      = "\\" letter
 
     interStringQuotation = "\"" space* "\""
@@ -70,8 +65,6 @@ C {
 
 
     // Expressions
-    //
-
     Expr            = NonemptyListOf<Assign_expr, ",">
 
 
@@ -84,7 +77,6 @@ C {
 
 
     // Binary operations
-    //
     Lor_expr        = Lor_expr "||" Lar_expr                                            -- lor
                     | Lar_expr
     Lar_expr        = Lar_expr "&&" Ior_expr                                            -- lar
@@ -108,14 +100,11 @@ C {
 
 
     // Unary operators
-    //
 
-    //
     Prefix_expr     = ( "++" | "--" ) spacesNoNl Unary_expr                             -- Unary
                     | Cast_expr
                     | Unary_expr
 
-    //
     Unary_expr      = ( "&" | "*" | "+" | "-" | "~" | "!" ) Prefix_expr                 -- Prefix
                     | sizeof Unary_expr                                                 -- Sizeof
                     | sizeof "(" Type_name ")"                                          -- SizeofBracketed
@@ -144,7 +133,6 @@ C {
 
     // Declaration statements
     // Statements that do "type" specification
-    //
     Prototype       = extern Pointer_list? id "(" Param_type_lst? ")" Gcc_attribute? ";"
                     | Decl_specs Pointer_list? id "(" Param_type_lst? ")" Gcc_attribute? ";"
 
@@ -252,7 +240,6 @@ C {
 	Struct_access   = struct_id ":" Expr
 
     // GCC Statements
-    //
 
     Gcc_decl_spec   = Gcc_attribute
                     | gcc_ext_spec
@@ -274,7 +261,6 @@ C {
     Gcc_asm_expr    = asm type_qualifier? "(" (~")" any)* ")"+
 
     // C Statements
-    //
 
     Stmt            = Labeled_stmt
                     | Compound_stmt
@@ -356,7 +342,7 @@ C {
     restrict = ("restrict" | "__restrict__" | "__restrict") ~identPart
     return = "return" ~identPart
     short = "short" ~identPart
-    signed = "signed" ~identPart
+    signed = "signe+d" ~identPart
     sizeof = "sizeof" ~identPart
     static = "static" ~identPart
     stdcall = "__stdcall" ~identPart
