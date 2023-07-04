@@ -37,6 +37,8 @@ const TOASTER_JS_HOOK_COVERAGE_R = `}#");`
 const TOASTER_ASSERT_KEYWORD = "@ToasterAssert";
 const TOASTER_COVERAGE_KEYWORD = "@ToasterCoverage";
 
+const MAGIC_ANSI_REMOVAL_REGEX = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
+
 function ansiiGreen(text) {
   return `\x1b[32m${text}\x1b[0m`;
 }
@@ -68,6 +70,18 @@ const FailDetails = {
 const NODETYPE_DEVICE = "device";
 const NODETYPE_FOG = "fog";
 
+Toaster.prototype.writeLog = function(text) {
+  process.stdout.write(text);
+  if(this.logFile) {
+    let prunedText = text.replace(MAGIC_ANSI_REMOVAL_REGEX,"");
+    fs.writeSync(this.logFile, prunedText);
+  }
+}
+
+Toaster.prototype.log = function(text) {
+  this.writeLog(text+"\n");
+}
+
 Toaster.prototype.updateTestState = function (test) {
   let completeStr = `${this.currentTest}`;
   let totalStr = `${this.tests.length}`;
@@ -77,22 +91,22 @@ Toaster.prototype.updateTestState = function (test) {
   let padding = totalStr.length - completeStr.length;
   prefix += " ".repeat(padding);
   if(test.state==TestState.COMPILING) {
-    process.stdout.write(`${prefix}${ansiiYellow(test.testName)} ${ansiiYellow("Compiling")} `);
+    this.writeLog(`${prefix}${ansiiYellow(test.testName)} ${ansiiYellow("Compiling")} `);
   } else if (test.state == TestState.STARTING) {
     let beginning = `${ansiiYellow(test.testName)} ${ansiiGreen("Compiled")}`;
-    process.stdout.write(`${prefix}${beginning} Starting...`)
+    this.writeLog(`${prefix}${beginning} Starting...`)
   } else if (test.state == TestState.RUNNING) {
     let beginning = `${ansiiYellow(test.testName)} ${ansiiGreen("Compiled")}`;
     let coverageStatus = "";
     if(test.coverageMarkers.length) {
       coverageStatus = `(${test.completedCoverageMarkers}/${test.coverageMarkers.length})`;
     }
-    process.stdout.write(`${prefix}${beginning} ${ansiiYellow("Running")} ${coverageStatus}`)
+    this.writeLog(`${prefix}${beginning} ${ansiiYellow("Running")} ${coverageStatus}`)
   } else if (test.state == TestState.PASSED) {
-    process.stdout.write(`${prefix}${ansiiGreen(test.testName + " Passed")}`)
+    this.writeLog(`${prefix}${ansiiGreen(test.testName + " Passed")}`)
   } else if (test.state == TestState.FAILED) {
     if(test.compilerWarnings != "") {
-      process.stdout.write(`${prefix}${test.compilerWarnings}`);
+      this.writeLog(`${prefix}${test.compilerWarnings}`);
     }
 
     if (test.failDetails == FailDetails.TEST_FAILED ||
@@ -126,11 +140,11 @@ Toaster.prototype.updateTestState = function (test) {
         console.trace();
       }
 
-      process.stdout.write(`${prefix}${ansiiRed(test.testName + " Failed")} (${reason}) `)
+      this.writeLog(`${prefix}${ansiiRed(test.testName + " Failed")} (${reason}) `)
     } else if (test.failDetails == FailDetails.COMPILE_FAILED) {
-      process.stdout.write(`${prefix}${ansiiRed(test.testName + " Failed to compile")}`);
+      this.writeLog(`${prefix}${ansiiRed(test.testName + " Failed to compile")}`);
     } else if (test.failDetails == FailDetails.LAUNCH_FAILED) {
-      process.stdout.write(`${prefix}${ansiiRed(test.testName + " Failed to start test")} `);
+      this.writeLog(`${prefix}${ansiiRed(test.testName + " Failed to start test")} `);
     } else {
       console.error("Mistakes were made while programming this.");
       console.trace();
@@ -148,10 +162,10 @@ function Toaster(conf) {
 
   if(conf.testDirectory == undefined) {
     if(fs.existsSync(DEFAULT_TEST_DIR)) {
-      console.log("Using default test directory " + DEFAULT_TEST_DIR);
+      this.log("Using default test directory " + DEFAULT_TEST_DIR);
       this.testDirectory = DEFAULT_TEST_DIR;
     } else {
-      console.log("Must provide a test folder.");
+      this.log("Must provide a test folder.");
       process.exit();
     }
   } else {
@@ -163,6 +177,8 @@ function Toaster(conf) {
   this.testDirectoryName = path.basename(this.testDirectory);
   this.currentTest = 0;
   this.testProcesses = new Set();
+
+  this.logFile = undefined;
 
   let that = this;
   process.on("SIGINT", ()=>that.exitHook());
@@ -183,6 +199,8 @@ Toaster.prototype.setupTestingEnvironment = function () {
   }
   this.resultDirectory = `${TEST_RESULT_DIR_NAME}/${this.testDirectoryName}-${new Date().toISOString()}`
   fs.mkdirSync(this.resultDirectory);
+
+  this.logFile = fs.openSync(`${this.resultDirectory}/log.txt`, 'w');
 }
 
 Toaster.prototype.walkTestDir = function (folder) {
@@ -217,6 +235,7 @@ Toaster.prototype.walkTestDir = function (folder) {
           failDetails: undefined,
           networkConfig: {
             devices: 1,
+            workers: 1,
             fogs: 0
         }});
       }
@@ -246,13 +265,14 @@ Toaster.prototype.scanTests = function () {
       failDetails: undefined,
       networkConfig: {
         devices: 1,
+        workers: 1,
         fogs: 0
       }
     });
   } else {
     this.tests = this.walkTestDir(this.testDirectory);
   }
-  console.log(`Found ${this.tests.length} tests.`);
+  this.log(`Found ${this.tests.length} tests.`);
 }
 
 const ASSERT_IDENTIFIER = "assert(";
@@ -293,9 +313,9 @@ function findMatchingParens(text, start) {
 
 const FOGS_KEYWORD = "fogs:";
 const DEVICES_KEYWORD = "devices:";
-
+const WORKERS_KEYWORD = "workers:";
 Toaster.prototype.scanForToasterConfig = function(test, line, lineIter) {
-  const keywords = [FOGS_KEYWORD, DEVICES_KEYWORD];
+  const keywords = [FOGS_KEYWORD, DEVICES_KEYWORD, WORKERS_KEYWORD];
   if(line.includes("@ToasterConfig")) {
     let lineResult;
     while(!(lineResult = lineIter.next()).done) {
@@ -313,6 +333,8 @@ Toaster.prototype.scanForToasterConfig = function(test, line, lineIter) {
             //TODO; check if this is correct!
           } else if (keyword == DEVICES_KEYWORD) {
             test.networkConfig.fogs = parseInt(value);
+          } else if (keyword == WORKERS_KEYWORD) {
+            test.networkConfig.workers = parseInt(value);
           }
         }
       }
@@ -421,7 +443,7 @@ Toaster.prototype.compileTest = async function(test) {
 
       let condition = line.substring(start + ASSERT_IDENTIFIER.length, end);
       if(condition=="") {
-        console.log(`\nAssert is missing condition! \\/ (${lineCount})\n--> ${line}`);
+        this.log(`\nAssert is missing condition! \\/ (${lineCount})\n--> ${line}`);
       }
       fs.writeSync(jsTestOutput, line.substring(0, start));
       fs.writeSync(jsTestOutput, TOASTER_JS_HOOK_ASSERT_L);
@@ -473,7 +495,7 @@ Toaster.prototype.compileTest = async function(test) {
 
   // We should log compiler output in the event of a compiler error.
 
-  //process.stdout.write("Compiling... ");
+  //this.writeLog("Compiling... ");
   var proc = undefined;
   let stdoutLog = "";
   let stderrLog = "";
@@ -520,13 +542,13 @@ Toaster.prototype.compileTest = async function(test) {
 
     test.failDetails = FailDetails.COMPILE_FAILED;
     this.setTestState(test,TestState.FAILED);
-    /*console.log("Failed!");*/
+    /*this.log("Failed!");*/
 
     test.output.write(stdoutLog);
     test.output.write("Stderr Follows: \n");
     test.output.write(stderrLog);
     test.output.close();
-    //console.log(` Full log can be found at ${test.logFile}`);
+    //this.log(` Full log can be found at ${test.logFile}`);
 
     return false;
   }
@@ -542,11 +564,6 @@ function killGroup(pgid) {
   } catch (err) {
     console.log("Failed to terminate test process.");
   }
-}
-
-// Built in process kill not working.
-function kill(pid) {
-  child_process.execSync(`kill -- ${pid}`, {stdio:'ignore'});
 }
 
   // Loop through process ID files (use this)
@@ -597,14 +614,13 @@ Toaster.prototype.processOutput = function (test, data) {
     }
 
     if(line.includes('@')) {
-      let keywordIndex = -1;
 
-      if((keywordIndex = line.indexOf(TOASTER_ASSERT_KEYWORD)) != -1) {
+      if(line.includes(TOASTER_ASSERT_KEYWORD)) {
         test.assertMessage = extractOutputKeywordData(line);
         test.failDetails = FailDetails.TEST_FAILED;
         this.setTestState(test, TestState.FAILED);
         return true
-      } else if ((keywordIndex = line.indexOf(TOASTER_COVERAGE_KEYWORD)) != -1) {
+      } else if (line.includes(TOASTER_COVERAGE_KEYWORD)) {
         let coverageId = extractOutputKeywordData(line);
         for(let marker of test.coverageMarkers) {
           if(marker.id == coverageId &&
@@ -644,6 +660,8 @@ Toaster.prototype.executeTest = async function(test, machType) {
 
   if(machType==NODETYPE_FOG) {
     args.push("--fog");
+  } else if (machType==NODETYPE_DEVICE){
+    args.push(`--num=${test.networkConfig.workers}`);
   }
 
   let that = this;
@@ -659,7 +677,7 @@ Toaster.prototype.executeTest = async function(test, machType) {
       }
       that.testProcesses.delete(testProcess.pid);
       //that.killWorkerTmuxSessions(test);
-    }catch(e){console.log(e)}
+    }catch(e){this.log(e)}
   }
 
   const testStartTime = Date.now();
@@ -757,10 +775,11 @@ Toaster.prototype.testAll = async function () {
 
   let endTime = Date.now();
   this.finalReport(endTime-this.startTime);
+  process.exit(1);
 }
 
 Toaster.prototype.runTest = async function (test) {
-  process.stdout.write('\n');
+  this.writeLog('\n');
 
   fs.mkdirSync(test.testResultDirectory, {recursive: true});
 
@@ -812,17 +831,22 @@ Toaster.prototype.finalReport = function(duration) {
     exitText = ansiiRed(exitText);
   }
 
-  console.log(exitText);
+  this.log(exitText);
 
-  console.log(`Complete Logs: ${this.resultDirectory}`);
+  this.log(`Toaster Log: ${this.resultDirectory}/log.txt`);
 
   if(passed != total) {
-    console.log("Logs of Failed Tests:");
+    this.log("Logs of Failed Tests:");
     for(let test of this.tests) {
       if(test.state == TestState.FAILED) {
-        console.log(`${ansiiRed(test.testName)} ${" ".repeat(Math.max(0,20-test.testName.length))} ${test.logFile}`);
+        this.log(`${ansiiRed(test.testName)} ${" ".repeat(Math.max(0,20-test.testName.length))} ${test.logFile}`);
       }
     }
+  }
+
+  if(this.logFile) {
+    fs.close(this.logFile);
+    this.logFile = undefined;
   }
 }
 
