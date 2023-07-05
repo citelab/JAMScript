@@ -31,7 +31,7 @@ if [ $machine = Linux ]; then
         echo "Detected Arch"
         PM_INSTALL="sudo pacman -S --needed"
         MOSQUITTO="mosquitto"
-        REDIS="redis"
+        REDIS="redis hiredis"
         LIBEVENT="libevent"
 
         NODE_SETUP=":"
@@ -81,6 +81,11 @@ if [ $machine = Linux ]; then
         echo "Node JS not found: install ...."
         eval ${NODE_SETUP}
         eval ${PM_INSTALL} ${NODE}
+    fi
+	# install tmux
+    if ! command -V tmux &> /dev/null; then
+        echo "tmux not found: install ...."
+        eval ${PM_INSTALL} tmux
     fi
 
 elif [ $machine = Mac ]; then
