@@ -5,4 +5,4 @@ setInterval(()=> {
     testfunc(count++).catch(()=> {
 	console.log("Error in calling testfunc...");
     });
-}, 10);
+}, 2000);
