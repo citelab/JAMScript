@@ -1,7 +1,7 @@
 JAMC <: C {
-    Source          = External_decl+
+    Source         := External_decl+
 
-    Namespace_spec  = jame id ";" // This looks rather like a typedef'd global decl...
+    Namespace_spec  = jname id ";" // This looks rather like a typedef'd global decl...
 
     Jcond_specifier = "{" Jcond_expr "}"
 
@@ -30,7 +30,8 @@ JAMC <: C {
     Jamtype_return  = Jamtype
                     | void
 
-    Jamtype         = ( unsigned? int | unsigned )                     -- Int
+    Jamtype         = unsigned? int                                    -- Int
+                    | unsigned                                         -- IntUnsigned
                     | unsigned? long unsigned? long unsigned? int?     -- LongLongInt
                     | unsigned? char                                   -- Char
                     | string_type ( "(" decimalInt ")" )?              -- String
@@ -44,10 +45,10 @@ JAMC <: C {
     Activity_def    = Sync_activity
                     | Async_activity
 
-    External_decl   := Activity_def
+    External_decl   += Activity_def
                     |  Namespace_spec
 
-    keyword         := jtaskAsync | jtaskSync | jname // TODO? | string_type ?
+    keyword         += jtaskAsync | jtaskSync | jname // TODO? | string_type ?
 
     string_type = "string" ~identPart
     jtaskAsync = "jtask*" ~identPart
