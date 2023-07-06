@@ -1,7 +1,7 @@
 JAMC <: C {
-    Source         := External_decl+
+    Source          = External_decl+
 
-    Namespace_spec  = in id
+    Namespace_spec  = jame id ";" // This looks rather like a typedef'd global decl...
 
     Jcond_specifier = "{" Jcond_expr "}"
 
@@ -13,46 +13,56 @@ JAMC <: C {
 
     jcond_expr_op   = "&&" | "||"
 
-    Async_activity  = jtaskAsync Jcond_specifier? Jtask_attr_spec? id "(" Param_type_lst? ")" Namespace_spec? Compound_stmt
+    Async_activity  = jtaskAsync Jcond_specifier? Jtask_attr_spec? id "(" Jamparam_type_lst? ")" Namespace_spec? Compound_stmt
 
-    Sync_activity   = jtaskSync Decl_specs Pointer_list? Jcond_specifier? Jtask_attr_spec? id "(" Param_type_lst? ")" Namespace_spec? Compound_stmt
+    Sync_activity   = jtaskSync Jamtype_return Jcond_specifier? Jtask_attr_spec? id "(" Jamparam_type_lst? ")" Namespace_spec? Compound_stmt
 
     Jtask_attr_spec = "[" ListOf<Jtask_attr, ",">  "]"
 
     Jtask_attr      = type "=" (sync | realtime | batch)
                     | period "=" number
                     | jitter "=" number
-                    | reuse "=" bool_expr
-                    | reuse_limit "=" number
-                    | reuse_argdev "=" percentage
-                    | max_controllers "=" number
+                    | reuse "=" (true | false)
+                    | reuse_limit "=" decimalInt
+                    | reuse_buffer "=" decimalInt
+                    | reuse_function "=" id
 
-   	percentage 	    = number "%"
+    Jamtype_return  = Jamtype
+                    | void
 
+    Jamtype         = ( unsigned? int | unsigned )                     -- Int
+                    | unsigned? long unsigned? long unsigned? int?     -- LongLongInt
+                    | unsigned? char                                   -- Char
+                    | string_type ( "(" decimalInt ")" )?              -- String
+                    | float                                            -- Float
+                    | double                                           -- Double
+
+    Jamparam_type_lst = NonemptyListOf<Jamparam_decl, ",">
+
+    Jamparam_decl   = Jamtype id ( "[" decimalInt "]" )?
 
     Activity_def    = Sync_activity
                     | Async_activity
 
     External_decl   := Activity_def
-                    |  Prototype
-                    |  Function_def
-                    |  Decl
-                    |  Preprocess_line
+                    |  Namespace_spec
 
-    as = "as" ~identPart
-    at = "at" ~identPart
+    keyword         := jtaskAsync | jtaskSync | jname // TODO? | string_type ?
+
+    string_type = "string" ~identPart
     jtaskAsync = "jtask*" ~identPart
     jtaskSync = "jtask" ~identPart
-    in = "in" ~identPart
+    jname = "jname" ~identPart
     type = "type" ~identPart
     period = "period" ~identPart
     jitter = "jitter" ~identPart
     reuse = "reuse" ~identPart
     reuse_limit = "reuse_limit" ~identPart
-    reuse_argdev = "reuse_argdev" ~identPart
-    max_controllers = "max_controllers" ~identPart
+    reuse_buffer = "reuse_buffer" ~identPart
+    reuse_function = "reuse_function" ~identPart
     batch = "BATCH" ~identPart
     sync = "SYNC" ~identPart
     realtime = "REALTIME" ~identPart
-    bool_expr = "true" | "false"
+    true = "true" ~identPart
+    false = "false" ~identPart
 }

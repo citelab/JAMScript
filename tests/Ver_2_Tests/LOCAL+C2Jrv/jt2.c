@@ -1,13 +1,13 @@
 int compyou(char *s);
 
-jtask* localme(int c, char *s) {
+jtask* localme(int c, string s) {
     while(1) {
         jsleep(20000);
         printf("############-->>> Hello  ME  %d... %s\n", c, s);
     }
 }
 
-jtask* localyou(int c, char *s) {
+jtask* localyou(int c, string s) {
     int x;
     while('1' - '0') {
         jsleep(10000);
