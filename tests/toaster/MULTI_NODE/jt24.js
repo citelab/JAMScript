@@ -1,6 +1,7 @@
 // @ToasterConfig
 // Fogs: 1
 // Devices: 1
+// Workers: 4
 
 
 jcond {
