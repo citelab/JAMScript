@@ -184,7 +184,7 @@ dojamout_p2_fg() {
             node jstart.js $args
             ;;
         fog)
-            node --inspect jstart.js $args
+            node jstart.js $args
             ;;
         device)
             node --inspect jstart.js $args
