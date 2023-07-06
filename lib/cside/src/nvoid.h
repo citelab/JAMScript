@@ -26,11 +26,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 typedef struct _nvoid_t
 {
     int len;
-    void *data;
+    void* data;
 } nvoid_t;
 
-nvoid_t *nvoid_new(void *data, int len);
-nvoid_t *nvoid_null();
+nvoid_t* nvoid_new(void* data, int len);
+nvoid_t* nvoid_null();
 
 #define nvoid_free(n)  do {             \
     free(n);                            \

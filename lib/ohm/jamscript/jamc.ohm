@@ -28,11 +28,13 @@ JAMC <: C {
                     | reuse_function "=" id
 
     Jamtype_return  = Jamtype
-                    | void
+                    | void                                             -- Void
 
     Jamtype         = unsigned? int                                    -- Int
                     | unsigned                                         -- IntUnsigned
-                    | unsigned? long unsigned? long unsigned? int?     -- LongLongInt
+                    | unsigned? long long int?                         -- LongLongInt
+                    | long unsigned long int?                          -- LongUnsignedLongInt
+                    | long long unsigned int?                          -- LongLongUnsignedInt
                     | unsigned? char                                   -- Char
                     | string_type ( "(" decimalInt ")" )?              -- String
                     | float                                            -- Float

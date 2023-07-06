@@ -57,11 +57,11 @@ typedef struct _arg_t
     union _argvalue_t
     {
         int ival;
-        uint64_t lval;
-        char *sval;
+        long long int lval;
+        char* sval;
         double dval;
-        nvoid_t *nval;
-        void *vval;
+        nvoid_t* nval;
+        void* vval;
     } val;
 } arg_t;
 
@@ -89,7 +89,7 @@ typedef struct _command_t
     unsigned char buffer[HUGE_CMD_STR_LEN];     // CBOR byte array in raw byte form
     int length;                                 // length of the raw CBOR data
 
-    arg_t *args;                                // List of args
+    arg_t* args;                                // List of args
 
     int refcount;                               // Deallocation control
     pthread_mutex_t lock;
@@ -110,8 +110,7 @@ typedef struct _internal_command_t
 internal_command_t *internal_command_new(command_t *cmd);
 void internal_command_free(internal_command_t *ic);
 
-command_t *command_new(int cmd, int subcmd, char *fn_name,
-                    uint64_t task_id, char *node_id, char *old_id, char *fn_argsig, ...);
+command_t *command_new(int cmd, int subcmd, char *fn_name, uint64_t task_id, char *node_id, char *old_id, char *fn_argsig, ...);
 command_t *command_new_using_arg(int cmd, int opt, char *fn_name, uint64_t taskid, char *node_id, char *old_id, char *fn_argsig, arg_t *args);
 command_t *command_from_data(char *fn_argsig, void *data, int len);
 void command_hold(command_t *cmd);

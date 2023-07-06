@@ -65,7 +65,7 @@ void do_cbor_encoding(CborEncoder *enc, darg_t *u, int n)
     cbor_encoder_close_container(enc, &mapEncoder);
 }
 
-void free_buffer(darg_t *u, int n)
+void free_buffer(darg_t* u, int n)
 {
     for (int i = 0; i < n; i++) {
         if (u[i].label != NULL)
@@ -78,16 +78,14 @@ void free_buffer(darg_t *u, int n)
                 nvoid_free(u[i].val.nval);
             break;
             case D_VOID_TYPE:
-                free(u[i].val.vval);
-            break;
-            default:
-            break;
+                if (u[i].val.vval != NULL)
+                    free(u[i].val.vval);
         }
     }
     free(u);
 }
 
-
+// TODO all of these
 int __extract_int(const uint8_t* buffer, size_t len)
 {
     CborParser parser;

@@ -32,18 +32,19 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // data. so the source "data" could be released by
 // originating routine.
 //
-nvoid_t *nvoid_new(void *data, int len)
+nvoid_t* nvoid_new(void* data, int len)
 {
-    nvoid_t *nv = (nvoid_t *)malloc(sizeof(len) + len);
+    nvoid_t* nv = (nvoid_t*)malloc(sizeof(len) + len);
     assert(nv != NULL);
     nv->len = len;
-    memcpy(nv->data, data, len);
+    if (data != NULL)
+        memcpy(&nv->data, data, len);
     return nv;
 }
 
-nvoid_t *nvoid_null()
+nvoid_t* nvoid_null()
 {
-    nvoid_t *nv = (nvoid_t *)calloc(1, sizeof(nvoid_t));
+    nvoid_t* nv = (nvoid_t*)calloc(1, sizeof(nvoid_t));
     nv->len = 0;
     nv->data = NULL;
     return nv;

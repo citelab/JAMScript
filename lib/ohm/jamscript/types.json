@@ -2,57 +2,37 @@
     "int": {
         "c_pattern": "%i",
         "jamlib": "ival",
-        "js_type": "number",
         "c_code": "i",
-        "js_code": "n",
-        "caster": "get_bcast_int"
+    },
+    "long long int": {
+        "c_pattern": "%lli",
+        "jamlib": "lval",
+        "c_code": "l",
     },
     "float": {
         "c_pattern": "%f",
         "jamlib": "dval",
-        "js_type": "number",
-        "c_code": "f",
-        "js_code": "n",
-        "caster": "get_bcast_float"
+        "c_code": "d",
     },
     "double": {
         "c_pattern": "%lf",
         "jamlib": "dval",
-        "js_type": "number",
         "c_code": "d",
-        "js_code": "n",
-        "caster": "get_bcast_double"
     },
     "string": {
         "c_pattern": "\\\"%s\\\"",
         "jamlib": "sval",
-        "js_type": "string",
         "c_code": "s",
-        "js_code": "s",
-        "caster": ""
-    },
-    "char*": {
-        "c_pattern": "\\\"%s\\\"",
-        "jamlib": "sval",
-        "js_type": "string",
-        "c_code": "s",
-        "js_code": "s",
-        "caster": "get_bcast_char"
     },
     "char": {
-        "c_pattern": "\\\"%s\\\"",
-        "jamlib": "sval",
-        "js_type": "string",
-        "c_code": "s",
-        "js_code": "s",
-        "caster": ""
+        "c_pattern": "\\\'%c\\\'",
+        "jamlib": "ival",
+        "c_code": "i",
     },
-    "jamtask": {
-        "c_pattern": "\\\"%s\\\"",
-        "jamlib": "sval",
-        "js_type": "string",
-        "c_code": "s",
-        "js_code": "s",
-        "caster": null
-    }
+    "nvoid": {
+        "c_pattern": "nvoid(%d)",
+        "jamlib": "nval",
+        "c_code": "n",
+    },
+
 }

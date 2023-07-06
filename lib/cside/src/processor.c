@@ -24,7 +24,7 @@ arg_t *command_arg_clone_special(arg_t *arg, char *fname, uint64_t taskid, char 
         rl[i].nargs = 4;
         i++;
         rl[i].type = LONG_TYPE;
-        rl[i].val.lval = taskid;
+        rl[i].val.lval = (long long int)taskid;
         rl[i].nargs = 4;
         i++;
         rl[i].type = STRING_TYPE;
@@ -46,7 +46,7 @@ arg_t *command_arg_clone_special(arg_t *arg, char *fname, uint64_t taskid, char 
         rl[i].nargs = arg->nargs + 4;
         i++;
         rl[i].type = LONG_TYPE;
-        rl[i].val.lval = taskid;
+        rl[i].val.lval = (long long int)taskid;
         rl[i].nargs = arg->nargs + 4;
         i++;
         rl[i].type = STRING_TYPE;
@@ -64,20 +64,20 @@ arg_t *command_arg_clone_special(arg_t *arg, char *fname, uint64_t taskid, char 
 void exec_sync(context_t ctx)
 {
     (void)ctx;
-    arg_t *t = (arg_t *)(task_get_args());
+    arg_t* t = (arg_t *)(task_get_args());
     int nargs = t->nargs;
-    char *fn_name = t[nargs - 4].val.sval;
-    uint64_t task_id = t[nargs - 3].val.lval;
-    char *node_id = strdup(t[nargs - 2].val.sval);
-    server_t *s = (server_t *)t[nargs - 1].val.vval;
-    cnode_t *c = s->cnode;
-    tboard_t *tb = (tboard_t *)(c->tboard);
-    function_t *f = tboard_find_func(tb, fn_name);
+    char* fn_name = t[nargs - 4].val.sval;
+    uint64_t task_id = (uint64_t)t[nargs - 3].val.lval;
+    char* node_id = strdup(t[nargs - 2].val.sval);
+    server_t* s = (server_t*)t[nargs - 1].val.vval;
+    cnode_t* c = s->cnode;
+    tboard_t* tb = (tboard_t*)(c->tboard);
+    function_t* f = tboard_find_func(tb, fn_name);
     if (f != NULL) {
-        arg_t *rv = blocking_task_create(tb, *f, f->tasktype, t, (nargs - 4));
+        arg_t* rv = blocking_task_create(tb, *f, f->tasktype, t, (nargs - 4));
         if (rv != NULL) {
-            command_t *cmd = NULL;
-            switch (rv->type) {
+            command_t* cmd = NULL;
+            switch (rv->type) { // TODO add for other return types...
             case INT_TYPE:
                 cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, "i", rv->val.ival);
                 break;
@@ -275,7 +275,7 @@ void msg_processor(void *serv, command_t *cmd)
     case CmdNames_PUT_SCHEDULE:
         k = 0;
         pthread_mutex_lock(&t->schmutex);
-        t->sched.len = cmd->args[k].val.lval;
+        t->sched.len = cmd->args[k].val.lval; // TODO this is being stored as an int though...?
         k++;
         t->sched.rtslots = cmd->args[k].val.ival;
         for (int i  = 0; i < t->sched.rtslots; i++) {
