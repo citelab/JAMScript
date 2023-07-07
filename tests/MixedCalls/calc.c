@@ -18,6 +18,7 @@ jtask* localtask() {
 				y = calc(i, x);
 				z = number(i, x);
 				printf("Y = %f, Z = %d\n", y, z);				
+				jsleep(100000000);
 		}
 }
 
