@@ -20,7 +20,7 @@ async function sleep(x) {
 async function getloop() {
     let x;
     while(true) {
-        x = await xx.readLast();
+        x = await zz.readLast();
         console.log("Value received... ", x);
     }
 }
