@@ -145,9 +145,9 @@ void dpanel_del_apanel(dpanel_t *dp, char *nid)
  * UFLOW PROCESSOR FUNCTIONS
  *
  */
-void *dpanel_ufprocessor(void *arg)
+void* dpanel_ufprocessor(void* arg)
 {
-    dpanel_t *dp = (dpanel_t *)arg;
+    dpanel_t* dp = (dpanel_t*)arg;
 
     // Initialize the event loop
     dp->uloop = event_base_new();
@@ -171,12 +171,12 @@ void *dpanel_ufprocessor(void *arg)
     return NULL;
 }
 
-void dpanel_connect_dcb(const redisAsyncContext *c, int status) {
+void dpanel_connect_dcb(const redisAsyncContext* c, int status) {
     if (status != REDIS_OK)
         printf("Error: %s\n", c->errstr);
 }
 
-void dpanel_disconnect_dcb(const redisAsyncContext *c, int status) {
+void dpanel_disconnect_dcb(const redisAsyncContext* c, int status) {
     if (status != REDIS_OK)
         printf("Error: %s\n", c->errstr);
 }
@@ -268,13 +268,13 @@ void dpanel_ucallback2(redisAsyncContext* c, void* r, void* privdata) {
  * FUNCTIONS for dealing with UFLOW objects
  */
 
-uftable_entry_t *dp_create_uflow(dpanel_t *dp, char *key, char *fmt)
+uftable_entry_t* dp_create_uflow(dpanel_t* dp, char* key, char* fmt)
 {
-    uftable_entry_t *uft = (uftable_entry_t *)calloc(sizeof(uftable_entry_t), 1);
+    uftable_entry_t* uft = (uftable_entry_t*)calloc(sizeof(uftable_entry_t), 1);
     assert(uft != NULL);
     uft->key = strdup(key);
     uft->fmt = strdup(fmt);
-    uft->dpanel = (void *)dp;
+    uft->dpanel = (void*)dp;
     uft->lclock = 0;
     HASH_ADD_STR(dp->uftable, key, uft);
     return uft;
@@ -310,13 +310,13 @@ void freeUObject(uflow_obj_t* uobj) {
 }
 
 
-uflow_obj_t *uflow_obj_new(uftable_entry_t *uf, char *vstr)
+uflow_obj_t* uflow_obj_new(uftable_entry_t* uf, char* vstr)
 {
-    uflow_obj_t *uo = (uflow_obj_t *)calloc(sizeof(uflow_obj_t), 1);
+    uflow_obj_t* uo = (uflow_obj_t *)calloc(sizeof(uflow_obj_t), 1);
     uo->key = uf->key;
     uo->fmt = uf->fmt;
-    dpanel_t *dp = uf->dpanel;
-    cnode_t *cn = dp->cnode;
+    dpanel_t* dp = uf->dpanel;
+    cnode_t* cn = dp->cnode;
     uo->clock = get_jamclock(cn);
     uo->value = strdup(vstr);
 
@@ -324,20 +324,20 @@ uflow_obj_t *uflow_obj_new(uftable_entry_t *uf, char *vstr)
 }
 
 
-void ufwrite_int(uftable_entry_t *uf, int x)
+void ufwrite_int(uftable_entry_t* uf, int x)
 {
-    dpanel_t *dp = (dpanel_t *)(uf->dpanel);
-    struct queue_entry *e = NULL;
-    uflow_obj_t *uobj;
+    dpanel_t* dp = (dpanel_t*)(uf->dpanel);
+    struct queue_entry* e = NULL;
+    uflow_obj_t* uobj;
 
     uint8_t buf[16];
     char out[32];
 
     CborEncoder encoder;
-    cbor_encoder_init(&encoder, (uint8_t *)&buf, sizeof(buf), 0);
+    cbor_encoder_init(&encoder, (uint8_t*)&buf, sizeof(buf), 0);
     cbor_encode_int(&encoder, x);
-    int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t *)&buf);
-    Base64encode(out, (char *)buf, len);
+    int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t*)&buf);
+    Base64encode(out, (char*)buf, len);
     uobj = uflow_obj_new(uf, out);
 
     e = queue_new_node(uobj);
@@ -347,20 +347,20 @@ void ufwrite_int(uftable_entry_t *uf, int x)
     pthread_mutex_unlock(&(dp->ufmutex));
 }
 
-void ufwrite_double(uftable_entry_t *uf, double x)
+void ufwrite_double(uftable_entry_t* uf, double x)
 {
-    dpanel_t *dp = (dpanel_t *)(uf->dpanel);
-    struct queue_entry *e = NULL;
-    uflow_obj_t *uobj;
+    dpanel_t* dp = (dpanel_t*)(uf->dpanel);
+    struct queue_entry* e = NULL;
+    uflow_obj_t* uobj;
 
     uint8_t buf[16];
     char out[32];
 
     CborEncoder encoder;
-    cbor_encoder_init(&encoder, (uint8_t *)&buf, sizeof(buf), 0);
+    cbor_encoder_init(&encoder, (uint8_t*)&buf, sizeof(buf), 0);
     cbor_encode_double(&encoder, x);
-    int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t *)&buf);
-    Base64encode(out, (char *)buf, len);
+    int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t*)&buf);
+    Base64encode(out, (char*)buf, len);
     uobj = uflow_obj_new(uf, out);
 
     e = queue_new_node(uobj);
@@ -371,20 +371,20 @@ void ufwrite_double(uftable_entry_t *uf, double x)
 }
 
 
-void ufwrite_str(uftable_entry_t *uf, char *str)
+void ufwrite_str(uftable_entry_t* uf, char* str)
 {
-    dpanel_t *dp = (dpanel_t *)(uf->dpanel);
-    struct queue_entry *e = NULL;
-    uflow_obj_t *uobj;
+    dpanel_t* dp = (dpanel_t*)(uf->dpanel);
+    struct queue_entry* e = NULL;
+    uflow_obj_t* uobj;
 
-    uint8_t buf[4096];
+    uint8_t buf[4096]; // TODO
     char out[8192];
 
     CborEncoder encoder;
-    cbor_encoder_init(&encoder, (uint8_t *)&buf, sizeof(buf), 0);
+    cbor_encoder_init(&encoder, (uint8_t*)&buf, sizeof(buf), 0);
     cbor_encode_text_stringz(&encoder, str);
-    int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t *)&buf);
-    Base64encode(out, (char *)buf, len);
+    int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t*)&buf);
+    Base64encode(out, (char*)buf, len);
     uobj = uflow_obj_new(uf, out);
     e = queue_new_node(uobj);
     pthread_mutex_lock(&(dp->ufmutex));
@@ -393,7 +393,7 @@ void ufwrite_str(uftable_entry_t *uf, char *str)
     pthread_mutex_unlock(&(dp->ufmutex));
 }
 
-void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
+void ufwrite_struct(uftable_entry_t* uf, char* fmt, ...)
 {
     dpanel_t* dp = (dpanel_t *)(uf->dpanel);
     struct queue_entry* e = NULL;
@@ -406,33 +406,36 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
     int len = strlen(fmt);
     assert(len > 0);
 
-    uargs = (darg_t *)calloc(len, sizeof(darg_t));
+    uargs = (darg_t*)calloc(len, sizeof(darg_t));
 
     va_start(args, fmt);
     for (int i = 0; i < len; i++) {
         label = va_arg(args, char*);
         uargs[i].label = strdup(label);
         switch(fmt[i]) {
-            case 'n': // TODO this isn't actually getting transmitted at all right now
-                nv = va_arg(args, nvoid_t*);
-                uargs[i].val.nval = nv;
-                uargs[i].type = D_NVOID_TYPE;
-                break;
-            case 's':
-                uargs[i].val.sval = strdup(va_arg(args, char*));
-                uargs[i].type = D_STRING_TYPE;
-                break;
-            case 'i':
-                uargs[i].val.ival = va_arg(args, int);
-                uargs[i].type = D_INT_TYPE;
-                break;
-            case 'd':
-            case 'f':
-                uargs[i].val.dval = va_arg(args, double);
-                uargs[i].type = D_DOUBLE_TYPE;
-                break;
-            default:
-                break;
+        case 'n': // TODO this isn't actually getting transmitted at all right now
+            nv = va_arg(args, nvoid_t*); // TODO -- to clone?
+            uargs[i].val.nval = nv;
+            uargs[i].type = D_NVOID_TYPE;
+            break;
+        case 's':
+            uargs[i].val.sval = strdup(va_arg(args, char*));
+            uargs[i].type = D_STRING_TYPE;
+            break;
+        case 'i':
+            uargs[i].val.ival = va_arg(args, int);
+            uargs[i].type = D_INT_TYPE;
+            break;
+        case 'l':
+            uargs[i].val.lval = va_arg(args, long long int);
+            uargs[i].type = D_LONG_TYPE;
+            break;
+        case 'd':
+            uargs[i].val.dval = va_arg(args, double);
+            uargs[i].type = D_DOUBLE_TYPE;
+            break;
+        default:
+            break;
         }
     }
     va_end(args);
@@ -458,10 +461,10 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
 /*
  * DFLOW PROCESSOR FUNCTIONS
  */
-void *dpanel_dfprocessor(void *arg)
+void* dpanel_dfprocessor(void* arg)
 {
-    dpanel_t *dp = (dpanel_t *)arg;
-    cnode_t *cn = (cnode_t *)dp->cnode;
+    dpanel_t* dp = (dpanel_t*)arg;
+    cnode_t* cn = (cnode_t*)dp->cnode;
 
     // Initialize the event loop
     dp->dloop = event_base_new();
@@ -497,10 +500,10 @@ void *dpanel_dfprocessor(void *arg)
 
 // this callback is triggered when a broadcast message is sent by the data store
 //
-void dpanel_dcallback2(redisAsyncContext *c, void *r, void *privdata)
+void dpanel_dcallback2(redisAsyncContext* c, void* r, void* privdata)
 {
-    redisReply *reply = r;
-    dpanel_t *dp = (dpanel_t *)privdata;
+    redisReply* reply = r;
+    dpanel_t* dp = (dpanel_t*)privdata;
 
     if (reply == NULL) {
         if (c->errstr) {
@@ -517,11 +520,11 @@ void dpanel_dcallback2(redisAsyncContext *c, void *r, void *privdata)
 
 // this callback is triggered when a broadcast message is sent by the data store
 //
-void dpanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
+void dpanel_dcallback(redisAsyncContext* c, void* r, void* privdata)
 {
-    redisReply *reply = r;
-    dpanel_t *dp = (dpanel_t *)privdata;
-    dftable_entry_t *entry;
+    redisReply* reply = r;
+    dpanel_t* dp = (dpanel_t*)privdata;
+    dftable_entry_t* entry;
 
     if (reply == NULL) {
         if (c->errstr) {
@@ -533,7 +536,8 @@ void dpanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
     char keymsg[64];
     snprintf(keymsg, 64, "%d__d__keycompleted", dp->logical_appid);
 
-    if (dp->use_apanel) return;         // the dpanel callback disabled - using the apanel cb
+    if (dp->use_apanel)
+        return; // the dpanel callback disabled - using the apanel cb
 
     if (reply->type == REDIS_REPLY_ARRAY &&
         (strcmp(reply->element[1]->str, keymsg) == 0) &&
@@ -550,15 +554,14 @@ void dpanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
 
 // this is callback used by the actual reading function for the data in dflow
 // so.. here we need to
-//
-void dflow_callback(redisAsyncContext *c, void *r, void *privdata)
+void dflow_callback(redisAsyncContext* c, void* r, void* privdata)
 {
-    redisReply *reply = r;
+    redisReply* reply = r;
     // the privdata is pointing to the dftable_entry
-    dftable_entry_t *entry = (dftable_entry_t *)privdata;
-    dpanel_t *dp = entry->dpanel;
-    tboard_t *t = dp->tboard;
-    remote_task_t *rtask = NULL;
+    dftable_entry_t* entry = (dftable_entry_t*)privdata;
+    dpanel_t* dp = entry->dpanel;
+    tboard_t* t = dp->tboard;
+    remote_task_t* rtask = NULL;
 
     if (reply == NULL) {
         if (c->errstr) {
@@ -591,10 +594,10 @@ void dflow_callback(redisAsyncContext *c, void *r, void *privdata)
 // it is creating an entry for the variable.
 // only done once...
 //
-dftable_entry_t *dp_create_dflow(dpanel_t *dp, char *key, char *fmt)
+dftable_entry_t* dp_create_dflow(dpanel_t* dp, char* key, char* fmt)
 {
     // create the dftable_entry, mutex needs to be initialized
-    dftable_entry_t *df = (dftable_entry_t *)calloc(sizeof(dftable_entry_t), 1);
+    dftable_entry_t* df = (dftable_entry_t*)calloc(sizeof(dftable_entry_t), 1);
     df->key = strdup(key);
     // NOTE: the fmt is used in the decoding process when the data is pulled in
     df->fmt = strdup(fmt);
@@ -614,24 +617,24 @@ dftable_entry_t *dp_create_dflow(dpanel_t *dp, char *key, char *fmt)
  * Value readers - these are going to block the coroutine by creating a user-level
  * context switch until the data is ready. The coroutine might still face a queuing
  * delay before getting activated. We have readers for primitive values (integer,
- * double, string, etc) and composite values (structures). The sending side (J) is
+ * double, string, &c.) and composite values (structures). The sending side (J) is
  * pushing a JSON object with field names in the case of structures. For primitive
  * values the J side is pushing the values alone.
  */
 
-void dfread_int(dftable_entry_t *df, int *val)
+void dfread_int(dftable_entry_t* df, int* val)
 {
-    dpanel_t *dp = (dpanel_t *)df->dpanel;
-    cnode_t *cn = (cnode_t *)dp->cnode;
-    tboard_t *tboard = (tboard_t *)cn->tboard;
+    dpanel_t* dp = (dpanel_t*)df->dpanel;
+    cnode_t* cn = (cnode_t*)dp->cnode;
+    tboard_t* tboard = (tboard_t*)cn->tboard;
 
-    uint8_t buf[16];
+    uint8_t buf[16]; // TODO
 
-    void *p = dflow_task_create(tboard, df);
+    void* p = dflow_task_create(tboard, df);
     if (p != NULL) {
         derror = 0;
-        Base64decode((char *)buf, (char *)p);
-        *val = __extract_int(buf, Base64decode_len((char *)p));
+        Base64decode((char*)buf, (char*)p);
+        *val = __extract_int(buf, Base64decode_len((char*)p));
     } else {
         derror = -1;
         *val = 0;
@@ -645,7 +648,7 @@ void dfread_double(dftable_entry_t *df, double *val)
     cnode_t *cn = (cnode_t *)dp->cnode;
     tboard_t *tboard = (tboard_t *)cn->tboard;
 
-    uint8_t buf[16];
+    uint8_t buf[16]; // TODO
 
     void *p = dflow_task_create(tboard, df);
     if (p != NULL) {
@@ -664,7 +667,7 @@ void dfread_string(dftable_entry_t* df, char* val, int maxlen) {
     cnode_t* cn = (cnode_t*)dp->cnode;
     tboard_t* tboard = (tboard_t*)cn->tboard;
 
-    uint8_t buf[4096];
+    uint8_t buf[4096]; // TODO fix this
 
     void* p = dflow_task_create(tboard, df);
     if (p != NULL) {
@@ -680,70 +683,67 @@ void dfread_string(dftable_entry_t* df, char* val, int maxlen) {
     free(p);
 }
 
-void dfread_struct(dftable_entry_t *df, char *fmt, ...) {
-    dpanel_t *dp = (dpanel_t *)df->dpanel;
-    cnode_t *cn = (cnode_t *)dp->cnode;
-    tboard_t *tboard = (tboard_t *)cn->tboard;
+void dfread_struct(dftable_entry_t* df, char* fmt, ...) {
+    dpanel_t* dp = (dpanel_t*)df->dpanel;
+    cnode_t* cn = (cnode_t*)dp->cnode;
+    tboard_t* tboard = (tboard_t *)cn->tboard;
 
-    void *p = dflow_task_create(tboard, df);
+    void* p = dflow_task_create(tboard, df);
     if (p != NULL) {
         derror = 0;
-        uint8_t buf[4096];
-        Base64decode((char *)buf, (char *)p);
-        darg_entry_t* dargs = __extract_map(buf, Base64decode_len((char*)p)),* darg,* tmp;
 
         int len = strlen(fmt);
         assert(len > 0);
         va_list args;
         char* label;
 
+        darg_entry_t* dargs = NULL,* darg,* tmp;
+
         va_start(args, fmt);
         for(int i=0; i<len; i++){
             label = va_arg(args, char*);
-            HASH_FIND_STR(dargs, label, darg);
-            if(!darg){
-                printf("CBOR could not find field %s\n", label);
-                va_arg(args, void*);
-                continue;
-            }
+            darg = (darg_entry_t*)malloc(sizeof(darg_entry_t));
             switch(fmt[i]){
-            case 's':
-                if(darg->type == D_STRING_TYPE)
-                    *va_arg(args, char**) = darg->val.sval;
-                else
-                    printf("CBOR type mismatch at %s, excpected s\n", label);
-                break;
             case 'i':
-                if(darg->type == D_INT_TYPE)
-                    *va_arg(args, int*) = darg->val.ival;
-                else
-                    printf("CBOR type mismatch at %s, excpected i\n", label);
+                darg->type = D_INT_TYPE;
+                darg->loc.ival = va_arg(args, int*);
+                break;
+            case 'l':
+                darg->type = D_LONG_TYPE;
+                darg->loc.lval = va_arg(args, long long int*);
+                break;
+            case 's':
+                darg->type = D_STRING_TYPE;
+                darg->loc.nval = va_arg(args, nvoid*);
                 break;
             case 'd':
-                if(darg->type == D_DOUBLE_TYPE)
-                    *va_arg(args, double*) = darg->val.dval;
-                else
-                    printf("CBOR type mismatch at %s, excpected d\n", label);
+                darg->type = D_DOUBLE_TYPE;
+                darg->loc.dval = va_arg(args, double*);
                 break;
-            case 'f':
-                if(darg->type == D_DOUBLE_TYPE)
-                    *va_arg(args, float*) = (float)darg->val.dval;
-                else
-                    printf("CBOR type mismatch at %s, excpected f\n", label);
+            case 'n':
+                darg->type = D_NVOID_TYPE;
+                darg->loc.dval = va_arg(args, nvoid*);
                 break;
             default:
-                printf("CBOR unrecognized format option %c for %s\n", fmt[i], label);
+                printf("Unrecognized format option %c for %s\n", fmt[i], label);
                 va_arg(args, void*);
             }
-            HASH_DEL(dargs, darg);
-            free(darg->label);
-            free(darg);
+            HASH_ADD_STR(dargs, label, darg);
+
         }
         va_end(args);
+
+
+        int buflen = Base64decode_len((char*)p);
+        uint8_t* buf = (uint8_t*)malloc(buflen * sizeof(char));
+        Base64decode((char*)buf, (char*)p);
+
+        __extract_map(buf, buflen, dargs);
+        free(buf);
+
         HASH_ITER(hh, dargs, darg, tmp){
-            printf("CBOR recieved unused struct field %s\n", darg->label);
+            printf("CBOR had no input for struct field %s\n", darg->label);
             HASH_DEL(dargs, darg);
-            free(darg->label);
             free(darg);
         }
     } else // Just ignore when error? or could nullify all struct fields

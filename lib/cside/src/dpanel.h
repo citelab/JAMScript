@@ -76,7 +76,14 @@ typedef struct {
 typedef struct {
     char* label;
     dargtype_t type;
-    union _dargvalue_t val;
+    union _dargentry_location {
+        int* ival;
+        long long int* lval;
+        char* sval;
+        double* dval;
+        nvoid_t* nval;
+        void* vval;
+    } loc;
     UT_hash_handle hh;
 } darg_entry_t;
 
@@ -150,23 +157,25 @@ void dflow_callback(redisAsyncContext *c, void *r, void *privdata);
 void dpanel_ucallback2(redisAsyncContext *c, void *r, void *privdata);
 void dpanel_dcallback2(redisAsyncContext *c, void *r, void *privdata);
 
-void ufwrite_int(uftable_entry_t *uf, int x);
-void ufwrite_double(uftable_entry_t *uf, double x);
-void ufwrite_str(uftable_entry_t *uf, char *str);
-void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...);
+void ufwrite_int(uftable_entry_t* uf, int x);
+void ufwrite_long(uftable_entry_t* uf, long long int x);
+void ufwrite_double(uftable_entry_t* uf, double x);
+void ufwrite_str(uftable_entry_t* uf, char* str);
+void ufwrite_nvoid(uftable_entry_t* uf, nvoid* str);
+void ufwrite_struct(uftable_entry_t* uf, char* fmt, ...);
 
-void dfread_int(dftable_entry_t *df, int *val);
-void dfread_double(dftable_entry_t *df, double *val);
-void dfread_string(dftable_entry_t *df, char *val, int len);
-void dfread_struct(dftable_entry_t *df, char *fmt, ...);
+void dfread_int(dftable_entry_t* df, int* val);
+void dfread_double(dftable_entry_t* df, double* val);
+void dfread_string(dftable_entry_t* df, char* val, int len);
+void dfread_struct(dftable_entry_t* df, char* fmt, ...);
 
-int estimate_cbor_buffer_len(darg_t *u, int len);
-void do_cbor_encoding(CborEncoder *enc, darg_t *u, int len);
-void free_buffer(darg_t *u, int len);
+int estimate_cbor_buffer_len(darg_t* u, int len);
+void do_cbor_encoding(CborEncoder* enc, darg_t* u, int len);
+void free_buffer(darg_t* u, int len);
 
-int __extract_int(const uint8_t *buffer, size_t len);
-double __extract_double(const uint8_t *buffer, size_t len);
-char* __extract_str(const uint8_t *buffer, size_t len);
-darg_entry_t* __extract_map(const uint8_t* buffer, size_t len);
+int __extract_int(const uint8_t* buffer, size_t len);
+double __extract_double(const uint8_t* buffer, size_t len);
+char* __extract_str(const uint8_t* buffer, size_t len);
+darg_entry_t* __extract_map(const uint8_t* buffer, size_t len, darg_entry_t* dargs);
 
 #endif
