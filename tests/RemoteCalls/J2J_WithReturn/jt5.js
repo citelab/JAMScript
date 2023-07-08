@@ -20,4 +20,4 @@ setInterval(()=> {
     } else
 		console.log("Nothing to call...");
 
-}, 20);
+}, 2000);
