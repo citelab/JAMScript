@@ -1,7 +1,5 @@
 // @ToasterConfig
-// Fogs: 1
-// Devices: 1
-// Workers: 4
+// networkdescriptor: networkdescriptor.toml
 
 jcond {
     typeAonly: jsys.tag == "typeA";
@@ -14,10 +12,10 @@ let count = 10;
 let weDidThisCoverageMarker = false;
 
 
-jtask* function remoteEchoReceiver(str, count) {
+jtask function remoteEchoReceiver(str, count) {
     console.log("Received an echo!");
     console.log(str, count);
-//    coverage();
+    coverage();
     weDidThisCoverageMarker = true;
 }
 
@@ -27,12 +25,10 @@ jtask {fogonly} function compyou(str) {
     let qq = count * count;
     console.log("Value I am returning..... to the other side == ", qq);
 
-    remoteEcho("Fog to worker communication").catch((e)=> {
-	console.log("Calling remoteEcho from " + jsys.type + " got an error " + e);
-    });
+    remoteEcho("Fog to worker communication");
 
-  //  coverage();
-//    assert(weDidThisCoverageMarker);
+    coverage();
+    assert(weDidThisCoverageMarker);
     
     return qq;
 }
@@ -43,19 +39,16 @@ let lat = jsys.lat;
 setInterval(()=> {
     console.log("Tag..... ", jsys.tags, "device type ", jsys.type);
     if (jsys.type === 'device') {
-//        coverage();
+        coverage();
         long = (long + 5) % 170;
         jsys.setLoc({long: long, lat: lat});
         console.log("Longitude and Latitude .... ", jsys.long, jsys.lat);
     }
-
-    remoteEcho("Device to worker communication").catch((e)=> {
-	console.log("Calling remoteEcho from " + jsys.type + " got an error " + e);
-    });
-
-  //  coverage();
+    remoteEcho("Device to worker communication");
+    coverage();
     console.log("Calling compyou.. ");
-    compyou(" String = " + count++).then((y)=> {console.log(y.status(), y.values())}).catch(()=> {console.log("Helllo.....");});
+    let x = compyou(" String = " + count++); // --> let x = jworklib.machExecuteRV("compyou", ...)
+    x.then((y)=> {console.log(y.status(), y.values())}).catch(()=> {console.log("Helllo.....");});
 
 }, 3000);
 
