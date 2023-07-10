@@ -1,5 +1,5 @@
 #!/bin/bash
-
+echo homeslice
 IDIR="${BASH_SOURCE%/*}"
 if [[ ! -d "$IDIR" ]]; then IDIR="$PWD"; fi
 source "$IDIR/inc/misc_tools.sh"
@@ -245,6 +245,7 @@ doaout() {
             else
                 # As simple as can be
                 ./a.out $cargs &
+                echo This worked correctly
             fi
         fi
         ((counter++))
@@ -351,10 +352,10 @@ resolvedata() {
 
     local host="${name%:*}"
     local port="${name##*:}"
-
+    echo start
     startredis $port
     waitforredis $port
-
+    echo worked
     if [ $host == "docker" ]; then
         local ipaddr=`hostname -I`
         name=$ipaddr:$port

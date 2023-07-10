@@ -1,7 +1,5 @@
 // @ToasterConfig
-// Fogs: 1
-// Devices: 1
-// Workers: 4
+// networkdescriptor: networkdescriptor.toml
 
 jcond {
     typeAonly: jsys.tag == "typeA";
