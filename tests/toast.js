@@ -33,7 +33,6 @@ const TOASTER_JS_HOOK_ASSERT_R = `)){let _err = new Error(); console.log("@Toast
 const TOASTER_JS_HOOK_COVERAGE_L = `console.log("@ToasterCoverage#{`;
 const TOASTER_JS_HOOK_COVERAGE_R = `}#");`
 
-
 const TOASTER_ASSERT_KEYWORD = "@ToasterAssert";
 const TOASTER_COVERAGE_KEYWORD = "@ToasterCoverage";
 

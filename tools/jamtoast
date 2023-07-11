@@ -763,7 +763,7 @@ Toaster.prototype.executeTest = async function(test,
   const testStartTime = Date.now();
 
   // We should log compiler output in the event of a compiler error.
-  let testProcess = child_process.spawn(command, args, {shell: true, detached: true});
+  let testProcess = child_process.spawn(command, args, {shell: false, detached: true});
   this.testProcesses.add(testProcess.pid);
 
   let timeout = setTimeout(()=>{

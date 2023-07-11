@@ -1,0 +1,33 @@
+In these tests we want to test the following mechanisms.
+
+We have remote calls and uflows or dflows or both.
+The tasks are controlled by JCond expressions.
+
+JCond at the controller
+    = called by the worker
+    == jt30.* 
+
+JCond at the controller
+    = called by the worker
+    = called by the controller
+    == jt31.* 
+
+Repeat the above with tasks with return results
+    = * Failing now..
+    == jt32.*
+
+
+Repeat the above with some tasks that return results and others don't return results
+    == jt33.*
+
+
+JCond at the worker 
+    = called by the local worker 
+    = called by remote controllers from the device, fog levels
+    == jt34.*
+
+JCond at both sides 
+    = called by all sides 
+    == most complex test 
+    == jt35.*
+

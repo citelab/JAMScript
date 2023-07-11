@@ -22,7 +22,7 @@ topics_t *cnode_create_topics(char *app)
     char sbuf[1024];
     topics_t *t = (topics_t *)calloc(1, sizeof(topics_t));
     int tcnt = 0;
-    snprintf(sbuf, 1024, "/%s/replies/down", app);
+    snprintf(sbuf, 1024, "/%s/replies/down/c", app);
     t->subtopics[tcnt++] = strdup(sbuf);
     snprintf(sbuf, 1024, "/%s/announce/down", app);
     t->subtopics[tcnt++] = strdup(sbuf);
