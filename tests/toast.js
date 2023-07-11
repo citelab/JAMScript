@@ -9,42 +9,7 @@ const fs      = require('fs'),
       path    = require('path'),
       process = require('process'),
       assert  = require('assert'),
-      child_process = require('child_process'),
-      toml    = require('toml');
-
-
-const USAGE = `
-jamtoast [options] file
-Toaster is a testing framework for JAMScript that wraps over jamrun.
-Individual test files and test directories are both accepted inputs. If a
-directory is provided, toaster will recursively search for tests. Currently,
-a test is defined as one javascript file and one C file in the same directory
-with the same name. To specify an indidivudal test provide the path to the test
-without the .js or .c extension.
-
-
-Command Line Options:
--t [duration] --timeout [duration]   sets the maximum amount of time for a test to run.
-
-
-Keywords:
-Toaster provides two keywords that can be used inside of tests (both jside and cside).
-
-assert(condition);     -- this functions as a regular assert but hooks into the toaster error logging system
-coverage();            -- For a test to pass it must execute every coverage function in the test at least once.
-
-
-Toaster Config:
-For tests that must run on multiple nodes at once, the toaster config is a way of
-describing basic network structure. This is all done through comments within one of your test files.
-
-You start the configuration with the @ToasterConfig annotation.
-
-// @ToasterConfig
-// Fogs: [number of fogs]
-// Devices: [number of devices]
-// Workers: [number of workers for each device]
-`;
+      child_process = require('child_process');
 
 const TEST_RESULT_DIR_NAME = "toast-results";
 const DEFAULT_TEST_DIR = "toaster"
@@ -52,12 +17,12 @@ const DEFAULT_TEST_DIR = "toaster"
 const JAMRUNS_DIR = `${os.homedir()}/.jamruns`;
 
 const TOASTER_JS_HOOKS =
-`jtask function assert(cond){if(!(cond)){let _err = new Error(); console.log("\\n@ToasterAssert#{"+_err.stack+"}#");}}
+`jtask function assert(cond){if(!cond){let _err = new Error(); console.log("\\n@ToasterAssert#{"+_err.stack+"}#");}}
 jtask function coverage(_id){console.log("\\n@ToasterCoverage#{"+_id+"}#");}\n`;
 const TOASTER_C_HOOKS =
 `#undef assert
-#define assert(cond, line) {if(!(cond)){printf("\\n@ToasterAssert#{%d, %s}#\\n", line, #cond);fflush(stdout);}}
-#define coverage(_id){printf("\\n@ToasterCoverage#{%d}#\\n", _id);fflush(stdout);}\n`;
+#define assert(cond, line) {if(!cond){printf("\\n@ToasterAssert#{%d, %s}#\\n", line, #cond);}}
+#define coverage(_id){printf("\\n@ToasterCoverage#{%d}#\\n", _id);}\n`;
 
 
 // Just while the compiler is broken:
@@ -253,11 +218,10 @@ Toaster.prototype.walkTestDir = function (folder) {
       let baseName = file.substring(0, file.length-2);
       if(fs.existsSync(`${folder}/${baseName}.js`)){
         let testName = `${folder}/${baseName}`.substring(this.testDirectory.length+1);
+
         tests.push({
           testName: testName,
           baseName: baseName,
-	  appName: testName,
-	  testFolder: folder,
           cFile: `${folder}/${baseName}.c`,
           jsFile: `${folder}/${baseName}.js`,
           testResultDirectory: `${that.resultDirectory}/${testName}`,
@@ -272,9 +236,7 @@ Toaster.prototype.walkTestDir = function (folder) {
           networkConfig: {
             devices: 1,
             workers: 1,
-            fogs: 0,
-	    netDescPath: undefined,
-	    netDesc: undefined
+            fogs: 0
         }});
       }
     }
@@ -286,13 +248,10 @@ Toaster.prototype.walkTestDir = function (folder) {
 Toaster.prototype.scanTests = function () {
   if(this.conf.singleTest) {
     let basename = path.basename(this.testDirectory);
-    let folder = basename.substring(0, basename.lastIndexOf('/'));
     this.tests = [];
     this.tests.push({
       testName: basename,
       baseName: basename,
-      appName: basename,
-      testFolder: folder,
       cFile: `${this.testDirectory}.c`,
       jsFile: `${this.testDirectory}.js`,
       testResultDirectory: `${this.resultDirectory}/${basename}`,
@@ -307,9 +266,7 @@ Toaster.prototype.scanTests = function () {
       networkConfig: {
         devices: 1,
         workers: 1,
-        fogs: 0,
-	netDescPath: undefined,
-	netDesc: undefined
+        fogs: 0
       }
     });
   } else {
@@ -357,9 +314,8 @@ function findMatchingParens(text, start) {
 const FOGS_KEYWORD = "fogs:";
 const DEVICES_KEYWORD = "devices:";
 const WORKERS_KEYWORD = "workers:";
-const NET_DESC_KEYWORD = "networkdescriptor:";
 Toaster.prototype.scanForToasterConfig = function(test, line, lineIter) {
-  const keywords = [FOGS_KEYWORD, DEVICES_KEYWORD, WORKERS_KEYWORD, NET_DESC_KEYWORD];
+  const keywords = [FOGS_KEYWORD, DEVICES_KEYWORD, WORKERS_KEYWORD];
   if(line.includes("@ToasterConfig")) {
     let lineResult;
     while(!(lineResult = lineIter.next()).done) {
@@ -379,31 +335,12 @@ Toaster.prototype.scanForToasterConfig = function(test, line, lineIter) {
             test.networkConfig.fogs = parseInt(value);
           } else if (keyword == WORKERS_KEYWORD) {
             test.networkConfig.workers = parseInt(value);
-          } else if (keyword == NET_DESC_KEYWORD) {
-
-	    if(test.networkConfig.netDescPath != undefined) {
-	      this.log("ERROR: More than one network descriptor provided!");
-	    }
-	    test.networkConfig.netDescPath = value;
-	  }
+          }
         }
       }
 
       if(!keywordFound) {
-        break;
-      }
-    }
-    // Check valid config
-    if(test.networkConfig.netDescPath && (test.networkConfig.fogs != 0 || test.networkConfig.devices != 1)) {
-      this.log("ERROR: Toaster config has both network descriptor and manual network configuration.");
-    }
-
-    if(test.networkConfig.netDescPath) {
-      let netDescToml = fs.readFileSync(test.testFolder + "/" + test.networkConfig.netDescPath);
-      test.networkConfig.netDesc = toml.parse(netDescToml);
-      
-      if('appname' in test.networkConfig.netDesc) {
-	test.appName = test.networkConfig.netDesc['appname'];
+        return;
       }
     }
   }
@@ -651,16 +588,13 @@ function extractOutputKeywordData(text){
 }
 
 Toaster.prototype.processOutput = function (test, data) {
-  if(test.state == TestState.STARTING) {
-    this.setTestState(test, TestState.RUNNING);
-  }
-
   if(typeof data != 'string') {
     return;
   }
-
   for(let line of data.split('\n')) {
-    if (test.state == TestState.PASSED ||
+    if(test.state == TestState.STARTING) {
+      this.setTestState(test, TestState.RUNNING);
+    } else if (test.state == TestState.PASSED ||
               test.state == TestState.FAILED) {
       return false;
     }
@@ -671,7 +605,8 @@ Toaster.prototype.processOutput = function (test, data) {
     if(line.includes("error") || line.includes("Error")) {
       // NOTE: this is super hacky edge case handling for an already hacky
       // way of detecting errors!
-      console.log("\n\nTest!");
+
+      console.log("WHAT");
       if(line.includes("error: 0")) {
         continue;
       }
@@ -716,32 +651,19 @@ Toaster.prototype.cleanupResidualTests = function() {
   this.testProcesses.clear();
 }
 
-Toaster.prototype.executeTest = async function(test,
-					       machType,
-					       tags=undefined,
-					       data=undefined,
-					       shouldHost=undefined) {
+Toaster.prototype.executeTest = async function(test, machType) {
   let command = `jamrun`
   let args =  [
     `${test.testResultDirectory}/test.jxe`,
     `--app=${this.testDirectoryName}`,
     //"--log",
-    "--disable-stdout-redirect"];
+    "--disable-stdout-redirect",
+    "--temp_broker"];
 
   if(machType==NODETYPE_FOG) {
     args.push("--fog");
   } else if (machType==NODETYPE_DEVICE){
     args.push(`--num=${test.networkConfig.workers}`);
-  }
-
-  if(tags) {
-    args.push("--tags="+tags);
-  }
-  if(data) {
-    args.push("--data="+data);
-  }
-  if(shouldHost && machType==NODETYPE_FOG) {
-    args.push("--local_registry");
   }
 
   let that = this;
@@ -768,7 +690,6 @@ Toaster.prototype.executeTest = async function(test,
 
   let timeout = setTimeout(()=>{
     if(test.state == TestState.STARTING) {
-      debugger;
       test.failDetails = FailDetails.LAUNCH_FAILED;
       that.setTestState(test, TestState.FAILED);
       this.testProcesses.delete(testProcess.pid);
@@ -785,7 +706,6 @@ Toaster.prototype.executeTest = async function(test,
   }, this.timeoutAmount);
 
   testProcess.stdout.setEncoding('utf-8');
-  testProcess.stderr.setEncoding('utf-8');
 
   testProcess.stdout.on('data', (data) => {
     if(that.processOutput(test, data)) {
@@ -813,7 +733,6 @@ Toaster.prototype.executeTest = async function(test,
       } else if(test.state == TestState.STARTING) {
         test.failDetails = FailDetails.LAUNCH_FAILED
         that.setTestState(test, TestState.FAILED);
-        debugger;
       }
 
       let report = that.generateReport(test);
@@ -876,41 +795,14 @@ Toaster.prototype.runTest = async function (test) {
 
   // Resume as soon as one of these exits.
   await new Promise( (resolve) => {
-    if(test.networkConfig.netDesc) {
-      let netDesc = test.networkConfig.netDesc;
-      console.log(netDesc);
-      if('fog' in netDesc) {
-	for (let fog of netDesc['fog']) {
-	  this.executeTest(test,
-			   NODETYPE_FOG,
-			   fog['tags'],
-			   fog['data'],
-			   fog['hostLocalRegistry']
-			  ).then(()=>{resolve()});
-	}
-      }
-      
-      if('device' in netDesc) {
-	for (let fog of netDesc['device']) {
-	  this.executeTest(test,
-			   NODETYPE_DEVICE,
-			   fog['tags'],
-			   fog['data']
-			  ).then(()=>{resolve()});
-	}
-      }
-    } else {
-      for(let _ = 0; _ < test.networkConfig.devices; _++){
-	this.executeTest(test, NODETYPE_DEVICE).then(()=>{resolve()});
-      }
-
-      for(let _ = 0; _ < test.networkConfig.fogs; _++){
-	this.executeTest(test, NODETYPE_FOG).then(()=>{resolve()});
-      }
+    for(let _ = 0; _ < test.networkConfig.devices; _++){
+      this.executeTest(test, NODETYPE_DEVICE).then(()=>{resolve()});
     }
-     
+
+    for(let _ = 0; _ < test.networkConfig.fogs; _++){
+      this.executeTest(test, NODETYPE_FOG).then(()=>{resolve()});
+    }
   });
-  
   this.cleanupResidualTests();
 
 }
@@ -977,9 +869,6 @@ function processArgs() {
           conf.timeoutAmount = undefined;
         }
         i++;
-      } else if (args[i] === "-h" || args[i] === "--help") {
-	  console.log(USAGE);
-	  process.exit();
       }
     } else {
       let inputPath = args[i];

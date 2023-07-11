@@ -1,7 +1,7 @@
 // @ToasterConfig
 // Fogs: 1
 // Devices: 1
-// Workers: 4
+// Workers: 1
 
 jcond {
     typeAonly: jsys.tag == "typeA";

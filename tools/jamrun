@@ -110,7 +110,7 @@ startmqtt() {
     local cfile=$2
 
     # Check whether the MQTT server is running.. if not start it
-    $MOSQUITTO_PUB -p $port -t "test" -m "hello"
+    $MOSQUITTO_PUB -p $port -t "test" -m "hello" 2> /dev/null
 
     if [ $? -ne 0 ]; then
         if [ -z $NOVERBOSE ]; then
@@ -713,6 +713,7 @@ if [ -e "$file" ]; then
                 getappid $jamfolder $folder/$iport $app
                 dojamout_p1 $type $iport $folder
                 setuptmux $folder/$iport
+		
                 doaout $num $iport $group
                 dojamout_p2 $type $iport $folder $group
                 if [ -z $bg ]; then
