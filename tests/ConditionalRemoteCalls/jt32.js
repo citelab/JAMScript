@@ -8,9 +8,10 @@ let fcount = 10;
 let scount = 10;
 let count = 10;
 
-jtask* {fogOnly} function processMessage(str) {
+jtask {fogOnly} function processMessage(str) {
     fcount++;
     console.log("First .. Processing the message ... ",  fcount, str);
+    return fcount;
 }
 
 jtask* {fogOnly} function controllerFunc(str) {
@@ -18,9 +19,10 @@ jtask* {fogOnly} function controllerFunc(str) {
     console.log("Printing at the Controller... ", count, str);
 }
 
-jtask* {deviceOnly} function anotherProcessMsg(str) {
+jtask {deviceOnly} function anotherProcessMsg(str) {
     scount++;
     console.log("First .. Processing the message ... ",  scount, str);
+    return scount;
 }
 
 setInterval(()=> {
