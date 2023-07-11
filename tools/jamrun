@@ -352,10 +352,10 @@ resolvedata() {
 
     local host="${name%:*}"
     local port="${name##*:}"
-    echo start
+
     startredis $port
     waitforredis $port
-    echo worked
+    
     if [ $host == "docker" ]; then
         local ipaddr=`hostname -I`
         name=$ipaddr:$port

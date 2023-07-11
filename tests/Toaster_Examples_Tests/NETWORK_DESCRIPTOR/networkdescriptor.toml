@@ -2,15 +2,15 @@ appname="qwe"
 
 [[device]]
 #data="127.0.0.1:6381"
-#	tags="somewhat-less-cool-node"
+tags="somewhat-less-cool-node"
 
 
 [[fog]]
 #data="127.0.0.1:6379"
-#tags="cool-node"
+tags="cool-node"
 
 
 [[fog]]
 #data="127.0.0.1:6380"
-#tags="even-cooler-node"
-#host-local-registry=true
+tags="even-cooler-node"
+host-local-registry=true

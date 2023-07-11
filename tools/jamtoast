@@ -430,6 +430,9 @@ Toaster.prototype.compileTest = async function(test) {
   var coverageUID = 0;
   var lineCount = 0;
 
+
+  // Roll c-side and j-side processing into one single processor...
+  
   // Process c-side
   fs.writeSync(cTestOutput, TOASTER_C_HOOKS);
 
@@ -445,6 +448,11 @@ Toaster.prototype.compileTest = async function(test) {
 
     this.scanForToasterConfig(test, line, lineIter);
 
+    let commentStart = Number.MAX_SAFE_INTEGER;
+    if(line.includes("//")) {
+      commentStart = line.indexOf("//");
+    }
+
     if(line.toLowerCase().includes("error")) {
       test.compilerWarnings +=`WARNING: Printing 'Error' to standard out will mark the test as failed! (${lineCount})\n`;
       test.compilerWarnings += `--> ${line}\n`;
@@ -453,27 +461,32 @@ Toaster.prototype.compileTest = async function(test) {
     if(line.includes(ASSERT_IDENTIFIER)) {
       regularLine = false;
       let start = line.indexOf(ASSERT_IDENTIFIER);
-      let end = findMatchingParens(line, start);
-      fs.writeSync(cTestOutput, line.substring(0, end));
-      fs.writeSync(cTestOutput, `,${lineCount}`);
-      fs.writeSync(cTestOutput, line.substring(end) + "\n");
+      if(start < commentStart) {
+	let end = findMatchingParens(line, start);
+	fs.writeSync(cTestOutput, line.substring(0, end));
+	fs.writeSync(cTestOutput, `,${lineCount}`);
+	fs.writeSync(cTestOutput, line.substring(end) + "\n");	
+      }
     }
     if(line.includes(COVERAGE_IDENTIFIER)) {
       regularLine = false;
       let start = line.indexOf(COVERAGE_IDENTIFIER);
-      let end = findMatchingParens(line, start);
+      
+      if(start < commentStart) {
+	let end = findMatchingParens(line, start);
 
-      let currentCoverageID = coverageUID++;
+	let currentCoverageID = coverageUID++;
 
-      fs.writeSync(cTestOutput, line.substring(0, end));
-      fs.writeSync(cTestOutput, `${currentCoverageID}`);
-      fs.writeSync(cTestOutput, line.substring(end)+"\n");
+	fs.writeSync(cTestOutput, line.substring(0, end));
+	fs.writeSync(cTestOutput, `${currentCoverageID}`);
+	fs.writeSync(cTestOutput, line.substring(end)+"\n");
 
-      coverageMarkers.push({
-        id: currentCoverageID,
-        line: lineCount,
-        covered: false
-      });
+	coverageMarkers.push({
+          id: currentCoverageID,
+          line: lineCount,
+          covered: false
+	});
+      }
     }
     if(regularLine) {
       fs.writeSync(cTestOutput, line+"\n");
@@ -498,41 +511,50 @@ Toaster.prototype.compileTest = async function(test) {
       test.compilerWarnings += `--> ${line}\n`;
     }
 
+    let commentStart = Number.MAX_SAFE_INTEGER;
+    if(line.includes("//")) {
+      commentStart = line.indexOf("//");
+    }
+
     // TODO: remove this when compiler bug is fixed
     if(line.includes(ASSERT_IDENTIFIER)) {
       regularLine = false;
       let start = line.indexOf(ASSERT_IDENTIFIER);
-      let end = findMatchingParens(line, start);
+      if(start < commentStart) {
+	let end = findMatchingParens(line, start);
 
-      let condition = line.substring(start + ASSERT_IDENTIFIER.length, end);
-      if(condition=="") {
-        this.log(`\nAssert is missing condition! \\/ (${lineCount})\n--> ${line}`);
+	let condition = line.substring(start + ASSERT_IDENTIFIER.length, end);
+	if(condition=="") {
+          this.log(`\nAssert is missing condition! \\/ (${lineCount})\n--> ${line}`);
+	}
+	fs.writeSync(jsTestOutput, line.substring(0, start));
+	fs.writeSync(jsTestOutput, TOASTER_JS_HOOK_ASSERT_L);
+	fs.writeSync(jsTestOutput, condition);
+	fs.writeSync(jsTestOutput, TOASTER_JS_HOOK_ASSERT_R);
+	fs.writeSync(jsTestOutput, line.substring(end+2)+"\n");
       }
-      fs.writeSync(jsTestOutput, line.substring(0, start));
-      fs.writeSync(jsTestOutput, TOASTER_JS_HOOK_ASSERT_L);
-      fs.writeSync(jsTestOutput, condition);
-      fs.writeSync(jsTestOutput, TOASTER_JS_HOOK_ASSERT_R);
-      fs.writeSync(jsTestOutput, line.substring(end+2)+"\n");
     }
 
     if(line.includes(COVERAGE_IDENTIFIER)) {
       regularLine = false;
       let start = line.indexOf(COVERAGE_IDENTIFIER);
-      let end = findMatchingParens(line, start);
+      if(start < commentStart) {
+	let end = findMatchingParens(line, start);
 
-      let currentCoverageID = coverageUID++;
+	let currentCoverageID = coverageUID++;
 
-      fs.writeSync(jsTestOutput, line.substring(0, start));
-      fs.writeSync(jsTestOutput, TOASTER_JS_HOOK_COVERAGE_L);
-      fs.writeSync(jsTestOutput, `${currentCoverageID}`);
-      fs.writeSync(jsTestOutput, TOASTER_JS_HOOK_COVERAGE_R);
-      fs.writeSync(jsTestOutput, line.substring(end+2)+"\n");
+	fs.writeSync(jsTestOutput, line.substring(0, start));
+	fs.writeSync(jsTestOutput, TOASTER_JS_HOOK_COVERAGE_L);
+	fs.writeSync(jsTestOutput, `${currentCoverageID}`);
+	fs.writeSync(jsTestOutput, TOASTER_JS_HOOK_COVERAGE_R);
+	fs.writeSync(jsTestOutput, line.substring(end+2)+"\n");
 
-      coverageMarkers.push({
-        id: currentCoverageID,
-        line: lineCount,
-        covered: false
-      });
+	coverageMarkers.push({
+          id: currentCoverageID,
+          line: lineCount,
+          covered: false
+	});
+      }
     }
     if(regularLine) {
       fs.writeSync(jsTestOutput, line+"\n");
@@ -671,7 +693,6 @@ Toaster.prototype.processOutput = function (test, data) {
     if(line.includes("error") || line.includes("Error")) {
       // NOTE: this is super hacky edge case handling for an already hacky
       // way of detecting errors!
-      console.log("\n\nTest!");
       if(line.includes("error: 0")) {
         continue;
       }
@@ -813,7 +834,6 @@ Toaster.prototype.executeTest = async function(test,
       } else if(test.state == TestState.STARTING) {
         test.failDetails = FailDetails.LAUNCH_FAILED
         that.setTestState(test, TestState.FAILED);
-        debugger;
       }
 
       let report = that.generateReport(test);
@@ -878,7 +898,6 @@ Toaster.prototype.runTest = async function (test) {
   await new Promise( (resolve) => {
     if(test.networkConfig.netDesc) {
       let netDesc = test.networkConfig.netDesc;
-      console.log(netDesc);
       if('fog' in netDesc) {
 	for (let fog of netDesc['fog']) {
 	  this.executeTest(test,
