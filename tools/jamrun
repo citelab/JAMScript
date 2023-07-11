@@ -1,5 +1,4 @@
 #!/bin/bash
-echo homeslice
 IDIR="${BASH_SOURCE%/*}"
 if [[ ! -d "$IDIR" ]]; then IDIR="$PWD"; fi
 source "$IDIR/inc/misc_tools.sh"
