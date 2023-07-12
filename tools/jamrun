@@ -1,5 +1,4 @@
 #!/bin/bash
-echo homeslice
 IDIR="${BASH_SOURCE%/*}"
 if [[ ! -d "$IDIR" ]]; then IDIR="$PWD"; fi
 source "$IDIR/inc/misc_tools.sh"
@@ -110,7 +109,7 @@ startmqtt() {
     local cfile=$2
 
     # Check whether the MQTT server is running.. if not start it
-    $MOSQUITTO_PUB -p $port -t "test" -m "hello"
+    $MOSQUITTO_PUB -p $port -t "test" -m "hello" 2> /dev/null
 
     if [ $? -ne 0 ]; then
         if [ -z $NOVERBOSE ]; then
@@ -352,10 +351,10 @@ resolvedata() {
 
     local host="${name%:*}"
     local port="${name##*:}"
-    echo start
+
     startredis $port
     waitforredis $port
-    echo worked
+    
     if [ $host == "docker" ]; then
         local ipaddr=`hostname -I`
         name=$ipaddr:$port
@@ -713,6 +712,7 @@ if [ -e "$file" ]; then
                 getappid $jamfolder $folder/$iport $app
                 dojamout_p1 $type $iport $folder
                 setuptmux $folder/$iport
+		
                 doaout $num $iport $group
                 dojamout_p2 $type $iport $folder $group
                 if [ -z $bg ]; then
