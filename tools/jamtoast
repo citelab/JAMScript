@@ -809,6 +809,9 @@ Toaster.prototype.executeTest = async function(test,
   testProcess.stderr.setEncoding('utf-8');
 
   testProcess.stdout.on('data', (data) => {
+    if(that.conf.verbose) {
+      process.stdout.write(data);
+    }
     if(that.processOutput(test, data)) {
       cleanup();
     }
@@ -984,7 +987,8 @@ function processArgs() {
   let conf = {
     testDirectory: undefined,
     singleTest: false,
-    timeoutAmount: undefined
+    timeoutAmount: undefined,
+    verbose: false
   };
 
   for (var i = 0; i < args.length; i++) {
@@ -999,6 +1003,8 @@ function processArgs() {
       } else if (args[i] === "-h" || args[i] === "--help") {
 	  console.log(USAGE);
 	  process.exit();
+      } else if (args[i] === "-v" || args[i] === "--verbose") {
+	conf.verbose = true;
       }
     } else {
       let inputPath = args[i];
