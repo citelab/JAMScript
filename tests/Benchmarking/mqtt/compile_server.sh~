@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo "compiling...."
+clang -o testserver  -g  testserver.c icache.c ./include/minicoro.h utilities.c args.c dpanel-utils.c auxpanel.c  base64.c multicast.c uuid4.c jcond.c  core.c cnode.c history.c processor.c  mqtt-adapter.c command.c executor.c executor-utils.c  twheel-utils.c  nvoid.c timeout.c timeout-bitops.c  tboard.c  task.c  ./queue/queue.c  dpanel.c  -Iinclude -lhiredis -levent  -ltinycbor -lmosquitto -lmujs
+

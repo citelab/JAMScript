@@ -1,4 +1,4 @@
 #!/bin/sh
 
 echo "compiling...."
-clang -g ../include/minicoro.h utilities.c args.c  multicast.c uuid4.c jcond.c  core.c cnode.c history.c processor.c  mqtt_adapter.c command.c executor.c executor-utils.c  twheel-utils.c  nvoid.c timeout.c timeout-bitops.c  tboard.c  task.c  queue/queue.c  testdp.c dpanel.c  -I../include -lhiredis -levent  -ltinycbor -lmosquitto -lmujs
+clang -g ../include/minicoro.h utilities.c args.c  multicast.c uuid4.c jcond.c  core.c cnode.c history.c processor.c  mqtt-adapter.c command.c executor.c executor-utils.c  twheel-utils.c  nvoid.c timeout.c timeout-bitops.c  tboard.c  task.c  queue/queue.c  dpanel.c  -I../include -lhiredis -levent  -ltinycbor -lmosquitto -lmujs
