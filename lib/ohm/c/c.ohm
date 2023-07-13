@@ -342,7 +342,7 @@ C {
     restrict = ("restrict" | "__restrict__" | "__restrict") ~identPart
     return = "return" ~identPart
     short = "short" ~identPart
-    signed = "signe+d" ~identPart
+    signed = "signed" ~identPart
     sizeof = "sizeof" ~identPart
     static = "static" ~identPart
     stdcall = "__stdcall" ~identPart
