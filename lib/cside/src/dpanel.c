@@ -733,7 +733,6 @@ void dfread_struct(dftable_entry_t* df, char* fmt, ...) {
         }
         va_end(args);
 
-
         int buflen = Base64decode_len((char*)p);
         uint8_t* buf = (uint8_t*)malloc(buflen * sizeof(char));
         Base64decode((char*)buf, (char*)p);
