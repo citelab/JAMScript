@@ -64,8 +64,9 @@ C {
                     | ("#" | "`") identName                                             -- Id
 
 
-    // Expressions
-    Expr            = NonemptyListOf<Assign_expr, ",">
+    // Expressions: Ambiguous grammar, but Ohm will prioritize the first match
+    Expr            = Assign_expr
+                    | NonemptyListOf<Assign_expr, ",">                                  -- list
 
 
     Assign_expr     = Unary_expr ( "=" | "*=" | "/=" | ">>=" | "<<=" | "+=" | "-="| "%=" | "&=" | "|=" | "^=" ) Assign_expr          -- assign
