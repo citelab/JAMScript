@@ -1,11 +1,11 @@
 {
     "char": {
-        "c_pattern": "\\\'%c\\\'",
+        "c_pattern": "%c",
         "jamlib": "ival",
         "c_code": "i",
         "buffer": false,
         "c_type": "int",
-        "c_enum": "INT_TYPE",
+        "c_enum": "INT_TYPE"
     },
     "int": {
         "c_pattern": "%i",
@@ -13,7 +13,7 @@
         "c_code": "i",
         "buffer": false,
         "c_type": "int",
-        "c_enum": "INT_TYPE",
+        "c_enum": "INT_TYPE"
     },
     "long long int": {
         "c_pattern": "%lli",
@@ -21,7 +21,7 @@
         "c_code": "l",
         "buffer": false,
         "c_type": "long long int",
-        "c_enum": "LONG_TYPE",
+        "c_enum": "LONG_TYPE"
     },
     "float": {
         "c_pattern": "%f",
@@ -29,7 +29,7 @@
         "c_code": "d",
         "buffer": false,
         "c_type": "double",
-        "c_enum": "DOUBLE_TYPE",
+        "c_enum": "DOUBLE_TYPE"
     },
     "double": {
         "c_pattern": "%lf",
@@ -37,15 +37,15 @@
         "c_code": "d",
         "buffer": false,
         "c_type": "double",
-        "c_enum": "DOUBLE_TYPE",
+        "c_enum": "DOUBLE_TYPE"
     },
     "string": {
-        "c_pattern": "\\\"%s\\\"",
+        "c_pattern": "%s",
         "jamlib": "sval",
         "c_code": "s",
         "buffer": true,
         "c_type": "char*",
-        "c_enum": "STRING_TYPE",
+        "c_enum": "STRING_TYPE"
     },
     "nvoid": {
         "c_pattern": "nvoid(%d)",
@@ -53,7 +53,7 @@
         "c_code": "n",
         "buffer": true,
         "c_type": "nvoid*",
-        "c_enum": "NVOID_TYPE",
+        "c_enum": "NVOID_TYPE"
     },
     "void": {
         "c_pattern": "void",
@@ -61,6 +61,6 @@
         "c_code": "v",
         "buffer": false,
         "c_type": "void",
-        "c_enum": "NULL_TYPE",
-    },
+        "c_enum": "NULL_TYPE"
+    }
 }
