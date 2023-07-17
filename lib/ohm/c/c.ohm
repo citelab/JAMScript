@@ -70,7 +70,6 @@ C {
 
 
     Assign_expr     = Unary_expr ( "=" | "*=" | "/=" | ">>=" | "<<=" | "+=" | "-="| "%=" | "&=" | "|=" | "^=" ) Assign_expr          -- assign
-                    | Unary_expr "=" "{" ListOf<Struct_access, ","> "}"                 -- Struct
                     | Cond_expr
 
     Cond_expr       = Lor_expr "?" Expr ":" Cond_expr                                   -- cond
@@ -234,11 +233,10 @@ C {
                     | "{" ListOf<Designator, ","> ","? "}"                              -- DesignatorList
                     | Assign_expr
 
-    Designator      = "." Assign_expr
+    Designator      = "." id (Designator | Desig_assign)                                   -- Struct
+                    | "[" Assign_expr ("..." Assign_expr)? "]" (Designator | Desig_assign) -- Array
 
-	//JAM Additions
-	struct_id       = ("." id)+
-	Struct_access   = struct_id ":" Expr
+    Desig_assign    = "=" Assign_expr
 
     // GCC Statements
 
