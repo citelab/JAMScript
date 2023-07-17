@@ -1,9 +1,9 @@
 JAMJS <: ES6 {
-    Declaration     += Jexport 
+    Declaration     += Jexport
                     | Jrequire
                     | Jconditional
                     | Jdata_decl
-                    | Activity_def
+                    | Task_def
 
     Jexport         = jexport identifier at ("device" | "fog" | "cloud") ";"        -- specified
                     | jexport identifier ";"                                       -- default
@@ -15,12 +15,12 @@ JAMJS <: ES6 {
 
     C_type          = "struct" identifier "{" Struct_entry* "}"     -- struct
                     | "char" "*"                                    -- pointer
-                    | "char" 
+                    | "char"
                     | "double"
                     | "int"
                     | "float"
 
-    Struct_entry    = C_type identifier ";"                                 
+    Struct_entry    = C_type identifier ";"
 
 
     Jdata_spec      = C_type identifier as jdata_type "(" ("fog"|"cloud") ")" ";"   -- specified
@@ -49,9 +49,9 @@ JAMJS <: ES6 {
 
     jcond_joiner    = "&&" | "||"
 
-    Async_activity  = jasync Jcond_specifier? Jtask_attr_spec? FunctionDeclaration
+    Async_task  = jasync Jcond_specifier? Jtask_attr_spec? FunctionDeclaration
 
-    Sync_activity   = jsync Jcond_specifier? Jtask_attr_spec? FunctionDeclaration
+    Sync_task   = jsync Jcond_specifier? Jtask_attr_spec? FunctionDeclaration
 
     Jcond_specifier = "{" Jcond_expr "}"
 
@@ -62,18 +62,18 @@ JAMJS <: ES6 {
                     | identifier                                    -- id
 
     jcond_expr_op   = "&&" | "||"
-    
+
     Jtask_attr_spec = "[" ListOf<Jtask_attr, ",">  "]"
-    
+
     Jtask_attr      = reuse "=" booleanLiteral
                     | reuse_limit "=" numericLiteral
                     | reuse_argdev "=" percentage
                     | max_rate "=" numericLiteral
-                    
+
    	percentage 	    = numericLiteral "%"
 
-    Activity_def (a activity definition)  = Sync_activity
-                                          | Async_activity
+    Task_def        = Sync_task
+                    | Async_task
 
     as = "as" ~identifierPart
     at = "at" ~identifierPart
