@@ -1,0 +1,49 @@
+
+Tests planned
+=============
+* Prediction cache
+    Objective: Test the PC in the controller side.
+    Setup: One controller and many workers (20 or so). The workers are pushing the C2J calls to the controller with 
+    the same parameters. Task at the controller is compute heavy (medium). So, it spins at the controller for some time. 
+    
+    Expected results: With PC turned on, we need to see better throughput. More tasks completed in shorter times.
+
+* Fog hoisting testing
+    Objective: Show that force fog switching is working.
+    Setup: Have some fogs and devices under them. Run a forceFogHoist() on the devices that would convert all devices to fogs.
+    Continuously log the status of the devices and see whether all of them turned into fogs.
+
+    Expected results: See whether all devices are turning into fogs and then back to devices.
+
+* Conditional calls (Turn off A)
+    Objective: Partial test - examine whether some of the nodes can turn themselves off using JCond - A
+    Setup: Have 3-5 fogs. Use a tag value to turn off some of the Fogs. Call the fogs from the devices.
+
+    Expected results: We need to get results from the fogs that are not turned off. The fogs that are turned off should not
+    contribute to the results. If all the fogs are turned off, we should get a jerror set at the worker.
+
+* Conditional calls (Turn off B)
+    Objective: Partial test - examine whether some of the nodes can turn themselves off using JCond - B
+    Setup: Have 3-5 workers. Use a tag value to turn off some of the workers. Call the workers from the device-level or fog-level controller.
+
+    Expected results: We need to get results from the devices that are not turned off. The devices that are turned off should not
+    contribute to the results. If all the devices are turned off, we should get an empty set at the controller (no error).
+
+    NOTE: Put the above in the language spec - expected behaviour.
+
+
+Tests completed
+===============
+* All remote call tests are completed. Tested without JCond or UDFlows. 
+
+Tests in progress
+=================
+June 9, 2023
+    JCond tests are in progress
+        C2J has problems with synchronous J sides that are disabled using JCond
+        The C side is hanging expecting a return value that is not coming.
+        We need to return with an error code (set using jerror).
+
+
+
+        

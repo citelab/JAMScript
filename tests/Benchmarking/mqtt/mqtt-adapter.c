@@ -16,7 +16,7 @@ void mqtt_message_callback(struct mosquitto *mosq, void *udata, const struct mos
     server_t *serv = (server_t *)udata;
     if (msg->payloadlen) {
         command_t *cmd = command_from_data(NULL, msg->payload, msg->payloadlen);
-        msg_processor(serv, cmd);
+        //msg_processor(serv, cmd);
         //command_free(cmd);
     } else {
         printf("%s\n", msg->topic);
