@@ -1,7 +1,0 @@
-June 9, 2023
-    JCond tests are in progress
-        C2J has problems with synchronous J sides that are disabled using JCond
-        The C side is hanging expecting a return value that is not coming.
-        We need to return with an error code (set using jerror).
-    
-        
