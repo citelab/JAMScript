@@ -233,10 +233,10 @@ C {
                     | "{" ListOf<Designator, ","> ","? "}"                              -- DesignatorList
                     | Assign_expr
 
-    Designator      = "." id (Designator | Desig_assign)                                   -- Struct
-                    | "[" Assign_expr ("..." Assign_expr)? "]" (Designator | Desig_assign) -- Array
+    Designator      = (Desig_field)+ "=" Assign_expr
 
-    Desig_assign    = "=" Assign_expr
+    Desig_field    = "." id                                    -- Struct
+                   | "[" Assign_expr ("..." Assign_expr)? "]"  -- Array
 
     // GCC Statements
 

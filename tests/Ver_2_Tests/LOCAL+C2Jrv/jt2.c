@@ -1,5 +1,7 @@
 int compyou(char *s);
 
+int x = 10;
+
 jtask* localme(int c, string s) {
     while(1) {
         jsleep(20000);
@@ -11,9 +13,10 @@ jtask* localyou(int c, string s) {
     int x;
     while('1' - '0') {
         jsleep(10000);
-        printf("############-->>> Hello YOU  %d, %s\n", c, s);
-        x = compyou(x = s * 1 + !!0);
+        global.printf("############-->>> Hello YOU  %d, %s\n", c, s);
+        x = compyou(s);
         printf("---->> Value = %d\n", x);
+        printf("---->> Global= %d\n", japp.x);
         if (1)
             2;
         else
@@ -23,7 +26,7 @@ jtask* localyou(int c, string s) {
 
 int main(int argc, char *argv[])
 {
-    localme(10, "message-to-c-local-node");
-    localyou(10, "message-to-j");
+    localme(x, "message-to-c-local-node");
+    localyou(japp.x, "message-to-j");
     return 0;
 }
