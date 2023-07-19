@@ -13,8 +13,8 @@ jtask* {fogonly} function remoteCall(test) {
 }
 
 function doCall() {
-  remoteCall().catch((e)=>{});
-  setImmediate(doCall);
+    remoteCall().catch((e)=>{});
+    setImmediate(doCall);
 }
 
 setImmediate(doCall);
