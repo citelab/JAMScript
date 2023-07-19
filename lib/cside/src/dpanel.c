@@ -635,11 +635,11 @@ void dfread_int(dftable_entry_t* df, int* val)
         derror = 0;
         Base64decode((char*)buf, (char*)p);
         *val = __extract_int(buf, Base64decode_len((char*)p));
+        free(p);
     } else {
         derror = -1;
         *val = 0;
     }
-    free(p);
 }
 
 void dfread_double(dftable_entry_t *df, double *val)
@@ -655,11 +655,11 @@ void dfread_double(dftable_entry_t *df, double *val)
         derror = 0;
         Base64decode((char *)buf, (char *)p);
         *val = __extract_double(buf, Base64decode_len((char *)p));
+        free(p);
     } else {
         derror = -1;
         *val = 0;
     }
-    free(p);
 }
 
 void dfread_string(dftable_entry_t* df, char* val, int maxlen) {
@@ -667,7 +667,7 @@ void dfread_string(dftable_entry_t* df, char* val, int maxlen) {
     cnode_t* cn = (cnode_t*)dp->cnode;
     tboard_t* tboard = (tboard_t*)cn->tboard;
 
-    uint8_t buf[4096]; // TODO fix this
+    uint8_t buf[4096];
 
     void* p = dflow_task_create(tboard, df);
     if (p != NULL) {
@@ -676,11 +676,11 @@ void dfread_string(dftable_entry_t* df, char* val, int maxlen) {
         char* x = __extract_str(buf, Base64decode_len((char*)p));
         strncpy(val, x, maxlen);
         free(x);
+        free(p);
     } else {
         derror = -1;
         *val = 0;
     }
-    free(p);
 }
 
 void dfread_struct(dftable_entry_t* df, char* fmt, ...) {
@@ -745,7 +745,7 @@ void dfread_struct(dftable_entry_t* df, char* fmt, ...) {
             HASH_DEL(dargs, darg);
             free(darg);
         }
-    } else // Just ignore when error? or could nullify all struct fields
+        free(p);
+    } else
         derror = -1;
-    free(p);
 }
