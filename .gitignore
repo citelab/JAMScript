@@ -8,6 +8,8 @@ node_modules/*
 *.db
 *.dot
 dot.pdf
+ast.pdf
+cst.pdf
 
 .DS_Store
 
