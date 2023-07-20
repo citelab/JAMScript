@@ -7,7 +7,7 @@ let taskid = 1;
 
 function testInject(sock) {
     count++;
-    let msg = JAMP.createMachTaskReq("remoteCall", ["xxxx"], "nodeid", taskid++, 1);
+    let msg = JAMP.createMachTaskReq("remoteCall", ["xxxx"], "nodeid", taskid++, 0);
     smsg = cbor.encode(msg);
     sock.publish('/yyy/requests/up', smsg);
 }
@@ -37,7 +37,7 @@ function doLoadingX(sock) {
 }
 
 function netSetup() {
-    let sock = mqtt.connect("tcp://localhost:1883", {});
+    let sock = mqtt.connect("tcp://127.0.0.1:1883", {});
     sock.on('connect', ()=> {
         sock.subscribe('/test-channel');
     });

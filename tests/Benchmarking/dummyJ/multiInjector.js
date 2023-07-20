@@ -15,7 +15,7 @@ const sender = udp.createSocket({type:"udp4", reuseAddr:true});
 
 function testInject() {
     count++;
-    let data = JAMP.createMachTaskReq("remoteCall", ["xxxx"], "nodeid", taskid++, 1);
+    let data = JAMP.createMachTaskReq("remoteCall", ["xxxx"], "nodeid", taskid++, 0);
     data = cbor.encode(data);
     sender.send(data, 0, data.length, sport, multicast_addr);
 }

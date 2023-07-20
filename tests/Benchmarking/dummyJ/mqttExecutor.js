@@ -12,7 +12,6 @@ function netSetup() {
     return sock;
 }
 
-
 let sock = netSetup();
 sock.on('message', (m, q)=> {
     let qmesg = cbor.decode(q);
