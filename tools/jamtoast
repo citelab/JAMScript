@@ -256,7 +256,7 @@ Toaster.prototype.walkTestDir = function (folder) {
         tests.push({
           testName: testName,
           baseName: baseName,
-	  appName: testName,
+	  appName: baseName,
 	  testFolder: folder,
           cFile: `${folder}/${baseName}.c`,
           jsFile: `${folder}/${baseName}.js`,
@@ -778,7 +778,7 @@ Toaster.prototype.executeTest = async function(test,
       }
       that.testProcesses.delete(testProcess.pid);
       //that.killWorkerTmuxSessions(test);
-    }catch(e){this.log(e)}
+    } catch(e){ this.log(e); }
   }
 
   const testStartTime = Date.now();
@@ -793,6 +793,7 @@ Toaster.prototype.executeTest = async function(test,
       test.failDetails = FailDetails.LAUNCH_FAILED;
       that.setTestState(test, TestState.FAILED);
       this.testProcesses.delete(testProcess.pid);
+      cleanup();
     }
     if(test.state == TestState.RUNNING) {
       if(test.coverageMarkers.length) {
@@ -841,7 +842,7 @@ Toaster.prototype.executeTest = async function(test,
 
       let report = that.generateReport(test);
       test.output.write(`\n\n\n${report}`);
-      test.output.close();
+
       resolve();
     });
   });
@@ -934,7 +935,8 @@ Toaster.prototype.runTest = async function (test) {
   });
   
   this.cleanupResidualTests();
-
+  
+  test.output.close();
 }
 
 Toaster.prototype.finalReport = function(duration) {
