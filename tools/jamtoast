@@ -358,8 +358,9 @@ const FOGS_KEYWORD = "fogs:";
 const DEVICES_KEYWORD = "devices:";
 const WORKERS_KEYWORD = "workers:";
 const NET_DESC_KEYWORD = "networkdescriptor:";
+const TIMEOUT_KEYWORD = "runtotimeout:";
 Toaster.prototype.scanForToasterConfig = function(test, line, lineIter) {
-  const keywords = [FOGS_KEYWORD, DEVICES_KEYWORD, WORKERS_KEYWORD, NET_DESC_KEYWORD];
+  const keywords = [FOGS_KEYWORD, DEVICES_KEYWORD, WORKERS_KEYWORD, NET_DESC_KEYWORD, TIMEOUT_KEYWORD];
   if(line.includes("@ToasterConfig")) {
     let lineResult;
     while(!(lineResult = lineIter.next()).done) {
@@ -379,6 +380,8 @@ Toaster.prototype.scanForToasterConfig = function(test, line, lineIter) {
             test.networkConfig.fogs = parseInt(value);
           } else if (keyword == WORKERS_KEYWORD) {
             test.networkConfig.workers = parseInt(value);
+	  } else if (keyword == TIMEOUT_KEYWORD) {
+	    test.runToTimeout = value.toLowerCase().includes('true');
           } else if (keyword == NET_DESC_KEYWORD) {
 
 	    if(test.networkConfig.netDescPath != undefined) {
@@ -721,8 +724,10 @@ Toaster.prototype.processOutput = function (test, data) {
       }
       // Test is complete
       if(test.completedCoverageMarkers == test.coverageMarkers.length) {
-        this.setTestState(test,TestState.PASSED);
-        return true;
+	if(!test.runToTimeout) {
+          this.setTestState(test,TestState.PASSED);
+          return true;
+	}
       }
     }
 
@@ -796,7 +801,7 @@ Toaster.prototype.executeTest = async function(test,
       cleanup();
     }
     if(test.state == TestState.RUNNING) {
-      if(test.coverageMarkers.length) {
+      if(test.coverageMarkers.length != test.completedCoverageMarkers) {
         test.failDetails = FailDetails.TEST_FAILED;
         that.setTestState(test, TestState.FAILED);
       } else {
@@ -839,10 +844,10 @@ Toaster.prototype.executeTest = async function(test,
         test.failDetails = FailDetails.LAUNCH_FAILED
         that.setTestState(test, TestState.FAILED);
       }
-
-      let report = that.generateReport(test);
-      test.output.write(`\n\n\n${report}`);
-
+      if(this.testProcesses.size) {
+	let report = that.generateReport(test);
+	test.output.write(`\n\n\n${report}`);
+      }
       resolve();
     });
   });
@@ -899,7 +904,7 @@ Toaster.prototype.runTest = async function (test) {
 
 
   // Resume as soon as one of these exits.
-  await new Promise( (resolve) => {
+  await new Promise( async (resolve) => {
     if(test.networkConfig.netDesc) {
       let netDesc = test.networkConfig.netDesc;
       if('fog' in netDesc) {
@@ -910,6 +915,7 @@ Toaster.prototype.runTest = async function (test) {
 			   fog['data'],
 			   fog['hostLocalRegistry']
 			  ).then(()=>{resolve()});
+	  await new Promise((resolve)=>{setTimeout(()=>{resolve();}, 1000)});
 	}
       }
       
@@ -920,15 +926,18 @@ Toaster.prototype.runTest = async function (test) {
 			   fog['tags'],
 			   fog['data']
 			  ).then(()=>{resolve()});
+	  await new Promise((resolve)=>{setTimeout(()=>{resolve();}, 1000)});
 	}
       }
     } else {
-      for(let _ = 0; _ < test.networkConfig.devices; _++){
-	this.executeTest(test, NODETYPE_DEVICE).then(()=>{resolve()});
-      }
-
       for(let _ = 0; _ < test.networkConfig.fogs; _++){
 	this.executeTest(test, NODETYPE_FOG).then(()=>{resolve()});
+	await new Promise((resolve)=>{setTimeout(()=>{resolve();}, 1000)});
+      }
+
+      for(let _ = 0; _ < test.networkConfig.devices; _++){
+	this.executeTest(test, NODETYPE_DEVICE).then(()=>{resolve()});
+	await new Promise((resolve)=>{setTimeout(()=>{resolve();}, 1000)});
       }
     }
      
