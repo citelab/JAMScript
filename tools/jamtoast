@@ -745,7 +745,7 @@ Toaster.prototype.executeTest = async function(test,
   let command = `jamrun`
   let args =  [
     `${test.testResultDirectory}/test.jxe`,
-    `--app=${this.testDirectoryName}`,
+    `--app=${test.appName}`,
     //"--log",
     "--disable-stdout-redirect"];
 
