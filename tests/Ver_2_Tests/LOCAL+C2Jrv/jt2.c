@@ -1,9 +1,10 @@
 int compyou(char *s);
-
 int x = 10;
 
 jtask* localme(int c, string s) {
     while(1) {
+        if (x == 0)
+            continue;
         jsleep(20000);
         printf("############-->>> Hello  ME  %d... %s\n", c, s);
     }
