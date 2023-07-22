@@ -375,9 +375,8 @@ Toaster.prototype.scanForToasterConfig = function(test, line, lineIter) {
 
           if(keyword == FOGS_KEYWORD) {
             test.networkConfig.fogs = parseInt(value);
-            //TODO; check if this is correct!
           } else if (keyword == DEVICES_KEYWORD) {
-            test.networkConfig.fogs = parseInt(value);
+            test.networkConfig.devices = parseInt(value);
           } else if (keyword == WORKERS_KEYWORD) {
             test.networkConfig.workers = parseInt(value);
 	  } else if (keyword == TIMEOUT_KEYWORD) {
@@ -694,6 +693,9 @@ Toaster.prototype.processOutput = function (test, data) {
 
     // Try to pick up any spurrious errors we may have missed otherwise.
     if(line.includes("error") || line.includes("Error")) {
+      if(this.conf.ignoreError) {
+	continue;
+      }
       // NOTE: this is super hacky edge case handling for an already hacky
       // way of detecting errors!
       if(line.includes("error: 0")) {
@@ -902,7 +904,10 @@ Toaster.prototype.runTest = async function (test) {
     return;
   }
 
+  console.log(test.networkConfig);
 
+  let sleep = 750;
+  
   // Resume as soon as one of these exits.
   await new Promise( async (resolve) => {
     if(test.networkConfig.netDesc) {
@@ -915,7 +920,7 @@ Toaster.prototype.runTest = async function (test) {
 			   fog['data'],
 			   fog['hostLocalRegistry']
 			  ).then(()=>{resolve()});
-	  await new Promise((resolve)=>{setTimeout(()=>{resolve();}, 1000)});
+	  await new Promise((resolve2)=>{setTimeout(()=>{resolve2();}, sleep)});
 	}
       }
       
@@ -926,18 +931,18 @@ Toaster.prototype.runTest = async function (test) {
 			   fog['tags'],
 			   fog['data']
 			  ).then(()=>{resolve()});
-	  await new Promise((resolve)=>{setTimeout(()=>{resolve();}, 1000)});
+	  await new Promise((resolve2)=>{setTimeout(()=>{resolve2();}, sleep)});
 	}
       }
     } else {
       for(let _ = 0; _ < test.networkConfig.fogs; _++){
 	this.executeTest(test, NODETYPE_FOG).then(()=>{resolve()});
-	await new Promise((resolve)=>{setTimeout(()=>{resolve();}, 1000)});
+	await new Promise((resolve2)=>{setTimeout(()=>{resolve2();}, sleep)});
       }
 
       for(let _ = 0; _ < test.networkConfig.devices; _++){
 	this.executeTest(test, NODETYPE_DEVICE).then(()=>{resolve()});
-	await new Promise((resolve)=>{setTimeout(()=>{resolve();}, 1000)});
+	await new Promise((resolve2)=>{setTimeout(()=>{resolve2();}, sleep)});
       }
     }
      
@@ -1016,6 +1021,8 @@ function processArgs() {
 	  process.exit();
       } else if (args[i] === "-v" || args[i] === "--verbose") {
 	conf.verbose = true;
+      } else if (args[i] === "-i" || args[i] === "--ignore-error") {
+	conf.ignoreError = true;
       }
     } else {
       let inputPath = args[i];
