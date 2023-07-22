@@ -17,6 +17,8 @@ from fabric import Connection
 import time
 import cartopy.crs as ccrs
 
+from contextlib import ExitStack
+
 #appName = "qwe"
 appName = "jt1"
 
@@ -40,6 +42,7 @@ robinson = ccrs.Robinson()
 
 remote_host = None
 remote_tunnels = []
+remote_tunnel_context_stack = None
 remote_connection = None
 
 def geo2Distance_STANK(pos1,pos2):
@@ -287,6 +290,7 @@ def recursiveFindNodes(url, port, mach_type, node_id, location):
     global remote_tunnels
     global remote_host
     global remote_connection
+    global remote_tunnel_context_stack
     
     real_url = url
     if remote_host:
@@ -294,7 +298,8 @@ def recursiveFindNodes(url, port, mach_type, node_id, location):
         print("semi BRUH!")
         if port not in remote_tunnels:
             print("BRUH!")
-            remote_connection.forward_local(port)
+            remote_tunnel_context_stack.enter_context(remote_connection.forward_local(port))
+            #remote_connection.forward_local(port)
             remote_tunnels.append(port)
             
     
@@ -328,11 +333,15 @@ if __name__ == '__main__':
     if(args.remote):
         remote_host = args.remote
         remote_connection = Connection(remote_host)
-        with remote_connection.forward_local(18830):
+        with ExitStack() as stack:
+            remote_tunnel_context_stack = stack
+            remote_tunnel_context_stack.enter_context(remote_connection.forward_local(18830))
             remote_tunnels.append(18830)
             recursiveFindNodes("127.0.0.1", 18830, "global_registry", "", {"lat":0,"long":0})
-    
-    mobility_display().run()
+            mobility_display().run()
+    else:
+        recursiveFindNodes("127.0.0.1", 18830, "global_registry", "", {"lat":0,"long":0})
+        mobility_display().run()
 
 
 # We can bind the remote server to a local address
