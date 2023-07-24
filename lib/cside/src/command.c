@@ -345,7 +345,7 @@ bool command_qargs_alloc(const char* fmt, arg_t** rargs, va_list args)
 {
     arg_t* qargs = NULL;
     nvoid_t* nv;
-    int flen = strlen(fmt);
+    int flen = strlen(fmt), nvlen;
 
     if (flen > 0)
         qargs = (arg_t*)calloc(flen, sizeof(arg_t));
@@ -354,9 +354,10 @@ bool command_qargs_alloc(const char* fmt, arg_t** rargs, va_list args)
 
     for (int i = 0; i < flen; i++) {
         switch(fmt[i]) {
-        case 'n':
-            nv = va_arg(args, nvoid_t*);
-            qargs[i].val.nval = nvoid_new(&nv->data, nv->len); // TODO? should we clone this?
+        case 'n': // Note we expect two values from the args here -- from generated code
+            nvlen = va_args(args, int);
+            nv = va_arg(args, void*);
+            qargs[i].val.nval = nvoid_new(nv, nvlen);
             qargs[i].type = NVOID_TYPE;
             break;
         case 's':
