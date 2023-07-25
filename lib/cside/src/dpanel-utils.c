@@ -215,7 +215,6 @@ darg_entry_t* __extract_map(const uint8_t* buffer, size_t len, darg_entry_t* dar
             cbor_value_advance(&map);
         }
         HASH_DEL(dargs, darg);
-        free(darg);
     }
     return dargs;
 }

@@ -554,9 +554,7 @@ void dpanel_dcallback(redisAsyncContext* c, void* r, void* privdata)
 }
 
 // this is callback used by the actual reading function for the data in dflow
-// so.. here we need to
-void dflow_callback(redisAsyncContext* c, void* r, void* privdata)
-{
+void dflow_callback(redisAsyncContext* c, void* r, void* privdata) {
     redisReply* reply = r;
     // the privdata is pointing to the dftable_entry
     dftable_entry_t* entry = (dftable_entry_t*)privdata;
@@ -572,10 +570,10 @@ void dflow_callback(redisAsyncContext* c, void* r, void* privdata)
 
     HASH_FIND(hh, t->task_table, &(entry->taskid), sizeof(uint64_t), rtask);
     if (rtask != NULL) {
-	redisReply* cborData = (reply->element[7]);
+        redisReply* cborData = (reply->element[7]);
         rtask->data = malloc(cborData->len);
 
-	memcpy(rtask->data, cborData->str, cborData->len);
+        memcpy(rtask->data, cborData->str, cborData->len);
         rtask->data_size = cborData->len;
         if (rtask->calling_task != NULL) {
             rtask->status = DFLOW_TASK_COMPLETED;
@@ -595,8 +593,7 @@ void dflow_callback(redisAsyncContext* c, void* r, void* privdata)
 // it is creating an entry for the variable.
 // only done once...
 //
-dftable_entry_t* dp_create_dflow(dpanel_t* dp, char* key, char* fmt)
-{
+dftable_entry_t* dp_create_dflow(dpanel_t* dp, char* key, char* fmt) {
     // create the dftable_entry, mutex needs to be initialized
     dftable_entry_t* df = (dftable_entry_t*)calloc(sizeof(dftable_entry_t), 1);
     df->key = strdup(key);
@@ -622,8 +619,7 @@ dftable_entry_t* dp_create_dflow(dpanel_t* dp, char* key, char* fmt)
  * pushing a JSON object with field names in the case of structures. For primitive
  * values the J side is pushing the values alone.
  */
-void dfread_int(dftable_entry_t* df, int* val)
-{
+void dfread_int(dftable_entry_t* df, int* val) {
     dpanel_t* dp = (dpanel_t*)df->dpanel;
     cnode_t* cn = (cnode_t*)dp->cnode;
     tboard_t* tboard = (tboard_t*)cn->tboard;
@@ -639,11 +635,10 @@ void dfread_int(dftable_entry_t* df, int* val)
     }
 }
 
-void dfread_double(dftable_entry_t *df, double *val)
-{
-    dpanel_t *dp = (dpanel_t *)df->dpanel;
-    cnode_t *cn = (cnode_t *)dp->cnode;
-    tboard_t *tboard = (tboard_t *)cn->tboard;
+void dfread_double(dftable_entry_t* df, double* val) {
+    dpanel_t* dp = (dpanel_t*)df->dpanel;
+    cnode_t* cn = (cnode_t*)dp->cnode;
+    tboard_t* tboard = (tboard_t*)cn->tboard;
 
     dflow_task_response_t res = dflow_task_create(tboard, df);
     if (res.buf != NULL) {
@@ -661,7 +656,6 @@ void dfread_string(dftable_entry_t* df, char* val, int maxlen) {
     cnode_t* cn = (cnode_t*)dp->cnode;
     tboard_t* tboard = (tboard_t*)cn->tboard;
 
-
     dflow_task_response_t res = dflow_task_create(tboard, df);
     if (res.buf != NULL) {
         derror = 0;
@@ -675,11 +669,11 @@ void dfread_string(dftable_entry_t* df, char* val, int maxlen) {
     }
 }
 
+#define DFREAD_STRUCT_STATIC_FIELD_LENGTH 32
 void dfread_struct(dftable_entry_t* df, char* fmt, ...) {
     dpanel_t* dp = (dpanel_t*)df->dpanel;
     cnode_t* cn = (cnode_t*)dp->cnode;
     tboard_t* tboard = (tboard_t *)cn->tboard;
-
 
     dflow_task_response_t res = dflow_task_create(tboard, df);
     if (res.buf != NULL) {
@@ -689,12 +683,17 @@ void dfread_struct(dftable_entry_t* df, char* fmt, ...) {
         va_list args;
         char* label;
 
+        darg_entry_t darg_static[DFREAD_STRUCT_STATIC_FIELD_LENGTH],* darg_mem;
         darg_entry_t* dargs = NULL,* darg,* tmp;
+        if (len > DFREAD_STRUCT_STATIC_FIELD_LENGTH) // try to use static allocation
+            darg_mem = (darg_entry_t*)malloc(sizeof(darg_entry_t) * len);
+        else
+            darg_mem = darg_static;
 
         va_start(args, fmt);
         for(int i=0; i<len; i++){
             label = va_arg(args, char*);
-            darg = (darg_entry_t*)malloc(sizeof(darg_entry_t)); // TODO do this once
+            darg = &darg_mem[i];
             switch(fmt[i]){
             case 'i':
                 darg->type = D_INT_TYPE;
@@ -721,17 +720,17 @@ void dfread_struct(dftable_entry_t* df, char* fmt, ...) {
                 va_arg(args, void*);
             }
             HASH_ADD_STR(dargs, label, darg);
-
         }
         va_end(args);
 
-        __extract_map(buf, buflen, dargs);
+        __extract_map(res.buf, res.len, dargs);
 
         HASH_ITER(hh, dargs, darg, tmp){
             printf("CBOR had no input for struct field %s\n", darg->label);
             HASH_DEL(dargs, darg);
-            free(darg);
         }
+        if (len > DFREAD_STRUCT_STATIC_FIELD_LENGTH)
+            free(darg_mem);
         free(res.buf);
     } else
         derror = -1;
