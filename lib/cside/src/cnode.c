@@ -17,12 +17,13 @@ int get_jamclock(cnode_t *cn)
     return 0;
 }
 
+// Memory leak here
 topics_t *cnode_create_topics(char *app)
 {
     char sbuf[1024];
     topics_t *t = (topics_t *)calloc(1, sizeof(topics_t));
     int tcnt = 0;
-    snprintf(sbuf, 1024, "/%s/replies/down", app);
+    snprintf(sbuf, 1024, "/%s/replies/down/c", app);
     t->subtopics[tcnt++] = strdup(sbuf);
     snprintf(sbuf, 1024, "/%s/announce/down", app);
     t->subtopics[tcnt++] = strdup(sbuf);
@@ -45,6 +46,7 @@ void cnode_topics_destroy(topics_t *t)
     for (int i = 0; i < t->length; i++)
         free(t->subtopics[i]);
     free(t->requesttopic);
+    free(t->selfrequesttopic);
     free(t->replytopic);
     free(t);
 }

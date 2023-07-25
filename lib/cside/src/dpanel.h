@@ -27,6 +27,7 @@ typedef struct {
     char *fmt;
     uint64_t clock;
     char *value;
+    int len;
 } uflow_obj_t;
 
 typedef struct {
@@ -86,7 +87,6 @@ typedef struct {
     } loc;
     UT_hash_handle hh;
 } darg_entry_t;
-
 
 enum dpstate_t {
     NEW = 0,

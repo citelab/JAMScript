@@ -127,7 +127,7 @@ command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name, uint64_t ta
     cbor_encode_text_stringz(&mapEncoder, "cmd");
     cbor_encode_int(&mapEncoder, cmd);
     // store and encode subcmd
-    cmdo->cmd = subcmd;
+    cmdo->subcmd = subcmd;
     cbor_encode_text_stringz(&mapEncoder, "subcmd");
     cbor_encode_int(&mapEncoder, subcmd);
     // store and encode fn_name

@@ -1,5 +1,4 @@
 #!/bin/bash
-
 IDIR="${BASH_SOURCE%/*}"
 if [[ ! -d "$IDIR" ]]; then IDIR="$PWD"; fi
 source "$IDIR/inc/misc_tools.sh"
@@ -110,7 +109,7 @@ startmqtt() {
     local cfile=$2
 
     # Check whether the MQTT server is running.. if not start it
-    $MOSQUITTO_PUB -p $port -t "test" -m "hello"
+    $MOSQUITTO_PUB -p $port -t "test" -m "hello" 2> /dev/null
 
     if [ $? -ne 0 ]; then
         if [ -z $NOVERBOSE ]; then
@@ -118,7 +117,8 @@ startmqtt() {
             echo "Attempting to start MQTT at $port"
         fi
         if [ $machine = Mac ]; then
-            open -n -a $MOSQUITTO --stdout /dev/null --args -c $cfile 
+            open -n -a $MOSQUITTO --stdout /dev/null --args -c $cfile
+	        #$MOSQUITTO -c $cfile &>/dev/null & MOSQUITTO_PID=$!
             #MOSQUITTO_PID=$! # Currently Broken
         elif [ $machine = Linux ]; then
             nohup $MOSQUITTO -c $cfile &>/dev/null & MOSQUITTO_PID=$!
@@ -155,12 +155,14 @@ dojamout_p2() {
     fi
 }
 
-
 cleanup() {
      if [ $killbroker == "1" ]; then
         echo Killing broker with PID: $MOSQUITTO_PID
         kill -9 $MOSQUITTO_PID
     fi
+    #echo ${AOUT_PIDS[@]}
+    #kill -9 ${AOUT_PIDS[@]}
+
     #reset
     cleanuptmux
     exit 1
@@ -228,14 +230,21 @@ doaout() {
             # execute the program.. we are in the folder..
             buildcargs "-a=$jappid" "-p=$port" "-n=$counter" "-g=$group" "-t=$tags"
             local cargs=$results
-            if [ -z $log ]; then
-                $TMUX new-session -s $tmuxapp-$counter -d  "$VALGRIND ./a.out $cargs"
-            else
-                if [ `uname` == "Linux" ]; then
-                    $TMUX new-session -s $tmuxapp-$counter -d  script -a -c "$VALGRIND ./a.out $cargs" -f log
+
+            if [ -z $DISABLE_STDOUT_REDIRECT ]; then
+                if [ -z $log ]; then
+                    $TMUX new-session -s $tmuxapp-$counter -d  "$VALGRIND ./a.out $cargs"
                 else
-                    $TMUX new-session -s $tmuxapp-$counter -d  "script -a -t 1 log ./a.out $cargs"
+                    if [ `uname` == "Linux" ]; then
+                        $TMUX new-session -s $tmuxapp-$counter -d  script -a -c "$VALGRIND ./a.out $cargs" -f log
+                    else
+                        $TMUX new-session -s $tmuxapp-$counter -d  "script -a -t 1 log ./a.out $cargs"
+                    fi
                 fi
+            else
+                # As simple as can be
+                ./a.out $cargs &
+                echo This worked correctly
             fi
         fi
         ((counter++))
@@ -300,22 +309,21 @@ getappid() {
 }
 
 killtmux() {
-
     for q in `tmux ls | grep $1 | cut -d ':' -f 1`; do
+        echo $q
         tmux kill-session -t $q
     done
 }
 
 cleanuptmux() {
-    if [ ! -z $tmuxapp ]; then
-        killtmux $tmuxapp
-    fi
+    #if [ ! -z $tmuxapp ]; then
+        #killtmux $tmuxapp
+    #fi
     exit
 }
 
 startredis() {
     local port=$1
-
     # Start redis with no protected-mode and at the port
     echo -e "port $1\nprotected-mode no" | redis-server  --port $port  - 1> /dev/null &
 }
@@ -325,9 +333,12 @@ waitforredis() {
 
     while : ; do
         local present=`ps auwwx | grep redis-server | grep $port | wc -l | tr -d '[:space:]'`
+
         if [ $present == "1" ]; then
             break
         fi
+
+	echo Trying to find redis server...
         sleep 1
     done
     if [ -z $NOVERBOSE ]; then
@@ -345,7 +356,7 @@ resolvedata() {
 
     startredis $port
     waitforredis $port
-
+    
     if [ $host == "docker" ]; then
         local ipaddr=`hostname -I`
         name=$ipaddr:$port
@@ -597,6 +608,9 @@ while :; do
 		--valgrind)
 			VALGRIND="$VALGRIND_OPTS"
 			;;
+        --disable-stdout-redirect)
+            DISABLE_STDOUT_REDIRECT=1
+            ;;
         --)              # End of all options.
             shift
             break
@@ -692,7 +706,7 @@ if [ -e "$file" ]; then
                 done
                 if [ -z $local ]; then
                     group="$((iport-1882))"
-                else 
+                else
                     group=0
                 fi
                 create_missingdir $folder/$iport
@@ -700,6 +714,7 @@ if [ -e "$file" ]; then
                 getappid $jamfolder $folder/$iport $app
                 dojamout_p1 $type $iport $folder
                 setuptmux $folder/$iport
+		
                 doaout $num $iport $group
                 dojamout_p2 $type $iport $folder $group
                 if [ -z $bg ]; then

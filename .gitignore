@@ -13,6 +13,8 @@ cst.pdf
 
 .DS_Store
 
+**/toast-results
+
 *.out
 **/jamout.js
 **/jamout.c
@@ -22,7 +24,7 @@ cst.pdf
 **/*.conf/*
 **/dump.rdb
 **/errlog
-
+**/toast-results
 /.vscode
 /.idea
 .sconsign.dblite

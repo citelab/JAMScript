@@ -203,10 +203,10 @@ void dpanel_uaddall(dpanel_t* dp) { // add all pending uflow objects to outgoing
             pthread_mutex_unlock(&(dp->mutex));
             if (last || !--overrun) {
                 // send with a callback
-                redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
+                redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value, uobj->len);
             } else {
                 // send without a callback for pipelining.
-                redisAsyncCommand(dp->uctx, dpanel_uerrorcheck, NULL, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %s", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
+                redisAsyncCommand(dp->uctx, dpanel_uerrorcheck, NULL, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value, uobj->len);
             }
             freeUObject(uobj);
             free(next);
@@ -310,7 +310,8 @@ void freeUObject(uflow_obj_t* uobj) {
 }
 
 
-uflow_obj_t* uflow_obj_new(uftable_entry_t* uf, char* vstr)
+
+uflow_obj_t* uflow_obj_new(uftable_entry_t* uf, char* vstr, int len)
 {
     uflow_obj_t* uo = (uflow_obj_t *)calloc(sizeof(uflow_obj_t), 1);
     uo->key = uf->key;
@@ -318,8 +319,10 @@ uflow_obj_t* uflow_obj_new(uftable_entry_t* uf, char* vstr)
     dpanel_t* dp = uf->dpanel;
     cnode_t* cn = dp->cnode;
     uo->clock = get_jamclock(cn);
-    uo->value = strdup(vstr);
 
+    uo->value = malloc(len);
+    uo->len = len;
+    memcpy(uo->value, vstr, len);
     return uo;
 }
 
@@ -331,14 +334,13 @@ void ufwrite_int(uftable_entry_t* uf, int x)
     uflow_obj_t* uobj;
 
     uint8_t buf[16];
-    char out[32];
 
     CborEncoder encoder;
     cbor_encoder_init(&encoder, (uint8_t*)&buf, sizeof(buf), 0);
     cbor_encode_int(&encoder, x);
+
     int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t*)&buf);
-    Base64encode(out, (char*)buf, len);
-    uobj = uflow_obj_new(uf, out);
+    uobj = uflow_obj_new(uf, (char*)buf, len);
 
     e = queue_new_node(uobj);
     pthread_mutex_lock(&(dp->ufmutex));
@@ -354,14 +356,13 @@ void ufwrite_double(uftable_entry_t* uf, double x)
     uflow_obj_t* uobj;
 
     uint8_t buf[16];
-    char out[32];
 
     CborEncoder encoder;
     cbor_encoder_init(&encoder, (uint8_t*)&buf, sizeof(buf), 0);
     cbor_encode_double(&encoder, x);
+
     int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t*)&buf);
-    Base64encode(out, (char*)buf, len);
-    uobj = uflow_obj_new(uf, out);
+    uobj = uflow_obj_new(uf, (char*)buf, len);
 
     e = queue_new_node(uobj);
     pthread_mutex_lock(&(dp->ufmutex));
@@ -377,15 +378,15 @@ void ufwrite_str(uftable_entry_t* uf, char* str)
     struct queue_entry* e = NULL;
     uflow_obj_t* uobj;
 
-    uint8_t buf[4096]; // TODO
-    char out[8192];
+    uint8_t buf[4096];
 
     CborEncoder encoder;
     cbor_encoder_init(&encoder, (uint8_t*)&buf, sizeof(buf), 0);
     cbor_encode_text_stringz(&encoder, str);
+
     int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t*)&buf);
-    Base64encode(out, (char*)buf, len);
-    uobj = uflow_obj_new(uf, out);
+    uobj = uflow_obj_new(uf, (char*)buf, len);
+
     e = queue_new_node(uobj);
     pthread_mutex_lock(&(dp->ufmutex));
     queue_insert_tail(&(dp->ufqueue), e);
@@ -406,7 +407,7 @@ void ufwrite_struct(uftable_entry_t* uf, char* fmt, ...)
     int len = strlen(fmt);
     assert(len > 0);
 
-    uargs = (darg_t*)calloc(len, sizeof(darg_t));
+    uargs = (darg_t*)calloc(len, sizeof(darg_t)); // TODO can this just be a malloc
 
     va_start(args, fmt);
     for (int i = 0; i < len; i++) {
@@ -441,14 +442,14 @@ void ufwrite_struct(uftable_entry_t* uf, char* fmt, ...)
     va_end(args);
 
     uint8_t buf[4096];
-    char out[8192];
 
     CborEncoder encoder;
     cbor_encoder_init(&encoder, (uint8_t*)&buf, sizeof(buf), 0);
     do_cbor_encoding(&encoder, uargs, len);
+
     int clen = cbor_encoder_get_buffer_size(&encoder, (uint8_t*)&buf);
-    Base64encode(out, (char*)buf, clen);
-    uobj = uflow_obj_new(uf, out);
+    uobj = uflow_obj_new(uf, (char*)buf, clen);
+
     free_buffer(uargs, len);
     e = queue_new_node(uobj);
     pthread_mutex_lock(&(dp->ufmutex));
@@ -564,19 +565,19 @@ void dflow_callback(redisAsyncContext* c, void* r, void* privdata)
     remote_task_t* rtask = NULL;
 
     if (reply == NULL) {
-        if (c->errstr) {
+        if (c->errstr)
             printf("errstr: %s\n", c->errstr);
-        }
         return;
     }
 
     HASH_FIND(hh, t->task_table, &(entry->taskid), sizeof(uint64_t), rtask);
-    if (rtask != NULL)
-    {
-        rtask->data = strdup(reply->element[7]->str);
-        rtask->data_size = 1;
-        if (rtask->calling_task != NULL)
-        {
+    if (rtask != NULL) {
+	redisReply* cborData = (reply->element[7]);
+        rtask->data = malloc(cborData->len);
+
+	memcpy(rtask->data, cborData->str, cborData->len);
+        rtask->data_size = cborData->len;
+        if (rtask->calling_task != NULL) {
             rtask->status = DFLOW_TASK_COMPLETED;
             assert(mco_push(rtask->calling_task->ctx, rtask, sizeof(remote_task_t)) == MCO_SUCCESS);
             // place parent task back to appropriate queue - should be batch
@@ -621,21 +622,17 @@ dftable_entry_t* dp_create_dflow(dpanel_t* dp, char* key, char* fmt)
  * pushing a JSON object with field names in the case of structures. For primitive
  * values the J side is pushing the values alone.
  */
-
 void dfread_int(dftable_entry_t* df, int* val)
 {
     dpanel_t* dp = (dpanel_t*)df->dpanel;
     cnode_t* cn = (cnode_t*)dp->cnode;
     tboard_t* tboard = (tboard_t*)cn->tboard;
 
-    uint8_t buf[16]; // TODO
-
-    void* p = dflow_task_create(tboard, df);
-    if (p != NULL) {
+    dflow_task_response_t res = dflow_task_create(tboard, df);
+    if (res.buf != NULL) {
         derror = 0;
-        Base64decode((char*)buf, (char*)p);
-        *val = __extract_int(buf, Base64decode_len((char*)p));
-        free(p);
+        *val = __extract_int(res.buf, res.len);
+        free(res.buf);
     } else {
         derror = -1;
         *val = 0;
@@ -648,14 +645,11 @@ void dfread_double(dftable_entry_t *df, double *val)
     cnode_t *cn = (cnode_t *)dp->cnode;
     tboard_t *tboard = (tboard_t *)cn->tboard;
 
-    uint8_t buf[16]; // TODO
-
-    void *p = dflow_task_create(tboard, df);
-    if (p != NULL) {
+    dflow_task_response_t res = dflow_task_create(tboard, df);
+    if (res.buf != NULL) {
         derror = 0;
-        Base64decode((char *)buf, (char *)p);
-        *val = __extract_double(buf, Base64decode_len((char *)p));
-        free(p);
+        *val = __extract_double(res.buf, res.len);
+        free(res.buf);
     } else {
         derror = -1;
         *val = 0;
@@ -667,16 +661,14 @@ void dfread_string(dftable_entry_t* df, char* val, int maxlen) {
     cnode_t* cn = (cnode_t*)dp->cnode;
     tboard_t* tboard = (tboard_t*)cn->tboard;
 
-    uint8_t buf[4096];
 
-    void* p = dflow_task_create(tboard, df);
-    if (p != NULL) {
+    dflow_task_response_t res = dflow_task_create(tboard, df);
+    if (res.buf != NULL) {
         derror = 0;
-        Base64decode((char*)buf, (char*)p);
-        char* x = __extract_str(buf, Base64decode_len((char*)p));
+        char* x = __extract_str(res.buf, res.len);
         strncpy(val, x, maxlen);
         free(x);
-        free(p);
+        free(res.buf);
     } else {
         derror = -1;
         *val = 0;
@@ -688,10 +680,10 @@ void dfread_struct(dftable_entry_t* df, char* fmt, ...) {
     cnode_t* cn = (cnode_t*)dp->cnode;
     tboard_t* tboard = (tboard_t *)cn->tboard;
 
-    void* p = dflow_task_create(tboard, df);
-    if (p != NULL) {
-        derror = 0;
 
+    dflow_task_response_t res = dflow_task_create(tboard, df);
+    if (res.buf != NULL) {
+        derror = 0;
         int len = strlen(fmt);
         assert(len > 0);
         va_list args;
@@ -702,7 +694,7 @@ void dfread_struct(dftable_entry_t* df, char* fmt, ...) {
         va_start(args, fmt);
         for(int i=0; i<len; i++){
             label = va_arg(args, char*);
-            darg = (darg_entry_t*)malloc(sizeof(darg_entry_t));
+            darg = (darg_entry_t*)malloc(sizeof(darg_entry_t)); // TODO do this once
             switch(fmt[i]){
             case 'i':
                 darg->type = D_INT_TYPE;
@@ -733,19 +725,14 @@ void dfread_struct(dftable_entry_t* df, char* fmt, ...) {
         }
         va_end(args);
 
-        int buflen = Base64decode_len((char*)p);
-        uint8_t* buf = (uint8_t*)malloc(buflen * sizeof(char));
-        Base64decode((char*)buf, (char*)p);
-
         __extract_map(buf, buflen, dargs);
-        free(buf);
 
         HASH_ITER(hh, dargs, darg, tmp){
             printf("CBOR had no input for struct field %s\n", darg->label);
             HASH_DEL(dargs, darg);
             free(darg);
         }
-        free(p);
+        free(res.buf);
     } else
         derror = -1;
 }
