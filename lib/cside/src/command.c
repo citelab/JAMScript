@@ -102,7 +102,7 @@ command_t* command_new(int cmd, int subcmd, char* fn_name, uint64_t task_id, cha
                 qargs[i].type = DOUBLE_TYPE;
                 break;
             default:
-                printf("Unrecognized type '%c' in command_new\n", fn_arsig[i]);
+                printf("Unrecognized type '%c' in command_new\n", fn_argsig[i]);
             }
             qargs[i].nargs = len;
         }
@@ -208,8 +208,6 @@ command_t* command_from_data(char* fmt, void* data, int len)
     int i = 0;
     int argsiglen = 0;
     float fval;
-    char bytebuf[LARGE_CMD_STR_LEN];
-    char strbuf[LARGE_CMD_STR_LEN];
     char keybuf[32];
     uint64_t result;
     double dresult;
@@ -228,10 +226,10 @@ command_t* command_from_data(char* fmt, void* data, int len)
             continue;
         }
         if (strcmp(keybuf, "cmd") == 0) {
-            cbor_value_get_int(&map, &result);
+            cbor_value_get_uint64(&map, &result);
             cmd->cmd = result;
         } else if (strcmp(keybuf, "subcmd") == 0) {
-            cbor_value_get_int(&map, &result);
+            cbor_value_get_uint64(&map, &result);
             cmd->subcmd = result;
         } else if (strcmp(keybuf, "taskid") == 0) {
             if (cbor_value_get_type(&map) == 251) {
@@ -355,7 +353,7 @@ bool command_qargs_alloc(const char* fmt, arg_t** rargs, va_list args)
     for (int i = 0; i < flen; i++) {
         switch(fmt[i]) {
         case 'n': // Note we expect two values from the args here -- from generated code
-            nvlen = va_args(args, int);
+            nvlen = va_arg(args, int);
             nv = va_arg(args, void*);
             qargs[i].val.nval = nvoid_new(nv, nvlen);
             qargs[i].type = NVOID_TYPE;
@@ -404,7 +402,7 @@ void command_arg_print(arg_t* arg)
             printf("Double: %f ", arg[i].val.dval);
             break;
         case NVOID_TYPE:
-            printf("Nvoid: size(%d) ", arg[i].val.nval.len);
+            printf("Nvoid: size(%zu) ", arg[i].val.nval->len);
             break;
         default:
             printf("Other type: %d ", arg[i].type);
@@ -427,6 +425,8 @@ void command_arg_inner_free(arg_t* arg)
         case NVOID_TYPE:
             if(arg[i].val.nval)
                 nvoid_free(arg[i].val.nval);
+            break;
+        default:;
         }
     }
 }

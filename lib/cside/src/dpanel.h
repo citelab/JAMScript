@@ -161,7 +161,7 @@ void ufwrite_int(uftable_entry_t* uf, int x);
 void ufwrite_long(uftable_entry_t* uf, long long int x);
 void ufwrite_double(uftable_entry_t* uf, double x);
 void ufwrite_str(uftable_entry_t* uf, char* str);
-void ufwrite_nvoid(uftable_entry_t* uf, nvoid* str);
+void ufwrite_nvoid(uftable_entry_t* uf, nvoid_t* str);
 void ufwrite_struct(uftable_entry_t* uf, char* fmt, ...);
 
 void dfread_int(dftable_entry_t* df, int* val);

@@ -22,7 +22,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "nvoid.h"
 
-#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -32,9 +31,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // data. so the source "data" could be released by
 // originating routine.
 //
-nvoid_t* nvoid_new(void* data, int len)
-{
-    nvoid_t* nv = (nvoid_t*)malloc(sizeof(len) + len);
+nvoid_t* nvoid_new(void* data, size_t len) {
+    nvoid_t* nv = (nvoid_t*)malloc(sizeof(nvoid_t) + len);
     assert(nv != NULL);
     nv->len = len;
     if (data != NULL)
@@ -42,9 +40,9 @@ nvoid_t* nvoid_new(void* data, int len)
     return nv;
 }
 
-nvoid_t* nvoid_null()
-{
-    nvoid_t* nv = (nvoid_t*)calloc(1, sizeof(nvoid_t));
+nvoid_t* nvoid_null() {
+    nvoid_t* nv = (nvoid_t*)malloc(sizeof(nvoid_t));
+    assert(nv != NULL);
     nv->len = 0;
     nv->data = NULL;
     return nv;

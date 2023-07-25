@@ -5,7 +5,6 @@
 #include <string.h>
 #include <inttypes.h>
 
-#include "base64.h"
 #include "cnode.h"
 #include "dpanel.h"
 #include "tboard.h"
@@ -705,7 +704,7 @@ void dfread_struct(dftable_entry_t* df, char* fmt, ...) {
                 break;
             case 's':
                 darg->type = D_STRING_TYPE;
-                darg->loc.nval = va_arg(args, nvoid*);
+                darg->loc.nval = va_arg(args, nvoid_t*);
                 break;
             case 'd':
                 darg->type = D_DOUBLE_TYPE;
@@ -713,7 +712,7 @@ void dfread_struct(dftable_entry_t* df, char* fmt, ...) {
                 break;
             case 'n':
                 darg->type = D_NVOID_TYPE;
-                darg->loc.dval = va_arg(args, nvoid*);
+                darg->loc.nval = va_arg(args, nvoid_t*);
                 break;
             default:
                 printf("Unrecognized format option %c for %s\n", fmt[i], label);

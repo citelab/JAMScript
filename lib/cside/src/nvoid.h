@@ -23,13 +23,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef __NVOID_H__
 #define __NVOID_H__
 
+#include <stddef.h>
+
 typedef struct _nvoid_t
 {
-    int len;
+    size_t len;
     void* data;
 } nvoid_t;
 
-nvoid_t* nvoid_new(void* data, int len);
+nvoid_t* nvoid_new(void* data, size_t len);
 nvoid_t* nvoid_null();
 
 #define nvoid_free(n)  do {             \
