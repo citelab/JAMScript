@@ -27,8 +27,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdio.h>
 
 typedef struct _nvoid_t {
-    uint32_t cap;
-    uint32_t len;
+    uint32_t len; // Number of elements currently in array
+    uint32_t maxlen; // Maximum number of elements
+    uint32_t size; // Actual size, in bytes, of element buffer
+    uint32_t typesize; // Size of each element in buffer
     uint8_t data[8];
 } __attribute__ ((__aligned__ (8), __packed__)) nvoid_t;
 
@@ -40,21 +42,43 @@ nvoid_t* nvoid_dup(nvoid_t* src);
         free(n);                                \
     } while (0)
 
-void* panic(const char* msg, ...);
+// We need a panic so we can bounds check array operations at runtime
+// It's return type is a void* so we can use it in macros without type warnings
+void* nvoid_panic(const char* msg, ...);
 
-#define NVOID_DEFINE_TYPE(NAME, TYPE, CAP) typedef struct {             \
-        uint32_t cap;                                                   \
+// Macros for dealing with statically allocated nvoids in user generated code
+
+#define NVOID_ALIGNED_SIZE(TYPE, SIZE)                                  \
+    (sizeof(TYPE) * SIZE > 8 ? (sizeof(TYPE) * SIZE - 1 | 7) + 1 : 8)
+
+#define NVOID_DEFINE_TYPE(STRUCT_NAME, TYPE, SIZE)                      \
+    struct STRUCT_NAME {                                                \
         uint32_t len;                                                   \
+        uint32_t maxlen;                                                \
+        uint32_t size;                                                  \
+        uint32_t typesize;                                              \
         union {                                                         \
-            TYPE data[CAP];                                             \
-            uint8_t pad[sizeof(TYPE) * CAP > 8 ? (sizeof(TYPE) * CAP - 1 | 7) + 1 : 8]; \
+            TYPE data[SIZE];                                            \
+            uint8_t pad[NVOID_ALIGNED_SIZE(TYPE, SIZE)];                \
         } __attribute__ ((__packed__));                                 \
-    } __attribute__ ((__aligned__ (8), __packed__)) NAME
+    } __attribute__ ((__aligned__ (8), __packed__))
 
-#define NVOID_STATIC_PUSH(NVOID, TYPE, VALUE) ((void)(NVOID.len < NVOID.cap ? (NVOID.data[NVOID.len++] = VALUE) : *(TYPE*)panic("Attempted to push to nvoid " #NVOID " above capacity %u", NVOID.cap)))
+#define NVOID_STATIC_INIT(NVOID, STRUCT_NAME, TYPE, SIZE, LEN, ...)     \
+    struct STRUCT_NAME NVOID = {                                        \
+        .len = LEN,                                                     \
+        .maxlen = SIZE,                                                 \
+        .size = NVOID_ALIGNED_SIZE(TYPE, SIZE),                         \
+        .typesize = sizeof(TYPE),                                       \
+        .data = __VA_ARGS__                                             \
+    }
 
-#define NVOID_STATIC_POP(NVOID, TYPE) (NVOID.len > 0 ? NVOID.data[--NVOID.len] : *(TYPE*)panic("Attempted to pop from empty nvoid " #NVOID))
+#define NVOID_STATIC_PUSH(NVOID, TYPE, VALUE)                           \
+    ((void)(NVOID.len < NVOID.maxlen ? (NVOID.data[NVOID.len++] = VALUE) : *(TYPE*)nvoid_panic("Attempted to push to nvoid " #NVOID " above maxlen %u", NVOID.maxlen)))
 
-#define NVOID_STATIC_AT(NVOID, TYPE, INDEX) (*(INDEX < NVOID.len && INDEX > 0 ? &(NVOID.data[INDEX]) : (TYPE*)panic("Index out off bounds " #NVOID "[%u]", (unsigned int)INDEX)))
+#define NVOID_STATIC_POP(NVOID, TYPE)                                   \
+    (NVOID.len > 0 ? NVOID.data[--NVOID.len] : *(TYPE*)nvoid_panic("Attempted to pop from empty nvoid " #NVOID))
+
+#define NVOID_STATIC_AT(NVOID, TYPE, INDEX)                             \
+    (*(INDEX < NVOID.len && INDEX > 0 ? &(NVOID.data[INDEX]) : (TYPE*)nvoid_panic("Index out off bounds " #NVOID "[%u]", (unsigned int)INDEX)))
 
 #endif

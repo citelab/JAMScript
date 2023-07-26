@@ -26,33 +26,41 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdlib.h>
 #include <assert.h>
 
-
 // the nvoid_t structure has its own copy of the
 // data. so the source "data" could be released by
 // originating routine.
-//
-nvoid_t* nvoid_new(uint32_t cap, uint8_t* data, uint32_t len) {
-    nvoid_t* nv = nvoid_empty(cap);
+nvoid_t* nvoid_new(uint32_t size, uint8_t* data, uint32_t len) {
+    assert(len <= size);
+    nvoid_t* nv = nvoid_empty(size);
     nv->len = len;
     if (data != NULL)
-        memcpy(&nv->data, data, len);
+        memcpy(nv->data, data, len);
     return nv;
 }
 
-nvoid_t* nvoid_empty(uint32_t cap) {
-    uint32_t aligned_cap = cap > 8 ? (cap - 1 | 7) + 1 : 8;
-    nvoid_t* nv = (nvoid_t*)aligned_alloc(8, aligned_cap + 8);
+nvoid_t* nvoid_empty(uint32_t size) {
+    uint32_t aligned_size = size > 8 ? (size - 1 | 7) + 1 : 8;
+    nvoid_t* nv = (nvoid_t*)aligned_alloc(8, aligned_size + 16);
     assert(nv != NULL);
-    nv->cap = cap;
     nv->len = 0;
+    nv->maxlen = size;
+    nv->size = aligned_size;
+    nv->typesize = 1;
     return nv;
 }
 
 nvoid_t* nvoid_dup(nvoid_t* src) {
-    return nvoid_new(src->cap, src->data, src->len);
+    nvoid_t* nv = (nvoid_t*)aligned_alloc(8, src->size + 16);
+    assert(nv != NULL);
+    nv->len = src->len;
+    nv->maxlen = src->maxlen;
+    nv->size = src->size;
+    nv->typesize = src->typesize;
+    memcpy(nv->data, src->data, src->len);
+    return nv;
 }
 
-void* panic(const char* msg, ...) {
+void* nvoid_panic(const char* msg, ...) {
     va_list args;
     va_start(args, msg);
     vfprintf(stderr, msg, args);
