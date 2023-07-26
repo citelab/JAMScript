@@ -60,7 +60,7 @@ void do_cbor_encoding(CborEncoder* enc, darg_t* u, int n) {
             cbor_encode_null(&mapEnc);
             break;
         case D_NVOID_TYPE:
-            cbor_encode_byte_string(&mapEnc, &u[i].val.nval->data, u[i].val.nval->len);
+            cbor_encode_byte_string(&mapEnc, u[i].val.nval->data, u[i].val.nval->len);
             break;
         default:
             printf("Unkown type %d in do_cbor_encoding\n", u[i].type);

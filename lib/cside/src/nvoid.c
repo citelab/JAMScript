@@ -31,19 +31,31 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // data. so the source "data" could be released by
 // originating routine.
 //
-nvoid_t* nvoid_new(void* data, size_t len) {
-    nvoid_t* nv = (nvoid_t*)malloc(sizeof(nvoid_t) + len);
-    assert(nv != NULL);
+nvoid_t* nvoid_new(uint32_t cap, uint8_t* data, uint32_t len) {
+    nvoid_t* nv = nvoid_empty(cap);
     nv->len = len;
     if (data != NULL)
         memcpy(&nv->data, data, len);
     return nv;
 }
 
-nvoid_t* nvoid_null() {
-    nvoid_t* nv = (nvoid_t*)malloc(sizeof(nvoid_t));
+nvoid_t* nvoid_empty(uint32_t cap) {
+    uint32_t aligned_cap = cap > 8 ? (cap - 1 | 7) + 1 : 8;
+    nvoid_t* nv = (nvoid_t*)aligned_alloc(8, aligned_cap + 8);
     assert(nv != NULL);
+    nv->cap = cap;
     nv->len = 0;
-    nv->data = NULL;
     return nv;
+}
+
+nvoid_t* nvoid_dup(nvoid_t* src) {
+    return nvoid_new(src->cap, src->data, src->len);
+}
+
+void* panic(const char* msg, ...) {
+    va_list args;
+    va_start(args, msg);
+    vfprintf(stderr, msg, args);
+    va_end(args);
+    exit(1);
 }

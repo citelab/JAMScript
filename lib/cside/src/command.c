@@ -82,7 +82,7 @@ command_t* command_new(int cmd, int subcmd, char* fn_name, uint64_t task_id, cha
             switch(fn_argsig[i]) {
             case 'n':
                 nv = va_arg(args, nvoid_t*);
-                qargs[i].val.nval = nvoid_new(&nv->data, nv->len);
+                qargs[i].val.nval = nvoid_dup(nv);
                 qargs[i].type = NVOID_TYPE;
                 break;
             case 's':
@@ -163,7 +163,7 @@ command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name, uint64_t ta
             switch (args[i].type) {
             case NVOID_TYPE:
                 nv = args[i].val.nval;
-                cbor_encode_byte_string(&arrayEncoder, &nv->data, nv->len);
+                cbor_encode_byte_string(&arrayEncoder, nv->data, nv->len);
                 break;
             case STRING_TYPE:
                 cbor_encode_text_stringz(&arrayEncoder, args[i].val.sval);
@@ -288,8 +288,8 @@ command_t* command_from_data(char* fmt, void* data, int len)
                     case CborByteStringType:
                         cmd->args[i].type = NVOID_TYPE;
                         cbor_value_calculate_string_length(&arr, &length);
-                        cmd->args[i].val.nval = nvoid_new(NULL, length);
-                        cbor_value_copy_text_string(&arr, &cmd->args[i].val.nval->data, &length, NULL);
+                        cmd->args[i].val.nval = nvoid_empty(length);
+                        cbor_value_copy_text_string(&arr, cmd->args[i].val.nval->data, &length, NULL);
                         break;
                     case CborFloatType:
                         cmd->args[i].type = DOUBLE_TYPE;
@@ -339,11 +339,10 @@ void command_free(command_t *cmd)
     free(cmd);
 }
 
-bool command_qargs_alloc(const char* fmt, arg_t** rargs, va_list args)
-{
+bool command_qargs_alloc(const char* fmt, arg_t** rargs, va_list args) {
     arg_t* qargs = NULL;
     nvoid_t* nv;
-    int flen = strlen(fmt), nvlen;
+    int flen = strlen(fmt);
 
     if (flen > 0)
         qargs = (arg_t*)calloc(flen, sizeof(arg_t));
@@ -352,10 +351,9 @@ bool command_qargs_alloc(const char* fmt, arg_t** rargs, va_list args)
 
     for (int i = 0; i < flen; i++) {
         switch(fmt[i]) {
-        case 'n': // Note we expect two values from the args here -- from generated code
-            nvlen = va_arg(args, int);
-            nv = va_arg(args, void*);
-            qargs[i].val.nval = nvoid_new(nv, nvlen);
+        case 'n': // char(*)[], and others; we expect 2 arg values
+            nv = va_arg(args, nvoid_t*);
+            qargs[i].val.nval = nvoid_dup(nv);
             qargs[i].type = NVOID_TYPE;
             break;
         case 's':
@@ -402,7 +400,7 @@ void command_arg_print(arg_t* arg)
             printf("Double: %f ", arg[i].val.dval);
             break;
         case NVOID_TYPE:
-            printf("Nvoid: size(%zu) ", arg[i].val.nval->len);
+            printf("Nvoid: size %u ", arg[i].val.nval->len);
             break;
         default:
             printf("Other type: %d ", arg[i].type);
@@ -462,7 +460,7 @@ void command_args_copy_elements(arg_t* arg_from, arg_t* arg_to, size_t nargs_fro
             arg_to[i].val.sval = strdup(arg_from[i].val.sval);
             break;
         case NVOID_TYPE:
-            arg_to[i].val.nval = nvoid_new(&arg_from[i].val.nval->data, arg_from[i].val.nval->len);
+            arg_to[i].val.nval = nvoid_dup(arg_from[i].val.nval);
             break;
         case NULL_TYPE:
             arg_to[i].val.ival = 0;
