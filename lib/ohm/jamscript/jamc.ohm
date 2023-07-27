@@ -29,7 +29,8 @@ JAMC <: C {
                     | reuse_buffer "=" decimalInt
                     | reuse_function "=" id
 
-    Jamtype_return  = Jamtype ( "[" decimalInt "]" )?                  -- Type
+    Jamtype_return  = Jamtype
+                    | Jamtype "[" decimalInt "]"                       -- Array
                     | void                                             -- Void
 
     Jamtype         = unsigned? int                                    -- Int

@@ -165,8 +165,7 @@ bool task_add(tboard_t *t, task_t *task)
 /////////// BLOCKING TASK FUNCTIONS /////////////
 /////////////////////////////////////////////////
 
-void *blocking_task_create(tboard_t *t, function_t fn, int type, void *args, size_t sizeof_args)
-{
+void* blocking_task_create(tboard_t* t, function_t fn, int type, void* args, size_t sizeof_args) {
     if (mco_running() == NULL) // must be called from a coroutine!
         return NULL;
 
@@ -205,7 +204,7 @@ void *blocking_task_create(tboard_t *t, function_t fn, int type, void *args, siz
         // we got control back meaning blocking task should have executed.
         // check if task_t worth of memory is in storage
         if (mco_get_bytes_stored(mco_running()) == (sizeof(task_t) + sizeof(arg_t))) {
-            arg_t *retarg = calloc(1, sizeof(arg_t));
+            arg_t* retarg = calloc(1, sizeof(arg_t));
             // attempt to pop task_t from storage
             res = mco_pop(mco_running(), &task, sizeof(task_t));
             if (res != MCO_SUCCESS) {
@@ -239,8 +238,7 @@ void *blocking_task_create(tboard_t *t, function_t fn, int type, void *args, siz
  * is running asynchronously from the execution of the local task. We don't get
  * any return value from the remote side.
  */
-bool remote_task_create_nb(tboard_t *tboard, char *command, int level, char *fn_argsig, arg_t *args, int sizeof_args)
-{
+bool remote_task_create_nb(tboard_t* tboard, char* command, int level, char* fn_argsig, arg_t* args, int sizeof_args) {
     if (mco_running() == NULL) // must be called from a coroutine!
         return false;
 
@@ -321,7 +319,7 @@ arg_t *remote_task_create(tboard_t *tboard, char *command, int level, char *fn_a
         if (rtask.status == RTASK_COMPLETED) {
             remote_task_free(tboard, rtask.task_id);
 
-            return rtask.data; 
+            return rtask.data;
         } else {
             tboard_err("remote_task_create: Blocking remote task is not marked as completed: %d.\n",rtask.status);
             return NULL;
@@ -423,7 +421,7 @@ dflow_task_response_t dflow_task_create(tboard_t *tboard, void *entry)
             dfentry->state = NEW_STATE;
             pthread_mutex_unlock(&(dfentry->mutex));
 
-            return (dflow_task_response_t) {rtask.data, rtask.data_size}; 
+            return (dflow_task_response_t) {rtask.data, rtask.data_size};
         } else {
             tboard_err("dflow_task_create: dflow task is not marked as completed: %d.\n",rtask.status);
             return (dflow_task_response_t) {NULL,0};
