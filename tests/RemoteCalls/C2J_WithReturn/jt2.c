@@ -1,9 +1,9 @@
 int compyou(char* s);
 int x = 10;
 
-jarray long unsigned long pp[10] = {0, 1, 2}, qq[10];
+jarray long unsigned long pp[10] = {0, 1, [5] = 2}, qq[10];
 
-jarray char test[100] = "hi guys timothy chen here";
+jarray char test[100] = "hi guys timothy chen here", b[5] = {'a', 'b', 'c'};
 
 jasync localme(int c, char s[]) {
     while(1) {
