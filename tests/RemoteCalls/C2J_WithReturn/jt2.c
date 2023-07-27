@@ -1,7 +1,11 @@
-int compyou(char *s);
+int compyou(char* s);
 int x = 10;
 
-jtask* localme(int c, string s) {
+jarray long unsigned long pp[10] = {0, 1, 2}, qq[10];
+
+jarray char test[100] = "hi guys timothy chen here";
+
+jasync localme(int c, char s[]) {
     while(1) {
         if (x == 0)
             continue;
@@ -10,7 +14,7 @@ jtask* localme(int c, string s) {
     }
 }
 
-jtask* localyou(int c, string s) {
+jasync localyou(int c, char s[]) {
     int x;
     while('1' - '0') {
         jsleep(10000);
@@ -25,8 +29,7 @@ jtask* localyou(int c, string s) {
     }
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char* argv[]) {
     localme(x, "message-to-c-local-node");
     localyou(japp.x, "message-to-j");
     return 0;

@@ -136,12 +136,12 @@ C {
     Prototype       = extern Pointer_list? id "(" Param_type_lst? ")" Gcc_attribute? ";"
                     | Decl_specs Pointer_list? id "(" Param_type_lst? ")" Gcc_attribute? ";"
 
-    Decl            = Decl_specs Init_decl_lst ";"
+    Decl            = Decl_specs Init_decl_lst ";"                                      -- Decl
 
     Decl_specs      = (Store_cl_spec | Func_spec | type_qualifier | Gcc_decl_spec)* Type_spec (Store_cl_spec | Func_spec | type_qualifier | Gcc_decl_spec)*
                     | ("(" | Gcc_attribute)* Type_spec (")" | Gcc_attribute)*
 
-    Init_decl_lst   = ListOf<Init_decl, ",">
+    Init_decl_lst   = NonemptyListOf<Init_decl, ",">
 
     Init_decl       = Declarator "=" Initializer                                        -- Init
                     | Declarator                                                        -- NonInit
@@ -229,11 +229,11 @@ C {
                     | Decl_specs Abs_declarator                                         -- AbsDeclarator
                     | Decl_specs
 
-    Initializer     = "{" ListOf<Initializer, ","> ","? "}"                             -- InitializerList
-                    | "{" ListOf<Designator, ","> ","? "}"                              -- DesignatorList
+    Initializer     = "{" ListOf<Init_field, ","> ","? "}"                              -- list
                     | Assign_expr
 
-    Designator      = (Desig_field)+ "=" Assign_expr
+    Init_field      = (Desig_field)+ "=" Initializer                                    -- Designated
+                    | Initializer
 
     Desig_field    = "." id                                    -- Struct
                    | "[" Assign_expr ("..." Assign_expr)? "]"  -- Array

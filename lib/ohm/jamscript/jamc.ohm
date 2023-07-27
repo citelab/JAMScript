@@ -1,8 +1,6 @@
 JAMC <: C {
     Source         := External_decl+
 
-    Namespace_spec  = jname id ";" // This looks rather like a typedef'd global decl...
-
     Jcond_specifier = "{" Jcond_expr "}"
 
     Jcond_expr      = "(" Jcond_expr ")"                            -- paran
@@ -13,15 +11,15 @@ JAMC <: C {
 
     jcond_expr_op   = "&&" | "||"
 
-    Async_prototype = jtaskAsync (id ".")? id "(" Jamparam_type_lst? ")" ";"
+    Async_prototype = jasync (id ".")? id "(" Jamparam_type_lst ")" ";"
 
-    Sync_prototype  =  jtaskSync Jamtype_return (id ".")? id "(" Jamparam_type_lst? ")" ";"
+    Sync_prototype  = jsync Jamtype_return (id ".")? id "(" Jamparam_type_lst ")" ";"
 
-    Async_task      = jtaskAsync Jcond_specifier? Jtask_attr_spec? id "(" Jamparam_type_lst? ")" Compound_stmt
+    Async_task      = jasync Jcond_specifier? Jtask_attr_spec? id "(" Jamparam_type_lst ")" Compound_stmt
 
-    Sync_task       = jtaskSync Jamtype_return Jcond_specifier? Jtask_attr_spec? id "(" Jamparam_type_lst? ")" Compound_stmt
+    Sync_task       = jsync Jamtype_return Jcond_specifier? Jtask_attr_spec? id "(" Jamparam_type_lst ")" Compound_stmt
 
-    Jtask_attr_spec = "[" ListOf<Jtask_attr, ",">  "]"
+    Jtask_attr_spec = "[" NonemptyListOf<Jtask_attr, ",">  "]"
 
     Jtask_attr      = type "=" (sync | realtime | batch)
                     | period "=" number
@@ -31,7 +29,7 @@ JAMC <: C {
                     | reuse_buffer "=" decimalInt
                     | reuse_function "=" id
 
-    Jamtype_return  = Jamtype
+    Jamtype_return  = Jamtype ( "[" decimalInt "]" )?                  -- Type
                     | void                                             -- Void
 
     Jamtype         = unsigned? int                                    -- Int
@@ -40,13 +38,18 @@ JAMC <: C {
                     | long unsigned long int?                          -- LongUnsignedLongInt
                     | long long unsigned int?                          -- LongLongUnsignedInt
                     | unsigned? char                                   -- Char
-                    | string_type ( "(" decimalInt ")" )?              -- String
                     | float                                            -- Float
                     | double                                           -- Double
 
-    Jamparam_type_lst = NonemptyListOf<Jamparam_decl, ",">
+    Jamparam_type_lst = ListOf<Jamparam_decl, ",">
 
-    Jamparam_decl   = Jamtype id ( "[" decimalInt "]" )?
+    Jamparam_decl   = Jamtype id ( "[" "]" )?
+
+    Decl            += jarray Jamtype  Jamarray_dlist ";"              -- JamArray
+
+    Jamarray_dlist  =  NonemptyListOf<Jamarray_init, ",">
+
+    Jamarray_init   =  id "[" decimalInt "]" ( "=" ( Initializer_list | string) )?
 
     Task_def        = Sync_task
                     | Async_task
@@ -55,14 +58,13 @@ JAMC <: C {
 
     External_decl   += Task_def
                     | Jamprototype
-                    |  Namespace_spec
 
-    keyword         += jtaskAsync | jtaskSync | jname | string_type
+    keyword         += jasync | jsync | jarray
 
-    string_type = "string" ~identPart
-    jtaskAsync = "jtask*" ~identPart
-    jtaskSync = "jtask" ~identPart
-    jname = "jname" ~identPart
+    jasync = "jasync" ~identPart
+    jsync = "jsync" ~identPart
+    jarray = "jarray" ~identPart
+
     type = "type" ~identPart
     period = "period" ~identPart
     jitter = "jitter" ~identPart

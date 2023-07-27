@@ -38,10 +38,8 @@ nvoid_t* nvoid_empty(uint32_t cap);
 nvoid_t* nvoid_dup(nvoid_t* src);
 nvoid_t* nvoid_min(nvoid_t* src);
 nvoid_t* nvoid_str(char* str);
-
-#define nvoid_free(n)  do {                     \
-        free(n);                                \
-    } while (0)
+char* str_nvoid(nvoid_t* src);
+void nvoid_free(nvoid_t* nv);
 
 // We need a panic so we can bounds check array operations at runtime
 // Its return type is a void* so we can use it in macros without type warnings
@@ -64,15 +62,24 @@ void* nvoid_panic(const char* msg, ...);
         } __attribute__ ((__packed__));                                 \
     } __attribute__ ((__aligned__ (8), __packed__))
 
-#define NVOID_STATIC_INIT(NVOID, STRUCT_NAME, TYPE, SIZE, LEN, ...)     \
+#define NVOID_STATIC_INIT(NVOID, STRUCT_NAME, TYPE, MAXLEN, LEN, ...)   \
     struct STRUCT_NAME NVOID = {                                        \
         .len = LEN,                                                     \
-        .maxlen = SIZE,                                                 \
-        .size = NVOID_ALIGNED_SIZE(TYPE, SIZE),                         \
+        .maxlen = MAXLEN,                                               \
+        .size = NVOID_ALIGNED_SIZE(TYPE, MAXLEN),                       \
         .typesize = sizeof(TYPE),                                       \
         .data = __VA_ARGS__                                             \
     }
 
+#define NVOID_STATIC_INIT_EMPTY(NVOID, STRUCT_NAME, TYPE, MAXLEN)       \
+    struct STRUCT_NAME NVOID = {                                        \
+        .len = 0,                                                       \
+        .maxlen = MAXLEN,                                               \
+        .size = NVOID_ALIGNED_SIZE(TYPE, MAXLEN),                       \
+        .typesize = sizeof(TYPE),                                       \
+    }
+
+// Doing these with macros because it ensures they are typed correctly
 #define NVOID_STATIC_PUSH(NVOID, TYPE, VALUE)                           \
     ((void)(NVOID.len < NVOID.maxlen ? (NVOID.data[NVOID.len++] = VALUE) : *(TYPE*)nvoid_panic("Attempted to push to nvoid " #NVOID " above maxlen %u", NVOID.maxlen)))
 

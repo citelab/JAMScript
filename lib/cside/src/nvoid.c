@@ -53,31 +53,44 @@ nvoid_t* nvoid_empty(uint32_t size) {
 nvoid_t* nvoid_dup(nvoid_t* src) {
     nvoid_t* nv = (nvoid_t*)aligned_alloc(8, src->size + 16);
     assert(nv != NULL);
-    nv->len = src->len;
-    nv->maxlen = src->maxlen;
-    nv->size = src->size;
-    nv->typesize = src->typesize;
-    memcpy(nv->data, src->data, src->len);
+    memcpy(nv, src, src->len * src->typesize + 16);
     return nv;
 }
 
 nvoid_t* nvoid_min(nvoid_t* src) {
-    nvoid_t* nv = (nvoid_t*)malloc(src->len + 16);
+    uint32_t bytelen = src->len * src->typesize;
+    uint32_t aligned_size =  bytelen > 8 ? (bytelen - 1 | 7) + 1 : 8;
+    nvoid_t* nv = (nvoid_t*)aligned_alloc(8, aligned_size + 16);
     assert(nv != NULL);
-    nv->len = nv->size = nv->maxlen = src->len;
-    nv->typesize = 1;
-    memcpy(nv->data, src->data, src->len);
+    nv->size = aligned_size;
+    nv->len =  nv->maxlen = src->len;
+    nv->typesize = src->typesize;
+    memcpy(nv->data, src->data, bytelen);
     return nv;
 }
 
 nvoid_t* nvoid_str(char* str) {
-    uint32_t strlen = strlen(str);
-    nvoid_t* nv = (nvoid_t*)malloc(strlen + 16);
+    uint32_t bytelen = strlen(str);
+    uint32_t aligned_size = bytelen > 8 ? (bytelen - 1 | 7) + 1 : 8;
+    nvoid_t* nv = (nvoid_t*)aligned_alloc(8, aligned_size + 16);
     assert(nv != NULL);
-    nv->len = nv->size = nv->maxlen = strlen;
+    nv->size = aligned_size;
+    nv->len = nv->maxlen = bytelen;
     nv->typesize = 1;
-    memcpy(nv->data, src->data, strlen);
+    memcpy(nv->data, str, bytelen);
     return nv;
+}
+
+char* str_nvoid(nvoid_t* src) {
+    assert(src->typesize == 1);
+    char* str = malloc(src->len + 1);
+    memcpy(str, src->data, src->len);
+    str[src->len] = '\0';
+    return str;
+}
+
+void nvoid_free(nvoid_t* nv) {
+    free(nv);
 }
 
 void* nvoid_panic(const char* msg, ...) {
