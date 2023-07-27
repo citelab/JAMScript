@@ -351,7 +351,7 @@ bool command_qargs_alloc(const char* fmt, arg_t** rargs, va_list args) {
 
     for (int i = 0; i < flen; i++) {
         switch(fmt[i]) {
-        case 'n': // char(*)[], and others; we expect 2 arg values
+        case 'n':
             nv = va_arg(args, nvoid_t*);
             qargs[i].val.nval = nvoid_dup(nv);
             qargs[i].type = NVOID_TYPE;

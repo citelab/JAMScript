@@ -25,6 +25,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <stdio.h>
 
 // the nvoid_t structure has its own copy of the
 // data. so the source "data" could be released by
@@ -57,6 +58,25 @@ nvoid_t* nvoid_dup(nvoid_t* src) {
     nv->size = src->size;
     nv->typesize = src->typesize;
     memcpy(nv->data, src->data, src->len);
+    return nv;
+}
+
+nvoid_t* nvoid_min(nvoid_t* src) {
+    nvoid_t* nv = (nvoid_t*)malloc(src->len + 16);
+    assert(nv != NULL);
+    nv->len = nv->size = nv->maxlen = src->len;
+    nv->typesize = 1;
+    memcpy(nv->data, src->data, src->len);
+    return nv;
+}
+
+nvoid_t* nvoid_str(char* str) {
+    uint32_t strlen = strlen(str);
+    nvoid_t* nv = (nvoid_t*)malloc(strlen + 16);
+    assert(nv != NULL);
+    nv->len = nv->size = nv->maxlen = strlen;
+    nv->typesize = 1;
+    memcpy(nv->data, src->data, strlen);
     return nv;
 }
 

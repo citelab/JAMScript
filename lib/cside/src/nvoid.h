@@ -24,7 +24,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define __NVOID_H__
 
 #include <stdint.h>
-#include <stdio.h>
 
 typedef struct _nvoid_t {
     uint32_t len; // Number of elements currently in array
@@ -37,13 +36,15 @@ typedef struct _nvoid_t {
 nvoid_t* nvoid_new(uint32_t cap, uint8_t* data, uint32_t len);
 nvoid_t* nvoid_empty(uint32_t cap);
 nvoid_t* nvoid_dup(nvoid_t* src);
+nvoid_t* nvoid_min(nvoid_t* src);
+nvoid_t* nvoid_str(char* str);
 
 #define nvoid_free(n)  do {                     \
         free(n);                                \
     } while (0)
 
 // We need a panic so we can bounds check array operations at runtime
-// It's return type is a void* so we can use it in macros without type warnings
+// Its return type is a void* so we can use it in macros without type warnings
 void* nvoid_panic(const char* msg, ...);
 
 // Macros for dealing with statically allocated nvoids in user generated code
