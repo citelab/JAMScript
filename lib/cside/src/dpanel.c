@@ -203,10 +203,10 @@ void dpanel_uaddall(dpanel_t* dp) { // add all pending uflow objects to outgoing
             pthread_mutex_unlock(&(dp->mutex));
             if (last || !--overrun) {
                 // send with a callback
-                redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value, uobj->len);
+                redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, (uint8_t*) uobj->value, (size_t) uobj->len);
             } else {
                 // send without a callback for pipelining.
-                redisAsyncCommand(dp->uctx, dpanel_uerrorcheck, NULL, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value, uobj->len);
+                redisAsyncCommand(dp->uctx, dpanel_uerrorcheck, NULL, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, (uint8_t*) uobj->value, (size_t) uobj->len);
             }
             freeUObject(uobj);
             free(next);
@@ -339,6 +339,7 @@ void ufwrite_int(uftable_entry_t *uf, int x)
     cbor_encode_int(&encoder, x);
     int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t *)&buf);
     uobj = uflow_obj_new(uf, (char*) buf, len);
+
 
     e = queue_new_node(uobj);
     pthread_mutex_lock(&(dp->ufmutex));

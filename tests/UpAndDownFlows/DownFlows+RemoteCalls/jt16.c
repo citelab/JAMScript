@@ -12,6 +12,7 @@ jtask* {typeAonly} localyou(int c, char *s) {
 
 jtask int get_a_value(int x) {
     printf("Value of x %d\n", x);
+    fflush(stdout);
     return x;
 }
 

@@ -3,6 +3,7 @@ jtask* localyou(int c, char* s) {
     while(1) {
         qq.read(y, 100);
         printf("Value read %s\n", y);
+        fflush(stdout);
     }
 }
 
