@@ -1,0 +1,105 @@
+#!/usr/bin/env node
+
+const express = require('express'),
+      child_process = require('child_process'),
+      {NodeSSH} = require('node-ssh'),
+      ws = require('ws');
+
+const ssh = new NodeSSH();
+const app = express();
+
+const port = 8580;
+
+// Forward MQTT through websocket
+const websocketserver = new ws.WebSocketServer({port:8681 });
+
+var websockets = [];
+
+function websocketSend(message) {
+  for(var websocket of websockets) {
+    websocket.send(message);
+  }
+}
+
+websocketserver.on('error', (err)=>{console.error("WS: "); console.error(err)});
+websocketserver.on('connection', function(websocket) {
+  console.log("Someone Connected to the websocket.");
+  websockets.push(websocket);
+});
+
+
+const raw_html = `<html><head>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@7.x/dist/pixi.min.js"></script>
+<script src="sketch.js">setup()</script>
+<script>setup()</script>
+</head><body>
+  <main>
+  </main>
+</body></html>`;
+
+app.get('/', (req, res) => {
+  res.send(raw_html);
+});
+
+app.get('/sketch.js', (req, res) => {
+  var sketch = ""
+  
+  for(var func of P5) {
+    sketch += func.toString()
+  }
+
+  res.send(sketch);
+  setInterval(()=>{websocketSend("BVASDLKJASLDKJASLD!!!")},1000);
+});
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`);
+  child_process.execSync(`open "http://localhost:${port}"`, {stdio:'ignore'});
+});
+
+ssh.connect({
+  host: 'bmj',
+  username: ''
+}).then(()=>{
+  console.log("B");
+});
+
+
+// P5.js Content
+var P5 = []
+  
+P5.push(async function setup() {
+  let Application = PIXI.Application;
+  let Sprite = PIXI.Sprite;
+  let Assets = PIXI.Assets;
+  
+  const app = new Application();
+  document.body.appendChild(app.view);
+ 
+  // This creates a texture from a 'bunny.png' image
+  const graphics = new PIXI.Graphics();
+
+  // Rectangle
+  graphics.beginFill(0xDE3249);
+  graphics.drawRect(50, 50, 100, 100);
+  graphics.endFill();
+
+  app.stage.addChild(graphics);
+  
+  const socket = new WebSocket(`ws://localhost:8681`);
+  socket.addEventListener('message', (event) => handleMqtt(event.data));
+})
+
+P5.push(function handleMqtt(message){
+  console.log("Received Message: "+message);
+  
+})
+  
+P5.push(function draw() {
+  background(220,0,120);
+})
+
+
+for(var func in P5) {
+  console.log(P5[func].toString());
+}

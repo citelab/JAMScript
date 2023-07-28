@@ -1,0 +1,3 @@
+#!/bin/bash
+
+node ./jamvis_internal/serv.js
