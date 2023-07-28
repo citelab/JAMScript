@@ -36,6 +36,8 @@ typedef struct _nvoid_t {
 nvoid_t* nvoid_new(uint32_t cap, uint8_t* data, uint32_t len);
 nvoid_t* nvoid_empty(uint32_t cap);
 nvoid_t* nvoid_dup(nvoid_t* src);
+nvoid_t* nvoid_cpy(nvoid_t* dst, nvoid_t* src);
+nvoid_t* nvoid_cpy_str(nvoid_t* dst, char* str);
 nvoid_t* nvoid_min(nvoid_t* src);
 nvoid_t* nvoid_str(char* str);
 char* str_nvoid(nvoid_t* src);
@@ -81,12 +83,12 @@ void* nvoid_panic(const char* msg, ...);
 
 // Doing these with macros because it ensures they are typed correctly
 #define NVOID_STATIC_PUSH(NVOID, TYPE, VALUE)                           \
-    ((void)(NVOID.len < NVOID.maxlen ? (NVOID.data[NVOID.len++] = VALUE) : *(TYPE*)nvoid_panic("Attempted to push to nvoid " #NVOID " above maxlen %u", NVOID.maxlen)))
+    ((void)(NVOID.len < NVOID.maxlen ? (NVOID.data[NVOID.len++] = VALUE) : *(TYPE*)nvoid_panic("Attempted to push to nvoid " #NVOID " above maxlen %u\n", NVOID.maxlen)))
 
 #define NVOID_STATIC_POP(NVOID, TYPE)                                   \
-    (NVOID.len > 0 ? NVOID.data[--NVOID.len] : *(TYPE*)nvoid_panic("Attempted to pop from empty nvoid " #NVOID))
+    (NVOID.len > 0 ? NVOID.data[--NVOID.len] : *(TYPE*)nvoid_panic("Attempted to pop from empty nvoid \n" #NVOID))
 
 #define NVOID_STATIC_AT(NVOID, TYPE, INDEX)                             \
-    (*(INDEX < NVOID.len && INDEX > 0 ? &(NVOID.data[INDEX]) : (TYPE*)nvoid_panic("Index out off bounds " #NVOID "[%u]", (unsigned int)INDEX)))
+    (*(INDEX < NVOID.len && INDEX > 0 ? &(NVOID.data[INDEX]) : (TYPE*)nvoid_panic("Index out off bounds " #NVOID "[%u]\n", (unsigned int)INDEX)))
 
 #endif

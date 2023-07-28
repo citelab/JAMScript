@@ -57,6 +57,19 @@ nvoid_t* nvoid_dup(nvoid_t* src) {
     return nv;
 }
 
+nvoid_t* nvoid_cpy(nvoid_t* dst, nvoid_t* src) {
+    dst->len = src->len * src->typesize / dst->typesize;
+    assert(dst->len <= dst->maxlen);
+    return (nvoid_t*)memcpy(dst->data, src->data, dst->len * dst->typesize);
+}
+
+nvoid_t* nvoid_cpy_str(nvoid_t* dst, char* str) {
+    dst->len = strlen(str);
+    assert(dst->len <= dst->maxlen);
+    assert(dst->typesize == 1);
+    return (nvoid_t*)memcpy(dst->data, src->data, dst->len + 1);
+}
+
 nvoid_t* nvoid_min(nvoid_t* src) {
     uint32_t bytelen = src->len * src->typesize;
     uint32_t aligned_size =  bytelen > 8 ? (bytelen - 1 | 7) + 1 : 8;

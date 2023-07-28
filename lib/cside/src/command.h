@@ -50,12 +50,10 @@ typedef enum {
 #define LARGE_CMD_STR_LEN           128
 #define HUGE_CMD_STR_LEN            1024
 
-typedef struct _arg_t
-{
+typedef struct _arg_t {
     int nargs;
     argtype_t type;
-    union _argvalue_t
-    {
+    union _argvalue_t {
         int ival;
         long long int lval;
         char* sval;

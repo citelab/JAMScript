@@ -47,8 +47,7 @@ static uint64_t id = 1;
         strcpy(x, "");                  \
 } while (0)
 
-internal_command_t* internal_command_new(command_t* cmd)
-{
+internal_command_t* internal_command_new(command_t* cmd) {
     internal_command_t* icmd = (internal_command_t*)calloc(1, sizeof(internal_command_t));
 
     icmd->cmd = cmd->cmd;
@@ -57,8 +56,7 @@ internal_command_t* internal_command_new(command_t* cmd)
     return icmd;
 }
 
-void internal_command_free(internal_command_t* ic)
-{
+void internal_command_free(internal_command_t* ic) {
     command_args_free(ic->args);
     free(ic);
 }
@@ -67,10 +65,9 @@ void internal_command_free(internal_command_t* ic)
  * Return a command that includes a CBOR representation that can be sent out (a byte string)
  * It reuses the command_new_using_arg() function
  */
-command_t* command_new(int cmd, int subcmd, char* fn_name, uint64_t task_id, char* node_id, char* old_id, char* fn_argsig, ...)
-{
+command_t* command_new(int cmd, int subcmd, char* fn_name, uint64_t task_id, char* node_id, char* old_id, char* fn_argsig, ...) {
     va_list args;
-    arg_t* qargs;
+    arg_t* qargs = NULL;
     int len = strlen(fn_argsig);
 
     if (len > 0) {
@@ -107,16 +104,14 @@ command_t* command_new(int cmd, int subcmd, char* fn_name, uint64_t task_id, cha
             qargs[i].nargs = len;
         }
         va_end(args);
-    } else
-        qargs = NULL;
+    }
 
     command_t* c = command_new_using_arg(cmd, subcmd, fn_name, task_id, node_id, old_id, fn_argsig, qargs);
     command_args_free(qargs);
     return c;
 }
 
-command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name, uint64_t taskid, char* node_id, char* old_id, char* fn_argsig, arg_t* args)
-{
+command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name, uint64_t taskid, char* node_id, char* old_id, char* fn_argsig, arg_t* args) {
     command_t* cmdo = (command_t *)calloc(1, sizeof(command_t));
     CborEncoder encoder, mapEncoder, arrayEncoder;
     cbor_encoder_init(&encoder, cmdo->buffer, HUGE_CMD_STR_LEN, 0);
@@ -200,8 +195,7 @@ command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name, uint64_t ta
  * the specification in fmt to validate the parameter ordering. (TODO: no, we don't)
  * A local copy of bytes is actually created, so we can free it.
  */
-command_t* command_from_data(char* fmt, void* data, int len)
-{
+command_t* command_from_data(char* fmt, void* data, int len) {
     CborParser parser;
     CborValue it, map, arr;
     size_t length;
@@ -317,15 +311,13 @@ command_t* command_from_data(char* fmt, void* data, int len)
     return cmd;
 }
 
-void command_hold(command_t *cmd)
-{
+void command_hold(command_t* cmd) {
     pthread_mutex_lock(&cmd->lock);
     cmd->refcount++;
     pthread_mutex_unlock(&cmd->lock);
 }
 
-void command_free(command_t *cmd)
-{
+void command_free(command_t* cmd) {
     int rc;
     pthread_mutex_lock(&cmd->lock);
     rc = --cmd->refcount;
@@ -340,20 +332,17 @@ void command_free(command_t *cmd)
 }
 
 bool command_qargs_alloc(const char* fmt, arg_t** rargs, va_list args) {
-    arg_t* qargs = NULL;
-    nvoid_t* nv;
     int flen = strlen(fmt);
-
-    if (flen > 0)
-        qargs = (arg_t*)calloc(flen, sizeof(arg_t));
-    else
+    if (flen == 0)
         return false;
+
+    arg_t* qargs = (arg_t*)calloc(flen, sizeof(arg_t));
+    nvoid_t* nv;
 
     for (int i = 0; i < flen; i++) {
         switch(fmt[i]) {
         case 'n':
-            nv = va_arg(args, nvoid_t*);
-            qargs[i].val.nval = nvoid_dup(nv);
+            qargs[i].val.nval = nvoid_dup(va_arg(args, nvoid_t*));
             qargs[i].type = NVOID_TYPE;
             break;
         case 's':
@@ -429,8 +418,7 @@ void command_arg_inner_free(arg_t* arg)
     }
 }
 
-void command_args_free(arg_t* arg)
-{
+void command_args_free(arg_t* arg) {
     if (arg != NULL) {
         command_arg_inner_free(arg);
         free(arg);
