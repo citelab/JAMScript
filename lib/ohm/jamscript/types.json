@@ -34,7 +34,7 @@
         "c_type": "double",
         "c_enum": "DOUBLE_TYPE"
     },
-    "nvoid": {
+    "array": {
         "jamlib": "nval",
         "c_code": "n",
         "buffer": true,
