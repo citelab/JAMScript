@@ -794,24 +794,26 @@ Toaster.prototype.executeTest = async function(test,
   let testProcess = child_process.spawn(command, args, {shell: false, detached: true});
   this.testProcesses.add(testProcess.pid);
 
-  let timeout = setTimeout(()=>{
-    if(test.state == TestState.STARTING) {
-      debugger;
-      test.failDetails = FailDetails.LAUNCH_FAILED;
-      that.setTestState(test, TestState.FAILED);
-      this.testProcesses.delete(testProcess.pid);
-      cleanup();
-    }
-    if(test.state == TestState.RUNNING) {
-      if(test.coverageMarkers.length != test.completedCoverageMarkers) {
-        test.failDetails = FailDetails.TEST_FAILED;
-        that.setTestState(test, TestState.FAILED);
-      } else {
-        that.setTestState(test, TestState.PASSED);
+  if(!this.conf.noTimeout) {
+    let timeout = setTimeout(()=>{
+      if(test.state == TestState.STARTING) {
+	debugger;
+	test.failDetails = FailDetails.LAUNCH_FAILED;
+	that.setTestState(test, TestState.FAILED);
+	this.testProcesses.delete(testProcess.pid);
+	cleanup();
       }
-      cleanup();
-    }
-  }, this.timeoutAmount);
+      if(test.state == TestState.RUNNING) {
+	if(test.coverageMarkers.length != test.completedCoverageMarkers) {
+          test.failDetails = FailDetails.TEST_FAILED;
+          that.setTestState(test, TestState.FAILED);
+	} else {
+          that.setTestState(test, TestState.PASSED);
+	}
+	cleanup();
+      }
+    }, this.timeoutAmount);
+  }
 
   testProcess.stdout.setEncoding('utf-8');
   testProcess.stderr.setEncoding('utf-8');
@@ -1021,7 +1023,9 @@ function processArgs() {
 	  process.exit();
       } else if (args[i] === "-v" || args[i] === "--verbose") {
 	conf.verbose = true;
-      } else if (args[i] === "-i" || args[i] === "--ignore-error") {
+      } else if (args[i] === "-nt" || args[i] === "--no_timeout") {
+	conf.notimeout = true;
+      }else if (args[i] === "-i" || args[i] === "--ignore-error") {
 	conf.ignoreError = true;
       }
     } else {

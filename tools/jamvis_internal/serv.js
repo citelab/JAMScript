@@ -13,6 +13,7 @@ const app = express();
 
 const port = 8580;
 var app_name = 'jt1';
+var batch = false;
 
 /////////////////////
 // MQTT Management //
@@ -121,9 +122,10 @@ function mqtt_message_handler(topic, message_text) {
   
   if(message_text == "")
     return;
+  
   try {
     
-    let message = JSON.parse(message_text);
+    var message = JSON.parse(message_text);
   } catch(e) {
     console.log(e);
     return;
@@ -193,15 +195,29 @@ function update_node_view(node) {
   websocketSend(JSON.stringify(pack));
 }
 
-// fnor now, TODO: add more information from here
+var transport_update_queue = []
+
+// for now, TODO: add more information from here
 function update_transport_view(event_data) {
   let pack = {
     type: 'event',
     data: event_data
   };
-  websocketSend(JSON.stringify(pack));
+  if(batch) {
+    transport_update_queue.push(event_data);
+  } else {
+    websocketSend(JSON.stringify(pack));
+  }
 }
 
+function dump_transport_view_batch() {
+  let pack = {
+    type: 'event-batch',
+    data: transport_update_queue
+  }
+  websocketSend(JSON.stringify(pack));
+  transport_update_queue = []
+}
 
 //////////////////////////
 // Websocket Management //
@@ -242,7 +258,7 @@ websocket_server.on('connection', function(websocket) {
     data: location_average()
   };
   websocket.send(JSON.stringify(pack));
-
+  
   // Bring websocket up to date
   for(var node_entry of node_map) {
     var node = node_entry[1];
@@ -257,7 +273,11 @@ websocket_server.on('connection', function(websocket) {
 
 let args = process.argv.slice(2);
 app_name = args[0];
-
+batch    = args[1] == 'true';
+if(batch) {
+  console.log("Sending Batched Message Transport Packets.");
+  setInterval(()=>{dump_transport_view_batch()}, 500)
+}
 
 
 /////////////////////

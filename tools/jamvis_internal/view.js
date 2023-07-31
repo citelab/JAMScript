@@ -159,7 +159,11 @@ function websocket_receive(event) {
   let pack = JSON.parse(event.data);
   if (pack.type === 'event') {
     handle_transport_event(pack.data);
-  } else if (pack.type === 'state') {
+  } else if (pack.type === 'event-batch') {
+    for(var item of pack.data) {
+      handle_transport_event(item);
+    }
+  }  else if (pack.type === 'state') {
     handle_mqtt(pack.data);
   } else if (pack.type === 'viewport') {
     handle_viewport_update(pack.data);
