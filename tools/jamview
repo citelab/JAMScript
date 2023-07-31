@@ -187,7 +187,7 @@ class main_canvas(Widget):
         # Loop done twice to enforce drawing order.
         if display_connections:
             for broker in all_brokers:
-if 'device' in broker['mach_type']:
+                if 'device' in broker['mach_type']:
                     self.draw_connections(broker)
                     
         self.draw_centered_square((self.dbgx, self.dbgy), (214, 149, 148), 75)

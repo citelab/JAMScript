@@ -1,3 +1,38 @@
 #!/bin/bash
 
-node ./jamvis_internal/serv.js
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+show_usage() {
+    cat << EOF
+TODO: make help
+EOF
+}
+
+while :; do
+    case $1 in
+        --help)
+            show_usage
+            exit
+            ;;
+	--remote=?*)
+	    remote=${1#*=}
+	    ;;
+	--remote=)
+	die 'ERROR: "--remote" requires a non-empty option argument.'
+	;;
+	
+    esac
+    shift
+done
+
+if [ -z "$remote" ]; then
+    node ./jamvis_internal/serv.js
+    open "localhost:8580"
+else
+    ssh -L 8580:bmj:850  $remote
+fi
+
+
