@@ -213,7 +213,7 @@ var websockets = [];
 
 function location_average() {
 
-p  var acc = {x: 0, y: 0};
+  var acc = {x: 0, y: 0};
   for(var node_entry of node_map) {
     var node = node_entry[1];
     var pos = transform_coords(node.loc);
@@ -222,14 +222,14 @@ p  var acc = {x: 0, y: 0};
       y: acc.y + pos.y
     };
   }
-r  return {x: acc.x/node_map.size,
+  return {x: acc.x/node_map.size,
 	  y: acc.y/node_map.size};
 }
-o
+
 function websocketSend(message) {
-c  for(var websocket of websockets) {
-e    websocket.send(message);
-s  }
+  for(var websocket of websockets) {
+    websocket.send(message);
+  }
 }
 
 websocket_server.on('error', (err)=>{console.error("WS: "); console.error(err)});
