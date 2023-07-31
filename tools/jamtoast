@@ -775,7 +775,10 @@ Toaster.prototype.executeTest = async function(test,
   let that = this;
 
   function cleanup() {
-    clearTimeout(timeout);
+    if(!that.conf.noTimeout) {
+      clearTimeout(timeout);
+    }
+    
     const testEndTime = Date.now();
     test.runDuration = testEndTime-testStartTime;
     try {
@@ -1006,6 +1009,7 @@ function processArgs() {
     testDirectory: undefined,
     singleTest: false,
     timeoutAmount: undefined,
+    noTimeout: false,
     verbose: false
   };
 
@@ -1024,7 +1028,7 @@ function processArgs() {
       } else if (args[i] === "-v" || args[i] === "--verbose") {
 	conf.verbose = true;
       } else if (args[i] === "-nt" || args[i] === "--no_timeout") {
-	conf.notimeout = true;
+	conf.noTimeout = true;
       }else if (args[i] === "-i" || args[i] === "--ignore-error") {
 	conf.ignoreError = true;
       }

@@ -45,7 +45,7 @@ if [ -z "$remote" ]; then
     #open "localhost:8580"
 else
     echo "Connecting to remote."
-    (sleep 3 && open "http://localhost:8580") &
+    #(sleep 3 && open "http://localhost:8580") &
     ssh -t -t -L 8580:localhost:8580 -L 8681:localhost:8681 $remote ". ~/.bashrc && jamvis --app=$app"
 fi
 

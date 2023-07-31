@@ -17,6 +17,8 @@ var remote_calls_observed_text = undefined;
 var devices_text = undefined;
 var fogs_text = undefined;
 
+var bounding_boxes = [];
+
 function scalarAddition(vec2, scale) {
   return {x: vec2.x+scale, y: vec2.y+scale};
 }
@@ -115,9 +117,11 @@ function setup() {
   });
   
   document.addEventListener("mousedown", (event) => {
-    dragging = true;
-    drag_start = {x: event.screenX, y: event.screenY};
-    view_offset_drag_start = viewport_pos;
+    if(handle_click(event)) {
+      dragging = true;
+      drag_start = {x: event.screenX, y: event.screenY};
+      view_offset_drag_start = viewport_pos;
+    }
   });
 
   document.addEventListener("mouseup", (event) => {
@@ -143,6 +147,23 @@ function setup() {
   shared_ticker.add((delta) => update(delta));
 }
 
+
+// returns true if its a drag event
+function handle_click(event) {
+  for(var box of bounding_boxes) {
+    if(box.left < event.clientX &&
+       event.clientX < box.right &&
+       box.top < event.clientY &&
+       event.clientY < box.bottom) {
+      console.log("GOOD SHIT!!!" );
+      console.log(event);
+      console.log(box);
+      return false;
+    }
+  }
+
+  return true;
+}
 
 let resizeTimer = undefined;
 function resize(app) {
@@ -243,6 +264,11 @@ function transform_pos(pos) {
 //	  y: pos.y*view_scale+view_offset.y};
 }
 
+function corner_from_center(pos, size) {
+  return {x: pos.x - size/2,
+	  y: pos.y - size/2};
+}
+
 function center_of_square(pos, size) {
   return {x: pos.x + size/2,
 	  y: pos.y + size/2};
@@ -276,14 +302,14 @@ function render(delta) {
   // Connection Pass
   for(var device of devices) {
     var node = node_map.get(device);
-    var pos = center_of_square(transform_pos(node.graphics.pos), rect_size);
+    var pos = transform_pos(node.graphics.pos);
     
     for(var node_id of node.data.connections) {
       var conn_node = node_map.get(node_id);
       if(conn_node == undefined)
 	continue;
       
-      if(conn_node.local_registry)
+      if(conn_node.data.local_registry)
 	continue;
 
       let signal = node.graphics.signals[node_id];
@@ -294,7 +320,7 @@ function render(delta) {
 	})
       }
       
-      var conn_pos = center_of_square(transform_pos(conn_node.graphics.pos), rect_size);
+      var conn_pos = transform_pos(conn_node.graphics.pos);
       
       graphics.moveTo(pos.x, pos.y);
       graphics.lineTo(conn_pos.x, conn_pos.y);
@@ -315,7 +341,7 @@ function render(delta) {
   for(var device of devices) {
     var node = node_map.get(device);
     
-    let pos = transform_pos(node.graphics.pos);
+    let pos = corner_from_center(transform_pos(node.graphics.pos), rect_size);
     
     graphics.drawRect(pos.x, pos.y, rect_size, rect_size);
   }
@@ -330,7 +356,7 @@ function render(delta) {
       continue;
     }
     
-    let pos = transform_pos(node.graphics.pos);
+    let pos = corner_from_center(transform_pos(node.graphics.pos), rect_size);
     
     graphics.drawRect(pos.x-2, pos.y-2, rect_size+4, rect_size+4);
   }
@@ -341,7 +367,7 @@ function render(delta) {
   for(var fog of fogs) {
     var node = node_map.get(fog);
     
-    let pos = transform_pos(node.graphics.pos);
+    let pos = corner_from_center(transform_pos(node.graphics.pos), rect_size);
     
     graphics.drawRect(pos.x, pos.y, rect_size, rect_size);
   }
@@ -349,6 +375,8 @@ function render(delta) {
 }
 
 function update(delta) {
+
+  var new_bounding_boxes = [];
 
   // Animate Location Changes
   for(var node_entry of node_map) {
@@ -360,6 +388,16 @@ function update(delta) {
     node.graphics.pos.x += dx * 0.25 * delta;
     node.graphics.pos.y += dy * 0.25 * delta;
 
+    var screen_pos = transform_pos(node.graphics.pos);
+    
+    new_bounding_boxes.push({
+      node: node,
+      top: screen_pos.y-10,
+      bottom: screen_pos.y+10,
+      left: screen_pos.x-10,
+      right: screen_pos.x+10,
+    });
+
     for(var signal_node_id in node.graphics.signals) {
       node.graphics.signals[signal_node_id] -= 0.05 * delta;
       if(node.graphics.signals[signal_node_id] <= 0) {
@@ -367,6 +405,8 @@ function update(delta) {
       }
     }
   }
+  bounding_boxes = new_bounding_boxes;
+//  console.log(bounding_boxes);
   
   update_ui();
   render();
