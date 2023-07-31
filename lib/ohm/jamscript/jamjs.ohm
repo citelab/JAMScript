@@ -49,9 +49,12 @@ JAMJS <: ES6 {
 
     jcond_joiner    = "&&" | "||"
 
+    SYFunctionDeclaration (a function declaration)
+        = function identifier "(" FormalParameterList ")" "{" FunctionBody "}"
+
     Async_activity  = jasync Jcond_specifier? Jtask_attr_spec? FunctionDeclaration
 
-    Sync_activity   = jsync Jcond_specifier? Jtask_attr_spec? FunctionDeclaration
+    Sync_activity   = jsync Jcond_specifier? Jtask_attr_spec? SYFunctionDeclaration
 
     Jcond_specifier = "{" Jcond_expr "}"
 
@@ -98,4 +101,5 @@ JAMJS <: ES6 {
     reuse_argdev = "reuse_argdev" ~identifierPart
     max_rate = "max_rate" ~identifierPart
     uflow = "uflow" ~identifierPart
+    func = "kfun" ~identifierPart
 }
