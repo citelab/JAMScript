@@ -772,6 +772,10 @@ Toaster.prototype.executeTest = async function(test,
     args.push("--local_registry");
   }
 
+  if(this.conf.local) {
+    args.push("--local");
+  }
+
   let that = this;
 
   function cleanup() {
@@ -1010,7 +1014,8 @@ function processArgs() {
     singleTest: false,
     timeoutAmount: undefined,
     noTimeout: false,
-    verbose: false
+    verbose: false,
+    local: false
   };
 
   for (var i = 0; i < args.length; i++) {
@@ -1029,7 +1034,9 @@ function processArgs() {
 	conf.verbose = true;
       } else if (args[i] === "-nt" || args[i] === "--no_timeout") {
 	conf.noTimeout = true;
-      }else if (args[i] === "-i" || args[i] === "--ignore-error") {
+      } else if (args[i] === "-l" || args[i] === "--local") {
+	conf.local = true;
+      } else if (args[i] === "-i" || args[i] === "--ignore-error") {
 	conf.ignoreError = true;
       }
     } else {

@@ -320,7 +320,8 @@ arg_t *remote_task_create(tboard_t *tboard, char *command, int level, char *fn_a
         // check if task completed
         if (rtask.status == RTASK_COMPLETED) {
             remote_task_free(tboard, rtask.task_id);
-            return rtask.data;
+
+            return rtask.data; 
         } else {
             tboard_err("remote_task_create: Blocking remote task is not marked as completed: %d.\n",rtask.status);
             return NULL;
@@ -380,11 +381,11 @@ bool sleep_task_create(tboard_t *tboard, int sval)
 }
 
 // This is yet another reuse of remote task - this time to wait on the "broadcaster" or
-// downward flow (dflow).
-void *dflow_task_create(tboard_t *tboard, void *entry)
+// downward flow (dflow). TODO: figure out whats happening
+dflow_task_response_t dflow_task_create(tboard_t *tboard, void *entry)
 {
     if (mco_running() == NULL) // must be called from a coroutine!
-        return NULL;
+	return (dflow_task_response_t) {NULL,0};
 
     mco_result res;
     // create rtask object
@@ -399,7 +400,7 @@ void *dflow_task_create(tboard_t *tboard, void *entry)
     res = mco_push(mco_running(), &rtask, sizeof(remote_task_t));
     if (res != MCO_SUCCESS) {
         tboard_err("remote_task_create: Failed to push remote task to mco storage interface.\n");
-        return NULL;
+	return (dflow_task_response_t) {NULL,0};
     }
     // issued remote task, yield
     task_yield();
@@ -410,7 +411,7 @@ void *dflow_task_create(tboard_t *tboard, void *entry)
         res = mco_pop(mco_running(), &rtask, sizeof(remote_task_t));
         if (res != MCO_SUCCESS) {
             tboard_err("dflow_task_create: Failed to pop mco storage interface.\n");
-            return NULL;
+            return (dflow_task_response_t) {NULL,0};
         }
         // check if task completed
         if (rtask.status == DFLOW_TASK_COMPLETED) {
@@ -422,14 +423,14 @@ void *dflow_task_create(tboard_t *tboard, void *entry)
             dfentry->state = NEW_STATE;
             pthread_mutex_unlock(&(dfentry->mutex));
 
-            return rtask.data;
+            return (dflow_task_response_t) {rtask.data, rtask.data_size}; 
         } else {
             tboard_err("dflow_task_create: dflow task is not marked as completed: %d.\n",rtask.status);
-            return NULL;
+            return (dflow_task_response_t) {NULL,0};
         }
     } else {
         tboard_err("dflow_task_create: Failed to capture dflow task after termination.\n");
-        return NULL;
+        return (dflow_task_response_t) {NULL,0};
     }
 }
 

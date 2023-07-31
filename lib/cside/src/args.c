@@ -38,7 +38,7 @@ cnode_args_t *process_args(int argc, char **argv) {
     args->redport = DEFAULTS_REDPORT;
     args->redhost = DEFAULTS_REDHOST;
     args->port = DEFAULTS_PORT;
-    args->host = strdup(DEFAULTS_HOST);
+    args->host = DEFAULTS_HOST;
     args->nexecs = DEFAULTS_NUMEXECUTORS;
     args->snumber = DEFAULTS_SERIALNUM;
     args->appid = NULL;
@@ -109,5 +109,6 @@ cnode_args_t *process_args(int argc, char **argv) {
 
 void destroy_args(cnode_args_t *args) {
     // free arguments object
+
     free(args);
 }
