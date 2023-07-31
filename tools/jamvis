@@ -19,6 +19,13 @@ while :; do
             show_usage
             exit
             ;;
+	--app=?*)
+	    app=${1#*=}
+	    break
+	    ;;
+	--remote=)
+	die 'ERROR: "--app" requires a non-empty option argument.'
+	;;
 	--remote=?*)
 	    remote=${1#*=}
 	    break
@@ -33,12 +40,12 @@ while :; do
 done
 
 if [ -z "$remote" ]; then
-    node $SCRIPT_DIR/jamvis_internal/serv.js
+    node $SCRIPT_DIR/jamvis_internal/serv.js $app
     #open "localhost:8580"
 else
     echo "Connecting to remote."
-    (sleep 3000 | open "http://localhost:8580") &
-    ssh -t -t -L 8580:localhost:8580 -L 8681:localhost:8681 $remote ". ~/.bashrc && jamvis"
+    (sleep 3000 && open "http://localhost:8580") &
+    ssh -t -t -L 8580:localhost:8580 -L 8681:localhost:8681 $remote ". ~/.bashrc && jamvis --app=$app"
 fi
 
 

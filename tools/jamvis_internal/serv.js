@@ -121,8 +121,13 @@ function mqtt_message_handler(topic, message_text) {
   
   if(message_text == "")
     return;
-  
-  let message = JSON.parse(message_text);
+  try {
+    
+    let message = JSON.parse(message_text);
+  } catch(e) {
+    console.log(e);
+    return;
+  }
 
   // TODO: handle local registry unhost
   if(message_type == 'status') {
@@ -208,7 +213,7 @@ var websockets = [];
 
 function location_average() {
 
-  var acc = {x: 0, y: 0};
+p  var acc = {x: 0, y: 0};
   for(var node_entry of node_map) {
     var node = node_entry[1];
     var pos = transform_coords(node.loc);
@@ -217,14 +222,14 @@ function location_average() {
       y: acc.y + pos.y
     };
   }
-  return {x: acc.x/node_map.size,
+r  return {x: acc.x/node_map.size,
 	  y: acc.y/node_map.size};
 }
-
+o
 function websocketSend(message) {
-  for(var websocket of websockets) {
-    websocket.send(message);
-  }
+c  for(var websocket of websockets) {
+e    websocket.send(message);
+s  }
 }
 
 websocket_server.on('error', (err)=>{console.error("WS: "); console.error(err)});
@@ -244,6 +249,16 @@ websocket_server.on('connection', function(websocket) {
     update_node_view(node);
   }
 });
+
+
+////////////////////
+// Initialization //
+////////////////////
+
+let args = process.argv.slice(2);
+app_name = args[0];
+
+
 
 /////////////////////
 // Website Hosting //
