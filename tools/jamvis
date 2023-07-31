@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 die() {
     printf '%s\n' "$1" >&2
     exit 1
@@ -19,20 +21,24 @@ while :; do
             ;;
 	--remote=?*)
 	    remote=${1#*=}
+	    break
 	    ;;
 	--remote=)
 	die 'ERROR: "--remote" requires a non-empty option argument.'
 	;;
-	
+	*)
+            break
     esac
     shift
 done
 
 if [ -z "$remote" ]; then
-    node ./jamvis_internal/serv.js
-    open "localhost:8580"
+    node $SCRIPT_DIR/jamvis_internal/serv.js
+    #open "localhost:8580"
 else
-    ssh -L 8580:bmj:850  $remote
+    echo "Connecting to remote."
+    (sleep 3000 | open "http://localhost:8580") &
+    ssh -t -t -L 8580:localhost:8580 -L 8681:localhost:8681 $remote ". ~/.bashrc && jamvis"
 fi
 
 
