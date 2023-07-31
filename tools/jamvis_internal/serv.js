@@ -12,7 +12,7 @@ const express = require('express'),
 const app = express();
 
 const port = 8580;
-const app_name = 'jt1';
+var app_name = 'jt1';
 
 /////////////////////
 // MQTT Management //
