@@ -1,5 +1,5 @@
 // @ToasterConfig
-// Fogs: 50
+// Fogs: 20
 // Devices: 40
 // Workers: 1
 // RunToTimeout: True

@@ -777,6 +777,7 @@ Toaster.prototype.executeTest = async function(test,
   }
 
   let that = this;
+  var timeout;
 
   function cleanup() {
     if(!that.conf.noTimeout) {
@@ -802,7 +803,7 @@ Toaster.prototype.executeTest = async function(test,
   this.testProcesses.add(testProcess.pid);
 
   if(!this.conf.noTimeout) {
-    let timeout = setTimeout(()=>{
+    var timeout = setTimeout(()=>{
       if(test.state == TestState.STARTING) {
 	debugger;
 	test.failDetails = FailDetails.LAUNCH_FAILED;

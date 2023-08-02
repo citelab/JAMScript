@@ -39,7 +39,10 @@ setInterval(()=> {
   console.log("Tag..... ", jsys.tags, "device type ", jsys.type);
   if (jsys.type === 'device') {
     coverage();
-    long = (long + 5) % 170;
+    
+    // Chaotic
+    long = (long + Math.random()*2) % 360;
+    lat = (lat + Math.random()*1 - 0.5) % 90;
     jsys.setLoc({long: long, lat: lat});
     console.log("Longitude and Latitude .... ", jsys.long, jsys.lat);
   }
@@ -52,6 +55,6 @@ setInterval(()=> {
   console.log("Calling compyou.. ");
     compyou(" String = " + count++).then((y)=> {console.log(y.values())}).catch(()=> {console.log("Helllo.....");});
   
-}, 3000);
+}, 500);
 
 
