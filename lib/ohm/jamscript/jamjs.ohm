@@ -7,9 +7,9 @@ JAMJS <: ES6 {
 
     Jexport         = jexport identifier ";"
 
-    Jmanifest       = ( japp | jcomponent ) id "{" ListOf<Jfile_list, ";"> ";"? "}"
+    Jmanifest       = ( japp | jcomponent ) identifier "{" ListOf<Jfile_list, ";"> ";"? "}"
 
-    Jfile_list      = Jfile_type ":" ListOf<string, ",">
+    Jfile_list      = Jfile_type ":" ListOf<stringLiteral, ",">
 
     Jfile_type      = "jside" | "cside" | "header" | "others" | "components" | "required_clibs" | "required_jlibs"
 
@@ -22,11 +22,11 @@ JAMJS <: ES6 {
                     | float                                            -- Float
                     | double                                           -- Double
 
-    Struct_entry    = Jamtype identifier ("[" number "]")? ";"
+    Struct_entry    = Jamtype identifier ("[" decimalIntegerLiteral "]")? ";"
 
-    Jdata_spec      = Jamtype identifier as Jflow_type ";"
+    Jdata_spec      = Jamtype identifier as Jflow_type ";"                                 -- Basic
                     | struct identifier "{" Struct_entry+ "}" identifier as Jflow_type ";" -- Struct
-                    | Jamtype identifier "[" number "]" as Jflow_type ";"                  -- Array
+                    | Jamtype identifier "[" decimalIntegerLiteral "]" as Jflow_type ";"          -- Array
 
     Jflow_type      = dflow | uflow
 
@@ -65,7 +65,7 @@ JAMJS <: ES6 {
                     | reuse_argdev "=" percentage
                     | max_rate "=" numericLiteral
 
-   	percentage 	    = numericLiteral "%"
+   	percentage 	    = decimalLiteral "%"
 
     Task_def        = Sync_task
                     | Async_task
