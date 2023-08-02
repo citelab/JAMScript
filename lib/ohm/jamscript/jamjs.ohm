@@ -1,53 +1,48 @@
 JAMJS <: ES6 {
     Declaration     += Jexport
-                    | Jrequire
+                    | Jmanifest
                     | Jconditional
                     | Jdata_decl
                     | Task_def
 
-    Jexport         = jexport identifier at ("device" | "fog" | "cloud") ";"        -- specified
-                    | jexport identifier ";"                                       -- default
+    Jexport         = jexport identifier ";"
 
-    Jrequire        = jrequire identifier as identifier at ("fog" | "cloud" | "device") ";"
+    Jmanifest       = ( japp | jcomponent ) id "{" ListOf<Jfile_list, ";"> ";"? "}"
 
-    jdata_type      = dflow
-                    | uflow
+    Jfile_list      = Jfile_type ":" ListOf<string, ",">
 
-    C_type          = "struct" identifier "{" Struct_entry* "}"     -- struct
-                    | "char" "*"                                    -- pointer
-                    | "char"
-                    | "double"
-                    | "int"
-                    | "float"
+    Jfile_type      = "jside" | "cside" | "header" | "others" | "components" | "required_clibs" | "required_jlibs"
 
-    Struct_entry    = C_type identifier ";"
+    Jamtype         = unsigned? int                                    -- Int
+                    | unsigned                                         -- IntUnsigned
+                    | unsigned? long long int?                         -- LongLongInt
+                    | long unsigned long int?                          -- LongUnsignedLongInt
+                    | long long unsigned int?                          -- LongLongUnsignedInt
+                    | unsigned? char                                   -- Char
+                    | float                                            -- Float
+                    | double                                           -- Double
 
+    Struct_entry    = Jamtype identifier ("[" number "]")? ";"
 
-    Jdata_spec      = C_type identifier as jdata_type "(" ("fog"|"cloud") ")" ";"   -- specified
-                    | C_type identifier as jdata_type ";"                           -- default
-                    | Flow ";"                                                      -- flow
+    Jdata_spec      = Jamtype identifier as Jflow_type ";"
+                    | struct identifier "{" Struct_entry+ "}" identifier as Jflow_type ";" -- Struct
+                    | Jamtype identifier "[" number "]" as Jflow_type ";"                  -- Array
 
-    Flow            = identifier as flow with identifier of identifier              -- flow
-                    | identifier as outflow of identifier                           -- outflow
-                    | identifier as inflow                                          -- inflow
+    Jflow_type      = dflow | uflow
 
+    Jdata_decl      = jdata identifier? "{" Jdata_spec+ "}"
 
-    Jdata_decl (a jdata declaration) = jdata "{" Jdata_spec* "}"
+    Jconditional    = jcond identifier? "{" Jcond_entry+ "}"
 
-    Jconditional (a jconditional declaration) = jcond identifier? "{" Jcond_entry* "}"
+    Jcond_entry     = identifier ":" Jcond_decl_expr ";"
 
-    Jcond_entry     = identifier ":" NonemptyListOf<Jcond_rule, jcond_joiner> ";"
+    Jcond_decl_expr = "(" Jcond_expr ")"                            -- paran
+                    | "!" Jcond_expr                                -- not
+                    | Jcond_expr jcond_op Jcond_expr                -- bin_op
+                    | Jcond_expr "." identifier                     -- namespace
+                    | identifier                                    -- id
 
-	Jcond_rule      = MemberExpr jcond_op MemberExpr ","? identifier?
-
-    MemberExpr      = identifier "(" MemberExpr ")"                 -- funcExpr
-                    | MemberExpr "." identifier                     -- propRefExp
-                    | identifier
-                    | literal
-
-    jcond_op        = "==" | ">=" | ">" | "<=" | "<" | "!="
-
-    jcond_joiner    = "&&" | "||"
+    jcond_op        = "==" | "!=" | "&&" | "||"
 
     Async_task  = jasync Jcond_specifier? Jtask_attr_spec? FunctionDeclaration
 
@@ -58,7 +53,7 @@ JAMJS <: ES6 {
     Jcond_expr      = "(" Jcond_expr ")"                            -- paran
                     | "!" Jcond_expr                                -- not
                     | Jcond_expr jcond_expr_op Jcond_expr           -- bin_op
-                    | identifier "." identifier                     -- namespace
+                    | Jcond_expr "." identifier                     -- namespace
                     | identifier                                    -- id
 
     jcond_expr_op   = "&&" | "||"
@@ -75,27 +70,28 @@ JAMJS <: ES6 {
     Task_def        = Sync_task
                     | Async_task
 
+    keyword         += jexport | japp | jcomponent | jsync | jasync | jdata | jcond
+
     as = "as" ~identifierPart
     at = "at" ~identifierPart
-    controller = "controller" ~identifierPart
-    dflow = "dflow" ~identifierPart
-    flow = "flow" ~identifierPart
-    is = "is" ~identifierPart
-    inflow = "inflow" ~identifierPart
-    jasync = "jtask*" ~identifierPart
-    jcond = "jcond" ~identifierPart
-    jdata = "jdata" ~identifierPart
-    jsync = "jtask" ~identifierPart
     jexport = "jexport" ~identifierPart
-    jrequire = "jrequire" ~identifierPart
-    name = "name" ~identifierPart
-    of = "of" ~identifierPart
-    outflow = "outflow" ~identifierPart
-    source = "source" ~identifierPart
-    type = "type" ~identifierPart
+    japp = "japp" ~identifierPart
+    jcomponent = "jcomponent" ~identifierPart
+    int = "int" ~identifierPart
+    long = "long" ~identifierPart
+    char = "char" ~identifierPart
+    unsigned = "unsigned" ~identifierPart
+    float = "float" ~identifierPart
+    double = "double" ~identifierPart
+    struct = "struct" ~identifierPart
+    dflow = "dflow" ~identifierPart
+    uflow = "uflow" ~identifierPart
+    jasync = "jasync" ~identifierPart
+    jsync = "jsync" ~identifierPart
+    jdata = "jdata" ~identifierPart
+    jcond = "jcond" ~identifierPart
     reuse = "reuse" ~identifierPart
     reuse_limit = "reuse_limit" ~identifierPart
     reuse_argdev = "reuse_argdev" ~identifierPart
     max_rate = "max_rate" ~identifierPart
-    uflow = "uflow" ~identifierPart
 }

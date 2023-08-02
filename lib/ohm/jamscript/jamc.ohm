@@ -6,7 +6,7 @@ JAMC <: C {
     Jcond_expr      = "(" Jcond_expr ")"                            -- paran
                     | "!" Jcond_expr                                -- not
                     | Jcond_expr jcond_expr_op Jcond_expr           -- bin_op
-                    | id "." id                                     -- namespace
+                    | Jcond_expr "." id                             -- namespace
                     | id                                            -- id
 
     jcond_expr_op   = "&&" | "||"
