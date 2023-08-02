@@ -75,12 +75,12 @@ void dpanel_settboard(dpanel_t *dp, void *tb) {
 
 void dpanel_connect_cb(const redisAsyncContext *c, int status) {
     if (status != REDIS_OK)
-        printf("Dpanel_connect_cb Error: %s\n", c->errstr);
+	printf("Dpanel_connect_cb Error: %s\n", c->errstr);
 }
 
 void dpanel_disconnect_cb(const redisAsyncContext *c, int status) {
     if (status != REDIS_OK)
-        printf("Dpanel_discconnect_cb Error: %s\n", c->errstr);
+	printf("Dpanel_discconnect_cb Error: %s\n", c->errstr);
 }
 
 void dpanel_start(dpanel_t *dp)
@@ -89,14 +89,14 @@ void dpanel_start(dpanel_t *dp)
 
     rval = pthread_create(&(dp->ufprocessor), NULL, dpanel_ufprocessor, (void *)dp);
     if (rval) {
-        perror("ERROR! Unable to start the dpanel ufprocessor thread");
-        exit(1);
+	perror("ERROR! Unable to start the dpanel ufprocessor thread");
+	exit(1);
     }
 
     rval = pthread_create(&(dp->dfprocessor), NULL, dpanel_dfprocessor, (void *)dp);
     if (rval) {
-        perror("ERROR! Unable to start the dpanel dfprocessor thread");
-        exit(1);
+	perror("ERROR! Unable to start the dpanel dfprocessor thread");
+	exit(1);
     }
 }
 
@@ -127,16 +127,16 @@ void dpanel_del_apanel(dpanel_t *dp, char *nid)
     HASH_FIND_STR(dp->apanels, nid, arec);
     pthread_mutex_unlock(&(dp->mutex));
     if (arec) {
-        auxpanel_t *ap = arec->apanel;
-        HASH_DEL(dp->apanels, arec);
-        free(arec);
-        apanel_free(ap);
-        apanel_shutdown(ap);
+	auxpanel_t *ap = arec->apanel;
+	HASH_DEL(dp->apanels, arec);
+	free(arec);
+	apanel_free(ap);
+	apanel_shutdown(ap);
     }
     pthread_mutex_lock(&(dp->mutex));
     int cnt = HASH_COUNT(dp->apanels);
     if (cnt == 0)
-        dp->use_apanel = false;
+	dp->use_apanel = false;
     pthread_mutex_unlock(&(dp->mutex));
 }
 
@@ -155,8 +155,8 @@ void *dpanel_ufprocessor(void *arg)
     dp->uctx = redisAsyncConnect(dp->server, dp->port);
     if (dp->uctx->err)
     {
-        printf("ERROR! Connecting to the Redis server at %s:%d\n", dp->server, dp->port);
-        exit(1);
+	printf("ERROR! Connecting to the Redis server at %s:%d\n", dp->server, dp->port);
+	exit(1);
     }
 
     redisLibeventAttach(dp->uctx, dp->uloop);
@@ -173,17 +173,17 @@ void *dpanel_ufprocessor(void *arg)
 
 void dpanel_connect_dcb(const redisAsyncContext *c, int status) {
     if (status != REDIS_OK)
-        printf("Error: %s\n", c->errstr);
+	printf("Error: %s\n", c->errstr);
 }
 
 void dpanel_disconnect_dcb(const redisAsyncContext *c, int status) {
     if (status != REDIS_OK)
-        printf("Error: %s\n", c->errstr);
+	printf("Error: %s\n", c->errstr);
 }
 
 void dpanel_uerrorcheck(redisAsyncContext* c, void* r, void* privdata) {
     if (r == NULL && c->errstr)
-        printf("errstr: %s\n", c->errstr);
+	printf("errstr: %s\n", c->errstr);
 }
 
 void dpanel_uaddall(dpanel_t* dp) { // add all pending uflow objects to outgoing redis queue
@@ -193,24 +193,24 @@ void dpanel_uaddall(dpanel_t* dp) { // add all pending uflow objects to outgoing
     int overrun = 100; // number of times to batch before detecting an overrun and send everything -- only relevant if we are absolutely spamming queue
 
     if (dp->state == REGISTERED) {
-        while (!last && overrun) {
-            next = get_uflow_object(dp, &last); // pull data from the queue
-            if (next == NULL)
-                return;
-            uflow_obj_t* uobj = (uflow_obj_t*)next->data;
-            pthread_mutex_lock(&(dp->mutex));
-            apanel_send_to_fogs(dp->apanels, uobj);
-            pthread_mutex_unlock(&(dp->mutex));
-            if (last || !--overrun) {
-                // send with a callback
-                redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, (uint8_t*) uobj->value, (size_t) uobj->len);
-            } else {
-                // send without a callback for pipelining.
-                redisAsyncCommand(dp->uctx, dpanel_uerrorcheck, NULL, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, (uint8_t*) uobj->value, (size_t) uobj->len);
-            }
-            freeUObject(uobj);
-            free(next);
-        }
+	while (!last && overrun) {
+	    next = get_uflow_object(dp, &last); // pull data from the queue
+	    if (next == NULL)
+		return;
+	    uflow_obj_t* uobj = (uflow_obj_t*)next->data;
+	    pthread_mutex_lock(&(dp->mutex));
+	    apanel_send_to_fogs(dp->apanels, uobj);
+	    pthread_mutex_unlock(&(dp->mutex));
+	    if (last || !--overrun) {
+		// send with a callback
+		redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, (uint8_t*) uobj->value, (size_t) uobj->len);
+	    } else {
+		// send without a callback for pipelining.
+		redisAsyncCommand(dp->uctx, dpanel_uerrorcheck, NULL, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, (uint8_t*) uobj->value, (size_t) uobj->len);
+	    }
+	    freeUObject(uobj);
+	    free(next);
+	}
     }
 }
 
@@ -219,32 +219,32 @@ void dpanel_ucallback(redisAsyncContext* c, void* r, void* privdata) {
     dpanel_t* dp = (dpanel_t*)privdata;
 
     if (reply == NULL) {
-        if (c->errstr)
-            printf("errstr: %s\n", c->errstr);
-        return;
+	if (c->errstr)
+	    printf("errstr: %s\n", c->errstr);
+	return;
     }
 
     if (dp->state != REGISTERED && reply->integer <= 0) {
-        if (dp->ecount <= DP_MAX_ERROR_COUNT) { // retry again... for a registration..
-            dp->ecount++;
-            redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall get_id 0 %s", dp->uuid);
-            return;
-        } else {
-            fprintf(stderr, "Unable to register with the data store at %s, %d\n", dp->server, dp->port);
-            exit(1);
-        }
+	if (dp->ecount <= DP_MAX_ERROR_COUNT) { // retry again... for a registration..
+	    dp->ecount++;
+	    redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall get_id 0 %s", dp->uuid);
+	    return;
+	} else {
+	    fprintf(stderr, "Unable to register with the data store at %s, %d\n", dp->server, dp->port);
+	    exit(1);
+	}
     }
 
     if (dp->state != REGISTERED) { // do registration..
-        dp->state = REGISTERED;
-        dp->logical_id = reply->integer;
+	dp->state = REGISTERED;
+	dp->logical_id = reply->integer;
     }
 
     if (dp->logical_appid < 0) {
-        cnode_t* cn = (cnode_t*)dp->cnode;
-        redisAsyncCommand(dp->uctx, dpanel_ucallback2, dp, "fcall app_id 0 %s", cn->args->appid);
+	cnode_t* cn = (cnode_t*)dp->cnode;
+	redisAsyncCommand(dp->uctx, dpanel_ucallback2, dp, "fcall app_id 0 %s", cn->args->appid);
     } else
-        dpanel_uaddall(dp);
+	dpanel_uaddall(dp);
 }
 
 
@@ -253,9 +253,9 @@ void dpanel_ucallback2(redisAsyncContext* c, void* r, void* privdata) {
     dpanel_t *dp = (dpanel_t*)privdata;
 
     if (reply == NULL) {
-        if (c->errstr)
-            printf("errstr: %s\n", c->errstr);
-        return;
+	if (c->errstr)
+	    printf("errstr: %s\n", c->errstr);
+	return;
     }
 
     dp->logical_appid = reply->integer;
@@ -285,21 +285,21 @@ struct queue_entry* get_uflow_object(dpanel_t* dp, bool* last) {
     struct queue_entry* next = NULL,* nnext;
 
     while (next == NULL) {
-        pthread_mutex_lock(&(dp->ufmutex));
-        next = queue_peek_front(&(dp->ufqueue));
-        if (next) {
-            queue_pop_head(&(dp->ufqueue));
-            nnext = queue_peek_front(&(dp->ufqueue));
-            *last = !nnext;
-        } else
-            *last = false;
-        pthread_mutex_unlock(&(dp->ufmutex));
+	pthread_mutex_lock(&(dp->ufmutex));
+	next = queue_peek_front(&(dp->ufqueue));
+	if (next) {
+	    queue_pop_head(&(dp->ufqueue));
+	    nnext = queue_peek_front(&(dp->ufqueue));
+	    *last = !nnext;
+	} else
+	    *last = false;
+	pthread_mutex_unlock(&(dp->ufmutex));
 
-        if (next == NULL) {
-            pthread_mutex_lock(&(dp->ufmutex));
-            pthread_cond_wait(&(dp->ufcond), &(dp->ufmutex));
-            pthread_mutex_unlock(&(dp->ufmutex));
-        }
+	if (next == NULL) {
+	    pthread_mutex_lock(&(dp->ufmutex));
+	    pthread_cond_wait(&(dp->ufcond), &(dp->ufmutex));
+	    pthread_mutex_unlock(&(dp->ufmutex));
+	}
     }
     return next;
 }
@@ -407,30 +407,30 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
 
     va_start(args, fmt);
     for (int i = 0; i < len; i++) {
-        label = va_arg(args, char*);
-        uargs[i].label = strdup(label);
-        switch(fmt[i]) {
-            case 'n': // TODO this isn't actually getting transmitted at all right now
-                nv = va_arg(args, nvoid_t*);
-                uargs[i].val.nval = nv;
-                uargs[i].type = D_NVOID_TYPE;
-                break;
-            case 's':
-                uargs[i].val.sval = strdup(va_arg(args, char*));
-                uargs[i].type = D_STRING_TYPE;
-                break;
-            case 'i':
-                uargs[i].val.ival = va_arg(args, int);
-                uargs[i].type = D_INT_TYPE;
-                break;
-            case 'd':
-            case 'f':
-                uargs[i].val.dval = va_arg(args, double);
-                uargs[i].type = D_DOUBLE_TYPE;
-                break;
-            default:
-                break;
-        }
+	label = va_arg(args, char*);
+	uargs[i].label = strdup(label);
+	switch(fmt[i]) {
+	    case 'n': // TODO this isn't actually getting transmitted at all right now
+		nv = va_arg(args, nvoid_t*);
+		uargs[i].val.nval = nv;
+		uargs[i].type = D_NVOID_TYPE;
+		break;
+	    case 's':
+		uargs[i].val.sval = strdup(va_arg(args, char*));
+		uargs[i].type = D_STRING_TYPE;
+		break;
+	    case 'i':
+		uargs[i].val.ival = va_arg(args, int);
+		uargs[i].type = D_INT_TYPE;
+		break;
+	    case 'd':
+	    case 'f':
+		uargs[i].val.dval = va_arg(args, double);
+		uargs[i].type = D_DOUBLE_TYPE;
+		break;
+	    default:
+		break;
+	}
     }
     va_end(args);
 
@@ -441,7 +441,7 @@ void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
     do_cbor_encoding(&encoder, uargs, len);
     int clen = cbor_encoder_get_buffer_size(&encoder, (uint8_t*)&buf);
     uobj = uflow_obj_new(uf, (char*) buf, clen);
-    
+
     free_buffer(uargs, len);
     e = queue_new_node(uobj);
     pthread_mutex_lock(&(dp->ufmutex));
@@ -464,13 +464,13 @@ void *dpanel_dfprocessor(void *arg)
 
     dp->dctx = redisAsyncConnect(dp->server, dp->port);
     if (dp->dctx->err) {
-        printf("ERROR! Connecting to the Redis server at %s:%d\n", dp->server, dp->port);
-        exit(1);
+	printf("ERROR! Connecting to the Redis server at %s:%d\n", dp->server, dp->port);
+	exit(1);
     }
     dp->dctx2 = redisAsyncConnect(dp->server, dp->port);
     if (dp->dctx2->err) {
-        printf("ERROR! Connecting to the Redis server at %s:%d\n", dp->server, dp->port);
-        exit(1);
+	printf("ERROR! Connecting to the Redis server at %s:%d\n", dp->server, dp->port);
+	exit(1);
     }
 
     redisLibeventAttach(dp->dctx, dp->dloop);
@@ -480,9 +480,9 @@ void *dpanel_dfprocessor(void *arg)
     redisAsyncSetConnectCallback(dp->dctx2, dpanel_connect_dcb);
     redisAsyncSetDisconnectCallback(dp->dctx2, dpanel_disconnect_dcb);
     if (dp->logical_appid < 0)
-        redisAsyncCommand(dp->dctx, dpanel_dcallback2, dp, "fcall app_id 0 %s", cn->args->appid);
+	redisAsyncCommand(dp->dctx, dpanel_dcallback2, dp, "fcall app_id 0 %s", cn->args->appid);
     else
-        redisAsyncCommand(dp->dctx2, dpanel_dcallback, dp, "SUBSCRIBE %d__d__keycompleted", dp->logical_appid);
+	redisAsyncCommand(dp->dctx2, dpanel_dcallback, dp, "SUBSCRIBE %d__d__keycompleted", dp->logical_appid);
 
     event_base_dispatch(dp->dloop);
     // the above call is blocking... so we come here after the loop has exited
@@ -499,10 +499,10 @@ void dpanel_dcallback2(redisAsyncContext *c, void *r, void *privdata)
     dpanel_t *dp = (dpanel_t *)privdata;
 
     if (reply == NULL) {
-        if (c->errstr) {
-            printf("errstr: %s\n", c->errstr);
-        }
-        return;
+	if (c->errstr) {
+	    printf("errstr: %s\n", c->errstr);
+	}
+	return;
     }
 
     dp->logical_appid = reply->integer;
@@ -520,10 +520,10 @@ void dpanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
     dftable_entry_t *entry;
 
     if (reply == NULL) {
-        if (c->errstr) {
-            printf("errstr: %s\n", c->errstr);
-        }
-        return;
+	if (c->errstr) {
+	    printf("errstr: %s\n", c->errstr);
+	}
+	return;
     }
 
     char keymsg[64];
@@ -532,15 +532,15 @@ void dpanel_dcallback(redisAsyncContext *c, void *r, void *privdata)
     if (dp->use_apanel) return;         // the dpanel callback disabled - using the apanel cb
 
     if (reply->type == REDIS_REPLY_ARRAY &&
-        (strcmp(reply->element[1]->str, keymsg) == 0) &&
-        (strcmp(reply->element[0]->str, "message") == 0)) {
+	(strcmp(reply->element[1]->str, keymsg) == 0) &&
+	(strcmp(reply->element[0]->str, "message") == 0)) {
 
-        HASH_FIND_STR(dp->dftable, reply->element[2]->str, entry);
-        if (entry) {
-            if (entry->state == CLIENT_READY && entry->taskid > 0) {
-                redisAsyncCommand(dp->dctx, dflow_callback, entry, "fcall df_lread 1 %s %d", entry->key, dp->logical_appid);
-            }
-        }
+	HASH_FIND_STR(dp->dftable, reply->element[2]->str, entry);
+	if (entry) {
+	    if (entry->state == CLIENT_READY && entry->taskid > 0) {
+		redisAsyncCommand(dp->dctx, dflow_callback, entry, "fcall df_lread 1 %s %d", entry->key, dp->logical_appid);
+	    }
+	}
     }
 }
 
@@ -557,27 +557,32 @@ void dflow_callback(redisAsyncContext *c, void *r, void *privdata)
     remote_task_t *rtask = NULL;
 
     if (reply == NULL) {
-        if (c->errstr) {
-            printf("errstr: %s\n", c->errstr);
-        }
-        return;
+	if (c->errstr) {
+	    printf("errstr: %s\n", c->errstr);
+	}
+	return;
     }
 
     HASH_FIND(hh, t->task_table, &(entry->taskid), sizeof(uint64_t), rtask);
     if (rtask != NULL)
     {
+	if(rtask->status == DFLOW_TASK_COMPLETED)
+	    return;
+
 	redisReply* cborData = (reply->element[7]);
-        rtask->data = malloc(cborData->len);
-	
+	rtask->data = malloc(cborData->len);
+
 	memcpy(rtask->data, cborData->str, cborData->len);
-        rtask->data_size = cborData->len;
-        if (rtask->calling_task != NULL)
-        {
-            rtask->status = DFLOW_TASK_COMPLETED;
-            assert(mco_push(rtask->calling_task->ctx, rtask, sizeof(remote_task_t)) == MCO_SUCCESS);
-            // place parent task back to appropriate queue - should be batch
-            task_place(t, rtask->calling_task);
-        }
+	rtask->data_size = cborData->len;
+	if (rtask->calling_task != NULL)
+	{
+
+	    rtask->status = DFLOW_TASK_COMPLETED;
+	    assert(mco_push(rtask->calling_task->ctx, rtask, sizeof(remote_task_t)) == MCO_SUCCESS);
+
+	    // place parent task back to appropriate queue - should be batch
+	    task_place(t, rtask->calling_task);
+	}
     }
 }
 
@@ -627,11 +632,11 @@ void dfread_int(dftable_entry_t *df, int *val)
 
     dflow_task_response_t res = dflow_task_create(tboard, df);
     if (res.buf != NULL) {
-        derror = 0;
-        *val = __extract_int(res.buf, res.len);
+	derror = 0;
+	*val = __extract_int(res.buf, res.len);
     } else {
-        derror = -1;
-        *val = 0;
+	derror = -1;
+	*val = 0;
     }
     free(res.buf);
 }
@@ -644,11 +649,11 @@ void dfread_double(dftable_entry_t *df, double *val)
 
     dflow_task_response_t res = dflow_task_create(tboard, df);
     if (res.buf != NULL) {
-        derror = 0;
-        *val = __extract_double(res.buf, res.len);
+	derror = 0;
+	*val = __extract_double(res.buf, res.len);
     } else {
-        derror = -1;
-        *val = 0;
+	derror = -1;
+	*val = 0;
     }
     free(res.buf);
 }
@@ -661,13 +666,13 @@ void dfread_string(dftable_entry_t* df, char* val, int maxlen) {
 
     dflow_task_response_t res = dflow_task_create(tboard, df);
     if (res.buf != NULL) {
-        derror = 0;
-        char* x = __extract_str(res.buf, res.len);
-        strncpy(val, x, maxlen);
-        free(x);
+	derror = 0;
+	char* x = __extract_str(res.buf, res.len);
+	strncpy(val, x, maxlen);
+	free(x);
     } else {
-        derror = -1;
-        *val = 0;
+	derror = -1;
+	*val = 0;
     }
     free(res.buf);
 }
@@ -679,64 +684,64 @@ void dfread_struct(dftable_entry_t *df, char *fmt, ...) {
 
     dflow_task_response_t res = dflow_task_create(tboard, df);
     if (res.buf != NULL) {
-        derror = 0;
-        darg_entry_t* dargs = __extract_map(res.buf, res.len),* darg,* tmp;
+	derror = 0;
+	darg_entry_t* dargs = __extract_map(res.buf, res.len),* darg,* tmp;
 
-        int len = strlen(fmt);
-        assert(len > 0);
-        va_list args;
-        char* label;
+	int len = strlen(fmt);
+	assert(len > 0);
+	va_list args;
+	char* label;
 
-        va_start(args, fmt);
-        for(int i=0; i<len; i++){
-            label = va_arg(args, char*);
-            HASH_FIND_STR(dargs, label, darg);
-            if(!darg){
-                printf("CBOR could not find field %s\n", label);
-                va_arg(args, void*);
-                continue;
-            }
-            switch(fmt[i]){
-            case 's':
-                if(darg->type == D_STRING_TYPE)
-                    *va_arg(args, char**) = darg->val.sval;
-                else
-                    printf("CBOR type mismatch at %s, excpected s\n", label);
-                break;
-            case 'i':
-                if(darg->type == D_INT_TYPE)
-                    *va_arg(args, int*) = darg->val.ival;
-                else
-                    printf("CBOR type mismatch at %s, excpected i\n", label);
-                break;
-            case 'd':
-                if(darg->type == D_DOUBLE_TYPE)
-                    *va_arg(args, double*) = darg->val.dval;
-                else
-                    printf("CBOR type mismatch at %s, excpected d\n", label);
-                break;
-            case 'f':
-                if(darg->type == D_DOUBLE_TYPE)
-                    *va_arg(args, float*) = (float)darg->val.dval;
-                else
-                    printf("CBOR type mismatch at %s, excpected f\n", label);
-                break;
-            default:
-                printf("CBOR unrecognized format option %c for %s\n", fmt[i], label);
-                va_arg(args, void*);
-            }
-            HASH_DEL(dargs, darg);
-            free(darg->label);
-            free(darg);
-        }
-        va_end(args);
-        HASH_ITER(hh, dargs, darg, tmp){
-            printf("CBOR recieved unused struct field %s\n", darg->label);
-            HASH_DEL(dargs, darg);
-            free(darg->label);
-            free(darg);
-        }
+	va_start(args, fmt);
+	for(int i=0; i<len; i++){
+	    label = va_arg(args, char*);
+	    HASH_FIND_STR(dargs, label, darg);
+	    if(!darg){
+		printf("CBOR could not find field %s\n", label);
+		va_arg(args, void*);
+		continue;
+	    }
+	    switch(fmt[i]){
+	    case 's':
+		if(darg->type == D_STRING_TYPE)
+		    *va_arg(args, char**) = darg->val.sval;
+		else
+		    printf("CBOR type mismatch at %s, excpected s\n", label);
+		break;
+	    case 'i':
+		if(darg->type == D_INT_TYPE)
+		    *va_arg(args, int*) = darg->val.ival;
+		else
+		    printf("CBOR type mismatch at %s, excpected i\n", label);
+		break;
+	    case 'd':
+		if(darg->type == D_DOUBLE_TYPE)
+		    *va_arg(args, double*) = darg->val.dval;
+		else
+		    printf("CBOR type mismatch at %s, excpected d\n", label);
+		break;
+	    case 'f':
+		if(darg->type == D_DOUBLE_TYPE)
+		    *va_arg(args, float*) = (float)darg->val.dval;
+		else
+		    printf("CBOR type mismatch at %s, excpected f\n", label);
+		break;
+	    default:
+		printf("CBOR unrecognized format option %c for %s\n", fmt[i], label);
+		va_arg(args, void*);
+	    }
+	    HASH_DEL(dargs, darg);
+	    free(darg->label);
+	    free(darg);
+	}
+	va_end(args);
+	HASH_ITER(hh, dargs, darg, tmp){
+	    printf("CBOR recieved unused struct field %s\n", darg->label);
+	    HASH_DEL(dargs, darg);
+	    free(darg->label);
+	    free(darg);
+	}
     } else // Just ignore when error? or could nullify all struct fields
-        derror = -1;
+	derror = -1;
     free(res.buf);
 }
