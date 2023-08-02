@@ -127,7 +127,7 @@ function mqtt_message_handler(topic, message_text) {
     
     var message = JSON.parse(message_text);
   } catch(e) {
-    console.log(e);
+    console.log("Failed to parse message...");
     return;
   }
 
