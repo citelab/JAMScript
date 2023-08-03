@@ -1,0 +1,52 @@
+#!/bin/bash
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+show_usage() {
+    cat << EOF
+TODO: make help
+EOF
+}
+batch=false
+while :; do
+    case $1 in
+        --help)
+            show_usage
+            exit
+            ;;
+	--batch)
+            batch=true
+            ;;
+	--app=?*)
+	    app=${1#*=}
+	    ;;
+	--remote=)
+	die 'ERROR: "--app" requires a non-empty option argument.'
+	;;
+	--remote=?*)
+	    remote=${1#*=}
+	    ;;
+	--remote=)
+	die 'ERROR: "--remote" requires a non-empty option argument.'
+	;;
+	*)
+	    break
+    esac
+    shift
+done
+
+if [ -z "$remote" ]; then
+    node $SCRIPT_DIR/jamvis_internal/serv.js $app $batch
+    #open "localhost:8580"
+else
+    echo "Connecting to remote."
+    #(sleep 3 && open "http://localhost:8580") &
+    ssh -t -t -L 8580:localhost:8580 -L 8681:localhost:8681 $remote ". ~/.bashrc && jamvis --app=$app"
+fi
+
+

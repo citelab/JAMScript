@@ -777,9 +777,13 @@ Toaster.prototype.executeTest = async function(test,
   }
 
   let that = this;
+  var timeout;
 
   function cleanup() {
-    clearTimeout(timeout);
+    if(!that.conf.noTimeout) {
+      clearTimeout(timeout);
+    }
+    
     const testEndTime = Date.now();
     test.runDuration = testEndTime-testStartTime;
     try {
@@ -798,24 +802,26 @@ Toaster.prototype.executeTest = async function(test,
   let testProcess = child_process.spawn(command, args, {shell: false, detached: true});
   this.testProcesses.add(testProcess.pid);
 
-  let timeout = setTimeout(()=>{
-    if(test.state == TestState.STARTING) {
-      debugger;
-      test.failDetails = FailDetails.LAUNCH_FAILED;
-      that.setTestState(test, TestState.FAILED);
-      this.testProcesses.delete(testProcess.pid);
-      cleanup();
-    }
-    if(test.state == TestState.RUNNING) {
-      if(test.coverageMarkers.length != test.completedCoverageMarkers) {
-        test.failDetails = FailDetails.TEST_FAILED;
-        that.setTestState(test, TestState.FAILED);
-      } else {
-        that.setTestState(test, TestState.PASSED);
+  if(!this.conf.noTimeout) {
+    var timeout = setTimeout(()=>{
+      if(test.state == TestState.STARTING) {
+	debugger;
+	test.failDetails = FailDetails.LAUNCH_FAILED;
+	that.setTestState(test, TestState.FAILED);
+	this.testProcesses.delete(testProcess.pid);
+	cleanup();
       }
-      cleanup();
-    }
-  }, this.timeoutAmount);
+      if(test.state == TestState.RUNNING) {
+	if(test.coverageMarkers.length != test.completedCoverageMarkers) {
+          test.failDetails = FailDetails.TEST_FAILED;
+          that.setTestState(test, TestState.FAILED);
+	} else {
+          that.setTestState(test, TestState.PASSED);
+	}
+	cleanup();
+      }
+    }, this.timeoutAmount);
+  }
 
   testProcess.stdout.setEncoding('utf-8');
   testProcess.stderr.setEncoding('utf-8');
@@ -1008,6 +1014,7 @@ function processArgs() {
     testDirectory: undefined,
     singleTest: false,
     timeoutAmount: undefined,
+    noTimeout: false,
     verbose: false,
     local: false
   };
@@ -1026,6 +1033,8 @@ function processArgs() {
 	  process.exit();
       } else if (args[i] === "-v" || args[i] === "--verbose") {
 	conf.verbose = true;
+      } else if (args[i] === "-nt" || args[i] === "--no_timeout") {
+	conf.noTimeout = true;
       } else if (args[i] === "-l" || args[i] === "--local") {
 	conf.local = true;
       } else if (args[i] === "-i" || args[i] === "--ignore-error") {
