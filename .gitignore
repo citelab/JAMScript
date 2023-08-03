@@ -7,9 +7,9 @@ node_modules/*
 /tmp
 *.db
 *.dot
-dot.pdf
-ast.pdf
-cst.pdf
+dot*.pdf
+ast*.pdf
+cst*.pdf
 
 .DS_Store
 
