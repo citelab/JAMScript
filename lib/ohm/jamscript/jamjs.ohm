@@ -1,5 +1,5 @@
 JAMJS <: ES6 {
-    Declaration     += Jexport
+    GlobalElement   += Jexport
                     | Jmanifest
                     | Jconditional
                     | Jdata_decl
@@ -12,6 +12,18 @@ JAMJS <: ES6 {
     Jfile_list      = Jfile_type ":" ListOf<stringLiteral, ",">
 
     Jfile_type      = "jside" | "cside" | "header" | "others" | "components" | "required_clibs" | "required_jlibs"
+
+    Async_task  = jasync Jcond_specifier? Jtask_attr_spec? identifier "(" Jamparam_type_lst ")" "{" FunctionBody "}"
+
+    Sync_task   = jsync Jamtype_return Jcond_specifier? Jtask_attr_spec? identifier "(" Jamparam_type_lst ")" "{" FunctionBody "}"
+
+    Jamtype_return  = Jamtype
+                    | Jamtype "[" decimalIntegerLiteral "]"            -- Array
+                    | void                                             -- Void
+
+    Jamparam_type_lst = ListOf<Jamparam_decl, ",">
+
+    Jamparam_decl   = identifier ":" Jamtype ( "[" "]" )?
 
     Jamtype         = unsigned? int                                    -- Int
                     | unsigned                                         -- IntUnsigned
@@ -42,11 +54,7 @@ JAMJS <: ES6 {
                     | Jcond_expr "." identifier                     -- namespace
                     | identifier                                    -- id
 
-    jcond_op        = "==" | "!=" | "&&" | "||"
-
-    Async_task  = jasync Jcond_specifier? Jtask_attr_spec? FunctionDeclaration
-
-    Sync_task   = jsync Jcond_specifier? Jtask_attr_spec? FunctionDeclaration
+    jcond_op        = "==" | "!=" | "===" | "!==" | "<" | ">" | "<=" | ">=" | "&&" | "||"
 
     Jcond_specifier = "{" Jcond_expr "}"
 

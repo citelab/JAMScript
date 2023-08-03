@@ -1,13 +1,11 @@
 C {
-    Source         = External_decl*
+    Source          = External_decl*
 
     // Helper Rules
     identStart      = letter | "_"
     identPart       = identStart | decimalDigit
     linebreak       = "\n"
 
-
-    // Comments
     comment         = "//" (~linebreak any)* &linebreak
                     | "/*" (~"*/" any)* "*/"
 
@@ -15,11 +13,10 @@ C {
     spacesNoNl      = (~linebreak space)*
 
 	// Preprocessor will output line markers when compiled with debug options
-    Preprocess_line = "#" decimalInt "\"" (~"\"" any)* "\"" decimalInt*
+    Preprocess_line = "#" decimalIntegerLiteral "\"" (~"\"" any)* "\"" decimalIntegerLiteral*
 
-    // Identifiers and Names
     identName       = identStart identPart*
-    id              = ~keyword identName
+    identifier      = ~keyword identName
 
     // Numeric Literals
     hex             = ( "0x" | "0X" ) hexDigit+ ("u"|"U")? ("l"|"L")? ("l"|"L")?
@@ -28,8 +25,8 @@ C {
 
 
 
-    decimalInt      = nonZeroDigit decimalDigit*                                        -- Full
-                    | "0"                                                               -- Zero
+    decimalIntegerLiteral      = nonZeroDigit decimalDigit*                             -- Full
+                               | "0"                                                    -- Zero
 
     decimalDigit    = "0".."9"
     nonZeroDigit    = "1".."9"
@@ -43,24 +40,24 @@ C {
     decimal         = decimalValue ("l"|"L")
                     | decimalValue ("f"|"F")?
 
-    decimalValue    = "-"? decimalInt expPart                                           -- IntOnly
-                    | "-"? decimalInt? "." digit+ expPart?                              -- Decimal
+    decimalValue    = "-"? decimalIntegerLiteral expPart                                -- IntOnly
+                    | "-"? decimalIntegerLiteral? "." digit+ expPart?                   -- Decimal
 
-    integer         = "-"? decimalInt ("l"|"L"|"u")*
+    integer         = "-"? decimalIntegerLiteral ("l"|"L"|"u")*
 
     charLit         = "'" "\\" octalDigit octalDigit? octalDigit? "\'"                  -- Octal
                     | "'" "\\" "x" (~"'" hexDigit)+ "'"                                 -- Hex
                     | "'" escapeChar "'"                                                -- Escape
                     | "'" (~"'" any)* "'"                                               -- Char
 
-    number (a number) = charLit | hex | octal | decimal | integer
+    numericLiteral  = charLit | hex | octal | decimal | integer
 
     // String Literals
     escapeChar      = "\\" letter
 
     interStringQuotation = "\"" space* "\""
 
-    string          = "\"" (escapeChar | interStringQuotation | ~"\"" any)* "\""        -- String
+    stringLiteral   = "\"" (escapeChar | interStringQuotation | ~"\"" any)* "\""        -- String
                     | ("#" | "`") identName                                             -- Id
 
 
@@ -118,23 +115,23 @@ C {
 
     Left_expr       = Left_expr Call_expr                                               -- Call
                     | Left_expr "[" Expr "]"                                            -- Array
-                    | Left_expr "." id                                                  -- Struct
-                    | Left_expr "->" id                                                 -- Pointer
+                    | Left_expr "." identifier                                          -- Struct
+                    | Left_expr "->" identifier                                         -- Pointer
                     | Primary_expr
 
     Call_expr       = "(" ListOf<Assign_expr, ","> ")"
 
-    Primary_expr    = id
-                    | number
-                    | string
+    Primary_expr    = identifier
+                    | numericLiteral
+                    | stringLiteral
                     | "(" Expr ")"                                                      -- GroupExpr
 
     Const_expr      = Cond_expr
 
     // Declaration statements
     // Statements that do "type" specification
-    Prototype       = extern Pointer_list? id "(" Param_type_lst? ")" Gcc_attribute? ";"
-                    | Decl_specs Pointer_list? id "(" Param_type_lst? ")" Gcc_attribute? ";"
+    Prototype       = extern Pointer_list? identifier "(" Param_type_lst? ")" Gcc_attribute? ";"
+                    | Decl_specs Pointer_list? identifier "(" Param_type_lst? ")" Gcc_attribute? ";"
 
     Decl            = Decl_specs Init_decl_lst ";"                                      -- Decl
 
@@ -157,17 +154,17 @@ C {
     Type_modifier   = (long | short | signed | unsigned)+
 
     Type_spec       = Type_modifier (int | char | double)?                              -- Modified
-                    | (id | void | bool | float | int | char | double)
+                    | (identifier | void | bool | float | int | char | double)
                     | Enum_spec                                                         -- Enum
                     | Struct_spec                                                       -- Sturct
                     | Union_spec                                                        -- Union
 
-    Struct_spec     = struct Gcc_attribute* id "{" Struct_decl+ "}"                     -- Full
-                    | struct Gcc_attribute* id                                          -- Empty
+    Struct_spec     = struct Gcc_attribute* identifier "{" Struct_decl+ "}"             -- Full
+                    | struct Gcc_attribute* identifier                                  -- Empty
                     | struct Gcc_attribute* "{" Struct_decl+ "}"                        -- Anonymous
 
-    Union_spec      = union Gcc_attribute* id "{" Struct_decl+ "}"                      -- Full
-                    | union Gcc_attribute* id                                           -- Empty
+    Union_spec      = union Gcc_attribute* identifier "{" Struct_decl+ "}"              -- Full
+                    | union Gcc_attribute* identifier                                   -- Empty
                     | union Gcc_attribute* "{" Struct_decl+ "}"                         -- Anonymous
 
     Struct_decl     = Preprocess_line? Spec_qual_list ListOf<Sdeclarator, ","> ";"      -- Full
@@ -179,12 +176,12 @@ C {
                     | Declarator                                                        -- Decl
                     | ":" Const_expr Gcc_attribute*                                     -- Expr
 
-    Enum_spec       = enum Gcc_attribute* id "{" ListOf<Enumerator, ","> ","? "}"       -- Full
-                    | enum Gcc_attribute* id                                            -- Empty
+    Enum_spec       = enum Gcc_attribute* identifier "{" ListOf<Enumerator, ","> ","? "}"   -- Full
+                    | enum Gcc_attribute* identifier                                    -- Empty
                     | enum Gcc_attribute* "{" ListOf<Enumerator, ","> ","? "}"          -- Anonymous
 
-    Enumerator      = Preprocess_line? id "=" Const_expr                                -- IdExpr
-                    | Preprocess_line? id                                               -- Id
+    Enumerator      = Preprocess_line? identifier "=" Const_expr                        -- IdExpr
+                    | Preprocess_line? identifier                                       -- Id
 					| Preprocess_line  													-- Preprocess
 
 
@@ -197,7 +194,7 @@ C {
     Dir_declarator  = Dir_declarator Pmember_decl                                       -- PMember
                     | Dir_declarator Pcall_decl                                         -- PCall
                     | "(" Gcc_attribute* Declarator ")"                                 -- Declarator
-                    | id                                                                -- Id
+                    | identifier                                                        -- Id
 
 
     Abs_declarator  = Pointer_list Dir_abs_declarator Gcc_asm_expr? Gcc_attribute*      -- PointerListDADecl
@@ -218,7 +215,7 @@ C {
 
     Pointer_list    = Pointer+
 
-    Ident_list      = NonemptyListOf<id, ",">
+    Ident_list      = NonemptyListOf<identifier, ",">
 
     Param_type_lst  = NonemptyListOf<Param_decl, ","> "," var_args                      -- VarArgs
                     | NonemptyListOf<Param_decl, ","> 	  								-- ConArgs
@@ -235,8 +232,8 @@ C {
     Init_field      = (Desig_field)+ "=" Initializer                                    -- Designated
                     | Initializer
 
-    Desig_field    = "." id                                    -- Struct
-                   | "[" Assign_expr ("..." Assign_expr)? "]"  -- Array
+    Desig_field    = "." identifier                                                     -- Struct
+                   | "[" Assign_expr ("..." Assign_expr)? "]"                           -- Array
 
     // GCC Statements
 
@@ -272,7 +269,7 @@ C {
     Expr_stmt       = Expr? ";"
 
     Labeled_stmt    = Label_stmt | Case_stmt | Default_stmt
-    Label_stmt      = id ":" Stmt
+    Label_stmt      = identifier ":" Stmt
     Case_stmt       = case Const_expr ":" Stmt
     Default_stmt    = default ":" Stmt
 
@@ -288,7 +285,7 @@ C {
     For_stmt        = for "(" (Decl | Expr_stmt) Expr_stmt Expr? ")" Stmt
 
     Jump_stmt       = Goto_stmt | Continue_stmt | Break_stmt | Return_stmt
-    Goto_stmt       = goto id ";"
+    Goto_stmt       = goto identifier ";"
     Continue_stmt   = continue ";"
     Break_stmt      = break ";"
     Return_stmt     = return Expr? ";"

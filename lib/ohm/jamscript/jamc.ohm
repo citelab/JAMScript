@@ -1,36 +1,38 @@
 JAMC <: C {
-    Source         := External_decl+
+    Source          := External_decl+
 
     Jcond_specifier = "{" Jcond_expr "}"
 
     Jcond_expr      = "(" Jcond_expr ")"                            -- paran
                     | "!" Jcond_expr                                -- not
                     | Jcond_expr jcond_expr_op Jcond_expr           -- bin_op
-                    | Jcond_expr "." id                             -- namespace
-                    | id                                            -- id
+                    | Jcond_expr "." identifier                     -- namespace
+                    | identifier                                    -- id
 
     jcond_expr_op   = "&&" | "||"
 
-    Async_prototype = jasync (id ".")? id "(" Jamparam_type_lst ")" ";"
+    Async_prototype = jasync identifier "(" Jamparam_type_lst ")" ";"
 
-    Sync_prototype  = jsync Jamtype_return (id ".")? id "(" Jamparam_type_lst ")" ";"
+    Sync_prototype  = jsync Jamtype_return identifier "(" Jamparam_type_lst ")" ";"
 
-    Async_task      = jasync Jcond_specifier? Jtask_attr_spec? id "(" Jamparam_type_lst ")" Compound_stmt
+    Async_task      = jasync Jcond_specifier? Jtask_attr_spec? identifier "(" Jamparam_type_lst ")" Compound_stmt
 
-    Sync_task       = jsync Jamtype_return Jcond_specifier? Jtask_attr_spec? id "(" Jamparam_type_lst ")" Compound_stmt
+    Sync_task       = jsync Jamtype_return Jcond_specifier? Jtask_attr_spec? identifier "(" Jamparam_type_lst ")" Compound_stmt
 
     Jtask_attr_spec = "[" NonemptyListOf<Jtask_attr, ",">  "]"
 
+    booleanLiteral  = true | false
+
     Jtask_attr      = type "=" (sync | realtime | batch)
-                    | period "=" number
-                    | jitter "=" number
-                    | reuse "=" (true | false)
-                    | reuse_limit "=" decimalInt
-                    | reuse_buffer "=" decimalInt
-                    | reuse_function "=" id
+                    | period "=" numericLiteral
+                    | jitter "=" numericLiteral
+                    | reuse "=" booleanLiteral
+                    | reuse_limit "=" decimalIntegerLiteral
+                    | reuse_buffer "=" decimalIntegerLiteral
+                    | reuse_function "=" identifier
 
     Jamtype_return  = Jamtype
-                    | Jamtype "[" decimalInt "]"                       -- Array
+                    | Jamtype "[" decimalIntegerLiteral "]"            -- Array
                     | void                                             -- Void
 
     Jamtype         = unsigned? int                                    -- Int
@@ -44,16 +46,17 @@ JAMC <: C {
 
     Jamparam_type_lst = ListOf<Jamparam_decl, ",">
 
-    Jamparam_decl   = Jamtype id ( "[" "]" )?
+    Jamparam_decl   = Jamtype identifier ( "[" "]" )?
 
     Decl            += jarray Jamtype  Jamarray_dlist ";"              -- JamArray
 
     Jamarray_dlist  =  NonemptyListOf<Jamarray_init, ",">
 
-    Jamarray_init   =  id "[" decimalInt "]" ( "=" ( Initializer_list | string) )?
+    Jamarray_init   =  identifier "[" decimalIntegerLiteral "]" ( "=" ( Initializer_list | stringLiteral) )?
 
     Task_def        = Sync_task
                     | Async_task
+
     Jamprototype    = Sync_prototype
                     | Async_prototype
 

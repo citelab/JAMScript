@@ -1,6 +1,6 @@
 let count = 0;
 
-jtask function compyou(str) {
+jsync int compyou(str: char[]) {
     count++;
     console.log(count, str);
     return count * 4;
