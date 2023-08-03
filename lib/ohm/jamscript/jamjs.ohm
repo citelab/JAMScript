@@ -1,7 +1,7 @@
 JAMJS <: ES6 {
     GlobalElement   += Jexport
                     | Jmanifest
-                    | Jconditional
+                    | Jcond_decl
                     | Jdata_decl
                     | Task_def
 
@@ -38,13 +38,13 @@ JAMJS <: ES6 {
 
     Jdata_spec      = Jamtype identifier as Jflow_type ";"                                 -- Basic
                     | struct identifier "{" Struct_entry+ "}" identifier as Jflow_type ";" -- Struct
-                    | Jamtype identifier "[" decimalIntegerLiteral "]" as Jflow_type ";"          -- Array
+                    | Jamtype identifier "[" decimalIntegerLiteral "]" as Jflow_type ";"   -- Array
 
     Jflow_type      = dflow | uflow
 
     Jdata_decl      = jdata identifier? "{" Jdata_spec+ "}"
 
-    Jconditional    = jcond identifier? "{" Jcond_entry+ "}"
+    Jcond_decl      = jcond identifier? "{" Jcond_entry+ "}"
 
     Jcond_entry     = identifier ":" Jcond_decl_expr ";"
 
@@ -52,7 +52,7 @@ JAMJS <: ES6 {
                     | "!" Jcond_expr                                -- not
                     | Jcond_expr jcond_op Jcond_expr                -- bin_op
                     | Jcond_expr "." identifier                     -- namespace
-                    | identifier                                    -- id
+                    | identifier
 
     jcond_op        = "==" | "!=" | "===" | "!==" | "<" | ">" | "<=" | ">=" | "&&" | "||"
 
@@ -62,7 +62,7 @@ JAMJS <: ES6 {
                     | "!" Jcond_expr                                -- not
                     | Jcond_expr jcond_expr_op Jcond_expr           -- bin_op
                     | Jcond_expr "." identifier                     -- namespace
-                    | identifier                                    -- id
+                    | identifier
 
     jcond_expr_op   = "&&" | "||"
 
