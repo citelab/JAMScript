@@ -381,7 +381,7 @@ bool sleep_task_create(tboard_t *tboard, int sval)
 }
 
 // This is yet another reuse of remote task - this time to wait on the "broadcaster" or
-// downward flow (dflow). TODO: figure out whats happening
+// downward flow (dflow).
 dflow_task_response_t dflow_task_create(tboard_t *tboard, void *entry)
 {
     if (mco_running() == NULL) // must be called from a coroutine!
@@ -394,7 +394,7 @@ dflow_task_response_t dflow_task_create(tboard_t *tboard, void *entry)
     rtask.status = TASK_INITIALIZED;
     rtask.mode = TASK_MODE_DFLOW;
     rtask.entry = entry;
-
+    
     // push rtask into storage. This copies memory in current thread so we dont have
     // to worry about invalid reads
     res = mco_push(mco_running(), &rtask, sizeof(remote_task_t));
