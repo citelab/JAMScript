@@ -11,7 +11,7 @@ jtask* localyou(int c, char *s) {
     while(1) {
         ppp.write(value++);
 	count++;
-	jsleep(50);
+	jsleep(100);
     }
 }
 

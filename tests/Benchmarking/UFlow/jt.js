@@ -1,3 +1,6 @@
+//@ToasterConfig
+// Workers: 4
+
 
 jdata {
   struct __xx {
