@@ -16,7 +16,7 @@ async function sleep(x) {
 
 
 async function doCall() {
-  await sleep(1);
+  //await sleep(1);
   xx.write(tick++);
   count++;
   setImmediate(doCall);
