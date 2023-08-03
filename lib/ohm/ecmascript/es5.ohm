@@ -264,23 +264,15 @@ ES5 {
   PrimaryExpression = this
                     | identifier
                     | literal
-                      // ( litToken.type === "regexp"
-                      //   ? this.ast(_fromIdx, "RegExpExpr",{body:  litToken.value.body
-                      //                            flags: litToken.value.flags}, [])
-                      //   : this.ast(_fromIdx, "LiteralExpr",{type:  litToken.type
-                      //                             value: litToken.value}, []) )
                     | ArrayLiteral
                     | ObjectLiteral
                     | "(" Expression<withIn> ")"  -- parenExpr
-
-  MemberLiteral = identifier "#" identifier
 
   ArrayLiteral = "[" ListOf<AssignmentExpressionOrElision, ","> "]"
   AssignmentExpressionOrElision = AssignmentExpression<withIn>
                                 |                       -- elision
 
-  ObjectLiteral = "{" ListOf<PropertyAssignment, ","> "}"              -- noTrailingComma
-                | "{" NonemptyListOf<PropertyAssignment, ","> "," "}"  -- trailingComma
+  ObjectLiteral = "{" ListOf<PropertyAssignment, ","> ","? "}"
 
   PropertyAssignment = get PropertyName "(" ")" "{" FunctionBody "}"                  -- getter
                      | set PropertyName "(" FormalParameter ")" "{" FunctionBody "}"  -- setter
