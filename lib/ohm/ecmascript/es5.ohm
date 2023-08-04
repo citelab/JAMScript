@@ -108,9 +108,6 @@ ES5 {
     Note: Punctuator and DivPunctuator (see https://es5.github.io/x7.html#x7.7) are
     not currently used by this grammar.
   */
-
-  literal = nullLiteral | booleanLiteral | numericLiteral
-          | stringLiteral | regularExpressionLiteral // spec forgot Regexp literals in appendix?
   nullLiteral = "null" ~identifierPart
   booleanLiteral = ("true" | "false") ~identifierPart
 
@@ -263,7 +260,11 @@ ES5 {
 
   PrimaryExpression = this
                     | identifier
-                    | literal
+                    | nullLiteral
+                    | booleanLiteral
+                    | numericLiteral
+                    | stringLiteral
+                    | regularExpressionLiteral
                     | ArrayLiteral
                     | ObjectLiteral
                     | "(" Expression<withIn> ")"  -- parenExpr
