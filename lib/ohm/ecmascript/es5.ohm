@@ -175,6 +175,7 @@ ES5 {
 
   // §7.8.5 Regular Expression Literals -- http://ecma-international.org/ecma-262/5.1/#sec-7.8.5
 
+  regex = regularExpressionLiteral
   regularExpressionLiteral = "/" regularExpressionBody "/" regularExpressionFlags
   regularExpressionBody = regularExpressionFirstChar regularExpressionChar*
   regularExpressionFirstChar = ~("*" | "\\" | "/" | "[") regularExpressionNonTerminator
@@ -264,7 +265,7 @@ ES5 {
                     | booleanLiteral
                     | numericLiteral
                     | stringLiteral
-                    | regularExpressionLiteral
+                    | regex
                     | ArrayLiteral
                     | ObjectLiteral
                     | "(" Expression<withIn> ")"  -- parenExpr
@@ -470,16 +471,16 @@ ES5 {
 
   // §A.5 Functions and Programs -- http://ecma-international.org/ecma-262/5.1/#sec-A.5
 
-  FunctionDeclaration = function identifier "(" FormalParameterList ")" "{" FunctionBody "}"
+  FunctionDeclaration = function identifier "(" FormalParameterList ")" FunctionBody
 
   FunctionExpression
-    = function identifier? "(" FormalParameterList ")" "{" FunctionBody "}"
+    = function identifier? "(" FormalParameterList ")" FunctionBody
 
   FormalParameterList = ListOf<FormalParameter, ",">
 
   FormalParameter = identifier
 
-  FunctionBody = Directive* SourceElement*
+  FunctionBody = "{" Directive* SourceElement* "}"
 
   SourceElement (a declaration or a statement) = Declaration | Statement
 

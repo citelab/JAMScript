@@ -4,7 +4,7 @@ ES6 <: ES5 {
   ArrowFunction<guardIn> = ArrowParameters<guardIn> #(spacesNoNL "=>") ConciseBody<guardIn>
 
   ConciseBody<guardIn> = ~"{" AssignmentExpression<guardIn>  -- noBraces
-                       | "{" FunctionBody "}"                -- withBraces
+                       | FunctionBody
 
   ArrowParameters<guardIn> = BindingIdentifier<guardIn>  -- unparenthesized
                            | ArrowParamsParen<guardIn>
