@@ -430,9 +430,11 @@ ES5 {
 
   WhileStatement = while "(" Expression<withIn> ")" Statement
 
-  ForStatement = for "(" Expression<noIn>? ";" Expression<withIn>? ";" Expression<withIn>? ")" Statement
+  ForStatement
+    = for "(" Expression<noIn>? ";" Expression<withIn>? ";" Expression<withIn>? ")" Statement
 
-  ForDeclStatement = for "(" var VariableDeclarationList<noIn> ";" Expression<withIn>? ";" Expression<withIn>? ")" Statement
+  ForDeclStatement
+    = for "(" var VariableDeclarationList<noIn> ";" Expression<withIn>? ";" Expression<withIn>? ")" Statement
 
   ForInStatement = for "(" LeftHandSideExpression in Expression<withIn> ")" Statement
 
@@ -467,12 +469,10 @@ ES5 {
 
   // §A.5 Functions and Programs -- http://ecma-international.org/ecma-262/5.1/#sec-A.5
 
-  FunctionDeclaration (a function declaration)
-    = function identifier "(" FormalParameterList ")" "{" FunctionBody "}"
+  FunctionDeclaration = function identifier "(" FormalParameterList ")" "{" FunctionBody "}"
 
   FunctionExpression
-    = function identifier "(" FormalParameterList ")" "{" FunctionBody "}"  -- named
-    | function "(" FormalParameterList ")" "{" FunctionBody "}"             -- anonymous
+    = function identifier? "(" FormalParameterList ")" "{" FunctionBody "}"
 
   FormalParameterList = ListOf<FormalParameter, ",">
 
