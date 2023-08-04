@@ -390,7 +390,12 @@ ES5 {
     | EmptyStatement
     | ExpressionStatement
     | IfStatement
-    | IterationStatement
+    | DoWhileStatement
+    | WhileStatement
+    | ForStatement
+    | ForDeclStatement
+    | ForInStatement
+    | ForInDeclStatement
     | ContinueStatement
     | BreakStatement
     | ReturnStatement
@@ -413,8 +418,7 @@ ES5 {
 
   Initialiser<guardIn> = "=" AssignmentExpression<guardIn>
 
-  AssignmentStatement = identifier "=" ObjectLiteral #sc                    -- object
-                      | identifier "=" AssignmentExpression<withIn> #sc     -- expression
+  AssignmentStatement = identifier "=" ( ObjectLiteral | AssignmentExpression<withIn> ) #sc
 
   EmptyStatement = ";" // note: this semicolon eats newlines
 
@@ -422,18 +426,17 @@ ES5 {
 
   IfStatement = if "(" Expression<withIn> ")" Statement (else Statement)?
 
-  IterationStatement = do Statement while "(" Expression<withIn> ")" #sc    -- doWhile
-                     | while "(" Expression<withIn> ")" Statement           -- whileDo
-                     | for "(" Expression<noIn>? ";"
-                                 Expression<withIn>? ";"
-                                 Expression<withIn>? ")" Statement          -- for3
-                     | for "(" var VariableDeclarationList<noIn> ";"
-                                 Expression<withIn>? ";"
-                                 Expression<withIn>? ")" Statement          -- for3var
-                     | for "(" LeftHandSideExpression in
-                                 Expression<withIn> ")" Statement           -- forIn
-                     | for "(" var VariableDeclaration<noIn> in
-                                 Expression<withIn> ")" Statement           -- forInVar
+  DoWhileStatement = do Statement while "(" Expression<withIn> ")" #sc
+
+  WhileStatement = while "(" Expression<withIn> ")" Statement
+
+  ForStatement = for "(" Expression<noIn>? ";" Expression<withIn>? ";" Expression<withIn>? ")" Statement
+
+  ForDeclStatement = for "(" var VariableDeclarationList<noIn> ";" Expression<withIn>? ";" Expression<withIn>? ")" Statement
+
+  ForInStatement = for "(" LeftHandSideExpression in Expression<withIn> ")" Statement
+
+  ForInDeclStatement = for "(" var VariableDeclaration<noIn> in Expression<withIn> ")" Statement
 
   ContinueStatement = continue #((spacesNoNL identifier)? sc)
 
@@ -454,15 +457,11 @@ ES5 {
 
   LabelledStatement = identifier ":" Statement
 
-  ThrowStatement = throw Expression<withIn> #sc  -- throwExpr
+  ThrowStatement = throw Expression<withIn> #sc
 
-  TryStatement = try Block Catch Finally  -- tryCatchFinally
-               | try Block Finally        -- tryFinally
-               | try Block Catch          -- tryCatch
-
-  Catch = catch "(" FormalParameter ")" Block
-
-  Finally = finally Block
+  TryStatement = try Block catch "(" FormalParameter ")" Block finally Block  -- catchFinally
+               | try Block finally Block                                      -- finally
+               | try Block catch "(" FormalParameter ")" Block                -- catch
 
   DebuggerStatement = #(debugger sc)
 
