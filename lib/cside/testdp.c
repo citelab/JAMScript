@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
     uftable_entry_t *uf = dp_create_uflow(dp, "test", "i");
     int x = 10;
     for (int i = 0; i < 100000; i++) {
-        ufwrite(uf, i);
+        ufwrite_int(uf, i);
         x++;
         //int i = 100;
         //printf("Written... iteration %d\n", i);
