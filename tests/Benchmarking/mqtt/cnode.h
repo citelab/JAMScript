@@ -89,7 +89,6 @@ void cnode_recreate_mbroker(server_t *serv, enum levels level, char *server_id, 
 broker_info_t *cnode_scanj(int groupid, char *host, int port);
 
 void cnode_setcoords(cnode_t *cn, float xc, float yc);
-void cnode_setwidth(cnode_t *cn, int width);
 
 cnode_t *cnode_init(int argc, char **argv); 
 /** cnode_init() - Initializes CNode

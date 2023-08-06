@@ -165,7 +165,7 @@ local function uf_write(keys, args)
         redis.call('HSET', appid..'###'..k..'###'..hindx, 'count', 1, 'id###'..id, id, 'xcoord###'..id, xcoord, 'ycoord###'..id, ycoord, 'value###'..id, value)
         -- put it in the completed list and signal.. there is nothing more to expect
         redis.call('RPUSH', kcomp, appid..'###'..k..'###'..hindx)
-        redis.call('PUBLISH', appid.."__keycompleted", k..'_###_'..count)
+        redis.call('PUBLISH', appid.."__keycompleted", k..'_###_1')
     else
         redis.call('HSET', ssres[1], 'id###'..id, id, 'xcoord###'..id, xcoord, 'ycoord###'..id, ycoord, 'value###'..id, value)
         local tcount = redis.call('HINCRBY', ssres[1], 'count', 1)
