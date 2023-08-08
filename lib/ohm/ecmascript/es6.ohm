@@ -11,15 +11,14 @@ ES6 <: ES5 {
 
   BindingIdentifier<guardIn> = identifier  // TODO: Implement this properly.
 
-  ArrowParamsParen<guardIn> = "(" ( Expression<guardIn> | FormalParameterList ) ")"
+  ArrowParamsParen<guardIn> = "(" FormalParameterList ")"
 
   Declaration += AsyncFunctionDeclaration
 
-  AsyncFunctionDeclaration = async_function identifier "(" FormalParameterList ")" "{" FunctionBody "}"
-
-  async_function = "async" " "+ "function" ~identifierPart
+  AsyncFunctionDeclaration = async function identifier "(" FormalParameterList ")" FunctionBody
 
   CallExpression += await CallExpression --awaitCall
 
-  await = "await" " "+
+  await = "await" ~identifierPart
+  async = "async" ~identifierPart
 }
