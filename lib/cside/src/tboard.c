@@ -47,6 +47,7 @@ tboard_t* tboard_create(void *cnode, int secondary_queues)
     assert(pthread_cond_init(&(tboard->tcond), NULL) == 0);
     assert(pthread_mutex_init(&(tboard->twmutex), NULL) == 0);
     assert(pthread_mutex_init(&(tboard->schmutex), NULL) == 0);
+    assert(pthread_mutex_init(&(tboard->dflow_mutex), NULL) == 0);
 
     // create and initialize primary queues
     assert(pthread_mutex_init(&(tboard->pmutex), NULL) == 0);

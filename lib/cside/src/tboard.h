@@ -313,6 +313,8 @@ typedef struct {
     pthread_mutex_t hmutex;
     pthread_mutex_t twmutex;
     pthread_mutex_t schmutex;
+    
+    pthread_mutex_t dflow_mutex;
 
     struct queue pqueue_sy;
     struct queue pqueue_rt;

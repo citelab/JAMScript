@@ -168,6 +168,7 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
             assert(mco_pop(task->ctx, rtask, sizeof(remote_task_t)) == MCO_SUCCESS);
             // task issuing task_t object in remote task object
             rtask->calling_task = task;
+	    
             HASH_ADD(hh, tboard->task_table, task_id, sizeof(uint64_t), rtask);
 
             switch (rtask->mode) {

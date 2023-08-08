@@ -376,18 +376,30 @@ void ufwrite_str(uftable_entry_t *uf, char *str)
     struct queue_entry *e = NULL;
     uflow_obj_t *uobj;
 
-    uint8_t buf[4096];
+    int string_len = strlen(str);
+
+    int buf_size = 4096;
+    uint8_t internal_buf[4096];
+    uint8_t* buf = internal_buf;
+
+    if(string_len>4096) {
+	buf_size = string_len+100;
+	buf = (uint8_t*) malloc(buf_size);
+    }
 
     CborEncoder encoder;
-    cbor_encoder_init(&encoder, (uint8_t *)&buf, sizeof(buf), 0);
+    cbor_encoder_init(&encoder, (uint8_t *)buf, buf_size, 0);
     cbor_encode_text_stringz(&encoder, str);
-    int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t *)&buf);
+    int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t *)buf);
     uobj = uflow_obj_new(uf, (char*) buf, len);
     e = queue_new_node(uobj);
     pthread_mutex_lock(&(dp->ufmutex));
     queue_insert_tail(&(dp->ufqueue), e);
     pthread_cond_signal(&(dp->ufcond));
     pthread_mutex_unlock(&(dp->ufmutex));
+
+    if(buf != internal_buf)
+	free(buf);
 }
 
 void ufwrite_struct(uftable_entry_t *uf, char *fmt, ...)
@@ -563,11 +575,14 @@ void dflow_callback(redisAsyncContext *c, void *r, void *privdata)
 	return;
     }
 
+    pthread_mutex_lock(&(t->dflow_mutex));
     HASH_FIND(hh, t->task_table, &(entry->taskid), sizeof(uint64_t), rtask);
     if (rtask != NULL)
     {
-	if(rtask->status == DFLOW_TASK_COMPLETED)
+	if(rtask->status != CLIENT_READY) {
+	    pthread_mutex_unlock(&(t->dflow_mutex));
 	    return;
+	}
 
 	redisReply* cborData = (reply->element[7]);
 	rtask->data = malloc(cborData->len);
@@ -584,6 +599,7 @@ void dflow_callback(redisAsyncContext *c, void *r, void *privdata)
 	    task_place(t, rtask->calling_task);
 	}
     }
+    pthread_mutex_unlock(&(t->dflow_mutex));
 }
 
 

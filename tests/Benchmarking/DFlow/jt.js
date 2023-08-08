@@ -1,7 +1,11 @@
-
 jdata {
     int xx as dflow;
 }
+
+// @ToasterConfig
+// Workers: 1
+
+
 
 let tick = 10;
 let count = 0;

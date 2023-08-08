@@ -415,8 +415,10 @@ dflow_task_response_t dflow_task_create(tboard_t *tboard, void *entry)
         }
         // check if task completed
         if (rtask.status == DFLOW_TASK_COMPLETED) {
+	    pthread_mutex_lock(&(tboard->dflow_mutex));
             remote_task_free(tboard, rtask.task_id);
-
+	    pthread_mutex_unlock(&(tboard->dflow_mutex));
+	    
             // reset the state of the entry..
             dftable_entry_t *dfentry = (dftable_entry_t *)entry;
             pthread_mutex_lock(&(dfentry->mutex));
