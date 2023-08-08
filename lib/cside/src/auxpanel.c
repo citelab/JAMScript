@@ -272,7 +272,6 @@ void apanel_send_to_fogs(arecord_t* ar, void* u) {
     }
 }
 
-
 /*
  * DFLOW PROCESSOR FUNCTIONS
  */

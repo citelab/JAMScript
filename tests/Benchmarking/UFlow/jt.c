@@ -8,11 +8,11 @@ int count = 0;
 
 
 jtask* localyou(int c, char *s) {
-    while(1) {
+    //    while(1) {
         ppp.write(value++);
 	count++;
-	jsleep(100);
-    }
+	jsleep(1000000);
+	//    }
 }
 
 jtask* localme(int c, char *s) {

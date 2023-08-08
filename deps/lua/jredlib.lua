@@ -1,6 +1,5 @@
 #!lua name=jredlib
 
-
 -- this is for debugging purposes
 local function log(value) 
     redis.call('PUBLISH', 'logger', value)
@@ -12,11 +11,11 @@ end
 -- configuration variables - these can changed by the config function
 local DFLOW_BUFFER_SIZE = 200
 local UFLOW_BUFFER_SIZE = 200
+local UFLOW_MAX_LIST_LEN = 50
 local DFLOW_SIZE = 2000
 local UFLOW_SIZE = 2000
 local UWRITER_COUNT = 1000
 local nofwrites = 0
-
 
 -- configure the "global" variables (these variables are not in Redis)
 local function config(keys, args)
@@ -127,23 +126,6 @@ end
 -- number among them.
 -- 
 
---
--- SUB FUNCTIONS used by uf_write
--- 
-
-local function testme() 
-end
-
-local function trim_flow(ks, count)
-    local pelems = redis.call('ZPOPMIN', ks, count)
-    if (#pelems > 0) then 
-        for i = 1, #pelems do 
-            local fields = redis.call('HKEYS', pelems[i])  -- this hack has a problem.. we cannot have large uflow and have ssres nil
-            redis.call('HDEL', pelems[i], fields)
-        end
-    end
-end
-
 -- main writing function for uflow
 -- syntax: fcall uf_write 1 key, clock, node-id, app-id, xcoord, ycoord, value
 local function uf_write(keys, args) 
@@ -165,21 +147,28 @@ local function uf_write(keys, args)
         redis.call('HSET', appid..'###'..k..'###'..hindx, 'count', 1, 'id###'..id, id, 'xcoord###'..id, xcoord, 'ycoord###'..id, ycoord, 'value###'..id, value)
         -- put it in the completed list and signal.. there is nothing more to expect
         redis.call('RPUSH', kcomp, appid..'###'..k..'###'..hindx)
+        redis.call('LTRIM', kcomp, 0, UFLOW_MAX_LIST_LEN)
         redis.call('PUBLISH', appid.."__keycompleted", k..'_###_1')
     else
         redis.call('HSET', ssres[1], 'id###'..id, id, 'xcoord###'..id, xcoord, 'ycoord###'..id, ycoord, 'value###'..id, value)
         local tcount = redis.call('HINCRBY', ssres[1], 'count', 1)
         redis.call('RPUSH', kcomp, ssres[1])
+        redis.call('LTRIM', kcomp, 0, UFLOW_MAX_LIST_LEN)
         redis.call('PUBLISH', appid.."__keycompleted", k..'_###_'..tcount)
     end
     -- update the size of the flow
     local fsize = redis.call('ZCARD', ksset)
     -- if the size is too large, trim the flow
     if (fsize > UFLOW_SIZE) then 
-        trim_flow(ksset, UFLOW_BUFFER_SIZE) 
+        local pelems = redis.call('ZPOPMIN', ksset, UFLOW_BUFFER_SIZE)
+        if (#pelems > 0) then 
+            for i = 1, #pelems do 
+                local fields = redis.call('HKEYS', pelems[i])  -- this hack has a problem.. we cannot have large uflow and have ssres nil
+                redis.call('HDEL', pelems[i], fields)
+            end
+        end
     end
 end
-
 
 -- get the element at a particular score value for a key (variable name)
 -- syntax:: fcall uf_randread 1 key appid clock --> value at the clock
@@ -203,12 +192,11 @@ local function uf_lread(keys, args)
     local k = keys[1]
     local appid = args[1]
     local klist = appid..'###'..k..'###complete'
-    local len = redis.call('LLEN', klist)
-    if (len > 0) then 
-        local ssres = redis.call('RPOP', klist, 1)
-        return redis.call('HGETALL', ssres[1])
+    local ssres = redis.call('RPOP', klist, 1)
+    if (#ssres == 0) then
+        return ssres
     else 
-        return {}
+        return redis.call('HGETALL', ssres[1])
     end
 end 
 

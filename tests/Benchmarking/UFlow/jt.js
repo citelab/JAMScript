@@ -18,8 +18,10 @@ var count = 0;
 
 async function getloop() {
   let x;
-  while(true) {
-    x = await ppp.readLast();
+    while(true) {
+	console.log("Waiting on ppp....");
+	x = await ppp.readLast();
+	console.log("x ", x);
     count++;
   }
 }
