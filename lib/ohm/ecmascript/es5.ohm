@@ -276,8 +276,8 @@ ES5 {
 
   ObjectLiteral = "{" ListOf<PropertyAssignment, ","> ","? "}"
 
-  PropertyAssignment = get PropertyName "(" ")" "{" FunctionBody "}"                  -- getter
-                     | set PropertyName "(" FormalParameter ")" "{" FunctionBody "}"  -- setter
+  PropertyAssignment = get PropertyName "(" ")" FunctionBody                          -- getter
+                     | set PropertyName "(" FormalParameter ")" FunctionBody          -- setter
                      | PropertyName ":" AssignmentExpression<withIn>                  -- simple
 
   PropertyName = identifierName
@@ -436,11 +436,11 @@ ES5 {
     = for "(" Expression<noIn>? ";" Expression<withIn>? ";" Expression<withIn>? ")" Statement
 
   ForDeclStatement
-    = for "(" var VariableDeclarationList<noIn> ";" Expression<withIn>? ";" Expression<withIn>? ")" Statement
+    = for "(" (var | const | let) VariableDeclarationList<noIn> ";" Expression<withIn>? ";" Expression<withIn>? ")" Statement
 
   ForInStatement = for "(" LeftHandSideExpression in Expression<withIn> ")" Statement
 
-  ForInDeclStatement = for "(" var VariableDeclaration<noIn> in Expression<withIn> ")" Statement
+  ForInDeclStatement = for "(" (var | const | let) VariableDeclaration<noIn> in Expression<withIn> ")" Statement
 
   ContinueStatement = continue #((spacesNoNL identifier)? sc)
 

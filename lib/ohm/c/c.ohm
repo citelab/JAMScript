@@ -43,7 +43,7 @@ C {
     decimalValue    = "-"? decimalIntegerLiteral expPart                                -- IntOnly
                     | "-"? decimalIntegerLiteral? "." digit+ expPart?                   -- Decimal
 
-    integer         = "-"? decimalIntegerLiteral ("l"|"L"|"u")*
+    integer         = "-"? decimalIntegerLiteral ("l"|"L"|"u"|"U")*
 
     charLit         = "'" "\\" octalDigit octalDigit? octalDigit? "\'"                  -- Octal
                     | "'" "\\" "x" (~"'" hexDigit)+ "'"                                 -- Hex
