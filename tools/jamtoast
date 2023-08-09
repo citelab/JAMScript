@@ -25,7 +25,10 @@ without the .js or .c extension.
 
 Command Line Options:
 -t [duration] --timeout [duration]   sets the maximum amount of time for a test to run.
-
+-nt --no-timeout                     disables timeout
+-i  --ignore-error                   ignore runtime errors
+-v  --verbose                        verbose (shows stdout of running programs)
+-l  --local                          runs jamrun with --local                       
 
 Keywords:
 Toaster provides two keywords that can be used inside of tests (both jside and cside).
@@ -1033,7 +1036,7 @@ function processArgs() {
 	  process.exit();
       } else if (args[i] === "-v" || args[i] === "--verbose") {
 	conf.verbose = true;
-      } else if (args[i] === "-nt" || args[i] === "--no_timeout") {
+      } else if (args[i] === "-nt" || args[i] === "--no-timeout") {
 	conf.noTimeout = true;
       } else if (args[i] === "-l" || args[i] === "--local") {
 	conf.local = true;
