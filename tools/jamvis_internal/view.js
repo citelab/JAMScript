@@ -24,6 +24,7 @@ var hide_text = false;
 var show_lr_conn = false;
 var show_conn = true;
 var show_trails = false;
+var trail_mode = 0;
 
 
 const DEFAULT_LINE_COLOUR = {r:100, g:50, b:50};
@@ -36,6 +37,14 @@ const LR_SIGNAL_LINE_COLOUR = {r: 50, g: 255, b: 255};
 const FOG_COLOUR = {r: 14,g:149,b:148};
 const DEVICE_COLOUR = {r: 245,g:84,b:45};
 const LR_COLOUR = {r: 255,g:255,b:255};
+
+const TRAIL_COLOUR = {r: 150,g:150,b:150};
+
+const TRAIL_MAX = 40;
+
+const TRAIL_LEN1 = 5;
+const TRAIL_LEN2 = 15;
+
 
 const style_large = new PIXI.TextStyle({
   fontFamily: 'Times New Roman',
@@ -195,7 +204,8 @@ function handle_key(event) {
   } else if(event.key == 'c') {
     show_conn = !show_conn;
   } else if(event.key == 't') {
-    show_trails = !show_trails;
+    trail_mode++;
+    trail_mode = trail_mode % 4;
   }
 }
 
@@ -311,7 +321,7 @@ function handle_mqtt(message) {
 	  x: message.loc_proj.x,
 	  y: message.loc_proj.y
 	},
-	locs: new Array(10),
+	locs: new Array(TRAIL_MAX),
 	loc_off: 0,
 	signals: {}
       },
@@ -324,7 +334,7 @@ function handle_mqtt(message) {
   // Unfortunate hack for now...
   if(node.data.loc_proj.x !== message.loc_proj.x ||
      node.data.loc_proj.y !== message.loc_proj.y){
-    node.graphics.locs[node.graphics.loc_off % 10] = node.data.loc_proj;
+    node.graphics.locs[node.graphics.loc_off % TRAIL_MAX] = node.data.loc_proj;
     node.graphics.loc_off++;
   }
   
@@ -359,7 +369,7 @@ function lerp_colour(col1, col2, a) {
 }
 
 function get_past_loc(node, index) {
-  return node.graphics.locs[(node.graphics.loc_off+index) % 10];
+  return node.graphics.locs[(node.graphics.loc_off+index) % TRAIL_MAX];
 }
 
 const rect_size = 20
@@ -370,19 +380,33 @@ function render_trace() {
   
   let default_line_style = {
     width: 5,
-    color: DEVICE_COLOUR
+    color: TRAIL_COLOUR
   };
+  let len = 0;
+  switch(trail_mode) {
+  case 1:
+    len = TRAIL_LEN1;
+    break;
+  case 2:
+    len = TRAIL_LEN2;
+    break;
+  case 3:
+    len = TRAIL_MAX;
+    break;
+  }
 
   
   graphics.lineStyle(default_line_style);
 
+//  let diff = TRAIL_MAX-len;
+
   for(var device of devices) {
     var node = node_map.get(device);
-    for(var i = 0; i < 10; i++) {
-      var loc = get_past_loc(node,i);
+    for(var i = 0; i < len; i++) {
+      var loc = get_past_loc(node,i-len); // a bit of a hack
 
-      if(i!=9) {
-	var next_loc = get_past_loc(node,i+1);
+      if(i!=(len-1)) {
+	var next_loc = get_past_loc(node,i-len+1);
       } else {
 	var next_loc = node.data.loc_proj;
       }
@@ -482,7 +506,7 @@ function render(delta) {
   }
 
 
-  if(show_trails)
+  if(trail_mode)
     render_trace();
   
   graphics.lineStyle({
