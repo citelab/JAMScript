@@ -337,8 +337,6 @@ bool command_qargs_alloc(const char* fmt, arg_t** rargs, va_list args) {
         return false;
 
     arg_t* qargs = (arg_t*)calloc(flen, sizeof(arg_t));
-    nvoid_t* nv;
-
     for (int i = 0; i < flen; i++) {
         switch(fmt[i]) {
         case 'n':

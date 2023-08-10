@@ -175,7 +175,7 @@ void process_next_task(tboard_t* tboard, int type, struct queue** q, struct queu
                     entry->state = CLIENT_READY;
                 entry->taskid = rtask->task_id;
                 pthread_mutex_unlock(&(entry->mutex));
-                break;`
+                break;
             case TASK_MODE_SLEEPING:
                 // nothing to do here. the task is already in the task table
                 break;

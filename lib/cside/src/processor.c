@@ -17,12 +17,12 @@ arg_t* command_arg_clone_special(arg_t* arg, char* fname, uint64_t taskid, char*
     arg_t* rl;
     int i = 0, nargs = 4;
     if (arg != NULL) {
-        nargs += args->nargs;
-        rl = (arg_t *)calloc(nargs, sizeof(arg_t));
+        nargs += arg->nargs;
+        rl = (arg_t*)calloc(nargs, sizeof(arg_t));
         command_args_copy_elements(arg, rl, arg->nargs, nargs);
         i = arg->nargs;
     } else
-        rl = (arg_t *)calloc(4, sizeof(arg_t));
+        rl = (arg_t*)calloc(4, sizeof(arg_t));
     rl[i].type = STRING_TYPE;
     rl[i].val.sval = strdup(fname);
     rl[i].nargs = nargs;
@@ -44,7 +44,7 @@ arg_t* command_arg_clone_special(arg_t* arg, char* fname, uint64_t taskid, char*
 
 void exec_sync(context_t ctx) {
     (void)ctx;
-    arg_t* t = (arg_t *)(task_get_args());
+    arg_t* t = (arg_t*)(task_get_args());
     int nargs = t->nargs;
     char* fn_name = t[nargs - 4].val.sval;
     uint64_t task_id = (uint64_t)t[nargs - 3].val.lval;
@@ -54,25 +54,25 @@ void exec_sync(context_t ctx) {
     tboard_t* tb = (tboard_t*)(c->tboard);
     function_t* f = tboard_find_func(tb, fn_name);
     if (f != NULL) {
-        arg_t* rv = blocking_task_create(tb, *f, f->tasktype, t, (nargs - 4));
-        if (rv != NULL) {
+        arg_t rv;
+        arg_t* res=blocking_task_create(tb, *f, f->tasktype, &rv, t, (nargs - 4));
+        if (res != NULL) {
             command_t* cmd = NULL;
-            switch (rv->type) { // TODO add for other return types...
+            switch (rv.type) { // TODO add for other return types...
             case INT_TYPE:
-                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, "i", rv->val.ival);
+                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, "i", rv.val.ival);
                 break;
             case LONG_TYPE:
-                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, "i", rv->val.lval);
+                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, "i", rv.val.lval);
                 break;
             case STRING_TYPE:
-                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, "s", rv->val.sval);
+                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, "s", rv.val.sval);
                 break;
             case DOUBLE_TYPE:
-                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, "d", rv->val.dval);
+                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, "d", rv.val.dval);
                 break;
             default:;
             }
-            free(rv);
             free(node_id);
             mqtt_publish(s->mqtt, c->topics->replytopic, cmd->buffer, cmd->length, cmd, 0);
         }

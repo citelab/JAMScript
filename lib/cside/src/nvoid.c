@@ -67,7 +67,7 @@ nvoid_t* nvoid_cpy_str(nvoid_t* dst, char* str) {
     dst->len = strlen(str);
     assert(dst->len <= dst->maxlen);
     assert(dst->typesize == 1);
-    return (nvoid_t*)memcpy(dst->data, src->data, dst->len + 1);
+    return (nvoid_t*)memcpy(dst->data, str, dst->len + 1);
 }
 
 nvoid_t* nvoid_min(nvoid_t* src) {
