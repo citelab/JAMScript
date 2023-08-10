@@ -7,7 +7,7 @@ JAMJS <: ES6 {
 
     Jexport         = jexport identifier ";"
 
-    Jmanifest       = ( japp | jcomponent ) identifier "{" ListOf<Jfile_list, ";"> ";"? "}"
+    Jamnifest       = ( japp | jcomponent ) identifier "{" ListOf<Jfile_list, ";"> ";"? "}"
 
     Jfile_list      = Jfile_type ":" ListOf<stringLiteral, ",">
 
@@ -81,7 +81,6 @@ JAMJS <: ES6 {
     keyword         += jexport | japp | jcomponent | jsync | jasync | jdata | jcond
 
     as = "as" ~identifierPart
-    at = "at" ~identifierPart
     jexport = "jexport" ~identifierPart
     japp = "japp" ~identifierPart
     jcomponent = "jcomponent" ~identifierPart
