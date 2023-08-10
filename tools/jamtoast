@@ -695,7 +695,7 @@ Toaster.prototype.processOutput = function (test, data) {
     test.output.write(line + "\n");
 
     // Try to pick up any spurrious errors we may have missed otherwise.
-    if(line.includes("error") || line.includes("Error")) {
+    if(line.toLowerCase().includes("error")) {
       if(this.conf.ignoreError) {
 	continue;
       }
@@ -777,6 +777,10 @@ Toaster.prototype.executeTest = async function(test,
 
   if(this.conf.local) {
     args.push("--local");
+  }
+
+  if(this.conf.valgrind) {
+    args.push("--valgrind");
   }
 
   let that = this;
@@ -1019,7 +1023,8 @@ function processArgs() {
     timeoutAmount: undefined,
     noTimeout: false,
     verbose: false,
-    local: false
+    local: false,
+    valgrind: false
   };
 
   for (var i = 0; i < args.length; i++) {
@@ -1042,6 +1047,8 @@ function processArgs() {
 	conf.local = true;
       } else if (args[i] === "-i" || args[i] === "--ignore-error") {
 	conf.ignoreError = true;
+      } else if (args[i] === "-va" || args[i] === "--valgrind") {
+	conf.valgrind = true;
       }
     } else {
       let inputPath = args[i];
