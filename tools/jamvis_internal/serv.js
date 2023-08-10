@@ -299,7 +299,5 @@ app.get('/sketch.js', (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-  // TODO: do this later once we know we have a good context...
-  //child_process.execSync(`open "http://localhost:${port}"`, {stdio:'ignore'});
+  console.log(`JAMVis Webserver listening on port ${port}`);
 });
