@@ -1,6 +1,6 @@
 JAMJS <: ES6 {
     GlobalElement   += Jexport
-                    | Jmanifest
+                    | Jamnifest
                     | Jcond_decl
                     | Jdata_decl
                     | Task_def

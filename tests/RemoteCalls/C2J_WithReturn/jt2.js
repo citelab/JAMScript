@@ -1,5 +1,11 @@
 let count = 0;
 
+japp mytest {}
+
+jdata subname {
+    int bazinga[40] as dflow;
+}
+
 jsync int compyou(str: char[]) {
     count++;
     console.log(count, str);

@@ -16,21 +16,20 @@ jasync localme(int c, char s[]) {
 
 jasync localyou(int c, char s[]) {
     int x;
-    while('1' - '0') {
+    jarray int test[40];
+    while(1) {
+        test = subname.bazinga.read();
+        test = mytest.subname.bazinga.read();
         jsleep(10000);
         global.printf("############-->>> Hello YOU  %d, %s\n", c, s);
-        x = compyou(s);
+        x = mytest.compyou(s);
         printf("---->> Value = %d\n", x);
-        printf("---->> Global= %d\n", japp.x);
-        if (1)
-            2;
-        else
-            3;
+        printf("---->> Global= %d\n", mytest.x);
     }
 }
 
 int main(int argc, char* argv[]) {
     localme(x, "message-to-c-local-node");
-    localyou(japp.x, "message-to-j");
+    localyou(mytest.x, "message-to-j");
     return 0;
 }
