@@ -577,11 +577,14 @@ Toaster.prototype.compileTest = async function(test) {
 
   let command = 'jamc';
   let args = [
-    '-d',
     cTestPath,
     jsTestPath,
     '-o',
     `${test.testResultDirectory}/test`];
+
+  if(!this.conf.valgrind) {
+    args.push('-d');
+  }
 
   // We should log compiler output in the event of a compiler error.
 
