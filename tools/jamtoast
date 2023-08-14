@@ -680,6 +680,8 @@ function extractOutputKeywordData(text){
   return text.substring(start, end);
 }
 
+var lines_before_exit = -1;
+
 Toaster.prototype.processOutput = function (test, data) {
   if(test.state == TestState.STARTING) {
     this.setTestState(test, TestState.RUNNING);
@@ -696,7 +698,17 @@ Toaster.prototype.processOutput = function (test, data) {
     }
 
     test.output.write(line + "\n");
-
+    if(lines_before_exit > -1) {
+      if(lines_before_exit == 0) {	
+	test.failDetails = FailDetails.RUNTIME_FAILED;
+	this.setTestState(test, TestState.FAILED);
+      
+	return true;
+      }
+      console.log("shit working?");
+      lines_before_exit--;
+    }
+    
     // Try to pick up any spurrious errors we may have missed otherwise.
     if(line.toLowerCase().includes("error")) {
       if(this.conf.ignoreError) {
@@ -707,9 +719,10 @@ Toaster.prototype.processOutput = function (test, data) {
       if(line.includes("error: 0")) {
         continue;
       }
-      test.failDetails = FailDetails.RUNTIME_FAILED;
-      this.setTestState(test, TestState.FAILED);
-      return true;
+      // This has been modified
+      if(lines_before_exit == -1)
+	lines_before_exit = 30;
+      return false;
     }
 
     if(line.includes('@')) {

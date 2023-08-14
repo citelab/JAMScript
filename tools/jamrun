@@ -20,7 +20,7 @@ case "${unameOut}" in
     *)          machine="UNKNOWN:${unameOut}"
 esac
 
-VALGRIND_OPTS='valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=log_valgrind -s'
+VALGRIND_OPTS='valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -s'
 
 MOSQUITTO=`which mosquitto`
 MOSQUITTO_PUB=`which mosquitto_pub`
@@ -137,7 +137,7 @@ dojamout_p1() {
     local type=$1
     local pnum=$2
     local floc=$3
-
+    echo "${floc}/${pnum}/mqtt.conf"
     startmqtt $pnum "${floc}/${pnum}/mqtt.conf"
     echo "$data" > $floc/$pnum/dataStore
     echo "process" > $floc/$pnum/class
@@ -220,6 +220,7 @@ doaout() {
     local num=$1
     local port=$2
     local group=$3
+    local floc=$4
 
     if [ -e a.out ]; then
         chmod +x a.out
@@ -243,7 +244,7 @@ doaout() {
                 fi
             else
                 # As simple as can be
-                ./a.out $cargs &
+                "$VALGRIND --log-output=$floc/$port/valgrind_log" ./a.out $cargs &
                 echo This worked correctly
             fi
         fi
@@ -719,7 +720,7 @@ if [ -e "$file" ]; then
                 dojamout_p1 $type $iport $folder
                 setuptmux $folder/$iport
 		
-                doaout $num $iport $group
+                doaout $num $iport $group $folder
                 dojamout_p2 $type $iport $folder $group
                 if [ -z $bg ]; then
                     cleanuptmux
