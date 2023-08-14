@@ -226,6 +226,11 @@ doaout() {
         chmod +x a.out
     fi
 
+    if [ -n "$VALGRIND" ]; then
+	VALGRIND="$VALGRIND --log-output=$floc/$port/valgrind_log"
+    fi
+
+
     while [ $counter -le $num ]; do
         if [ -e a.out ]; then
             # execute the program.. we are in the folder..
@@ -244,8 +249,7 @@ doaout() {
                 fi
             else
                 # As simple as can be
-                "$VALGRIND --log-output=$floc/$port/valgrind_log" ./a.out $cargs &
-                echo This worked correctly
+                $VALGRIND ./a.out $cargs &
             fi
         fi
         ((counter++))
@@ -610,9 +614,9 @@ while :; do
         --local)
             local=1
             ;;
-		--valgrind)
-			VALGRIND="$VALGRIND_OPTS"
-			;;
+	--valgrind)
+	    VALGRIND="$VALGRIND_OPTS"
+	    ;;
         --disable-stdout-redirect)
             DISABLE_STDOUT_REDIRECT=1
             ;;
