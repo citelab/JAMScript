@@ -4,6 +4,7 @@ jtask* localyou(int c, char *s) {
     while(1) {
 	xx.read(&x);
         printf("Value read ... %d\n", x);
+        fflush(stdout);
     }
 }
 

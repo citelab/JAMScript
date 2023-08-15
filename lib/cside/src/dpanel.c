@@ -153,10 +153,10 @@ void* dpanel_ufprocessor(void* arg)
 
     dp->uctx = redisAsyncConnect(dp->server, dp->port);
     if (dp->uctx->err)
-    {
-        printf("ERROR! Connecting to the Redis server at %s:%d\n", dp->server, dp->port);
-        exit(1);
-    }
+        {
+            printf("ERROR! Connecting to the Redis server at %s:%d\n", dp->server, dp->port);
+            exit(1);
+        }
 
     redisLibeventAttach(dp->uctx, dp->uloop);
     redisAsyncSetConnectCallback(dp->uctx, dpanel_connect_cb);
@@ -202,10 +202,10 @@ void dpanel_uaddall(dpanel_t* dp) { // add all pending uflow objects to outgoing
             pthread_mutex_unlock(&(dp->mutex));
             if (last || !--overrun) {
                 // send with a callback
-                redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value, uobj->len);
+                redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, (uint8_t*) uobj->value, (size_t) uobj->len);
             } else {
                 // send without a callback for pipelining.
-                redisAsyncCommand(dp->uctx, dpanel_uerrorcheck, NULL, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value, uobj->len);
+                redisAsyncCommand(dp->uctx, dpanel_uerrorcheck, NULL, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, (uint8_t*) uobj->value, (size_t) uobj->len);
             }
             freeUObject(uobj);
             free(next);
@@ -340,6 +340,7 @@ void ufwrite_int(uftable_entry_t* uf, int x)
 
     int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t*)&buf);
     uobj = uflow_obj_new(uf, (char*)buf, len);
+
 
     e = queue_new_node(uobj);
     pthread_mutex_lock(&(dp->ufmutex));
@@ -506,9 +507,8 @@ void dpanel_dcallback2(redisAsyncContext* c, void* r, void* privdata)
     dpanel_t* dp = (dpanel_t*)privdata;
 
     if (reply == NULL) {
-        if (c->errstr) {
+        if (c->errstr)
             printf("errstr: %s\n", c->errstr);
-        }
         return;
     }
 
@@ -527,9 +527,8 @@ void dpanel_dcallback(redisAsyncContext* c, void* r, void* privdata)
     dftable_entry_t* entry;
 
     if (reply == NULL) {
-        if (c->errstr) {
+        if (c->errstr)
             printf("errstr: %s\n", c->errstr);
-        }
         return;
     }
 
@@ -539,16 +538,10 @@ void dpanel_dcallback(redisAsyncContext* c, void* r, void* privdata)
     if (dp->use_apanel)
         return; // the dpanel callback disabled - using the apanel cb
 
-    if (reply->type == REDIS_REPLY_ARRAY &&
-        (strcmp(reply->element[1]->str, keymsg) == 0) &&
-        (strcmp(reply->element[0]->str, "message") == 0)) {
-
+    if (reply->type == REDIS_REPLY_ARRAY && (strcmp(reply->element[1]->str, keymsg) == 0) && (strcmp(reply->element[0]->str, "message") == 0)) {
         HASH_FIND_STR(dp->dftable, reply->element[2]->str, entry);
-        if (entry) {
-            if (entry->state == CLIENT_READY && entry->taskid > 0) {
-                redisAsyncCommand(dp->dctx, dflow_callback, entry, "fcall df_lread 1 %s %d", entry->key, dp->logical_appid);
-            }
-        }
+        if (entry && entry->state == CLIENT_READY && entry->taskid > 0)
+            redisAsyncCommand(dp->dctx, dflow_callback, entry, "fcall df_lread 1 %s %d", entry->key, dp->logical_appid);
     }
 }
 
@@ -569,6 +562,9 @@ void dflow_callback(redisAsyncContext* c, void* r, void* privdata) {
 
     HASH_FIND(hh, t->task_table, &(entry->taskid), sizeof(uint64_t), rtask);
     if (rtask != NULL) {
+        if(rtask->status == DFLOW_TASK_COMPLETED)
+            return;
+
         redisReply* cborData = (reply->element[7]);
         rtask->data = malloc(cborData->len);
 
@@ -662,6 +658,7 @@ void dfread_string(dftable_entry_t* df, char* val, int maxlen) {
         strncpy(val, x, maxlen);
         free(x);
         free(res.buf);
+
     } else {
         derror = -1;
         *val = 0;

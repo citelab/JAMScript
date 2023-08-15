@@ -11,6 +11,10 @@ dot*.pdf
 ast*.pdf
 cst*.pdf
 
+*~
+
+*.dSYM
+
 .DS_Store
 
 **/toast-results
