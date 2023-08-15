@@ -10,7 +10,7 @@ var counter = 0;
 
 jtask function remoteCall(test) {
     counter += 1;
-    return counter;
+    resolve(counter);
 }
 
 if (jsys.type === 'device') {
