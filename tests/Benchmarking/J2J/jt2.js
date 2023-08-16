@@ -18,7 +18,6 @@ if (jsys.type === 'device') {
 	let tx = "time for j call ";
 	console.time(tx);
 	remoteCall('test msg').then((x)=> { console.timeEnd(tx); }).catch(()=> {});
-
     }, 1000);
 }
 
