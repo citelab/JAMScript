@@ -10,10 +10,11 @@ jtask {cloudonly} function getCloudId() {
 }
 
 if (jsys.type === 'fog') {
-//    setInterval(()=> {
-//	console.log("Calling the cloud... ");
-//	getCloudId().then((x)=> { console.log("Return value ", x.values()); }).catch(()=>{});
-//	console.log("After calling.. ");
-    //    }, 5000);
+    setInterval(()=> {
+	console.log("Calling the cloud... ");
+	getCloudId().then((x)=> { console.log("Return value ", x.values()); }).catch(()=>{});
+	console.log("After calling.. ");
+        }, 5000);
+
     console.log("I am fog.. ");
 }
