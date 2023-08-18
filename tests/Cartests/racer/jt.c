@@ -1,3 +1,4 @@
+#define CARCTL_IMPLEMENTATION
 #include "carapi/carctl.h"
 
 int forward_steps = 0;
@@ -21,7 +22,7 @@ jtask* drive_loop() {
 	    forward_steps--;
 	} else if (backward_steps>0) {
 	    car_throttle(&car, -0.1);
-	    backwards--;
+	    backward_steps--;
 	} else {
 	    car_throttle(&car, 0);
 	}
@@ -45,7 +46,7 @@ int main(int argc, char*argv[]) {
 
     car_create(&car, descriptor);
     
-    drive_loop(1);
+    drive_loop();
     return 0;
 }
 
