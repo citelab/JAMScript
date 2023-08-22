@@ -1,8 +1,7 @@
-
 jdata {
     struct __xx {
-	int yy;
-	double zz;
+	    int yy;
+	    double zz;
     } zzz as uflow;
     int qq as uflow;
     int ppp as uflow;
