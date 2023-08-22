@@ -211,7 +211,7 @@ if [ "$(ls -A $appsfolder)" ]; then
                 if [ -d $dir ]; then
                     checkprocess $dir
                     if [ $running == "ps" ] || [ $running == "new" ]; then
-                        printnodeinfo $jexs $dir
+                        printnodeinfo $jexs $dir $running
                     elif [ $running == "docker" ]; then
                         printdockerinfo $jexs $dir
                     fi

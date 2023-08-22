@@ -142,7 +142,7 @@ dojamout_p1() {
     echo "$data" > $floc/$pnum/dataStore
     echo "process" > $floc/$pnum/class
     echo "$SHELLPID" > $floc/$pnum/shellpid
-    echo "new" > $floc/$pnum/processId
+    echo "new" >> $floc/$pnum/processId
 }
 
 
