@@ -12,12 +12,17 @@ jtask {cloudonly} function getCloudId() {
 
 jtask {fogonly} function getId() {
     console.log("In getId...");
-    getCloudId().then((x)=> {
-	console.log("Cloud Id", x.values());
-	resolve(10);
-    }).catch((err)=> {
-	consol.log("Error.. ", err);
-    });
+    let retry = setInterval(()=> {
+	getCloudId().then((x)=> {
+            console.log("Cloud Id", x.values());
+	    if (x.values().length > 0) {
+		clearInterval(retry);
+		resolve(x.values()[0]);
+	    }
+	}).catch((err)=> {
+            consol.log("Error.. ", err);
+	});
+    }, 100);
 }
 
 async function getMyIndx() {

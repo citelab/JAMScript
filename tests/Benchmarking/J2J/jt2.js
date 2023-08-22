@@ -5,7 +5,6 @@ jcond {
     fogonly: jsys.type == "fog";
 }
 
-
 var counter = 0;
 
 jtask function remoteCall(test) {
@@ -20,4 +19,3 @@ if (jsys.type === 'device') {
 	remoteCall('test msg').then((x)=> { console.timeEnd(tx); }).catch(()=> {});
     }, 1000);
 }
-
