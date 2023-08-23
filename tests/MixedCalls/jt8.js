@@ -56,8 +56,10 @@ async function getMyIndx() {
 if (jsys.type === "device") {
     let myindx = await getMyIndx();
 
-    if (myindx < 0)
-	process.exit(1);
+    if (myindx < 0) {
+		console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>> >>>>>>>>>>>> Process.. exiting....");
+		process.exit(1);
+	}
 
     console.log("My index... ", myindx);
 }

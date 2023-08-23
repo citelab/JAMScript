@@ -169,11 +169,11 @@ function createZip(jsout, mout, jstart, tmpDir, cargs) {
     zip.file("jstart.js", jstart);
 
     // Include debug symbols if they are there.
-    if(fs.existsSync(`${tmpDir}/a.out.dSYM`)) {
-	fs.cpSync(`${tmpDir}/a.out.dSYM`, `${cargs.outPath}.dSYM`, {recursive: true});
+   // if(fs.existsSync(`${tmpDir}/a.out.dSYM`)) {
+	//fs.cpSync(`${tmpDir}/a.out.dSYM`, `${cargs.outPath}.dSYM`, {recursive: true});
 
 	//zip.file("a.out.dSYM", fs.readFileSync(`${tmpDir}/a.out.dSYM`))
-    }
+    //}
 
     zip.file("a.out", fs.readFileSync(`${tmpDir}/a.out`));
 
