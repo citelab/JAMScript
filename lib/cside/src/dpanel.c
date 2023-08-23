@@ -326,8 +326,7 @@ uflow_obj_t* uflow_obj_new(uftable_entry_t* uf, char* vstr, int len)
 }
 
 
-void ufwrite_int(uftable_entry_t* uf, int x)
-{
+void ufwrite_int(uftable_entry_t* uf, int64_t x) {
     dpanel_t* dp = (dpanel_t*)(uf->dpanel);
     struct queue_entry* e = NULL;
     uflow_obj_t* uobj;
@@ -349,8 +348,7 @@ void ufwrite_int(uftable_entry_t* uf, int x)
     pthread_mutex_unlock(&(dp->ufmutex));
 }
 
-void ufwrite_double(uftable_entry_t* uf, double x)
-{
+void ufwrite_double(uftable_entry_t* uf, double x) {
     dpanel_t* dp = (dpanel_t*)(uf->dpanel);
     struct queue_entry* e = NULL;
     uflow_obj_t* uobj;
@@ -372,8 +370,7 @@ void ufwrite_double(uftable_entry_t* uf, double x)
 }
 
 
-void ufwrite_str(uftable_entry_t* uf, char* str)
-{
+void ufwrite_str(uftable_entry_t* uf, char* str) {
     dpanel_t* dp = (dpanel_t*)(uf->dpanel);
     struct queue_entry* e = NULL;
     uflow_obj_t* uobj;
@@ -394,8 +391,7 @@ void ufwrite_str(uftable_entry_t* uf, char* str)
     pthread_mutex_unlock(&(dp->ufmutex));
 }
 
-void ufwrite_struct(uftable_entry_t* uf, char* fmt, ...)
-{
+void ufwrite_struct(uftable_entry_t* uf, char* fmt, ...) {
     dpanel_t* dp = (dpanel_t *)(uf->dpanel);
     struct queue_entry* e = NULL;
     uflow_obj_t* uobj;

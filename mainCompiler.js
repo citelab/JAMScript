@@ -140,9 +140,7 @@ function preprocess(file, cargs) {
     if (preprocessDecls === null) {
         preprocessDecls = [];
     }
-    let includes = '#include "jam.h"\n';
     let originalProgram = contents;
-    contents = includes + "int main();\n" + contents;
 
     fs.writeFileSync(`${tmpDir}/pre.c`, contents);
     let command = `clang -E -P -I/usr/local/include -I${homeDir}/.jamruns/jamhome/deps/fake_libc_include -I${homeDir}/.jamruns/clib/include ${tmpDir}/pre.c`;
