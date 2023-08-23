@@ -1,10 +1,9 @@
-let counter = 1;
-
-function afterDelay(n, x) {
-    return new Promise((resolve, reject) => {
-        setTimeout(()=> {resolve(x)}, n);
-    });
+function X() {
+    console.log("In function X");
+    (function A() {
+	console.log("In fucntion A");
+	setTimeout(A, 2000);
+    })();
 }
 
-afterDelay(1000, 1023).then((x)=> {console.log(x);});
-afterDelay(500, 31023).then((x)=> {console.log(x);});
+X();

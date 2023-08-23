@@ -33,5 +33,5 @@ if (jsys.type === 'device') {
 	compyou("hello").then((x)=> {
 	    console.log("Value = ", x.values());
 	}).catch(()=> {});
-    }, 250);
+    }, 2500);
 }

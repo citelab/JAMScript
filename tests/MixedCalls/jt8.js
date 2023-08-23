@@ -4,46 +4,54 @@ jcond {
 }
 
 let counter = 1;
+let gidtbl = new Map();
 
-jtask {cloudonly} function getCloudId() {
-    console.log("getCloudId... callled.. ", counter);
-    resolve (counter++);
+jtask {cloudonly} function getCloudId(uid) {
+	let id = gidtbl.get(uid);
+	if (id === undefined) {
+		id = counter++;
+		gidtbl.set(uid, id);
+	}
+	console.log("Id... ", id);
+    resolve (id);
 }
 
-jtask {fogonly} function getId() {
-    console.log("In getId...");
-    let retry = setInterval(()=> {
-	getCloudId().then((x)=> {
-            console.log("Cloud Id", x.values());
-	    if (x.values().length > 0) {
-		clearInterval(retry);
-		resolve(x.values()[0]);
-	    }
-	}).catch((err)=> {
-            consol.log("Error.. ", err);
-	});
-    }, 100);
+jtask {fogonly} function getId(uid) {
+	(function repeatBody() {
+		console.log("______________________ ", uid);
+		getCloudId(uid).then((x)=> {
+			console.log("Cloud Id", x.values());
+			if (x.values().length > 0) {
+				resolve(x.values()[0]);
+			}
+		}).catch((err)=> {
+			console.log("Error.. ", err);
+		});
+		setTimeout(repeatBody, 2000);
+	})();
 }
 
 async function getMyIndx() {
     let count = 0;
-    let retry = setInterval(()=> {
-	getId().then((y)=> {
-	    console.log("y - ", y.values());
-	    if (y.values().length > 0) {
-		clearInterval(retry);
-		return y.values()[0];
-	    }
-	}).catch((err)=> {
-	    console.log("Device error.. ", err);
+
+	return new Promise((resolve, reject)=> {
+		(function repeatBody() {
+			getId(jsys.id).then((y)=> {
+				console.log("y - ", y.values());
+				if (y.values().length > 0) {
+					resolve(y.values()[0]);
+				}
+			}).catch((err)=> {
+				console.log("Device error.. ", err);
+			});
+			count++;
+			if (count > 10) {
+				resolve(-1);
+			}
+			setTimeout(repeatBody, 2000);
+		})();
 	});
-	count++;
-	if (count > 10) {
-	    clearInterval(retry);
-	    return -1;
-	}
-    }, 1000);
-}    
+}
 
 if (jsys.type === "device") {
     let myindx = await getMyIndx();
