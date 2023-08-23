@@ -23,6 +23,20 @@ DIR* getDirectory(const char* path) {
     return dir;
 }
 
+char* GetSequencedFileName(const char* extension, int sequenceNumber) {
+    char* result = NULL;
+    int numberDigits = snprintf(NULL, 0, "%d", sequenceNumber);
+    result = (char*)malloc(numberDigits + strlen(extension) + 1);
+    if (result != NULL) {
+        result[0] = '\0';
+        char sequenceNumberStr[numberDigits];
+        sprintf(sequenceNumberStr, "%d", sequenceNumber);
+        strcat(result, sequenceNumberStr);
+        strcat(result, extension);
+    }
+    return result;
+}
+
 char* GetFileNameWithSequentialIdentifier(const char* fileName, const char* extension, int sequenceNumber) {
     char* result = NULL;
     char* dotPosition = strrchr(fileName, '.');

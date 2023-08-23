@@ -11,4 +11,5 @@ char* GetFileNameWithExtension(const char* fileName, const char *extension);
 char* GetFileNameWithSequentialIdentifier(const char* fileName, const char* extension, int sequenceNumber);
 int WriteBinaryFile(const char *filename, struct VehicleInformation *vehicleInformation, struct DataPoint *dataPoints, size_t numDataPoints);
 int WriteCsvFile(const char *filename, struct VehicleInformation *vehicleInformation, struct DataPoint *dataPoints, size_t numDataPoints);
+char* GetSequencedFileName(const char* extension, int sequenceNumber);
 #endif
