@@ -21,12 +21,12 @@ if (jsys.type === 'device') {
 
     setInterval(()=> {
 	    console.log("Hi.... ");
-	    compXAB("this is a message from the device");
+	compXAB("this is a message from the device").then((x)=> { console.log("Value received.. ", x.values()[0]); }).catch(()=> {});
     }, 1000);
 } else if (jsys.type === 'fog') {
 
     setInterval(()=> {
 	    console.log("Hi.... ");
-	    compYCD("this is a message from the fog");
+	compYCD("this is a message from the fog").then((x)=> { console.log("Value received ", x.values()[0]); }).catch(()=> {});
     }, 1000);
 }
