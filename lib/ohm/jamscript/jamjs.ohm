@@ -37,7 +37,7 @@ JAMJS <: ES6 {
     Struct_entry    = Jamtype identifier ("[" decimalIntegerLiteral "]")? ";"
 
     Jdata_spec      = Jamtype identifier as Jflow_type ";"                                 -- Basic
-                    | struct "{" Struct_entry+ "}" identifier as Jflow_type ";"            -- Struct
+                    | struct identifier "{" Struct_entry+ "}" identifier as Jflow_type ";" -- Struct
                     | Jamtype identifier "[" decimalIntegerLiteral "]" as Jflow_type ";"   -- Array
 
     Jflow_type      = dflow | uflow

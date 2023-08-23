@@ -285,8 +285,8 @@ ES5 {
                | numericLiteral
 
   MemberExpression = MemberExpression "[" Expression<withIn> "]"  -- arrayRefExp
-                   | MemberExpression "." identifierName  -- propRefExp
-                   | new MemberExpression Arguments       -- newExp
+                   | MemberExpression "." identifierName          -- propRefExp
+                   | new MemberExpression "(" Arguments ")"       -- newExp
                    | FunctionExpression
                    | PrimaryExpression
 
@@ -294,11 +294,11 @@ ES5 {
                 | new NewExpression -- newExp
 
   CallExpression = CallExpression "[" Expression<withIn> "]"  -- arrayRefExp
-                 | CallExpression "." identifierName  -- propRefExp
-                 | CallExpression Arguments           -- callExpExp
-                 | MemberExpression Arguments         -- memberExpExp
+                 | CallExpression "." identifierName          -- propRefExp
+                 | CallExpression "(" Arguments ")"           -- callExpExp
+                 | MemberExpression "(" Arguments ")"         -- memberExpExp
 
-  Arguments = "(" ListOf<AssignmentExpression<withIn>, ","> ")"
+  Arguments = ListOf<AssignmentExpression<withIn>, ",">
 
   LeftHandSideExpression = CallExpression
                          | NewExpression
