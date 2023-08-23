@@ -373,15 +373,12 @@ ES5 {
     | LogicalORExpression<guardIn>
 
   AssignmentExpression<guardIn>
-    = LeftHandSideExpression AssignmentOperator AssignmentExpression<guardIn> -- assignment
+    = LeftHandSideExpression ( "=" | ">>>=" | "<<=" | ">>=" | "*=" | "/=" | "%=" | "+=" | "-=" | "&=" | "^=" | "|=" ) AssignmentExpression<guardIn> -- assignment
     | ConditionalExpression<guardIn>
 
   Expression<guardIn> (an expression)
     = Expression<guardIn> "," AssignmentExpression<guardIn> -- commaExp
     | AssignmentExpression<guardIn>
-
-  AssignmentOperator = "=" | ">>>=" | "<<=" | ">>="
-                     | "*=" | "/=" | "%=" | "+=" | "-=" | "&=" | "^=" | "|="
 
   // §A.4 Statements -- http://ecma-international.org/ecma-262/5.1/#sec-A.4
 
