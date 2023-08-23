@@ -41,7 +41,7 @@ function runMain(cargs) {
             printAndExit(preprocessed);
 
         let results = jam.compile(preprocessed, fs.readFileSync(cargs.jsPath).toString(),
-                                  lineNumber, cargs.yieldPoint);
+                                  lineNumber);
 
         cargs.cSideEffectTable = results.C_SideEffectTable;
         cargs.jsSideEffectTable = results.JS_SideEffectTable;
@@ -292,7 +292,6 @@ function processArgs() {
         preprocessOnly: false,
         verbose: false,
         callGraphFlag: false,
-        yieldPoint: false,
         cSideEffectTable: "None",
         jsSideEffectTable: "None"
     };
@@ -323,8 +322,6 @@ function processArgs() {
             } else if (args[i] === "-a" || args[i] === "--analyze") {
                 // Generate call graph files
                 conf.callGraphFlag = true;
-            } else if (args[i] === "-y" || args[i] === "yield") {
-                conf.yieldPoint = true;
             }
         } else {
             let inputPath = args[i];

@@ -130,8 +130,8 @@ C {
 
     // Declaration statements
     // Statements that do "type" specification
-    Prototype       = extern Pointer_list? identifier "(" Param_type_lst? ")" Gcc_attribute? ";"
-                    | Decl_specs Pointer_list? identifier "(" Param_type_lst? ")" Gcc_attribute? ";"
+    Prototype       = extern Pointer_list? identifier "(" Param_type_lst ")" Gcc_attribute? ";"
+                    | Decl_specs Pointer_list? identifier "(" Param_type_lst ")" Gcc_attribute? ";"
 
     Decl            = Decl_specs Init_decl_lst ";"                                      -- Decl
 
@@ -202,14 +202,13 @@ C {
                     | Dir_abs_declarator Gcc_asm_expr? Gcc_attribute*                   -- DADecl
 
     Dir_abs_declarator  = Dir_abs_declarator? "[" Const_expr? "]"                       -- ConstExpr
-                        | Dir_abs_declarator? "(" Param_type_lst? ")"                   -- ParamTypeList
+                        | Dir_abs_declarator? "(" Param_type_lst ")"                    -- ParamTypeList
                         | "(" Gcc_attribute* Abs_declarator ")"                         -- AbsDecl
 
     Pmember_decl    = "[" Gcc_array_type_modifier* Const_expr? "]"
 
     Pcall_decl      = "(" Param_type_lst ")"                                            -- ParamTypeList
                     | "(" Ident_list ")"                                                -- IdentList
-                    | "(" ")"                                                           -- Empty
 
     Pointer         = "*" type_qualifier*
 
@@ -218,7 +217,7 @@ C {
     Ident_list      = NonemptyListOf<identifier, ",">
 
     Param_type_lst  = NonemptyListOf<Param_decl, ","> "," var_args                      -- VarArgs
-                    | NonemptyListOf<Param_decl, ","> 	  								-- ConArgs
+                    | ListOf<Param_decl, ","> 	  								        -- ConArgs
 
     var_args        = "..."
 
