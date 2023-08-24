@@ -2,14 +2,16 @@
 #include "dpanel.h"
 
 void do_nvoid_encoding(CborEncoder* enc, nvoid_t* nv) {
-    if (nvoid->typefmt == 'c')
+    if (nv->typefmt == 'c')
         cbor_encode_text_string(enc, (char*)nv->data, nv->len);
-    else if (nvoid->typefmt == 'C')
+    else if (nv->typefmt == 'C')
         cbor_encode_byte_string(enc, (uint8_t*)nv->data, nv->len);
     else {
         CborEncoder arrayEnc;
         cbor_encoder_create_array(enc, &arrayEnc, nv->len);
-        switch(nvoid->typefmt) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align" /* We specify __aligned__ (8) on nvoids */
+        switch(nv->typefmt) {
         case 'i':
             for (int i = 0; i < nv->len; i++)
                 cbor_encode_int(&arrayEnc, (int64_t)((int*)nv->data)[i]);
@@ -36,11 +38,12 @@ void do_nvoid_encoding(CborEncoder* enc, nvoid_t* nv) {
             break;
         case 'n':
             for (int i = 0; i < nv->len; i++)
-                do_nvoid_encoding(&arrayEnc, (nvoid_t*)&(nval->data[i * nval->typesize]));
+                do_nvoid_encoding(&arrayEnc, (nvoid_t*)&(nv->data[i * nv->typesize]));
             break;
         default:
             assert(false);
         }
+#pragma GCC diagnostic pop
         cbor_encoder_close_container(enc, &arrayEnc);
     }
 }
@@ -48,14 +51,10 @@ void do_nvoid_encoding(CborEncoder* enc, nvoid_t* nv) {
 void do_basic_type_encoding(CborEncoder* enc, char type, va_list args) {
     switch(type) {
     case 'c':
-        cbor_encode_int(enc, (int64_t)va_arg(args, char));
-        break;
-    case 'C':
-        cbor_encode_uint(enc, (uint64_t)va_arg(args, unsigned char));
-        break;
     case 'i':
         cbor_encode_int(enc, (int64_t)va_arg(args, int));
         break;
+    case 'C':
     case 'I':
         cbor_encode_uint(enc, (uint64_t)va_arg(args, unsigned int));
         break;
@@ -66,7 +65,7 @@ void do_basic_type_encoding(CborEncoder* enc, char type, va_list args) {
         cbor_encode_uint(enc, (uint64_t)va_arg(args, unsigned long long int));
         break;
     case 'f':
-        cbor_encode_float(enc, va_arg(args, float));
+        cbor_encode_float(enc, (float)va_arg(args, double));
         break;
     case 'd':
         cbor_encode_double(enc, va_arg(args, double));
@@ -101,6 +100,7 @@ void do_struct_encoding(CborEncoder* enc, char* fmt, va_list args) {
 int __extract_cbor_type(CborValue* dec, void* loc, char type) {
     int tmp_int, error = 0;
     uint64_t tmp_uint;
+    size_t n;
     switch(cbor_value_get_type(dec)){
     case CborIntegerType:
         switch(type) {
@@ -110,14 +110,14 @@ int __extract_cbor_type(CborValue* dec, void* loc, char type) {
             break;
         case 'C':
             cbor_value_get_uint64(dec, &tmp_uint);
-            *(unsigned char*)loc = (unsigned char)tmp_int;
+            *(unsigned char*)loc = (unsigned char)tmp_uint;
             break;
         case 'i':
             cbor_value_get_int(dec, (int*)loc);
             break;
         case 'I':
             cbor_value_get_uint64(dec, &tmp_uint);
-            *(unsigned int*)loc = (unsigned int)tmp_int;
+            *(unsigned int*)loc = (unsigned int)tmp_uint;
             break;
         case 'l':
             cbor_value_get_int64(dec, (int64_t*)loc);
@@ -134,8 +134,8 @@ int __extract_cbor_type(CborValue* dec, void* loc, char type) {
     case CborTextStringType:
         if(type == 'n') {
             nvoid_t* nval = (nvoid_t*)loc;
-            if(nval->typefmt | 32 == 'c') {
-                size_t len = nval->len, n;
+            if(nval->typefmt == 'c' || nval->typefmt == 'C') {
+                size_t len = nval->len;
                 char* strloc = (char*)nval->data;
                 cbor_value_calculate_string_length(dec, &n);
                 if (++n > len) {
@@ -150,12 +150,12 @@ int __extract_cbor_type(CborValue* dec, void* loc, char type) {
                     cbor_value_copy_text_string(dec, strloc, &n, dec);
                 break;
             }
-        } else if (type | 32 == 'c') {
+        } else if (type == 'c' || type == 'C') {
             cbor_value_calculate_string_length(dec, &n);
             if (n++ == 1) { // We can parse a 1 character string as a char
                 char strtmp[2];
                 cbor_value_copy_text_string(dec, strtmp, &n, dec);
-                (char*)loc = strtmp[0];
+                *(char*)loc = strtmp[0];
                 break;
             }
         }
@@ -164,10 +164,10 @@ int __extract_cbor_type(CborValue* dec, void* loc, char type) {
         cbor_value_advance(dec);
         break;
     case CborByteStringType:
-        if(type == D_NVOID_TYPE) {
+        if(type == 'n') {
             nvoid_t* nval = (nvoid_t*)loc;
-            if(nval->typefmt | 32 == 'c') {
-                size_t len = nval->len, n;
+            if(nval->typefmt == 'c' || nval->typefmt == 'C') {
+                size_t len = nval->len;
                 uint8_t* bytesloc = (uint8_t*)nval->data;
                 cbor_value_calculate_string_length(dec, &n);
                 if (n > len) {
@@ -181,12 +181,12 @@ int __extract_cbor_type(CborValue* dec, void* loc, char type) {
                     cbor_value_copy_byte_string(dec, bytesloc, &n, dec);
                 break;
             }
-        } else if (type | 32 == 'c') {
+        } else if (type == 'c' || type == 'C') {
             cbor_value_calculate_string_length(dec, &n);
             if (n == 1) { // We can parse a 1 character string as a char
                 uint8_t strtmp[1];
                 cbor_value_copy_byte_string(dec, strtmp, &n, dec);
-                (uint8_t*)loc = strtmp[0];
+                *(uint8_t*)loc = strtmp[0];
                 break;
             }
         }
@@ -219,7 +219,7 @@ int __extract_cbor_type(CborValue* dec, void* loc, char type) {
                     error |= __extract_cbor_type(&arr, (void*)&(nval->data[i * nval->typesize]), (char)nval->typefmt);
             cbor_value_leave_container(dec, &arr);
             if (overflowed) {
-                printf("CBOR array overflow: had length %zu, max allowed was %zu\n", i, nval->len);
+                printf("CBOR array overflow: had length %d, max allowed was %u\n", i, nval->len);
                 error = 1;
             }
         } else {
@@ -239,7 +239,6 @@ int __extract_cbor_type(CborValue* dec, void* loc, char type) {
 int __extract_basic_type(const uint8_t* buffer, size_t len, char type, void* loc) {
     CborParser parser;
     CborValue value;
-    double result;
     cbor_parser_init(buffer, len, 0, &parser, &value);
     return __extract_cbor_type(&value, loc, type);
 }

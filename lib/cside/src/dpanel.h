@@ -133,7 +133,7 @@ void ufwrite_array(uftable_entry_t* uf, uint8_t* buf, size_t buflen, nvoid_t* st
 void ufwrite_struct(uftable_entry_t* uf, uint8_t* buf, size_t buflen, char* fmt, ...);
 
 void dfread_basic_type(dftable_entry_t* df, char type, void* loc);
-void dfread_struct(dftable_entry_t* df, char* fmt, ...);
+void dfread_struct(dftable_entry_t* df, darg_entry_t* darg_mem, char* fmt, ...);
 
 void do_nvoid_encoding(CborEncoder* enc, nvoid_t* nv);
 void do_struct_encoding(CborEncoder* enc, char* fmt, va_list args);

@@ -92,7 +92,7 @@ void* nvoid_panic(const char* msg, ...);
     ((void)(NVOID.len < NVOID.maxlen ? (NVOID.data[NVOID.len++] = VALUE) : *(TYPE*)nvoid_panic("Attempted to push to nvoid " #NVOID " above maxlen %u\n", NVOID.maxlen)))
 
 #define NVOID_STATIC_POP(NVOID, TYPE)                                   \
-    (NVOID.len > 0 ? NVOID.data[--NVOID.len] : *(TYPE*)nvoid_panic("Attempted to pop from empty nvoid \n" #NVOID))
+    (NVOID.len > 0 ? NVOID.data[--NVOID.len] : *(TYPE*)nvoid_panic("Attempted to pop from empty nvoid " #NVOID "\n"))
 
 #define NVOID_STATIC_AT(NVOID, TYPE, INDEX)                             \
     (*(INDEX < NVOID.len && INDEX > 0 ? &(NVOID.data[INDEX]) : (TYPE*)nvoid_panic("Index out off bounds " #NVOID "[%u]\n", (unsigned int)INDEX)))
