@@ -4,35 +4,40 @@
         "c_code": "i",
         "buffer": false,
         "c_type": "int",
-        "c_enum": "INT_TYPE"
+        "c_enum": "INT_TYPE",
+        "size": 1
     },
     "int": {
         "jamlib": "ival",
         "c_code": "i",
         "buffer": false,
         "c_type": "int",
-        "c_enum": "INT_TYPE"
+        "c_enum": "INT_TYPE",
+        "size": 4
     },
     "long long int": {
         "jamlib": "lval",
         "c_code": "l",
         "buffer": false,
         "c_type": "long long int",
-        "c_enum": "LONG_TYPE"
+        "c_enum": "LONG_TYPE",
+        "size": 8
     },
     "float": {
         "jamlib": "dval",
         "c_code": "d",
         "buffer": false,
         "c_type": "double",
-        "c_enum": "DOUBLE_TYPE"
+        "c_enum": "DOUBLE_TYPE",
+        "size": 4
     },
     "double": {
         "jamlib": "dval",
         "c_code": "d",
         "buffer": false,
         "c_type": "double",
-        "c_enum": "DOUBLE_TYPE"
+        "c_enum": "DOUBLE_TYPE",
+        "size": 8
     },
     "array": {
         "jamlib": "nval",

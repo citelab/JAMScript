@@ -49,27 +49,10 @@ typedef struct {
     UT_hash_handle hh;
 } dftable_entry_t;
 
-typedef enum {
-    D_NULL_TYPE,
-    D_STRING_TYPE,
-    D_INT_TYPE,
-    D_LONG_TYPE,
-    D_DOUBLE_TYPE,
-    D_NVOID_TYPE,
-    D_VOID_TYPE
-} dargtype_t;
-
 typedef struct {
     char* label;
-    dargtype_t type;
-    union _dargentry_location {
-        int* ival;
-        long long int* lval;
-        char* sval;
-        double* dval;
-        nvoid_t* nval;
-        void* vval;
-    } loc;
+    char type;
+    void* loc;
     UT_hash_handle hh;
 } darg_entry_t;
 
@@ -142,24 +125,21 @@ void dflow_callback(redisAsyncContext *c, void *r, void *privdata);
 void dpanel_ucallback2(redisAsyncContext *c, void *r, void *privdata);
 void dpanel_dcallback2(redisAsyncContext *c, void *r, void *privdata);
 
-void ufwrite_int(uftable_entry_t* uf, int x);
-void ufwrite_long(uftable_entry_t* uf, long long int x);
+void ufwrite_int(uftable_entry_t* uf, int64_t x);
+void ufwrite_uint(uftable_entry_t* uf, uint64_t x);
 void ufwrite_double(uftable_entry_t* uf, double x);
 void ufwrite_str(uftable_entry_t* uf, char* str);
-void ufwrite_nvoid(uftable_entry_t* uf, nvoid_t* str);
-void ufwrite_struct(uftable_entry_t* uf, char* fmt, ...);
+void ufwrite_array(uftable_entry_t* uf, uint8_t* buf, size_t buflen, nvoid_t* str);
+void ufwrite_struct(uftable_entry_t* uf, uint8_t* buf, size_t buflen, char* fmt, ...);
 
-void dfread_int(dftable_entry_t* df, int* val);
-void dfread_double(dftable_entry_t* df, double* val);
-void dfread_string(dftable_entry_t* df, char* val, int len);
+void dfread_basic_type(dftable_entry_t* df, char type, void* loc);
 void dfread_struct(dftable_entry_t* df, char* fmt, ...);
 
 void do_nvoid_encoding(CborEncoder* enc, nvoid_t* nv);
 void do_struct_encoding(CborEncoder* enc, char* fmt, va_list args);
 
-int __extract_int(const uint8_t* buffer, size_t len);
-double __extract_double(const uint8_t* buffer, size_t len);
-char* __extract_str(const uint8_t* buffer, size_t len);
-darg_entry_t* __extract_map(const uint8_t* buffer, size_t len, darg_entry_t* dargs);
+int __extract_cbor_type(CborValue* dec, void* loc, char type);
+int __extract_basic_type(const uint8_t* buffer, size_t len, char type, void* loc);
+int __extract_map(const uint8_t* buffer, size_t len, darg_entry_t* dargs);
 
 #endif

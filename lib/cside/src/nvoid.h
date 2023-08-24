@@ -29,7 +29,9 @@ typedef struct _nvoid_t {
     uint32_t len; // Number of elements currently in array
     uint32_t maxlen; // Maximum number of elements
     uint32_t size; // Actual size, in bytes, of element buffer
-    uint32_t typesize; // Size of each element in buffer
+    uint16_t typesize; // Size of each element in buffer
+    uint8_t typefmt; // Character code for type eg. 'i'
+    uint8_t pad2;
     uint8_t data[8];
 } __attribute__ ((__aligned__ (8), __packed__)) nvoid_t;
 

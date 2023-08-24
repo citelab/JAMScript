@@ -399,6 +399,22 @@ void ufwrite_str(uftable_entry_t* uf, char* str) { // deprecated
     pthread_mutex_unlock(&(dp->ufmutex));
 }
 
+void ufwrite_array(uftable_entry_t* uf, uint8_t* buf, size_t buflen, nvoid_t* nv) {
+    CborEncoder encoder;
+    cbor_encoder_init(&encoder, buf, buflen, 0);
+    do_nvoid_encoding(&encoder, nv);
+
+    dpanel_t* dp = (dpanel_t*)(uf->dpanel);
+    int clen = cbor_encoder_get_buffer_size(&encoder, buf);
+    uflow_obj_t* uobj = uflow_obj_new(uf, (char*)buf, clen);
+
+    struct queue_entry* e = queue_new_node(uobj);
+    pthread_mutex_lock(&(dp->ufmutex));
+    queue_insert_tail(&(dp->ufqueue), e);
+    pthread_cond_signal(&(dp->ufcond));
+    pthread_mutex_unlock(&(dp->ufmutex));
+}
+
 void ufwrite_struct(uftable_entry_t* uf, uint8_t* buf, size_t buflen, char* fmt, ...) {
     CborEncoder encoder;
     cbor_encoder_init(&encoder, buf, buflen, 0);
@@ -418,23 +434,6 @@ void ufwrite_struct(uftable_entry_t* uf, uint8_t* buf, size_t buflen, char* fmt,
     pthread_cond_signal(&(dp->ufcond));
     pthread_mutex_unlock(&(dp->ufmutex));
 }
-
-void ufwrite_array(uftable_entry_t* uf, uint8_t* buf, size_t buflen, nvoid_t* nv) {
-    CborEncoder encoder;
-    cbor_encoder_init(&encoder, buf, buflen, 0);
-    do_nvoid_encoding(&encoder, nv);
-
-    dpanel_t* dp = (dpanel_t*)(uf->dpanel);
-    int clen = cbor_encoder_get_buffer_size(&encoder, buf);
-    uflow_obj_t* uobj = uflow_obj_new(uf, (char*)buf, clen);
-
-    struct queue_entry* e = queue_new_node(uobj);
-    pthread_mutex_lock(&(dp->ufmutex));
-    queue_insert_tail(&(dp->ufqueue), e);
-    pthread_cond_signal(&(dp->ufcond));
-    pthread_mutex_unlock(&(dp->ufmutex));
-}
-
 
 /*
  * DFLOW PROCESSOR FUNCTIONS
@@ -591,119 +590,47 @@ dftable_entry_t* dp_create_dflow(dpanel_t* dp, char* key, char* fmt) {
  * pushing a JSON object with field names in the case of structures. For primitive
  * values the J side is pushing the values alone.
  */
-void dfread_int(dftable_entry_t* df, int* val) {
+void dfread_basic_type(dftable_entry_t* df, char type, void* loc) {
     dpanel_t* dp = (dpanel_t*)df->dpanel;
     cnode_t* cn = (cnode_t*)dp->cnode;
     tboard_t* tboard = (tboard_t*)cn->tboard;
 
     dflow_task_response_t res = dflow_task_create(tboard, df);
     if (res.buf != NULL) {
-        derror = 0;
-        *val = __extract_int(res.buf, res.len);
+        derror = __extract_basic_type(res.buf, res.len, type, loc);
         free(res.buf);
-    } else {
+    } else
         derror = -1;
-        *val = 0;
-    }
 }
 
-void dfread_double(dftable_entry_t* df, double* val) {
+void dfread_struct(dftable_entry_t* df, darg_entry_t* darg_mem, char* fmt, ...) {
     dpanel_t* dp = (dpanel_t*)df->dpanel;
     cnode_t* cn = (cnode_t*)dp->cnode;
     tboard_t* tboard = (tboard_t*)cn->tboard;
 
     dflow_task_response_t res = dflow_task_create(tboard, df);
     if (res.buf != NULL) {
-        derror = 0;
-        *val = __extract_double(res.buf, res.len);
-        free(res.buf);
-    } else {
-        derror = -1;
-        *val = 0;
-    }
-}
-
-void dfread_string(dftable_entry_t* df, char* val, int maxlen) {
-    dpanel_t* dp = (dpanel_t*)df->dpanel;
-    cnode_t* cn = (cnode_t*)dp->cnode;
-    tboard_t* tboard = (tboard_t*)cn->tboard;
-
-    dflow_task_response_t res = dflow_task_create(tboard, df);
-    if (res.buf != NULL) {
-        derror = 0;
-        char* x = __extract_str(res.buf, res.len);
-        strncpy(val, x, maxlen);
-        free(x);
-        free(res.buf);
-
-    } else {
-        derror = -1;
-        *val = 0;
-    }
-}
-
-#define DFREAD_STRUCT_STATIC_FIELD_LENGTH 32
-void dfread_struct(dftable_entry_t* df, char* fmt, ...) {
-    dpanel_t* dp = (dpanel_t*)df->dpanel;
-    cnode_t* cn = (cnode_t*)dp->cnode;
-    tboard_t* tboard = (tboard_t*)cn->tboard;
-
-    dflow_task_response_t res = dflow_task_create(tboard, df);
-    if (res.buf != NULL) {
-        derror = 0;
         int len = strlen(fmt);
         assert(len > 0);
         va_list args;
-        char* label;
 
-        darg_entry_t darg_static[DFREAD_STRUCT_STATIC_FIELD_LENGTH],* darg_mem;
         darg_entry_t* dargs = NULL,* darg,* tmp;
-        if (len > DFREAD_STRUCT_STATIC_FIELD_LENGTH) // try to use static allocation
-            darg_mem = (darg_entry_t*)malloc(sizeof(darg_entry_t) * len);
-        else
-            darg_mem = darg_static;
-
         va_start(args, fmt);
         for(int i=0; i<len; i++){
-            label = va_arg(args, char*);
             darg = &darg_mem[i];
-            switch(fmt[i]){
-            case 'i':
-                darg->type = D_INT_TYPE;
-                darg->loc.ival = va_arg(args, int*);
-                break;
-            case 'l':
-                darg->type = D_LONG_TYPE;
-                darg->loc.lval = va_arg(args, long long int*);
-                break;
-            case 's':
-                darg->type = D_STRING_TYPE;
-                darg->loc.nval = va_arg(args, nvoid_t*);
-                break;
-            case 'd':
-                darg->type = D_DOUBLE_TYPE;
-                darg->loc.dval = va_arg(args, double*);
-                break;
-            case 'n':
-                darg->type = D_NVOID_TYPE;
-                darg->loc.nval = va_arg(args, nvoid_t*);
-                break;
-            default:
-                printf("Unrecognized format option %c for %s\n", fmt[i], label);
-                va_arg(args, void*);
-            }
+            darg->label = va_arg(args, char*);
+            darg->type = fmt[i];
+            darg->loc = va_arg(args, void*);
             HASH_ADD_STR(dargs, label, darg);
         }
         va_end(args);
 
-        __extract_map(res.buf, res.len, dargs);
+        derror = __extract_map(res.buf, res.len, dargs);
 
         HASH_ITER(hh, dargs, darg, tmp){
             printf("CBOR had no input for struct field %s\n", darg->label);
             HASH_DEL(dargs, darg);
         }
-        if (len > DFREAD_STRUCT_STATIC_FIELD_LENGTH)
-            free(darg_mem);
         free(res.buf);
     } else
         derror = -1;

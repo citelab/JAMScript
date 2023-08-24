@@ -34,10 +34,51 @@ void do_nvoid_encoding(CborEncoder* enc, nvoid_t* nv) {
             for (int i = 0; i < nv->len; i++)
                 cbor_encode_double(&arrayEnc, ((double*)nv->data)[i]);
             break;
+        case 'n':
+            for (int i = 0; i < nv->len; i++)
+                do_nvoid_encoding(&arrayEnc, (nvoid_t*)&(nval->data[i * nval->typesize]));
+            break;
         default:
             assert(false);
         }
         cbor_encoder_close_container(enc, &arrayEnc);
+    }
+}
+
+void do_basic_type_encoding(CborEncoder* enc, char type, va_list args) {
+    switch(type) {
+    case 'c':
+        cbor_encode_int(enc, (int64_t)va_arg(args, char));
+        break;
+    case 'C':
+        cbor_encode_uint(enc, (uint64_t)va_arg(args, unsigned char));
+        break;
+    case 'i':
+        cbor_encode_int(enc, (int64_t)va_arg(args, int));
+        break;
+    case 'I':
+        cbor_encode_uint(enc, (uint64_t)va_arg(args, unsigned int));
+        break;
+    case 'l':
+        cbor_encode_int(enc, (int64_t)va_arg(args, long long int));
+        break;
+    case 'L':
+        cbor_encode_uint(enc, (uint64_t)va_arg(args, unsigned long long int));
+        break;
+    case 'f':
+        cbor_encode_float(enc, va_arg(args, float));
+        break;
+    case 'd':
+        cbor_encode_double(enc, va_arg(args, double));
+        break;
+    case 'n':
+        do_nvoid_encoding(enc, va_arg(args, nvoid_t*));
+        break;
+    case 's': // deprecated
+        cbor_encode_text_stringz(enc, va_arg(args, char*));
+        break;
+    default:
+        assert(false);
     }
 }
 
@@ -51,84 +92,160 @@ void do_struct_encoding(CborEncoder* enc, char* fmt, va_list args) {
     for (int i = 0; i < len; i++) {
         char* label = va_arg(args, char*);
         cbor_encode_text_stringz(&mapEnc, label);
-        switch(fmt[i]) {
-        case 'c':
-            cbor_encode_int(&mapEnc, (int64_t)va_arg(args, char));
-            break;
-        case 'C':
-            cbor_encode_uint(&mapEnc, (uint64_t)va_arg(args, unsigned char));
-            break;
-        case 'i':
-            cbor_encode_int(&mapEnc, (int64_t)va_arg(args, int));
-            break;
-        case 'I':
-            cbor_encode_uint(&mapEnc, (uint64_t)va_arg(args, unsigned int));
-            break;
-        case 'l':
-            cbor_encode_int(&mapEnc, (int64_t)va_arg(args, long long int));
-            break;
-        case 'L':
-            cbor_encode_uint(&mapEnc, (uint64_t)va_arg(args, unsigned long long int));
-            break;
-        case 'f':
-            cbor_encode_float(&mapEnc, va_arg(args, float));
-            break;
-        case 'd':
-            cbor_encode_double(&mapEnc, va_arg(args, double));
-            break;
-        case 'n':
-            do_nvoid_encoding(&mapEnc, va_arg(args, nvoid_t*));
-            break;
-        case 's':
-            cbor_encode_text_stringz(&mapEnc, va_arg(args, char*));
-            break;
-        default:
-            assert(false);
-        }
+
+        do_basic_type_encoding(&mapEnc, fmt[i], args);
     }
     cbor_encoder_close_container(enc, &mapEnc);
 }
 
-int __extract_int(const uint8_t* buffer, size_t len) {
-    CborParser parser;
-    CborValue value;
-    int result;
-    cbor_parser_init(buffer, len, 0, &parser, &value);
-    cbor_value_get_int(&value, &result);
-    return result;
+int __extract_cbor_type(CborValue* dec, void* loc, char type) {
+    int tmp_int, error = 0;
+    uint64_t tmp_uint;
+    switch(cbor_value_get_type(dec)){
+    case CborIntegerType:
+        switch(type) {
+        case 'c':
+            cbor_value_get_int(dec, &tmp_int);
+            *(char*)loc = (char)tmp_int;
+            break;
+        case 'C':
+            cbor_value_get_uint64(dec, &tmp_uint);
+            *(unsigned char*)loc = (unsigned char)tmp_int;
+            break;
+        case 'i':
+            cbor_value_get_int(dec, (int*)loc);
+            break;
+        case 'I':
+            cbor_value_get_uint64(dec, &tmp_uint);
+            *(unsigned int*)loc = (unsigned int)tmp_int;
+            break;
+        case 'l':
+            cbor_value_get_int64(dec, (int64_t*)loc);
+            break;
+        case 'L':
+            cbor_value_get_uint64(dec, (uint64_t*)loc);
+            break;
+        default:
+            printf("CBOR type mismatch: found Integer, expected %c\n", type);
+            error = 1;
+        }
+        cbor_value_advance(dec);
+        break;
+    case CborTextStringType:
+        if(type == 'n') {
+            nvoid_t* nval = (nvoid_t*)loc;
+            if(nval->typefmt | 32 == 'c') {
+                size_t len = nval->len, n;
+                char* strloc = (char*)nval->data;
+                cbor_value_calculate_string_length(dec, &n);
+                if (++n > len) {
+                    printf("CBOR recieved string of length %zu, max possible is %zu\n", n, len);
+                    error = 1;
+                    char* strnew = malloc(n * sizeof(char));
+                    cbor_value_copy_text_string(dec, strnew, &n, dec);
+                    memcpy(strloc, strnew, len - 1);
+                    strloc[len - 1] = 0;
+                    free(strnew);
+                } else
+                    cbor_value_copy_text_string(dec, strloc, &n, dec);
+                break;
+            }
+        } else if (type | 32 == 'c') {
+            cbor_value_calculate_string_length(dec, &n);
+            if (n++ == 1) { // We can parse a 1 character string as a char
+                char strtmp[2];
+                cbor_value_copy_text_string(dec, strtmp, &n, dec);
+                (char*)loc = strtmp[0];
+                break;
+            }
+        }
+        printf("CBOR type mismatch: found String, expected %c\n", type);
+        error = 1;
+        cbor_value_advance(dec);
+        break;
+    case CborByteStringType:
+        if(type == D_NVOID_TYPE) {
+            nvoid_t* nval = (nvoid_t*)loc;
+            if(nval->typefmt | 32 == 'c') {
+                size_t len = nval->len, n;
+                uint8_t* bytesloc = (uint8_t*)nval->data;
+                cbor_value_calculate_string_length(dec, &n);
+                if (n > len) {
+                    printf("CBOR recieved nvoid of length %zu, max possible is %zu\n", n, len);
+                    error = 1;
+                    uint8_t* bytesnew = malloc(n);
+                    cbor_value_copy_byte_string(dec, bytesnew, &n, dec);
+                    memcpy(bytesloc, bytesnew, len);
+                    free(bytesnew);
+                } else
+                    cbor_value_copy_byte_string(dec, bytesloc, &n, dec);
+                break;
+            }
+        } else if (type | 32 == 'c') {
+            cbor_value_calculate_string_length(dec, &n);
+            if (n == 1) { // We can parse a 1 character string as a char
+                uint8_t strtmp[1];
+                cbor_value_copy_byte_string(dec, strtmp, &n, dec);
+                (uint8_t*)loc = strtmp[0];
+                break;
+            }
+        }
+        printf("CBOR type mismatch: found Bytes, expected %c\n", type);
+        error = 1;
+        cbor_value_advance(dec);
+        break;
+    case CborDoubleType:
+        if (type == 'd')
+            cbor_value_get_double(dec, (double*)loc);
+        else if (type == 'f')
+            cbor_value_get_float(dec, (float*)loc);
+        else {
+            printf("CBOR type mismatch: found Double, expected %c\n", type);
+            error = 1;
+        }
+        cbor_value_advance(dec);
+        break;
+    case CborArrayType:
+        if(type == 'n') {
+            nvoid_t* nval = (nvoid_t*)loc;
+            CborValue arr;
+            cbor_value_enter_container(dec, &arr);
+            int overflowed = false, i = 0;
+            for (;!cbor_value_at_end(&arr); i++)
+                if (i >= nval->len) {
+                    cbor_value_advance(&arr);
+                    overflowed = true;
+                } else
+                    error |= __extract_cbor_type(&arr, (void*)&(nval->data[i * nval->typesize]), (char)nval->typefmt);
+            cbor_value_leave_container(dec, &arr);
+            if (overflowed) {
+                printf("CBOR array overflow: had length %zu, max allowed was %zu\n", i, nval->len);
+                error = 1;
+            }
+        } else {
+            printf("CBOR type mismatch: found Array, expected %c\n", type);
+            error = 1;
+            cbor_value_advance(dec);
+        }
+        break;
+    default:
+        printf("CBOR unknown type\n");
+        error = 1;
+        cbor_value_advance(dec);
+    }
+    return error;
 }
 
-long long int __extract_long(const uint8_t* buffer, size_t len) {
-    CborParser parser;
-    CborValue value;
-    long long int result;
-    cbor_parser_init(buffer, len, 0, &parser, &value);
-    cbor_value_get_int64(&value, &result);
-    return result;
-}
-
-double __extract_double(const uint8_t* buffer, size_t len) {
+int __extract_basic_type(const uint8_t* buffer, size_t len, char type, void* loc) {
     CborParser parser;
     CborValue value;
     double result;
     cbor_parser_init(buffer, len, 0, &parser, &value);
-    cbor_value_get_double(&value, &result);
-    return result;
+    return __extract_cbor_type(&value, loc, type);
 }
 
-// TODO we want this to be with a fixed buffer ...
-char* __extract_str(const uint8_t* buffer, size_t len) {
-    CborParser parser;
-    CborValue value;
-    cbor_parser_init(buffer, len, 0, &parser, &value);
-    size_t n;
-    cbor_value_calculate_string_length(&value, &n);
-    char* x = calloc(n+1, sizeof(char)); // and maybe avoid this :))
-    cbor_value_copy_text_string(&value, x, &n, NULL);
-    return x;
-}
-
-darg_entry_t* __extract_map(const uint8_t* buffer, size_t len, darg_entry_t* dargs) {
+int __extract_map(const uint8_t* buffer, size_t len, darg_entry_t* dargs) {
+    int error = 0;
     darg_entry_t* darg;
     CborParser parser;
     CborValue value, map;
@@ -141,72 +258,18 @@ darg_entry_t* __extract_map(const uint8_t* buffer, size_t len, darg_entry_t* dar
         assert(cbor_value_is_text_string(&map));
         cbor_value_dup_text_string(&map, &field, &n, &map);
         HASH_FIND_STR(dargs, field, darg);
-        free(field);
         if(!darg){
             printf("CBOR field not found in struct %s\n", field);
+            error = 1;
             cbor_value_advance(&map);
+            free(field);
             continue;
         }
-        switch(cbor_value_get_type(&map)){
-        case CborIntegerType:
-            if (darg->type == D_INT_TYPE)
-                cbor_value_get_int(&map, darg->loc.ival);
-            else if (darg->type == D_LONG_TYPE)
-                cbor_value_get_int64(&map, darg->loc.lval);
-            else
-                printf("CBOR type mismatch: found Integer, expected %d\n", darg->type);
-            cbor_value_advance(&map);
-            break;
-        case CborTextStringType:
-            if(darg->type == D_STRING_TYPE) {
-                size_t len = darg->loc.nval->len;
-                char* strloc = (char*)&darg->loc.nval->data;
-                cbor_value_calculate_string_length(&map, &n);
-                n++;
-                if (n > len) {
-                    printf("CBOR recieved string of length %zu, max possible is %zu\n", n, len);
-                    char* strnew = malloc(n * sizeof(char));
-                    cbor_value_copy_text_string(&map, strnew, &n, &map);
-                    memcpy(strloc, strnew, len - 1);
-                    strloc[len - 1] = 0;
-                    free(strnew);
-                } else
-                    cbor_value_copy_text_string(&map, strloc, &n, &map);
-            } else {
-                printf("CBOR type mismatch: found String, expected %d\n", darg->type);
-                cbor_value_advance(&map);
-            }
-            break;
-        case CborByteStringType:
-            if(darg->type == D_NVOID_TYPE) {
-                size_t len = darg->loc.nval->len;
-                uint8_t* bytesloc = (uint8_t*)&darg->loc.nval->data;
-                cbor_value_calculate_string_length(&map, &n);
-                if (n > len) {
-                    printf("CBOR recieved nvoid of length %zu, max possible is %zu\n", n, len);
-                    uint8_t* bytesnew = malloc(n);
-                    cbor_value_copy_byte_string(&map, bytesnew, &n, &map);
-                    memcpy(bytesloc, bytesnew, len);
-                    free(bytesnew);
-                } else
-                    cbor_value_copy_byte_string(&map, bytesloc, &n, &map);
-            } else {
-                printf("CBOR type mismatch: found Bytes, expected %d\n", darg->type);
-                cbor_value_advance(&map);
-            }
-            break;
-        case CborDoubleType:
-            if (darg->type == D_DOUBLE_TYPE)
-                cbor_value_get_double(&map, darg->loc.dval);
-            else
-                printf("CBOR type mismatch: found Double, expected %d\n", darg->type);
-            cbor_value_advance(&map);
-            break;
-        default:
-            printf("CBOR unknown type with key %s\n", field);
-            cbor_value_advance(&map);
-        }
+        free(field);
+
+        error |= __extract_cbor_type(&map, darg->loc, darg->type);
+
         HASH_DEL(dargs, darg);
     }
-    return dargs;
+    return error;
 }
