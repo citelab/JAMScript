@@ -1,94 +1,92 @@
 #include <tinycbor/cbor.h>
 #include "dpanel.h"
 
-#define MIN_VOID_SIZE               1024
-
-int estimate_cbor_buffer_len(darg_t *u, int n)
-{
-    int len = 0;
-
-    for (int i = 0; i < n; i++) {
-        switch(u[i].type) {
-        case D_NULL_TYPE:
-            len += 1;
+void do_nvoid_encoding(CborEncoder* enc, nvoid_t* nv) {
+    if (nvoid->typefmt == 'c')
+        cbor_encode_text_string(enc, (char*)nv->data, nv->len);
+    else if (nvoid->typefmt == 'C')
+        cbor_encode_byte_string(enc, (uint8_t*)nv->data, nv->len);
+    else {
+        CborEncoder arrayEnc;
+        cbor_encoder_create_array(enc, &arrayEnc, nv->len);
+        switch(nvoid->typefmt) {
+        case 'i':
+            for (int i = 0; i < nv->len; i++)
+                cbor_encode_int(&arrayEnc, (int64_t)((int*)nv->data)[i]);
             break;
-        case D_STRING_TYPE:
-            len += sizeof(u[i].val.sval);
+        case 'I':
+            for (int i = 0; i < nv->len; i++)
+                cbor_encode_uint(&arrayEnc, (uint64_t)((unsigned int*)nv->data)[i]);
             break;
-        case D_INT_TYPE:
-            len += sizeof(u[i].val.ival);
+        case 'l':
+            for (int i = 0; i < nv->len; i++)
+                cbor_encode_int(&arrayEnc, (int64_t)((long long int*)nv->data)[i]);
             break;
-        case D_LONG_TYPE:
-            len += sizeof(u[i].val.lval);
+        case 'L':
+            for (int i = 0; i < nv->len; i++)
+                cbor_encode_uint(&arrayEnc, (uint64_t)((unsigned long long int*)nv->data)[i]);
             break;
-        case D_DOUBLE_TYPE:
-            len += sizeof(u[i].val.dval);
+        case 'f':
+            for (int i = 0; i < nv->len; i++)
+                cbor_encode_float(&arrayEnc, ((float*)nv->data)[i]);
             break;
-        case D_NVOID_TYPE:
-            len += u[i].val.nval->len;
-            break;
-        case D_VOID_TYPE:
-            len += MIN_VOID_SIZE;
-            break;
-        }
-
-    }
-
-    return len;
-}
-
-void do_cbor_encoding(CborEncoder* enc, darg_t* u, int n) {
-    CborEncoder mapEnc;
-    cbor_encoder_create_map(enc, &mapEnc, n);
-
-    for (int i = 0; i < n; i++) {
-        cbor_encode_text_stringz(&mapEnc, u[i].label);
-        switch(u[i].type) {
-        case D_STRING_TYPE:
-            cbor_encode_text_stringz(&mapEnc, u[i].val.sval);
-            break;
-        case D_INT_TYPE:
-            cbor_encode_int(&mapEnc, u[i].val.ival);
-            break;
-        case D_LONG_TYPE:
-            cbor_encode_int(&mapEnc, u[i].val.lval);
-            break;
-        case D_DOUBLE_TYPE:
-            cbor_encode_double(&mapEnc, u[i].val.dval);
-            break;
-        case D_NULL_TYPE:
-            cbor_encode_null(&mapEnc);
-            break;
-        case D_NVOID_TYPE:
-            cbor_encode_byte_string(&mapEnc, u[i].val.nval->data, u[i].val.nval->len);
+        case 'd':
+            for (int i = 0; i < nv->len; i++)
+                cbor_encode_double(&arrayEnc, ((double*)nv->data)[i]);
             break;
         default:
-            printf("Unkown type %d in do_cbor_encoding\n", u[i].type);
+            assert(false);
         }
-
+        cbor_encoder_close_container(enc, &arrayEnc);
     }
-    cbor_encoder_close_container(enc, &mapEnc);
 }
 
-void free_buffer(darg_t* u, int n) {
-    for (int i = 0; i < n; i++) {
-        if (u[i].label != NULL)
-            free(u[i].label);
-        switch(u[i].type) {
-        case D_STRING_TYPE:
-            free(u[i].val.sval);
+void do_struct_encoding(CborEncoder* enc, char* fmt, va_list args) {
+    int len = strlen(fmt);
+    assert(len > 0);
+
+    CborEncoder mapEnc;
+    cbor_encoder_create_map(enc, &mapEnc, len);
+
+    for (int i = 0; i < len; i++) {
+        char* label = va_arg(args, char*);
+        cbor_encode_text_stringz(&mapEnc, label);
+        switch(fmt[i]) {
+        case 'c':
+            cbor_encode_int(&mapEnc, (int64_t)va_arg(args, char));
             break;
-        case D_NVOID_TYPE:
-            nvoid_free(u[i].val.nval);
+        case 'C':
+            cbor_encode_uint(&mapEnc, (uint64_t)va_arg(args, unsigned char));
             break;
-        case D_VOID_TYPE:
-            if (u[i].val.vval != NULL)
-                free(u[i].val.vval);
+        case 'i':
+            cbor_encode_int(&mapEnc, (int64_t)va_arg(args, int));
             break;
-        default:;
+        case 'I':
+            cbor_encode_uint(&mapEnc, (uint64_t)va_arg(args, unsigned int));
+            break;
+        case 'l':
+            cbor_encode_int(&mapEnc, (int64_t)va_arg(args, long long int));
+            break;
+        case 'L':
+            cbor_encode_uint(&mapEnc, (uint64_t)va_arg(args, unsigned long long int));
+            break;
+        case 'f':
+            cbor_encode_float(&mapEnc, va_arg(args, float));
+            break;
+        case 'd':
+            cbor_encode_double(&mapEnc, va_arg(args, double));
+            break;
+        case 'n':
+            do_nvoid_encoding(&mapEnc, va_arg(args, nvoid_t*));
+            break;
+        case 's':
+            cbor_encode_text_stringz(&mapEnc, va_arg(args, char*));
+            break;
+        default:
+            assert(false);
         }
     }
-    free(u);
+    cbor_encoder_close_container(enc, &mapEnc);
 }
 
 int __extract_int(const uint8_t* buffer, size_t len) {

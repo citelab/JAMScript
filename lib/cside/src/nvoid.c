@@ -47,6 +47,7 @@ nvoid_t* nvoid_empty(uint32_t size) {
     nv->maxlen = size;
     nv->size = aligned_size;
     nv->typesize = 1;
+    nv->typefmt = 'C';
     return nv;
 }
 
@@ -78,6 +79,7 @@ nvoid_t* nvoid_min(nvoid_t* src) {
     nv->size = aligned_size;
     nv->len =  nv->maxlen = src->len;
     nv->typesize = src->typesize;
+    nv->typefmt = src->typefmt;
     memcpy(nv->data, src->data, bytelen);
     return nv;
 }
@@ -90,6 +92,7 @@ nvoid_t* nvoid_str(char* str) {
     nv->size = aligned_size;
     nv->len = nv->maxlen = bytelen;
     nv->typesize = 1;
+    nv->typefmt = 'c';
     memcpy(nv->data, str, bytelen);
     return nv;
 }

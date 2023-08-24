@@ -60,24 +60,25 @@ bool remote_async_call(tboard_t* t, char* cmd_func, char* fn_sig, ...) {
  * This must be called from within a task.. not the main thread (outside the task)
  * On failure: this function returns NULL. Otherwise, it returns the pointer to retarg.
  */
-// arg_t local_sync_call(tboard_t* t, char* cmd_func, arg_t* retarg, nvoid_t* retbuf, ...) {
-//     function_t* f = tboard_find_func(t, cmd_func);
-//     if (f == NULL) {
-//         printf("ERROR! Function %s not available for execution\n", cmd_func);
-//         return NULL;
-//     }
-//     const char* argsig = f->fn_sig;
-//     arg_t* qargs = NULL;
-//     if (strlen(argsig) > 0) {
-//         va_list args;
-//         va_start(args, retbuf);
-//         command_qargs_alloc(argsig, &qargs, args);
-//         va_end(args);
-//     }
-//     blocking_task_create(t, *f, f->tasktype, retarg, qargs, strlen(argsig));
-//     command_args_free(qargs);
-//     return retarg;
-// }
+arg_t local_sync_call(tboard_t* t, char* cmd_func, ...) {
+    function_t* f = tboard_find_func(t, cmd_func);
+    if (f == NULL) {
+        printf("ERROR! Function %s not available for execution\n", cmd_func);
+        return NULL;
+    }
+    const char* argsig = f->fn_sig;
+    arg_t* qargs = NULL;
+    if (strlen(argsig) > 0) {
+        va_list args;
+        va_start(args, retbuf);
+        command_qargs_alloc(argsig, &qargs, args);
+        va_end(args);
+    }
+    arg_t retarg;
+    blocking_task_create(t, *f, f->tasktype, &retarg, qargs, strlen(argsig));
+    command_args_free(qargs);
+    return retarg;
+}
 
 void local_async_call(tboard_t* t, char* cmd_func, ...) {
     function_t* f = tboard_find_func(t, cmd_func);

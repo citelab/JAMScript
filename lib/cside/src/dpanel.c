@@ -327,21 +327,35 @@ uflow_obj_t* uflow_obj_new(uftable_entry_t* uf, char* vstr, int len)
 
 
 void ufwrite_int(uftable_entry_t* uf, int64_t x) {
-    dpanel_t* dp = (dpanel_t*)(uf->dpanel);
-    struct queue_entry* e = NULL;
-    uflow_obj_t* uobj;
-
     uint8_t buf[16];
 
     CborEncoder encoder;
     cbor_encoder_init(&encoder, (uint8_t*)&buf, sizeof(buf), 0);
     cbor_encode_int(&encoder, x);
 
+    dpanel_t* dp = (dpanel_t*)(uf->dpanel);
     int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t*)&buf);
-    uobj = uflow_obj_new(uf, (char*)buf, len);
+    uflow_obj_t* uobj = uflow_obj_new(uf, (char*)buf, len);
 
+    struct queue_entry* e = queue_new_node(uobj);
+    pthread_mutex_lock(&(dp->ufmutex));
+    queue_insert_tail(&(dp->ufqueue), e);
+    pthread_cond_signal(&(dp->ufcond));
+    pthread_mutex_unlock(&(dp->ufmutex));
+}
 
-    e = queue_new_node(uobj);
+void ufwrite_uint(uftable_entry_t* uf, uint64_t x) {
+    uint8_t buf[16];
+
+    CborEncoder encoder;
+    cbor_encoder_init(&encoder, (uint8_t*)&buf, sizeof(buf), 0);
+    cbor_encode_uint(&encoder, x);
+
+    dpanel_t* dp = (dpanel_t*)(uf->dpanel);
+    int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t*)&buf);
+    uflow_obj_t* uobj = uflow_obj_new(uf, (char*)buf, len);
+
+    struct queue_entry* e = queue_new_node(uobj);
     pthread_mutex_lock(&(dp->ufmutex));
     queue_insert_tail(&(dp->ufqueue), e);
     pthread_cond_signal(&(dp->ufcond));
@@ -349,20 +363,17 @@ void ufwrite_int(uftable_entry_t* uf, int64_t x) {
 }
 
 void ufwrite_double(uftable_entry_t* uf, double x) {
-    dpanel_t* dp = (dpanel_t*)(uf->dpanel);
-    struct queue_entry* e = NULL;
-    uflow_obj_t* uobj;
-
     uint8_t buf[16];
 
     CborEncoder encoder;
     cbor_encoder_init(&encoder, (uint8_t*)&buf, sizeof(buf), 0);
     cbor_encode_double(&encoder, x);
 
+    dpanel_t* dp = (dpanel_t*)(uf->dpanel);
     int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t*)&buf);
-    uobj = uflow_obj_new(uf, (char*)buf, len);
+    uflow_obj_t* uobj = uflow_obj_new(uf, (char*)buf, len);
 
-    e = queue_new_node(uobj);
+    struct queue_entry* e = queue_new_node(uobj);
     pthread_mutex_lock(&(dp->ufmutex));
     queue_insert_tail(&(dp->ufqueue), e);
     pthread_cond_signal(&(dp->ufcond));
@@ -370,84 +381,54 @@ void ufwrite_double(uftable_entry_t* uf, double x) {
 }
 
 
-void ufwrite_str(uftable_entry_t* uf, char* str) {
-    dpanel_t* dp = (dpanel_t*)(uf->dpanel);
-    struct queue_entry* e = NULL;
-    uflow_obj_t* uobj;
-
+void ufwrite_str(uftable_entry_t* uf, char* str) { // deprecated
     uint8_t buf[4096];
 
     CborEncoder encoder;
     cbor_encoder_init(&encoder, (uint8_t*)&buf, sizeof(buf), 0);
     cbor_encode_text_stringz(&encoder, str);
 
+    dpanel_t* dp = (dpanel_t*)(uf->dpanel);
     int len = cbor_encoder_get_buffer_size(&encoder, (uint8_t*)&buf);
-    uobj = uflow_obj_new(uf, (char*)buf, len);
+    uflow_obj_t* uobj = uflow_obj_new(uf, (char*)buf, len);
 
-    e = queue_new_node(uobj);
+    struct queue_entry* e = queue_new_node(uobj);
     pthread_mutex_lock(&(dp->ufmutex));
     queue_insert_tail(&(dp->ufqueue), e);
     pthread_cond_signal(&(dp->ufcond));
     pthread_mutex_unlock(&(dp->ufmutex));
 }
 
-void ufwrite_struct(uftable_entry_t* uf, char* fmt, ...) {
-    dpanel_t* dp = (dpanel_t *)(uf->dpanel);
-    struct queue_entry* e = NULL;
-    uflow_obj_t* uobj;
+void ufwrite_struct(uftable_entry_t* uf, uint8_t* buf, size_t buflen, char* fmt, ...) {
+    CborEncoder encoder;
+    cbor_encoder_init(&encoder, buf, buflen, 0);
+
     va_list args;
-    darg_t* uargs;
-    char* label;
-    nvoid_t* nv;
-
-    int len = strlen(fmt);
-    assert(len > 0);
-
-    uargs = (darg_t*)calloc(len, sizeof(darg_t)); // TODO can this just be a malloc
-
     va_start(args, fmt);
-    for (int i = 0; i < len; i++) {
-        label = va_arg(args, char*);
-        uargs[i].label = strdup(label);
-        switch(fmt[i]) {
-        case 'n': // TODO this isn't actually getting transmitted at all right now
-            nv = va_arg(args, nvoid_t*); // TODO -- to clone?
-            uargs[i].val.nval = nv;
-            uargs[i].type = D_NVOID_TYPE;
-            break;
-        case 's':
-            uargs[i].val.sval = strdup(va_arg(args, char*));
-            uargs[i].type = D_STRING_TYPE;
-            break;
-        case 'i':
-            uargs[i].val.ival = va_arg(args, int);
-            uargs[i].type = D_INT_TYPE;
-            break;
-        case 'l':
-            uargs[i].val.lval = va_arg(args, long long int);
-            uargs[i].type = D_LONG_TYPE;
-            break;
-        case 'd':
-            uargs[i].val.dval = va_arg(args, double);
-            uargs[i].type = D_DOUBLE_TYPE;
-            break;
-        default:
-            break;
-        }
-    }
+    do_struct_encoding(&encoder, fmt, args);
     va_end(args);
 
-    uint8_t buf[4096];
+    dpanel_t* dp = (dpanel_t*)(uf->dpanel);
+    int clen = cbor_encoder_get_buffer_size(&encoder, buf);
+    uflow_obj_t* uobj = uflow_obj_new(uf, (char*)buf, clen);
 
+    struct queue_entry* e = queue_new_node(uobj);
+    pthread_mutex_lock(&(dp->ufmutex));
+    queue_insert_tail(&(dp->ufqueue), e);
+    pthread_cond_signal(&(dp->ufcond));
+    pthread_mutex_unlock(&(dp->ufmutex));
+}
+
+void ufwrite_array(uftable_entry_t* uf, uint8_t* buf, size_t buflen, nvoid_t* nv) {
     CborEncoder encoder;
-    cbor_encoder_init(&encoder, (uint8_t*)&buf, sizeof(buf), 0);
-    do_cbor_encoding(&encoder, uargs, len);
+    cbor_encoder_init(&encoder, buf, buflen, 0);
+    do_nvoid_encoding(&encoder, nv);
 
-    int clen = cbor_encoder_get_buffer_size(&encoder, (uint8_t*)&buf);
-    uobj = uflow_obj_new(uf, (char*)buf, clen);
+    dpanel_t* dp = (dpanel_t*)(uf->dpanel);
+    int clen = cbor_encoder_get_buffer_size(&encoder, buf);
+    uflow_obj_t* uobj = uflow_obj_new(uf, (char*)buf, clen);
 
-    free_buffer(uargs, len);
-    e = queue_new_node(uobj);
+    struct queue_entry* e = queue_new_node(uobj);
     pthread_mutex_lock(&(dp->ufmutex));
     queue_insert_tail(&(dp->ufqueue), e);
     pthread_cond_signal(&(dp->ufcond));
@@ -665,7 +646,7 @@ void dfread_string(dftable_entry_t* df, char* val, int maxlen) {
 void dfread_struct(dftable_entry_t* df, char* fmt, ...) {
     dpanel_t* dp = (dpanel_t*)df->dpanel;
     cnode_t* cn = (cnode_t*)dp->cnode;
-    tboard_t* tboard = (tboard_t *)cn->tboard;
+    tboard_t* tboard = (tboard_t*)cn->tboard;
 
     dflow_task_response_t res = dflow_task_create(tboard, df);
     if (res.buf != NULL) {

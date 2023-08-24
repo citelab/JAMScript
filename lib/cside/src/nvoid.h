@@ -57,28 +57,32 @@ void* nvoid_panic(const char* msg, ...);
         uint32_t len;                                                   \
         uint32_t maxlen;                                                \
         uint32_t size;                                                  \
-        uint32_t typesize;                                              \
+        uint16_t typesize;                                              \
+        uint8_t typefmt;                                                \
+        uint8_t pad2;                                                   \
         union {                                                         \
             TYPE data[SIZE];                                            \
             uint8_t pad[NVOID_ALIGNED_SIZE(TYPE, SIZE)];                \
         } __attribute__ ((__packed__));                                 \
     } __attribute__ ((__aligned__ (8), __packed__))
 
-#define NVOID_STATIC_INIT(NVOID, STRUCT_NAME, TYPE, MAXLEN, LEN, ...)   \
+#define NVOID_STATIC_INIT(NVOID, STRUCT_NAME, TYPE, TYPEFMT, MAXLEN, LEN, ...) \
     struct STRUCT_NAME NVOID = {                                        \
         .len = LEN,                                                     \
         .maxlen = MAXLEN,                                               \
         .size = NVOID_ALIGNED_SIZE(TYPE, MAXLEN),                       \
-        .typesize = sizeof(TYPE),                                       \
+        .typesize = (uint16_t)sizeof(TYPE),                             \
+        .typefmt = (uint8_t)TYPEFMT                                     \
         .data = __VA_ARGS__                                             \
     }
 
-#define NVOID_STATIC_INIT_EMPTY(NVOID, STRUCT_NAME, TYPE, MAXLEN)       \
+#define NVOID_STATIC_INIT_EMPTY(NVOID, STRUCT_NAME, TYPE, TYPEFMT, MAXLEN) \
     struct STRUCT_NAME NVOID = {                                        \
         .len = 0,                                                       \
         .maxlen = MAXLEN,                                               \
         .size = NVOID_ALIGNED_SIZE(TYPE, MAXLEN),                       \
-        .typesize = sizeof(TYPE),                                       \
+        .typesize = (uint16_t)sizeof(TYPE),                             \
+        .typefmt = (uint8_t)TYPEFMT                                     \
     }
 
 // Doing these with macros because it ensures they are typed correctly

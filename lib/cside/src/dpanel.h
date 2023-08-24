@@ -60,21 +60,6 @@ typedef enum {
 } dargtype_t;
 
 typedef struct {
-    int nargs;
-    char* label;
-    dargtype_t type;
-    union _dargvalue_t
-    {
-        int32_t ival;
-        int64_t lval;
-        char* sval;
-        double dval;
-        nvoid_t* nval;
-        void* vval;
-    } val;
-} darg_t;
-
-typedef struct {
     char* label;
     dargtype_t type;
     union _dargentry_location {
@@ -169,9 +154,8 @@ void dfread_double(dftable_entry_t* df, double* val);
 void dfread_string(dftable_entry_t* df, char* val, int len);
 void dfread_struct(dftable_entry_t* df, char* fmt, ...);
 
-int estimate_cbor_buffer_len(darg_t* u, int len);
-void do_cbor_encoding(CborEncoder* enc, darg_t* u, int len);
-void free_buffer(darg_t* u, int len);
+void do_nvoid_encoding(CborEncoder* enc, nvoid_t* nv);
+void do_struct_encoding(CborEncoder* enc, char* fmt, va_list args);
 
 int __extract_int(const uint8_t* buffer, size_t len);
 double __extract_double(const uint8_t* buffer, size_t len);
