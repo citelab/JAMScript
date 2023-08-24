@@ -1,6 +1,8 @@
 #ifndef __JAM_H__
 #define __JAM_H__
 
+#include <stdint.h>
+
 #include "../src/cnode.h"
 #include "../src/utilities.h"
 #include "../src/command.h"
