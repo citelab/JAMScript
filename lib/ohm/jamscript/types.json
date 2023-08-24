@@ -1,56 +1,69 @@
 {
     "char": {
         "jamlib": "ival",
-        "c_code": "i",
+        "c_code": "c",
         "buffer": false,
         "c_type": "int",
-        "c_enum": "INT_TYPE",
-        "size": 1
+        "c_enum": "INT_TYPE"
     },
     "int": {
         "jamlib": "ival",
         "c_code": "i",
         "buffer": false,
         "c_type": "int",
-        "c_enum": "INT_TYPE",
-        "size": 4
+        "c_enum": "INT_TYPE"
     },
     "long long int": {
         "jamlib": "lval",
         "c_code": "l",
         "buffer": false,
         "c_type": "long long int",
-        "c_enum": "LONG_TYPE",
-        "size": 8
+        "c_enum": "LONG_TYPE"
     },
     "float": {
         "jamlib": "dval",
-        "c_code": "d",
-        "buffer": false,
+        "c_code": "f",
         "c_type": "double",
-        "c_enum": "DOUBLE_TYPE",
-        "size": 4
+        "c_enum": "DOUBLE_TYPE"
     },
     "double": {
         "jamlib": "dval",
         "c_code": "d",
-        "buffer": false,
         "c_type": "double",
-        "c_enum": "DOUBLE_TYPE",
-        "size": 8
+        "c_enum": "DOUBLE_TYPE"
     },
     "array": {
         "jamlib": "nval",
         "c_code": "n",
-        "buffer": true,
         "c_type": "nvoid_t*",
         "c_enum": "NVOID_TYPE"
     },
     "void": {
         "jamlib": "vval",
         "c_code": "v",
-        "buffer": false,
         "c_type": "void",
         "c_enum": "NULL_TYPE"
+    },
+    "unsigned": {
+        "char": {
+            "jamlib": "ival",
+            "c_code": "C",
+            "c_type": "unsigned char",
+            "c_enum": "INT_TYPE"
+        },
+        "int": {
+            "jamlib": "ival",
+            "c_code": "I",
+            "buffer": false,
+            "c_type": "unsigned int",
+            "c_enum": "INT_TYPE"
+        },
+        "long long int": {
+            "jamlib": "lval",
+            "c_code": "L",
+            "buffer": false,
+            "c_type": "unsigned long long int",
+            "c_enum": "LONG_TYPE"
+        }
     }
 }
