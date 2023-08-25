@@ -17,8 +17,8 @@ jasync localyou(int c, char s[]) {
     int x;
     jarray int test[40];
     while(1) {
-        test = subname.bazinga.read();
-        test = mytest.subname.bazinga.read();
+        subname.bazinga.read(&test);
+        mytest.subname.bazinga.read(&test);
         jsys.sleep(10000);
         global.printf("############-->>> Hello YOU  %d, %s\n", c, s->data);
         x = mytest.compyou(s);

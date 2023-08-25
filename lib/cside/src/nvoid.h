@@ -74,7 +74,7 @@ void* nvoid_panic(const char* msg, ...);
         .maxlen = MAXLEN,                                               \
         .size = NVOID_ALIGNED_SIZE(TYPE, MAXLEN),                       \
         .typesize = (uint16_t)sizeof(TYPE),                             \
-        .typefmt = (uint8_t)TYPEFMT                                     \
+        .typefmt = (uint8_t)TYPEFMT,                                    \
         .data = __VA_ARGS__                                             \
     }
 
