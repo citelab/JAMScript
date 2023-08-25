@@ -76,10 +76,10 @@ void exec_sync(context_t ctx) {
                 cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, fmtbuf, rv.val.dval);
                 break;
             case 's':
-                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, f,tbuf, rv.val.sval);
+                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, fmtbuf, rv.val.sval);
                 break;
             default:
-                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, f,tbuf, rv.val.nval);
+                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, fmtbuf, rv.val.nval);
             }
             free(node_id);
             mqtt_publish(s->mqtt, c->topics->replytopic, cmd->buffer, cmd->length, cmd, 0);

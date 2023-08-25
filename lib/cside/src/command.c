@@ -32,11 +32,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdarg.h>
 #include <stdio.h>
 #include <pthread.h>
-#include <tinycbor/cbor.h>
 #include <stdlib.h>
-#include "command.h"
 #include <assert.h>
 #include <inttypes.h>
+#include <tinycbor/cbor.h>
+#include "command.h"
+#include "dpanel.h"
 
 static uint64_t id = 1;
 
@@ -160,7 +161,6 @@ command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name, uint64_t ta
         cmdo->args = NULL;
         cbor_encoder_create_array(&mapEncoder, &arrayEncoder, 0);
     } else {
-        nvoid_t* nv;
         cmdo->args = command_args_clone(args);
         cbor_encoder_create_array(&mapEncoder, &arrayEncoder, args[0].nargs);
         for (int i = 0; i < args[0].nargs; i++) {
@@ -200,6 +200,7 @@ command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name, uint64_t ta
             default:
                 assert(false);
             }
+        }
     }
     cbor_encoder_close_container(&mapEncoder, &arrayEncoder);
     cbor_encoder_close_container(&encoder, &mapEncoder);
@@ -295,6 +296,7 @@ command_t* command_from_data(char* fmt, void* data, int len) {
                     cmd->args[i].nargs = nelems;
                     char tmpcharbuf[2];
                     cmd->args[i].type = cmd->fn_argsig[i];
+                    uint64_t tmp_uint;
                     switch (ty) {
                     case CborIntegerType:
                         switch(cmd->fn_argsig[i]) {
@@ -304,7 +306,6 @@ command_t* command_from_data(char* fmt, void* data, int len) {
                             cbor_value_get_int(&arr, &cmd->args[i].val.ival);
                             break;
                         case 'u':
-                            uint64_t tmp_uint;
                             cbor_value_get_uint64(&arr, &tmp_uint);
                             *(unsigned int*)&cmd->args[i].val.ival = (unsigned int)tmp_uint;
                             break;
@@ -312,7 +313,7 @@ command_t* command_from_data(char* fmt, void* data, int len) {
                             cbor_value_get_int64(&arr, (int64_t*)&cmd->args[i].val.lval);
                             break;
                         case 'z':
-                            cbor_value_get_uint64(&arr, (uint64_t*)&cmd->args[i].val.ival);
+                            cbor_value_get_uint64(&arr, (uint64_t*)&cmd->args[i].val.lval);
                             break;
                         default:
                             assert(false);
@@ -326,9 +327,9 @@ command_t* command_from_data(char* fmt, void* data, int len) {
                         case 'C':
                         case 'B':
                             cbor_value_calculate_string_length(&arr, &length);
-                            cmd->args[i].val.nval = nvoid_empty(++length);
-                            cmd->args[i].val.nval->typefmt = 'c';
-                            cbor_value_copy_text_string(&arr, cmd->args[i].val.nval->data, &length, NULL);
+                            cmd->args[i].val.nval = nvoid_empty(length++, cmd->fn_argsig[i]);
+                            cbor_value_copy_text_string(&arr, (char*)cmd->args[i].val.nval->data, &length, NULL);
+                            cmd->args[i].val.nval->len = length - 1;
                             break;
                         case 'c':
                         case 'b':
@@ -336,7 +337,7 @@ command_t* command_from_data(char* fmt, void* data, int len) {
                             assert(length == 1);
                             length++;
                             cbor_value_copy_text_string(&arr, tmpcharbuf, &length, NULL);
-                            cmd->args[i].val.ival->data = (int)tmpcharbuf[0];
+                            cmd->args[i].val.ival = (int)tmpcharbuf[0];
                             break;
                         default:
                             assert(false);
@@ -347,16 +348,17 @@ command_t* command_from_data(char* fmt, void* data, int len) {
                         case 'C':
                         case 'B':
                             cbor_value_calculate_string_length(&arr, &length);
-                            cmd->args[i].val.nval = nvoid_empty(length + 1);
+                            cmd->args[i].val.nval = nvoid_empty(length, cmd->fn_argsig[i]);
                             cbor_value_copy_byte_string(&arr, cmd->args[i].val.nval->data, &length, NULL);
-                            args[i].val.nval->data[length] = '\0';
+                            cmd->args[i].val.nval->data[length] = '\0';
+                            cmd->args[i].val.nval->len = length;
                             break;
                         case 'c':
                         case 'b':
                             cbor_value_calculate_string_length(&arr, &length);
                             assert(length == 1);
                             cbor_value_copy_byte_string(&arr, (uint8_t*)tmpcharbuf, &length, NULL);
-                            cmd->args[i].val.ival->data = (int)tmpcharbuf[0];
+                            cmd->args[i].val.ival = (int)tmpcharbuf[0];
                             break;
                         default:
                             assert(false);
@@ -378,12 +380,15 @@ command_t* command_from_data(char* fmt, void* data, int len) {
                         CborValue arrayEnc;
                         cbor_value_enter_container(&arr, &arrayEnc);
                         char type = cmd->fn_argsig[i] - 'A' + 'a';
-                        nvoid_t nval = nvoid_empty(length, type);
+                        nvoid_t* nval = nvoid_empty(length, type);
+                        nval->len = length;
                         cmd->args[i].val.nval = nval;
 
                         for(int j = 0; j < nval->maxlen; j++) {
                             uint64_t tmp_uint;
                             int tmp_int;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align" /* We specify __aligned__ (8) on nvoids */
                             switch(cbor_value_get_type(&arrayEnc)) {
                             case CborIntegerType:
                                 switch(type) {
@@ -437,6 +442,7 @@ command_t* command_from_data(char* fmt, void* data, int len) {
                                 break;
                             case CborDoubleType:
                                 if (type == 'f') {
+                                    double dval;
                                     cbor_value_get_double(&arr, &dval);
                                     ((float*)nval->data)[j] = (float)dval;
                                 } else if (type == 'd')
@@ -447,6 +453,7 @@ command_t* command_from_data(char* fmt, void* data, int len) {
                             default:
                                 assert(false);
                             }
+#pragma GCC diagnostic push
                             cbor_value_advance(&arrayEnc);
                         }
 

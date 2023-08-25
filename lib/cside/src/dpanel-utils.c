@@ -144,15 +144,16 @@ int __extract_cbor_type(CborValue* dec, void* loc, char type) {
             nvoid_t* nval = (nvoid_t*)loc;
             assert(nval->typefmt == type - 'A' + 'a');
             if(nval->typefmt == 'c' || nval->typefmt == 'b') {
-                size_t len = nval->len;
+                size_t len = nval->maxlen;
                 char* strloc = (char*)nval->data;
                 cbor_value_calculate_string_length(dec, &n);
-                if (++n > len) {
+                if (n++ > len) {
                     printf("CBOR recieved string of length %zu, max possible is %zu\n", n, len);
                     error = 1;
                     char* strnew = malloc(n * sizeof(char));
                     cbor_value_copy_text_string(dec, strnew, &n, dec);
                     memcpy(strloc, strnew, len - 1);
+                    nval->len = len;
                     strloc[len - 1] = 0;
                     free(strnew);
                 } else
@@ -186,9 +187,12 @@ int __extract_cbor_type(CborValue* dec, void* loc, char type) {
                     uint8_t* bytesnew = malloc(n);
                     cbor_value_copy_byte_string(dec, bytesnew, &n, dec);
                     memcpy(bytesloc, bytesnew, len);
+                    nval->len = len;
                     free(bytesnew);
-                } else
+                } else {
+                    nval->len = n;
                     cbor_value_copy_byte_string(dec, bytesloc, &n, dec);
+                }
                 break;
             }
         } else if (type == 'c' || type == 'b') {
@@ -223,16 +227,18 @@ int __extract_cbor_type(CborValue* dec, void* loc, char type) {
             cbor_value_enter_container(dec, &arr);
             int overflowed = false, i = 0;
             for (;!cbor_value_at_end(&arr); i++)
-                if (i >= nval->len) {
+                if (i >= nval->maxlen) {
                     cbor_value_advance(&arr);
                     overflowed = true;
                 } else
                     error |= __extract_cbor_type(&arr, (void*)&(nval->data[i * nval->typesize]), (char)nval->typefmt);
             cbor_value_leave_container(dec, &arr);
             if (overflowed) {
-                printf("CBOR array overflow: had length %d, max allowed was %u\n", i, nval->len);
+                nval->len = nval->maxlen;
+                printf("CBOR array overflow: had length %d, max allowed was %u\n", i, nval->maxlen);
                 error = 1;
-            }
+            } else
+                nval->len = i;
         } else {
             printf("CBOR type mismatch: found Array, expected %c\n", type);
             error = 1;

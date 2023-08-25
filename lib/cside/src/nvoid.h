@@ -36,7 +36,7 @@ typedef struct _nvoid_t {
 } __attribute__ ((__aligned__ (8), __packed__)) nvoid_t;
 
 nvoid_t* nvoid_new(uint32_t cap, uint8_t* data, uint32_t len);
-nvoid_t* nvoid_empty(uint32_t cap);
+nvoid_t* nvoid_empty(uint32_t maxlen, char typefmt);
 nvoid_t* nvoid_dup(nvoid_t* src);
 nvoid_t* nvoid_cpy(nvoid_t* dst, nvoid_t* src);
 nvoid_t* nvoid_cpy_str(nvoid_t* dst, char* str);
