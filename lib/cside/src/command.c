@@ -282,6 +282,7 @@ command_t* command_from_data(char* fmt, void* data, int len) {
             size_t nelems;
             assert(cbor_value_is_length_known(&map));
             cbor_value_get_array_length(&map, &nelems);
+            printf("%u ; %s; %s\n", cmd->cmd, cmd->fn_argsig, cmd->fn_name);
             assert(nelems == argsiglen);
 
             cbor_value_enter_container(&map, &arr);
