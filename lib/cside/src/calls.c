@@ -73,6 +73,5 @@ void local_async_call(tboard_t* t, char* cmd_func, ...) {
             va_end(args);
         }
         task_create(t, *f, qargs, NULL);
-        command_args_free(qargs); // TODO?
     }
 }
