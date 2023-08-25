@@ -29,7 +29,7 @@ jasync localyou(int c, char s[]) {
 
 int main(int argc, char* argv[]) {
     jarray char memessage[30] = "message-to-c-local-node", yumessage[30] = "message-to-j";
-    localme(x, &memessage);
+    //localme(x, &memessage);
     localyou(mytest.x, &yumessage);
     return 0;
 }

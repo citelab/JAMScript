@@ -57,6 +57,7 @@ function runMain(cargs) {
                     results.manifest = createManifest(cargs.outPath, results.hasJdata);
                     createZip(
                         results.JS,
+                        results.C,
                         results.manifest,
                         results.jstart,
                         tmpDir,
@@ -160,17 +161,18 @@ function preprocess(file, cargs) {
     };
 }
 
-function createZip(jsout, mout, jstart, tmpDir, cargs) {
+function createZip(jsout, cout, mout, jstart, tmpDir, cargs) {
     let zip = new JSZip();
     zip.file("MANIFEST.txt", mout);
     zip.file("jamout.js", jsout);
+    zip.file("jamout.c", cout); // TODO this should be removed eventually but is very useful for debugging
     zip.file("jstart.js", jstart);
 
     // Include debug symbols if they are there.
     if(fs.existsSync(`${tmpDir}/a.out.dSYM`)) {
-	fs.cpSync(`${tmpDir}/a.out.dSYM`, `${cargs.outPath}.dSYM`, {recursive: true});
+	    fs.cpSync(`${tmpDir}/a.out.dSYM`, `${cargs.outPath}.dSYM`, {recursive: true});
 
-	//zip.file("a.out.dSYM", fs.readFileSync(`${tmpDir}/a.out.dSYM`))
+	    //zip.file("a.out.dSYM", fs.readFileSync(`${tmpDir}/a.out.dSYM`))
     }
 
     zip.file("a.out", fs.readFileSync(`${tmpDir}/a.out`));
