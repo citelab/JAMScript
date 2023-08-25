@@ -17,17 +17,20 @@ jtask {cloudonly} function getCloudId(uid) {
 }
 
 jtask {fogonly} function getId(uid) {
+	let repeatStop = 0;
 	(function repeatBody() {
 		console.log("______________________ ", uid);
 		getCloudId(uid).then((x)=> {
 			console.log("Cloud Id", x.values());
 			if (x.values().length > 0) {
+				repeatStop = 1;
 				resolve(x.values()[0]);
 			}
 		}).catch((err)=> {
 			console.log("Error.. ", err);
 		});
-		setTimeout(repeatBody, 2000);
+		if (repeatStop === 0)
+			setTimeout(repeatBody, 2000);
 	})();
 }
 
@@ -35,10 +38,12 @@ async function getMyIndx() {
     let count = 0;
 
 	return new Promise((resolve, reject)=> {
+		let repeatStop = 0;
 		(function repeatBody() {
 			getId(jsys.id).then((y)=> {
 				console.log("y - ", y.values());
 				if (y.values().length > 0) {
+					repeatStop = 1;
 					resolve(y.values()[0]);
 				}
 			}).catch((err)=> {
@@ -48,7 +53,8 @@ async function getMyIndx() {
 			if (count > 10) {
 				resolve(-1);
 			}
-			setTimeout(repeatBody, 2000);
+			if (repeatStop === 0)
+				setTimeout(repeatBody, 2000);
 		})();
 	});
 }
