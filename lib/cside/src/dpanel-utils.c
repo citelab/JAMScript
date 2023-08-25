@@ -4,7 +4,7 @@
 void do_nvoid_encoding(CborEncoder* enc, nvoid_t* nv) {
     if (nv->typefmt == 'c')
         cbor_encode_text_string(enc, (char*)nv->data, nv->len);
-    else if (nv->typefmt == 'C')
+    else if (nv->typefmt == 'b')
         cbor_encode_byte_string(enc, (uint8_t*)nv->data, nv->len);
     else {
         CborEncoder arrayEnc;
@@ -16,7 +16,7 @@ void do_nvoid_encoding(CborEncoder* enc, nvoid_t* nv) {
             for (int i = 0; i < nv->len; i++)
                 cbor_encode_int(&arrayEnc, (int64_t)((int*)nv->data)[i]);
             break;
-        case 'I':
+        case 'u':
             for (int i = 0; i < nv->len; i++)
                 cbor_encode_uint(&arrayEnc, (uint64_t)((unsigned int*)nv->data)[i]);
             break;
@@ -24,7 +24,7 @@ void do_nvoid_encoding(CborEncoder* enc, nvoid_t* nv) {
             for (int i = 0; i < nv->len; i++)
                 cbor_encode_int(&arrayEnc, (int64_t)((long long int*)nv->data)[i]);
             break;
-        case 'L':
+        case 'z':
             for (int i = 0; i < nv->len; i++)
                 cbor_encode_uint(&arrayEnc, (uint64_t)((unsigned long long int*)nv->data)[i]);
             break;
@@ -54,14 +54,14 @@ void do_basic_type_encoding(CborEncoder* enc, char type, va_list args) {
     case 'i':
         cbor_encode_int(enc, (int64_t)va_arg(args, int));
         break;
-    case 'C':
-    case 'I':
+    case 'b':
+    case 'u':
         cbor_encode_uint(enc, (uint64_t)va_arg(args, unsigned int));
         break;
     case 'l':
         cbor_encode_int(enc, (int64_t)va_arg(args, long long int));
         break;
-    case 'L':
+    case 'z':
         cbor_encode_uint(enc, (uint64_t)va_arg(args, unsigned long long int));
         break;
     case 'f':
@@ -70,6 +70,14 @@ void do_basic_type_encoding(CborEncoder* enc, char type, va_list args) {
     case 'd':
         cbor_encode_double(enc, va_arg(args, double));
         break;
+    case 'C':
+    case 'I':
+    case 'B':
+    case 'U':
+    case 'L':
+    case 'Z':
+    case 'F':
+    case 'D':
     case 'n':
         do_nvoid_encoding(enc, va_arg(args, nvoid_t*));
         break;
@@ -108,21 +116,21 @@ int __extract_cbor_type(CborValue* dec, void* loc, char type) {
             cbor_value_get_int(dec, &tmp_int);
             *(char*)loc = (char)tmp_int;
             break;
-        case 'C':
+        case 'b':
             cbor_value_get_uint64(dec, &tmp_uint);
             *(unsigned char*)loc = (unsigned char)tmp_uint;
             break;
         case 'i':
             cbor_value_get_int(dec, (int*)loc);
             break;
-        case 'I':
+        case 'u':
             cbor_value_get_uint64(dec, &tmp_uint);
             *(unsigned int*)loc = (unsigned int)tmp_uint;
             break;
         case 'l':
             cbor_value_get_int64(dec, (int64_t*)loc);
             break;
-        case 'L':
+        case 'z':
             cbor_value_get_uint64(dec, (uint64_t*)loc);
             break;
         default:
@@ -132,9 +140,10 @@ int __extract_cbor_type(CborValue* dec, void* loc, char type) {
         cbor_value_advance(dec);
         break;
     case CborTextStringType:
-        if(type == 'n') {
+        if(type >= 'A' && type <= 'Z') {
             nvoid_t* nval = (nvoid_t*)loc;
-            if(nval->typefmt == 'c' || nval->typefmt == 'C') {
+            assert(nval->typefmt == type - 'A' + 'a');
+            if(nval->typefmt == 'c' || nval->typefmt == 'b') {
                 size_t len = nval->len;
                 char* strloc = (char*)nval->data;
                 cbor_value_calculate_string_length(dec, &n);
@@ -150,7 +159,7 @@ int __extract_cbor_type(CborValue* dec, void* loc, char type) {
                     cbor_value_copy_text_string(dec, strloc, &n, dec);
                 break;
             }
-        } else if (type == 'c' || type == 'C') {
+        } else if (type == 'c' || type == 'b') {
             cbor_value_calculate_string_length(dec, &n);
             if (n++ == 1) { // We can parse a 1 character string as a char
                 char strtmp[2];
@@ -164,9 +173,10 @@ int __extract_cbor_type(CborValue* dec, void* loc, char type) {
         cbor_value_advance(dec);
         break;
     case CborByteStringType:
-        if(type == 'n') {
+        if(type >= 'A' && type <= 'Z') {
             nvoid_t* nval = (nvoid_t*)loc;
-            if(nval->typefmt == 'c' || nval->typefmt == 'C') {
+            assert(nval->typefmt == type - 'A' + 'a');
+            if(nval->typefmt == 'c' || nval->typefmt == 'b') {
                 size_t len = nval->len;
                 uint8_t* bytesloc = (uint8_t*)nval->data;
                 cbor_value_calculate_string_length(dec, &n);
@@ -181,7 +191,7 @@ int __extract_cbor_type(CborValue* dec, void* loc, char type) {
                     cbor_value_copy_byte_string(dec, bytesloc, &n, dec);
                 break;
             }
-        } else if (type == 'c' || type == 'C') {
+        } else if (type == 'c' || type == 'b') {
             cbor_value_calculate_string_length(dec, &n);
             if (n == 1) { // We can parse a 1 character string as a char
                 uint8_t strtmp[1];
@@ -206,8 +216,9 @@ int __extract_cbor_type(CborValue* dec, void* loc, char type) {
         cbor_value_advance(dec);
         break;
     case CborArrayType:
-        if(type == 'n') {
+        if(type >= 'A' && type <= 'Z') {
             nvoid_t* nval = (nvoid_t*)loc;
+            assert(nval->typefmt == type - 'A' + 'a');
             CborValue arr;
             cbor_value_enter_container(dec, &arr);
             int overflowed = false, i = 0;

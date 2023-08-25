@@ -32,22 +32,38 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // originating routine.
 nvoid_t* nvoid_new(uint32_t size, uint8_t* data, uint32_t len) {
     assert(len <= size);
-    nvoid_t* nv = nvoid_empty(size);
+    nvoid_t* nv = nvoid_empty(size, 'b');
     nv->len = len;
     if (data != NULL)
         memcpy(nv->data, data, len);
     return nv;
 }
 
-nvoid_t* nvoid_empty(uint32_t size) {
-    uint32_t aligned_size = size > 8 ? (size - 1 | 7) + 1 : 8;
+nvoid_t* nvoid_empty(uint32_t maxlen, char typefmt) {
+    uint16_t typesize;
+    switch (typefmt) {
+    case 'c':
+    case 'b':
+        typesize = 1;
+        break;
+    case 'i':
+    case 'u':
+    case 'f':
+        typesize = 4;
+    case 'l':
+    case 'z':
+    case 'd':
+        typesize = 8;
+    }
+    uint32_t size = maxlen * typesize;
+    uint32_t aligned_size = size >= 8 ? (size | 7) + 1 : 8;
     nvoid_t* nv = (nvoid_t*)aligned_alloc(8, aligned_size + 16);
     assert(nv != NULL);
     nv->len = 0;
-    nv->maxlen = size;
+    nv->maxlen = maxlen;
     nv->size = aligned_size;
-    nv->typesize = 1;
-    nv->typefmt = 'C';
+    nv->typesize = typesize;
+    nv->typefmt = typefmt;
     return nv;
 }
 
@@ -73,7 +89,7 @@ nvoid_t* nvoid_cpy_str(nvoid_t* dst, char* str) {
 
 nvoid_t* nvoid_min(nvoid_t* src) {
     uint32_t bytelen = src->len * src->typesize;
-    uint32_t aligned_size =  bytelen > 8 ? (bytelen - 1 | 7) + 1 : 8;
+    uint32_t aligned_size =  bytelen >= 8 ? (bytelen | 7) + 1 : 8;
     nvoid_t* nv = (nvoid_t*)aligned_alloc(8, aligned_size + 16);
     assert(nv != NULL);
     nv->size = aligned_size;
@@ -86,7 +102,7 @@ nvoid_t* nvoid_min(nvoid_t* src) {
 
 nvoid_t* nvoid_str(char* str) {
     uint32_t bytelen = strlen(str);
-    uint32_t aligned_size = bytelen > 8 ? (bytelen - 1 | 7) + 1 : 8;
+    uint32_t aligned_size = bytelen >= 8 ? (bytelen | 7) + 1 : 8;
     nvoid_t* nv = (nvoid_t*)aligned_alloc(8, aligned_size + 16);
     assert(nv != NULL);
     nv->size = aligned_size;
