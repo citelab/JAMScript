@@ -22,7 +22,7 @@ jtask {fogonly} function compyou(str) {
     console.log("Value I am returning..... to the other side == ", qq);
 
     remoteEcho("Fog to worker communication").catch((e)=> {
-	console.log("Calling remoteEcho from " + jsys.type + " got an error " + e);
+	console.log("Calling remoteEcho from " + jsys.type + " got a bad state ");
     });
 
     coverage();
@@ -42,7 +42,7 @@ setInterval(()=> {
         console.log("Longitude and Latitude .... ", jsys.long, jsys.lat);
     }
     remoteEcho("Device to worker communication").catch((e)=> {
-	console.log("Calling remoteEcho from " + jsys.type + " got an error " + e);
+      console.log("Calling remoteEcho from " + jsys.type + " got a bad state.. ");
     });;
     coverage();
     console.log("Calling compyou.. ");

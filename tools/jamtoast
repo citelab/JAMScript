@@ -36,6 +36,8 @@ Toaster provides two keywords that can be used inside of tests (both jside and c
 assert(condition);     -- this functions as a regular assert but hooks into the toaster error logging system
 coverage();            -- For a test to pass it must execute every coverage function in the test at least once.
 
+For coverage markers, by default the test will exit once every coverage marker has been reached. To prevent this,
+you can use the RunToTimeout option in the Toaster Config.
 
 Toaster Config:
 For tests that must run on multiple nodes at once, the toaster config is a way of
@@ -47,7 +49,40 @@ You start the configuration with the @ToasterConfig annotation.
 // Fogs: [number of fogs]
 // Devices: [number of devices]
 // Workers: [number of workers for each device]
+// Cloud: [true/false run a cloud]
+// NetworkDescriptor: [path to a network descriptor]
+// RunToTimeout: [true/false ignore early exit from coverage markers]
+
+Network Descriptor:
+This is an alternative to the Toaster Config's Fogs/Devices/Workers/Cloud options. They cannot be both used for the same test. The following example network descriptor demonstrates all possible options for each node type.
+
+appname="YOUR_NAME"
+
+[[device]]
+tags="YOUR_DEVICE"
+data="127.0.0.1:6379" 
+loc={long=30, lat=30}
+edge=4
+
+[[fog]]
+tags="YOUR_FOG"
+data="127.0.0.1:6380"
+loc={long=30, lat=30}
+host-local-registry=true
+
+[cloud]
+tags="YOUR_CLOUD"
+data="127.0.0.1:6381"
+
 `;
+
+// Feature TODO:
+// - Seperate Node Logs (filename should be nodeid perhaps)
+// - Final Report should highlight offending Node
+// - Add an option to display all log file urls.
+
+
+
 
 const TEST_RESULT_DIR_NAME = "toast-results";
 const DEFAULT_TEST_DIR = "toaster"
@@ -107,6 +142,7 @@ const FailDetails = {
 
 const NODETYPE_DEVICE = "device";
 const NODETYPE_FOG = "fog";
+const NODETYPE_CLOUD = "cloud";
 
 Toaster.prototype.writeLog = function(text) {
   process.stdout.write(text);
@@ -275,6 +311,7 @@ Toaster.prototype.walkTestDir = function (folder) {
           networkConfig: {
             devices: 1,
             workers: 1,
+	    cloud: false,
             fogs: 0,
 	    netDescPath: undefined,
 	    netDesc: undefined
@@ -310,6 +347,7 @@ Toaster.prototype.scanTests = function () {
       networkConfig: {
         devices: 1,
         workers: 1,
+	cloud: false,
         fogs: 0,
 	netDescPath: undefined,
 	netDesc: undefined
@@ -359,9 +397,11 @@ function findMatchingParens(text, start) {
 
 const FOGS_KEYWORD = "fogs:";
 const DEVICES_KEYWORD = "devices:";
+const CLOUD_KEYWORD = "cloud:";
 const WORKERS_KEYWORD = "workers:";
 const NET_DESC_KEYWORD = "networkdescriptor:";
 const TIMEOUT_KEYWORD = "runtotimeout:";
+
 Toaster.prototype.scanForToasterConfig = function(test, line, lineIter) {
   const keywords = [FOGS_KEYWORD, DEVICES_KEYWORD, WORKERS_KEYWORD, NET_DESC_KEYWORD, TIMEOUT_KEYWORD];
   if(line.includes("@ToasterConfig")) {
@@ -382,6 +422,8 @@ Toaster.prototype.scanForToasterConfig = function(test, line, lineIter) {
             test.networkConfig.devices = parseInt(value);
           } else if (keyword == WORKERS_KEYWORD) {
             test.networkConfig.workers = parseInt(value);
+	  } else if (keyword == CLOUD_KEYWORD){
+	    test.networkConfig.cloud = value.toLowerCase().includes('true');
 	  } else if (keyword == TIMEOUT_KEYWORD) {
 	    test.runToTimeout = value.toLowerCase().includes('true');
           } else if (keyword == NET_DESC_KEYWORD) {
@@ -751,7 +793,9 @@ Toaster.prototype.executeTest = async function(test,
 					       machType,
 					       tags=undefined,
 					       data=undefined,
-					       shouldHost=undefined) {
+					       shouldHost=undefined,
+					       loc=undefined,
+					       edge=undefined) {
   let command = `jamrun`
   let args =  [
     `${test.testResultDirectory}/test.jxe`,
@@ -761,8 +805,10 @@ Toaster.prototype.executeTest = async function(test,
 
   if(machType==NODETYPE_FOG) {
     args.push("--fog");
-  } else if (machType==NODETYPE_DEVICE){
+  } else if (machType==NODETYPE_DEVICE) {
     args.push(`--num=${test.networkConfig.workers}`);
+  } else if (machType==NODETYPE_CLOUD) {
+    args.push("--cloud");
   }
 
   if(tags) {
@@ -774,7 +820,12 @@ Toaster.prototype.executeTest = async function(test,
   if(shouldHost && machType==NODETYPE_FOG) {
     args.push("--local_registry");
   }
-
+  if(loc) {
+    args.push(`--loc=${loc.long},${loc.lat}`)
+  }
+  if(edge) {
+    args.push("--edge="+edge);
+  }
   if(this.conf.local) {
     args.push("--local");
   }
@@ -929,29 +980,45 @@ Toaster.prototype.runTest = async function (test) {
   await new Promise( async (resolve) => {
     if(test.networkConfig.netDesc) {
       let netDesc = test.networkConfig.netDesc;
+      if('cloud' in netDesc) {
+	this.executeTest(test,
+			 NODETYPE_CLOUD,
+			 netDesc['cloud']['tags'],
+			 netDesc['cloud']['data']
+			).then(()=>{resolve()});
+	await new Promise((resolve2)=>{setTimeout(()=>{resolve2();}, sleep)});
+      }
+      
       if('fog' in netDesc) {
 	for (let fog of netDesc['fog']) {
 	  this.executeTest(test,
 			   NODETYPE_FOG,
 			   fog['tags'],
 			   fog['data'],
-			   fog['hostLocalRegistry']
+			   fog['hostLocalRegistry'],
+			   fog['loc']
 			  ).then(()=>{resolve()});
 	  await new Promise((resolve2)=>{setTimeout(()=>{resolve2();}, sleep)});
 	}
       }
       
       if('device' in netDesc) {
-	for (let fog of netDesc['device']) {
+	for (let device of netDesc['device']) {
 	  this.executeTest(test,
 			   NODETYPE_DEVICE,
-			   fog['tags'],
-			   fog['data']
+			   device['tags'],
+			   device['data'],
+			   device['loc'],
+			   device['edge']
 			  ).then(()=>{resolve()});
 	  await new Promise((resolve2)=>{setTimeout(()=>{resolve2();}, sleep)});
 	}
       }
     } else {
+      if(test.networkConfig.cloud) {
+	this.executeTest(test, NODETYPE_CLOUD).then(()=>{resolve()});
+	await new Promise((resolve2)=>{setTimeout(()=>{resolve2();}, sleep)});
+      }
       for(let _ = 0; _ < test.networkConfig.fogs; _++){
 	this.executeTest(test, NODETYPE_FOG).then(()=>{resolve()});
 	await new Promise((resolve2)=>{setTimeout(()=>{resolve2();}, sleep)});
