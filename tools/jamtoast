@@ -301,6 +301,7 @@ Toaster.prototype.walkTestDir = function (folder) {
           jsFile: `${folder}/${baseName}.js`,
           testResultDirectory: `${that.resultDirectory}/${testName}`,
           logFile: `${that.resultDirectory}/${testName}/jlog.txt`,
+	  logFiles: new Map(),
           state: TestState.COMPILING,
           completedCoverageMarkers: 0,
           compilationDuration: 0,
@@ -337,6 +338,7 @@ Toaster.prototype.scanTests = function () {
       jsFile: `${this.testDirectory}.js`,
       testResultDirectory: `${this.resultDirectory}/${basename}`,
       logFile: `${this.resultDirectory}/${basename}/jlog.txt`,
+      logFiles: new Map(),
       state: TestState.COMPILING,
       completedCoverageMarkers: 0,
       compilationDuration: 0,
@@ -427,7 +429,6 @@ Toaster.prototype.scanForToasterConfig = function(test, line, lineIter) {
 	  } else if (keyword == TIMEOUT_KEYWORD) {
 	    test.runToTimeout = value.toLowerCase().includes('true');
           } else if (keyword == NET_DESC_KEYWORD) {
-
 	    if(test.networkConfig.netDescPath != undefined) {
 	      this.log("ERROR: More than one network descriptor provided!");
 	    }
@@ -440,8 +441,9 @@ Toaster.prototype.scanForToasterConfig = function(test, line, lineIter) {
         break;
       }
     }
+    
     // Check valid config
-    if(test.networkConfig.netDescPath && (test.networkConfig.fogs != 0 || test.networkConfig.devices != 1)) {
+    if(test.networkConfig.netDescPath && (test.networkConfig.fogs != 0 || test.networkConfig.devices != 1 || test.networkConfig.cloud)) {
       this.log("ERROR: Toaster config has both network descriptor and manual network configuration.");
     }
 
@@ -719,7 +721,7 @@ function extractOutputKeywordData(text){
   return text.substring(start, end);
 }
 
-Toaster.prototype.processOutput = function (test, data) {
+Toaster.prototype.processOutput = function (test, data, log) {
   if(test.state == TestState.STARTING) {
     this.setTestState(test, TestState.RUNNING);
   }
@@ -734,7 +736,7 @@ Toaster.prototype.processOutput = function (test, data) {
       return false;
     }
 
-    test.output.write(line + "\n");
+    log.write(line+ '\n');
 
     // Try to pick up any spurrious errors we may have missed otherwise.
     if(line.toLowerCase().includes("error")) {
@@ -838,6 +840,7 @@ Toaster.prototype.executeTest = async function(test,
   var timeout;
 
   function cleanup() {
+    // In the case where timeout is never set
     if(!that.conf.noTimeout) {
       clearTimeout(timeout);
     }
@@ -849,9 +852,9 @@ Toaster.prototype.executeTest = async function(test,
          test.failDetails != FailDetails.LAUNCH_FAILED) {
         killGroup(testProcess.pid); // Not entirely sure why this works...
       }
+      test.logFiles.get(testProcess.pid).close();
       that.testProcesses.delete(testProcess.pid);
-      //that.killWorkerTmuxSessions(test);
-    } catch(e){ this.log(e); }
+    } catch(e){ that.log(e); }
   }
 
   const testStartTime = Date.now();
@@ -859,11 +862,13 @@ Toaster.prototype.executeTest = async function(test,
   // We should log compiler output in the event of a compiler error.
   let testProcess = child_process.spawn(command, args, {shell: false, detached: true});
   this.testProcesses.add(testProcess.pid);
+  //let log = fs.openSync(`${test.testResultDirectory}/${testProcess.pid}.txt`, 'w');
+  let log = fs.createWriteStream(`${test.testResultDirectory}/${machType}_${testProcess.pid}.txt`);
+  test.logFiles.set(testProcess.pid, log);
 
   if(!this.conf.noTimeout) {
     var timeout = setTimeout(()=>{
       if(test.state == TestState.STARTING) {
-	debugger;
 	test.failDetails = FailDetails.LAUNCH_FAILED;
 	that.setTestState(test, TestState.FAILED);
 	this.testProcesses.delete(testProcess.pid);
@@ -888,17 +893,17 @@ Toaster.prototype.executeTest = async function(test,
     if(that.conf.verbose) {
       process.stdout.write(data);
     }
-    if(that.processOutput(test, data)) {
+    if(that.processOutput(test, data, log)) {
       cleanup();
     }
   });
 
   testProcess.stderr.on('data', (data) => {
     if(test.state == TestState.RUNNING) {
-      if(that.processOutput(test, data)) {
+      if(that.processOutput(test, data, log)) {
         cleanup();
       }
-      test.output.write(`STDERR: ${data}`);
+      log.write(`STDERR: ${data}`);
     }
   });
 
@@ -916,7 +921,7 @@ Toaster.prototype.executeTest = async function(test,
       }
       if(this.testProcesses.size) {
 	let report = that.generateReport(test);
-	test.output.write(`\n\n\n${report}`);
+	log.write(`\n\n\n${report}`);
       }
       resolve();
     });
