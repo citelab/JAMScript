@@ -249,7 +249,7 @@ command_t* command_from_data(char* fmt, void* data, int len) {
             cmd->subcmd = result;
         } else if (strcmp(keybuf, "taskid") == 0) {
             if (cbor_value_get_type(&map) == 251) {
-                printf("TODO: Got a double taskid.. we could be losing precision..");
+                printf("TODO: Got a double taskid.. we could be losing precision..\n");
                 cbor_value_get_double(&map, &dresult);
                 cmd->task_id = (uint64_t)dresult; // TODO we lose precision doing this
             } else {

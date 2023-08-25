@@ -67,7 +67,7 @@ typedef struct _command_t
     // CBOR object is going to hold all the data
     int cmd;
     int subcmd;
-    char fn_name[SMALL_CMD_STR_LEN];            // Function name
+    char fn_name[LARGE_CMD_STR_LEN];            // Function name
     uint64_t task_id;                           // Task identifier (a function in execution)
     char node_id[LARGE_CMD_STR_LEN];            // this can be the UUID4 of the source of the message
     char old_id[LARGE_CMD_STR_LEN];             // this can be the UUID4 of the original message (only valid in a "reply")
