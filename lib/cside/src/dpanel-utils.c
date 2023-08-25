@@ -71,8 +71,8 @@ void do_basic_type_encoding(CborEncoder* enc, char type, va_list args) {
         cbor_encode_double(enc, va_arg(args, double));
         break;
     case 'C':
-    case 'I':
     case 'B':
+    case 'I':
     case 'U':
     case 'L':
     case 'Z':

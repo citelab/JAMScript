@@ -33,18 +33,6 @@ extern "C" {
 #include <pthread.h>
 #include "nvoid.h"
 
-
-typedef enum {
-    NULL_TYPE,
-    STRING_TYPE,
-    INT_TYPE,
-    LONG_TYPE,
-    DOUBLE_TYPE,
-    NVOID_TYPE,
-    VOID_TYPE
-} argtype_t;
-
-
 #define TINY_CMD_STR_LEN            16
 #define SMALL_CMD_STR_LEN           32
 #define LARGE_CMD_STR_LEN           128
@@ -52,7 +40,7 @@ typedef enum {
 
 typedef struct _arg_t {
     int nargs;
-    argtype_t type;
+    char type;
     union _argvalue_t {
         int ival;
         long long int lval;

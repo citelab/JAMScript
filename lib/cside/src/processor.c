@@ -23,19 +23,19 @@ arg_t* command_arg_clone_special(arg_t* arg, char* fname, uint64_t taskid, char*
         i = arg->nargs;
     } else
         rl = (arg_t*)calloc(4, sizeof(arg_t));
-    rl[i].type = STRING_TYPE;
+    rl[i].type = 's';
     rl[i].val.sval = strdup(fname);
     rl[i].nargs = nargs;
     i++;
-    rl[i].type = LONG_TYPE;
+    rl[i].type = 'l';
     rl[i].val.lval = (long long int)taskid;
     rl[i].nargs = nargs;
     i++;
-    rl[i].type = STRING_TYPE;
+    rl[i].type = 's';
     rl[i].val.sval = strdup(nodeid);
     rl[i].nargs = nargs;
     i++;
-    rl[i].type = VOID_TYPE;
+    rl[i].type = 'v';
     rl[i].val.vval = serv;
     rl[i].nargs = nargs;
 
@@ -58,20 +58,28 @@ void exec_sync(context_t ctx) {
         arg_t* res=blocking_task_create(tb, *f, f->tasktype, &rv, t, (nargs - 4));
         if (res != NULL) {
             command_t* cmd = NULL;
+            char fmtbuf[2] = "-";
+            fmtbuf[0] = rv.type;
             switch (rv.type) { // TODO add for other return types...
-            case INT_TYPE:
-                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, "i", rv.val.ival);
+            case 'c':
+            case 'b':
+            case 'i':
+            case 'u':
+                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, fmtbuf, rv.val.ival);
                 break;
-            case LONG_TYPE:
-                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, "i", rv.val.lval);
+            case 'l':
+            case 'z':
+                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, fmtbuf, rv.val.lval);
                 break;
-            case STRING_TYPE:
-                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, "s", rv.val.sval);
+            case 'f':
+            case 'd':
+                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, fmtbuf, rv.val.dval);
                 break;
-            case DOUBLE_TYPE:
-                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, "d", rv.val.dval);
+            case 's':
+                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, f,tbuf, rv.val.sval);
                 break;
-            default:;
+            default:
+                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, f,tbuf, rv.val.nval);
             }
             free(node_id);
             mqtt_publish(s->mqtt, c->topics->replytopic, cmd->buffer, cmd->length, cmd, 0);
@@ -83,7 +91,7 @@ function_t esync = TBOARD_FUNC("exec_sync", exec_sync, "nnn", "", PRI_BATCH_TASK
 
 void execute_cmd(server_t* s, function_t* f, command_t* cmd) {
     cnode_t* c = s->cnode;
-    tboard_t* t = (tboard_t *)(c->tboard);
+    tboard_t* t = (tboard_t*)(c->tboard);
 
     if (cmd->subcmd == 0)
         task_create(t, *f, cmd->args, cmd); // no return value
@@ -281,7 +289,7 @@ void send_close_msg(void* serv, char* node_id, uint64_t task_id) {
 void send_err_msg(void* serv, char* node_id, uint64_t task_id) {
     server_t* s = (server_t*)serv;
     cnode_t* c = s->cnode;
-    command_t* cmd = command_new(CmdNames_REXEC_ERR, 0, "", task_id, c->core->device_id, node_id, "i", CmdNames_FUNC_NOT_FOUND);
+    command_t* cmd = command_new(CmdNames_REXEC_ERR, 0, "", task_id, c->core->device_id, node_id, "i", (int)CmdNames_FUNC_NOT_FOUND);
     mqtt_publish(s->mqtt, c->topics->replytopic, cmd->buffer, cmd->length, cmd, 0);
 }
 
@@ -295,7 +303,7 @@ void send_ack_msg(void* serv, char* node_id, uint64_t task_id, int timeout) {
 void send_nak_msg(void* serv, char* node_id, uint64_t task_id) {
     server_t* s = (server_t*)serv;
     cnode_t* c = s->cnode;
-    command_t* cmd = command_new(CmdNames_REXEC_NAK, 0, "", task_id, c->core->device_id, node_id, "i", CmdNames_COND_FALSE);
+    command_t* cmd = command_new(CmdNames_REXEC_NAK, 0, "", task_id, c->core->device_id, node_id, "i", (int)CmdNames_COND_FALSE);
     mqtt_publish(s->mqtt, c->topics->replytopic, cmd->buffer, cmd->length, cmd, 0);
 }
 

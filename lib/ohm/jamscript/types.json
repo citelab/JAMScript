@@ -2,68 +2,93 @@
     "char": {
         "jamlib": "ival",
         "c_code": "c",
-        "buffer": false,
-        "c_type": "int",
-        "c_enum": "INT_TYPE"
+        "c_type": "int"
     },
     "int": {
         "jamlib": "ival",
         "c_code": "i",
-        "buffer": false,
-        "c_type": "int",
-        "c_enum": "INT_TYPE"
+        "c_type": "int"
     },
     "long long int": {
         "jamlib": "lval",
         "c_code": "l",
-        "buffer": false,
-        "c_type": "long long int",
-        "c_enum": "LONG_TYPE"
+        "c_type": "long long int"
     },
     "float": {
         "jamlib": "dval",
         "c_code": "f",
-        "c_type": "double",
-        "c_enum": "DOUBLE_TYPE"
+        "c_type": "double"
     },
     "double": {
         "jamlib": "dval",
         "c_code": "d",
-        "c_type": "double",
-        "c_enum": "DOUBLE_TYPE"
-    },
-    "array": {
-        "jamlib": "nval",
-        "c_code": "n",
-        "c_type": "nvoid_t*",
-        "c_enum": "NVOID_TYPE"
-    },
-    "void": {
-        "jamlib": "vval",
-        "c_code": "v",
-        "c_type": "void",
-        "c_enum": "NULL_TYPE"
+        "c_type": "double"
     },
     "unsigned": {
         "char": {
             "jamlib": "ival",
-            "c_code": "C",
+            "c_code": "b",
             "c_type": "unsigned char",
             "c_enum": "INT_TYPE"
         },
         "int": {
             "jamlib": "ival",
-            "c_code": "I",
-            "buffer": false,
-            "c_type": "unsigned int",
-            "c_enum": "INT_TYPE"
+            "c_code": "u",
+            "c_type": "unsigned int"
         },
         "long long int": {
             "jamlib": "lval",
-            "c_code": "L",
-            "buffer": false,
-            "c_type": "unsigned long long int",
-            "c_enum": "LONG_TYPE"
+            "c_code": "z",
+            "c_type": "unsigned long long int"
         }
+    },
+    "array": {
+        "char": {
+            "jamlib": "nval",
+            "c_code": "C",
+            "c_type": "nvoid_t*"
+        },
+        "int": {
+            "jamlib": "nval",
+            "c_code": "I",
+            "c_type": "nvoid_t*"
+        },
+        "long long int": {
+            "jamlib": "nval",
+            "c_code": "L",
+            "c_type": "nvoid_t*"
+        },
+        "float": {
+            "jamlib": "nval",
+            "c_code": "F",
+            "c_type": "nvoid_t*"
+        },
+        "double": {
+            "jamlib": "nval",
+            "c_code": "D",
+            "c_type": "nvoid_t*"
+        },
+        "unsigned": {
+            "char": {
+                "jamlib": "nval",
+                "c_code": "B",
+                "c_type": "nvoid_t*"
+            },
+            "int": {
+                "jamlib": "nval",
+                "c_code": "U",
+                "c_type": "nvoid_t*"
+            },
+            "long long int": {
+                "jamlib": "nval",
+                "c_code": "Z",
+                "c_type": "nvoid_t*"
+            }
+        }
+    },
+    "void": {
+        "jamlib": "vval",
+        "c_code": "v",
+        "c_type": "void"
     }
 }

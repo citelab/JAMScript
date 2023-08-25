@@ -76,27 +76,36 @@ command_t* command_new(int cmd, int subcmd, char* fn_name, uint64_t task_id, cha
 
         va_start(args, fn_argsig);
         for (int i = 0; i < len; i++) {
+            qargs[i].type = fn_argsig[i];
             switch(fn_argsig[i]) {
             case 'n':
+            case 'C':
+            case 'B':
+            case 'I':
+            case 'U':
+            case 'L':
+            case 'Z':
+            case 'D':
+            case 'F':
                 nv = va_arg(args, nvoid_t*);
                 qargs[i].val.nval = nvoid_dup(nv);
-                qargs[i].type = NVOID_TYPE;
                 break;
             case 's':
                 qargs[i].val.sval = strdup(va_arg(args, char*));
-                qargs[i].type = STRING_TYPE;
                 break;
+            case 'c':
+            case 'b':
             case 'i':
+            case 'u':
                 qargs[i].val.ival = va_arg(args, int);
-                qargs[i].type = INT_TYPE;
                 break;
             case 'l':
+            case 'z':
                 qargs[i].val.lval = va_arg(args, long long int);
-                qargs[i].type = LONG_TYPE;
                 break;
             case 'd':
+            case 'f':
                 qargs[i].val.dval = va_arg(args, double);
-                qargs[i].type = DOUBLE_TYPE;
                 break;
             default:
                 printf("Unrecognized type '%c' in command_new\n", fn_argsig[i]);
@@ -156,29 +165,41 @@ command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name, uint64_t ta
         cbor_encoder_create_array(&mapEncoder, &arrayEncoder, args[0].nargs);
         for (int i = 0; i < args[0].nargs; i++) {
             switch (args[i].type) {
-            case NVOID_TYPE:
-                nv = args[i].val.nval;
-                cbor_encode_byte_string(&arrayEncoder, nv->data, nv->len);
+            case 'c':
+            case 'i':
+                cbor_encode_int(&arrayEncoder, (int64_t)args[i].val.ival);
                 break;
-            case STRING_TYPE:
+            case 'b':
+            case 'u':
+                cbor_encode_uint(&arrayEncoder, (uint64_t)(unsigned int)args[i].val.ival);
+                break;
+            case 'l':
+                cbor_encode_int(&arrayEncoder, (int64_t)args[i].val.lval);
+                break;
+            case 'z':
+                cbor_encode_uint(&arrayEncoder, (uint64_t)args[i].val.lval);
+                break;
+            case 'f':
+            case 'd':
+                cbor_encode_double(&arrayEncoder, args[i].val.lval);
+                break;
+            case 'C':
+            case 'I':
+            case 'B':
+            case 'U':
+            case 'L':
+            case 'Z':
+            case 'F':
+            case 'D':
+            case 'n':
+                do_nvoid_encoding(&arrayEncoder, args[i].val.nval);
+                break;
+            case 's':
                 cbor_encode_text_stringz(&arrayEncoder, args[i].val.sval);
                 break;
-            case INT_TYPE:
-                cbor_encode_int(&arrayEncoder, args[i].val.ival);
-                break;
-            case LONG_TYPE:
-                cbor_encode_int(&arrayEncoder, args[i].val.lval);
-                break;
-            case DOUBLE_TYPE:
-                cbor_encode_double(&arrayEncoder, args[i].val.dval);
-                break;
-            case NULL_TYPE:
-                cbor_encode_null(&arrayEncoder);
-                break;
             default:
-                printf("Unknown type %d in command_new_using_arg\n", args[i].type);
+                assert(false);
             }
-        }
     }
     cbor_encoder_close_container(&mapEncoder, &arrayEncoder);
     cbor_encoder_close_container(&encoder, &mapEncoder);
@@ -273,27 +294,24 @@ command_t* command_from_data(char* fmt, void* data, int len) {
                     CborType ty = cbor_value_get_type(&arr);
                     cmd->args[i].nargs = nelems;
                     char tmpcharbuf[2];
+                    cmd->args[i].type = cmd->fn_argsig[i];
                     switch (ty) {
                     case CborIntegerType:
                         switch(cmd->fn_argsig[i]) {
                         case 'c':
                         case 'b':
                         case 'i':
-                            cmd->args[i].type = INT_TYPE;
                             cbor_value_get_int(&arr, &cmd->args[i].val.ival);
                             break;
                         case 'u':
-                            cmd->args[i].type = INT_TYPE;
                             uint64_t tmp_uint;
                             cbor_value_get_uint64(&arr, &tmp_uint);
                             *(unsigned int*)&cmd->args[i].val.ival = (unsigned int)tmp_uint;
                             break;
                         case 'l':
-                            cmd->args[i].type = LONG_TYPE;
                             cbor_value_get_int64(&arr, (int64_t*)&cmd->args[i].val.lval);
                             break;
                         case 'z':
-                            cmd->args[i].type = LONG_TYPE;
                             cbor_value_get_uint64(&arr, (uint64_t*)&cmd->args[i].val.ival);
                             break;
                         default:
@@ -303,12 +321,10 @@ command_t* command_from_data(char* fmt, void* data, int len) {
                     case CborTextStringType:
                         switch(cmd->fn_argsig[i]) {
                         case 's': // deprecated
-                            cmd->args[i].type = STRING_TYPE;
                             cbor_value_dup_text_string(&arr, &cmd->args[i].val.sval, &length, NULL);
                             break;
                         case 'C':
                         case 'B':
-                            cmd->args[i].type = NVOID_TYPE;
                             cbor_value_calculate_string_length(&arr, &length);
                             cmd->args[i].val.nval = nvoid_empty(++length);
                             cmd->args[i].val.nval->typefmt = 'c';
@@ -318,7 +334,6 @@ command_t* command_from_data(char* fmt, void* data, int len) {
                         case 'b':
                             cbor_value_calculate_string_length(&arr, &length);
                             assert(length == 1);
-                            cmd->args[i].type = INT_TYPE;
                             length++;
                             cbor_value_copy_text_string(&arr, tmpcharbuf, &length, NULL);
                             cmd->args[i].val.ival->data = (int)tmpcharbuf[0];
@@ -331,7 +346,6 @@ command_t* command_from_data(char* fmt, void* data, int len) {
                         switch(cmd->fn_argsig[i]) {
                         case 'C':
                         case 'B':
-                            cmd->args[i].type = NVOID_TYPE;
                             cbor_value_calculate_string_length(&arr, &length);
                             cmd->args[i].val.nval = nvoid_empty(length + 1);
                             cbor_value_copy_byte_string(&arr, cmd->args[i].val.nval->data, &length, NULL);
@@ -341,7 +355,6 @@ command_t* command_from_data(char* fmt, void* data, int len) {
                         case 'b':
                             cbor_value_calculate_string_length(&arr, &length);
                             assert(length == 1);
-                            cmd->args[i].type = INT_TYPE;
                             cbor_value_copy_byte_string(&arr, (uint8_t*)tmpcharbuf, &length, NULL);
                             cmd->args[i].val.ival->data = (int)tmpcharbuf[0];
                             break;
@@ -351,20 +364,17 @@ command_t* command_from_data(char* fmt, void* data, int len) {
                         break;
                     case CborFloatType:
                         assert(cmd->fn_argsig[i] == 'd' || cmd->fn_argsig[i] == 'f');
-                        cmd->args[i].type = DOUBLE_TYPE;
                         cbor_value_get_float(&arr, &fval);
                         cmd->args[i].val.dval = (double)fval;
                         break;
                     case CborDoubleType:
                         assert(cmd->fn_argsig[i] == 'd' || cmd->fn_argsig[i] == 'f');
-                        cmd->args[i].type = DOUBLE_TYPE;
                         cbor_value_get_double(&arr, &cmd->args[i].val.dval);
                         break;
                     case CborArrayType:
                         assert(cmd->fn_argsig[i] <= 'Z' && cmd->fn_argsig[i] >= 'A');
                         assert(cbor_value_is_length_known(&arr)); // TODO? unsure when it wouldnt be
                         cbor_value_get_array_length(&arr, &length);
-                        cmd->args[i].type = NVOID_TYPE;
                         CborValue arrayEnc;
                         cbor_value_enter_container(&arr, &arrayEnc);
                         char type = cmd->fn_argsig[i] - 'A' + 'a';
@@ -488,6 +498,7 @@ bool command_qargs_alloc(const char* fmt, arg_t** rargs, va_list args) {
 
     arg_t* qargs = (arg_t*)calloc(flen, sizeof(arg_t));
     for (int i = 0; i < flen; i++) {
+        qargs[i].type = fmt[i];
         switch(fmt[i]) {
         case 'n':
         case 'C':
@@ -499,31 +510,27 @@ bool command_qargs_alloc(const char* fmt, arg_t** rargs, va_list args) {
         case 'D':
         case 'F':
             qargs[i].val.nval = nvoid_dup(va_arg(args, nvoid_t*));
-            qargs[i].type = NVOID_TYPE;
             break;
         case 's':
             qargs[i].val.sval = strdup(va_arg(args, char*));
-            qargs[i].type = STRING_TYPE;
-            break
+            break;
         case 'c':
         case 'b':
         case 'i':
         case 'u':
             qargs[i].val.ival = va_arg(args, int);
-            qargs[i].type = INT_TYPE;
             break;
         case 'l':
         case 'z':
             qargs[i].val.lval = va_arg(args, long long int);
-            qargs[i].type = LONG_TYPE;
             break;
         case 'd':
         case 'f':
             qargs[i].val.dval = va_arg(args, double);
-            qargs[i].type = DOUBLE_TYPE;
             break;
         default:
             printf("Unrecognized type '%c' in command_qargs_alloc\n", fmt[i]);
+            assert(false);
         }
         qargs[i].nargs = flen;
     }
@@ -537,19 +544,32 @@ void command_arg_print(arg_t* arg)
     int i;
     for (i = 0; i < arg[0].nargs; i++) {
         switch(arg[i].type) {
-        case INT_TYPE:
+        case 'c':
+        case 'b':
+        case 'i':
+        case 'u':
             printf("Int: %d ", arg[i].val.ival);
             break;
-        case LONG_TYPE:
+        case 'l':
+        case 'z':
             printf("Long Long Int: %lld ", arg[i].val.lval);
             break;
-        case STRING_TYPE:
+        case 's':
             printf("String: %s ", arg[i].val.sval);
             break;
-        case DOUBLE_TYPE:
+        case 'f':
+        case 'd':
             printf("Double: %f ", arg[i].val.dval);
             break;
-        case NVOID_TYPE:
+        case 'n':
+        case 'C':
+        case 'B':
+        case 'I':
+        case 'U':
+        case 'L':
+        case 'Z':
+        case 'F':
+        case 'D':
             printf("Nvoid (%c): length %u ", (char)arg[i].val.nval->typefmt, arg[i].val.nval->len);
             break;
         default:
@@ -560,21 +580,26 @@ void command_arg_print(arg_t* arg)
 }
 
 //empty the memory space pointer to by arg
-void command_arg_inner_free(arg_t* arg)
-{
+void command_arg_inner_free(arg_t* arg) {
     if (arg == NULL)
         return;
     for (int i = 0; i < arg[0].nargs; i++) {
         switch (arg[i].type) {
-        case STRING_TYPE:
+        case 's':
             if(arg[i].val.sval)
                 free(arg[i].val.sval);
             break;
-        case NVOID_TYPE:
+        case 'n':
+        case 'C':
+        case 'B':
+        case 'I':
+        case 'U':
+        case 'L':
+        case 'Z':
+        case 'F':
+        case 'D':
             if(arg[i].val.nval)
                 nvoid_free(arg[i].val.nval);
-            break;
-        default:;
         }
     }
 }
@@ -596,26 +621,37 @@ void command_args_copy_elements(arg_t* arg_from, arg_t* arg_to, size_t nargs_fro
         arg_to[i].type = arg_from[i].type;
         arg_to[i].nargs = nargs_to;
         switch (arg_from[i].type) {
-        case INT_TYPE:
+        case 'c':
+        case 'b':
+        case 'i':
+        case 'u':
             arg_to[i].val.ival = arg_from[i].val.ival;
             break;
-        case LONG_TYPE:
+        case 'l':
+        case 'z':
             arg_to[i].val.lval = arg_from[i].val.lval;
             break;
-        case DOUBLE_TYPE:
+        case 'd':
+        case 'f':
             arg_to[i].val.dval = arg_from[i].val.dval;
             break;
-        case STRING_TYPE:
+        case 's':
             arg_to[i].val.sval = strdup(arg_from[i].val.sval);
             break;
-        case NVOID_TYPE:
+        case 'n':
+        case 'C':
+        case 'B':
+        case 'I':
+        case 'U':
+        case 'L':
+        case 'Z':
+        case 'F':
+        case 'D':
             arg_to[i].val.nval = nvoid_dup(arg_from[i].val.nval);
-            break;
-        case NULL_TYPE:
-            arg_to[i].val.ival = 0;
             break;
         default:
             printf("Unknown type %d in command_args_copy_elements\n", arg_from[i].type);
+            assert(false);
         }
     }
 }
