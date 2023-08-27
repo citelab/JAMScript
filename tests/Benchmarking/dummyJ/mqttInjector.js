@@ -44,8 +44,6 @@ function netSetup() {
     return sock;
 }
 
-
-
 let sock = netSetup();
 //doLoading(sock);
 doLoadingX(sock);
