@@ -19,3 +19,4 @@ if (jsys.type === 'device') {
 	remoteCall('test msg').then((x)=> { console.timeEnd(tx); }).catch(()=> {});
     }, 1000);
 }
+
