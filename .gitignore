@@ -7,6 +7,10 @@ node_modules/*
 /tmp
 *.db
 
+*~
+
+*.dSYM
+
 .DS_Store
 
 **/toast-results

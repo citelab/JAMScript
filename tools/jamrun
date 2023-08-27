@@ -275,6 +275,10 @@ portavailable() {
     else
         porttaken=0
     fi
+
+    if [ $porttaken -eq 0 ]; then 
+        porttaken=`netstat -an -p tcp 2>/dev/null | grep $port | wc -l`
+    fi
 }
 
 setuptmux() {
@@ -324,7 +328,6 @@ cleanuptmux() {
 
 startredis() {
     local port=$1
-
     # Start redis with no protected-mode and at the port
     echo -e "port $1\nprotected-mode no" | redis-server  --port $port  - 1> /dev/null &
 }
@@ -334,9 +337,12 @@ waitforredis() {
 
     while : ; do
         local present=`ps auwwx | grep redis-server | grep $port | wc -l | tr -d '[:space:]'`
+
         if [ $present == "1" ]; then
             break
         fi
+
+	echo Trying to find redis server...
         sleep 1
     done
     if [ -z $NOVERBOSE ]; then
