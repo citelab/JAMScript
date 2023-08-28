@@ -5,7 +5,7 @@ jarray long unsigned long pp[10] = {0, 1, [5] = 2}, qq[10];
 jarray char test[100] = "hi guys timothy chen here", b[5] = {'a', 'b', 'c'};
 
 jasync localme(int c, char s[]) {
-    printf("HELLO? LOCAL YOU?\n");
+    printf("HELLO? LOCAL ME?\n");
     while(1) {
         if (x == 0)
             continue;
@@ -22,6 +22,7 @@ jasync localyou(int c, char s[]) {
     jarray int test[40];
     while(1) {
         subname.bazinga.read(&test);
+        global.printf("test length... %u\n", test.len);
         jsys.sleep(1000000);
         c = arrayLength(&test, s);
         global.printf("############-->>> Hello YOU  %d, %s\n", c, s->data);
