@@ -40,6 +40,7 @@ jtask {fogonly} function getId(uid) {
 
 async function getMyIndx() {
     while(1) {
+		console.log("Calling getId...");
 		let a = getId(jsys.id);
 		try {
 			let x = await a.next();
