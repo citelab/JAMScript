@@ -7,7 +7,7 @@ const fs = require("fs"),
     child_process = require("child_process"),
     crypto = require("crypto"),
     path = require("path"),
-    callGraph = require("./lib/ohm/jamscript/callGraph"),
+    // callGraph = require("./lib/ohm/jamscript/callGraph"),
     jam = require("./lib/ohm/jamscript/jam"),
     os = require('os');
 const JSZip = checkedRequire("jszip", "ERROR! jsZip not installed. Install jsZip first using 'npm install jszip'");
@@ -46,10 +46,10 @@ function runMain(cargs) {
         cargs.cSideEffectTable = results.C_SideEffectTable;
         cargs.jsSideEffectTable = results.JS_SideEffectTable;
 
-        if (cargs.callGraphFlag) {
-            fs.writeFileSync("callgraph.html", callGraph.createWebpage());
-            fs.writeFileSync("callgraph.dot", callGraph.createDOT());
-        }
+        // if (cargs.callGraphFlag) {
+        //     fs.writeFileSync("callgraph.html", callGraph.createWebpage());
+        //     fs.writeFileSync("callgraph.dot", callGraph.createDOT());
+        // }
 
         if (!cargs.noCompile) {
             let task = nativeCompile(results.C, cargs);
@@ -169,11 +169,10 @@ function createZip(jsout, cout, mout, jstart, tmpDir, cargs) {
     zip.file("jstart.js", jstart);
 
     // Include debug symbols if they are there.
-    //if(fs.existsSync(`${tmpDir}/a.out.dSYM`)) {
-	//fs.cpSync(`${tmpDir}/a.out.dSYM`, `${cargs.outPath}.dSYM`, {recursive: true});
-
-	//zip.file("a.out.dSYM", fs.readFileSync(`${tmpDir}/a.out.dSYM`))
-    //}
+    // if(fs.existsSync(`${tmpDir}/a.out.dSYM`)) {
+	//     fs.cpSync(`${tmpDir}/a.out.dSYM`, `${cargs.outPath}.dSYM`, {recursive: true});
+	//     zip.file("a.out.dSYM", fs.readFileSync(`${tmpDir}/a.out.dSYM`))
+    // }
 
     zip.file("a.out", fs.readFileSync(`${tmpDir}/a.out`));
 
