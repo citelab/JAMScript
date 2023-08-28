@@ -50,6 +50,7 @@ nvoid_t* nvoid_empty(uint32_t maxlen, char typefmt) {
     case 'u':
     case 'f':
         typesize = 4;
+        break;
     case 'l':
     case 'z':
     case 'd':
