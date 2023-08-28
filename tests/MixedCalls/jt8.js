@@ -4,47 +4,57 @@ jcond {
 }
 
 let counter = 1;
+let gidtbl = new Map();
 
-jtask {cloudonly} function getCloudId() {
-    console.log("getCloudId... callled.. ", counter);
-    resolve (counter++);
+jtask {cloudonly} function getCloudId(uid) {
+	let id = gidtbl.get(uid);
+	if (id === undefined) {
+		id = counter++;
+		gidtbl.set(uid, id);
+	}
+	console.log("Id... ", id);
+    resolve (id);
 }
 
-jtask {fogonly} function getId() {
-    console.log("In getId...");
-    getCloudId().then((x)=> {
-	console.log("Cloud Id", x.values());
-	resolve(10);
-    }).catch((err)=> {
-	consol.log("Error.. ", err);
-    });
+async function getMyCloudId(uid) {
+    while(1) {
+		let a = getCloudId(uid);
+		try {
+			let x = await a.next();
+			await a.return();
+			return x.value;
+		} catch (e) {
+			console.log("Error calling getCloudId().. ", e.message);
+			await a.return();
+		}
+	}
+}
+
+
+jtask {fogonly} function getId(uid) {
+
+    console.log("Calling getMyCloudId...");
+    let mygid = getMyCloudId(uid);
+    resolve(mygid);
 }
 
 async function getMyIndx() {
-    let count = 0;
-    let retry = setInterval(()=> {
-	getId().then((y)=> {
-	    console.log("y - ", y.values());
-	    if (y.values().length > 0) {
-		clearInterval(retry);
-		return y.values()[0];
-	    }
-	}).catch((err)=> {
-	    console.log("Device error.. ", err);
-	});
-	count++;
-	if (count > 10) {
-	    clearInterval(retry);
-	    return -1;
-	}
-    }, 1000);
-}    
+    while(1) {
+		console.log("Calling getId...");
+		let a = getId(jsys.id);
+		try {
+			let x = await a.next();
+			await a.return();
+			return x.value;
+		} catch (e) {
+			console.log("Error calling getId().. ", e.message);
+			await a.return();
+		}
+    }
+}
 
 if (jsys.type === "device") {
     let myindx = await getMyIndx();
-
-    if (myindx < 0)
-	process.exit(1);
-
     console.log("My index... ", myindx);
+    process.exit(0);
 }

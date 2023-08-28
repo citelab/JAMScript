@@ -1,5 +1,5 @@
 
 int main(int argc, char *argv[]) {
-    printf("Hello..\n");
+    printf("hello from C\n");
     return 0;
 }

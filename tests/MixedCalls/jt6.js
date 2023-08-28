@@ -6,7 +6,7 @@ let counter = 1;
 
 jtask {cloudonly} function getCloudId() {
     console.log("getCloudId... callled.. ", counter);
-  resolve (counter++);
+    resolve (counter++);
 }
 
 if (jsys.type === 'fog') {
@@ -15,5 +15,6 @@ if (jsys.type === 'fog') {
 	getCloudId().then((x)=> { console.log("Return value ", x.values()); }).catch(()=>{});
 	console.log("After calling.. ");
         }, 5000);
+
     console.log("I am fog.. ");
 }

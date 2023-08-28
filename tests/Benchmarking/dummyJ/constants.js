@@ -68,7 +68,7 @@ module.exports = Object.freeze({
     },
     TTConfig: {
         CLOCK_INTERVAL: 200,
-        CLOCK_COUNT: 3,
+        CLOCK_COUNT: 10,
         MAX_RETRIES: 4,
         ACK_BOOST: 30,
         BOOST_LIMIT: 5,
