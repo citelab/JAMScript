@@ -19,6 +19,15 @@ ES6 <: ES5 {
 
   CallExpression += await CallExpression --awaitCall
 
+  Statement += ForAwaitOfStatement
+            |  ForAwaitOfDeclStatement
+
+  ForAwaitOfStatement = for await "(" LeftHandSideExpression of Expression<withIn> ")" Statement
+
+  ForAwaitOfDeclStatement = for await "(" (var | const | let) VariableDeclaration<noIn> of Expression<withIn> ")" Statement
+
+  keyword += await | async
+
   await = "await" ~identifierPart
   async = "async" ~identifierPart
 }

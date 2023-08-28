@@ -92,6 +92,7 @@ ES5 {
           | debugger | function  | this       | with
           | default  | if        | throw      | let
           | delete   | in        | try        | const
+          | of
 
   futureReservedWordLax = class  | enum  | extends
                         | super  | const | export
@@ -251,6 +252,7 @@ ES5 {
   protected = "protected" ~identifierPart
   static = "static" ~identifierPart
   yield = "yield" ~identifierPart
+  of = "of" ~identifierPart
 
   // end of lexical rules
 
@@ -435,9 +437,9 @@ ES5 {
   ForDeclStatement
     = for "(" (var | const | let) VariableDeclarationList<noIn> ";" Expression<withIn>? ";" Expression<withIn>? ")" Statement
 
-  ForInStatement = for "(" LeftHandSideExpression in Expression<withIn> ")" Statement
+  ForInStatement = for "(" LeftHandSideExpression (in | of) Expression<withIn> ")" Statement
 
-  ForInDeclStatement = for "(" (var | const | let) VariableDeclaration<noIn> in Expression<withIn> ")" Statement
+  ForInDeclStatement = for "(" (var | const | let) VariableDeclaration<noIn> (in | of) Expression<withIn> ")" Statement
 
   ContinueStatement = continue #((spacesNoNL identifier)? sc)
 
