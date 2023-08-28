@@ -288,7 +288,7 @@ arg_t* remote_task_create(tboard_t* tboard, char* command, int level, char* fn_a
     strcpy(rtask.fn_argsig, fn_argsig);
     int length = strlen(command);
     if(length > MAX_MSG_LENGTH){
-        tboard_err("remote_task_create: Command length exceeds maximum supported value (%d > %d).\n",length, MAX_MSG_LENGTH);
+        tboard_err("remote_task_create: Command length exceeds maximum supported value (%d > %d).\n", length, MAX_MSG_LENGTH);
         return NULL;
     }
 
@@ -315,7 +315,7 @@ arg_t* remote_task_create(tboard_t* tboard, char* command, int level, char* fn_a
             remote_task_free(tboard, rtask.task_id);
             return rtask.data;
         }
-        tboard_err("remote_task_create: Blocking remote task is not marked as completed: %d.\n",rtask.status);
+        tboard_err("remote_task_create: Blocking remote task is not marked as completed: %d.\n", rtask.status);
         return NULL;
     }
     tboard_err("remote_task_create: Failed to capture blocking remote task after termination.\n");

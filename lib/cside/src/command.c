@@ -249,7 +249,6 @@ command_t* command_from_data(char* fmt, void* data, int len) {
             cmd->subcmd = result;
         } else if (strcmp(keybuf, "taskid") == 0) {
             if (cbor_value_get_type(&map) == 251) {
-                printf("TODO: Got a double taskid.. we could be losing precision..\n");
                 cbor_value_get_double(&map, &dresult);
                 cmd->task_id = (uint64_t)dresult; // TODO we lose precision doing this
             } else {
@@ -282,7 +281,7 @@ command_t* command_from_data(char* fmt, void* data, int len) {
             size_t nelems;
             assert(cbor_value_is_length_known(&map));
             cbor_value_get_array_length(&map, &nelems);
-            printf("%u ; %s; %s\n", cmd->cmd, cmd->fn_argsig, cmd->fn_name);
+            //printf("%u ; %s; %s\n", cmd->cmd, cmd->fn_argsig, cmd->fn_name);
             assert(nelems == argsiglen);
 
             cbor_value_enter_container(&map, &arr);

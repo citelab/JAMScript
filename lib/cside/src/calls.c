@@ -25,14 +25,15 @@ arg_t remote_sync_call(tboard_t* t, char* cmd_func, char* fn_sig, ...) {
         command_qargs_alloc(fn_sig, &qargs, args);
         va_end(args);
     }
-    // TODO because we overwrite the qargs, there is probably a memory leak if the first argument is a string or nvoid (?) or do we do a command_args_internal_free();
-    remote_task_create(t, cmd_func, level, fn_sig, qargs, strlen(fn_sig)); // This overwrites qargs
+
+    arg_t* rarg = remote_task_create(t, cmd_func, level, fn_sig, qargs, strlen(fn_sig));
 
     arg_t retarg;
-    retarg.type = qargs[0].type;
-    retarg.val = qargs[0].val;
+    retarg.type = rarg->type;
+    retarg.val = rarg->val;
 
-    free(qargs); // TODO check this isn;t causing memory leak... we should do an internal free before
+    command_args_free(qargs);
+    free(rarg);
     return retarg;
 }
 

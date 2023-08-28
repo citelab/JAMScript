@@ -7,14 +7,13 @@ jdata subname {
 }
 
 jsync int arrayLength(arr: int[], str: char[]) {
-    console.log("---------------- " + str);
-    console.log(arr);
+    console.log("---------------- " + str, arr);
     return arr.length;
 }
 
 jsync int compyou(str: char[]) {
     count++;
-    console.log(count, str);
+    console.log("the count the count is ", count, str);
     return count * 4;
 }
 
