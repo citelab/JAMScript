@@ -77,7 +77,7 @@ data="127.0.0.1:6381"
 `;
 
 // Feature TODO:
-// - Seperate Node Logs (filename should be nodeid perhaps)
+// - Seperate Node Logs (filename should be nodeid perhaps) DONE
 // - Final Report should highlight offending Node
 // - Add an option to display all log file urls.
 
@@ -309,6 +309,7 @@ Toaster.prototype.walkTestDir = function (folder) {
           runDuration: 0,
           assertMessage: undefined,
           failDetails: undefined,
+	  offendingNodes: [],
           networkConfig: {
             devices: 1,
             workers: 1,
@@ -346,6 +347,7 @@ Toaster.prototype.scanTests = function () {
       runDuration: 0,
       assertMessage: undefined,
       failDetails: undefined,
+	  offendingNodes: [],
       networkConfig: {
         devices: 1,
         workers: 1,
@@ -721,7 +723,7 @@ function extractOutputKeywordData(text){
   return text.substring(start, end);
 }
 
-Toaster.prototype.processOutput = function (test, data, log) {
+Toaster.prototype.processOutput = function (test, data, log, pid) {
   if(test.state == TestState.STARTING) {
     this.setTestState(test, TestState.RUNNING);
   }
@@ -748,6 +750,7 @@ Toaster.prototype.processOutput = function (test, data, log) {
       if(line.includes("error: 0")) {
         continue;
       }
+      test.offendingNodes.push(pid);
       test.failDetails = FailDetails.RUNTIME_FAILED;
       this.setTestState(test, TestState.FAILED);
       return true;
@@ -759,6 +762,7 @@ Toaster.prototype.processOutput = function (test, data, log) {
         test.assertMessage = extractOutputKeywordData(line);
         test.failDetails = FailDetails.TEST_FAILED;
         this.setTestState(test, TestState.FAILED);
+	test.offendingNodes.push(pid);
         return true
       } else if (line.includes(TOASTER_COVERAGE_KEYWORD)) {
         let coverageId = extractOutputKeywordData(line);
@@ -861,23 +865,26 @@ Toaster.prototype.executeTest = async function(test,
 
   // We should log compiler output in the event of a compiler error.
   let testProcess = child_process.spawn(command, args, {shell: false, detached: true});
-  this.testProcesses.add(testProcess.pid);
+  let pid = testProcess.pid;
+  this.testProcesses.add(pid);
   //let log = fs.openSync(`${test.testResultDirectory}/${testProcess.pid}.txt`, 'w');
   let log = fs.createWriteStream(`${test.testResultDirectory}/${machType}_${testProcess.pid}.txt`);
-  test.logFiles.set(testProcess.pid, log);
+  test.logFiles.set(pid, log);
 
   if(!this.conf.noTimeout) {
     var timeout = setTimeout(()=>{
       if(test.state == TestState.STARTING) {
 	test.failDetails = FailDetails.LAUNCH_FAILED;
 	that.setTestState(test, TestState.FAILED);
-	this.testProcesses.delete(testProcess.pid);
+	test.offendingNodes.push(pid);
+	this.testProcesses.delete(pid);
 	cleanup();
       }
       if(test.state == TestState.RUNNING) {
 	if(test.coverageMarkers.length != test.completedCoverageMarkers) {
           test.failDetails = FailDetails.TEST_FAILED;
           that.setTestState(test, TestState.FAILED);
+	  test.offendingNodes.push(pid);
 	} else {
           that.setTestState(test, TestState.PASSED);
 	}
@@ -893,14 +900,14 @@ Toaster.prototype.executeTest = async function(test,
     if(that.conf.verbose) {
       process.stdout.write(data);
     }
-    if(that.processOutput(test, data, log)) {
+    if(that.processOutput(test, data, log, pid)) {
       cleanup();
     }
   });
 
   testProcess.stderr.on('data', (data) => {
     if(test.state == TestState.RUNNING) {
-      if(that.processOutput(test, data, log)) {
+      if(that.processOutput(test, data, log, pid)) {
         cleanup();
       }
       log.write(`STDERR: ${data}`);
@@ -914,14 +921,16 @@ Toaster.prototype.executeTest = async function(test,
         // Crash
         test.failDetails = FailDetails.CRASH_FAILED;
         that.setTestState(test, TestState.FAILED);
-        that.testProcesses.delete(testProcess.pid);
+        that.testProcesses.delete(pid);
+	test.offendingNodes.push(pid);
       } else if(test.state == TestState.STARTING) {
         test.failDetails = FailDetails.LAUNCH_FAILED
         that.setTestState(test, TestState.FAILED);
+	test.offendingNodes.push(pid);
       }
       if(this.testProcesses.size) {
 	let report = that.generateReport(test);
-	log.write(`\n\n\n${report}`);
+	test.output.write(`\n\n\n${report}`);
       }
       resolve();
     });
@@ -977,7 +986,7 @@ Toaster.prototype.runTest = async function (test) {
     return;
   }
 
-  console.log(test.networkConfig);
+  //console.log(test.networkConfig);
 
   let sleep = 750;
   
@@ -1077,6 +1086,9 @@ Toaster.prototype.finalReport = function(duration) {
     for(let test of this.tests) {
       if(test.state == TestState.FAILED) {
         this.log(`${ansiiRed(test.testName)} ${" ".repeat(Math.max(0,20-test.testName.length))} ${test.logFile}`);
+	for(let node of test.offendingNodes) {
+	  this.log(`${" ".repeat(20)}  ${test.logFiles.get(node).path}`);
+	}
       }
     }
   }
