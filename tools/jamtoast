@@ -907,10 +907,10 @@ Toaster.prototype.executeTest = async function(test,
 
   testProcess.stderr.on('data', (data) => {
     if(test.state == TestState.RUNNING) {
+      log.write(`STDERR: ${data}`);
       if(that.processOutput(test, data, log, pid)) {
         cleanup();
       }
-      log.write(`STDERR: ${data}`);
     }
   });
 
