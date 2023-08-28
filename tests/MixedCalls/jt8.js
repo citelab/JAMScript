@@ -16,56 +16,44 @@ jtask {cloudonly} function getCloudId(uid) {
     resolve (id);
 }
 
+async function getMyCloudId(uid) {
+    while(1) {
+		let a = getCloudId(uid);
+		try {
+			let x = await a.next();
+			await a.return();
+			return x.value;
+		} catch (e) {
+			console.log("Error calling getCloudId().. ", e.message);
+			await a.return();
+		}
+	}
+}
+
+
 jtask {fogonly} function getId(uid) {
-	let repeatStop = 0;
-	(function repeatBody() {
-		console.log("______________________ ", uid);
-		getCloudId(uid).then((x)=> {
-			console.log("Cloud Id", x.values());
-			if (x.values().length > 0) {
-				repeatStop = 1;
-				resolve(x.values()[0]);
-			}
-		}).catch((err)=> {
-			console.log("Error.. ", err);
-		});
-		if (repeatStop === 0)
-			setTimeout(repeatBody, 2000);
-	})();
+
+    console.log("Calling getMyCloudId...");
+    let mygid = getMyCloudId(uid);
+    resolve(mygid);
 }
 
 async function getMyIndx() {
-    let count = 0;
-
-	return new Promise((resolve, reject)=> {
-		let repeatStop = 0;
-		(function repeatBody() {
-			getId(jsys.id).then((y)=> {
-				console.log("y - ", y.values());
-				if (y.values().length > 0) {
-					repeatStop = 1;
-					resolve(y.values()[0]);
-				}
-			}).catch((err)=> {
-				console.log("Device error.. ", err);
-			});
-			count++;
-			if (count > 10) {
-				resolve(-1);
-			}
-			if (repeatStop === 0)
-				setTimeout(repeatBody, 2000);
-		})();
-	});
+    while(1) {
+		let a = getId(jsys.id);
+		try {
+			let x = await a.next();
+			await a.return();
+			return x.value;
+		} catch (e) {
+			console.log("Error calling getId().. ", e.message);
+			await a.return();
+		}
+    }
 }
 
 if (jsys.type === "device") {
     let myindx = await getMyIndx();
-
-    if (myindx < 0) {
-		console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>> >>>>>>>>>>>> Process.. exiting....");
-		process.exit(1);
-	}
-
     console.log("My index... ", myindx);
+    process.exit(0);
 }
