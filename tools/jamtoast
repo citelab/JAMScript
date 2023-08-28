@@ -78,7 +78,7 @@ data="127.0.0.1:6381"
 
 // Feature TODO:
 // - Seperate Node Logs (filename should be nodeid perhaps) DONE
-// - Final Report should highlight offending Node
+// - Final Report should highlight offending Node DONE
 // - Add an option to display all log file urls.
 
 
