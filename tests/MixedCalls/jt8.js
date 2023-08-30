@@ -1,6 +1,7 @@
 jcond {
     cloudonly: jsys.type == "cloud";
     fogonly: jsys.type == "fog";
+	devonly: jsys.type == "device";
 }
 
 let counter = 1;
@@ -30,12 +31,16 @@ async function getMyCloudId(uid) {
 	}
 }
 
-
 jtask {fogonly} function getId(uid) {
 
     console.log("Calling getMyCloudId...");
     let mygid = getMyCloudId(uid);
     resolve(mygid);
+}
+
+jtask* {devonly} function driveNode(long, lat, soc) {
+	jsys.setLoc({long: long, lat: lat});
+	console.log(long, lat);
 }
 
 async function getMyIndx() {
@@ -55,6 +60,8 @@ async function getMyIndx() {
 
 if (jsys.type === "device") {
     let myindx = await getMyIndx();
-    console.log("My index... ", myindx);
-    process.exit(0);
+    console.log("=============== >> My index... ", myindx);
+    
+	setupWorker(myindx);
 }
+
