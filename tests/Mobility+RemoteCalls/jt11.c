@@ -2,7 +2,7 @@
 jtask* localyou(int c, char *s) {
     char *y;
     while(1) {
-        jsleep(100000);
+        jsleep(1000000);
         printf("############-->>> Hello YOU  %d, %s\n", c, s);
     }
 }
