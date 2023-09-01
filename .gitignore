@@ -10,6 +10,8 @@ node_modules/*
 dot*.pdf
 ast*.pdf
 cst*.pdf
+callGraph.pdf
+callgraph.pdf
 
 *~
 
