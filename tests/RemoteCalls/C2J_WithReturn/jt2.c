@@ -25,9 +25,9 @@ jasync localyou(int c, char s[]) {
         global.printf("test length... %u\n", test.len);
         jsys.sleep(1000000);
         c = arrayLength(&test, s);
-        global.printf("############-->>> Hello YOU  %d, %s\n", c, s->data);
         if (c > 20)
             mytest.x = 0;
+        global.printf("############-->>> Hello YOU  %d, %s\n", c, s->data);
     }
 }
 
