@@ -1,8 +1,15 @@
 let count = 10;
 
-setInterval(()=> {
-    console.log("hello.. main loop.. calling the C function testfunc..  ");
-    testfunc(count++).catch(()=> {
-	console.log("Error in calling testfunc...");
+async function sleep(n) {
+    return new Promise((resolve)=> {
+        setTimeout(()=> {
+            resolve();
+        }, n);
     });
-}, 2000);
+}
+
+while(1) {
+    await sleep(1000);
+    console.log("Hello... calling the C side... ");
+    testfunc(count++).catch((e)=> { console.log("Error in calling testfunc ", e.message); });
+}
