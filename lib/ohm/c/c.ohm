@@ -12,7 +12,7 @@ C {
     space           += comment
     spacesNoNl      = (~linebreak space)*
 
-	// Preprocessor will output line markers when compiled with debug options
+    // Preprocessor will output line markers when compiled with debug options
     Preprocess_line = "#" decimalIntegerLiteral "\"" (~"\"" any)* "\"" decimalIntegerLiteral*
 
     identName       = identStart identPart*
@@ -182,7 +182,7 @@ C {
 
     Enumerator      = Preprocess_line? identifier "=" Const_expr                        -- IdExpr
                     | Preprocess_line? identifier                                       -- Id
-					| Preprocess_line  													-- Preprocess
+                    | Preprocess_line                                                   -- Preprocess
 
 
     type_qualifier  = const
@@ -217,7 +217,7 @@ C {
     Ident_list      = NonemptyListOf<identifier, ",">
 
     Param_type_lst  = NonemptyListOf<Param_decl, ","> "," var_args                      -- VarArgs
-                    | ListOf<Param_decl, ","> 	  								        -- ConArgs
+                    | ListOf<Param_decl, ",">                                           -- ConArgs
 
     var_args        = "..."
 

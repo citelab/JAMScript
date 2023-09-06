@@ -1,6 +1,6 @@
 let count = 0;
 
-jtask function compyou(str) {
+jsync char[20] compyou(str: char*) {
     count++;
     console.log(count, str);
     return "hello -- " + count;
