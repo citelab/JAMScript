@@ -53,7 +53,7 @@ setInterval(()=> {
   
   coverage();
   console.log("Calling compyou.. ");
-    compyou(" String = " + count++).then((y)=> {console.log(y.values())}).catch(()=> {console.log("Helllo.....");});
+//    compyou(" String = " + count++).then((y)=> {console.log(y.values())}).catch(()=> {console.log("Helllo.....");});
   
 }, 500);
 

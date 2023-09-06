@@ -1,16 +1,15 @@
 
 jtask* localyou(int c, char *s) {
-    char *y;
     while(1) {
         jsleep(1000000);
-        printf("############-->>> Hello YOU  %d, %s\n", c, s);
+        printf("... ############-->>> Hello YOU  %d, %s\n", c, s);
     }
 }
 
-jtask* answerme(char *s) {
-    printf("Value string %s\n", s);
+jtask int get_a_value(int x) {
+    printf("Value of x %d\n", x);
+    return x;
 }
-
 
 int main(int argc, char *argv[])
 {

@@ -6,16 +6,13 @@
   
         const mbox = new Map();
 
-        mbox.set("getCloudId", {func: "getCloudId", arg_sig: "x", side_eff: true, results: true, reuse: false, cond: "cloudonly"});
-mbox.set("getId", {func: "getId", arg_sig: "x", side_eff: true, results: true, reuse: false, cond: "fogonly"});
-mbox.set("driveNode", {func: "driveNode", arg_sig: "x,x,x", side_eff: true, results: false, reuse: false, cond: "devonly"});
+        mbox.set("answerme_ctl", {func: "answerme_ctl", arg_sig: "x,x,x,x", side_eff: true, results: false, reuse: false, cond: ""});
         
   
   const conds = new Map();
   
-  conds.set("cloudonly", {source: `jsys.type == 'cloud'`});
-conds.set("fogonly", {source: `jsys.type == 'fog'`});
-conds.set("devonly", {source: `jsys.type == 'device'`});
+  conds.set("fogonly", {source: `jsys.type == 'fog'`});
+conds.set("typeAonly", {source: `jsys.tag == 'typeA'`});
   
 
   async function launch()

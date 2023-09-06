@@ -9,7 +9,7 @@ jtask {fogonly} function compyou(str) {
     count++;
     console.log("Compyou running.... ",  count, str);
     let qq = count * count;
-    resolve(qq);
+    return qq;
 }
 
 let long = jsys.long;
