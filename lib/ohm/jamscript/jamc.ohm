@@ -23,10 +23,7 @@ JAMC <: C {
 
     booleanLiteral  = true | false
 
-    Jtask_attr      = type "=" (sync | realtime | batch)
-                    | period "=" numericLiteral
-                    | jitter "=" numericLiteral
-                    | reuse "=" booleanLiteral
+    Jtask_attr      = reuse "=" booleanLiteral
                     | reuse_limit "=" decimalIntegerLiteral
                     | reuse_buffer "=" decimalIntegerLiteral
                     | reuse_function "=" identifier
@@ -46,7 +43,8 @@ JAMC <: C {
 
     Jamparam_type_lst = ListOf<Jamparam_decl, ",">
 
-    Jamparam_decl   = Jamtype identifier ( "[" "]" )?
+    Jamparam_decl   = Jamtype identifier ( "[" "]" )?                  -- Param
+                    | char "*" identifier                              -- String
 
     Decl            += jarray Jamtype  Jamarray_dlist ";"              -- JamArray
 

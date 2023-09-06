@@ -23,7 +23,8 @@ JAMJS <: ES6 {
 
     Jamparam_type_lst = ListOf<Jamparam_decl, ",">
 
-    Jamparam_decl   = identifier ":" Jamtype ( "[" "]" )?
+    Jamparam_decl   = identifier ":" Jamtype ( "[" "]" )?              -- Param
+                    | identifier ":" char "*"                          -- String
 
     Jamtype         = unsigned? int                                    -- Int
                     | unsigned                                         -- IntUnsigned
@@ -73,7 +74,7 @@ JAMJS <: ES6 {
                     | reuse_argdev "=" percentage
                     | max_rate "=" numericLiteral
 
-   	percentage 	    = decimalLiteral "%"
+    percentage      = decimalLiteral "%"
 
     Task_def        = Sync_task
                     | Async_task

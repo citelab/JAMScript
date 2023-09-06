@@ -86,6 +86,11 @@
             }
         }
     },
+    "string": {
+        "jamlib": "sval",
+        "c_code": "s",
+        "c_type": "char*"
+    },
     "void": {
         "jamlib": "vval",
         "c_code": "v",
