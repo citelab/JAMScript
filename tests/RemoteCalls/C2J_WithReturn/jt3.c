@@ -1,6 +1,6 @@
 jasync localme(int c, char *s) {
     while(1) {
-        jsleep(200000);
+        jsys.sleep(200000);
         printf("############-->>> Hello  ME  %d... %s\n", c, s);
     }
 }
@@ -8,11 +8,10 @@ jasync localme(int c, char *s) {
 jasync localyou(int c, char *s) {
     jarray char y[20];
     while(1) {
-        jsleep(100000);
+        jsys.sleep(100000);
         printf("############-->>> Hello YOU  %d, %s\n", c, s);
         y = compyou(s);
         printf("---->> Value = %s\n", y.data);
-        free(y);
     }
 }
 

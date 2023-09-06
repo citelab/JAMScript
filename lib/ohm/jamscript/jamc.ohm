@@ -19,7 +19,7 @@ JAMC <: C {
 
     Sync_task       = jsync Jamtype_return Jcond_specifier? Jtask_attr_spec? identifier "(" Jamparam_type_lst ")" Compound_stmt
 
-    Jtask_attr_spec = "[" NonemptyListOf<Jtask_attr, ",">  "]"
+    Jtask_attr_spec = "[" NonemptyListOf<Jtask_attr, ",">  ","? "]"
 
     booleanLiteral  = true | false
 
@@ -28,9 +28,9 @@ JAMC <: C {
                     | reuse_buffer "=" decimalIntegerLiteral
                     | reuse_function "=" identifier
 
-    Jamtype_return  = Jamtype
-                    | Jamtype "[" decimalIntegerLiteral "]"            -- Array
+    Jamtype_return  = Jamtype "[" decimalIntegerLiteral "]"            -- Array
                     | void                                             -- Void
+                    | Jamtype
 
     Jamtype         = unsigned? int                                    -- Int
                     | unsigned                                         -- IntUnsigned
@@ -43,8 +43,8 @@ JAMC <: C {
 
     Jamparam_type_lst = ListOf<Jamparam_decl, ",">
 
-    Jamparam_decl   = Jamtype identifier ( "[" "]" )?                  -- Param
-                    | char "*" identifier                              -- String
+    Jamparam_decl   = char "*" identifier                              -- String
+                    | Jamtype identifier ( "[" "]" )?                  -- Param
 
     Decl            += jarray Jamtype  Jamarray_dlist ";"              -- JamArray
 

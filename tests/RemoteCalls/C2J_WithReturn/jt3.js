@@ -1,6 +1,6 @@
 let count = 0;
 
-jsync char[20] compyou(str: char*) {
+jsync char[20] [reuse = false] compyou(str: char*) {
     count++;
     console.log(count, str);
     return "hello -- " + count;

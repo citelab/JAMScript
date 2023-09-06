@@ -17,14 +17,14 @@ JAMJS <: ES6 {
 
     Sync_task   = jsync Jamtype_return Jcond_specifier? Jtask_attr_spec? identifier "(" Jamparam_type_lst ")" FunctionBody
 
-    Jamtype_return  = Jamtype
-                    | Jamtype "[" decimalIntegerLiteral "]"            -- Array
+    Jamtype_return  = Jamtype "[" decimalIntegerLiteral "]"            -- Array
                     | void                                             -- Void
+                    | Jamtype
 
     Jamparam_type_lst = ListOf<Jamparam_decl, ",">
 
-    Jamparam_decl   = identifier ":" Jamtype ( "[" "]" )?              -- Param
-                    | identifier ":" char "*"                          -- String
+    Jamparam_decl   = identifier ":" char "*"                          -- String
+                    | identifier ":" Jamtype ( "[" "]" )?              -- Param
 
     Jamtype         = unsigned? int                                    -- Int
                     | unsigned                                         -- IntUnsigned
@@ -37,9 +37,9 @@ JAMJS <: ES6 {
 
     Struct_entry    = Jamtype identifier ("[" decimalIntegerLiteral "]")? ";"
 
-    Jdata_spec      = Jamtype identifier as Jflow_type ";"                                 -- Basic
+    Jdata_spec      = Jamtype identifier "[" decimalIntegerLiteral "]" as Jflow_type ";"   -- Array
                     | struct identifier "{" Struct_entry+ "}" identifier as Jflow_type ";" -- Struct
-                    | Jamtype identifier "[" decimalIntegerLiteral "]" as Jflow_type ";"   -- Array
+                    | Jamtype identifier as Jflow_type ";"                                 -- Basic
 
     Jflow_type      = dflow | uflow
 
@@ -67,7 +67,7 @@ JAMJS <: ES6 {
 
     jcond_expr_op   = "&&" | "||"
 
-    Jtask_attr_spec = "[" ListOf<Jtask_attr, ",">  "]"
+    Jtask_attr_spec = "[" NonemptyListOf<Jtask_attr, ",">  ","? "]"
 
     Jtask_attr      = reuse "=" booleanLiteral
                     | reuse_limit "=" numericLiteral
