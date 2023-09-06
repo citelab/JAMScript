@@ -1,26 +1,24 @@
-jdata {
-    int enable_task as uflow;
-}
-
-jcond {
-    jcond_enable_task: enable_task == 1;
-}
-
 let count = 10;
 
-setInterval(()=> {
-    if (jsys.type === 'fog')
-	    get_a_value(count++).then((y)=> {
-            console.log("Return value from the call...", y.values());
-	    }).catch(()=> {
-	        console.log("Error...");
-	    });
-}, 100);
-setInterval(()=> {
-    if (jsys.type === 'fog')
-	    toggle_jcond().then((y)=> {
-            console.log("Jcond set to...", y.values());
-	    }).catch(()=> {
-	        console.log("Error toggling...");
-	    });
-}, 1000);
+async function sleep(n) {
+    return new Promise((resolve)=> {
+        setTimeout(()=> {
+            resolve();
+        }, n);
+    });
+}
+
+while (1) {
+    await sleep(1000);
+    if (jsys.type === 'fog') {
+	    let ghandle = get_a_value(count++);
+	    try {
+            let x = await ghandle.next();
+	        let y = await ghandle.next();
+            ghandle.return();
+            console.log("Return value from the call.. ", x.value, y.value);
+	    } catch(e) {
+            console.log("Error.. ", e.message);
+	    }
+    }
+}

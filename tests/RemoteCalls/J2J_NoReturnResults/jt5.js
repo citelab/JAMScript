@@ -8,10 +8,17 @@ jtask* function xyz(hello) {
     console.log("Message from controller ...", hello);
 }
 
-setInterval(()=> {
-    if (jsys.type == 'fog') {
-		xyz("hi").catch((e)=> {
-			console.log(e);
-		});
+async function sleep(n) {
+    return new Promise((resolve)=> {
+        setTimeout(()=> {
+            resolve();
+        }, n);
+    });
+}
+
+if (jsys.type === 'fog') {
+	while (1) {
+		xyz("hi").catch((e)=> { console.log(e, " at ", jsys.type); });
+		await sleep(1000);
 	}
-}, 1000);
+}

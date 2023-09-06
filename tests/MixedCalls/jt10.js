@@ -8,7 +8,7 @@ let count = 10;
 
 jtask {fogonly} function compXAB(str) {
     console.log("Calling XAB with ...", str);
-    resolve(count++);
+    return count++;
 }
 
 

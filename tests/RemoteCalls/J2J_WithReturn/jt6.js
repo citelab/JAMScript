@@ -24,8 +24,11 @@ if (jsys.type == 'fog') {
 	let ahandle = abc("hi");
 	try {
 	    let x = await ahandle.next();
+	    let y = await ahandle.next();
+	    let z = await ahandle.next();
+	    let v = await ahandle.next();
 	    await ahandle.return();
-	    console.log("Return... ", x.value);
+	    console.log("Return... ", x.value, y.value, z.value, v.value);
 	} catch (e) {
 	    await ahandle.return();
 	    console.log("Error... ");
