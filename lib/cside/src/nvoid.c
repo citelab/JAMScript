@@ -36,6 +36,7 @@ nvoid_t* nvoid_new(uint32_t size, uint8_t* data, uint32_t len) {
     nv->len = len;
     if (data != NULL)
         memcpy(nv->data, data, len);
+    nv->data[len] = '\0';
     return nv;
 }
 
@@ -72,20 +73,25 @@ nvoid_t* nvoid_dup(nvoid_t* src) {
     nvoid_t* nv = (nvoid_t*)aligned_alloc(8, src->size + 16);
     assert(nv != NULL);
     memcpy(nv, src, src->len * src->typesize + 16);
+    nv->data[src->len * src->typesize] = '\0';
     return nv;
 }
 
 nvoid_t* nvoid_cpy(nvoid_t* dst, nvoid_t* src) {
     dst->len = src->len * src->typesize / dst->typesize;
     assert(dst->len <= dst->maxlen);
-    return (nvoid_t*)memcpy(dst->data, src->data, dst->len * dst->typesize);
+    memcpy(dst->data, src->data, dst->len * dst->typesize);
+    dst->data[dst->len * dst->typesize] = '\0';
+    return dst;
 }
 
 nvoid_t* nvoid_cpy_str(nvoid_t* dst, char* str) {
     dst->len = strlen(str);
     assert(dst->len <= dst->maxlen);
     assert(dst->typesize == 1);
-    return (nvoid_t*)memcpy(dst->data, str, dst->len + 1);
+    memcpy(dst->data, str, dst->len);
+    dst->data[dst->len] = '\0';
+    return dst;
 }
 
 nvoid_t* nvoid_min(nvoid_t* src) {
@@ -98,6 +104,7 @@ nvoid_t* nvoid_min(nvoid_t* src) {
     nv->typesize = src->typesize;
     nv->typefmt = src->typefmt;
     memcpy(nv->data, src->data, bytelen);
+    nv->data[bytelen] = '\0';
     return nv;
 }
 
@@ -111,6 +118,7 @@ nvoid_t* nvoid_str(char* str) {
     nv->typesize = 1;
     nv->typefmt = 'c';
     memcpy(nv->data, str, bytelen);
+    nv->data[bytelen] = '\0';
     return nv;
 }
 

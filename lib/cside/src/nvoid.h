@@ -24,6 +24,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define __NVOID_H__
 
 #include <stdint.h>
+#include <stdarg.h>
 
 typedef struct _nvoid_t {
     uint32_t len; // Number of elements currently in array
