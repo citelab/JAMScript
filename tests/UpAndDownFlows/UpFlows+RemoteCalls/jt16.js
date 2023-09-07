@@ -1,20 +1,17 @@
 jdata {
-    struct __xx {
-	    int yy;
-	    double zz;
-    } zzz as uflow;
     int qq as uflow;
     int ppp as uflow;
-    char* qqqq as uflow;
+    char qqqq[40] as uflow;
     float xxxx as uflow;
     double yyy as uflow;
 }
 
 async function getloop() {
-    let x;
+    let x, y;
     while(true) {
         x = await ppp.readLast();
-        console.log("Value received... ", x);
+        y = await qqqq.readLast();
+        console.log("Value received... ", x, y);
     }
 }
 
