@@ -2,20 +2,9 @@ jdata {
     struct _zz {
 	    int x;
 	    double yy;
-        char* str;
+        char str[30];
     } xx as uflow;
 }
-
-let count = 10;
-
-async function sleep(x) {
-    return new Promise((resolve, reject) => {
-        setTimeout(()=> {
-            resolve(true);
-        }, x);
-    });
-}
-
 
 async function getloop() {
     let x;
