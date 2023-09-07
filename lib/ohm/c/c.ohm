@@ -138,7 +138,7 @@ C {
     Decl_specs      = (Store_cl_spec | Func_spec | type_qualifier | Gcc_decl_spec)* Type_spec (Store_cl_spec | Func_spec | type_qualifier | Gcc_decl_spec)*
                     | ("(" | Gcc_attribute)* Type_spec (")" | Gcc_attribute)*
 
-    Init_decl_lst   = NonemptyListOf<Init_decl, ",">
+    Init_decl_lst   = ListOf<Init_decl, ",">
 
     Init_decl       = Declarator "=" Initializer                                        -- Init
                     | Declarator                                                        -- NonInit

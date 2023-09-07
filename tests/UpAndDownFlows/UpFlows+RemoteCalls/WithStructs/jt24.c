@@ -1,12 +1,14 @@
-jtask* localyou(int c, char* s) {
+jasync localyou(int c, char* s) {
+    jarray int asdf[3] = {1, 3};
 
-    struct _zz tt = {.x = 10, .yy = 1.323, .qq = 14, .ddd = 23.545};
+    struct _zz tt = {.x = 10, .yy = 1.323, .qq = asdf, .ddd = 23.545};
 
     while(1) {
-        jsleep(1000000);
+        jsys.sleep(1000000);
         printf("############-->>> Hello YOU  %d, %s\n", c, s);
         xx.write(&tt);
         printf("X = %d, YY = %f\n", tt.x, tt.yy);
+        tt.x++;
     }
 }
 

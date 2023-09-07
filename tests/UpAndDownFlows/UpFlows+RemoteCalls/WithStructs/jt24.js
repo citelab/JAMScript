@@ -1,22 +1,11 @@
 jdata {
     struct _zz {
-	int x;
-	double yy;
-	int qq;
-	double ddd;
+	    int x;
+	    double yy;
+	    int qq[3];
+	    double ddd;
     } xx as uflow;
 }
-
-let count = 10;
-
-async function sleep(x) {
-    return new Promise((resolve, reject) => {
-        setTimeout(()=> {
-            resolve(true);
-        }, x);
-    });
-}
-
 
 async function getloop() {
     let x;
@@ -28,4 +17,3 @@ async function getloop() {
 
 
 await getloop();
-
