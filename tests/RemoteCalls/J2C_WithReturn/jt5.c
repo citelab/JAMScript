@@ -1,12 +1,12 @@
 
-jtask* localyou(int c, char *s) {
+jasync localyou(int c, char *s) {
     while(1) {
-        jsleep(1000000);
+        jsys.sleep(1000000);
         printf("############-->>> Hello YOU  %d, %s\n", c, s);
     }
 }
 
-jtask int get_a_value(int x) {
+jsync int get_a_value(int x) {
     printf("Value of x %d\n", x);
     return x;
 }

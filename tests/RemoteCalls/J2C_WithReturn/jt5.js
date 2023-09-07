@@ -13,10 +13,10 @@ while (1) {
     console.log("Getting a value... ");
     let ghandle = get_a_value(count++);
     try {
-	let x = await ghandle.next();
-	ghandle.return();
-	console.log("Return value from the call.. ", x.value);
+	    let x = await ghandle.next();
+	    ghandle.return();
+	    console.log("Return value from the call.. ", x.value);
     } catch(e) {
-	console.log("Error.. ", e.message);
+	    console.log("Error.. ", e.message);
     }
 }
