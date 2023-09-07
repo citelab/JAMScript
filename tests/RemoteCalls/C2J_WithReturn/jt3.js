@@ -1,9 +1,9 @@
 let count = 0;
 
-jsync char[20] [reuse = false] compyou(str: char*) {
+jsync char[60] [reuse = false] compyou(str: char*) {
     count++;
     console.log(count, str);
-    return "hello -- " + count;
+    return "hello -- " + count + " " + str;
 }
 
 setInterval(()=> {

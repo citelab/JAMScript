@@ -32,7 +32,7 @@ typedef struct _nvoid_t {
     uint32_t size; // Actual size, in bytes, of element buffer
     uint16_t typesize; // Size of each element in buffer
     uint8_t typefmt; // Character code for type eg. 'i'
-    uint8_t pad2;
+    uint8_t static_alloc; // Whether nvoid was created on stack or not
     uint8_t data[8];
 } __attribute__ ((__aligned__ (8), __packed__)) nvoid_t;
 
@@ -62,7 +62,7 @@ void* nvoid_panic(const char* msg, ...);
         uint32_t size;                                                  \
         uint16_t typesize;                                              \
         uint8_t typefmt;                                                \
-        uint8_t pad2;                                                   \
+        uint8_t static_alloc;                                           \
         union {                                                         \
             TYPE data[SIZE];                                            \
             uint8_t pad[NVOID_ALIGNED_SIZE(TYPE, SIZE)];                \
@@ -76,6 +76,7 @@ void* nvoid_panic(const char* msg, ...);
         .size = NVOID_ALIGNED_SIZE(TYPE, MAXLEN),                       \
         .typesize = (uint16_t)sizeof(TYPE),                             \
         .typefmt = (uint8_t)TYPEFMT,                                    \
+        .static_alloc = 1,                                              \
         .data = __VA_ARGS__                                             \
     }
 
@@ -85,7 +86,8 @@ void* nvoid_panic(const char* msg, ...);
         .maxlen = MAXLEN,                                               \
         .size = NVOID_ALIGNED_SIZE(TYPE, MAXLEN),                       \
         .typesize = (uint16_t)sizeof(TYPE),                             \
-        .typefmt = (uint8_t)TYPEFMT                                     \
+        .typefmt = (uint8_t)TYPEFMT,                                    \
+        .static_alloc = 1                                               \
     }
 
 // Doing these with macros because it ensures they are typed correctly

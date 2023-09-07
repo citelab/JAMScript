@@ -329,7 +329,7 @@ command_t* command_from_data(char* fmt, void* data, int len) {
                             cbor_value_calculate_string_length(&arr, &length);
                             cmd->args[i].val.nval = nvoid_empty(length++, cmd->fn_argsig[i]);
                             cbor_value_copy_text_string(&arr, (char*)cmd->args[i].val.nval->data, &length, NULL);
-                            cmd->args[i].val.nval->len = length - 1;
+                            cmd->args[i].val.nval->len = length;
                             break;
                         case 'c':
                         case 'b':

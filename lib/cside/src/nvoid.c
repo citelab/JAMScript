@@ -42,6 +42,7 @@ nvoid_t* nvoid_new(uint32_t size, uint8_t* data, uint32_t len) {
 
 nvoid_t* nvoid_empty(uint32_t maxlen, char typefmt) {
     uint16_t typesize;
+    typefmt |= 32; // lowercase
     switch (typefmt) {
     case 'c':
     case 'b':
@@ -56,6 +57,8 @@ nvoid_t* nvoid_empty(uint32_t maxlen, char typefmt) {
     case 'z':
     case 'd':
         typesize = 8;
+        break;
+    default: assert(0);
     }
     uint32_t size = maxlen * typesize;
     uint32_t aligned_size = size >= 8 ? (size | 7) + 1 : 8;
@@ -66,6 +69,7 @@ nvoid_t* nvoid_empty(uint32_t maxlen, char typefmt) {
     nv->size = aligned_size;
     nv->typesize = typesize;
     nv->typefmt = typefmt;
+    nv->static_alloc = 0;
     return nv;
 }
 
@@ -73,12 +77,14 @@ nvoid_t* nvoid_dup(nvoid_t* src) {
     nvoid_t* nv = (nvoid_t*)aligned_alloc(8, src->size + 16);
     assert(nv != NULL);
     memcpy(nv, src, src->len * src->typesize + 16);
+    nv->static_alloc = 0;
     nv->data[src->len * src->typesize] = '\0';
     return nv;
 }
 
 nvoid_t* nvoid_cpy(nvoid_t* dst, nvoid_t* src) {
-    dst->len = src->len * src->typesize / dst->typesize;
+    assert(dst->typefmt == src->typefmt);
+    dst->len = src->len;
     assert(dst->len <= dst->maxlen);
     memcpy(dst->data, src->data, dst->len * dst->typesize);
     dst->data[dst->len * dst->typesize] = '\0';
@@ -103,6 +109,7 @@ nvoid_t* nvoid_min(nvoid_t* src) {
     nv->len =  nv->maxlen = src->len;
     nv->typesize = src->typesize;
     nv->typefmt = src->typefmt;
+    nv->static_alloc = 0;
     memcpy(nv->data, src->data, bytelen);
     nv->data[bytelen] = '\0';
     return nv;
@@ -117,6 +124,7 @@ nvoid_t* nvoid_str(char* str) {
     nv->len = nv->maxlen = bytelen;
     nv->typesize = 1;
     nv->typefmt = 'c';
+    nv->static_alloc = 0;
     memcpy(nv->data, str, bytelen);
     nv->data[bytelen] = '\0';
     return nv;
@@ -131,7 +139,8 @@ char* str_nvoid(nvoid_t* src) {
 }
 
 void nvoid_free(nvoid_t* nv) {
-    free(nv);
+    if (!nv->static_alloc)
+        free(nv);
 }
 
 void* nvoid_panic(const char* msg, ...) {
