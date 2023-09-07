@@ -1,0 +1,22 @@
+let count = 10;
+
+async function sleep(n) {
+    return new Promise((resolve)=> {
+        setTimeout(()=> {
+            resolve();
+        }, n);
+    });
+}
+
+while (1) {
+    await sleep(1000);
+    console.log("Getting a value... ");
+    let ghandle = get_a_value(count++);
+    try {
+	    let x = await ghandle.next();
+	    ghandle.return();
+	    console.log("Return value from the call.. ", x.value);
+    } catch(e) {
+	    console.log("Error.. ", e.message);
+    }
+}
