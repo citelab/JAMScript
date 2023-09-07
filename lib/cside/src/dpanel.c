@@ -614,7 +614,7 @@ void dfread_struct(dftable_entry_t* df, darg_entry_t* darg_mem, char* fmt, ...) 
         assert(len > 0);
         va_list args;
 
-        darg_entry_t* dargs = NULL,* darg,* tmp;
+        darg_entry_t* dargs = NULL,* darg;
         va_start(args, fmt);
         for(int i=0; i<len; i++){
             darg = &darg_mem[i];
@@ -627,10 +627,6 @@ void dfread_struct(dftable_entry_t* df, darg_entry_t* darg_mem, char* fmt, ...) 
 
         derror = __extract_map(res.buf, res.len, dargs);
 
-        HASH_ITER(hh, dargs, darg, tmp){
-            printf("CBOR had no input for struct field %s\n", darg->label);
-            HASH_DEL(dargs, darg);
-        }
         free(res.buf);
     } else
         derror = -1;

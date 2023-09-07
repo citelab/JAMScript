@@ -262,7 +262,7 @@ int __extract_basic_type(const uint8_t* buffer, size_t len, char type, void* loc
 
 int __extract_map(const uint8_t* buffer, size_t len, darg_entry_t* dargs) {
     int error = 0;
-    darg_entry_t* darg;
+    darg_entry_t* darg,* tmp;
     CborParser parser;
     CborValue value, map;
     cbor_parser_init(buffer, len, 0, &parser, &value);
@@ -285,6 +285,12 @@ int __extract_map(const uint8_t* buffer, size_t len, darg_entry_t* dargs) {
 
         error |= __extract_cbor_type(&map, darg->loc, darg->type);
 
+        HASH_DEL(dargs, darg);
+    }
+
+    HASH_ITER(hh, dargs, darg, tmp){
+        printf("CBOR had no input for struct field %s\n", darg->label);
+        error |= 1;
         HASH_DEL(dargs, darg);
     }
     return error;
