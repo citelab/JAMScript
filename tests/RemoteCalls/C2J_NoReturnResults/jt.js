@@ -1,6 +1,6 @@
 let count = 0;
 
-jtask* function you(str) {
+jasync you(str: char*) {
     count++;
     console.log("Message received: ", str, " local count ", count);
 }

@@ -11,5 +11,7 @@ async function sleep(n) {
 while(1) {
     await sleep(1000);
     console.log("Hello... calling the C side... ");
-    testfunc(count++).catch((e)=> { console.log("Error in calling testfunc ", e.message); });
+    testfunc(count++).catch((e) => {
+        console.log("Error in calling testfunc ", e);
+    });
 }
