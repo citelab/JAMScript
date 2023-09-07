@@ -7,7 +7,7 @@ const fs = require("fs"),
     child_process = require("child_process"),
     crypto = require("crypto"),
     path = require("path"),
-    callGraph = require("./lib/ohm/jamscript/callGraph"),
+    // callGraph = require("./lib/ohm/jamscript/callGraph"),
     jam = require("./lib/ohm/jamscript/jam"),
     os = require('os');
 const JSZip = checkedRequire("jszip", "ERROR! jsZip not installed. Install jsZip first using 'npm install jszip'");
@@ -41,22 +41,23 @@ function runMain(cargs) {
             printAndExit(preprocessed);
 
         let results = jam.compile(preprocessed, fs.readFileSync(cargs.jsPath).toString(),
-                                  lineNumber, cargs.yieldPoint);
+                                  lineNumber);
 
         cargs.cSideEffectTable = results.C_SideEffectTable;
         cargs.jsSideEffectTable = results.JS_SideEffectTable;
 
-        if (cargs.callGraphFlag) {
-            fs.writeFileSync("callgraph.html", callGraph.createWebpage());
-            fs.writeFileSync("callgraph.dot", callGraph.createDOT());
-        }
+        // if (cargs.callGraphFlag) {
+        //     fs.writeFileSync("callgraph.html", callGraph.createWebpage());
+        //     fs.writeFileSync("callgraph.dot", callGraph.createDOT());
+        // }
 
         if (!cargs.noCompile) {
             let task = nativeCompile(results.C, cargs);
             task.then(function (value) {
-                    results.manifest = createManifest(cargs.outPath, results.maxLevel, results.hasJdata);
+                    results.manifest = createManifest(cargs.outPath, results.hasJdata);
                     createZip(
                         results.JS,
+                        results.C,
                         results.manifest,
                         results.jstart,
                         tmpDir,
@@ -140,9 +141,7 @@ function preprocess(file, cargs) {
     if (preprocessDecls === null) {
         preprocessDecls = [];
     }
-    let includes = '#include "jam.h"\n';
     let originalProgram = contents;
-    contents = includes + "int main();\n" + contents;
 
     fs.writeFileSync(`${tmpDir}/pre.c`, contents);
     let command = `clang -E -P -I/usr/local/include -I${homeDir}/.jamruns/jamhome/deps/fake_libc_include -I${homeDir}/.jamruns/clib/include ${tmpDir}/pre.c`;
@@ -162,18 +161,18 @@ function preprocess(file, cargs) {
     };
 }
 
-function createZip(jsout, mout, jstart, tmpDir, cargs) {
+function createZip(jsout, cout, mout, jstart, tmpDir, cargs) {
     let zip = new JSZip();
     zip.file("MANIFEST.txt", mout);
     zip.file("jamout.js", jsout);
+    zip.file("jamout.c", cout); // TODO this should be removed eventually but is very useful for debugging
     zip.file("jstart.js", jstart);
 
     // Include debug symbols if they are there.
-   // if(fs.existsSync(`${tmpDir}/a.out.dSYM`)) {
-	//fs.cpSync(`${tmpDir}/a.out.dSYM`, `${cargs.outPath}.dSYM`, {recursive: true});
-
-	//zip.file("a.out.dSYM", fs.readFileSync(`${tmpDir}/a.out.dSYM`))
-    //}
+    // if(fs.existsSync(`${tmpDir}/a.out.dSYM`)) {
+	//     fs.cpSync(`${tmpDir}/a.out.dSYM`, `${cargs.outPath}.dSYM`, {recursive: true});
+	//     zip.file("a.out.dSYM", fs.readFileSync(`${tmpDir}/a.out.dSYM`))
+    // }
 
     zip.file("a.out", fs.readFileSync(`${tmpDir}/a.out`));
 
@@ -203,7 +202,7 @@ function createZip(jsout, mout, jstart, tmpDir, cargs) {
         .pipe(fs.createWriteStream(`${cargs.outPath}.jxe`));
 }
 
-function createManifest(cargs, level, hasJ) {
+function createManifest(cargs, hasJ) {
     let mout;
     let ctime = new Date().getTime();
 
@@ -211,7 +210,6 @@ function createManifest(cargs, level, hasJ) {
     mout += "DESCRIPTION = JAMScript executable file\n";
     mout += `NAME = ${cargs.outPath}\n`;
     mout += `CREATE-TIME = ${ctime}\n`;
-    mout += `MAX-HEIGHT = ${level}\n`;
     mout += `JDATA = ${hasJ}\n`;
     mout += `C-SIDE-EFFECT = ${JSON.stringify(cargs.cSideEffectTable)}\n`;
     mout += `JS-SIDE-EFFECT = ${JSON.stringify(cargs.jsSideEffectTable)}\n`;
@@ -293,7 +291,6 @@ function processArgs() {
         preprocessOnly: false,
         verbose: false,
         callGraphFlag: false,
-        yieldPoint: false,
         cSideEffectTable: "None",
         jsSideEffectTable: "None"
     };
@@ -324,8 +321,6 @@ function processArgs() {
             } else if (args[i] === "-a" || args[i] === "--analyze") {
                 // Generate call graph files
                 conf.callGraphFlag = true;
-            } else if (args[i] === "-y" || args[i] === "yield") {
-                conf.yieldPoint = true;
             }
         } else {
             let inputPath = args[i];

@@ -6,6 +6,12 @@ node_modules/*
 *.gch
 /tmp
 *.db
+*.dot
+dot*.pdf
+ast*.pdf
+cst*.pdf
+callGraph.pdf
+callgraph.pdf
 
 *~
 

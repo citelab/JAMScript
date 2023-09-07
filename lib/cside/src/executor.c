@@ -46,8 +46,7 @@ enum execmodes_t {
     pthread_mutex_unlock(X);                                    \
 } while (0);
 
-void convert_time_to_absolute(struct timespec *t, struct timespec *abt)
-{
+void convert_time_to_absolute(struct timespec *t, struct timespec *abt) {
     struct timeval tnow;
     gettimeofday(&tnow, NULL);
     abt->tv_sec = t->tv_sec + tnow.tv_sec;
@@ -55,10 +54,9 @@ void convert_time_to_absolute(struct timespec *t, struct timespec *abt)
 }
 
 
-void process_timing_wheel(tboard_t *tboard, enum execmodes_t *mode)
-{
+void process_timing_wheel(tboard_t* tboard, enum execmodes_t* mode) {
     twheel_update_to_now(tboard);
-    struct timeout *t = NULL;
+    struct timeout* t = NULL;
     *mode = BATCH_MODE_EXEC;
 
     do {
@@ -89,9 +87,8 @@ void process_timing_wheel(tboard_t *tboard, enum execmodes_t *mode)
     } while (t != NULL);
 }
 
-struct queue_entry *get_next_task(tboard_t *tboard, int etype, enum execmodes_t mode, int num, struct queue **q, pthread_mutex_t **mutex, pthread_cond_t **cond)
-{
-    struct queue_entry *next = NULL; // queue entry of ready queue
+struct queue_entry* get_next_task(tboard_t* tboard, int etype, enum execmodes_t mode, int num, struct queue** q, pthread_mutex_t** mutex, pthread_cond_t** cond) {
+    struct queue_entry* next = NULL; // queue entry of ready queue
 
     if (etype == PRIMARY_EXECUTOR) { // we're in pExec
         // check if any primary tasks are waiting in primary ready queue
@@ -99,14 +96,14 @@ struct queue_entry *get_next_task(tboard_t *tboard, int etype, enum execmodes_t 
         *mutex = &(tboard->pmutex);
         *cond = &(tboard->pcond);
         switch (mode) {
-            case SYNC_MODE_EXEC:
-                *q = &(tboard->pqueue_sy);
+        case SYNC_MODE_EXEC:
+            *q = &(tboard->pqueue_sy);
             break;
-            case RT_MODE_EXEC:
-                *q = &(tboard->pqueue_rt);
+        case RT_MODE_EXEC:
+            *q = &(tboard->pqueue_rt);
             break;
-            case BATCH_MODE_EXEC:
-                *q = &(tboard->pqueue_ba);
+        case BATCH_MODE_EXEC:
+            *q = &(tboard->pqueue_ba);
             break;
         }
         next = queue_peek_front(*q);
@@ -132,31 +129,26 @@ struct queue_entry *get_next_task(tboard_t *tboard, int etype, enum execmodes_t 
     return next;
 }
 
-void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queue_entry *next, pthread_mutex_t *mutex, pthread_cond_t *cond)
-{
-    dftable_entry_t *entry;
-    // DO_SNAPSHOT(0);
+void process_next_task(tboard_t* tboard, int type, struct queue** q, struct queue_entry* next, pthread_mutex_t* mutex, pthread_cond_t* cond) {
+    dftable_entry_t* entry;
     ////////// Get queue data, and swap context to function until task yields ///////////
     task_t *task = ((task_t *)(next->data));
     task->status = TASK_RUNNING; // update status incase first run
-    // DO_SNAPSHOT(1);
     // swap context to task - to start the execution
     // so.. we start the execution (by default) and then let it yield..
     // at yield the task would indicate the reason for yielding... which we
     // use to process accordingly...
     mco_resume(task->ctx);
-    // DO_SNAPSHOT(2);
     // check status of task
     int status = mco_status(task->ctx);
     if (status == MCO_SUSPENDED) { // task yielded
-        // DO_SNAPSHOT(3);
         task->yields++; // increment # yields of specific task
         task->hist->yields++; // increment total # yields in history hash table
-        struct queue_entry *e = NULL;
+        struct queue_entry* e = NULL;
         // check if task yielded with special instruction
         if (mco_get_bytes_stored(task->ctx) == sizeof(task_t)) {
             // indicative of blocking local task creation, so we must retrieve it
-            task_t *subtask = calloc(1, sizeof(task_t)); // freed on termination
+            task_t* subtask = calloc(1, sizeof(task_t)); // freed on termination
             assert(mco_pop(task->ctx, subtask, sizeof(task_t)) == MCO_SUCCESS);
             // save issuing task_t object in subtask task_t object
             subtask->parent = task;
@@ -164,32 +156,31 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
             task_place(tboard, subtask);
         } else if (mco_get_bytes_stored(task->ctx) == sizeof(remote_task_t)) {
             // indicative of remote task creation, so we must retrieve it
-            remote_task_t *rtask = calloc(1, sizeof(remote_task_t)); // freed on retrieval
+            remote_task_t* rtask = calloc(1, sizeof(remote_task_t)); // freed on retrieval
             assert(mco_pop(task->ctx, rtask, sizeof(remote_task_t)) == MCO_SUCCESS);
             // task issuing task_t object in remote task object
             rtask->calling_task = task;
             HASH_ADD(hh, tboard->task_table, task_id, sizeof(uint64_t), rtask);
 
             switch (rtask->mode) {
-                case TASK_MODE_REMOTE_NB:
-                    e = queue_new_node(task);
-                    remote_task_place(tboard, rtask);
+            case TASK_MODE_REMOTE_NB:
+                e = queue_new_node(task);
+                remote_task_place(tboard, rtask);
                 break;
-                case TASK_MODE_DFLOW:
-                    entry = (dftable_entry_t *)rtask->entry;
-                    // set the task state accordingly in the dftable_entry_t ..
-                    pthread_mutex_lock(&(entry->mutex));
-                    if (entry->state == NEW_STATE)
-                        entry->state = CLIENT_READY;
-                    entry->taskid = rtask->task_id;
-                    pthread_mutex_unlock(&(entry->mutex));
+            case TASK_MODE_DFLOW:
+                entry = (dftable_entry_t*)rtask->entry;
+                // set the task state accordingly in the dftable_entry_t ..
+                pthread_mutex_lock(&(entry->mutex));
+                if (entry->state == NEW_STATE)
+                    entry->state = CLIENT_READY;
+                entry->taskid = rtask->task_id;
+                pthread_mutex_unlock(&(entry->mutex));
                 break;
-
-                case TASK_MODE_SLEEPING:
-                    // nothing to do here. the task is already in the task table
+            case TASK_MODE_SLEEPING:
+                // nothing to do here. the task is already in the task table
                 break;
-                case TASK_MODE_REMOTE:
-                    remote_task_place(tboard, rtask);
+            case TASK_MODE_REMOTE:
+                remote_task_place(tboard, rtask);
             }
 
         } else { // just a normal yield, so we create node to reinsert task into queue
@@ -198,19 +189,19 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
             // DO_SNAPSHOT(5);
         }
 
-        if (e != NULL){
+        if (e != NULL) {
             // DO_SNAPSHOT(6);
             // reinsert task into queue it was taken out of
             pthread_mutex_lock(mutex); // lock appropriate mutex
             switch (task->type) {
-                case PRI_SYNC_TASK:
-                    queue_insert_tail(&(tboard->pqueue_sy), e);
+            case PRI_SYNC_TASK:
+                queue_insert_tail(&(tboard->pqueue_sy), e);
                 break;
-                case PRI_REAL_TASK:
-                    queue_insert_tail(&(tboard->pqueue_rt), e);
+            case PRI_REAL_TASK:
+                queue_insert_tail(&(tboard->pqueue_rt), e);
                 break;
-                case PRI_BATCH_TASK:
-                    queue_insert_tail(&(tboard->pqueue_ba), e);
+            case PRI_BATCH_TASK:
+                queue_insert_tail(&(tboard->pqueue_ba), e);
             }
             if(type == PRIMARY_EXECUTOR) pthread_cond_signal(cond); // we wish to wake secondary executors if they are asleep
             pthread_mutex_unlock(mutex);
@@ -245,18 +236,16 @@ void process_next_task(tboard_t *tboard, int type, struct queue **q, struct queu
         // if command object is specified, just free it. User data would be deallocated by itself
 
         if (task->cmd_obj)
-            command_free((command_t *)task->cmd_obj);       // FIXME: THis is conflicting with release in the wrapper
+            command_free((command_t*)task->cmd_obj);       // FIXME: THis is conflicting with release in the wrapper
         mco_destroy(task->ctx);
         // free task_t object
         free(task);
-    } else {
+    } else
         printf("Unexpected status received: %d, will lose task.\n",status);
-    }
 }
 
-void process_internal_command(tboard_t *t, internal_command_t *ic)
-{
-    remote_task_t *rtask = NULL;
+void process_internal_command(tboard_t* t, internal_command_t* ic) {
+    remote_task_t* rtask = NULL;
 
     switch (ic->cmd) {
     case CmdNames_REXEC_ACK:
@@ -314,9 +303,8 @@ void process_internal_command(tboard_t *t, internal_command_t *ic)
     }
 }
 
-void process_internal_queue(tboard_t *t)
-{
-    struct queue_entry *next = NULL;
+void process_internal_queue(tboard_t* t) {
+    struct queue_entry* next = NULL;
     pthread_mutex_lock(&t->iqmutex);
     next = queue_peek_front(&t->iq);
     if (next)
@@ -329,17 +317,16 @@ void process_internal_queue(tboard_t *t)
 }
 
 
-void *executor(void *arg)
-{
+void* executor(void* arg) {
     // get task board pointer and purpose from argument
-    exec_t args = *((exec_t *)arg);
-    tboard_t *tboard = args.tboard;
+    exec_t args = *((exec_t*)arg);
+    tboard_t* tboard = args.tboard;
     // determine behavior based on arguments
     int type = args.type;
     int num = args.num;
 
-    pthread_mutex_t *mutex = NULL; // mutex to lock for previous queue
-    pthread_cond_t *cond = NULL; // condition variable to signal after insertion
+    pthread_mutex_t* mutex = NULL; // mutex to lock for previous queue
+    pthread_cond_t* cond = NULL; // condition variable to signal after insertion
     enum execmodes_t mode;
 
     // disable premature cancellation by tboard_kill() to ensure graceful terminations
@@ -358,11 +345,11 @@ void *executor(void *arg)
             process_internal_queue(tboard);
 
         //// define variables needed for each iteration
-        struct queue_entry *next = NULL; // queue entry of ready queue
+        struct queue_entry* next = NULL; // queue entry of ready queue
         // the following variables are to keep track of which secondary queue (if any)
         // task is taken out of. This is important to track for pExec after taking a task
         // out of a secondary queue when primary queue is empty
-        struct queue *q = NULL; // queue entry to reinsert task into after yielding
+        struct queue* q = NULL; // queue entry to reinsert task into after yielding
         DO_SNAPSHOT(3);
         // Fetch next task to run
         next = get_next_task(tboard, type, mode, num, &q, &mutex, &cond);
