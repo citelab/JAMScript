@@ -236,7 +236,7 @@ void process_next_task(tboard_t* tboard, int type, struct queue** q, struct queu
         // if command object is specified, just free it. User data would be deallocated by itself
 
         if (task->cmd_obj)
-            command_free((command_t*)task->cmd_obj);       // FIXME: THis is conflicting with release in the wrapper
+            free(task->cmd_obj);
         mco_destroy(task->ctx);
         // free task_t object
         free(task);
