@@ -629,7 +629,7 @@ dflow_task_response_t dflow_task_create(tboard_t *tboard, void *entry);
 
 int preferred_task_level(remote_task_t *rt);
 
-void *blocking_task_create(tboard_t *t, function_t fn, int type, void *args, size_t sizeof_args);
+arg_t* blocking_task_create(tboard_t* t, function_t fn, int type, arg_t* retarg, arg_t* args, size_t sizeof_args);
 /**
  * blocking_task_create() - Called from parent task, function creates blocking child task
  *                          and yields parent coroutine

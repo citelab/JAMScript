@@ -23,8 +23,9 @@
 /* (end of original copyright and license) */
 
 ES5 {
-
-  Program = Directive* SourceElement*
+  Source = Program
+  Program = Directive* GlobalElement*
+  GlobalElement = SourceElement // Abstracted out so JAMJS can extend
 
   // §A.1 Lexical Grammar -- http://ecma-international.org/ecma-262/5.1/#sec-A.1
 
@@ -91,6 +92,7 @@ ES5 {
           | debugger | function  | this       | with
           | default  | if        | throw      | let
           | delete   | in        | try        | const
+          | of
 
   futureReservedWordLax = class  | enum  | extends
                         | super  | const | export
@@ -107,9 +109,6 @@ ES5 {
     Note: Punctuator and DivPunctuator (see https://es5.github.io/x7.html#x7.7) are
     not currently used by this grammar.
   */
-
-  literal = nullLiteral | booleanLiteral | numericLiteral
-          | stringLiteral | regularExpressionLiteral // spec forgot Regexp literals in appendix?
   nullLiteral = "null" ~identifierPart
   booleanLiteral = ("true" | "false") ~identifierPart
 
@@ -146,7 +145,8 @@ ES5 {
   octalDigit = "0".."7"
 
   // For semantics on how string literals are constructed, see section 7.8.4
-  stringLiteral = "\"" doubleStringCharacter* "\""
+  stringLiteral = string
+  string        = "\"" doubleStringCharacter* "\""
                 | "'" singleStringCharacter* "'"
   doubleStringCharacter = ~("\"" | "\\" | lineTerminator) sourceCharacter -- nonEscaped
                         | "\\" escapeSequence                             -- escaped
@@ -176,6 +176,7 @@ ES5 {
 
   // §7.8.5 Regular Expression Literals -- http://ecma-international.org/ecma-262/5.1/#sec-7.8.5
 
+  regex = regularExpressionLiteral
   regularExpressionLiteral = "/" regularExpressionBody "/" regularExpressionFlags
   regularExpressionBody = regularExpressionFirstChar regularExpressionChar*
   regularExpressionFirstChar = ~("*" | "\\" | "/" | "[") regularExpressionNonTerminator
@@ -251,7 +252,8 @@ ES5 {
   protected = "protected" ~identifierPart
   static = "static" ~identifierPart
   yield = "yield" ~identifierPart
-  
+  of = "of" ~identifierPart
+
   // end of lexical rules
 
   noIn = ~in
@@ -261,27 +263,23 @@ ES5 {
 
   PrimaryExpression = this
                     | identifier
-                    | literal
-                      // ( litToken.type === "regexp"
-                      //   ? this.ast(_fromIdx, "RegExpExpr",{body:  litToken.value.body
-                      //                            flags: litToken.value.flags}, [])
-                      //   : this.ast(_fromIdx, "LiteralExpr",{type:  litToken.type
-                      //                             value: litToken.value}, []) )
+                    | nullLiteral
+                    | booleanLiteral
+                    | numericLiteral
+                    | stringLiteral
+                    | regex
                     | ArrayLiteral
                     | ObjectLiteral
                     | "(" Expression<withIn> ")"  -- parenExpr
-
-  MemberLiteral = identifier "#" identifier 
 
   ArrayLiteral = "[" ListOf<AssignmentExpressionOrElision, ","> "]"
   AssignmentExpressionOrElision = AssignmentExpression<withIn>
                                 |                       -- elision
 
-  ObjectLiteral = "{" ListOf<PropertyAssignment, ","> "}"              -- noTrailingComma
-                | "{" NonemptyListOf<PropertyAssignment, ","> "," "}"  -- trailingComma
+  ObjectLiteral = "{" ListOf<PropertyAssignment, ","> ","? "}"
 
-  PropertyAssignment = get PropertyName "(" ")" "{" FunctionBody "}"                  -- getter
-                     | set PropertyName "(" FormalParameter ")" "{" FunctionBody "}"  -- setter
+  PropertyAssignment = get PropertyName "(" ")" FunctionBody                          -- getter
+                     | set PropertyName "(" FormalParameter ")" FunctionBody          -- setter
                      | PropertyName ":" AssignmentExpression<withIn>                  -- simple
 
   PropertyName = identifierName
@@ -289,8 +287,8 @@ ES5 {
                | numericLiteral
 
   MemberExpression = MemberExpression "[" Expression<withIn> "]"  -- arrayRefExp
-                   | MemberExpression "." identifierName  -- propRefExp
-                   | new MemberExpression Arguments       -- newExp
+                   | MemberExpression "." identifierName          -- propRefExp
+                   | new MemberExpression "(" Arguments ")"       -- newExp
                    | FunctionExpression
                    | PrimaryExpression
 
@@ -298,11 +296,11 @@ ES5 {
                 | new NewExpression -- newExp
 
   CallExpression = CallExpression "[" Expression<withIn> "]"  -- arrayRefExp
-                 | CallExpression "." identifierName  -- propRefExp
-                 | CallExpression Arguments           -- callExpExp
-                 | MemberExpression Arguments         -- memberExpExp
+                 | CallExpression "." identifierName          -- propRefExp
+                 | CallExpression "(" Arguments ")"           -- callExpExp
+                 | MemberExpression "(" Arguments ")"         -- memberExpExp
 
-  Arguments = "(" ListOf<AssignmentExpression<withIn>, ","> ")"
+  Arguments = ListOf<AssignmentExpression<withIn>, ",">
 
   LeftHandSideExpression = CallExpression
                          | NewExpression
@@ -377,15 +375,12 @@ ES5 {
     | LogicalORExpression<guardIn>
 
   AssignmentExpression<guardIn>
-    = LeftHandSideExpression AssignmentOperator AssignmentExpression<guardIn> -- assignment
+    = LeftHandSideExpression ( "=" | ">>>=" | "<<=" | ">>=" | "*=" | "/=" | "%=" | "+=" | "-=" | "&=" | "^=" | "|=" ) AssignmentExpression<guardIn> -- assignment
     | ConditionalExpression<guardIn>
 
   Expression<guardIn> (an expression)
     = Expression<guardIn> "," AssignmentExpression<guardIn> -- commaExp
     | AssignmentExpression<guardIn>
-
-  AssignmentOperator = "=" | ">>>=" | "<<=" | ">>="
-                     | "*=" | "/=" | "%=" | "+=" | "-=" | "&=" | "^=" | "|="
 
   // §A.4 Statements -- http://ecma-international.org/ecma-262/5.1/#sec-A.4
 
@@ -396,7 +391,12 @@ ES5 {
     | EmptyStatement
     | ExpressionStatement
     | IfStatement
-    | IterationStatement
+    | DoWhileStatement
+    | WhileStatement
+    | ForStatement
+    | ForDeclStatement
+    | ForInStatement
+    | ForInDeclStatement
     | ContinueStatement
     | BreakStatement
     | ReturnStatement
@@ -419,8 +419,7 @@ ES5 {
 
   Initialiser<guardIn> = "=" AssignmentExpression<guardIn>
 
-  AssignmentStatement = identifier "=" ObjectLiteral #sc                    -- object
-                      | identifier "=" AssignmentExpression<withIn> #sc     -- expression
+  AssignmentStatement = identifier "=" ( ObjectLiteral | AssignmentExpression<withIn> ) #sc
 
   EmptyStatement = ";" // note: this semicolon eats newlines
 
@@ -428,18 +427,19 @@ ES5 {
 
   IfStatement = if "(" Expression<withIn> ")" Statement (else Statement)?
 
-  IterationStatement = do Statement while "(" Expression<withIn> ")" #sc    -- doWhile
-                     | while "(" Expression<withIn> ")" Statement           -- whileDo
-                     | for "(" Expression<noIn>? ";"
-                                 Expression<withIn>? ";"
-                                 Expression<withIn>? ")" Statement          -- for3
-                     | for "(" var VariableDeclarationList<noIn> ";"
-                                 Expression<withIn>? ";"
-                                 Expression<withIn>? ")" Statement          -- for3var
-                     | for "(" LeftHandSideExpression in
-                                 Expression<withIn> ")" Statement           -- forIn
-                     | for "(" var VariableDeclaration<noIn> in
-                                 Expression<withIn> ")" Statement           -- forInVar
+  DoWhileStatement = do Statement while "(" Expression<withIn> ")" #sc
+
+  WhileStatement = while "(" Expression<withIn> ")" Statement
+
+  ForStatement
+    = for "(" Expression<noIn>? ";" Expression<withIn>? ";" Expression<withIn>? ")" Statement
+
+  ForDeclStatement
+    = for "(" (var | const | let) VariableDeclarationList<noIn> ";" Expression<withIn>? ";" Expression<withIn>? ")" Statement
+
+  ForInStatement = for "(" LeftHandSideExpression (in | of) Expression<withIn> ")" Statement
+
+  ForInDeclStatement = for "(" (var | const | let) VariableDeclaration<noIn> (in | of) Expression<withIn> ")" Statement
 
   ContinueStatement = continue #((spacesNoNL identifier)? sc)
 
@@ -460,32 +460,26 @@ ES5 {
 
   LabelledStatement = identifier ":" Statement
 
-  ThrowStatement = throw Expression<withIn> #sc  -- throwExpr
+  ThrowStatement = throw Expression<withIn> #sc
 
-  TryStatement = try Block Catch Finally  -- tryCatchFinally
-               | try Block Finally        -- tryFinally
-               | try Block Catch          -- tryCatch
-
-  Catch = catch "(" FormalParameter ")" Block
-
-  Finally = finally Block
+  TryStatement = try Block catch "(" FormalParameter ")" Block finally Block  -- catchFinally
+               | try Block finally Block                                      -- finally
+               | try Block catch "(" FormalParameter ")" Block                -- catch
 
   DebuggerStatement = #(debugger sc)
 
   // §A.5 Functions and Programs -- http://ecma-international.org/ecma-262/5.1/#sec-A.5
 
-  FunctionDeclaration (a function declaration)
-    = function identifier "(" FormalParameterList ")" "{" FunctionBody "}"
+  FunctionDeclaration = function identifier "(" FormalParameterList ")" FunctionBody
 
   FunctionExpression
-    = function identifier "(" FormalParameterList ")" "{" FunctionBody "}"  -- named
-    | function "(" FormalParameterList ")" "{" FunctionBody "}"             -- anonymous
+    = function identifier? "(" FormalParameterList ")" FunctionBody
 
   FormalParameterList = ListOf<FormalParameter, ",">
 
   FormalParameter = identifier
 
-  FunctionBody = Directive* SourceElement*
+  FunctionBody = "{" Directive* SourceElement* "}"
 
   SourceElement (a declaration or a statement) = Declaration | Statement
 

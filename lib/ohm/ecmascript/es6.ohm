@@ -4,25 +4,30 @@ ES6 <: ES5 {
   ArrowFunction<guardIn> = ArrowParameters<guardIn> #(spacesNoNL "=>") ConciseBody<guardIn>
 
   ConciseBody<guardIn> = ~"{" AssignmentExpression<guardIn>  -- noBraces
-                       | "{" FunctionBody "}"                -- withBraces
+                       | FunctionBody
 
   ArrowParameters<guardIn> = BindingIdentifier<guardIn>  -- unparenthesized
-                           | CoverParenthesizedExpressionAndArrowParameterList<guardIn>
+                           | ArrowParamsParen<guardIn>
 
   BindingIdentifier<guardIn> = identifier  // TODO: Implement this properly.
 
-  CoverParenthesizedExpressionAndArrowParameterList<guardIn>
-    = "(" Expression<guardIn> ")"  -- expression
-    | "(" ")"                      -- parens
-    | "(" FormalParameterList ")"  -- params
+  ArrowParamsParen<guardIn> = "(" FormalParameterList ")"
 
   Declaration += AsyncFunctionDeclaration
 
-  AsyncFunctionDeclaration = async_function identifier "(" FormalParameterList ")" "{" FunctionBody "}"
-  
-  async_function = "async" " "+ "function" ~identifierPart
+  AsyncFunctionDeclaration = async function identifier "(" FormalParameterList ")" FunctionBody
 
-  MemberExpression += await MemberExpression --awaitCall //PrimaryExpression -- awaitCall
+  CallExpression += await CallExpression --awaitCall
 
-  await = "await" " "+ 
+  Statement += ForAwaitOfStatement
+            |  ForAwaitOfDeclStatement
+
+  ForAwaitOfStatement = for await "(" LeftHandSideExpression of Expression<withIn> ")" Statement
+
+  ForAwaitOfDeclStatement = for await "(" (var | const | let) VariableDeclaration<noIn> of Expression<withIn> ")" Statement
+
+  keyword += await | async
+
+  await = "await" ~identifierPart
+  async = "async" ~identifierPart
 }

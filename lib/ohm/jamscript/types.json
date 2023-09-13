@@ -1,58 +1,99 @@
 {
-    "int": {
-        "c_pattern": "%i",
+    "char": {
         "jamlib": "ival",
-        "js_type": "number",
+        "c_code": "c",
+        "c_type": "int"
+    },
+    "int": {
+        "jamlib": "ival",
         "c_code": "i",
-        "js_code": "n",
-        "caster": "get_bcast_int"
+        "c_type": "int"
+    },
+    "long long int": {
+        "jamlib": "lval",
+        "c_code": "l",
+        "c_type": "long long int"
     },
     "float": {
-        "c_pattern": "%f",
         "jamlib": "dval",
-        "js_type": "number",
         "c_code": "f",
-        "js_code": "n",
-        "caster": "get_bcast_float"
+        "c_type": "double"
     },
     "double": {
-        "c_pattern": "%lf",
         "jamlib": "dval",
-        "js_type": "number",
         "c_code": "d",
-        "js_code": "n",
-        "caster": "get_bcast_double"
+        "c_type": "double"
+    },
+    "unsigned": {
+        "char": {
+            "jamlib": "ival",
+            "c_code": "b",
+            "c_type": "unsigned char",
+            "c_enum": "INT_TYPE"
+        },
+        "int": {
+            "jamlib": "ival",
+            "c_code": "u",
+            "c_type": "unsigned int"
+        },
+        "long long int": {
+            "jamlib": "lval",
+            "c_code": "z",
+            "c_type": "unsigned long long int"
+        }
+    },
+    "array": {
+        "char": {
+            "jamlib": "nval",
+            "c_code": "C",
+            "c_type": "nvoid_t*"
+        },
+        "int": {
+            "jamlib": "nval",
+            "c_code": "I",
+            "c_type": "nvoid_t*"
+        },
+        "long long int": {
+            "jamlib": "nval",
+            "c_code": "L",
+            "c_type": "nvoid_t*"
+        },
+        "float": {
+            "jamlib": "nval",
+            "c_code": "F",
+            "c_type": "nvoid_t*"
+        },
+        "double": {
+            "jamlib": "nval",
+            "c_code": "D",
+            "c_type": "nvoid_t*"
+        },
+        "unsigned": {
+            "char": {
+                "jamlib": "nval",
+                "c_code": "B",
+                "c_type": "nvoid_t*"
+            },
+            "int": {
+                "jamlib": "nval",
+                "c_code": "U",
+                "c_type": "nvoid_t*"
+            },
+            "long long int": {
+                "jamlib": "nval",
+                "c_code": "Z",
+                "c_type": "nvoid_t*"
+            }
+        }
     },
     "string": {
-        "c_pattern": "\\\"%s\\\"",
         "jamlib": "sval",
-        "js_type": "string",
         "c_code": "s",
-        "js_code": "s",
-        "caster": ""
+        "c_type": "char*"
     },
-    "char*": {
-        "c_pattern": "\\\"%s\\\"",
-        "jamlib": "sval",
-        "js_type": "string",
-        "c_code": "s",
-        "js_code": "s",
-        "caster": "get_bcast_char"
-    },
-    "char": {
-        "c_pattern": "\\\"%s\\\"",
-        "jamlib": "sval",
-        "js_type": "string",
-        "c_code": "s",
-        "js_code": "s",
-        "caster": ""
-    },
-    "jamtask": {
-        "c_pattern": "\\\"%s\\\"",
-        "jamlib": "sval",
-        "js_type": "string",
-        "c_code": "s",
-        "js_code": "s",
-        "caster": null
+    "void": {
+        "jamlib": "vval",
+        "c_code": "v",
+        "c_type": "void"
     }
 }

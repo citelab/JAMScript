@@ -1,38 +1,32 @@
 C {
-    Source         = External_decl*
+    Source          = External_decl*
 
     // Helper Rules
-    //
     identStart      = letter | "_"
     identPart       = identStart | decimalDigit
     linebreak       = "\n"
 
-
-    // Comments
-    //
     comment         = "//" (~linebreak any)* &linebreak
                     | "/*" (~"*/" any)* "*/"
 
     space           += comment
     spacesNoNl      = (~linebreak space)*
 
-    Preprocess_line = "#" decimalInt "\"" (~"\"" any)* "\"" decimalInt*
+    // Preprocessor will output line markers when compiled with debug options
+    Preprocess_line = "#" decimalIntegerLiteral "\"" (~"\"" any)* "\"" decimalIntegerLiteral*
 
-    // Identifiers and Names
-    //
     identName       = identStart identPart*
-    id              = ~keyword identName
+    identifier      = ~keyword identName
 
     // Numeric Literals
-    //
     hex             = ( "0x" | "0X" ) hexDigit+ ("u"|"U")? ("l"|"L")? ("l"|"L")?
 
     // hexDigit defined in Ohm"s built-in rules (otherwise: hexDigit = "0".."9" | "a".."f" | "A".."F")
 
 
 
-    decimalInt      = nonZeroDigit decimalDigit*                                        -- Full
-                    | "0"                                                               -- Zero
+    decimalIntegerLiteral      = nonZeroDigit decimalDigit*                             -- Full
+                               | "0"                                                    -- Zero
 
     decimalDigit    = "0".."9"
     nonZeroDigit    = "1".."9"
@@ -46,35 +40,33 @@ C {
     decimal         = decimalValue ("l"|"L")
                     | decimalValue ("f"|"F")?
 
-    decimalValue    = "-"? decimalInt expPart                                           -- IntOnly
-                    | "-"? decimalInt? "." digit+ expPart?                              -- Decimal
+    decimalValue    = "-"? decimalIntegerLiteral expPart                                -- IntOnly
+                    | "-"? decimalIntegerLiteral? "." digit+ expPart?                   -- Decimal
 
-    integer         = "-"? decimalInt ("l"|"L"|"u")*
+    integer         = "-"? decimalIntegerLiteral ("l"|"L"|"u"|"U")*
 
     charLit         = "'" "\\" octalDigit octalDigit? octalDigit? "\'"                  -- Octal
                     | "'" "\\" "x" (~"'" hexDigit)+ "'"                                 -- Hex
                     | "'" escapeChar "'"                                                -- Escape
                     | "'" (~"'" any)* "'"                                               -- Char
 
-    number (a number) = charLit | hex | octal | decimal | integer
+    numericLiteral  = charLit | hex | octal | decimal | integer
 
     // String Literals
-    //
     escapeChar      = "\\" letter
 
     interStringQuotation = "\"" space* "\""
 
-    string          = "\"" (escapeChar | interStringQuotation | ~"\"" any)* "\""        -- String
+    stringLiteral   = "\"" (escapeChar | interStringQuotation | ~"\"" any)* "\""        -- String
                     | ("#" | "`") identName                                             -- Id
 
 
-    // Expressions
-    //
+    // Expressions: Ambiguous grammar, but Ohm will prioritize the first match
+    Expr            = Assign_expr
+                    | NonemptyListOf<Assign_expr, ",">                                  -- list
 
-    Expr            = NonemptyListOf<Assign_expr, ",">
 
-
-    Assign_expr     = Unary_expr Assign_op Assign_expr                                  -- assign
+    Assign_expr     = Unary_expr ( "=" | "*=" | "/=" | ">>=" | "<<=" | "+=" | "-="| "%=" | "&=" | "|=" | "^=" ) Assign_expr          -- assign
                     | Cond_expr
 
     Cond_expr       = Lor_expr "?" Expr ":" Cond_expr                                   -- cond
@@ -82,7 +74,6 @@ C {
 
 
     // Binary operations
-    //
     Lor_expr        = Lor_expr "||" Lar_expr                                            -- lor
                     | Lar_expr
     Lar_expr        = Lar_expr "&&" Ior_expr                                            -- lar
@@ -104,19 +95,13 @@ C {
     Mult_expr       = Mult_expr ( "*" | "/" | "%" ) Prefix_expr                         -- mult
                     | Prefix_expr
 
-    Assign_op       = "=" | "*=" | "/=" | ">>=" | "<<=" | "+=" | "-="
-                    | "%=" | "&=" | "|=" | "^="
-
 
     // Unary operators
-    //
 
-    //
     Prefix_expr     = ( "++" | "--" ) spacesNoNl Unary_expr                             -- Unary
                     | Cast_expr
                     | Unary_expr
 
-    //
     Unary_expr      = ( "&" | "*" | "+" | "-" | "~" | "!" ) Prefix_expr                 -- Prefix
                     | sizeof Unary_expr                                                 -- Sizeof
                     | sizeof "(" Type_name ")"                                          -- SizeofBracketed
@@ -125,34 +110,30 @@ C {
     Cast_expr       = "(" Type_name ")" Cast_expr                                       -- Cast
                     | Unary_expr
 
-    Postfix_expr    = Left_expr spacesNoNl "++"                                         -- Increment
-                    | Left_expr spacesNoNl "--"                                         -- Decrement
+    Postfix_expr    = Left_expr spacesNoNl ( "++" | "--" )                              -- Postfix
                     | Left_expr
 
     Left_expr       = Left_expr Call_expr                                               -- Call
-                    | Left_expr Member_expr                                             -- Member
+                    | Left_expr "[" Expr "]"                                            -- Array
+                    | Left_expr "." identifier                                          -- Struct
+                    | Left_expr "->" identifier                                         -- Pointer
                     | Primary_expr
 
     Call_expr       = "(" ListOf<Assign_expr, ","> ")"
 
-    Member_expr     = "[" Expr "]"                                                      -- Array
-                    | "." id                                                            -- Struct
-                    | "->" id                                                           -- Pointer
-
-    Primary_expr    = id
-                    | number
-                    | string
+    Primary_expr    = identifier
+                    | numericLiteral
+                    | stringLiteral
                     | "(" Expr ")"                                                      -- GroupExpr
 
     Const_expr      = Cond_expr
 
     // Declaration statements
     // Statements that do "type" specification
-    //
-    Prototype       = extern Pointer_list? id "(" Param_type_lst? ")" Gcc_attribute? ";"
-                    | Decl_specs Pointer_list? id "(" Param_type_lst? ")" Gcc_attribute? ";"
+    Prototype       = extern Pointer_list? identifier "(" Param_type_lst ")" Gcc_attribute? ";"
+                    | Decl_specs Pointer_list? identifier "(" Param_type_lst ")" Gcc_attribute? ";"
 
-    Decl            = Decl_specs Init_decl_lst ";"
+    Decl            = Decl_specs Init_decl_lst ";"                                      -- Decl
 
     Decl_specs      = (Store_cl_spec | Func_spec | type_qualifier | Gcc_decl_spec)* Type_spec (Store_cl_spec | Func_spec | type_qualifier | Gcc_decl_spec)*
                     | ("(" | Gcc_attribute)* Type_spec (")" | Gcc_attribute)*
@@ -173,17 +154,17 @@ C {
     Type_modifier   = (long | short | signed | unsigned)+
 
     Type_spec       = Type_modifier (int | char | double)?                              -- Modified
-                    | (id | void | bool | float | int | char | double)
+                    | (identifier | void | bool | float | int | char | double)
                     | Enum_spec                                                         -- Enum
                     | Struct_spec                                                       -- Sturct
                     | Union_spec                                                        -- Union
 
-    Struct_spec     = struct Gcc_attribute* id "{" Struct_decl+ "}"                     -- Full
-                    | struct Gcc_attribute* id                                          -- Empty
+    Struct_spec     = struct Gcc_attribute* identifier "{" Struct_decl+ "}"             -- Full
+                    | struct Gcc_attribute* identifier                                  -- Empty
                     | struct Gcc_attribute* "{" Struct_decl+ "}"                        -- Anonymous
 
-    Union_spec      = union Gcc_attribute* id "{" Struct_decl+ "}"                      -- Full
-                    | union Gcc_attribute* id                                           -- Empty
+    Union_spec      = union Gcc_attribute* identifier "{" Struct_decl+ "}"              -- Full
+                    | union Gcc_attribute* identifier                                   -- Empty
                     | union Gcc_attribute* "{" Struct_decl+ "}"                         -- Anonymous
 
     Struct_decl     = Preprocess_line? Spec_qual_list ListOf<Sdeclarator, ","> ";"      -- Full
@@ -195,12 +176,13 @@ C {
                     | Declarator                                                        -- Decl
                     | ":" Const_expr Gcc_attribute*                                     -- Expr
 
-    Enum_spec       = enum Gcc_attribute* id "{" ListOf<Enumerator, ","> ","? "}"       -- Full
-                    | enum Gcc_attribute* id                                            -- Empty
+    Enum_spec       = enum Gcc_attribute* identifier "{" ListOf<Enumerator, ","> ","? "}"   -- Full
+                    | enum Gcc_attribute* identifier                                    -- Empty
                     | enum Gcc_attribute* "{" ListOf<Enumerator, ","> ","? "}"          -- Anonymous
 
-    Enumerator      = Preprocess_line? id "=" Const_expr                                -- IdExpr
-                    | Preprocess_line? id                                               -- Id
+    Enumerator      = Preprocess_line? identifier "=" Const_expr                        -- IdExpr
+                    | Preprocess_line? identifier                                       -- Id
+                    | Preprocess_line                                                   -- Preprocess
 
 
     type_qualifier  = const
@@ -212,34 +194,30 @@ C {
     Dir_declarator  = Dir_declarator Pmember_decl                                       -- PMember
                     | Dir_declarator Pcall_decl                                         -- PCall
                     | "(" Gcc_attribute* Declarator ")"                                 -- Declarator
-                    | id                                                                -- Id
+                    | identifier                                                        -- Id
 
 
-    Abs_declarator  = Pointer_list Dir_abs_declarator Gcc_asm_expr? Gcc_attribute*      -- PointerListDirAbsDeclarator
-                    | Pointer_list                                                      -- PointerList
-                    | Dir_abs_declarator Gcc_asm_expr? Gcc_attribute*                   -- DirAbsDeclarator
+    Abs_declarator  = Pointer_list Dir_abs_declarator Gcc_asm_expr? Gcc_attribute*      -- PointerListDADecl
+                    | Pointer_list Gcc_asm_expr? Gcc_attribute*                         -- PointerList
+                    | Dir_abs_declarator Gcc_asm_expr? Gcc_attribute*                   -- DADecl
 
-    Dir_abs_declarator  = Dir_abs_declarator "[" Const_expr? "]"                        -- DirAbsDeclaratorConstExpr
-                        | "[" Const_expr? "]"                                           -- ConstExpr
-                        | Dir_abs_declarator "(" Param_type_lst? ")"                    -- DirAbsDeclaratorParamTypeList
-                        | "(" Param_type_lst? ")"                                       -- ParamTypeList
-                        | "(" Gcc_attribute* Abs_declarator ")"                         -- AbsDeclarator
+    Dir_abs_declarator  = Dir_abs_declarator? "[" Const_expr? "]"                       -- ConstExpr
+                        | Dir_abs_declarator? "(" Param_type_lst ")"                    -- ParamTypeList
+                        | "(" Gcc_attribute* Abs_declarator ")"                         -- AbsDecl
 
-    Pmember_decl    = "[" Gcc_array_type_modifier* Const_expr "]"                       -- ConstExpr
-                    | "[" Gcc_array_type_modifier* "]"                                  -- Empty
+    Pmember_decl    = "[" Gcc_array_type_modifier* Const_expr? "]"
 
     Pcall_decl      = "(" Param_type_lst ")"                                            -- ParamTypeList
                     | "(" Ident_list ")"                                                -- IdentList
-                    | "(" ")"                                                           -- Empty
 
     Pointer         = "*" type_qualifier*
 
     Pointer_list    = Pointer+
 
-    Ident_list      = NonemptyListOf<id, ",">
+    Ident_list      = NonemptyListOf<identifier, ",">
 
-    Param_type_lst  = NonemptyListOf<Param_decl, ","> "," var_args                      -- List
-                    | NonemptyListOf<Param_decl, ",">
+    Param_type_lst  = NonemptyListOf<Param_decl, ","> "," var_args                      -- VarArgs
+                    | ListOf<Param_decl, ",">                                           -- ConArgs
 
     var_args        = "..."
 
@@ -247,14 +225,16 @@ C {
                     | Decl_specs Abs_declarator                                         -- AbsDeclarator
                     | Decl_specs
 
-    Initializer     = "{" ListOf<Initializer, ","> ","? "}"                             -- InitializerList
-                    | "{" ListOf<Designator, ","> ","? "}"                              -- DesignatorList
+    Initializer     = "{" ListOf<Init_field, ","> ","? "}"                              -- list
                     | Assign_expr
 
-    Designator      = "." Assign_expr
+    Init_field      = (Desig_field)+ "=" Initializer                                    -- Designated
+                    | Initializer
+
+    Desig_field    = "." identifier                                                     -- Struct
+                   | "[" Assign_expr ("..." Assign_expr)? "]"                           -- Array
 
     // GCC Statements
-    //
 
     Gcc_decl_spec   = Gcc_attribute
                     | gcc_ext_spec
@@ -276,10 +256,8 @@ C {
     Gcc_asm_expr    = asm type_qualifier? "(" (~")" any)* ")"+
 
     // C Statements
-    //
 
-    Stmt            = Assign_stmt
-                    | Labeled_stmt
+    Stmt            = Labeled_stmt
                     | Compound_stmt
                     | Selection_stmt
                     | Iteration_stmt
@@ -287,32 +265,29 @@ C {
                     | Expr_stmt
                     | Gcc_asm_stmt
 
-    //JAM Addition
-    struct_id       = ("." id)+
-    Struct_access   = struct_id ":" Expr
+    Expr_stmt       = Expr? ";"
 
-    Assign_stmt     = id "=" "{" ListOf<Struct_access, ","> "}" ";"                     -- Struct
-                    | id "=" Expr ";"                                                   -- Expr
-
-    Expr_stmt       = Expr? ";"                                                         -- ExprStmt
-
-    Labeled_stmt    = id ":" Stmt                                                       -- LabeledStmt
-                    | case Const_expr ":" Stmt                                          -- CaseStmt
-                    | default ":" Stmt                                                  -- DefaultStmt
+    Labeled_stmt    = Label_stmt | Case_stmt | Default_stmt
+    Label_stmt      = identifier ":" Stmt
+    Case_stmt       = case Const_expr ":" Stmt
+    Default_stmt    = default ":" Stmt
 
     Compound_stmt   =  "{" (Stmt|Decl)* "}" ";"?
 
-    Selection_stmt  = if "(" Expr ")" Stmt (else Stmt)?                                 -- IfStmt
-                    | switch "(" Expr ")" Stmt                                          -- SwitchStmt
+    Selection_stmt  = If_stmt | Switch_stmt
+    If_stmt         = if "(" Expr ")" Stmt (else Stmt)?
+    Switch_stmt     = switch "(" Expr ")" Stmt
 
-    Iteration_stmt  = while "(" Expr ")" Stmt                                           -- WhileStmt
-                    | do Stmt while "(" Expr ")" ";"                                    -- DoWhileStmt
-                    | for "(" (Decl | Expr_stmt) Expr_stmt Expr ")" Stmt                -- ForStmt
+    Iteration_stmt  = While_stmt | DoWhile_stmt | Switch_stmt
+    While_stmt      = while "(" Expr ")" Stmt
+    DoWhile_stmt    = do Stmt while "(" Expr ")" ";"
+    For_stmt        = for "(" (Decl | Expr_stmt) Expr_stmt Expr? ")" Stmt
 
-    Jump_stmt       = goto id ";"                                                       -- GotoStmt
-                    | continue ";"                                                      -- ContinueStmt
-                    | break ";"                                                         -- BreakStmt
-                    | return Expr? ";"                                                  -- ReturnStmt
+    Jump_stmt       = Goto_stmt | Continue_stmt | Break_stmt | Return_stmt
+    Goto_stmt       = goto identifier ";"
+    Continue_stmt   = continue ";"
+    Break_stmt      = break ";"
+    Return_stmt     = return Expr? ";"
 
     External_decl   = Function_def
                     | Prototype
