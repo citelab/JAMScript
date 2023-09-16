@@ -1,0 +1,16 @@
+
+
+Ask getAdminProcessor() to return a handle for the call (incoming msg).
+If the incoming msg is a REGISTER - we could have two situations: (a) already part of the 
+table (registered). Not yet registered - new registration. In either case, return a valid handle.
+
+If the nodeid is undefined or Not found and Not Register, then return undefined. 
+
+if getAdminProcessor() returns undefined -> we do nothing in the messageProcessor().
+
+If NOT undefined from getAdminProcessor() then we do
+    we process message -> doAdminProcessing()
+    
+
+
+

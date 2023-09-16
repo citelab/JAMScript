@@ -5,7 +5,9 @@ function you(str) {
     console.log("String.. ", str, " count ", count);
 }
 
-setInterval(()=> {
+while (1) {
+    await jsys.sleep(1000);
     console.log("                             hello.. main loop ");
     you("hello..");
-}, 1);
+}
+
