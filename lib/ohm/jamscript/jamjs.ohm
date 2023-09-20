@@ -54,13 +54,10 @@ JAMJS <: ES6 {
     Jtask_attr_spec = "[" NonemptyListOf<Jtask_attr, ",">  ","? "]"
 
     Jtask_attr      = node_type "=" (cloud | fog | device)
-                    | reuse "=" booleanLiteral
-                    | reuse_buffer "=" decimalIntegerLiteral
-                    | reuse_function "=" identifier
+                    | reuse "=" (default | identifier)
+                    | reuse_history "=" decimalIntegerLiteral
                     | retry "=" decimalIntegerLiteral
                     | timeout "=" decimalLiteral
-
-    percentage      = decimalLiteral "%"
 
     Task_def        = Sync_task
                     | Async_task
@@ -92,8 +89,7 @@ JAMJS <: ES6 {
     cloud = "cloud" ~identifierPart
     fog = "fog" ~identifierPart
     device = "device" ~identifierPart
-    reuse_buffer = "reuse_buffer" ~identifierPart
-    reuse_function = "reuse_function" ~identifierPart
+    reuse_history = "reuse_history" ~identifierPart
     retry = "retry" ~identifierPart
     timeout = "timeout" ~identifierPart
 }

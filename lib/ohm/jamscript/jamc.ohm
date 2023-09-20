@@ -15,9 +15,8 @@ JAMC <: C {
 
     booleanLiteral  = true | false
 
-    Jtask_attr      = reuse "=" booleanLiteral
-                    | reuse_buffer "=" decimalIntegerLiteral
-                    | reuse_function "=" identifier
+    Jtask_attr      = reuse "=" ( default | (~default identifier) )
+                    | reuse_history "=" decimalIntegerLiteral
                     | retry "=" decimalIntegerLiteral
                     | timeout "=" decimalLiteral
 
@@ -68,8 +67,8 @@ JAMC <: C {
     jreuse = "jreuse" ~identPart
 
     reuse = "reuse" ~identifierPart
-    reuse_buffer = "reuse_buffer" ~identifierPart
-    reuse_function = "reuse_function" ~identifierPart
+    default = "default" ~identifierPart
+    reuse_history = "reuse_history" ~identifierPart
     retry = "retry" ~identifierPart
     timeout = "timeout" ~identifierPart
 
