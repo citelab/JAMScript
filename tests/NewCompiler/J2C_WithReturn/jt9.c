@@ -9,13 +9,16 @@ jreuse {
 
 
 jasync [reuse_history = 2] localyou(int c, char *s) {
+    jarray int q[1] = {1};
     for(;1;) {
         jsys.sleep(1000000);
+        reuse_array(&q);
         printf("... ############-->>> Hello YOU  %d, %s\n", c, s);
     }
 }
 
 jsync int[30] [reuse = whatever, reuse_history = 5] reuse_array(int q[]) {
+    printf("whatever\n");
     jarray int i[30] = {1, 3, 5, 6};
     return i;
 }
