@@ -2,7 +2,8 @@ let count = 0;
 
 jreuse {
     test(olds, news) {
-        return olds.arg_0 == news.arg_0;
+        console.log("reusing", count);
+        return count === 3;
     }
 }
 
