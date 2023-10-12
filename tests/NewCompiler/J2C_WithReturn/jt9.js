@@ -10,13 +10,13 @@ async function sleep(n) {
 
 if (jsys.type === 'fog') {
     while (1) {
-	await sleep(1000);
-	try { 
-	    for await (const x of get_a_value(count++)) {
-		console.log("Return value from Get_a_value = ", x);
+	    await sleep(1000);
+	    try {
+	        for await (const x of get_a_value(count++)) {
+		        console.log("Return value from Get_a_value = ", x);
+	        }
+	    } catch (e) {
+	        console.log("Error message... ", e.message);
 	    }
-	} catch (e) {
-	    console.log("Error message... ", e.message);
-	}
     }
 }

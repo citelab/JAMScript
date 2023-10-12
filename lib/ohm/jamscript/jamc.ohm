@@ -18,7 +18,7 @@ JAMC <: C {
     Jtask_attr      = reuse "=" ( default | (~default identifier) )
                     | reuse_history "=" decimalIntegerLiteral
                     | retry "=" decimalIntegerLiteral
-                    | timeout "=" decimalLiteral
+                    | timeout "=" decimalValue
 
     Jamtype_return  = Jamtype "[" decimalIntegerLiteral "]"            -- Array
                     | void                                             -- Void
@@ -66,11 +66,10 @@ JAMC <: C {
     jcond = "jcond" ~identPart
     jreuse = "jreuse" ~identPart
 
-    reuse = "reuse" ~identifierPart
-    default = "default" ~identifierPart
-    reuse_history = "reuse_history" ~identifierPart
-    retry = "retry" ~identifierPart
-    timeout = "timeout" ~identifierPart
+    reuse = "reuse" ~identPart
+    reuse_history = "reuse_history" ~identPart
+    retry = "retry" ~identPart
+    timeout = "timeout" ~identPart
 
     true = "true" ~identPart
     false = "false" ~identPart

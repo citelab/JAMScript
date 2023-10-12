@@ -1,12 +1,18 @@
+jreuse {
+    test(old, new) {
+        return old.arg_0 == new.arg_0;
+    }
+}
+
 
 jasync localyou(int c, char *s) {
-    while(1) {
+    for(;1;) {
         jsys.sleep(1000000);
         printf("... ############-->>> Hello YOU  %d, %s\n", c, s);
     }
 }
 
-jsync int get_a_value(int x) {
+jsync int [reuse = test] get_a_value(int x) {
     printf("Value of x %d\n", x);
     return x;
 }
