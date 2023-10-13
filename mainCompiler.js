@@ -15,7 +15,7 @@ const   fs      = require("fs"),
 const USAGE = `
 jamc [options] <inputs>
 
-JAMScript compiler toolchain for creating JAMScript executable (.jxe) from 
+JAMScript compiler toolchain for creating JAMScript executable (.jxe) from
 source files. It takes the C-side and J-side source files and any data files
 (given as a directory) that have to be packaged with the executable.
 
@@ -24,7 +24,7 @@ Options:
     -h (--help)         shows the usage of the compiler (this information).
     -d (--debug)        sets the debug mode in which address sanitizer is linked to the C side
     -p (--preprocess)   launch the preprocessor only
-    -o (--output)       sets the output filename 
+    -o (--output)       sets the output filename
     -V (--version)      prints version information
     -v (--verbose)      turns on verbose mode
     -vv (--extrav)      turns on extra verbosity mode
@@ -50,7 +50,7 @@ runMain(args);
 function ansiiGreen(text) {
     return `\x1b[32m${text}\x1b[0m`;
 }
-  
+
 function ansiiYellow(text) {
     return `\x1b[33m${text}\x1b[0m`;
 }
@@ -214,7 +214,7 @@ function nativeCompile(code, cargs) {
             options = "-lm";
         }
         if (cargs.debug) {
-            options += " -fno-omit-frame-pointer -fsanitize=address";
+            options += " -fno-omit-frame-pointer -fsanitize=address -Wall";
         }
 
         const includes = [
@@ -256,7 +256,7 @@ function printAndExit(output) {
 }
 
 function preprocess(file, cargs) {
-    
+
     if (args.verbose) console.log("Preprocessing...");
 
     let contents = fs.readFileSync(file).toString();
@@ -359,4 +359,3 @@ function deleteFolderRecursive(path) {
         fs.rmdirSync(path);
     }
 }
-
