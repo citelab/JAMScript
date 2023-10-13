@@ -47,7 +47,7 @@ JAMJS <: ES6 {
 
     Jcond_decl      = ( jcond | jreuse ) "{" Jcond_entry+ "}"
 
-    Jcond_entry     = identifier "(" identifier ("," identifier)? ")" FunctionBody
+    Jcond_entry     = identifier "(" identifier "," identifier ")" FunctionBody
 
     Jcond_specifier = "{" identifier "}"
 
