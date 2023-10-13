@@ -46,7 +46,7 @@ JAMC <: C {
 
     Jcond_decl      = ( jcond | jreuse ) "{" Jcond_entry+ "}"
 
-    Jcond_entry     = identifier "(" identifier ("," identifier)? ")" Compound_stmt
+    Jcond_entry     = identifier "(" identifier "," identifier ")" Compound_stmt
 
     Task_def        = Sync_task
                     | Async_task

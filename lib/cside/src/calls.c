@@ -63,16 +63,21 @@ void local_async_call(tboard_t* t, char* cmd_func, ...) {
         printf("ERROR! Function %s not available for execution\n", cmd_func);
         return;
     }
-
-    if (jcond_evaluate(f->cond)) {
-        const char* argsig = f->fn_sig;
-        arg_t* qargs = NULL;
-        if (strlen(argsig) > 0) {
-            va_list args;
-            va_start(args, cmd_func);
-            command_qargs_alloc(argsig, &qargs, args);
-            va_end(args);
-        }
-        task_create(t, *f, qargs, NULL);
+    if (f->cond) {
+        // TODO populate these properly
+        jcond_my_t my;
+        jcond_your_t your;
+        if (!(*f->cond)(my, your))
+            return;
     }
+    const char* argsig = f->fn_sig;
+    arg_t* qargs = NULL;
+    if (strlen(argsig) > 0) {
+        va_list args;
+        va_start(args, cmd_func);
+        command_qargs_alloc(argsig, &qargs, args);
+        va_end(args);
+    }
+    task_create(t, *f, qargs, NULL);
+
 }

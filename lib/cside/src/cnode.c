@@ -117,21 +117,6 @@ broker_info_t *cnode_scanj(int groupid, char *host, int port) {
     return bi;
 }
 
-void cnode_setup_jcond(char *dstr) {
-
-    char tagstr[1024];
-    // Initialize the jconditional
-    jcond_init();
-    jcond_eval_str("var jsys = {type: 'device'};");
-
-    if (dstr != NULL && strlen(dstr) > 0)
-    {
-        snprintf(tagstr, 1024, "jsys.tag = '%s';", dstr);
-        jcond_eval_str(tagstr);
-    }
-    jcond_eval_str("function jcondContext(a) { return eval(a); }");
-}
-
 cnode_t *cnode_init(int argc, char **argv){
     cnode_t *cn = (cnode_t *)calloc(1, sizeof(cnode_t));
 
@@ -178,7 +163,6 @@ cnode_t *cnode_init(int argc, char **argv){
     // Do the initial registeration - it could fail and we resend on the next PING
     send_reg_msg(cn->devserv, cn->core->device_id, 0);
 
-    cnode_setup_jcond(cn->args->tags);
     tboard_start(cn->tboard);
 
     return cn;
