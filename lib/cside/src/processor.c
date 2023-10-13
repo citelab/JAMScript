@@ -87,7 +87,7 @@ void exec_sync(context_t ctx) {
     }
 }
 
-function_t esync = TBOARD_FUNC("exec_sync", exec_sync, "nnn", "", PRI_BATCH_TASK);
+function_t esync = TBOARD_FUNC("exec_sync", exec_sync, "nnn", NULL, PRI_BATCH_TASK);
 
 void execute_cmd(server_t* s, function_t* f, command_t* cmd) {
     cnode_t* c = s->cnode;
@@ -225,13 +225,18 @@ void msg_processor(void* serv, command_t* cmd) {
             // send REXEC_ERR to the controller that sent the request
             command_free(cmd);
             return;
-        } else if (jcond_evaluate(f->cond) != true) {
-            send_nak_msg(s, cmd->node_id, cmd->task_id);
-            command_free(cmd);
-            return;
-        } else // send the REXEC_ACK to the controller that sent the request
-            send_ack_msg(s, cmd->node_id, cmd->task_id, ((cmd->subcmd == 0) ? 0: globals_Timeout_REXEC_ACK_TIMEOUT));
-
+        } else if (f->cond) {
+            // TODO populate these values properly
+            jcond_my_t my;
+            jcond_your_t your;
+            if ((*f->cond)(my, your) != true) {
+                send_nak_msg(s, cmd->node_id, cmd->task_id);
+                command_free(cmd);
+                return;
+            }
+        }
+        // send the REXEC_ACK to the controller that sent the request
+        send_ack_msg(s, cmd->node_id, cmd->task_id, ((cmd->subcmd == 0) ? 0: globals_Timeout_REXEC_ACK_TIMEOUT));
         // cmd is freed after the task is completed.. otherwise we will create a memory fault
         execute_cmd(s, f, cmd);
         return;

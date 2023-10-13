@@ -13,7 +13,7 @@
 #include "command.h"
 #include "sleeping.h"
 #include "icache.h"
-
+#include "jcond.h"
 
 ///////////////////////////////
 ///// Configurable Macros  ////
@@ -146,11 +146,11 @@ typedef struct {
     tb_task_f fn;
     enum task_types_t tasktype;
     const char *fn_sig;
-    const char *cond;
+    int (*cond)(jcond_my_t, jcond_your_t);
     UT_hash_handle hh;
 } function_t;
 
-#define TBOARD_FUNC(name, func, sig, ccond, ttype) (function_t){.fn = func, .fn_name = name, .fn_sig = sig, .cond = ccond, .tasktype = ttype}
+#define TBOARD_FUNC(name, func, sig, ccond, ttype) ((function_t){.fn = (func), .fn_name = (name), .fn_sig = (sig), .cond = (ccond), .tasktype = (ttype)})
 
 struct history_t;
 struct exec_t;

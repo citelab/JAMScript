@@ -45,41 +45,24 @@ JAMJS <: ES6 {
 
     Jdata_decl      = jdata identifier? "{" Jdata_spec+ "}"
 
-    Jcond_decl      = jcond identifier? "{" Jcond_entry+ "}"
+    Jcond_decl      = ( jcond | jreuse ) "{" Jcond_entry+ "}"
 
-    Jcond_entry     = identifier ":" Jcond_decl_expr ";"
+    Jcond_entry     = identifier "(" identifier "," identifier ")" FunctionBody
 
-    Jcond_decl_expr = "(" Jcond_expr ")"                            -- paran
-                    | "!" Jcond_expr                                -- not
-                    | Jcond_expr jcond_op Jcond_expr                -- bin_op
-                    | Jcond_expr "." identifier                     -- namespace
-                    | identifier
-
-    jcond_op        = "==" | "!=" | "===" | "!==" | "<" | ">" | "<=" | ">=" | "&&" | "||"
-
-    Jcond_specifier = "{" Jcond_expr "}"
-
-    Jcond_expr      = "(" Jcond_expr ")"                            -- paran
-                    | "!" Jcond_expr                                -- not
-                    | Jcond_expr jcond_expr_op Jcond_expr           -- bin_op
-                    | Jcond_expr "." identifier                     -- namespace
-                    | identifier
-
-    jcond_expr_op   = "&&" | "||"
+    Jcond_specifier = "{" identifier "}"
 
     Jtask_attr_spec = "[" NonemptyListOf<Jtask_attr, ",">  ","? "]"
 
-    Jtask_attr      = reuse "=" booleanLiteral
-                    | reuse_limit "=" numericLiteral
-                    | reuse_argdev "=" percentage
-                    | max_rate "=" numericLiteral
-
-    percentage      = decimalLiteral "%"
+    Jtask_attr      = node_type "=" (cloud | fog | device)
+                    | reuse "=" (default | identifier)
+                    | reuse_history "=" decimalIntegerLiteral
+                    | retry "=" decimalIntegerLiteral
+                    | timeout "=" decimalLiteral
 
     Task_def        = Sync_task
                     | Async_task
 
-    keyword         += jexport | japp | jcomponent | jsync | jasync | jdata | jcond
+    keyword         += jexport | japp | jcomponent | jsync | jasync | jdata | jcond | jreuse
 
     as = "as" ~identifierPart
     jexport = "jexport" ~identifierPart
@@ -98,8 +81,15 @@ JAMJS <: ES6 {
     jsync = "jsync" ~identifierPart
     jdata = "jdata" ~identifierPart
     jcond = "jcond" ~identifierPart
+    jreuse = "jreuse" ~identifierPart
+
+    // attributes
     reuse = "reuse" ~identifierPart
-    reuse_limit = "reuse_limit" ~identifierPart
-    reuse_argdev = "reuse_argdev" ~identifierPart
-    max_rate = "max_rate" ~identifierPart
+    node_type = "node_type" ~identifierPart
+    cloud = "cloud" ~identifierPart
+    fog = "fog" ~identifierPart
+    device = "device" ~identifierPart
+    reuse_history = "reuse_history" ~identifierPart
+    retry = "retry" ~identifierPart
+    timeout = "timeout" ~identifierPart
 }

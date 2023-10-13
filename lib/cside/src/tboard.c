@@ -97,7 +97,7 @@ void tboard_start(tboard_t *tboard)
     // then we create the thread
     if (tboard == NULL || tboard->status != 0)
         return; // only want to start an initialized tboard
-    
+
     // create primary executor
     exec_t *primary = (exec_t *)calloc(1, sizeof(exec_t));
     primary->type = PRIMARY_EXECUTOR;
@@ -139,7 +139,7 @@ void tboard_shutdown(tboard_t *tboard)
     // from task board as it should be locked before tboard_kill() is run
     pthread_mutex_lock(&(tboard->tmutex));
     pthread_mutex_lock(&(tboard->twmutex));
-    // destroy mutex and condition variables 
+    // destroy mutex and condition variables
     pthread_mutex_destroy(&(tboard->iqmutex));
     pthread_mutex_destroy(&(tboard->cmutex));
     pthread_mutex_destroy(&(tboard->pmutex));
@@ -184,13 +184,13 @@ void tboard_shutdown(tboard_t *tboard)
 
     // unlock tmutex so we can destroy it
     pthread_mutex_unlock(&(tboard->tmutex));
-    
+
     // free executor arguments
     free(tboard->pexect);
     for (int i=0; i<tboard->sqs; i++) {
         free(tboard->sexect[i]);
     }
-    
+
     // destroy history mutex
     history_destroy(tboard);
     // destroy the registry of functions
@@ -210,7 +210,7 @@ bool tboard_kill(tboard_t *t)
     printf("Status =========================== %d\n", t->status);
     if (t == NULL || t->status == 0)
         return false;
-    
+
     // lock emutex to before queueing executor thread cancellation
     pthread_mutex_lock(&(t->emutex));
     // indicate to taskboard that shutdown is occuring
@@ -229,7 +229,7 @@ bool tboard_kill(tboard_t *t)
         pthread_cond_signal(&(t->scond[i]));
         pthread_mutex_unlock(&(t->smutex[i]));
     }
-    
+
     // wait for executor threads to terminate fully
     pthread_cond_wait(&(t->tcond), &(t->emutex)); // will be signaled by tboard_destroy once threads exit
     // unlock emutex so it can be destroyed
@@ -282,7 +282,7 @@ void tboard_register_func(tboard_t *t, function_t fn) {
     f->fn_name = strdup(fn.fn_name);
     f->fn_sig = strdup(fn.fn_sig);
     f->tasktype = fn.tasktype;
-    f->cond = strdup(fn.cond);
+    f->cond = fn.cond;
     HASH_ADD_KEYPTR(hh, t->registry, f->fn_name, strlen(f->fn_name), f);
 }
 
@@ -291,7 +291,7 @@ function_t *tboard_find_func(tboard_t *t, char *fname) {
     HASH_FIND_STR(t->registry, fname, f);
     if (f)
         return f;
-    else 
+    else
         return NULL;
 }
 
@@ -302,7 +302,6 @@ void destroy_func_registry(tboard_t *t) {
         HASH_DEL(t->registry, currf);  /* delete; t->registry advances to next */
         free((void *)currf->fn_name);
         free((void *)currf->fn_sig);
-        free((void *)currf->cond);
         free((void *)currf);
     }
 }

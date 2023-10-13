@@ -1,15 +1,7 @@
 JAMC <: C {
     Source          := External_decl+
 
-    Jcond_specifier = "{" Jcond_expr "}"
-
-    Jcond_expr      = "(" Jcond_expr ")"                            -- paran
-                    | "!" Jcond_expr                                -- not
-                    | Jcond_expr jcond_expr_op Jcond_expr           -- bin_op
-                    | Jcond_expr "." identifier                     -- namespace
-                    | identifier
-
-    jcond_expr_op   = "&&" | "||"
+    Jcond_specifier = "{" identifier "}"
 
     Async_prototype = jasync identifier "(" Jamparam_type_lst ")" ";"
 
@@ -23,10 +15,10 @@ JAMC <: C {
 
     booleanLiteral  = true | false
 
-    Jtask_attr      = reuse "=" booleanLiteral
-                    | reuse_limit "=" decimalIntegerLiteral
-                    | reuse_buffer "=" decimalIntegerLiteral
-                    | reuse_function "=" identifier
+    Jtask_attr      = reuse "=" ( default | (~default identifier) )
+                    | reuse_history "=" decimalIntegerLiteral
+                    | retry "=" decimalIntegerLiteral
+                    | timeout "=" decimalValue
 
     Jamtype_return  = Jamtype "[" decimalIntegerLiteral "]"            -- Array
                     | void                                             -- Void
@@ -52,6 +44,10 @@ JAMC <: C {
 
     Jamarray_init   =  identifier "[" decimalIntegerLiteral "]" ( "=" ( Initializer_list | stringLiteral) )?
 
+    Jcond_decl      = ( jcond | jreuse ) "{" Jcond_entry+ "}"
+
+    Jcond_entry     = identifier "(" identifier "," identifier ")" Compound_stmt
+
     Task_def        = Sync_task
                     | Async_task
 
@@ -59,24 +55,22 @@ JAMC <: C {
                     | Async_prototype
 
     External_decl   += Task_def
+                    | Jcond_decl
                     | Jamprototype
 
-    keyword         += jasync | jsync | jarray
+    keyword         += jasync | jsync | jarray | jcond | jreuse
 
     jasync = "jasync" ~identPart
     jsync = "jsync" ~identPart
     jarray = "jarray" ~identPart
+    jcond = "jcond" ~identPart
+    jreuse = "jreuse" ~identPart
 
-    type = "type" ~identPart
-    period = "period" ~identPart
-    jitter = "jitter" ~identPart
     reuse = "reuse" ~identPart
-    reuse_limit = "reuse_limit" ~identPart
-    reuse_buffer = "reuse_buffer" ~identPart
-    reuse_function = "reuse_function" ~identPart
-    batch = "BATCH" ~identPart
-    sync = "SYNC" ~identPart
-    realtime = "REALTIME" ~identPart
+    reuse_history = "reuse_history" ~identPart
+    retry = "retry" ~identPart
+    timeout = "timeout" ~identPart
+
     true = "true" ~identPart
     false = "false" ~identPart
 }

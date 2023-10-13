@@ -1,6 +1,19 @@
 let count = 0;
 
-jsync char[60] [reuse = false] compyou(str: char*) {
+jreuse {
+    test(olds, news) {
+        console.log("reusing", count);
+        return count === 3;
+    }
+}
+
+jcond {
+    test(my, your) {
+        return true;
+    }
+}
+
+jsync char[60] {test} [reuse = test, reuse_history = 3] compyou(str: char*) {
     count++;
     console.log(count, str);
     return "hello -- " + count + " " + str;

@@ -278,7 +278,7 @@ C {
     If_stmt         = if "(" Expr ")" Stmt (else Stmt)?
     Switch_stmt     = switch "(" Expr ")" Stmt
 
-    Iteration_stmt  = While_stmt | DoWhile_stmt | Switch_stmt
+    Iteration_stmt  = While_stmt | DoWhile_stmt | For_stmt
     While_stmt      = while "(" Expr ")" Stmt
     DoWhile_stmt    = do Stmt while "(" Expr ")" ";"
     For_stmt        = for "(" (Decl | Expr_stmt) Expr_stmt Expr? ")" Stmt
