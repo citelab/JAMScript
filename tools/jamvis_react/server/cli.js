@@ -1,0 +1,51 @@
+const { Command } = require("commander");
+const serverCli = new Command();
+
+serverCli
+  .name("jamvis")
+  .description("A webapp to visualize JAMScript programs")
+  .version("0.1.0")
+  .usage("-u [hostname] -p [port]");
+
+serverCli
+  .option(
+    "-u, --url <hostname>",
+    "The URL/Hostname of the jamvis server",
+    "localhost",
+  )
+  .option("-p, --port <port>", "The port of the jamvis server", 3000)
+  .option("-w, --websocket-port", "The port of the websocket server jamvis will create", 8080)
+  .option("-m, --mqtt-port", "The port of the mqtt server jamvis will connect to", 18830)
+  .requiredOption(
+    "-a, --app <app name>",
+    "The name of the running JAMScript application",
+  );
+
+serverCli.parse();
+
+const options = serverCli.opts()
+
+
+const printArgs = (options, lengthLines) => {
+  console.log('-'.repeat(lengthLines))
+  console.log(
+    "Starting jamvis on: \t \t",
+    "http://" + options.url + ":" + options.port,
+  );
+  console.log(
+    "Creating WebSocket server at: \t",
+    "ws://" + options.url + ":" + options.websocketPort,
+  );
+  console.log(
+    "Listening to mqtt server at: \t",
+    "mqtt://" + options.url + ":" + options.mqttPort,
+  );
+  console.log("For JAMScript app: \t \t", options.app);
+
+  console.log('-'.repeat(lengthLines))
+}
+
+module.exports = {
+  arguments: options,
+  printArguments: printArgs
+}
