@@ -32,7 +32,6 @@ arg_t remote_sync_call(tboard_t* t, char* cmd_func, char* fn_sig, ...) {
     retarg.type = rarg->type;
     retarg.val = rarg->val;
 
-    command_args_free(qargs);
     free(rarg);
     return retarg;
 }
@@ -53,7 +52,6 @@ bool remote_async_call(tboard_t* t, char* cmd_func, char* fn_sig, ...) {
         va_end(args);
     }
     bool rval = remote_task_create_nb(t, cmd_func, level, fn_sig, qargs, strlen(fn_sig));
-    command_args_free(qargs);
     return rval;
 }
 

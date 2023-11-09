@@ -312,6 +312,9 @@ arg_t* remote_task_create(tboard_t* tboard, char* command, int level, char* fn_a
             tboard_err("remote_task_create: Failed to pop remote task from mco storage interface.\n");
             return NULL;
         } else if (rtask.status == RTASK_COMPLETED) {
+            if (sizeof_args)
+                command_args_free(args); // the rtask.data value will be overwritten with return args
+
             remote_task_free(tboard, rtask.task_id);
             return rtask.data;
         }
@@ -430,8 +433,8 @@ void remote_task_destroy(remote_task_t *rtask) {
         task_destroy(rtask->calling_task);
     }
     // free alloc'd data if applicable
-    // if (rtask->data_size > 0 && rtask->data != NULL)
-    // command_args_free(rtask->data);
+    if (rtask->data_size > 0 && rtask->data != NULL)
+        command_args_free(rtask->data);
     // free rtask object
     free(rtask);
 }
