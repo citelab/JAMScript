@@ -5,9 +5,9 @@ japp nspc {
 
 let count = 0;
 
-jasync you(str: char*) {
+jasync you(str: char*, num: int[]) {
     count++;
-    console.log("Message received: ", str, " local count ", count);
+    console.log("Message received: ", str, num, " local count ", count);
 }
 
 setInterval(()=> {

@@ -6,10 +6,11 @@ jasync localme(int c, char* s) {
 }
 
 jasync localyou(int c, char* s) {
+    jarray int num[5] = {1, 2, 3, 4, 5};
     while(1) {
         jsys.sleep(1000000);
         wprintf(L"############-->>> Hello YOU  %d, %s\n", c, s);
-        you(s);
+        you(s, &num);
     }
 }
 
