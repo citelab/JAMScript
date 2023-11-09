@@ -1,3 +1,8 @@
+japp nspc {
+    required_linker_flags:-lm, -lc;
+    required_clibs: stdio.h , float.h, wchar.h
+}
+
 let count = 0;
 
 jasync you(str: char*) {

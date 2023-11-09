@@ -9,9 +9,26 @@ JAMJS <: ES6 {
 
     Jamnifest       = ( japp | jcomponent ) identifier "{" ListOf<Jfile_list, ";"> ";"? "}"
 
-    Jfile_list      = Jfile_type ":" ListOf<stringLiteral, ",">
+    Jfile_list      = jside ":" ListOf<jfile_path<"jj">, ",">
+                    | cside ":" ListOf<jfile_path<"jc">, ",">
+                    | header ":" ListOf<jfile_path<"jc">, ",">
+                    | others ":" ListOf<jfile_path<jfile_others>, ",">
+                    | components ":" ListOf<jfile_path<"jxc">, ",">
+                    | required_clibs ":" ListOf<jfile_path<"h">, ",">
+                    | required_jlibs ":" ListOf<jfile_path<"js">, ",">
+                    | required_linker_flags ":" ListOf<jlinker_flag, ",">
 
-    Jfile_type      = "jside" | "cside" | "header" | "others" | "components" | "required_clibs" | "required_jlibs"
+     jfile_others   = "js" | "c"
+
+     jfile_path<extension> = (~( jfile_end<extension> space* jfile_terminator ) jfile_path_character)+ jfile_end<extension>
+     jfile_end<extension>  = "." ( extension ) ~identifierPart
+     jfile_path_character  = ~(jfile_path_escaped_character | "*") sourceCharacter     --nonEscaped
+                           | "\\" (jfile_path_escaped_character)                       --escaped
+                           | "*"                                                       --glob
+     jfile_terminator      = "," | ";" | "}"
+     jfile_path_escaped_character = jfile_terminator | "\"" | "\\"
+
+     jlinker_flag          = "-" identifier
 
     Async_task  = jasync Jcond_specifier? Jtask_attr_spec? identifier "(" Jamparam_type_lst ")" FunctionBody
 
@@ -92,4 +109,14 @@ JAMJS <: ES6 {
     reuse_history = "reuse_history" ~identifierPart
     retry = "retry" ~identifierPart
     timeout = "timeout" ~identifierPart
+
+    // manifest
+    jside = "jside" ~identifierPart
+    cside = "cside" ~identifierPart
+    header = "header" ~identifierPart
+    others = "others" ~identifierPart
+    components = "components" ~identifierPart
+    required_clibs = "required_clibs" ~identifierPart
+    required_jlibs = "required_jlibs" ~identifierPart
+    required_linker_flags = "required_linker_flags" ~identifierPart
 }

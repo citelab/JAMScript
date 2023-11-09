@@ -14,7 +14,8 @@ jasync localyou(int c, char* s) {
 }
 
 int main(int argc, char* argv[]) {
-    localme(10, "cxxxxyyyy");
+    wprintf(L"folks we are printing with wide characters\n");
+    localme(FLT_MANT_DIG, "cxxxxyyyy");
     localyou(10, "a-message-for-j");
     return 0;
 }
