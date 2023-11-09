@@ -1,10 +1,8 @@
 const express = require("express");
+const dgram = require("node:dgram");
 const next = require("next");
 const { arguments, printArguments } = require("./cli.js");
-const { startBroker, parseTopic, parseMessage } = require("./broker.js");
 const { startWebSocketServer } = require("./webSocketServer.js");
-
-let nodes = new Map()
 
 // Process and announce CLI Arguments
 const serverInfo = {
@@ -16,10 +14,6 @@ const webSocketInfo = {
   port: arguments.websocketPort,
 };
 
-const mqttInfo = {
-  port: arguments.mqttPort,
-  app: arguments.app,
-};
 printArguments(arguments, 60);
 
 // Create NextJS app in dev or production mode at specified url:port
@@ -28,15 +22,9 @@ const app = next({ dev, hostname: serverInfo.hostname, port: serverInfo.port });
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
-  // Launch other services (mqtt, websocket, etc...)
   const webSocketServer = startWebSocketServer(webSocketInfo.port);
-  const globalBroker = startBroker(
-    serverInfo.hostname,
-    mqttInfo.port,
-    `${mqttInfo.app}/local_registry/+/status`,
-  );
-
   const server = express();
+  const webSockets = [];
 
   // API calls to be processed by external services
   server.get("/websocket", (req, res) => {
@@ -53,31 +41,41 @@ app.prepare().then(() => {
     console.log("Server successfully started");
   });
 
-  globalBroker.on("message", (topic, message) => {
-    const info = parseTopic(topic)
-    if (info.messageType === "status") {
-      messageData = parseMessage(message);
-      console.log("Global broker", info, messageData)
-      console.log("Node ID", info.nodeId)
-      if (messageData.payload !== "offline" && !nodes.has(info.nodeId)) {
-        nodes.set(info.nodeId, messageData)
-        const localBroker = startBroker(messageData.payload.ip, messageData.payload.port, '+/+/+/status');
-        localBroker.on("message", (localTopic, localMessage) => {
-          const localInfo = parseTopic(localTopic)
-          if (!nodes.has(localInfo.nodeId)) {
-            nodes.set(localInfo.nodeId, parseMessage(localMessage))
-            console.log("Local Broker\n", topic, parseTopic(localTopic), parseMessage(localMessage));
-          }
-        });
-      }
-    }
-  });
-
+  // communcation with the client
   webSocketServer.on("connection", (webSocket) => {
+    webSockets.push(webSocket)
     webSocket.on("message", (data) => {
-      const content = JSON.parse(data.toString());
-      const fogData = Array.from(nodes.values());
-      webSocket.send(JSON.stringify(fogData));
+      // example template
+      const template = {
+        type: "Sprite",
+        props: {
+          image: "image/cloud-fog.png",
+        },
+      }
+      // send to client 
+      webSocket.send(JSON.stringify({ type: "template", content: template}))
     });
   });
+
+  const exampleData = { height: 512, width: 512 }
+  setInterval(() => {
+    // update data
+    exampleData.height += exampleData.height > 512 ? -50 : 50
+    exampleData.width += exampleData.width > 512 ? -50 : 50
+    for (let webSocket of webSockets) {
+      webSocket.send(JSON.stringify({type: "data", content: exampleData}))
+    }
+  }, 1000)
+  // communication with the cluster of servers 
+  // Step 1: Connect to root server 
+  const datagram = dgram.createSocket("udp4")
+  const rootServer = arguments.cluster.split(":")
+  datagram.send(JSON.stringify({source: "display", content: { type: "clusterTree"}}), rootServer[1], rootServer[0], (err) => {
+    if (err) {
+      console.log(`Could not send message of type ${obj.type} to ${rinfo}`);
+    }
+  })
+  // Step 2: Cache tree of servers 
+  //
+  // Step 3: Send messages to servers based on client position
 });

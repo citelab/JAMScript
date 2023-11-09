@@ -1,22 +1,18 @@
 "use client";
-import "tailwindcss/tailwind.css";
-import { useEffect, useRef, useState } from "react";
-import { Stage, TilingSprite } from "@pixi/react";
-import ViewportComponent from "@/components/Viewport.js";
+import { useEffect, useRef, useState, createElement } from "react";
+import { Sprite } from "@pixi/react";
 import useWindowDimensions from "@/helpers/windowDimensions.js";
 import Navbar from "@/components/Navbar.js";
-import { Fog } from "@/components/Nodes.js";
-import tailwindConfig from "@/tailwind.config";
-
-// Get the background color from tailwind config
-const viewportBackground = parseInt((tailwindConfig.daisyui.themes[0].darkmode["primary"]).slice(1), 16)
+import MainViewport from "@/components/MainViewport.js";
+import { deserialize } from 'react-serialize'
 
 const StartPage = () => {
   const websocket = useRef(null);
-  const fogs = useRef([])
-  
+  const [level, setLevel] = useState(1);
+  const { height, width } = useWindowDimensions();
+  const [template, setTemplate] = useState(null);
+  const [data, setData] = useState(null);
 
-  // Create websocket only on component mount
   useEffect(() => {
     const openWebSocket = async () => {
       const newSocket = await connectWebSocket();
@@ -26,53 +22,38 @@ const StartPage = () => {
     openWebSocket();
   }, []);
 
+  // Listen for websocket messages
   useEffect(() => {
     if (websocket.current) {
-      websocket.current.addEventListener('message', (message) => {
-        if (message.data) {
-          fogs.current = JSON.parse(message.data)
+      websocket.current.addEventListener("message", (message) => {
+        const parsedMessage = JSON.parse(message.data)
+        switch(parsedMessage.type) {
+          case ("template"):
+            setTemplate(parsedMessage.content);
+            break;
+          case ("data"):
+            setData(parsedMessage.content);
+            break;
         }
-      })
+        
+      });
     }
-  }, [websocket.current])
-  const [level, setLevel] = useState(1);
-  const viewportRef = useRef(null);
-  const { height, width } = useWindowDimensions();
+  }, [websocket.current]);
 
-  const sendLevel = () => {
-    const level = Math.round(viewportRef.current.transform.scale.x);
-    setLevel(level);
-    websocket.current.send(JSON.stringify({ level: level }));
+  const sendLevel = (new_level) => {
+    websocket.current.send(JSON.stringify({ level: new_level }));
+    setLevel(new_level);
   };
 
   return (
     <>
-      <Navbar numFogs={fogs.current.length} />
-      <Stage
-        width={width}
-        height={height - 0.5}
-        options={{
-          backgroundAlpha: 1,
-          antialias: true,
-          backgroundColor: viewportBackground,
-        }}
-      >
-        <ViewportComponent
-          ref={viewportRef}
-          worldWidth={width * 4}
-          worldHeight={height * 4}
-          onZoomEnd={sendLevel}
-          background='/image/services.png'
-        >
-          {fogs.current.map((fog) => (
-            <Fog key={fog.id} x={fog.payload.loc.x} y={fog.payload.loc.y} scale={1 / (level + 1)} />
-          ))}
-        </ViewportComponent>
-      </Stage>
+      <Navbar level={level} />
+      <MainViewport width={width} height={height} sendLevel={sendLevel}>
+        <Template type={template?.type} props={{...template?.props, ...data}}/>
+      </MainViewport>
     </>
   );
 };
-
 
 const connectWebSocket = async () => {
   const response = await fetch("api/websocket");
@@ -82,5 +63,13 @@ const connectWebSocket = async () => {
   );
   return websocket;
 };
+
+const Template = ({type, props}) => {
+  if (type && props) {
+    const element = createElement(type, props)
+    return (element)
+  }
+  return null
+}
 
 export default StartPage;

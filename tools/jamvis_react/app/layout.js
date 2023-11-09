@@ -1,6 +1,6 @@
 import './globals.css'
 export const metadata = {
-  title: 'JAMVis',
+  title: 'JAMVIS',
   description: 'A visualiser for JAMScript applications',
 }
 

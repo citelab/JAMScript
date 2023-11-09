@@ -15,11 +15,7 @@ serverCli
   )
   .option("-p, --port <port>", "The port of the jamvis server", 3000)
   .option("-w, --websocket-port", "The port of the websocket server jamvis will create", 8080)
-  .option("-m, --mqtt-port", "The port of the mqtt server jamvis will connect to", 18830)
-  .requiredOption(
-    "-a, --app <app name>",
-    "The name of the running JAMScript application",
-  );
+  .requiredOption("-c, --cluster <cluster>", "The cluster of servers to connect to", "localhost:6359")
 
 serverCli.parse();
 
@@ -36,12 +32,6 @@ const printArgs = (options, lengthLines) => {
     "Creating WebSocket server at: \t",
     "ws://" + options.url + ":" + options.websocketPort,
   );
-  console.log(
-    "Listening to mqtt server at: \t",
-    "mqtt://" + options.url + ":" + options.mqttPort,
-  );
-  console.log("For JAMScript app: \t \t", options.app);
-
   console.log('-'.repeat(lengthLines))
 }
 

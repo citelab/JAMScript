@@ -10,7 +10,7 @@ const Navbar = (props) => {
   };
   return (
     <>
-      <Sidebar show={showSidebar} numFogs={props.numFogs} />
+      <Sidebar show={showSidebar}  />
       <div className="navbar rounded-lg h-20 bg-base-200 absolute">
         <div className="navbar-start">
           <div className="btn btn-ghost " onClick={onHover}>
@@ -26,6 +26,7 @@ const Navbar = (props) => {
           </a>
         </div>
         <div className="navbar-end">
+          <h1 className="font-mono text-xl"> level = {props.level} </h1>
         </div>
       </div>
     </>
