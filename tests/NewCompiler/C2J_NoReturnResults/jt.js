@@ -1,6 +1,6 @@
 japp nspc {
     required_linker_flags:-lm, -lc;
-    required_clibs: stdio.h , float.h, wchar.h
+    required_clibs: float.h, wchar.h, bazinga.h
 }
 
 let count = 0;
