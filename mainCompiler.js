@@ -7,7 +7,6 @@ const   fs      = require("fs"),
         child_process = require("child_process"),
         crypto  = require("crypto"),
         path    = require("path"),
-        // callGraph = require("./lib/ohm/jamscript/callGraph"),
         jam     = require("./lib/ohm/jamscript/jam"),
         os = require('os'),
         JSZip = require("jszip");
@@ -37,7 +36,6 @@ Inputs:
 `
 
 // global parameters
-let preprocessDecls;
 let tmpDir = "/tmp/jam-" + randomValueHex(20);
 let homeDir = os.homedir();
 
@@ -152,8 +150,11 @@ function runMain(cargs) {
 
     try {
         fs.mkdirSync(tmpDir);
+
+        let jsTree = jam.preprocessJs(fs.readFileSync(cargs.jsPath).toString(), args.verbosity);
+
         try {
-            var preprocessedOutput = preprocess(cargs.cPath, cargs);
+            var preprocessedOutput = preprocess(cargs.cPath, cargs, jam.getCIncludes(jsTree));
             preprocessed = preprocessedOutput.program;
 			lineNumber = preprocessedOutput.lineNumber;
         } catch (e) {
@@ -163,35 +164,22 @@ function runMain(cargs) {
         if (cargs.preprocessOnly)
             printAndExit(preprocessed);
 
-        let results = jam.compile(preprocessed, fs.readFileSync(cargs.jsPath).toString(),
-                                  lineNumber, args.verbosity);
+        let results = jam.compile(preprocessed, jsTree, lineNumber, args.verbosity);
 
         cargs.cSideEffectTable = results.C_SideEffectTable;
         cargs.jsSideEffectTable = results.JS_SideEffectTable;
 
-        // if (cargs.callGraphFlag) {
-        //     fs.writeFileSync("callgraph.html", callGraph.createWebpage());
-        //     fs.writeFileSync("callgraph.dot", callGraph.createDOT());
-        // }
-
         if (!cargs.noCompile) {
-            let task = nativeCompile(results.C, cargs);
+            let task = nativeCompile(results.C, cargs, jam.getCIncludes(jsTree), jam.getCLinkerFlags(jsTree));
             task.then(function (value) {
-                    results.manifest = createManifest(cargs.outPath, results.hasJdata);
-                    createZip(
-                        results.JS,
-                        results.C,
-                        results.manifest,
-                        results.jstart,
-                        tmpDir,
-                        cargs
-                    );
-                    if (!cargs.debug) {
-                        for (var i = 0; i < value.length; i++) {
-                            console.log(value[i]);
-                        }
-                        deleteFolderRecursive(tmpDir);
+                results.manifest = createManifest(cargs.outPath, results.hasJdata);
+                createZip(results.JS, results.C, results.manifest, results.jstart, tmpDir, cargs);
+                if (!cargs.debug) {
+                    for (var i = 0; i < value.length; i++) {
+                        console.log(value[i]);
                     }
+                    deleteFolderRecursive(tmpDir);
+                }
             }).catch(function (error) {
                 console.log(error);
             });
@@ -202,7 +190,7 @@ function runMain(cargs) {
     }
 }
 
-function nativeCompile(code, cargs) {
+function nativeCompile(code, cargs, userIncludes, userLinkerFlags) {
     return new Promise(function (resolve, reject) {
         // Set platform options
         let options = "";
@@ -217,26 +205,17 @@ function nativeCompile(code, cargs) {
             options += " -fno-omit-frame-pointer -fsanitize=address -Wall";
         }
 
-        const includes = [
-                'jam'
-            ]
-            .map((lib) => `#include <${lib}.h>`)
-            .join("\n") + "\n";
+        const requiredIncludes = [`jam.h`];
 
-        fs.writeFileSync(
-            `${tmpDir}/jamout.c`,
-            includes + preprocessDecls.join("\n") + "\n" + code
-        );
+        let includes = requiredIncludes.concat(userIncludes).map(f => `-include "${f}"`).join(" ");
 
+        fs.writeFileSync(`${tmpDir}/jamout.c`, code);
 
         try {
-            var command = `clang -g ${tmpDir}/jamout.c -o ${tmpDir}/a.out -I/usr/local/include -I${homeDir}/.jamruns/clib/include -I${homeDir}/.jamruns/clib/src ${options} -pthread -ltinycbor -lmosquitto -lhiredis -levent  ${homeDir}/.jamruns/clib/libjam.a  ${homeDir}/.jamruns/jamhome/deps/mujs2/build/release/libmujs.a -L/usr/local/lib`;
+            var command = `clang -g ${tmpDir}/jamout.c -o ${tmpDir}/a.out -I/usr/local/include -I${homeDir}/.jamruns/clib/include -I${homeDir}/.jamruns/clib/src ${options} -pthread -ltinycbor -lmosquitto -lhiredis -levent ${userLinkerFlags.join(" ")} ${homeDir}/.jamruns/clib/libjam.a  ${homeDir}/.jamruns/jamhome/deps/mujs2/build/release/libmujs.a -L/usr/local/lib ${includes}`;
 
-            let err = child_process.spawnSync('ld', ['-lwiringPi']).stderr;
-            if(err == null || !err.includes("-lwiringPi"))
-                command += " -lwiringPi";
-            if (args.verbose) console.log("Compiling C code...");
-            if (cargs.verbose) {
+            if (args.verbosity) console.log("[C] Compiling code...");
+            if (cargs.verbosity == 2) {
                 console.log(command);
             }
             // This prints any errors to stderr automatically, so no need to show the error again
@@ -255,21 +234,17 @@ function printAndExit(output) {
     process.exit();
 }
 
-function preprocess(file, cargs) {
+function preprocess(file, cargs, userIncludes) {
+    if (args.verbosity) console.log("[C] Preprocessing...");
 
-    if (args.verbose) console.log("Preprocessing...");
+    let imacros = userIncludes.map(f => `-imacros "${f}"`).join(" ");
 
     let contents = fs.readFileSync(file).toString();
-    preprocessDecls = contents.match(/^[#;].*/gm);
-    if (preprocessDecls === null) {
-        preprocessDecls = [];
-    }
-    let originalProgram = contents;
 
     fs.writeFileSync(`${tmpDir}/pre.c`, contents);
-    let command = `clang -E -P -I/usr/local/include -I${homeDir}/.jamruns/jamhome/deps/fake_libc_include -I${homeDir}/.jamruns/clib/include ${tmpDir}/pre.c`;
+    let command = `clang -E -P -I/usr/local/include -I${homeDir}/.jamruns/clib/include ${imacros} ${tmpDir}/pre.c`;
 
-    if (cargs.verbose)
+    if (cargs.verbosity == 2)
         console.log(command);
 
     let preprocessedProg = child_process.execSync(command).toString();
@@ -306,14 +281,14 @@ function createZip(jsout, cout, mout, jstart, tmpDir, cargs) {
                 var dir = fs.readdirSync(e);
                 process.chdir(e);
                 dir.forEach(function (f) {
-                    if (args.verbose) console.log("Copying file: ", e + "/" + f);
+                    if (args.verbosity) console.log("Copying file: ", e + "/" + f);
                     zip
                         .folder(path.basename(e))
                         .file(path.basename(f), fs.readFileSync(f));
                 });
                 process.chdir("..");
             } else {
-                if (args.verbose) console.log("Copying file: ", e);
+                if (args.verbosity) console.log("Copying file: ", e);
                 zip.file(path.basename(e), fs.readFileSync(e));
             }
         });
