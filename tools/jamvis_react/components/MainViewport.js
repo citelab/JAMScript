@@ -1,7 +1,10 @@
-import { Stage, Sprite } from "@pixi/react";
-import ViewportComponent from "@/components/Viewport.js";
+'use client'
+import { Stage } from "@pixi/react";
 import tailwindConfig from "@/tailwind.config";
 import { useRef } from "react";
+import { Sprite } from "@pixi/react";
+// const ViewportComponent = dynamic(() => import("@/components/Viewport.js"), {ssr: false})
+import ViewportComponent from "@/components/Viewport.js";
 
 // Get the background color from tailwind config
 const viewportBackground = parseInt(

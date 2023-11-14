@@ -3,6 +3,9 @@ const dgram = require("node:dgram");
 const next = require("next");
 const { arguments, printArguments } = require("./cli.js");
 const { startWebSocketServer } = require("./webSocketServer.js");
+const { templateMessage, dataMessage, newTemplates, newData } = require(
+  "./pixi-react-test.js",
+);
 
 // Process and announce CLI Arguments
 const serverInfo = {
@@ -11,6 +14,7 @@ const serverInfo = {
 };
 
 const webSocketInfo = {
+  url: arguments.url,
   port: arguments.websocketPort,
 };
 
@@ -24,10 +28,10 @@ const handle = app.getRequestHandler();
 app.prepare().then(() => {
   const webSocketServer = startWebSocketServer(webSocketInfo.port);
   const server = express();
-  const webSockets = [];
+  const webSockets = new Map();
 
   // API calls to be processed by external services
-  server.get("/websocket", (req, res) => {
+  server.get("/api/websocket", (req, res) => {
     return res.send(webSocketInfo);
   });
 
@@ -38,44 +42,71 @@ app.prepare().then(() => {
 
   server.listen(serverInfo.port, (error) => {
     if (error) throw error;
-    console.log("Server successfully started");
   });
 
+  const templates = newTemplates(50);
   // communcation with the client
-  webSocketServer.on("connection", (webSocket) => {
-    webSockets.push(webSocket)
-    webSocket.on("message", (data) => {
-      // example template
-      const template = {
-        type: "Sprite",
-        props: {
-          image: "image/cloud-fog.png",
-        },
+  webSocketServer.on("connection", (webSocket, req) => {
+
+    // store webSocket information index by its ip
+    const ip = req.socket.remoteAddress
+    webSockets.set(ip, webSocket);
+    console.log("New connection from", ip)
+
+    // handle incoming messages
+    webSocket.on("message", (message) => {
+      const parsedMessage = JSON.parse(message.toString())
+
+      if (parsedMessage.type === "template") {
+        webSocket.send(templateMessage(templates))
       }
-      // send to client 
-      webSocket.send(JSON.stringify({ type: "template", content: template}))
-    });
+    })  
+
+    webSocket.on("close", (code) => {
+      console.log("Websocket at", ip, "closed with code", code)
+    })
   });
 
-  const exampleData = { height: 512, width: 512 }
+
+  // send data to all connected websockets
   setInterval(() => {
-    // update data
-    exampleData.height += exampleData.height > 512 ? -50 : 50
-    exampleData.width += exampleData.width > 512 ? -50 : 50
-    for (let webSocket of webSockets) {
-      webSocket.send(JSON.stringify({type: "data", content: exampleData}))
+    let myTemplates = [...templates]
+    for (let webSocket of webSockets.values()) {
+      const positionChanges = newData({ min: -30, max: 30 })(myTemplates)
+      const newPositions = []
+      myTemplates = myTemplates.map((node, index) => {
+        const myNode = {...node}
+        myNode.position.x += positionChanges[index].x
+        myNode.position.y += positionChanges[index].y
+        newPositions.push({x: myNode.position.x, y: myNode.position.y})
+        return myNode
+      })
+      
+      const data = dataMessage(newPositions)
+      webSocket.send(data)
     }
-  }, 1000)
-  // communication with the cluster of servers 
-  // Step 1: Connect to root server 
-  const datagram = dgram.createSocket("udp4")
-  const rootServer = arguments.cluster.split(":")
-  datagram.send(JSON.stringify({source: "display", content: { type: "clusterTree"}}), rootServer[1], rootServer[0], (err) => {
-    if (err) {
-      console.log(`Could not send message of type ${obj.type} to ${rinfo}`);
-    }
-  })
-  // Step 2: Cache tree of servers 
+  }, 10);
+
+  // communication with the cluster of servers
+  // Step 1: Connect to root server
+  // const datagram = dgram.createSocket("udp4");
+  // const rootServer = arguments.cluster.split(":");
+  // datagram.send(
+  //   JSON.stringify({ source: "display", type: "template" }),
+  //   rootServer[1],
+  //   rootServer[0],
+  //   (err) => {
+  //     if (err) {
+  //       console.log(`Could not send message of type ${obj.type} to ${rinfo}`);
+  //     }
+  //   },
+  // );
   //
-  // Step 3: Send messages to servers based on client position
+  // datagram.on("message", (message, rinfo) => {
+  //   parsedMessage = JSON.parse(message);
+  //   switch (parsedMessage.type) {
+  //     case ("template"):
+  //       template = parsedMessage.content;
+  //   }
+  // });
 });

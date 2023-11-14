@@ -46,6 +46,17 @@ const handleError = (server) => (err) => {
   }
 };
 
+const serverTemplate = [{
+  type: "Rectangle",
+  props: { startX: 50, startY: 50, endX: 100, endY: 100}
+},{
+  type: "Rectangle",
+  props: { startX: 100, startY: 50, endX: 150, endY: 100}
+},{
+  type: "Rectangle",
+  props: { startX: 150, startY: 50, endX: 200, endY: 100}
+  }
+]
 const StartServer = () => {
   const options = getCliOptions();
   const server = dgram.createSocket("udp4");
@@ -56,6 +67,11 @@ const StartServer = () => {
     area: options.serverArea,
     children: [],
   };
+
+  const serverInfo = {
+    template: serverTemplate,
+    data: new Map()
+  }
 
 
   if (options.verbose) {
@@ -79,6 +95,14 @@ const StartServer = () => {
     // send servers' features to display
     //
     // case: display requests data
+    //
+    //
+    switch (message.type) {
+      case "template":
+        console.log("Sending template to", rinfo)
+        server.send({type: "template", content: JSON.stringify(serverInfo.template)}, rinfo)
+      break;
+    }
     // send data to display
   })
 
@@ -86,8 +110,6 @@ const StartServer = () => {
     console.log("received message")
     switch (message.type) {
       case "features":
-        console.log("features received")
-        console.log(message.content)
         serverFeatures.children.push(message.content);
         break;
       case "data":

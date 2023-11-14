@@ -3,5 +3,6 @@
     "paths": {
       "@/*": ["./*"]
     }
-  }
+  },
+  "javascript.suggestionActions.enabled": false,
 }
