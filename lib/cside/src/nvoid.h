@@ -36,6 +36,11 @@ typedef struct _nvoid_t {
     uint8_t data[8];
 } __attribute__ ((__aligned__ (8), __packed__)) nvoid_t;
 
+typedef struct _nvoid_refcount_t {
+    unsigned refcount;
+    nvoid_t* nv;
+} nvoid_refcount_t;
+
 nvoid_t* nvoid_new(uint32_t cap, uint8_t* data, uint32_t len);
 nvoid_t* nvoid_empty(uint32_t maxlen, char typefmt);
 nvoid_t* nvoid_dup(nvoid_t* src);
@@ -91,13 +96,106 @@ void* nvoid_panic(const char* msg, ...);
     }
 
 // Doing these with macros because it ensures they are typed correctly
-#define NVOID_STATIC_PUSH(NVOID, TYPE, VALUE)                           \
-    ((void)(NVOID.len < NVOID.maxlen ? (NVOID.data[NVOID.len++] = VALUE) : *(TYPE*)nvoid_panic("Attempted to push to nvoid " #NVOID " above maxlen %u\n", NVOID.maxlen)))
+#define NVOID_STATIC_PUSH(NVOID, VALUE)                                 \
+    ({                                                                  \
+        __auto_type __nv = (NVOID);                                     \
+        if (__nv.len >= __nv.maxlen)                                    \
+            nvoid_panic("Attempted to push to nvoid above maxlen %u\n", __nv.maxlen); \
+        __nv.data[__nv.len++] = (VALUE);                                \
+    })
 
-#define NVOID_STATIC_POP(NVOID, TYPE)                                   \
-    (NVOID.len > 0 ? NVOID.data[--NVOID.len] : *(TYPE*)nvoid_panic("Attempted to pop from empty nvoid " #NVOID "\n"))
+#define NVOID_STATIC_POP(NVOID)                                         \
+    ({                                                                  \
+        __auto_type __nv = (NVOID);                                     \
+        if (__nv.len <= 0)                                              \
+            nvoid_panic("Attempted to pop from empty nvoid\n");         \
+        __nv.data[--__nv.len];                                          \
+    })
 
-#define NVOID_STATIC_AT(NVOID, TYPE, INDEX)                             \
-    (*(INDEX < NVOID.len && INDEX > 0 ? &(NVOID.data[INDEX]) : (TYPE*)nvoid_panic("Index out off bounds " #NVOID "[%u]\n", (unsigned int)INDEX)))
+
+#define NVOID_STATIC_AT(NVOID, INDEX)                                   \
+    (*({                                                                \
+            __auto_type __nv = (NVOID);                                 \
+            __auto_type __ind = (INDEX);                                \
+            if (__ind >= __nv.len || __ind < 0)                         \
+                nvoid_panic("Index out off bounds %u\n", (unsigned int)__ind); \
+            &__nv.data[__ind];                                          \
+        }))
+
+#define NVOID_STATIC_LEN(NVOID)                 \
+    ((size_t)(NVOID).len)
+
+#define NVOID_STATIC_INSERT(NVOID, VALUE, INDEX)                        \
+    ({                                                                  \
+        __auto_type __nv = (NVOID);                                     \
+        __auto_type __ind = (INDEX);                                    \
+        if (__nv.len >= __nv.maxlen)                                    \
+            nvoid_panic("Attempted to push to nvoid above maxlen %u\n", __nv.maxlen); \
+        else if (__ind > __nv.len || __ind < 0)                         \
+            nvoid_panic("Index out off bounds %u\n", (unsigned int)__ind); \
+        memmove(&__nv.data[__ind + 1], &__nv.data[__ind], __nv.typesize * (__nv.len - __ind)); \
+        __nv.data[__ind] = (VALUE);                                     \
+    })
+
+#define NVOID_STATIC_REMOVE(NVOID, INDEX)                               \
+    ({                                                                  \
+        __auto_type __nv = (NVOID);                                     \
+        __auto_type __ind = (INDEX);                                    \
+        if (__ind >= __nv.len || __ind < 0)                             \
+            nvoid_panic("Index out off bounds %u\n", (unsigned int)__ind); \
+        __auto_type __val = __nv.data[__ind];                           \
+        memmove(&__nv.data[__ind], &__nv.data[__ind + 1], __nv.typesize * (__nv.len - __ind - 1)); \
+        __val;                                                          \
+    })
+
+// dynamic macros
+// the compiler needs to make sure that the NVOID is always an lval here
+#define NVOID_DYNAMIC_PUSH(NVOID, VALUE)                            \
+    ({                                                              \
+        if ((NVOID)->len >= (NVOID)->maxlen)                        \
+            (NVOID) = (typeof(NVOID))realloc((nvoid_t*)(NVOID));    \
+        (NVOID)->data[(NVOID)->len++] = (VALUE);                    \
+    })
+
+#define NVOID_DYNAMIC_POP(NVOID)                                \
+    ({                                                          \
+        if ((NVOID)->len <= 0)                                  \
+            nvoid_panic("Attempted to pop from empty nvoid\n"); \
+        (NVOID)->data[--(NVOID)->len];                          \
+    })
+
+
+#define NVOID_DYNAMIC_AT(NVOID, INDEX)                                  \
+    (*({                                                                \
+            __auto_type __ind = (INDEX);                                \
+            if (__ind >= (NVOID)->len || __ind < 0)                     \
+                nvoid_panic("Index out off bounds %u\n", (unsigned int)__ind); \
+            &(NVOID)->data[__ind];                                      \
+        }))
+
+#define NVOID_DYNAMIC_LEN(NVOID)                \
+    ((size_t)(NVOID)->len)
+
+#define NVOID_DYNAMIC_INSERT(NVOID, VALUE, INDEX)                       \
+    ({                                                                  \
+        __auto_type __ind = (INDEX);                                    \
+        if (__ind > (NVOID)->len || __ind < 0)                          \
+            nvoid_panic("Index out off bounds %u\n", (unsigned int)__ind); \
+        else if ((NVOID)->len >= (NVOID)->maxlen)                       \
+            (NVOID) = (typeof(NVOID))realloc((nvoid_t*)(NVOID));        \
+        memmove(&(NVOID)->data[__ind + 1], &(NVOID)->data[__ind], (NVOID)->typesize * ((NVOID)->len - __ind)); \
+        (NVOID)->data[__ind] = (VALUE);                                 \
+    })
+
+#define NVOID_DYNAMIC_REMOVE(NVOID, INDEX)                              \
+    ({                                                                  \
+        __auto_type NVOID = (NVOID);                                    \
+        __auto_type __ind = (INDEX);                                    \
+        if (__ind >= (NVOID)->len || __ind < 0)                         \
+            nvoid_panic("Index out off bounds %u\n", (unsigned int)__ind); \
+        __auto_type __val = (NVOID)->data[__ind];                       \
+        memmove(&(NVOID)->data[__ind], &(NVOID)->data[__ind + 1], (NVOID)->typesize * ((NVOID)->len - __ind - 1)); \
+        __val;                                                          \
+    })
 
 #endif

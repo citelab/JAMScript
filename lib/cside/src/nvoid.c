@@ -138,6 +138,13 @@ char* str_nvoid(nvoid_t* src) {
     return str;
 }
 
+nvoid_t* nvoid_realloc(nvoid_t* src) {
+    src->maxlen += 16;
+    uint32_t bytelen = src->maxlen * src->typesize;
+    src->size = bytelen >= 8 ? (bytelen | 7) + 1 : 8;
+    return (nvoid_t*)realloc(src, src->size);
+}
+
 void nvoid_free(nvoid_t* nv) {
     if (!nv->static_alloc)
         free(nv);
