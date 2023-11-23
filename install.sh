@@ -134,7 +134,7 @@ elif [ $machine = Mac ]; then
     # install redis
     if ! command -v redis-server &> /dev/null; then
         echo "Redis not found: installing..."
-        brew install redis
+        brew install redis hiredis
     fi
 
 fi
