@@ -25,13 +25,13 @@ JAMC <: C {
                     | Jamtype
 
     Jamtype         = unsigned? int                                    -- Int
-                    | unsigned                                         -- IntUnsigned
                     | unsigned? long long int?                         -- LongLongInt
                     | long unsigned long int?                          -- LongUnsignedLongInt
                     | long long unsigned int?                          -- LongLongUnsignedInt
                     | unsigned? char                                   -- Char
                     | float                                            -- Float
                     | double                                           -- Double
+                    | unsigned                                         -- IntUnsigned
 
     Jamparam_type_lst = ListOf<Jamparam_decl, ",">
 
