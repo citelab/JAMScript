@@ -270,6 +270,7 @@ command_t* command_from_data(char* fmt, void* data, int len) {
         } else if (strcmp(keybuf, "fn_name") == 0) {
             length = SMALL_CMD_STR_LEN;
             cbor_value_copy_text_string	(&map, cmd->fn_name, &length, NULL);
+            // printf("%s\n", cmd->fn_name);
         } else if (strcmp(keybuf, "fn_argsig") == 0) {
             length = SMALL_CMD_STR_LEN;
             if (cbor_value_is_text_string(&map)) {
@@ -456,9 +457,9 @@ command_t* command_from_data(char* fmt, void* data, int len) {
 #pragma GCC diagnostic push
                             cbor_value_advance(&arrayEnc);
                         }
-
+                        i++;
                         cbor_value_leave_container(&arr, &arrayEnc);
-                        break;
+                        continue;
                     default:
                         printf("Unrecognized CBOR %d command_from_data\n", ty);
                         assert(false);
