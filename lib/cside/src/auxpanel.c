@@ -255,7 +255,7 @@ uflow_obj_t* uflow_obj_clone(uflow_obj_t* u) {
     uo->clock = u->clock;
     uo->len = u->len;
     uo->value = malloc(u->len);
-    memcpy(&uo->value, &u->value, u->len);
+    memcpy(uo->value, u->value, u->len);
 
     printf("cloning uobj [%zu]", (size_t) uo->len);
     for (int i=0;i<uo->len;i++)
