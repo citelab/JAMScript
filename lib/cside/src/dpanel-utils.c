@@ -98,6 +98,7 @@ void do_struct_encoding(CborEncoder* enc, char* fmt, va_list args) {
 
     for (int i = 0; i < len; i++) {
         char* label = va_arg(args, char*);
+        printf("encoded label %s\n", label);
         cbor_encode_text_stringz(&mapEnc, label);
 
         do_basic_type_encoding(&mapEnc, fmt[i], args);
