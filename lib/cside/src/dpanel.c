@@ -200,7 +200,7 @@ void dpanel_uaddall(dpanel_t* dp) { // add all pending uflow objects to outgoing
             pthread_mutex_lock(&(dp->mutex));
             apanel_send_to_fogs(dp->apanels, uobj);
             pthread_mutex_unlock(&(dp->mutex));
-            printf("writing [%d]", (size_t) uobj->len);
+            printf("writing [%zu]", (size_t) uobj->len);
             for (int i=0;i<uobj->len;i++)
                 printf(" %.2x", i[(uint8_t*) uobj->value]);
             putchar('\n');
@@ -421,7 +421,7 @@ void ufwrite_array(uftable_entry_t* uf, uint8_t* buf, size_t buflen, nvoid_t* nv
 
 void ufwrite_struct(uftable_entry_t* uf, uint8_t* buf, size_t buflen, char* fmt, ...) {
     CborEncoder encoder;
-    printf("allowed size %d\n", buflen);
+    printf("allowed size %zu\n", buflen);
     cbor_encoder_init(&encoder, buf, buflen, 0);
 
     va_list args;
