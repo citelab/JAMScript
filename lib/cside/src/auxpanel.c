@@ -194,7 +194,7 @@ void apanel_uaddall(auxpanel_t* ap) { // add all pending uflow objects to outgoi
             // send without a callback for pipelining.
             redisAsyncCommand(ap->a_uctx, apanel_uerrorcheck, NULL, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, ap->logical_id, ap->logical_appid, cn->width, cn->xcoord, cn->ycoord, (uint8_t*) uobj->value, (size_t) uobj->len);
         }
-        free(uobj);
+        freeUObject(uobj);
         free(next);
     }
 }
@@ -254,7 +254,8 @@ uflow_obj_t* uflow_obj_clone(uflow_obj_t* u) {
     uo->fmt = u->fmt;
     uo->clock = u->clock;
     uo->len = u->len;
-    uo->value = u->value;
+    uo->value = malloc(u->len);
+    memcpy(&uo->value, &u->value, u->len);
 
     printf("cloning uobj [%zu]", (size_t) uo->len);
     for (int i=0;i<uo->len;i++)
