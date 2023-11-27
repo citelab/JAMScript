@@ -181,12 +181,6 @@ void apanel_uaddall(auxpanel_t* ap) { // add all pending uflow objects to outgoi
             return;
         uflow_obj_t* uobj = (uflow_obj_t*)next->data;
 
-        printf("auxpanel writing [%zu]", (size_t) uobj->len);
-        for (int i=0;i<uobj->len;i++)
-            printf(" %.2x", i[(uint8_t*) uobj->value]);
-        putchar('\n');
-
-
         if (last || !--overrun) {
             // send with a callback
             redisAsyncCommand(ap->a_uctx, apanel_ucallback, ap, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, ap->logical_id, ap->logical_appid, cn->width, cn->xcoord, cn->ycoord, (uint8_t*) uobj->value, (size_t) uobj->len);
@@ -256,12 +250,6 @@ uflow_obj_t* uflow_obj_clone(uflow_obj_t* u) {
     uo->len = u->len;
     uo->value = malloc(u->len);
     memcpy(uo->value, u->value, u->len);
-
-    printf("cloning uobj [%zu]", (size_t) uo->len);
-    for (int i=0;i<uo->len;i++)
-        printf(" %.2x", i[(uint8_t*) uo->value]);
-    putchar('\n');
-
 
     return uo;
 }

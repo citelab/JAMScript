@@ -197,13 +197,11 @@ void dpanel_uaddall(dpanel_t* dp) { // add all pending uflow objects to outgoing
             if (next == NULL)
                 return;
             uflow_obj_t* uobj = (uflow_obj_t*)next->data;
+
             pthread_mutex_lock(&(dp->mutex));
             apanel_send_to_fogs(dp->apanels, uobj);
             pthread_mutex_unlock(&(dp->mutex));
-            printf("writing [%zu]", (size_t) uobj->len);
-            for (int i=0;i<uobj->len;i++)
-                printf(" %.2x", i[(uint8_t*) uobj->value]);
-            putchar('\n');
+
             if (last || !--overrun) {
                 // send with a callback
                 redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, (uint8_t*) uobj->value, (size_t) uobj->len);
@@ -421,7 +419,6 @@ void ufwrite_array(uftable_entry_t* uf, uint8_t* buf, size_t buflen, nvoid_t* nv
 
 void ufwrite_struct(uftable_entry_t* uf, uint8_t* buf, size_t buflen, char* fmt, ...) {
     CborEncoder encoder;
-    printf("allowed size %zu\n", buflen);
     cbor_encoder_init(&encoder, buf, buflen, 0);
 
     va_list args;
@@ -430,8 +427,8 @@ void ufwrite_struct(uftable_entry_t* uf, uint8_t* buf, size_t buflen, char* fmt,
     va_end(args);
 
     dpanel_t* dp = (dpanel_t*)(uf->dpanel);
+
     int clen = cbor_encoder_get_buffer_size(&encoder, buf);
-    printf("cbor len %d\n", clen);
     uflow_obj_t* uobj = uflow_obj_new(uf, (char*)buf, clen);
 
     struct queue_entry* e = queue_new_node(uobj);
