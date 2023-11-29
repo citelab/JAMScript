@@ -6,7 +6,7 @@ jasync calculateGradient(int data[]) {
 
     while (1) {
         printf("Before sleep... \n");
-        jsys.sleep(1000); // TODO
+        jsys.sleep(10000000); // TODO
         jarray int gradient[128] = {1, 2, 3};
 
         printf("writing to uflow %d\n", dataTag);
