@@ -220,6 +220,7 @@ doaout() {
     local num=$1
     local port=$2
     local group=$3
+    local datap=$4
 
     if [ -e a.out ]; then
         chmod +x a.out
@@ -228,7 +229,7 @@ doaout() {
     while [ $counter -le $num ]; do
         if [ -e a.out ]; then
             # execute the program.. we are in the folder..
-            buildcargs "-a=$jappid" "-p=$port" "-n=$counter" "-g=$group" "-t=$tags"
+            buildcargs "-a=$jappid" "-p=$port" "-n=$counter" "-g=$group" "-t=$tags" "-o=$datap"
             local cargs=$results
 
             if [ -z $DISABLE_STDOUT_REDIRECT ]; then
@@ -328,27 +329,32 @@ cleanuptmux() {
 
 startredis() {
     local port=$1
-    # Start redis with no protected-mode and at the port
-    echo -e "port $1\nprotected-mode no" | redis-server  --port $port  - 1> /dev/null &
+    redis-server  --port $port  - 1> /dev/null &
 }
 
 waitforredis() {
     local port=$1
 
     while : ; do
-        local present=`ps auwwx | grep redis-server | grep $port | wc -l | tr -d '[:space:]'`
-
-        if [ $present == "1" ]; then
+        local resp=`redis-cli -p $port -c PING 2>/dev/null`
+        if [[ $resp == "PONG" ]]; then
             break
         fi
-
-	echo Trying to find redis server...
+        if [ -z $NOVERBOSE ]; then
+            echo Trying to find redis server...
+        fi
         sleep 1
     done
     if [ -z $NOVERBOSE ]; then
         echo ">>> Redis running at port: $port"
     fi
+}
+
+setupredis() {
+    local port=$1
+
     cat $REDISFUNCS | redis-cli -p $port -x FUNCTION LOAD REPLACE > /dev/null
+    echo "set protected-mode no" | redis-cli -p $port > /dev/null
 }
 
 
@@ -360,6 +366,7 @@ resolvedata() {
 
     startredis $port
     waitforredis $port
+    setupredis $port
     
     if [ $host == "docker" ]; then
         local ipaddr=`hostname -I`
@@ -666,10 +673,6 @@ if [ -e "$file" ]; then
     getheight
     getjdata
 
-    if [ "$jdata" = true ]; then
-        resolvedata $data
-    fi
-
     if [ -e jstart.js ]; then
         # save the current program information for short cut use
         save "$filenoext" $appfolder/program
@@ -684,6 +687,10 @@ if [ -e "$file" ]; then
                     [[ $porttaken == 1 ]] || break
                     ((iport++))
                 done
+                if [ "$jdata" = true ]; then
+                    dport=$((iport + 20000))
+                    resolvedata "127.0.0.1:$dport"
+                fi
                 create_missingdir $folder/$iport
                 create_conffile "${folder}/${iport}/mqtt.conf"  $iport
                 getappid $jamfolder $folder/$iport $app
@@ -696,6 +703,10 @@ if [ -e "$file" ]; then
                     [[ $porttaken == 1 ]] || break
                     ((iport++))
                 done
+                if [ "$jdata" = true ]; then
+                    dport=$((iport + 20000))
+                    resolvedata "127.0.0.1:$dport"
+                fi
                 create_missingdir $folder/$iport
                 create_conffile "${folder}/${iport}/mqtt.conf"  $iport
                 getappid $jamfolder $folder/$iport $app
@@ -713,13 +724,16 @@ if [ -e "$file" ]; then
                 else
                     group=0
                 fi
+                if [ "$jdata" = true ]; then
+                    dport=$((iport + 20000))
+                    resolvedata "127.0.0.1:$dport"
+                fi
                 create_missingdir $folder/$iport
                 create_conffile "${folder}/${iport}/mqtt.conf"  $iport
                 getappid $jamfolder $folder/$iport $app
                 dojamout_p1 $type $iport $folder
                 setuptmux $folder/$iport
-		
-                doaout $num $iport $group
+                doaout $num $iport $group $dport
                 dojamout_p2 $type $iport $folder $group
                 if [ -z $bg ]; then
                     cleanuptmux
