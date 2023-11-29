@@ -72,7 +72,7 @@ typedef struct _command_t
     char node_id[LARGE_CMD_STR_LEN];            // this can be the UUID4 of the source of the message
     char old_id[LARGE_CMD_STR_LEN];             // this can be the UUID4 of the original message (only valid in a "reply")
     char fn_argsig[SMALL_CMD_STR_LEN];          // Argument signature of the functions - use fmask format
-    unsigned char buffer[HUGE_CMD_STR_LEN];     // CBOR byte array in raw byte form
+    unsigned char buffer[HUGE_CMD_STR_LEN];     // TODO: CBOR byte array in raw byte form -- overflow problems ...
     int length;                                 // length of the raw CBOR data
 
     arg_t* args;                                // List of args

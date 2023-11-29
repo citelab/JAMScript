@@ -27,12 +27,29 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <assert.h>
 #include <stdio.h>
 
+uint16_t nvoid_typesize(char typefmt) {
+    switch (typefmt) {
+    case 'c':
+    case 'b':
+        return 1;
+    case 'i':
+    case 'u':
+    case 'f':
+        return 4;
+    case 'l':
+    case 'z':
+    case 'd':
+        return 8;
+    default: assert(0);
+    }
+}
+
 // the nvoid_t structure has its own copy of the
 // data. so the source "data" could be released by
 // originating routine.
-nvoid_t* nvoid_new(uint32_t size, uint8_t* data, uint32_t len) {
-    assert(len <= size);
-    nvoid_t* nv = nvoid_empty(size, 'b');
+nvoid_t* nvoid_new(uint32_t maxlen, uint8_t* data, uint32_t len) {
+    assert(len <= maxlen);
+    nvoid_t* nv = nvoid_empty(maxlen, 'b');
     nv->len = len;
     if (data != NULL)
         memcpy(nv->data, data, len);
@@ -40,26 +57,26 @@ nvoid_t* nvoid_new(uint32_t size, uint8_t* data, uint32_t len) {
     return nv;
 }
 
-nvoid_t* nvoid_empty(uint32_t maxlen, char typefmt) {
-    uint16_t typesize;
+void nvoid_init(nvoid_t* nv, uint32_t maxlen, char typefmt, uint8_t* data, uint32_t len) {
+    assert(len <= maxlen);
     typefmt |= 32; // lowercase
-    switch (typefmt) {
-    case 'c':
-    case 'b':
-        typesize = 1;
-        break;
-    case 'i':
-    case 'u':
-    case 'f':
-        typesize = 4;
-        break;
-    case 'l':
-    case 'z':
-    case 'd':
-        typesize = 8;
-        break;
-    default: assert(0);
-    }
+    uint16_t typesize = nvoid_typesize(typefmt);
+
+    uint32_t size = maxlen * typesize;
+    uint32_t aligned_size = size >= 8 ? (size | 7) + 1 : 8;
+    nv->maxlen = maxlen;
+    nv->size = aligned_size;
+    nv->typesize = typesize;
+    nv->typefmt = typefmt;
+    nv->len = len;
+    if (data != NULL)
+        memcpy(nv->data, data, len);
+    nv->data[len] = '\0';
+}
+
+nvoid_t* nvoid_empty(uint32_t maxlen, char typefmt) {
+    typefmt |= 32; // lowercase
+    uint16_t typesize = nvoid_typesize(typefmt);
     uint32_t size = maxlen * typesize;
     uint32_t aligned_size = size >= 8 ? (size | 7) + 1 : 8;
     nvoid_t* nv = (nvoid_t*)aligned_alloc(8, aligned_size + 16);
