@@ -18,11 +18,11 @@ int get_jamclock(cnode_t *cn)
 }
 
 int get_serial(cnode_t *cn) {
-    cn->core->serial_num;
+    return cn->core->serial_num;
 }
 
 char *get_id(cnode_t *cn) {
-    cn->core->device_id;
+    return cn->core->device_id;
 }
 
 // Memory leak here
