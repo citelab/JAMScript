@@ -19,5 +19,6 @@
 
 #define __jname__jsys__sleep(X)               sleep_task_create(cnode->tboard, X)
 #define __jname__jsys__yield()                task_yield()
+#define __jname__jsys__dontyield()            ((void)0)
 
 #endif
