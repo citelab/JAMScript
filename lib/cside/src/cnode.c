@@ -17,6 +17,14 @@ int get_jamclock(cnode_t *cn)
     return 0;
 }
 
+int get_serial(cnode_t *cn) {
+    cn->core->serial_num;
+}
+
+char *get_id(cnode_t *cn) {
+    cn->core->device_id;
+}
+
 // Memory leak here
 topics_t *cnode_create_topics(char *app)
 {
