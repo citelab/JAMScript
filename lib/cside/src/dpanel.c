@@ -541,10 +541,14 @@ void dflow_callback(redisAsyncContext* c, void* r, void* privdata) {
 
     HASH_FIND(hh, t->task_table, &(entry->taskid), sizeof(uint64_t), rtask);
     if (rtask != NULL) {
+        int i;
         if(rtask->status == DFLOW_TASK_COMPLETED)
             return;
 
-        redisReply* cborData = (reply->element[7]);
+        for (i = 0; i < reply->elements; i++)
+            if (strncmp(reply->element[i]->str, "value###", 8) == 0)
+                break;
+        redisReply* cborData = (reply->element[i+1]);
         rtask->data = malloc(cborData->len);
 
         memcpy(rtask->data, cborData->str, cborData->len);
