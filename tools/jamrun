@@ -355,6 +355,7 @@ setupredis() {
 
     cat $REDISFUNCS | redis-cli -p $port -x FUNCTION LOAD REPLACE > /dev/null
     echo "set protected-mode no" | redis-cli -p $port > /dev/null
+    echo 'config set save ""protected-mode no' | redis-cli -p $port > /dev/null
 }
 
 
