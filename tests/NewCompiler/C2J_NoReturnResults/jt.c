@@ -1,6 +1,7 @@
 jasync localme(int c, char* s) {
     while(1) {
-        jsys.sleep(2000000);
+        // jsys.sleep(2000000);
+        jsys.dontyield();
         wprintf(L"############-->>> Hello  ME  %d... %s\n", c, s);
     }
 }
