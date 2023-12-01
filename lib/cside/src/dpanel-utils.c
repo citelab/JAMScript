@@ -108,6 +108,7 @@ void do_struct_encoding(CborEncoder* enc, char* fmt, va_list args) {
 int __extract_cbor_type(CborValue* dec, void* loc, char type) {
     int tmp_int, error = 0;
     uint64_t tmp_uint;
+    int64_t tmp_llint;
     size_t n;
     switch(cbor_value_get_type(dec)){
     case CborIntegerType:
@@ -132,6 +133,14 @@ int __extract_cbor_type(CborValue* dec, void* loc, char type) {
             break;
         case 'z':
             cbor_value_get_uint64(dec, (uint64_t*)loc);
+            break;
+        case 'd':
+            cbor_value_get_int64(dec, &tmp_llint);
+            *(double*)loc = (double)tmp_llint;
+            break;
+        case 'f':
+            cbor_value_get_int64(dec, &tmp_llint);
+            *(double*)loc = (double)tmp_llint;
             break;
         default:
             printf("CBOR type mismatch: found Integer, expected %c\n", type);
@@ -246,7 +255,7 @@ int __extract_cbor_type(CborValue* dec, void* loc, char type) {
         }
         break;
     default:
-        printf("CBOR unknown type\n");
+        printf("CBOR unknown type %x\n", cbor_value_get_type(dec));
         error = 1;
         cbor_value_advance(dec);
     }
@@ -256,6 +265,12 @@ int __extract_cbor_type(CborValue* dec, void* loc, char type) {
 int __extract_basic_type(const uint8_t* buffer, size_t len, char type, void* loc) {
     CborParser parser;
     CborValue value;
+
+    // printf("extracting dflow buf [%zu]:", len);
+    // for (int i=0; i < len; i++)
+    //     printf(" %.2x", i[buffer]);
+    // putchar('\n');
+
     cbor_parser_init(buffer, len, 0, &parser, &value);
     return __extract_cbor_type(&value, loc, type);
 }
