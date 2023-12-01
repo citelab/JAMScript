@@ -431,6 +431,12 @@ void ufwrite_struct(uftable_entry_t* uf, uint8_t* buf, size_t buflen, char* fmt,
     int clen = cbor_encoder_get_buffer_size(&encoder, buf);
     uflow_obj_t* uobj = uflow_obj_new(uf, (char*)buf, clen);
 
+    // printf("writing uflow struct buf [%d]: ", clen);
+    // for (int i=0; i < clen; i++)
+    //     printf("%.2x", i[buf]);
+    // putchar('\n');
+
+
     struct queue_entry* e = queue_new_node(uobj);
     pthread_mutex_lock(&(dp->ufmutex));
     queue_insert_tail(&(dp->ufqueue), e);

@@ -265,7 +265,7 @@ void apanel_ufwrite(auxpanel_t* ap, uflow_obj_t* u) {
 
 void apanel_send_to_fogs(arecord_t* ar, void* u) {
     int nfogs = HASH_COUNT(ar);
-    printf("nfogs: %d\n", nfogs);
+    // printf("nfogs: %d\n", nfogs);
     if (nfogs == 0) return;
 
     uflow_obj_t* uo = (uflow_obj_t*)u;
