@@ -1,4 +1,15 @@
+jdata {
+    int ppp as uflow;
+}
 
-setInterval(()=> {
-    console.log("This is from J");
-}, 1000);
+async function getloop() {
+    let x;
+    while(true) {
+        x = await ppp.readLast();
+        console.log("Value received... ", x);
+    }
+}
+
+console.log("I am in the device J .. expecting data from the C workers.");
+await getloop();
+
