@@ -91,6 +91,9 @@ broker_info_t *cnode_scanj(int groupid, char *host, int port);
 void cnode_setcoords(cnode_t *cn, float xc, float yc);
 void cnode_setwidth(cnode_t *cn, int width);
 
+int get_serial(cnode_t *cn);
+char *get_id(cnode_t *cn);
+
 cnode_t *cnode_init(int argc, char **argv); 
 /** cnode_init() - Initializes CNode
  * @argc: argument count
