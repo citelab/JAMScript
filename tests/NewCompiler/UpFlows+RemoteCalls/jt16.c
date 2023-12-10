@@ -1,3 +1,4 @@
+
 int value = 10;
 
 jasync localyou(int c, char* s) {
@@ -13,11 +14,11 @@ jasync localme(int c, char* s) {
         int write;
     } ppp = {.write = 4};
     printf("%d\n", ppp.write);
-    jarray char qqqqwritor[40] = "!eeeeeeeeee!";
+    jarray char qqqqwriter[40] = "!eeeeeeeeee!";
     while(1) {
         jsys.sleep(100000);
         printf("############-->>> Hello ME  %d, %s\n", c, s);
-        qqqq.write(&qqqqwritor);
+        qqqq.write(&qqqqwriter);
     }
 }
 

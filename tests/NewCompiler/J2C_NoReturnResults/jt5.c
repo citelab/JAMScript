@@ -1,3 +1,5 @@
+
+
 jasync localyou(int c, char *s) {
     while(1) {
         jsys.sleep(10000000);
@@ -6,12 +8,17 @@ jasync localyou(int c, char *s) {
     }
 }
 
+void anotherfunc() {
+    printf("This is a local function \n");
+}
+
 jasync testfunc(int x) {
     printf("------------ Value of x %d\n", x);
 }
 
 
 int main(int argc, char *argv[]) {
+    anotherfunc();
     localyou(10, "local-message...");
     return 0;
 }
