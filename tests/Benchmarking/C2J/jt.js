@@ -1,6 +1,6 @@
 var counter = 0;
 
-jtask* function remoteCall(test) {
+jasync remoteCall(test: int) {
   counter += 1;
 }
 

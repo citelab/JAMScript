@@ -1,6 +1,4 @@
-void remoteCall(int);
-
-jtask* sendALotOfStuff()
+jasync sendALotOfStuff()
 {
     while(true)
     {
@@ -9,7 +7,8 @@ jtask* sendALotOfStuff()
     }
 }
 
-int main()
+int main(int argc, char *argv[])
 {
     sendALotOfStuff();
+    return 0;
 }
