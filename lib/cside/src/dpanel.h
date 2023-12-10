@@ -9,7 +9,7 @@
 
 #include <event.h>
 #include <hiredis/async.h>
-#include <hiredis/adapters/libevent.h>
+
 
 #include <tinycbor/cbor.h>
 

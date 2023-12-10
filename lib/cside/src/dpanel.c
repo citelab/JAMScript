@@ -4,12 +4,12 @@
 #include <assert.h>
 #include <string.h>
 #include <inttypes.h>
+#include <hiredis/adapters/libevent.h>
 
 #include "cnode.h"
 #include "dpanel.h"
 #include "tboard.h"
 #include "auxpanel.h"
-
 
 /*
  * Some forward declarations

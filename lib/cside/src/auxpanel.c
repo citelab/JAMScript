@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <inttypes.h>
+#include <hiredis/adapters/libevent.h>
 
 #include "auxpanel.h"
 #include "dpanel.h"
