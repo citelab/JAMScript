@@ -189,6 +189,10 @@ function runMain(cargs) {
 }
 
 function nativeCompile(code, cargs, userIncludes, userLinkerFlags) {
+    let compMsg = "";
+    if (cargs.verbosity)
+        compMsg = "Compilation finished";
+
     return new Promise(function (resolve, reject) {
         // Set platform options
         let options = "";
@@ -223,7 +227,7 @@ function nativeCompile(code, cargs, userIncludes, userLinkerFlags) {
         } catch (e) {
             reject("Compilation failed");
         }
-        resolve("Compilation finished");
+        resolve(compMsg);
     });
 }
 

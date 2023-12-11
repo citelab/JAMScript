@@ -16,7 +16,8 @@ CFLAGS	:= -g -pthread -Wall -Wcast-align -fno-omit-frame-pointer
 ifdef valgrind
 CFLAGS	:= $(CFLAGS) -D MCO_USE_VALGRIND -O0
 else
-CFLAGS	:= $(CFLAGS) -fsanitize=address -O1
+CFLAGS	:= $(CFLAGS) -O1
+# -fsanitize=address -O1
 endif
 
 ifeq ($(shell getconf LONG_BIT),32)
