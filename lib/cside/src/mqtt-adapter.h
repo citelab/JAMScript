@@ -8,6 +8,7 @@
 #include <pthread.h>
 #include "uthash.h"
 #include "utarray.h"
+#include "mqtt-batch.h"
 
 #ifndef __MQTT_ADAPTER_H__
 #define __MQTT_ADAPTER_H__
@@ -36,6 +37,7 @@ typedef struct mqtt_adapter {
     enum levels level;
     struct mosquitto *mosq;
     struct pub_msg_entry_t *pmsgs;
+    mqtt_batcher_t *batcher;
     pthread_mutex_t hlock;
     UT_array *topics;
 } mqtt_adapter_t;

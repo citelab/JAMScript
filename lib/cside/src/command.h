@@ -99,6 +99,8 @@ void internal_command_free(internal_command_t *ic);
 command_t *command_new(int cmd, int subcmd, char *fn_name, uint64_t task_id, char *node_id, char *old_id, char *fn_argsig, ...);
 command_t *command_new_using_arg(int cmd, int opt, char *fn_name, uint64_t taskid, char *node_id, char *old_id, char *fn_argsig, arg_t *args);
 command_t *command_from_data(char *fn_argsig, void *data, int len);
+command_t **commands_array_from_data(char* fmt, void* data, int data_len, int *array_size);
+bool is_data_array(void* data, int len);
 void command_hold(command_t *cmd);
 void command_free(command_t *cmd);
 bool command_qargs_alloc(const char *fmt, arg_t **rargs, va_list args);

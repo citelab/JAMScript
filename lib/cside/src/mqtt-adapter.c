@@ -8,6 +8,7 @@
 #include "tboard.h"
 #include "cnode.h"
 #include "utilities.h"
+#include "mqtt-batch.h"
 
 // XXX: Got the message for the task board
 void mqtt_message_callback(struct mosquitto *mosq, void *udata, const struct mosquitto_message *msg)
@@ -15,9 +16,21 @@ void mqtt_message_callback(struct mosquitto *mosq, void *udata, const struct mos
     (void)mosq;
     server_t *serv = (server_t *)udata;
     if (msg->payloadlen) {
-        command_t *cmd = command_from_data(NULL, msg->payload, msg->payloadlen);
-        msg_processor(serv, cmd);
-        // command_free(cmd);
+        if (is_data_array(msg->payload, msg->payloadlen)) {
+            int array_size = 0;
+            command_t **commands = commands_array_from_data(NULL, msg->payload, msg->payloadlen, &array_size);
+            if (commands == NULL) {
+                return;
+            }
+            for (int i = 0; i < array_size; i++) {
+                msg_processor(serv, commands[i]);
+            }
+            free(commands);
+        } else {
+            command_t *cmd = command_from_data(NULL, msg->payload, msg->payloadlen);
+            msg_processor(serv, cmd);
+            //command_free(cmd);
+        }
     } else {
         printf("%s\n", msg->topic);
     }
@@ -82,7 +95,7 @@ void mqtt_publish_callback(struct mosquitto *mosq, void *udata, int mid)
         pthread_mutex_lock(&(serv->mqtt->hlock));
         HASH_DEL(serv->mqtt->pmsgs, p);
         pthread_mutex_unlock(&(serv->mqtt->hlock));
-	    command_free((command_t *)p->ptr);
+        destroy_batch((mqtt_batch_t *)p->ptr);
         free(p);
     }
 }
@@ -102,7 +115,7 @@ void destroy_pub_msgs(struct mqtt_adapter *ma)
 
     HASH_ITER(hh, ma->pmsgs, pe, tmp) {
         HASH_DEL(ma->pmsgs, pe);
-        command_free((command_t *)pe->ptr);
+        destroy_batch((mqtt_batch_t*)pe->ptr);
         free(pe);
     }
 }
@@ -128,6 +141,7 @@ struct mqtt_adapter *create_mqtt_adapter(enum levels level, void *s)
         mosquitto_lib_cleanup();
     assert (mosq != NULL);
     ma->pmsgs = NULL;
+    ma->batcher = create_mqtt_batcher();
     utarray_new(ma->topics, &ut_str_icd);
     pthread_mutex_init(&(ma->hlock), NULL);
     ma->mid = 0;
@@ -175,6 +189,7 @@ void destroy_mqtt_adapter(struct mqtt_adapter **ma)
     utarray_free((*ma)->topics);
     free(*ma);
     *ma = NULL;
+    destroy_mqtt_batcher((*ma)->batcher);
     mosquitto_lib_cleanup();
 }
 
@@ -185,17 +200,28 @@ void disconnect_mqtt_adapter(struct mqtt_adapter *ma)
 
 void mqtt_publish(struct mqtt_adapter *ma, char *topic, void *msg, int msglen, void *udata, int qos)
 {
+    
+    mqtt_batcher_queue_msg(ma->batcher, topic, msg, msglen, udata, qos);
+    mqtt_topic_batcher_t *topic_batcher = mqtt_batcher_get_topic_batcher(ma->batcher, topic);
+    pthread_mutex_lock(&(topic_batcher->queue_lock));
+    if (topic_batcher->queue_size < MAX_BATCH_SIZE) {
+        pthread_mutex_unlock(&(topic_batcher->queue_lock));
+        return;
+    }
+    pthread_mutex_unlock(&(topic_batcher->queue_lock));
+    mqtt_queue_node_t *batch_queue = topic_batcher_get_batch(topic_batcher);
+    mqtt_batch_t *batch = prepare_batch(batch_queue);
+    if (!batch) {
+        return;
+    }
+
     if (ma != NULL) {
         ma->mid++;
-        if (udata != NULL) {
-            command_t *p = (command_t *)udata;
-            mosquitto_publish(ma->mosq, &(ma->mid), topic, msglen, msg, qos, 0);
-            struct pub_msg_entry_t *pentry = create_pub_msg_entry(ma->mid, p);
-            pthread_mutex_lock(&(ma->hlock));
-            HASH_ADD_INT(ma->pmsgs, id, pentry);
-            pthread_mutex_unlock(&(ma->hlock));
-        } else
-            mosquitto_publish(ma->mosq, &(ma->mid), topic, msglen, msg, qos, 0);
+        mosquitto_publish(ma->mosq, &(ma->mid), batch->topic, batch->msglen, batch->msg, batch->qos, 0);
+        struct pub_msg_entry_t *pentry = create_pub_msg_entry(ma->mid, batch);
+        pthread_mutex_lock(&(ma->hlock));
+        HASH_ADD_INT(ma->pmsgs, id, pentry);
+        pthread_mutex_unlock(&(ma->hlock));
     }
 }
 

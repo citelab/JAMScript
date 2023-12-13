@@ -211,6 +211,343 @@ command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name, uint64_t ta
     return cmdo;
 }
 
+/*
+ * Verify if the byte stream received is a cbor array.
+ */
+bool is_data_array(void* data, int len) {
+    CborParser parser;
+    CborValue value;
+    cbor_parser_init(data, len, 0, &parser, &value);
+    return cbor_value_is_array(&value);
+}
+
+/*
+ * Command from already initialized CBOR value
+ */
+command_t *command_from_cbor_value(char* fmt, CborValue *map) {
+    CborParser parser;
+    CborValue arr;
+    size_t length;
+    int i = 0;
+    int argsiglen = 0;
+    float fval;
+    char keybuf[32];
+    uint64_t result;
+    double dresult;
+
+    command_t* cmd = (command_t*)calloc(1, sizeof(command_t));
+    while (!cbor_value_at_end(map)) {
+        if (cbor_value_get_type(map) == CborTextStringType) {
+            length = 32;
+            cbor_value_copy_text_string	(map, keybuf, &length, map);
+        } else {
+            cbor_value_advance(map);
+            continue;
+        }
+        if (strcmp(keybuf, "cmd") == 0) {
+            cbor_value_get_uint64(map, &result);
+            cmd->cmd = result;
+        } else if (strcmp(keybuf, "subcmd") == 0) {
+            cbor_value_get_uint64(map, &result);
+            cmd->subcmd = result;
+        } else if (strcmp(keybuf, "taskid") == 0) {
+            if (cbor_value_get_type(map) == 251) {
+                cbor_value_get_double(map, &dresult);
+                cmd->task_id = (uint64_t)dresult; // TODO we lose precision doing this
+            } else {
+                cbor_value_get_uint64(map, &result);
+                cmd->task_id = result;
+            }
+        } else if (strcmp(keybuf, "nodeid") == 0) {
+            length = LARGE_CMD_STR_LEN;
+            if (cbor_value_is_text_string(map))
+                cbor_value_copy_text_string	(map, cmd->node_id, &length, NULL);
+            else
+                strcpy(cmd->node_id, "");
+        } else if (strcmp(keybuf, "oldid") == 0) {
+            length = LARGE_CMD_STR_LEN;
+            if (cbor_value_is_text_string(map))
+                cbor_value_copy_text_string	(map, cmd->old_id, &length, NULL);
+            else
+                strcpy(cmd->old_id, "");
+        } else if (strcmp(keybuf, "fn_name") == 0) {
+            length = SMALL_CMD_STR_LEN;
+            cbor_value_copy_text_string	(map, cmd->fn_name, &length, NULL);
+        } else if (strcmp(keybuf, "fn_argsig") == 0) {
+            length = SMALL_CMD_STR_LEN;
+            if (cbor_value_is_text_string(map)) {
+                cbor_value_copy_text_string	(map, cmd->fn_argsig, &length, NULL);
+                argsiglen = length;
+            } else
+                strcpy(cmd->fn_argsig, "");
+        } else if (strcmp(keybuf, "args") == 0) {
+            size_t nelems;
+            assert(cbor_value_is_length_known(map));
+            cbor_value_get_array_length(map, &nelems);
+            // printf("%u; %s; %s; %zu\n", cmd->cmd, cmd->fn_name, cmd->fn_argsig, nelems);
+            assert(nelems == argsiglen);
+
+            cbor_value_enter_container(map, &arr);
+
+            if (nelems > 0) {
+                if (fmt != NULL)
+                    assert(!strcmp(fmt, cmd->fn_argsig));
+                cmd->args = (arg_t*)calloc(nelems, sizeof(arg_t));
+
+                while (!cbor_value_at_end(&arr)) {
+                    CborType ty = cbor_value_get_type(&arr);
+                    cmd->args[i].nargs = nelems;
+                    char tmpcharbuf[2];
+                    cmd->args[i].type = cmd->fn_argsig[i];
+                    uint64_t tmp_uint;
+                    switch (ty) {
+                    case CborIntegerType:
+                        switch(cmd->fn_argsig[i]) {
+                        case 'c':
+                        case 'b':
+                        case 'i':
+                            cbor_value_get_int(&arr, &cmd->args[i].val.ival);
+                            break;
+                        case 'u':
+                            cbor_value_get_uint64(&arr, &tmp_uint);
+                            *(unsigned int*)&cmd->args[i].val.ival = (unsigned int)tmp_uint;
+                            break;
+                        case 'l':
+                            cbor_value_get_int64(&arr, (int64_t*)&cmd->args[i].val.lval);
+                            break;
+                        case 'z':
+                            cbor_value_get_uint64(&arr, (uint64_t*)&cmd->args[i].val.lval);
+                            break;
+                        default:
+                            assert(false);
+                        }
+                        break;
+                    case CborTextStringType:
+                        switch(cmd->fn_argsig[i]) {
+                        case 's': // deprecated
+                            cbor_value_dup_text_string(&arr, &cmd->args[i].val.sval, &length, NULL);
+                            break;
+                        case 'C':
+                        case 'B':
+                            cbor_value_calculate_string_length(&arr, &length);
+                            cmd->args[i].val.nval = nvoid_empty(length++, cmd->fn_argsig[i]);
+                            cbor_value_copy_text_string(&arr, (char*)cmd->args[i].val.nval->data, &length, NULL);
+                            cmd->args[i].val.nval->len = length;
+                            break;
+                        case 'c':
+                        case 'b':
+                            cbor_value_calculate_string_length(&arr, &length);
+                            assert(length == 1);
+                            length++;
+                            cbor_value_copy_text_string(&arr, tmpcharbuf, &length, NULL);
+                            cmd->args[i].val.ival = (int)tmpcharbuf[0];
+                            break;
+                        default:
+                            assert(false);
+                        }
+                        break;
+                    case CborByteStringType:
+                        switch(cmd->fn_argsig[i]) {
+                        case 'C':
+                        case 'B':
+                            cbor_value_calculate_string_length(&arr, &length);
+                            cmd->args[i].val.nval = nvoid_empty(length, cmd->fn_argsig[i]);
+                            cbor_value_copy_byte_string(&arr, cmd->args[i].val.nval->data, &length, NULL);
+                            cmd->args[i].val.nval->data[length] = '\0';
+                            cmd->args[i].val.nval->len = length;
+                            break;
+                        case 'c':
+                        case 'b':
+                            cbor_value_calculate_string_length(&arr, &length);
+                            assert(length == 1);
+                            cbor_value_copy_byte_string(&arr, (uint8_t*)tmpcharbuf, &length, NULL);
+                            cmd->args[i].val.ival = (int)tmpcharbuf[0];
+                            break;
+                        default:
+                            assert(false);
+                        }
+                        break;
+                    case CborFloatType:
+                        assert(cmd->fn_argsig[i] == 'd' || cmd->fn_argsig[i] == 'f');
+                        cbor_value_get_float(&arr, &fval);
+                        cmd->args[i].val.dval = (double)fval;
+                        break;
+                    case CborDoubleType:
+                        assert(cmd->fn_argsig[i] == 'd' || cmd->fn_argsig[i] == 'f');
+                        cbor_value_get_double(&arr, &cmd->args[i].val.dval);
+                        break;
+                    case CborArrayType:
+                        assert(cmd->fn_argsig[i] <= 'Z' && cmd->fn_argsig[i] >= 'A');
+                        assert(cbor_value_is_length_known(&arr));
+                        cbor_value_get_array_length(&arr, &length);
+                        // printf("got array length %zu\n", length);
+                        CborValue arrayEnc;
+                        cbor_value_enter_container(&arr, &arrayEnc);
+                        char type = cmd->fn_argsig[i] - 'A' + 'a';
+                        nvoid_t* nval = nvoid_empty(length, type);
+                        nval->len = length;
+                        cmd->args[i].val.nval = nval;
+
+                        for(int j = 0; j < nval->maxlen; j++) {
+                            uint64_t tmp_uint;
+                            int tmp_int;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align" /* We specify __aligned__ (8) on nvoids */
+                            switch(cbor_value_get_type(&arrayEnc)) {
+                            case CborIntegerType:
+                                switch(type) {
+                                case 'c':
+                                    cbor_value_get_int(&arrayEnc, &tmp_int);
+                                    ((char*)nval->data)[j] = (char)tmp_int;
+                                    break;
+                                case 'b':
+                                    cbor_value_get_uint64(&arr, &tmp_uint);
+                                    ((unsigned char*)nval->data)[j] = (unsigned char)tmp_uint;
+                                case 'i':
+                                    cbor_value_get_int(&arrayEnc, &((int*)nval->data)[j]);
+                                    break;
+                                case 'u':
+                                    cbor_value_get_uint64(&arrayEnc, &tmp_uint);
+                                    ((unsigned int*)nval->data)[j] = (unsigned int)tmp_uint;
+                                    break;
+                                case 'l':
+                                    cbor_value_get_int64(&arrayEnc, &((int64_t*)nval->data)[j]);
+                                    break;
+                                case 'z':
+                                    cbor_value_get_uint64(&arrayEnc, &((uint64_t*)nval->data)[j]);
+                                    break;
+                                default:
+                                    assert(false);
+                                }
+                                break;
+                            case CborTextStringType:
+                                cbor_value_calculate_string_length(&arrayEnc, &length);
+                                assert(length == 1);
+                                length++;
+                                cbor_value_copy_text_string(&arrayEnc, tmpcharbuf, &length, NULL);
+                                switch(type) {
+                                case 'c':
+                                case 'b':
+                                    nval->data[j] = (uint8_t)tmpcharbuf[0];
+                                    break;
+                                case 'i':
+                                case 'u':
+                                    ((unsigned int*)nval->data)[j] = tmpcharbuf[0];
+                                    break;
+                                case 'l':
+                                case 'z':
+                                    ((uint64_t*)nval->data)[j] = tmpcharbuf[0];
+                                    break;
+                                default:
+                                    assert(false);
+                                }
+                                break;
+                            case CborByteStringType:
+                                cbor_value_calculate_string_length(&arrayEnc, &length);
+                                assert(length == 1);
+                                cbor_value_copy_byte_string(&arrayEnc, (uint8_t*)tmpcharbuf, &length, NULL);
+                                switch(type) {
+                                case 'c':
+                                case 'b':
+                                    nval->data[j] = (uint8_t)tmpcharbuf[0];
+                                    break;
+                                case 'i':
+                                case 'u':
+                                    ((unsigned int*)nval->data)[j] = tmpcharbuf[0];
+                                    break;
+                                case 'l':
+                                case 'z':
+                                    ((uint64_t*)nval->data)[j] = tmpcharbuf[0];
+                                    break;
+                                default:
+                                    assert(false);
+                                }
+                                break;
+                            case CborFloatType:
+                                if (type == 'd') {
+                                    cbor_value_get_float(&arrayEnc, &fval);
+                                    ((double*)nval->data)[j] = (double)fval;
+                                } else if (type == 'f')
+                                    cbor_value_get_float(&arrayEnc, &((float*)nval->data)[j]);
+                                else
+                                    assert(false);
+                                break;
+                            case CborDoubleType:
+                                if (type == 'f') {
+                                    double dval;
+                                    cbor_value_get_double(&arrayEnc, &dval);
+                                    ((float*)nval->data)[j] = (float)dval;
+                                } else if (type == 'd')
+                                    cbor_value_get_double(&arrayEnc, &((double*)nval->data)[j]);
+                                else
+                                    assert(false);
+                                break;
+                            default:
+                                printf("CBOR illegal type: %d at %d\n", cbor_value_get_type(&arrayEnc), j);
+                                assert(false);
+                            }
+#pragma GCC diagnostic push
+                            cbor_value_advance(&arrayEnc);
+                        }
+                        i++;
+                        cbor_value_leave_container(&arr, &arrayEnc);
+                        continue;
+                    default:
+                        printf("Unrecognized CBOR %d command_from_data\n", ty);
+                        assert(false);
+                    }
+                    i++;
+                    cbor_value_advance(&arr);
+                }
+
+            } else
+                cmd->args = NULL;
+        }
+        cbor_value_advance(map);
+    }
+    cmd->refcount = 1;
+    pthread_mutex_init(&cmd->lock, NULL);
+    cmd->id = id++;
+    return cmd;
+}
+
+/*
+ * Parses an array of commands from CBOR data. The length of the decoded array 
+ * will be written to array_size.
+ */
+command_t **commands_array_from_data(char* fmt, void* data, int data_len, int *array_size) {
+    if (array_size == NULL) {
+        return NULL;
+    }
+    CborParser parser;
+    CborValue it,arr;
+    cbor_parser_init(data, data_len, 0, &parser, &it);
+    if (!cbor_value_is_array(&it)) {
+        return NULL;
+    }
+    size_t array_length;
+    cbor_value_get_array_length(&it, &array_length);
+    command_t** commands = calloc(array_length, sizeof(command_t*));
+    const uint8_t* prev = data;
+    cbor_value_enter_container(&it, &arr);
+    for (int i = 0; i < array_length && !cbor_value_at_end(&arr); i++) {
+        if (cbor_value_get_type(&arr) == CborMapType) {
+            CborValue command_val;
+            cbor_value_enter_container(&arr, &command_val);
+            command_t *cmd = command_from_cbor_value(fmt, &command_val);
+            cbor_value_leave_container(&arr, &command_val);
+            const uint8_t* now = cbor_value_get_next_byte(&arr);
+            memcpy(cmd->buffer, prev, now - prev);
+            cmd->length = now - prev;
+            prev = now;
+            commands[i] = cmd;
+        }
+    }
+    cbor_value_leave_container(&it, &arr);
+    *array_size = array_length;
+    return commands;
+}
+
 
 /*
  * Command from CBOR data. If the fmt is non NULL, then we use
