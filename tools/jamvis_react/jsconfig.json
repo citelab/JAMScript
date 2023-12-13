@@ -2,7 +2,9 @@
   "compilerOptions": {
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
   },
   "javascript.suggestionActions.enabled": false,
 }

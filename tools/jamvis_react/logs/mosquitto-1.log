@@ -1,0 +1,61 @@
+1702400794: mosquitto version 2.0.18 starting
+1702400794: Using default config.
+1702400794: Starting in local only mode. Connections will only be possible from clients running on this machine.
+1702400794: Create a configuration file which defines a listener to allow remote access.
+1702400794: For more details see https://mosquitto.org/documentation/authentication-methods/
+1702400794: Opening ipv4 listen socket on port 1883.
+1702400794: Opening ipv6 listen socket on port 1883.
+1702400794: mosquitto version 2.0.18 running
+1702400794: New connection from ::1:57333 on port 1883.
+1702400794: New connection from ::1:57334 on port 1883.
+1702400794: New connection from ::1:57335 on port 1883.
+1702400794: New connection from ::1:57336 on port 1883.
+1702400794: New connection from ::1:57337 on port 1883.
+1702400794: New connection from ::1:57338 on port 1883.
+1702400794: New connection from ::1:57339 on port 1883.
+1702400794: New connection from ::1:57340 on port 1883.
+1702400794: New connection from ::1:57341 on port 1883.
+1702400794: New connection from ::1:57342 on port 1883.
+1702400794: New client connected from ::1:57333 as mqttjs_d9195a29 (p5, c1, k60).
+1702400794: New client connected from ::1:57334 as mqttjs_2348a1ba (p5, c1, k60).
+1702400794: New client connected from ::1:57335 as mqttjs_0bd48560 (p5, c1, k60).
+1702400794: New client connected from ::1:57336 as mqttjs_22ccf034 (p5, c1, k60).
+1702400794: New client connected from ::1:57337 as mqttjs_5298a5c0 (p5, c1, k60).
+1702400794: New client connected from ::1:57338 as mqttjs_9f18e90d (p5, c1, k60).
+1702400794: New client connected from ::1:57339 as mqttjs_0eb3d763 (p5, c1, k60).
+1702400794: New client connected from ::1:57340 as mqttjs_2b234582 (p5, c1, k60).
+1702400794: New client connected from ::1:57341 as mqttjs_b9ec8769 (p5, c1, k60).
+1702400794: New client connected from ::1:57342 as mqttjs_e8a455da (p5, c1, k60).
+1702400794: New connection from ::1:57343 on port 1883.
+1702400794: New connection from ::1:57344 on port 1883.
+1702400794: New client connected from ::1:57343 as mqttjs_3c076618 (p5, c1, k60).
+1702400794: New client connected from ::1:57344 as mqttjs_fca579bc (p5, c1, k60).
+1702400794: New connection from ::1:57345 on port 1883.
+1702400794: New connection from ::1:57346 on port 1883.
+1702400794: New connection from ::1:57347 on port 1883.
+1702400794: New connection from ::1:57348 on port 1883.
+1702400794: New connection from ::1:57349 on port 1883.
+1702400794: New connection from ::1:57350 on port 1883.
+1702400794: New client connected from ::1:57345 as mqttjs_729e5b5d (p5, c1, k60).
+1702400794: New client connected from ::1:57346 as mqttjs_7bf4b4a0 (p5, c1, k60).
+1702400794: New connection from ::1:57351 on port 1883.
+1702400794: New connection from ::1:57352 on port 1883.
+1702400794: New client connected from ::1:57347 as mqttjs_40f29bd8 (p5, c1, k60).
+1702400794: New client connected from ::1:57348 as mqttjs_800b6fba (p5, c1, k60).
+1702400794: New client connected from ::1:57349 as mqttjs_f3100d3a (p5, c1, k60).
+1702400794: New client connected from ::1:57350 as mqttjs_9bd5aeb8 (p5, c1, k60).
+1702400794: New client connected from ::1:57351 as mqttjs_7f6cdfc3 (p5, c1, k60).
+1702400794: New client connected from ::1:57352 as mqttjs_2ae23824 (p5, c1, k60).
+1702400796: New connection from ::1:57354 on port 1883.
+1702400796: New client connected from ::1:57354 as mqttjs_abdec18b (p5, c1, k60).
+1702400808: Client mqttjs_d9195a29 closed its connection.
+1702400808: Client mqttjs_2348a1ba closed its connection.
+1702400808: Client mqttjs_0bd48560 closed its connection.
+1702400808: Client mqttjs_22ccf034 closed its connection.
+1702400808: Client mqttjs_5298a5c0 closed its connection.
+1702400808: Client mqttjs_9f18e90d closed its connection.
+1702400808: Client mqttjs_0eb3d763 closed its connection.
+1702400808: Client mqttjs_2b234582 closed its connection.
+1702400808: Client mqttjs_b9ec8769 closed its connection.
+1702400808: Client mqttjs_e8a455da closed its connection.
+1702400808: mosquitto version 2.0.18 terminating

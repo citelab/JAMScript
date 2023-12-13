@@ -1,0 +1,19 @@
+#!/bin/bash
+# This script is used to start the SBS server
+# All STDOUT outputs are mixed together
+#
+
+# Terminate all child processes on exit
+trap "exit" INT TERM ERR
+trap "kill 0" EXIT
+
+if [[ $# -eq 0 ]] ; then
+    echo 'Please provide a name for the log file'
+    exit 0
+fi
+
+mosquitto > logs/mosquitto-$1.log 2>&1 &
+node server/server.js &
+node server/moving-node.js &
+
+wait

@@ -3,7 +3,7 @@ const IMAGE_NAMES = [
   "Services.png",
   "fog.png",
   "internet.png",
-  "menu.svg",
+  "Menu.png",
 ];
 const IMAGE_PATHS = IMAGE_NAMES.map((name) => {
   return "/image/" + name;
@@ -12,7 +12,7 @@ const IMAGE_PATHS = IMAGE_NAMES.map((name) => {
 const createNodeArray = (num) => {
   const nodes = [];
   for (let i = 0; i < num; ++i) {
-    const node = createNode(i)(100)({ x: 2500, y: 1200 })(IMAGE_PATHS)(50);
+    const node = createNode(i)(100)({ x: 400, y: 400 })(IMAGE_PATHS)(50);
     nodes.push(node);
   }
 
@@ -35,11 +35,16 @@ const createNode =
       y: randomPosition(maxPosition.y),
     };
 
-    const image = images[getRandomInt(0)(images.length - 1)];
+    const image = images[getRandomInt(0)(images.length)];
 
     const speed = {
       x: randomSpeed(maxSpeed) / 100,
       y: randomSpeed(maxSpeed) / 100,
+    };
+
+    const direction = {
+      x: getRandomInt(-1)(2),
+      y: getRandomInt(-1)(2),
     };
 
     return {
@@ -48,6 +53,7 @@ const createNode =
       position: position,
       speed: speed,
       image: image,
+      direction: direction,
     };
   };
 
@@ -88,9 +94,16 @@ const createTemplateMessage = (nodeArray) => {
   });
 };
 
+const weigthedBool = (percentage) => {
+  const random = Math.random();
+  return random < percentage;
+}
+
 module.exports = {
   templateMessage: createTemplateMessage,
   dataMessage: createDataMessage,
   newTemplates: createNodeArray,
-  newData: getNewPositions
-}
+  newData: getNewPositions,
+  weightedBool: weigthedBool,
+  randomInt: getRandomInt
+};

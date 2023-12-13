@@ -8,14 +8,13 @@ const PixiViewportComponent = PixiComponent("Viewport", {
     // comes from github issue: https://github.com/davidfig/pixi-viewport/issues/438
     const events = new EventSystem(props.app.renderer);
     events.domElement = props.app.renderer.view;
-    const { worldWidth, worldHeight } = props;
     const { ticker } = props.app;
 
     const viewport = new Viewport({
       screenWidth: window.innerWidth,
       screenHeight: window.innerHeight,
-      worldWidth: worldWidth,
-      worldHeight: worldHeight,
+      worldWidth: props.worldWidth,
+      worldHeight: props.worldHeight,
       ticker: ticker,
       events: events,
     });
@@ -24,6 +23,7 @@ const PixiViewportComponent = PixiComponent("Viewport", {
       .wheel();
 
     viewport.on("zoomed-end", props.onZoomEnd);
+    viewport.on("moved", props.onMove);
     viewport.clampZoom({ maxScale: props.depth, minScale: 1 });
     return viewport;
   },
@@ -40,6 +40,5 @@ const ViewportComponent = forwardRef(
     return <PixiViewportComponent ref={ref} app={app} {...props} />;
   },
 );
-
 
 export default ViewportComponent;

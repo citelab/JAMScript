@@ -1,9 +1,7 @@
-'use client'
+"use client";
 import { Stage } from "@pixi/react";
 import tailwindConfig from "@/tailwind.config";
 import { useRef } from "react";
-import { Sprite } from "@pixi/react";
-// const ViewportComponent = dynamic(() => import("@/components/Viewport.js"), {ssr: false})
 import ViewportComponent from "@/components/Viewport.js";
 
 // Get the background color from tailwind config
@@ -12,31 +10,37 @@ const viewportBackground = parseInt(
   16,
 );
 
-const MainViewport = ({ width, height, sendLevel, children }) => {
+const MainViewport = ({ width, height, onZoomEnd, onMove, children }) => {
   const viewportRef = useRef(null);
 
-  const onZoomEnd = () => {
+  const zoomEnd = () => {
     const newLevel = viewportRef.current.scale.x;
-    sendLevel(newLevel);
+    onZoomEnd(newLevel);
+  };
+
+
+  const logPosition = () => {
+    onMove(viewportRef.current.corner); 
   }
+
   return (
     <Stage
       width={width}
       height={height - 0.5}
       options={{
         backgroundAlpha: 1,
-        antialias: true,
         backgroundColor: viewportBackground,
       }}
     >
       <ViewportComponent
         ref={viewportRef}
-        worldWidth={width * 4}
-        worldHeight={height * 4}
-        onZoomEnd={onZoomEnd}
+        worldWidth={10000}
+        worldHeight={10000}
+        onZoomEnd={zoomEnd}
+        onMove={logPosition}
         depth={10}
       >
-      {children}
+        {children}
       </ViewportComponent>
     </Stage>
   );
