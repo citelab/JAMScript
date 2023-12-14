@@ -1,43 +1,61 @@
 const mqtt = require("mqtt");
-const { randomInt, enums, pixelToBlock, sblockCoordsToId } = require(
+const { enums, worldToSblock } = require(
   "./utils.js",
 );
 
 const imagePaths = [
   "/image/cloud-fog.png",
-  "/image/Menu.png",
+  "/image/microcontroller.png",
   "/image/fog.png",
   "/image/internet.png",
+  "/image/Services.png",
+  "/image/scale-modification.png",
+  "/image/Cloud.png",
+  "/image/planet.png",
+  "/image/server.png",
+  "/image/computers.png",
 ];
+
+const nodePositions = [
+  { x: 10, y: 10 },
+  { x: 10, y: 310 },
+  { x: 10, y: 610 },
+  { x: 10, y: 1010 },
+  { x: 310, y: 10 },
+  { x: 610, y: 10 },
+  { x: 1010, y: 10 },
+  { x: 1010, y: 310 },
+  { x: 1010, y: 610 },
+  { x: 1010, y: 1010 },
+  { x: 3000, y: 40}
+];
+
 const createNodes = (hostname, port, amount, images) => {
   let nodes = [];
 
   for (let key = 0; key < amount; ++key) {
 
-    const randomDirection = [{x: 1, y: 1}, {x: -1, y: 1}, {x: -1, y: -1}, {x: 1, y: -1}][randomInt(0)(4)];
-
     const node = new MovingNode(
       key,
-      randomInt(0)(3000),
-      randomInt(0)(3000),
+      nodePositions[key].x,
+      nodePositions[key].y,
       hostname,
       port,
-      images[key % 4],
-      randomDirection
+      images[ key % images.length]
     );
     nodes.push(node);
   }
-  return nodes
+  return nodes;
 };
 
 class MovingNode {
-  constructor(key, x, y, hostname, port, image, direction) {
+  constructor(key, x, y, hostname, port, image) {
     this.image = image;
     this.x = x;
     this.y = y;
     this.id = key;
-    this.image = image
-    this.direction = direction;
+
+    // MQTT
     this.mqttURL = `mqtt://${hostname}:${port}`;
     this.client = mqtt.connect(this.mqttURL, enums.mqtt.OPTIONS);
 
@@ -49,8 +67,7 @@ class MovingNode {
       const message = payload.toString();
       if (topic === "block-size" && message.startsWith("size:")) {
         const size = message.split(":")[1];
-        const sblockCoords = pixelToBlock(this.x, this.y, size);
-        const sblockId = sblockCoordsToId(sblockCoords.x, sblockCoords.y, size);
+        const sblockId = worldToSblock(size, this.x, this.y);
 
         this.sblock = {
           size: size,
@@ -71,11 +88,13 @@ class MovingNode {
     this.x += this.direction.x;
     this.y += this.direction.y;
 
-
     // Check if the node has moved to a new sblock
-    const sblockCoords = pixelToBlock(this.x, this.y, this.sblock.size);
-    const newSblockId = sblockCoordsToId(sblockCoords.x, sblockCoords.y, this.sblock.size);
-    
+    const newSblockId = worldToSblock(
+      this.sblock.size,
+      this.x,
+      this.y,
+    );
+
     if (newSblockId !== this.sblock.id) {
       this.setSblock(newSblockId);
       this.publishOutline();
@@ -90,10 +109,10 @@ class MovingNode {
   }
 
   publishOutline() {
-
     this.outline = {
       type: "outline",
       content: {
+        id: this.id,
         x: this.x,
         y: this.y,
         width: 50,
@@ -106,19 +125,18 @@ class MovingNode {
   }
 
   publishState() {
-
     const nodeState = JSON.stringify({
       type: "state",
       content: {
         ...this.getPosition(),
-      }
+      },
     });
 
     this.client.publish(this.topic, nodeState);
   }
 
   setSblock(sblockID) {
-    this.sblock = { size: this.sblock.size, id: sblockID}
+    this.sblock = { size: this.sblock.size, id: sblockID };
     this.topic = `sblocks/${this.sblock.id}/node-${this.id}`;
   }
 
@@ -134,18 +152,12 @@ class MovingNode {
     return {
       height: this.height,
       width: this.width,
-    }
+    };
   }
   getPosition() {
     return { x: this.x, y: this.y };
   }
-
 }
 
-const nodes = createNodes("localhost", 1883, 500, imagePaths);
-setInterval(() => {
-  for (let node of nodes) {
-    node.move();
-  }
-}, 100);
+createNodes("localhost", 1883, 11, imagePaths);
 module.exports = MovingNode;

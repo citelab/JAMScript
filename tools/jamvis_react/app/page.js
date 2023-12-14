@@ -8,13 +8,9 @@ import useWindowDimensions from "@/hooks/windowDimensions.js";
 // COMPONENTS
 import Navbar from "@/components/Navbar.js";
 import MainViewport from "@/components/MainViewport.js";
-import InfoCard from "@/components/InfoCard.js";
-import { Sprite, useApp } from "@pixi/react";
-// import FreeSprite from "@/components/FreeSprite";
-import { createContext, useContext } from "react";
-import PixiFreeSprite from "@/app/PixiFreeSprite.js";
-
-const StateContext = createContext(null);
+// import InfoCard from "@/components/InfoCard.js";
+import { Sprite } from "@pixi/react";
+import { useCallback } from "react";
 
 let didMount = false;
 
@@ -27,7 +23,7 @@ const StartPage = () => {
   const [level, setLevel] = useState(1);
   const { width, height } = useWindowDimensions();
   const [outlines, setOutlines] = useState([]);
-  const state = useRef([]);
+  const [numNodes, setNumNodes] = useState(0);
   const webSocket = useRef(null);
 
   useEffect(() => {
@@ -35,77 +31,78 @@ const StartPage = () => {
       didMount = true;
       return;
     }
-    webSocket.current = openWebSocket('ws://localhost:8080');
+    webSocket.current = openWebSocket("ws://localhost:8080");
 
-    webSocket.current.addEventListener("message", () => {
+    webSocket.current.addEventListener("open", () => {
+      webSocket.current.send(
+        JSON.stringify({
+          type: "viewInfo",
+          content: { startX: 0, startY: 0, endX: width, endY: height },
+        }),
+      );
+    });
 
-    })
+    webSocket.current.addEventListener("message", (message) => {
+      const info = JSON.parse(message.data);
+      switch (info.type) {
+        case "outlines":
+          setNumNodes(info.content.length);
+          setOutlines(info.content);
+          break;
+      }
+    });
   }, []);
-
-
-  // useEffect(() => {
-  //     const parsedMessage = JSON.parse(lastMessage.data);
-  //     switch (parsedMessage.type) {
-  //       case "outlines":
-  //         setOutlines(parsedMessage.content);
-  //         break;
-  //       case "states":
-  //         state.current = parsedMessage.content;
-  //         break;
-  //     }
-  // }, []);
+  
+  const nodes = useCallback((outlines) => {
+    return outlines.map((outline) => {
+      return (
+        <Sprite
+          key={outline.id}
+          image={outline.image}
+          x={outline.x}
+          y={outline.y}
+          width={outline.width}
+          height={outline.height}
+        />
+      );
+    });
+  }, [outlines]);
 
   const sendLevel = (zoomLevel) => {
     setLevel(zoomLevel);
   };
 
-  const sendPosition = ({ x, y }) => {
-    // console.log("Width:", width, "Height:", height);
-    // console.log("X:", x, "Y:", y)
+  const sendPosition = (left, top, right, bottom) => {
+    // console.log("Sending position")
+    // console.log(
+    //   left, top, right, bottom
+    // )
     const message = {
       type: "viewInfo",
       content: {
-        x: x,
-        y: y,
-        width: width,
-        height: height,
+        startX: left,
+        startY: top,
+        endX: right,
+        endY: bottom,
       },
     };
 
-    webSocket.send(JSON.stringify(message));
+    webSocket.current.send(JSON.stringify(message));
   };
 
   return (
     <>
-      <Navbar level={level} />
+      <Navbar level={level} numNodes={numNodes} />
       <MainViewport
         width={width}
         height={height}
         onZoomEnd={sendLevel}
         onMove={sendPosition}
       >
-        <StateContext.Provider value={state}>
-          {outlines && outlines.map((outline, index) => {
-            return (
-              <FreeSprite
-                key={index}
-                x={state[index] ? state[index].x : outline.x}
-                y={state[index] ? state[index].y : outline.y}
-                width={50}
-                height={50}
-                image={outline.image}
-                state={state}
-              />
-            );
-          })}
-        </StateContext.Provider>
+        {nodes(outlines)}
       </MainViewport>
     </>
   );
 };
 
-const FreeSprite = (props) => {
-  const data = useContext(StateContext);
-  return <PixiFreeSprite app={useApp()} {...props} />;
-};
 export default StartPage;

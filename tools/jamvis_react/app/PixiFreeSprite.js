@@ -9,12 +9,12 @@ const PixiFreeSprite = PixiComponent('PixiFreeSprite', {
     sprite.width = props.width
     sprite.height = props.height
 
-    props.app.ticker.add(() => { 
-      if (props.state.current[props.key]) {
-        sprite.x = props.state.current[props.key].x
-        sprite.y = props.state.current[props.key].y
-      }
-    })
+    // props.app.ticker.add(() => { 
+    //   if (props.state.current[props.key]) {
+    //     sprite.x = props.state.current[props.key].x
+    //     sprite.y = props.state.current[props.key].y
+    //   }
+    // })
 
     return sprite
 

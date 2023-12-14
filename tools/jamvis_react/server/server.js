@@ -7,9 +7,7 @@ const {
   FatalError,
   logError,
   enums,
-  pixelToBlock,
-  sblockCoordsToId,
-  DefaultNode,
+  shownSblocks,
 } = require(
   "./utils.js",
 );
@@ -29,7 +27,8 @@ const serve = () => {
   const webSockets = new Map();
   const nodes = new Map();
   const sblockContents = new Map();
-  let shownSblocks = [];
+  let viewportSblocks = [];
+  let viewportNodes = [];
 
   // Used to communicate with all webSockets
   const frontendPipe = new EventEmitter();
@@ -67,7 +66,12 @@ const serve = () => {
       const sblockId = parseInt(topics[1]);
 
       if (!nodes.has(id)) {
-        const node = new DefaultNode(id, sblockId);
+        const node = {
+          id: id,
+          sblockId: sblockId,
+          outline: {},
+          state: {},
+        };
         nodes.set(node.id, node);
       }
 
@@ -103,11 +107,42 @@ const serve = () => {
         case "viewInfo":
           // The frontend has changed the viewport's position or size,
           // so the shown sblocks must be updated
-          shownSblocks = getShownSblocks(data.content);
-          break;
 
-        case "outlines":
-          frontendPipe.emit("outline");
+          // The zoom factor affects how much of the physical world is shown
+          // So the area of the viewport must be scaled by the zoom factor
+
+          const newSblocks = shownSblocks(
+            data.content,
+            enums.sbs.S_BLOCK_SIZE,
+            enums.sbs.WORLD_SIZE,
+          );
+
+          // Only update the shown sblocks if they have changed
+          newSblocks.sort((a, b) => a - b);
+
+          viewportSblocks = newSblocks;
+          // Check each sblock in the viewport and compare its contents 
+          // to the contents of the previous viewport
+          for (let id of newSblocks) {
+            // Server's node list for the sblock
+            currentNodes = sblockContents.get(id) ;
+            
+            if (!currentNodes) {
+              continue;
+            }
+
+            // Check each node with the viewport's node list
+            for (let node of currentNodes) {
+              nodeId = node.id
+              // If a node is in the sblock but not in the viewport,
+              // the frontend must be notified
+              if (!viewportNodes.includes(nodeId)) {
+                frontendPipe.emit("outline");
+                break;
+              }
+            }
+          }
+
           break;
       }
     });
@@ -120,18 +155,15 @@ const serve = () => {
   frontendPipe.on("outline", () => {
     for (let ws of webSockets.values()) {
       outlines = [];
-      for (let node of nodes.values()) {
-        // console.log(shownSblocks.sort(),"contains",node.sblockId,"?", shownSblocks.includes(node.sblockId));
-        if (shownSblocks.includes(node.sblockId)) {
-          outlines.push({
-            x: node.outline.x,
-            y: node.outline.y,
-            width: node.outline.width,
-            height: node.outline.height,
-            image: node.outline.image,
-          });
+      for (let sblock of viewportSblocks) {
+        if (sblockContents.has(sblock)) {
+          outlines.push(
+            ...sblockContents.get(sblock).map((node) => node.outline),
+          );
         }
       }
+      console.log("Sending", outlines.length, "outlines");
+      viewportNodes = outlines.map(node => node.id);
       ws.send(JSON.stringify({ type: "outlines", content: outlines }));
     }
   });
@@ -147,41 +179,6 @@ const serve = () => {
       ws.send(JSON.stringify({ type: "states", content: states }));
     }
   });
-};
-
-const getShownSblocks = (frontend) => {
-  const sblockIds = [];
-
-  // TODO: make the frontend send its bottom right corner
-  const viewport = {
-    ...frontend,
-    end: {
-      x: frontend.x + frontend.width,
-      y: frontend.y + frontend.height,
-    },
-  };
-
-  // Convert viewport coordinates to S-BLOCK coordinates
-  const startBlock = pixelToBlock(
-    viewport.x,
-    viewport.y,
-    enums.sbs.S_BLOCK_SIZE,
-  );
-  const endBlock = pixelToBlock(
-    viewport.end.x,
-    viewport.end.y,
-    enums.sbs.S_BLOCK_SIZE,
-  );
-
-  // Get all S-BLOCK ids in the viewport
-  for (let x = startBlock.x; x <= endBlock.x; x++) {
-    for (let y = startBlock.y; y <= endBlock.y; y++) {
-      const blockId = sblockCoordsToId(x, y, enums.sbs.S_BLOCK_SIZE);
-      sblockIds.push(blockId);
-    }
-  }
-
-  return sblockIds;
 };
 
 const createWebServer = (info) => {

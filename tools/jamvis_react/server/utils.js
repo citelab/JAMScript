@@ -37,52 +37,12 @@ const logError = (errorMessage) => (topic) => (err) => {
   }
 };
 
-class DefaultNode {
-  constructor(id, sblockId) {
-    this.id = id;
-    this.sblockId = sblockId;
-    this.x = randomInt(0)(100);
-    this.y = randomInt(0)(100);
-    this.height = randomInt(50)(100);
-    this.width = randomInt(50)(100);
-    this.image = "/image/NoState.png";
-    this.state = { x: 0, y: 0 };
-    this.outline = { x: 0, y: 0, width: 10, height: 10, image: "/image/NoState.png" };
-  }
-
-  getOutline() {
-    return this.outline;
-  }
-
-  getPosition() {
-    return {
-      x: this.x,
-      y: this.y,
-    }
-  }
-  getImage() {
-    return this.image;
-  }
-  getSize() {
-    return {
-      height: this.height,
-      width: this.width,
-    }
-  }
-
-  getState() {
-    return this.state;
-  }
-}
-
 const mqttMessageHandler =
   (nodes, mqttClient, sblockContents, frontendPipe) => (topic, payload) => {
     const message = payload.toString();
 
     if (topic === "block-size" && !message.startsWith("size:")) {
-
       mqttClient.publish("block-size", "size:" + sbs.S_BLOCK_SIZE);
-
     } else if (topic.startsWith("sblocks/")) {
       // All messages in the sblocks/ topic are in JSON format
       // They each must contain a type and a content field
@@ -114,33 +74,43 @@ const mqttMessageHandler =
     }
   };
 
-const createArray = (length) => {
-  let array = new Array(length || 0);
-  let counter = length;
+const sblockPosition = (sblockSize) => (worldX, worldY) => {
+  // Scale the world coordinates
+  const position = {
+    column: Math.floor(worldX / sblockSize),
+    row: Math.floor(worldY / sblockSize),
+  };
 
-  if (arguments.length > 1) {
-    const args = Array.prototype.slice.call(arguments, 1);
-    while (counter--) {
-      array[length - 1 - counter] = createArray.apply(this, args);
+  return position;
+};
+
+const sblocksInRange = ({startX, startY, endX, endY}, sblockSize, worldSize) => {
+  const sblocks = [];
+  const dimension = worldSize / sblockSize;
+
+  // Convert the world coordinates to sblock coordinates
+  const worldToSblock = sblockPosition(sblockSize);
+  const topLeft = worldToSblock(startX, startY);
+  const bottomRight = worldToSblock(endX, endY);
+
+  // Get the sblock IDs in the range
+  for (let column = topLeft.column; column <= bottomRight.column; column++) {
+    for (let row = topLeft.row; row <= bottomRight.row; row++) {
+      const id = (row * dimension) + column;
+      sblocks.push(id);
     }
   }
 
-  return array;
-};
+  return sblocks;
+}
 
-const pixelToBlock = (x, y, sblockSize) => {
-  const blockX = Math.floor(x / sblockSize);
-  const blockY = Math.floor(y / sblockSize);
+const worldToSblock = (sblockSize, worldX, worldY) => { 
+  const position = sblockPosition(sblockSize)(worldX, worldY);
+  const dimension = sbs.WORLD_SIZE / sblockSize;
+  const id = (position.row * dimension) + position.column;
 
-  return { x: blockX, y: blockY };
-};
-
-const blockId = (x, y, numBlocks) => {
-  const xVal = (x % numBlocks) * x;
-  const yVal = (y % numBlocks) * y;
-  return xVal + yVal;
-};
-
+  return id;
+}
 const randomInt = (min) => (max) => {
   return Math.floor(Math.random() * (max - min) + min);
 };
@@ -153,8 +123,8 @@ class FatalError extends Error {
 }
 
 module.exports = {
-  createArray: createArray,
-  pixelToBlock: pixelToBlock,
+  shownSblocks: sblocksInRange,
+  worldToSblock: worldToSblock,
   enums: {
     sbs: sbs,
     mqtt,
@@ -164,7 +134,5 @@ module.exports = {
   logError: logError,
   randomInt: randomInt,
   FatalError: FatalError,
-  sblockCoordsToId: blockId,
   mqttMessage: mqttMessageHandler,
-  DefaultNode: DefaultNode,
 };

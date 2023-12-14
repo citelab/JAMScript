@@ -3,6 +3,7 @@ import { Stage } from "@pixi/react";
 import tailwindConfig from "@/tailwind.config";
 import { useRef } from "react";
 import ViewportComponent from "@/components/Viewport.js";
+import AppGrid from "@/components/AppGrid.js";
 
 // Get the background color from tailwind config
 const viewportBackground = parseInt(
@@ -18,10 +19,14 @@ const MainViewport = ({ width, height, onZoomEnd, onMove, children }) => {
     onZoomEnd(newLevel);
   };
 
-
   const logPosition = () => {
-    onMove(viewportRef.current.corner); 
-  }
+    onMove(
+      viewportRef.current.left,
+      viewportRef.current.top,
+      viewportRef.current.right,
+      viewportRef.current.bottom,
+    );
+  };
 
   return (
     <Stage
@@ -40,6 +45,13 @@ const MainViewport = ({ width, height, onZoomEnd, onMove, children }) => {
         onMove={logPosition}
         depth={10}
       >
+        <AppGrid
+          width={10000}
+          height={10000}
+          cellWidth={100}
+          cellHeight={100}
+        />
+
         {children}
       </ViewportComponent>
     </Stage>

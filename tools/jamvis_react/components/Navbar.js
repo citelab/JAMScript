@@ -10,7 +10,7 @@ const Navbar = (props) => {
   };
   return (
     <>
-      <Sidebar show={showSidebar}  />
+      <Sidebar show={showSidebar} numNodes={props.numNodes} />
       <div className="navbar rounded-lg h-20 bg-base-200 absolute">
         <div className="navbar-start">
           <div className="btn btn-ghost " onClick={onHover}>
