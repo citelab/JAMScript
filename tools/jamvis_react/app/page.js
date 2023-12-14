@@ -8,6 +8,7 @@ import useWindowDimensions from "@/hooks/windowDimensions.js";
 // COMPONENTS
 import Navbar from "@/components/Navbar.js";
 import MainViewport from "@/components/MainViewport.js";
+import FreeSprite from "@/components/FreeSprite.js";
 // import InfoCard from "@/components/InfoCard.js";
 import { Sprite } from "@pixi/react";
 import { useCallback } from "react";
@@ -25,6 +26,7 @@ const StartPage = () => {
   const [outlines, setOutlines] = useState([]);
   const [numNodes, setNumNodes] = useState(0);
   const webSocket = useRef(null);
+  const states = useRef(null);
 
   useEffect(() => {
     if (!didMount) {
@@ -49,20 +51,25 @@ const StartPage = () => {
           setNumNodes(info.content.length);
           setOutlines(info.content);
           break;
+        case "states": {
+          states.current = info.content;
+        }
       }
     });
   }, []);
   
-  const nodes = useCallback((outlines) => {
-    return outlines.map((outline) => {
+  const nodes = useCallback((outlines, ) => {
+    return outlines.map((outline, index) => {
       return (
-        <Sprite
-          key={outline.id}
+        <FreeSprite
+          key={index}
+          id={index}
           image={outline.image}
           x={outline.x}
           y={outline.y}
           width={outline.width}
           height={outline.height}
+          state={states}
         />
       );
     });

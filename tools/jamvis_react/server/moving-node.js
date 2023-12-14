@@ -1,5 +1,5 @@
 const mqtt = require("mqtt");
-const { enums, worldToSblock } = require(
+const { enums, worldToSblock, randomInt } = require(
   "./utils.js",
 );
 
@@ -16,32 +16,17 @@ const imagePaths = [
   "/image/computers.png",
 ];
 
-const nodePositions = [
-  { x: 10, y: 10 },
-  { x: 10, y: 310 },
-  { x: 10, y: 610 },
-  { x: 10, y: 1010 },
-  { x: 310, y: 10 },
-  { x: 610, y: 10 },
-  { x: 1010, y: 10 },
-  { x: 1010, y: 310 },
-  { x: 1010, y: 610 },
-  { x: 1010, y: 1010 },
-  { x: 3000, y: 40}
-];
-
 const createNodes = (hostname, port, amount, images) => {
   let nodes = [];
 
   for (let key = 0; key < amount; ++key) {
-
     const node = new MovingNode(
       key,
-      nodePositions[key].x,
-      nodePositions[key].y,
+      randomInt(0)(enums.sbs.WORLD_SIZE),
+      randomInt(0)(enums.sbs.WORLD_SIZE),
       hostname,
       port,
-      images[ key % images.length]
+      images[key % images.length],
     );
     nodes.push(node);
   }
@@ -54,6 +39,10 @@ class MovingNode {
     this.x = x;
     this.y = y;
     this.id = key;
+    this.direction = {
+      x: 1,
+      y: 1
+    }
 
     // MQTT
     this.mqttURL = `mqtt://${hostname}:${port}`;
@@ -85,8 +74,8 @@ class MovingNode {
 
   move() {
     if (!this.sblock) return;
-    this.x += this.direction.x;
-    this.y += this.direction.y;
+    this.x += this.direction.x * 0.1;
+    this.y += this.direction.y * 0.1;
 
     // Check if the node has moved to a new sblock
     const newSblockId = worldToSblock(
@@ -95,10 +84,10 @@ class MovingNode {
       this.y,
     );
 
-    if (newSblockId !== this.sblock.id) {
-      this.setSblock(newSblockId);
-      this.publishOutline();
-    }
+    // if (newSblockId !== this.sblock.id) {
+    //   this.setSblock(newSblockId);
+    //   this.publishOutline();
+    // }
 
     this.publishState();
   }
@@ -159,5 +148,11 @@ class MovingNode {
   }
 }
 
-createNodes("localhost", 1883, 11, imagePaths);
+const nodes = createNodes("localhost", 1883, 30, imagePaths);
+
+setInterval(() => {
+  nodes.map((node) => {
+    node.move();
+  });
+}, 500)
 module.exports = MovingNode;

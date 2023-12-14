@@ -27,8 +27,8 @@ const serve = () => {
   const webSockets = new Map();
   const nodes = new Map();
   const sblockContents = new Map();
-  let viewportSblocks = [];
-  let viewportNodes = [];
+  let viewportSblocks = new Map();
+  let viewportNodes = new Map();
 
   // Used to communicate with all webSockets
   const frontendPipe = new EventEmitter();
@@ -82,12 +82,19 @@ const serve = () => {
 
       // Add the node to its current sblock
       if (!sblockContents.has(sblockId)) {
-        sblockContents.set(sblockId, []);
+        sblockContents.set(sblockId, new Map());
       }
-      sblockContents.get(sblockId).push(node);
+      sblockContents.get(sblockId).set(id, node);
 
       // Notify the frontend that the node has been updated
-      frontendPipe.emit(type);
+      switch (type) {
+        case "outline":
+          for (let ip of webSockets.keys()) frontendPipe.emit("outline", ip);
+          break;
+        case "state":
+          for (let ip of webSockets.keys()) frontendPipe.emit("state", ip);
+          break;
+      }
     }
   };
 
@@ -99,6 +106,8 @@ const serve = () => {
 
     console.debug("New connection from", ip);
     webSockets.set(ip, webSocket);
+    viewportNodes.set(ip, []);
+    viewportSblocks.set(ip, []);
 
     webSocket.on("message", (message) => {
       const data = JSON.parse(message.toString());
@@ -119,25 +128,30 @@ const serve = () => {
 
           // Only update the shown sblocks if they have changed
           newSblocks.sort((a, b) => a - b);
+          viewportSblocks.set(ip, newSblocks);
+          const currentNodeIds = viewportNodes.get(ip).map((node) => node.id);
 
-          viewportSblocks = newSblocks;
-          // Check each sblock in the viewport and compare its contents 
+          // console.log("Viewport is seeing", currentNodes, "nodes")
+
+          // Check each sblock in the viewport and compare its contents
           // to the contents of the previous viewport
           for (let id of newSblocks) {
             // Server's node list for the sblock
-            currentNodes = sblockContents.get(id) ;
-            
-            if (!currentNodes) {
+            const sbsNodes = sblockContents.get(id);
+
+            if (!sbsNodes) {
               continue;
             }
 
+            const sbsNodeIds = Array.from(sbsNodes.keys());
+            // console.log("SBS has nodes", sbsNodes.map((node) => node.id))
+
             // Check each node with the viewport's node list
-            for (let node of currentNodes) {
-              nodeId = node.id
+            for (let node of sbsNodeIds) {
               // If a node is in the sblock but not in the viewport,
               // the frontend must be notified
-              if (!viewportNodes.includes(nodeId)) {
-                frontendPipe.emit("outline");
+              if (!currentNodeIds.includes(node)) {
+                frontendPipe.emit("outline", ip);
                 break;
               }
             }
@@ -152,32 +166,45 @@ const serve = () => {
     });
   });
 
-  frontendPipe.on("outline", () => {
-    for (let ws of webSockets.values()) {
-      outlines = [];
-      for (let sblock of viewportSblocks) {
-        if (sblockContents.has(sblock)) {
-          outlines.push(
-            ...sblockContents.get(sblock).map((node) => node.outline),
-          );
-        }
+  frontendPipe.on("outline", (ip) => {
+    const outlines = [];
+    const sblocks = viewportSblocks.get(ip);
+    const webSocket = webSockets.get(ip);
+
+    // console.log("Viewport is seeing", sblocks.length, "sblocks")
+
+    for (let id of sblocks) {
+      const contents = sblockContents.get(id)
+      if (contents) {
+        contents.forEach((node, key) => {
+          outlines.push(node.outline);
+        })
       }
-      console.log("Sending", outlines.length, "outlines");
-      viewportNodes = outlines.map(node => node.id);
-      ws.send(JSON.stringify({ type: "outlines", content: outlines }));
     }
+
+    console.log("Sending", outlines.length, "outlines");
+
+    viewportNodes.set(ip, outlines);
+    webSocket.send(JSON.stringify({ type: "outlines", content: outlines }));
   });
 
-  frontendPipe.on("state", () => {
-    for (let ws of webSockets.values()) {
-      states = [];
-      for (let node of nodes.values()) {
-        if (shownSblocks.includes(node.sblockId)) {
-          states.push(node.state);
-        }
+  frontendPipe.on("state", (ip) => {
+    const webSocket = webSockets.get(ip);
+    states = []
+    const currentNodesIds = viewportNodes.get(ip);
+    const sblocks = viewportSblocks.get(ip);
+
+    for (let id of sblocks) {
+      const contents = sblockContents.get(id)
+
+      if (contents) {
+        contents.forEach((node) => {
+          states.push(node.state)
+        })
       }
-      ws.send(JSON.stringify({ type: "states", content: states }));
     }
+    // console.log("Updating states")
+    webSocket.send(JSON.stringify({ type: "states", content: states }));
   });
 };
 
