@@ -229,13 +229,14 @@ void msg_processor(void* serv, command_t* cmd) {
             // TODO populate these values properly
             jcond_my_t my;
             jcond_your_t your;
-            
-
+            set_my_struct(&my, c);
+            yourwrap_t *yt = create_yourwrap(cmd->node_id, cmd->latitude, cmd->longitude, cmd->edge, cmd->type);
+            set_your_struct(&your, yt);
             if ((*f->cond)(my, your) != true) {
                 send_nak_msg(s, cmd->node_id, cmd->task_id);
                 command_free(cmd);
-                return;
             }
+            free_yourwrap(yt);
         }
         // send the REXEC_ACK to the controller that sent the request
         send_ack_msg(s, cmd->node_id, cmd->task_id, ((cmd->subcmd == 0) ? 0: globals_Timeout_REXEC_ACK_TIMEOUT));
