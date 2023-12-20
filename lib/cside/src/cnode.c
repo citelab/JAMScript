@@ -10,7 +10,6 @@
 #include "jcond.h"
 #include <unistd.h>
 
-cnode_t *cn;
 int jamclock = 1;
 
 int get_jamclock(cnode_t *cn)
@@ -20,6 +19,14 @@ int get_jamclock(cnode_t *cn)
 
 int get_serial(cnode_t *cn) {
     return cn->core->serial_num;
+}
+
+void set_latitude(cnode_t *cn, double lx) {
+    cn->latitude = lx;
+}
+
+void set_longitude(cnode_t *cn, double lx) {
+    cn->longitude = lx;
 }
 
 char *get_id(cnode_t *cn) {

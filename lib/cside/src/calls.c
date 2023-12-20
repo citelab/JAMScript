@@ -65,6 +65,8 @@ void local_async_call(tboard_t* t, char* cmd_func, ...) {
         // TODO populate these properly
         jcond_my_t my;
         jcond_your_t your;
+        set_my_struct(&my, t->cnode);
+        set_your_struct(&your, NULL);
         if (!(*f->cond)(my, your))
             return;
     }

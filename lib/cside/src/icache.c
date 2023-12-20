@@ -4,8 +4,7 @@
 #include <inttypes.h>
 #include "uthash.h"
 
-void clean_icache(struct id_entry *t)
-{
+void clean_icache(struct id_entry *t) {
     struct id_entry *cur, *tmp;
 
     HASH_ITER(hh, t, cur, tmp) {
@@ -14,16 +13,14 @@ void clean_icache(struct id_entry *t)
     }
 }
 
-void switch_icache(icache_t *ic)
-{
+void switch_icache(icache_t *ic) {
     ic->curtab = (ic->curtab + 1) % 3;
     int cleantab = (ic->curtab + 1) % 3;
     clean_icache(ic->tables[cleantab]);
     ic->tables[cleantab] = NULL;
 }
 
-icache_t *icache_alloc()
-{
+icache_t *icache_alloc()  {
     icache_t *ic = (icache_t *)calloc(1, sizeof(icache_t));
     if (ic == NULL) {
         perror("icache_alloc");
@@ -39,8 +36,7 @@ icache_t *icache_alloc()
     return ic;
 }
 
-bool icache_insert(icache_t *ic, uint64_t task_id, char *node_id)
-{
+bool icache_insert(icache_t *ic, uint64_t task_id, char *node_id) {
     char buf[1024];
     snprintf(buf, 1024, "%" PRIu64 "%s", task_id, node_id);
     struct id_entry *entry = (struct id_entry *)calloc(1, sizeof(struct id_entry));
@@ -57,8 +53,7 @@ bool icache_insert(icache_t *ic, uint64_t task_id, char *node_id)
     return true;
 }
 
-bool icache_lookup(icache_t *ic, uint64_t task_id, char *node_id)
-{
+bool icache_lookup(icache_t *ic, uint64_t task_id, char *node_id) {
     struct id_entry *entry = NULL;
     char buf[1024];
     snprintf(buf, 1024, "%" PRIu64 "%s", task_id, node_id);

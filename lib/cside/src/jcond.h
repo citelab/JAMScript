@@ -26,4 +26,7 @@ typedef struct {
     char side;
 } jcond_your_t;
 
+void set_my_struct(jcond_my_t *my, void *cnode);
+void set_your_struct(jcond_your_t *your, void *data);
+
 #endif
