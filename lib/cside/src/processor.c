@@ -229,6 +229,8 @@ void msg_processor(void* serv, command_t* cmd) {
             // TODO populate these values properly
             jcond_my_t my;
             jcond_your_t your;
+            
+
             if ((*f->cond)(my, your) != true) {
                 send_nak_msg(s, cmd->node_id, cmd->task_id);
                 command_free(cmd);

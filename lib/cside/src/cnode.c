@@ -234,11 +234,6 @@ bool cnode_stop(cnode_t *cn) {
     return true;
 }
 
-void cnode_setcoords(cnode_t *cn, float xc, float yc)
-{
-    cn->xcoord = xc;
-    cn->ycoord = yc;
-}
 
 void cnode_setwidth(cnode_t *cn, int width)
 {

@@ -70,8 +70,8 @@ typedef struct cnode_t {
     int eservnum;
     void *tboard;
     void *dpanel;
-    float xcoord;
-    float ycoord;
+    double latitude;
+    double longitude;
     int width;
     
 } cnode_t;
@@ -87,11 +87,11 @@ server_t *cnode_create_mbroker(cnode_t *cn, enum levels level, char *server_id, 
 void cnode_recreate_mbroker(server_t *serv, enum levels level, char *server_id, char *host, int port, char *topics[], int ntopics);
 
 broker_info_t *cnode_scanj(int groupid, char *host, int port);
-
-void cnode_setcoords(cnode_t *cn, float xc, float yc);
 void cnode_setwidth(cnode_t *cn, int width);
 
 int get_serial(cnode_t *cn);
+void set_latitude(cnode_t *cn, double lx);
+void set_longitude(cnode_t *cn, double lx);
 char *get_id(cnode_t *cn);
 
 cnode_t *cnode_init(int argc, char **argv); 

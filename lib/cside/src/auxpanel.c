@@ -184,10 +184,10 @@ void apanel_uaddall(auxpanel_t* ap) { // add all pending uflow objects to outgoi
 
         if (last || !--overrun) {
             // send with a callback
-            redisAsyncCommand(ap->a_uctx, apanel_ucallback, ap, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, ap->logical_id, ap->logical_appid, cn->width, cn->xcoord, cn->ycoord, (uint8_t*) uobj->value, (size_t) uobj->len);
+            redisAsyncCommand(ap->a_uctx, apanel_ucallback, ap, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, ap->logical_id, ap->logical_appid, cn->width, cn->latitude, cn->longitude, (uint8_t*) uobj->value, (size_t) uobj->len);
         } else {
             // send without a callback for pipelining.
-            redisAsyncCommand(ap->a_uctx, apanel_uerrorcheck, NULL, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, ap->logical_id, ap->logical_appid, cn->width, cn->xcoord, cn->ycoord, (uint8_t*) uobj->value, (size_t) uobj->len);
+            redisAsyncCommand(ap->a_uctx, apanel_uerrorcheck, NULL, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, ap->logical_id, ap->logical_appid, cn->width, cn->latitude, cn->longitude, (uint8_t*) uobj->value, (size_t) uobj->len);
         }
         freeUObject(uobj);
         free(next);
