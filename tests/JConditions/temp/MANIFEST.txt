@@ -1,0 +1,5 @@
+VERSION = 2.0
+DESCRIPTION = JAMScript executable file
+NAME = undefined
+CREATE-TIME = 1703346079894
+JDATA = false
