@@ -31,7 +31,7 @@ int main()
     int j = 10000000;
     while(j-- > 0) {
         // publish on the adapter
-	cmd = command_new("REGISTER", "DEVICE", "-", j, "-", "-", "device_id", "");
+	cmd = command_brief_new("REGISTER", "DEVICE", "-", j, "-", "-", "device_id", "");
         printf("J = %d\n,", j);
         /*
         cbor_item_t *cstr = cbor_build_string("hello, message from C");

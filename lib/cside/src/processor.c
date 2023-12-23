@@ -65,21 +65,21 @@ void exec_sync(context_t ctx) {
             case 'b':
             case 'i':
             case 'u':
-                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, fmtbuf, rv.val.ival);
+                cmd = command_brief_new(CmdNames_REXEC_RES, task_id, c->core->device_id, node_id, fmtbuf, rv.val.ival);
                 break;
             case 'l':
             case 'z':
-                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, fmtbuf, rv.val.lval);
+                cmd = command_brief_new(CmdNames_REXEC_RES, task_id, c->core->device_id, node_id, fmtbuf, rv.val.lval);
                 break;
             case 'f':
             case 'd':
-                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, fmtbuf, rv.val.dval);
+                cmd = command_brief_new(CmdNames_REXEC_RES, task_id, c->core->device_id, node_id, fmtbuf, rv.val.dval);
                 break;
             case 's':
-                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, fmtbuf, rv.val.sval);
+                cmd = command_brief_new(CmdNames_REXEC_RES, task_id, c->core->device_id, node_id, fmtbuf, rv.val.sval);
                 break;
             default:
-                cmd = command_new(CmdNames_REXEC_RES, 0, "", task_id, c->core->device_id, node_id, fmtbuf, rv.val.nval);
+                cmd = command_brief_new(CmdNames_REXEC_RES, task_id, c->core->device_id, node_id, fmtbuf, rv.val.nval);
             }
             free(node_id);
             mqtt_publish(s->mqtt, c->topics->replytopic, cmd->buffer, cmd->length, cmd, 0);
@@ -122,7 +122,7 @@ void msg_processor(void* serv, command_t* cmd) {
         if (c->cnstate == CNODE_NOT_REGISTERED) {
             c->cnstate = CNODE_REGISTERED;
             // send a GET_CLOUD_FOG_INFO request to the device J
-            rcmd = command_new(CmdNames_GET_CLOUD_FOG_INFO, 0, "", 0, c->core->device_id, "", "i", 0);
+            rcmd = command_brief_new(CmdNames_GET_CLOUD_FOG_INFO, 0, c->core->device_id, "", "i", 0);
             mqtt_publish(s->mqtt, c->topics->requesttopic, rcmd->buffer, rcmd->length, rcmd, 0);
         }
         command_free(cmd);
@@ -189,7 +189,7 @@ void msg_processor(void* serv, command_t* cmd) {
     case CmdNames_PING:
         // send the PONG back to device J
         // we received -- [cmd: PING node_id: "controller id" ]
-        rcmd = command_new(CmdNames_PONG, 0, "", 0, c->core->device_id, "", "");
+        rcmd = command_brief_new(CmdNames_PONG, 0, c->core->device_id, "", "");
         mqtt_publish(s->mqtt, c->topics->requesttopic, rcmd->buffer, rcmd->length, rcmd, 0);
         // we send -- [cmd: PONG node_id: "worker id" ]
 
@@ -230,7 +230,7 @@ void msg_processor(void* serv, command_t* cmd) {
             jcond_my_t my;
             jcond_your_t your;
             set_my_struct(&my, c);
-            yourwrap_t *yt = create_yourwrap(cmd->node_id, cmd->latitude, cmd->longitude, cmd->edge, cmd->type);
+            yourwrap_t *yt = create_yourwrap(c, cmd->node_id, cmd->latitude, cmd->longitude, cmd->edge, cmd->type);
             set_your_struct(&your, yt);
             if ((*f->cond)(my, your) != true) {
                 send_nak_msg(s, cmd->node_id, cmd->task_id);
@@ -289,34 +289,34 @@ void msg_processor(void* serv, command_t* cmd) {
 void send_close_msg(void* serv, char* node_id, uint64_t task_id) {
     server_t* s = (server_t*)serv;
     cnode_t* c = s->cnode;
-    command_t* cmd = command_new(CmdNames_CLOSE_PORT, 0, "", task_id, c->core->device_id, node_id, "");
+    command_t* cmd = command_brief_new(CmdNames_CLOSE_PORT, task_id, c->core->device_id, node_id, "");
     mqtt_publish(s->mqtt, c->topics->selfrequesttopic, cmd->buffer, cmd->length, cmd, 0);
 }
 
 void send_err_msg(void* serv, char* node_id, uint64_t task_id) {
     server_t* s = (server_t*)serv;
     cnode_t* c = s->cnode;
-    command_t* cmd = command_new(CmdNames_REXEC_ERR, 0, "", task_id, c->core->device_id, node_id, "i", (int)CmdNames_FUNC_NOT_FOUND);
+    command_t* cmd = command_brief_new(CmdNames_REXEC_ERR, task_id, c->core->device_id, node_id, "i", (int)CmdNames_FUNC_NOT_FOUND);
     mqtt_publish(s->mqtt, c->topics->replytopic, cmd->buffer, cmd->length, cmd, 0);
 }
 
 void send_ack_msg(void* serv, char* node_id, uint64_t task_id, int timeout) {
     server_t* s = (server_t*)serv;
     cnode_t* c = s->cnode;
-    command_t* cmd = command_new(CmdNames_REXEC_ACK, 0, "", task_id, c->core->device_id, node_id, "i", timeout);
+    command_t* cmd = command_brief_new(CmdNames_REXEC_ACK, task_id, c->core->device_id, node_id, "i", timeout);
     mqtt_publish(s->mqtt, c->topics->replytopic, cmd->buffer, cmd->length, cmd, 0);
 }
 
 void send_nak_msg(void* serv, char* node_id, uint64_t task_id) {
     server_t* s = (server_t*)serv;
     cnode_t* c = s->cnode;
-    command_t* cmd = command_new(CmdNames_REXEC_NAK, 0, "", task_id, c->core->device_id, node_id, "i", (int)CmdNames_COND_FALSE);
+    command_t* cmd = command_brief_new(CmdNames_REXEC_NAK, task_id, c->core->device_id, node_id, "i", (int)CmdNames_COND_FALSE);
     mqtt_publish(s->mqtt, c->topics->replytopic, cmd->buffer, cmd->length, cmd, 0);
 }
 
 void send_reg_msg(void* serv, char* node_id, uint64_t task_id) {
     server_t* s = (server_t*)serv;
     cnode_t* c = s->cnode;
-    command_t* cmd = command_new(CmdNames_REGISTER, 0, "", task_id, c->core->device_id, node_id, "");
+    command_t* cmd = command_brief_new(CmdNames_REGISTER, task_id, c->core->device_id, node_id, "");
     mqtt_publish(s->mqtt, c->topics->requesttopic, cmd->buffer, cmd->length, cmd, 0);
 }

@@ -62,11 +62,15 @@ void internal_command_free(internal_command_t* ic) {
     free(ic);
 }
 
+
 /*
  * Return a command that includes a CBOR representation that can be sent out (a byte string)
  * It reuses the command_new_using_arg() function
+ *
+ * There are two versions - the "brief" and "full" (does not have any qualification) versions. 
+ * Some protocol steps don't need to send all the elements - so we have a brief version.
  */
-command_t* command_new(int cmd, int subcmd, char* fn_name, uint64_t task_id, char* node_id, char* old_id, char* fn_argsig, ...) {
+command_t* command_brief_new(int cmd, uint64_t task_id, char* node_id, char* old_id, char* fn_argsig, ...) {
     va_list args;
     arg_t* qargs = NULL;
     int len = strlen(fn_argsig);
@@ -116,29 +120,83 @@ command_t* command_new(int cmd, int subcmd, char* fn_name, uint64_t task_id, cha
         va_end(args);
     }
 
-    command_t* c = command_new_using_arg(cmd, subcmd, fn_name, task_id, node_id, old_id, fn_argsig, qargs);
+    command_t* c = command_brief_new_using_arg(cmd, task_id, node_id, old_id, fn_argsig, qargs);
     command_args_free(qargs);
     return c;
 }
 
-command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name, uint64_t taskid, char* node_id, char* old_id, char* fn_argsig, arg_t* args) {
+
+/*
+ * Return a command that includes a CBOR representation that can be sent out (a byte string)
+ * It reuses the command_new_using_arg() function
+ * 
+ */
+command_t* command_new(int cmd, int subcmd, char* fn_name, uint64_t task_id, char* node_id, char* old_id, double latitude, double longitude, int edge, int type, char* fn_argsig, ...) {
+    va_list args;
+    arg_t* qargs = NULL;
+    int len = strlen(fn_argsig);
+
+    if (len > 0) {
+        nvoid_t* nv;
+        qargs = (arg_t*)calloc(len, sizeof(arg_t));
+
+        va_start(args, fn_argsig);
+        for (int i = 0; i < len; i++) {
+            qargs[i].type = fn_argsig[i];
+            switch(fn_argsig[i]) {
+            case 'n':
+            case 'C':
+            case 'B':
+            case 'I':
+            case 'U':
+            case 'L':
+            case 'Z':
+            case 'D':
+            case 'F':
+                nv = va_arg(args, nvoid_t*);
+                qargs[i].val.nval = nvoid_dup(nv);
+                break;
+            case 's':
+                qargs[i].val.sval = strdup(va_arg(args, char*));
+                break;
+            case 'c':
+            case 'b':
+            case 'i':
+            case 'u':
+                qargs[i].val.ival = va_arg(args, int);
+                break;
+            case 'l':
+            case 'z':
+                qargs[i].val.lval = va_arg(args, long long int);
+                break;
+            case 'd':
+            case 'f':
+                qargs[i].val.dval = va_arg(args, double);
+                break;
+            default:
+                printf("Unrecognized type '%c' in command_new\n", fn_argsig[i]);
+            }
+            qargs[i].nargs = len;
+        }
+        va_end(args);
+    }
+
+    command_t* c = command_new_using_arg(cmd, subcmd, fn_name, task_id, node_id, old_id, latitude, longitude, edge, type, fn_argsig, qargs);
+    command_args_free(qargs);
+    return c;
+}
+
+
+command_t* command_brief_new_using_arg(int cmd, uint64_t taskid, char* node_id, char* old_id, char* fn_argsig, arg_t* args) {
     command_t* cmdo = (command_t *)calloc(1, sizeof(command_t));
     CborEncoder encoder, mapEncoder, arrayEncoder;
     cbor_encoder_init(&encoder, cmdo->buffer, HUGE_CMD_STR_LEN, 0);
-    cbor_encoder_create_map(&encoder, &mapEncoder, 8);
+    cbor_encoder_create_map(&encoder, &mapEncoder, 6);
     // store the fields into the structure and encode into the CBOR
     // store and encode cmd
     cmdo->cmd = cmd;
     cbor_encode_text_stringz(&mapEncoder, "cmd");
     cbor_encode_int(&mapEncoder, cmd);
-    // store and encode subcmd
-    cmdo->subcmd = subcmd;
-    cbor_encode_text_stringz(&mapEncoder, "subcmd");
-    cbor_encode_int(&mapEncoder, subcmd);
-    // store and encode fn_name
-    COPY_STRING(cmdo->fn_name, fn_name, SMALL_CMD_STR_LEN);
-    cbor_encode_text_stringz(&mapEncoder, "fn_name");
-    cbor_encode_text_stringz(&mapEncoder, fn_name);
     // store and encode task_id
     cmdo->task_id = taskid;
     cbor_encode_text_stringz(&mapEncoder, "taskid");
@@ -212,6 +270,114 @@ command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name, uint64_t ta
 }
 
 
+command_t* command_new_using_arg(int cmd, int subcmd, char* fn_name, uint64_t taskid, char* node_id, char* old_id, double latitude, double longitude, int edge, int type, char* fn_argsig, arg_t* args) {
+    command_t* cmdo = (command_t *)calloc(1, sizeof(command_t));
+    CborEncoder encoder, mapEncoder, arrayEncoder;
+    cbor_encoder_init(&encoder, cmdo->buffer, HUGE_CMD_STR_LEN, 0);
+    cbor_encoder_create_map(&encoder, &mapEncoder, 12);
+    // store the fields into the structure and encode into the CBOR
+    // store and encode cmd
+    cmdo->cmd = cmd;
+    cbor_encode_text_stringz(&mapEncoder, "cmd");
+    cbor_encode_int(&mapEncoder, cmd);
+    // store and encode subcmd
+    cmdo->subcmd = subcmd;
+    cbor_encode_text_stringz(&mapEncoder, "subcmd");
+    cbor_encode_int(&mapEncoder, subcmd);
+    // store and encode fn_name
+    COPY_STRING(cmdo->fn_name, fn_name, SMALL_CMD_STR_LEN);
+    cbor_encode_text_stringz(&mapEncoder, "fn_name");
+    cbor_encode_text_stringz(&mapEncoder, fn_name);
+    // store and encode task_id
+    cmdo->task_id = taskid;
+    cbor_encode_text_stringz(&mapEncoder, "taskid");
+    cbor_encode_uint(&mapEncoder, taskid);
+    // store and encode node_id
+    COPY_STRING(cmdo->node_id, node_id, LARGE_CMD_STR_LEN);
+    cbor_encode_text_stringz(&mapEncoder, "nodeid");
+    cbor_encode_text_stringz(&mapEncoder, node_id);
+    // store and encode old_id
+    COPY_STRING(cmdo->old_id, old_id, LARGE_CMD_STR_LEN);
+    cbor_encode_text_stringz(&mapEncoder, "oldid");
+    cbor_encode_text_stringz(&mapEncoder, old_id);
+    // store and encode latitude
+    cmdo->latitude = latitude;
+    cbor_encode_text_stringz(&mapEncoder, "latitude");
+    cbor_encode_double(&mapEncoder, latitude);
+    // store and encode longitude
+    cmdo->longitude = longitude;
+    cbor_encode_text_stringz(&mapEncoder, "longitude");
+    cbor_encode_double(&mapEncoder, longitude);
+    // store and encode edge
+    cmdo->edge = edge;
+    cbor_encode_text_stringz(&mapEncoder, "edge");
+    cbor_encode_double(&mapEncoder, edge);
+    // store and encode type
+    cmdo->type = type;
+    cbor_encode_text_stringz(&mapEncoder, "type");
+    cbor_encode_double(&mapEncoder, type);
+    // store and encode fn_argsig
+    COPY_STRING(cmdo->fn_argsig, fn_argsig, SMALL_CMD_STR_LEN);
+    cbor_encode_text_stringz(&mapEncoder, "fn_argsig");
+    cbor_encode_text_stringz(&mapEncoder, fn_argsig);
+    // store and encode the args
+    cbor_encode_text_stringz(&mapEncoder, "args");
+    if (args == NULL) {
+        cmdo->args = NULL;
+        cbor_encoder_create_array(&mapEncoder, &arrayEncoder, 0);
+    } else {
+        cmdo->args = command_args_clone(args);
+        cbor_encoder_create_array(&mapEncoder, &arrayEncoder, args[0].nargs);
+        for (int i = 0; i < args[0].nargs; i++) {
+            switch (args[i].type) {
+            case 'c':
+            case 'i':
+                cbor_encode_int(&arrayEncoder, (int64_t)args[i].val.ival);
+                break;
+            case 'b':
+            case 'u':
+                cbor_encode_uint(&arrayEncoder, (uint64_t)(unsigned int)args[i].val.ival);
+                break;
+            case 'l':
+                cbor_encode_int(&arrayEncoder, (int64_t)args[i].val.lval);
+                break;
+            case 'z':
+                cbor_encode_uint(&arrayEncoder, (uint64_t)args[i].val.lval);
+                break;
+            case 'f':
+            case 'd':
+                cbor_encode_double(&arrayEncoder, args[i].val.lval);
+                break;
+            case 'C':
+            case 'I':
+            case 'B':
+            case 'U':
+            case 'L':
+            case 'Z':
+            case 'F':
+            case 'D':
+            case 'n':
+                do_nvoid_encoding(&arrayEncoder, args[i].val.nval);
+                break;
+            case 's':
+                cbor_encode_text_stringz(&arrayEncoder, args[i].val.sval);
+                break;
+            default:
+                assert(false);
+            }
+        }
+    }
+    cbor_encoder_close_container(&mapEncoder, &arrayEncoder);
+    cbor_encoder_close_container(&encoder, &mapEncoder);
+    cmdo->id = id++;
+    cmdo->refcount = 1;
+    pthread_mutex_init(&cmdo->lock, NULL);
+    cmdo->length = cbor_encoder_get_buffer_size(&encoder, cmdo->buffer);
+    return cmdo;
+}
+
+
+
 /*
  * Command from CBOR data. If the fmt is non NULL, then we use
  * the specification in fmt to validate the parameter ordering. (TODO: no, we don't)
@@ -227,6 +393,7 @@ command_t* command_from_data(char* fmt, void* data, int len) {
     char keybuf[32];
     uint64_t result;
     double dresult;
+    int iresult;
 
     // printf("command_from_data reading [%zu]", (size_t) len);
     // for (int i=0; i < len; i++)
@@ -275,6 +442,30 @@ command_t* command_from_data(char* fmt, void* data, int len) {
         } else if (strcmp(keybuf, "fn_name") == 0) {
             length = SMALL_CMD_STR_LEN;
             cbor_value_copy_text_string	(&map, cmd->fn_name, &length, NULL);
+        }  else if (strcmp(keybuf, "latitude") == 0) {
+            if (cbor_value_get_type(&map) == CborDoubleType) {
+                cbor_value_get_double(&map, &dresult);
+                cmd->latitude = dresult; 
+            } else 
+                cmd->latitude = 100.0; // Invalid value to indicate that no value was received - 90 to -90 is valid
+        } else if (strcmp(keybuf, "longitude") == 0) {
+            if (cbor_value_get_type(&map) == CborDoubleType) {
+                cbor_value_get_double(&map, &dresult);
+                cmd->longitude = dresult; 
+            } else 
+                cmd->longitude = 200.0; // Invalid value to indicate that no value was received -- 180 to -180 is valid
+        } else if (strcmp(keybuf, "edge") == 0) {
+            if (cbor_value_get_type(&map) == CborIntegerType) {
+                cbor_value_get_int(&map, &iresult);
+                cmd->edge = iresult; 
+            } else
+                cmd->edge = 1;
+        } else if (strcmp(keybuf, "type") == 0) {
+            if (cbor_value_get_type(&map) == CborIntegerType) {
+                cbor_value_get_int(&map, &iresult);
+                cmd->type = iresult;
+            } else 
+                cmd->type = 0;
         } else if (strcmp(keybuf, "fn_argsig") == 0) {
             length = SMALL_CMD_STR_LEN;
             if (cbor_value_is_text_string(&map)) {

@@ -440,7 +440,7 @@ void remote_task_destroy(remote_task_t *rtask) {
 
 
 #define  send_command_to_server(X) do {                                 \
-        cmd = command_new_using_arg(CmdNames_REXEC, rtask->mode == TASK_MODE_REMOTE ? 1 : 0, rtask->command, rtask->task_id, cn->core->device_id, "", rtask->fn_argsig, rtask->data); \
+        cmd = command_new_using_arg(CmdNames_REXEC, rtask->mode == TASK_MODE_REMOTE ? 1 : 0, rtask->command, rtask->task_id, cn->core->device_id, "", cn->latitude, cn->longitude, cn->eservnum,  0, rtask->fn_argsig, rtask->data); \
         mqtt_publish(X, cn->topics->requesttopic, cmd->buffer, cmd->length, cmd, 0); \
     } while (0)
 

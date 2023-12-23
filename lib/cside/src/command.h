@@ -71,6 +71,10 @@ typedef struct _command_t
     uint64_t task_id;                           // Task identifier (a function in execution)
     char node_id[LARGE_CMD_STR_LEN];            // this can be the UUID4 of the source of the message
     char old_id[LARGE_CMD_STR_LEN];             // this can be the UUID4 of the original message (only valid in a "reply")
+    double latitude;                            // latitude of the node sending the command
+    double longitude;                           // longitude of the node sending the command
+    int edge;                                   // number of edge connections of the node sending the command
+    int type;                                   // type of the node sending the command
     char fn_argsig[SMALL_CMD_STR_LEN];          // Argument signature of the functions - use fmask format
     unsigned char buffer[HUGE_CMD_STR_LEN];     // TODO: CBOR byte array in raw byte form -- overflow problems ...
     int length;                                 // length of the raw CBOR data
@@ -96,8 +100,11 @@ typedef struct _internal_command_t
 internal_command_t *internal_command_new(command_t *cmd);
 void internal_command_free(internal_command_t *ic);
 
-command_t *command_new(int cmd, int subcmd, char *fn_name, uint64_t task_id, char *node_id, char *old_id, char *fn_argsig, ...);
-command_t *command_new_using_arg(int cmd, int opt, char *fn_name, uint64_t taskid, char *node_id, char *old_id, char *fn_argsig, arg_t *args);
+command_t *command_new(int cmd, int subcmd, char *fn_name, uint64_t task_id, char *node_id, char *old_id, double latitude, double longitude, int edge, int type,  char *fn_argsig, ...);
+command_t *command_new_using_arg(int cmd, int opt, char *fn_name, uint64_t taskid, char *node_id, char *old_id, double latitude, double longitude, int edge, int type, char *fn_argsig, arg_t *args);
+command_t *command_brief_new(int cmd, uint64_t task_id, char *node_id, char *old_id, char *fn_argsig, ...);
+command_t *command_brief_new_using_arg(int cmd, uint64_t taskid, char *node_id, char *old_id, char *fn_argsig, arg_t *args);
+
 command_t *command_from_data(char *fn_argsig, void *data, int len);
 void command_hold(command_t *cmd);
 void command_free(command_t *cmd);
