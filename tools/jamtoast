@@ -90,10 +90,10 @@ const DEFAULT_TEST_DIR = "toaster"
 const JAMRUNS_DIR = `${os.homedir()}/.jamruns`;
 
 const TOASTER_JS_HOOKS =
-`jtask function assert(cond){if(!(cond)){let _err = new Error(); console.log("\\n@ToasterAssert#{"+_err.stack+"}#");}}
+	  `jtask function assert(cond){if(!(cond)){let _err = new Error(); console.log("\\n@ToasterAssert#{"+_err.stack+"}#");}}
 jtask function coverage(_id){console.log("\\n@ToasterCoverage#{"+_id+"}#");}\n`;
 const TOASTER_C_HOOKS =
-`#undef assert
+	  `#undef assert
 #define assert(cond, line) {if(!(cond)){printf("\\n@ToasterAssert#{%d, %s}#\\n", line, #cond);fflush(stdout);}}
 #define coverage(_id){printf("\\n@ToasterCoverage#{%d}#\\n", _id);fflush(stdout);}\n`;
 
@@ -113,31 +113,31 @@ const TOASTER_COVERAGE_KEYWORD = "@ToasterCoverage";
 const MAGIC_ANSI_REMOVAL_REGEX = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
 
 function ansiiGreen(text) {
-  return `\x1b[32m${text}\x1b[0m`;
+	return `\x1b[32m${text}\x1b[0m`;
 }
 
 function ansiiYellow(text) {
-  return `\x1b[33m${text}\x1b[0m`;
+	return `\x1b[33m${text}\x1b[0m`;
 }
 
 function ansiiRed(text) {
-  return `\x1b[31m${text}\x1b[0m`;
+	return `\x1b[31m${text}\x1b[0m`;
 }
 
 const TestState = {
-  COMPILING:  0,
-  STARTING:   1,
-  RUNNING:    2,
-  PASSED:  3,
-  FAILED:     4,
-  COMPILE_FAILED: 5,
+	COMPILING:  0,
+	STARTING:   1,
+	RUNNING:    2,
+	PASSED:  3,
+	FAILED:     4,
+	COMPILE_FAILED: 5,
 };
 
 const FailDetails = {
-  TEST_FAILED: 0,
-  LAUNCH_FAILED: 1,
-  RUNTIME_FAILED: 2,
-  CRASH_FAILED: 3,
+	TEST_FAILED: 0,
+	LAUNCH_FAILED: 1,
+	RUNTIME_FAILED: 2,
+	CRASH_FAILED: 3,
 }
 
 const NODETYPE_DEVICE = "device";
@@ -145,258 +145,258 @@ const NODETYPE_FOG = "fog";
 const NODETYPE_CLOUD = "cloud";
 
 Toaster.prototype.writeLog = function(text) {
-  process.stdout.write(text);
-  if(this.logFile) {
-    let prunedText = text.replace(MAGIC_ANSI_REMOVAL_REGEX,"");
-    fs.writeSync(this.logFile, prunedText);
-  }
+	process.stdout.write(text);
+	if(this.logFile) {
+		let prunedText = text.replace(MAGIC_ANSI_REMOVAL_REGEX,"");
+		fs.writeSync(this.logFile, prunedText);
+	}
 }
 
 Toaster.prototype.log = function(text) {
-  this.writeLog(text+"\n");
+	this.writeLog(text+"\n");
 }
 
 Toaster.prototype.updateTestState = function (test) {
-  let completeStr = `${this.currentTest}`;
-  let totalStr = `${this.tests.length}`;
+	let completeStr = `${this.currentTest}`;
+	let totalStr = `${this.tests.length}`;
 
-  // Magic characters clear line
-  let prefix = `\x1b[2K\r(${completeStr}/${totalStr}) `;
-  let padding = totalStr.length - completeStr.length;
-  prefix += " ".repeat(padding);
-  if(test.state==TestState.COMPILING) {
-    this.writeLog(`${prefix}${ansiiYellow(test.testName)} ${ansiiYellow("Compiling")} `);
-  } else if (test.state == TestState.STARTING) {
-    let beginning = `${ansiiYellow(test.testName)} ${ansiiGreen("Compiled")}`;
-    this.writeLog(`${prefix}${beginning} Starting...`)
-  } else if (test.state == TestState.RUNNING) {
-    let beginning = `${ansiiYellow(test.testName)} ${ansiiGreen("Compiled")}`;
-    let coverageStatus = "";
-    if(test.coverageMarkers.length) {
-      coverageStatus = `(${test.completedCoverageMarkers}/${test.coverageMarkers.length})`;
-    }
-    this.writeLog(`${prefix}${beginning} ${ansiiYellow("Running")} ${coverageStatus}`)
-  } else if (test.state == TestState.PASSED) {
-    this.writeLog(`${prefix}${ansiiGreen(test.testName + " Passed")}`)
-  } else if (test.state == TestState.FAILED) {
-    if(test.compilerWarnings != "") {
-      this.writeLog(`${prefix}${test.compilerWarnings}`);
-    }
+	// Magic characters clear line
+	let prefix = `\x1b[2K\r(${completeStr}/${totalStr}) `;
+	let padding = totalStr.length - completeStr.length;
+	prefix += " ".repeat(padding);
+	if(test.state==TestState.COMPILING) {
+		this.writeLog(`${prefix}${ansiiYellow(test.testName)} ${ansiiYellow("Compiling")} `);
+	} else if (test.state == TestState.STARTING) {
+		let beginning = `${ansiiYellow(test.testName)} ${ansiiGreen("Compiled")}`;
+		this.writeLog(`${prefix}${beginning} Starting...`)
+	} else if (test.state == TestState.RUNNING) {
+		let beginning = `${ansiiYellow(test.testName)} ${ansiiGreen("Compiled")}`;
+		let coverageStatus = "";
+		if(test.coverageMarkers.length) {
+			coverageStatus = `(${test.completedCoverageMarkers}/${test.coverageMarkers.length})`;
+		}
+		this.writeLog(`${prefix}${beginning} ${ansiiYellow("Running")} ${coverageStatus}`)
+	} else if (test.state == TestState.PASSED) {
+		this.writeLog(`${prefix}${ansiiGreen(test.testName + " Passed")}`)
+	} else if (test.state == TestState.FAILED) {
+		if(test.compilerWarnings != "") {
+			this.writeLog(`${prefix}${test.compilerWarnings}`);
+		}
 
-    if (test.failDetails == FailDetails.TEST_FAILED ||
-        test.failDetails == FailDetails.RUNTIME_FAILED ||
-        test.failDetails == FailDetails.CRASH_FAILED)  {
-      // Provide some context as to why
-      let reason = "";
-      if(test.completedCoverageMarkers != test.coverageMarkers.length) {
-        reason += `${test.completedCoverageMarkers}/${test.coverageMarkers.length} Coverage Markers`
-      }
-      if(test.assertMessage) {
-        if(reason!="") {
-          reason += ", ";
-        }
-        reason += "Failed Assert";
-      }
-      if(test.failDetails == FailDetails.RUNTIME_FAILED) {
-        if(reason!="") {
-          reason += ", ";
-        }
-        reason += "JAMScript Runtime Error";
-      } else if (test.failDetails == FailDetails.CRASH_FAILED) {
-        if(reason!="") {
-          reason += ", ";
-        }
-        reason += "Test Crashed";
-      }
+		if (test.failDetails == FailDetails.TEST_FAILED ||
+			test.failDetails == FailDetails.RUNTIME_FAILED ||
+			test.failDetails == FailDetails.CRASH_FAILED)  {
+			// Provide some context as to why
+			let reason = "";
+			if(test.completedCoverageMarkers != test.coverageMarkers.length) {
+				reason += `${test.completedCoverageMarkers}/${test.coverageMarkers.length} Coverage Markers`
+			}
+			if(test.assertMessage) {
+				if(reason!="") {
+					reason += ", ";
+				}
+				reason += "Failed Assert";
+			}
+			if(test.failDetails == FailDetails.RUNTIME_FAILED) {
+				if(reason!="") {
+					reason += ", ";
+				}
+				reason += "JAMScript Runtime Error";
+			} else if (test.failDetails == FailDetails.CRASH_FAILED) {
+				if(reason!="") {
+					reason += ", ";
+				}
+				reason += "Test Crashed";
+			}
 
-      if(reason == "") {
-        reason = "!INTERNAL!";
-        console.trace();
-      }
+			if(reason == "") {
+				reason = "!INTERNAL!";
+				console.trace();
+			}
 
-      this.writeLog(`${prefix}${ansiiRed(test.testName + " Failed")} (${reason}) `)
-    } else if (test.failDetails == FailDetails.COMPILE_FAILED) {
-      this.writeLog(`${prefix}${ansiiRed(test.testName + " Failed to compile")}`);
-    } else if (test.failDetails == FailDetails.LAUNCH_FAILED) {
-      this.writeLog(`${prefix}${ansiiRed(test.testName + " Failed to start test")} `);
-    } else {
-      console.error("Mistakes were made while programming this.");
-      console.trace();
-    }
-  }
+			this.writeLog(`${prefix}${ansiiRed(test.testName + " Failed")} (${reason}) `)
+		} else if (test.failDetails == FailDetails.COMPILE_FAILED) {
+			this.writeLog(`${prefix}${ansiiRed(test.testName + " Failed to compile")}`);
+		} else if (test.failDetails == FailDetails.LAUNCH_FAILED) {
+			this.writeLog(`${prefix}${ansiiRed(test.testName + " Failed to start test")} `);
+		} else {
+			console.error("Mistakes were made while programming this.");
+			console.trace();
+		}
+	}
 }
 
 Toaster.prototype.setTestState = function(test, state) {
-  test.state = state;
-  this.updateTestState(test);
+	test.state = state;
+	this.updateTestState(test);
 }
 
 function Toaster(conf) {
-  this.conf = conf;
+	this.conf = conf;
 
-  if(conf.testDirectory == undefined) {
-    if(fs.existsSync(DEFAULT_TEST_DIR)) {
-      this.log("Using default test directory " + DEFAULT_TEST_DIR);
-      this.testDirectory = DEFAULT_TEST_DIR;
-    } else {
-      this.log("Must provide a test folder.");
-      process.exit();
-    }
-  } else {
-    this.testDirectory = conf.testDirectory;
-  }
+	if(conf.testDirectory == undefined) {
+		if(fs.existsSync(DEFAULT_TEST_DIR)) {
+			this.log("Using default test directory " + DEFAULT_TEST_DIR);
+			this.testDirectory = DEFAULT_TEST_DIR;
+		} else {
+			this.log("Must provide a test folder.");
+			process.exit();
+		}
+	} else {
+		this.testDirectory = conf.testDirectory;
+	}
 
-  this.timeoutAmount = conf.timeoutAmount || 10000;
+	this.timeoutAmount = conf.timeoutAmount || 10000;
 
-  this.testDirectoryName = path.basename(this.testDirectory);
-  this.currentTest = 0;
-  this.testProcesses = new Set();
+	this.testDirectoryName = path.basename(this.testDirectory);
+	this.currentTest = 0;
+	this.testProcesses = new Set();
 
-  this.logFile = undefined;
+	this.logFile = undefined;
 
-  let that = this;
-  process.on("SIGINT", ()=>that.exitHook());
-  //process.on("exit", ()=>that.exitHook());
+	let that = this;
+	process.on("SIGINT", ()=>that.exitHook());
+	//process.on("exit", ()=>that.exitHook());
 }
 
 
 Toaster.prototype.exitHook = function() {
-  let endTime = Date.now();
-  this.finalReport(endTime-this.startTime);
-  process.exit();
+	let endTime = Date.now();
+	this.finalReport(endTime-this.startTime);
+	process.exit();
 }
 
 
 Toaster.prototype.setupTestingEnvironment = function () {
-  if (!fs.existsSync(TEST_RESULT_DIR_NAME)) {
-    fs.mkdirSync(TEST_RESULT_DIR_NAME);
-  }
-  this.resultDirectory = `${TEST_RESULT_DIR_NAME}/${this.testDirectoryName}-${new Date().toISOString()}`
-  fs.mkdirSync(this.resultDirectory);
+	if (!fs.existsSync(TEST_RESULT_DIR_NAME)) {
+		fs.mkdirSync(TEST_RESULT_DIR_NAME);
+	}
+	this.resultDirectory = `${TEST_RESULT_DIR_NAME}/${this.testDirectoryName}-${new Date().toISOString()}`
+	fs.mkdirSync(this.resultDirectory);
 
-  this.logFile = fs.openSync(`${this.resultDirectory}/log.txt`, 'w');
+	this.logFile = fs.openSync(`${this.resultDirectory}/log.txt`, 'w');
 }
 
 Toaster.prototype.walkTestDir = function (folder) {
-  let that = this;
-  var tests = [];
-  for(let file of fs.readdirSync(folder)) {
-    let completePath = `${folder}/${file}`;
+	let that = this;
+	var tests = [];
+	for(let file of fs.readdirSync(folder)) {
+		let completePath = `${folder}/${file}`;
 
-    if(fs.lstatSync(completePath).isDirectory()) {
-      tests.push(...that.walkTestDir(completePath));
-    }
+		if(fs.lstatSync(completePath).isDirectory()) {
+			tests.push(...that.walkTestDir(completePath));
+		}
 
-    let extension = path.extname(file);
-    if(extension === ".c") {
-      let baseName = file.substring(0, file.length-2);
-      if(fs.existsSync(`${folder}/${baseName}.js`)){
-        let testName = `${folder}/${baseName}`.substring(this.testDirectory.length+1);
-        tests.push({
-          testName: testName,
-          baseName: baseName,
-	  appName: baseName,
-	  testFolder: folder,
-          cFile: `${folder}/${baseName}.c`,
-          jsFile: `${folder}/${baseName}.js`,
-          testResultDirectory: `${that.resultDirectory}/${testName}`,
-          logFile: `${that.resultDirectory}/${testName}/jlog.txt`,
-	  logFiles: new Map(),
-          state: TestState.COMPILING,
-          completedCoverageMarkers: 0,
-          compilationDuration: 0,
-          compilerWarnings: "",
-          runDuration: 0,
-          assertMessage: undefined,
-          failDetails: undefined,
-	  offendingNodes: [],
-          networkConfig: {
-            devices: 1,
-            workers: 1,
-	    cloud: false,
-            fogs: 0,
-	    netDescPath: undefined,
-	    netDesc: undefined
-        }});
-      }
-    }
-  }
-  return tests;
+		let extension = path.extname(file);
+		if(extension === ".c") {
+			let baseName = file.substring(0, file.length-2);
+			if(fs.existsSync(`${folder}/${baseName}.js`)){
+				let testName = `${folder}/${baseName}`.substring(this.testDirectory.length+1);
+				tests.push({
+					testName: testName,
+					baseName: baseName,
+					appName: baseName,
+					testFolder: folder,
+					cFile: `${folder}/${baseName}.c`,
+					jsFile: `${folder}/${baseName}.js`,
+					testResultDirectory: `${that.resultDirectory}/${testName}`,
+					logFile: `${that.resultDirectory}/${testName}/jlog.txt`,
+					logFiles: new Map(),
+					state: TestState.COMPILING,
+					completedCoverageMarkers: 0,
+					compilationDuration: 0,
+					compilerWarnings: "",
+					runDuration: 0,
+					assertMessage: undefined,
+					failDetails: undefined,
+					offendingNodes: [],
+					networkConfig: {
+						devices: 1,
+						workers: 1,
+						cloud: false,
+						fogs: 0,
+						netDescPath: undefined,
+						netDesc: undefined
+					}});
+			}
+		}
+	}
+	return tests;
 }
 
 
 Toaster.prototype.scanTests = function () {
-  if(this.conf.singleTest) {
-    let basename = path.basename(this.testDirectory);
-    let folder = basename.substring(0, basename.lastIndexOf('/'));
-    this.tests = [];
-    this.tests.push({
-      testName: basename,
-      baseName: basename,
-      appName: basename,
-      testFolder: folder,
-      cFile: `${this.testDirectory}.c`,
-      jsFile: `${this.testDirectory}.js`,
-      testResultDirectory: `${this.resultDirectory}/${basename}`,
-      logFile: `${this.resultDirectory}/${basename}/jlog.txt`,
-      logFiles: new Map(),
-      state: TestState.COMPILING,
-      completedCoverageMarkers: 0,
-      compilationDuration: 0,
-      compilerWarnings: "",
-      runDuration: 0,
-      assertMessage: undefined,
-      failDetails: undefined,
-	  offendingNodes: [],
-      networkConfig: {
-        devices: 1,
-        workers: 1,
-	cloud: false,
-        fogs: 0,
-	netDescPath: undefined,
-	netDesc: undefined
-      }
-    });
-  } else {
-    this.tests = this.walkTestDir(this.testDirectory);
-  }
-  this.log(`Found ${this.tests.length} tests.`);
+	if(this.conf.singleTest) {
+		let basename = path.basename(this.testDirectory);
+		let folder = basename.substring(0, basename.lastIndexOf('/'));
+		this.tests = [];
+		this.tests.push({
+			testName: basename,
+			baseName: basename,
+			appName: basename,
+			testFolder: folder,
+			cFile: `${this.testDirectory}.c`,
+			jsFile: `${this.testDirectory}.js`,
+			testResultDirectory: `${this.resultDirectory}/${basename}`,
+			logFile: `${this.resultDirectory}/${basename}/jlog.txt`,
+			logFiles: new Map(),
+			state: TestState.COMPILING,
+			completedCoverageMarkers: 0,
+			compilationDuration: 0,
+			compilerWarnings: "",
+			runDuration: 0,
+			assertMessage: undefined,
+			failDetails: undefined,
+			offendingNodes: [],
+			networkConfig: {
+				devices: 1,
+				workers: 1,
+				cloud: false,
+				fogs: 0,
+				netDescPath: undefined,
+				netDesc: undefined
+			}
+		});
+	} else {
+		this.tests = this.walkTestDir(this.testDirectory);
+	}
+	this.log(`Found ${this.tests.length} tests.`);
 }
 
 const ASSERT_IDENTIFIER = "assert(";
 const COVERAGE_IDENTIFIER = "coverage(";
 
 function findMatchingParens(text, start) {
-  var end = -1;
-  var lastIndex = start;
-  var depth = 0;
+	var end = -1;
+	var lastIndex = start;
+	var depth = 0;
 
-  while(true) {
-    let nextOpen = text.indexOf('(', lastIndex);
-    let nextClose = text.indexOf(')', lastIndex);
+	while(true) {
+		let nextOpen = text.indexOf('(', lastIndex);
+		let nextClose = text.indexOf(')', lastIndex);
 
-    if(nextOpen == -1 && nextClose == -1) {
-      console.error(`Error: was unable to find matching closing paren for '${text}'`);
-      process.exit();
-    }
+		if(nextOpen == -1 && nextClose == -1) {
+			console.error(`Error: was unable to find matching closing paren for '${text}'`);
+			process.exit();
+		}
 
-    if(nextOpen == -1 || nextClose < nextOpen) {
-      depth--;
-      assert(lastIndex != start);
-      lastIndex = nextClose + 1;
+		if(nextOpen == -1 || nextClose < nextOpen) {
+			depth--;
+			assert(lastIndex != start);
+			lastIndex = nextClose + 1;
 
-      if(depth == 0) {
-        end = nextClose;
-        break;
-      }
-    }
+			if(depth == 0) {
+				end = nextClose;
+				break;
+			}
+		}
 
-    if(nextOpen != -1 && nextOpen < nextClose) {
-      depth++;
-      lastIndex = nextOpen + 1;
-    }
-  }
-  return end;
+		if(nextOpen != -1 && nextOpen < nextClose) {
+			depth++;
+			lastIndex = nextOpen + 1;
+		}
+	}
+	return end;
 }
 
 const FOGS_KEYWORD = "fogs:";
@@ -407,287 +407,287 @@ const NET_DESC_KEYWORD = "networkdescriptor:";
 const TIMEOUT_KEYWORD = "runtotimeout:";
 
 Toaster.prototype.scanForToasterConfig = function(test, line, lineIter) {
-  const keywords = [FOGS_KEYWORD, DEVICES_KEYWORD, WORKERS_KEYWORD, NET_DESC_KEYWORD, TIMEOUT_KEYWORD];
-  if(line.includes("@ToasterConfig")) {
-    let lineResult;
-    while(!(lineResult = lineIter.next()).done) {
-      line = lineResult.value.toLowerCase();
+	const keywords = [FOGS_KEYWORD, DEVICES_KEYWORD, WORKERS_KEYWORD, NET_DESC_KEYWORD, TIMEOUT_KEYWORD];
+	if(line.includes("@ToasterConfig")) {
+		let lineResult;
+		while(!(lineResult = lineIter.next()).done) {
+			line = lineResult.value.toLowerCase();
 
-      let keywordFound = false;
-      for(let keyword of keywords) {
-        if(line.includes(keyword)) {
-          keywordFound = true;
-          let start = line.indexOf(keyword) + keyword.length;
-          let value = line.substring(start).trim();
+			let keywordFound = false;
+			for(let keyword of keywords) {
+				if(line.includes(keyword)) {
+					keywordFound = true;
+					let start = line.indexOf(keyword) + keyword.length;
+					let value = line.substring(start).trim();
 
-          if(keyword == FOGS_KEYWORD) {
-            test.networkConfig.fogs = parseInt(value);
-          } else if (keyword == DEVICES_KEYWORD) {
-            test.networkConfig.devices = parseInt(value);
-          } else if (keyword == WORKERS_KEYWORD) {
-            test.networkConfig.workers = parseInt(value);
-	  } else if (keyword == CLOUD_KEYWORD){
-	    test.networkConfig.cloud = value.toLowerCase().includes('true');
-	  } else if (keyword == TIMEOUT_KEYWORD) {
-	    test.runToTimeout = value.toLowerCase().includes('true');
-          } else if (keyword == NET_DESC_KEYWORD) {
-	    if(test.networkConfig.netDescPath != undefined) {
-	      this.log("ERROR: More than one network descriptor provided!");
-	    }
-	    test.networkConfig.netDescPath = value;
-	  }
-        }
-      }
+					if(keyword == FOGS_KEYWORD) {
+						test.networkConfig.fogs = parseInt(value);
+					} else if (keyword == DEVICES_KEYWORD) {
+						test.networkConfig.devices = parseInt(value);
+					} else if (keyword == WORKERS_KEYWORD) {
+						test.networkConfig.workers = parseInt(value);
+					} else if (keyword == CLOUD_KEYWORD){
+						test.networkConfig.cloud = value.toLowerCase().includes('true');
+					} else if (keyword == TIMEOUT_KEYWORD) {
+						test.runToTimeout = value.toLowerCase().includes('true');
+					} else if (keyword == NET_DESC_KEYWORD) {
+						if(test.networkConfig.netDescPath != undefined) {
+							this.log("ERROR: More than one network descriptor provided!");
+						}
+						test.networkConfig.netDescPath = value;
+					}
+				}
+			}
 
-      if(!keywordFound) {
-        break;
-      }
-    }
-    
-    // Check valid config
-    if(test.networkConfig.netDescPath && (test.networkConfig.fogs != 0 || test.networkConfig.devices != 1 || test.networkConfig.cloud)) {
-      this.log("ERROR: Toaster config has both network descriptor and manual network configuration.");
-    }
+			if(!keywordFound) {
+				break;
+			}
+		}
+		
+		// Check valid config
+		if(test.networkConfig.netDescPath && (test.networkConfig.fogs != 0 || test.networkConfig.devices != 1 || test.networkConfig.cloud)) {
+			this.log("ERROR: Toaster config has both network descriptor and manual network configuration.");
+		}
 
-    if(test.networkConfig.netDescPath) {
-      let netDescToml = fs.readFileSync(test.testFolder + "/" + test.networkConfig.netDescPath);
-      test.networkConfig.netDesc = toml.parse(netDescToml);
-      
-      if('appname' in test.networkConfig.netDesc) {
-	test.appName = test.networkConfig.netDesc['appname'];
-      }
-    }
-  }
+		if(test.networkConfig.netDescPath) {
+			let netDescToml = fs.readFileSync(test.testFolder + "/" + test.networkConfig.netDescPath);
+			test.networkConfig.netDesc = toml.parse(netDescToml);
+			
+			if('appname' in test.networkConfig.netDesc) {
+				test.appName = test.networkConfig.netDesc['appname'];
+			}
+		}
+	}
 }
 
 Toaster.prototype.compileTest = async function(test) {
-  const buildEnv = `${JAMRUNS_DIR}/_toaster_build_env`;
-  if(!fs.existsSync(buildEnv)) {
-    fs.mkdirSync(buildEnv);
-  }
-
-  this.updateTestState(test);
-
-  let cTestPath = `${buildEnv}/${test.baseName}.c`;
-  let jsTestPath = `${buildEnv}/${test.baseName}.js`;
-
-  let cFileContents = fs.readFileSync(test.cFile, 'utf-8');
-  let cTestOutput = fs.openSync(cTestPath, 'w');
-
-  let jsFileContents = fs.readFileSync(test.jsFile, 'utf-8');
-  let jsTestOutput = fs.openSync(jsTestPath, 'w');
-
-  let coverageMarkers = [];
-  var coverageUID = 0;
-  var lineCount = 0;
-
-
-  // Roll c-side and j-side processing into one single processor...
-  
-  // Process c-side
-  fs.writeSync(cTestOutput, TOASTER_C_HOOKS);
-
-  let lines = cFileContents.split(/\r?\n/);
-  let lineIter = lines[Symbol.iterator]();
-
-  var lineResult;
-  while(!(lineResult = lineIter.next()).done) {
-    let line = lineResult.value;
-
-    lineCount++;
-    let regularLine = true;
-
-    this.scanForToasterConfig(test, line, lineIter);
-
-    let commentStart = Number.MAX_SAFE_INTEGER;
-    if(line.includes("//")) {
-      commentStart = line.indexOf("//");
-    }
-
-    if(line.toLowerCase().includes("error")) {
-      test.compilerWarnings +=`WARNING: Printing 'Error' to standard out will mark the test as failed! (${lineCount})\n`;
-      test.compilerWarnings += `--> ${line}\n`;
-    }
-
-    if(line.includes(ASSERT_IDENTIFIER)) {
-      regularLine = false;
-      let start = line.indexOf(ASSERT_IDENTIFIER);
-      if(start < commentStart) {
-	let end = findMatchingParens(line, start);
-	fs.writeSync(cTestOutput, line.substring(0, end));
-	fs.writeSync(cTestOutput, `,${lineCount}`);
-	fs.writeSync(cTestOutput, line.substring(end) + "\n");	
-      }
-    }
-    if(line.includes(COVERAGE_IDENTIFIER)) {
-      regularLine = false;
-      let start = line.indexOf(COVERAGE_IDENTIFIER);
-      
-      if(start < commentStart) {
-	let end = findMatchingParens(line, start);
-
-	let currentCoverageID = coverageUID++;
-
-	fs.writeSync(cTestOutput, line.substring(0, end));
-	fs.writeSync(cTestOutput, `${currentCoverageID}`);
-	fs.writeSync(cTestOutput, line.substring(end)+"\n");
-
-	coverageMarkers.push({
-          id: currentCoverageID,
-          line: lineCount,
-          covered: false
-	});
-      }
-    }
-    if(regularLine) {
-      fs.writeSync(cTestOutput, line+"\n");
-    }
-  }
-
-  // Process c-side
-  lineCount = 0;
-
-  lines = jsFileContents.split(/\r?\n/);
-  lineIter = lines[Symbol.iterator]();
-  while(!(lineResult = lineIter.next()).done) {
-    let line = lineResult.value;
-
-    lineCount++;
-    let regularLine = true;
-
-    this.scanForToasterConfig(test, line, lineIter);
-
-    if(line.toLowerCase().includes("error")) {
-      test.compilerWarnings +=`WARNING: Printing 'Error' to standard out will mark the test as failed! (${lineCount})\n`;
-      test.compilerWarnings += `--> ${line}\n`;
-    }
-
-    let commentStart = Number.MAX_SAFE_INTEGER;
-    if(line.includes("//")) {
-      commentStart = line.indexOf("//");
-    }
-
-    // TODO: remove this when compiler bug is fixed
-    if(line.includes(ASSERT_IDENTIFIER)) {
-      regularLine = false;
-      let start = line.indexOf(ASSERT_IDENTIFIER);
-      if(start < commentStart) {
-	let end = findMatchingParens(line, start);
-
-	let condition = line.substring(start + ASSERT_IDENTIFIER.length, end);
-	if(condition=="") {
-          this.log(`\nAssert is missing condition! \\/ (${lineCount})\n--> ${line}`);
+	const buildEnv = `${JAMRUNS_DIR}/_toaster_build_env`;
+	if(!fs.existsSync(buildEnv)) {
+		fs.mkdirSync(buildEnv);
 	}
-	fs.writeSync(jsTestOutput, line.substring(0, start));
-	fs.writeSync(jsTestOutput, TOASTER_JS_HOOK_ASSERT_L);
-	fs.writeSync(jsTestOutput, condition);
-	fs.writeSync(jsTestOutput, TOASTER_JS_HOOK_ASSERT_R);
-	fs.writeSync(jsTestOutput, line.substring(end+2)+"\n");
-      }
-    }
 
-    if(line.includes(COVERAGE_IDENTIFIER)) {
-      regularLine = false;
-      let start = line.indexOf(COVERAGE_IDENTIFIER);
-      if(start < commentStart) {
-	let end = findMatchingParens(line, start);
+	this.updateTestState(test);
 
-	let currentCoverageID = coverageUID++;
+	let cTestPath = `${buildEnv}/${test.baseName}.c`;
+	let jsTestPath = `${buildEnv}/${test.baseName}.js`;
 
-	fs.writeSync(jsTestOutput, line.substring(0, start));
-	fs.writeSync(jsTestOutput, TOASTER_JS_HOOK_COVERAGE_L);
-	fs.writeSync(jsTestOutput, `${currentCoverageID}`);
-	fs.writeSync(jsTestOutput, TOASTER_JS_HOOK_COVERAGE_R);
-	fs.writeSync(jsTestOutput, line.substring(end+2)+"\n");
+	let cFileContents = fs.readFileSync(test.cFile, 'utf-8');
+	let cTestOutput = fs.openSync(cTestPath, 'w');
 
-	coverageMarkers.push({
-          id: currentCoverageID,
-          line: lineCount,
-          covered: false
-	});
-      }
-    }
-    if(regularLine) {
-      fs.writeSync(jsTestOutput, line+"\n");
-    }
-  }
+	let jsFileContents = fs.readFileSync(test.jsFile, 'utf-8');
+	let jsTestOutput = fs.openSync(jsTestPath, 'w');
 
-  fs.closeSync(jsTestOutput);
-  fs.closeSync(cTestOutput);
-
-  test.coverageMarkers = coverageMarkers;
-
-  const compilationStart = Date.now();
-
-  // Forward preprocessed files into JamC
-
-  let command = 'jamc';
-  let args = [
-    '-d',
-    cTestPath,
-    jsTestPath,
-    '-o',
-    `${test.testResultDirectory}/test`];
-
-  // We should log compiler output in the event of a compiler error.
-
-  //this.writeLog("Compiling... ");
-  var proc = undefined;
-  let stdoutLog = "";
-  let stderrLog = "";
-
-  try {
-    proc = child_process.spawn(command,args, {detached: true});//, {stdio: [0,test.output,test.output]});
-    proc.stderr.setEncoding('utf-8');
-    proc.stdout.setEncoding('utf-8');
+	let coverageMarkers = [];
+	var coverageUID = 0;
+	var lineCount = 0;
 
 
+	// Roll c-side and j-side processing into one single processor...
+	
+	// Process c-side
+	fs.writeSync(cTestOutput, TOASTER_C_HOOKS);
 
-    proc.stdout.on('data', (data)=> {
-      stdoutLog += data;
-    });
+	let lines = cFileContents.split(/\r?\n/);
+	let lineIter = lines[Symbol.iterator]();
 
-    let shouldFail = false;
-    proc.stderr.on('data', (data)=> {
-      stderrLog += data;
-      if(data.toLowerCase().includes("error")) {
-        shouldFail = true;
-      }
-    });
+	var lineResult;
+	while(!(lineResult = lineIter.next()).done) {
+		let line = lineResult.value;
 
-    await new Promise((resolve)=>{
-      proc.stderr.on('close', ()=>{resolve()});
-    });
+		lineCount++;
+		let regularLine = true;
 
-    if(!fs.existsSync(`${test.testResultDirectory}/test.jxe`) ||
-       shouldFail) {
-      throw new Error();
-    }
+		this.scanForToasterConfig(test, line, lineIter);
 
-    const compilationEnd = Date.now();
-    test.compilationDuration = compilationEnd-compilationStart;
+		let commentStart = Number.MAX_SAFE_INTEGER;
+		if(line.includes("//")) {
+			commentStart = line.indexOf("//");
+		}
 
-    this.setTestState(test,TestState.STARTING);
+		if(line.toLowerCase().includes("error")) {
+			test.compilerWarnings +=`WARNING: Printing 'Error' to standard out will mark the test as failed! (${lineCount})\n`;
+			test.compilerWarnings += `--> ${line}\n`;
+		}
 
-    test.output.write(stdoutLog);
-    test.output.write("Stderr Follows: \n");
-    test.output.write(stderrLog);
+		if(line.includes(ASSERT_IDENTIFIER)) {
+			regularLine = false;
+			let start = line.indexOf(ASSERT_IDENTIFIER);
+			if(start < commentStart) {
+				let end = findMatchingParens(line, start);
+				fs.writeSync(cTestOutput, line.substring(0, end));
+				fs.writeSync(cTestOutput, `,${lineCount}`);
+				fs.writeSync(cTestOutput, line.substring(end) + "\n");	
+			}
+		}
+		if(line.includes(COVERAGE_IDENTIFIER)) {
+			regularLine = false;
+			let start = line.indexOf(COVERAGE_IDENTIFIER);
+			
+			if(start < commentStart) {
+				let end = findMatchingParens(line, start);
 
-    return true;
-  } catch(err) {
+				let currentCoverageID = coverageUID++;
 
-    test.failDetails = FailDetails.COMPILE_FAILED;
-    this.setTestState(test,TestState.FAILED);
-    /*this.log("Failed!");*/
+				fs.writeSync(cTestOutput, line.substring(0, end));
+				fs.writeSync(cTestOutput, `${currentCoverageID}`);
+				fs.writeSync(cTestOutput, line.substring(end)+"\n");
 
-    test.output.write(stdoutLog);
-    test.output.write("Stderr Follows: \n");
-    test.output.write(stderrLog);
-    test.output.close();
-    //this.log(` Full log can be found at ${test.logFile}`);
+				coverageMarkers.push({
+					id: currentCoverageID,
+					line: lineCount,
+					covered: false
+				});
+			}
+		}
+		if(regularLine) {
+			fs.writeSync(cTestOutput, line+"\n");
+		}
+	}
 
-    return false;
-  }
+	// Process c-side
+	lineCount = 0;
+
+	lines = jsFileContents.split(/\r?\n/);
+	lineIter = lines[Symbol.iterator]();
+	while(!(lineResult = lineIter.next()).done) {
+		let line = lineResult.value;
+
+		lineCount++;
+		let regularLine = true;
+
+		this.scanForToasterConfig(test, line, lineIter);
+
+		if(line.toLowerCase().includes("error")) {
+			test.compilerWarnings +=`WARNING: Printing 'Error' to standard out will mark the test as failed! (${lineCount})\n`;
+			test.compilerWarnings += `--> ${line}\n`;
+		}
+
+		let commentStart = Number.MAX_SAFE_INTEGER;
+		if(line.includes("//")) {
+			commentStart = line.indexOf("//");
+		}
+
+		// TODO: remove this when compiler bug is fixed
+		if(line.includes(ASSERT_IDENTIFIER)) {
+			regularLine = false;
+			let start = line.indexOf(ASSERT_IDENTIFIER);
+			if(start < commentStart) {
+				let end = findMatchingParens(line, start);
+
+				let condition = line.substring(start + ASSERT_IDENTIFIER.length, end);
+				if(condition=="") {
+					this.log(`\nAssert is missing condition! \\/ (${lineCount})\n--> ${line}`);
+				}
+				fs.writeSync(jsTestOutput, line.substring(0, start));
+				fs.writeSync(jsTestOutput, TOASTER_JS_HOOK_ASSERT_L);
+				fs.writeSync(jsTestOutput, condition);
+				fs.writeSync(jsTestOutput, TOASTER_JS_HOOK_ASSERT_R);
+				fs.writeSync(jsTestOutput, line.substring(end+2)+"\n");
+			}
+		}
+
+		if(line.includes(COVERAGE_IDENTIFIER)) {
+			regularLine = false;
+			let start = line.indexOf(COVERAGE_IDENTIFIER);
+			if(start < commentStart) {
+				let end = findMatchingParens(line, start);
+
+				let currentCoverageID = coverageUID++;
+
+				fs.writeSync(jsTestOutput, line.substring(0, start));
+				fs.writeSync(jsTestOutput, TOASTER_JS_HOOK_COVERAGE_L);
+				fs.writeSync(jsTestOutput, `${currentCoverageID}`);
+				fs.writeSync(jsTestOutput, TOASTER_JS_HOOK_COVERAGE_R);
+				fs.writeSync(jsTestOutput, line.substring(end+2)+"\n");
+
+				coverageMarkers.push({
+					id: currentCoverageID,
+					line: lineCount,
+					covered: false
+				});
+			}
+		}
+		if(regularLine) {
+			fs.writeSync(jsTestOutput, line+"\n");
+		}
+	}
+
+	fs.closeSync(jsTestOutput);
+	fs.closeSync(cTestOutput);
+
+	test.coverageMarkers = coverageMarkers;
+
+	const compilationStart = Date.now();
+
+	// Forward preprocessed files into JamC
+
+	let command = 'jamc';
+	let args = [
+		'-d',
+		cTestPath,
+		jsTestPath,
+		'-o',
+		`${test.testResultDirectory}/test`];
+
+	// We should log compiler output in the event of a compiler error.
+
+	//this.writeLog("Compiling... ");
+	var proc = undefined;
+	let stdoutLog = "";
+	let stderrLog = "";
+
+	try {
+		proc = child_process.spawn(command,args, {detached: true});//, {stdio: [0,test.output,test.output]});
+		proc.stderr.setEncoding('utf-8');
+		proc.stdout.setEncoding('utf-8');
+
+
+
+		proc.stdout.on('data', (data)=> {
+			stdoutLog += data;
+		});
+
+		let shouldFail = false;
+		proc.stderr.on('data', (data)=> {
+			stderrLog += data;
+			if(data.toLowerCase().includes("error")) {
+				shouldFail = true;
+			}
+		});
+
+		await new Promise((resolve)=>{
+			proc.stderr.on('close', ()=>{resolve()});
+		});
+
+		if(!fs.existsSync(`${test.testResultDirectory}/test.jxe`) ||
+		   shouldFail) {
+			throw new Error();
+		}
+
+		const compilationEnd = Date.now();
+		test.compilationDuration = compilationEnd-compilationStart;
+
+		this.setTestState(test,TestState.STARTING);
+
+		test.output.write(stdoutLog);
+		test.output.write("Stderr Follows: \n");
+		test.output.write(stderrLog);
+
+		return true;
+	} catch(err) {
+
+		test.failDetails = FailDetails.COMPILE_FAILED;
+		this.setTestState(test,TestState.FAILED);
+		/*this.log("Failed!");*/
+
+		test.output.write(stdoutLog);
+		test.output.write("Stderr Follows: \n");
+		test.output.write(stderrLog);
+		test.output.close();
+		//this.log(` Full log can be found at ${test.logFile}`);
+
+		return false;
+	}
 
 }
 
@@ -695,464 +695,462 @@ Toaster.prototype.compileTest = async function(test) {
 // as our initial process. Works well consistently so far... Should come back and
 // figure out a cleaner way of getting this done.
 function killGroup(pgid) {
-  try {
-    child_process.execSync(`kill -- -${pgid}`, {stdio:'ignore'});
-  } catch (err) {
-    console.log("Failed to terminate test process.");
-  }
+	try {
+		child_process.execSync(`kill -- -${pgid}`, {stdio:'ignore'});
+	} catch (err) {
+		console.log("Failed to terminate test process.");
+	}
 }
 
-  // Loop through process ID files (use this)
+// Loop through process ID files (use this)
 Toaster.prototype.killWorkerTmuxSessions = function() {
 
-  const searchDir = `${os.homedir()}/.jamruns/apps/test_${this.testDirectory}`;
+	const searchDir = `${os.homedir()}/.jamruns/apps/test_${this.testDirectory}`;
 
-  for(let file of fs.readdirSync(searchDir)) {
-    let completePath = `${searchDir}/${file}`;
-    if(fs.lstatSync(completePath).isDirectory()) {
-      let tmuxid = fs.readFileSync(`${completePath}/tmuxid`, 'utf-8');
-      child_process.execSync(`tmux kill-session -t ${tmuxid}`);
-    }
-  }
-
+	for(let file of fs.readdirSync(searchDir)) {
+		let completePath = `${searchDir}/${file}`;
+		if(fs.lstatSync(completePath).isDirectory()) {
+			let tmuxid = fs.readFileSync(`${completePath}/tmuxid`, 'utf-8');
+			child_process.execSync(`tmux kill-session -t ${tmuxid}`);
+		}
+	}
 }
 
 function extractOutputKeywordData(text){
-  let start = text.indexOf("#{")+2;
-  let end = text.indexOf("}#");
-  return text.substring(start, end);
+	let start = text.indexOf("#{")+2;
+	let end = text.indexOf("}#");
+	return text.substring(start, end);
 }
 
 Toaster.prototype.processOutput = function (test, data, log, pid) {
-  if(test.state == TestState.STARTING) {
-    this.setTestState(test, TestState.RUNNING);
-  }
-
-  if(typeof data != 'string') {
-    return;
-  }
-
-  for(let line of data.split('\n')) {
-    if (test.state == TestState.PASSED ||
-              test.state == TestState.FAILED) {
-      return false;
-    }
-
-    log.write(line+ '\n');
-
-    // Try to pick up any spurrious errors we may have missed otherwise.
-    if(line.toLowerCase().includes("error")) {
-      if(this.conf.ignoreError) {
-	continue;
-      }
-      // NOTE: this is super hacky edge case handling for an already hacky
-      // way of detecting errors!
-      if(line.includes("error: 0")) {
-        continue;
-      }
-      test.offendingNodes.push(pid);
-      test.failDetails = FailDetails.RUNTIME_FAILED;
-      this.setTestState(test, TestState.FAILED);
-      return true;
-    }
-
-    if(line.includes('@')) {
-
-      if(line.includes(TOASTER_ASSERT_KEYWORD)) {
-        test.assertMessage = extractOutputKeywordData(line);
-        test.failDetails = FailDetails.TEST_FAILED;
-        this.setTestState(test, TestState.FAILED);
-	test.offendingNodes.push(pid);
-        return true
-      } else if (line.includes(TOASTER_COVERAGE_KEYWORD)) {
-        let coverageId = extractOutputKeywordData(line);
-        for(let marker of test.coverageMarkers) {
-          if(marker.id == coverageId &&
-            marker.covered == false) {
-            test.completedCoverageMarkers++;
-            marker.covered = true;
-            this.updateTestState(test);
-          }
-        }
-      }
-      // Test is complete
-      if(test.completedCoverageMarkers == test.coverageMarkers.length) {
-	if(!test.runToTimeout) {
-          this.setTestState(test,TestState.PASSED);
-          return true;
+	if(test.state == TestState.STARTING) {
+		this.setTestState(test, TestState.RUNNING);
 	}
-      }
-    }
 
-  }
-  return false;
+	if(typeof data != 'string') {
+		return;
+	}
+
+	for(let line of data.split('\n')) {
+		if (test.state == TestState.PASSED ||
+			test.state == TestState.FAILED) {
+			return false;
+		}
+
+		log.write(line+ '\n');
+
+		// Try to pick up any spurrious errors we may have missed otherwise.
+		if(line.toLowerCase().includes("error")) {
+			if(this.conf.ignoreError) {
+				continue;
+			}
+			// NOTE: this is super hacky edge case handling for an already hacky
+			// way of detecting errors!
+			if(line.includes("error: 0")) {
+				continue;
+			}
+			test.offendingNodes.push(pid);
+			test.failDetails = FailDetails.RUNTIME_FAILED;
+			this.setTestState(test, TestState.FAILED);
+			return true;
+		}
+
+		if(line.includes('@')) {
+
+			if(line.includes(TOASTER_ASSERT_KEYWORD)) {
+				test.assertMessage = extractOutputKeywordData(line);
+				test.failDetails = FailDetails.TEST_FAILED;
+				this.setTestState(test, TestState.FAILED);
+				test.offendingNodes.push(pid);
+				return true
+			} else if (line.includes(TOASTER_COVERAGE_KEYWORD)) {
+				let coverageId = extractOutputKeywordData(line);
+				for(let marker of test.coverageMarkers) {
+					if(marker.id == coverageId &&
+					   marker.covered == false) {
+						test.completedCoverageMarkers++;
+						marker.covered = true;
+						this.updateTestState(test);
+					}
+				}
+			}
+			// Test is complete
+			if(test.completedCoverageMarkers == test.coverageMarkers.length) {
+				if(!test.runToTimeout) {
+					this.setTestState(test,TestState.PASSED);
+					return true;
+				}
+			}
+		}
+	}
+	return false;
 }
 
 Toaster.prototype.cleanupResidualTests = function() {
-  for(let pid of this.testProcesses) {
-    killGroup(pid);
-  }
-  this.testProcesses.clear();
+	for(let pid of this.testProcesses) {
+		killGroup(pid);
+	}
+	this.testProcesses.clear();
 }
 
 Toaster.prototype.executeTest = async function(test,
-					       machType,
-					       tags=undefined,
-					       data=undefined,
-					       shouldHost=undefined,
-					       loc=undefined,
-					       edge=undefined) {
-  let command = `jamrun`
-  let args =  [
-    `${test.testResultDirectory}/test.jxe`,
-    `--app=${test.appName}`,
-    //"--log",
-    "--disable-stdout-redirect"];
+											   machType,
+											   tags=undefined,
+											   data=undefined,
+											   shouldHost=undefined,
+											   loc=undefined,
+											   edge=undefined) {
+	let command = `jamrun`
+	let args =  [
+		`${test.testResultDirectory}/test.jxe`,
+		`--app=${test.appName}`,
+		//"--log",
+		"--disable-stdout-redirect"];
 
-  if(machType==NODETYPE_FOG) {
-    args.push("--fog");
-  } else if (machType==NODETYPE_DEVICE) {
-    args.push(`--num=${test.networkConfig.workers}`);
-  } else if (machType==NODETYPE_CLOUD) {
-    args.push("--cloud");
-  }
-
-  if(tags) {
-    args.push("--tags="+tags);
-  }
-  if(data) {
-    args.push("--data="+data);
-  }
-  if(shouldHost && machType==NODETYPE_FOG) {
-    args.push("--local_registry");
-  }
-  if(loc) {
-    args.push(`--loc=${loc.long},${loc.lat}`)
-  }
-  if(edge) {
-    args.push("--edge="+edge);
-  }
-  if(this.conf.local) {
-    args.push("--local");
-  }
-
-  if(this.conf.valgrind) {
-    args.push("--valgrind");
-  }
-
-  let that = this;
-  var timeout;
-
-  function cleanup() {
-    // In the case where timeout is never set
-    if(!that.conf.noTimeout) {
-      clearTimeout(timeout);
-    }
-    
-    const testEndTime = Date.now();
-    test.runDuration = testEndTime-testStartTime;
-    try {
-      if(test.failDetails != FailDetails.CRASH_FAILED ||
-         test.failDetails != FailDetails.LAUNCH_FAILED) {
-        killGroup(testProcess.pid); // Not entirely sure why this works...
-      }
-      test.logFiles.get(testProcess.pid).close();
-      that.testProcesses.delete(testProcess.pid);
-    } catch(e){ that.log(e); }
-  }
-
-  const testStartTime = Date.now();
-
-  // We should log compiler output in the event of a compiler error.
-  let testProcess = child_process.spawn(command, args, {shell: false, detached: true});
-  let pid = testProcess.pid;
-  this.testProcesses.add(pid);
-  //let log = fs.openSync(`${test.testResultDirectory}/${testProcess.pid}.txt`, 'w');
-  let log = fs.createWriteStream(`${test.testResultDirectory}/${machType}_${testProcess.pid}.txt`);
-  test.logFiles.set(pid, log);
-
-  if(!this.conf.noTimeout) {
-    var timeout = setTimeout(()=>{
-      if(test.state == TestState.STARTING) {
-	test.failDetails = FailDetails.LAUNCH_FAILED;
-	that.setTestState(test, TestState.FAILED);
-	test.offendingNodes.push(pid);
-	this.testProcesses.delete(pid);
-	cleanup();
-      }
-      if(test.state == TestState.RUNNING) {
-	if(test.coverageMarkers.length != test.completedCoverageMarkers) {
-          test.failDetails = FailDetails.TEST_FAILED;
-          that.setTestState(test, TestState.FAILED);
-	  test.offendingNodes.push(pid);
-	} else {
-          that.setTestState(test, TestState.PASSED);
+	if(machType==NODETYPE_FOG) {
+		args.push("--fog");
+	} else if (machType==NODETYPE_DEVICE) {
+		args.push(`--num=${test.networkConfig.workers}`);
+	} else if (machType==NODETYPE_CLOUD) {
+		args.push("--cloud");
 	}
-	cleanup();
-      }
-    }, this.timeoutAmount);
-  }
 
-  testProcess.stdout.setEncoding('utf-8');
-  testProcess.stderr.setEncoding('utf-8');
+	if(tags) {
+		args.push("--tags="+tags);
+	}
+	if(data) {
+		args.push("--data="+data);
+	}
+	if(shouldHost && machType==NODETYPE_FOG) {
+		args.push("--local_registry");
+	}
+	if(loc) {
+		args.push(`--loc=${loc.long},${loc.lat}`)
+	}
+	if(edge) {
+		args.push("--edge="+edge);
+	}
+	if(this.conf.local) {
+		args.push("--local");
+	}
 
-  testProcess.stdout.on('data', (data) => {
-    if(that.conf.verbose) {
-      process.stdout.write(data);
-    }
-    if(that.processOutput(test, data, log, pid)) {
-      cleanup();
-    }
-  });
+	if(this.conf.valgrind) {
+		args.push("--valgrind");
+	}
 
-  testProcess.stderr.on('data', (data) => {
-    if(test.state == TestState.RUNNING) {
-      log.write(`STDERR: ${data}`);
-      if(that.processOutput(test, data, log, pid)) {
-        cleanup();
-      }
-    }
-  });
+	let that = this;
+	var timeout;
 
-  await new Promise((resolve) => {
-    testProcess.on('close', () => {
+	function cleanup() {
+		// In the case where timeout is never set
+		if(!that.conf.noTimeout) {
+			clearTimeout(timeout);
+		}
+		
+		const testEndTime = Date.now();
+		test.runDuration = testEndTime-testStartTime;
+		try {
+			if(test.failDetails != FailDetails.CRASH_FAILED ||
+			   test.failDetails != FailDetails.LAUNCH_FAILED) {
+				killGroup(testProcess.pid); // Not entirely sure why this works...
+			}
+			test.logFiles.get(testProcess.pid).close();
+			that.testProcesses.delete(testProcess.pid);
+		} catch(e){ that.log(e); }
+	}
 
-      if(test.state == TestState.RUNNING) {
-        // Crash
-        test.failDetails = FailDetails.CRASH_FAILED;
-        that.setTestState(test, TestState.FAILED);
-        that.testProcesses.delete(pid);
-	test.offendingNodes.push(pid);
-      } else if(test.state == TestState.STARTING) {
-        test.failDetails = FailDetails.LAUNCH_FAILED
-        that.setTestState(test, TestState.FAILED);
-	test.offendingNodes.push(pid);
-      }
-      if(this.testProcesses.size) {
-	let report = that.generateReport(test);
-	test.output.write(`\n\n\n${report}`);
-      }
-      resolve();
-    });
-  });
+	const testStartTime = Date.now();
+
+	// We should log compiler output in the event of a compiler error.
+	let testProcess = child_process.spawn(command, args, {shell: false, detached: true});
+	let pid = testProcess.pid;
+	this.testProcesses.add(pid);
+	//let log = fs.openSync(`${test.testResultDirectory}/${testProcess.pid}.txt`, 'w');
+	let log = fs.createWriteStream(`${test.testResultDirectory}/${machType}_${testProcess.pid}.txt`);
+	test.logFiles.set(pid, log);
+
+	if(!this.conf.noTimeout) {
+		var timeout = setTimeout(()=>{
+			if(test.state == TestState.STARTING) {
+				test.failDetails = FailDetails.LAUNCH_FAILED;
+				that.setTestState(test, TestState.FAILED);
+				test.offendingNodes.push(pid);
+				this.testProcesses.delete(pid);
+				cleanup();
+			}
+			if(test.state == TestState.RUNNING) {
+				if(test.coverageMarkers.length != test.completedCoverageMarkers) {
+					test.failDetails = FailDetails.TEST_FAILED;
+					that.setTestState(test, TestState.FAILED);
+					test.offendingNodes.push(pid);
+				} else {
+					that.setTestState(test, TestState.PASSED);
+				}
+				cleanup();
+			}
+		}, this.timeoutAmount);
+	}
+
+	testProcess.stdout.setEncoding('utf-8');
+	testProcess.stderr.setEncoding('utf-8');
+
+	testProcess.stdout.on('data', (data) => {
+		if(that.conf.verbose) {
+			process.stdout.write(data);
+		}
+		if(that.processOutput(test, data, log, pid)) {
+			cleanup();
+		}
+	});
+
+	testProcess.stderr.on('data', (data) => {
+		if(test.state == TestState.RUNNING) {
+			log.write(`STDERR: ${data}`);
+			if(that.processOutput(test, data, log, pid)) {
+				cleanup();
+			}
+		}
+	});
+
+	await new Promise((resolve) => {
+		testProcess.on('close', () => {
+
+			if(test.state == TestState.RUNNING) {
+				// Crash
+				test.failDetails = FailDetails.CRASH_FAILED;
+				that.setTestState(test, TestState.FAILED);
+				that.testProcesses.delete(pid);
+				test.offendingNodes.push(pid);
+			} else if(test.state == TestState.STARTING) {
+				test.failDetails = FailDetails.LAUNCH_FAILED
+				that.setTestState(test, TestState.FAILED);
+				test.offendingNodes.push(pid);
+			}
+			if(this.testProcesses.size) {
+				let report = that.generateReport(test);
+				test.output.write(`\n\n\n${report}`);
+			}
+			resolve();
+		});
+	});
 }
 
 Toaster.prototype.generateReport = function(test) {
-  var reportMessage = "";
-  if(test.state == TestState.PASSED) {
-    reportMessage = `Test: ${test.testName} Completed Succesfully\n`+
-      `Time to Compile: ${test.compilationDuration/1000.0}s\n` +
-      `Time to Run Test: ${test.runDuration/1000.0}s\n`;
-  } else if (test.state == TestState.FAILED) {
-    reportMessage = `Test: ${test.testName} Failed\n`+
-      `Time to Compile: ${test.compilationDuration/1000.0}s\n` +
-      `Time to Run Test: ${test.runDuration/1000.0}s\n` +
-      `Reached ${test.completedCoverageMarkers} coverage markers out of ${test.coverageMarkers.length}\n`;
-    if(test.completedCoverageMarkers != test.coverageMarkers.length) {
-      for(let marker of test.coverageMarkers) {
-        if(!marker.covered) {
-          reportMessage += `  Missed coverage marker on line ${marker.line}\n`
-        }
-      }
-    }
-  }
-
-  return reportMessage;
+	var reportMessage = "";
+	if(test.state == TestState.PASSED) {
+		reportMessage = `Test: ${test.testName} Completed Succesfully\n`+
+			`Time to Compile: ${test.compilationDuration/1000.0}s\n` +
+			`Time to Run Test: ${test.runDuration/1000.0}s\n`;
+	} else if (test.state == TestState.FAILED) {
+		reportMessage = `Test: ${test.testName} Failed\n`+
+			`Time to Compile: ${test.compilationDuration/1000.0}s\n` +
+			`Time to Run Test: ${test.runDuration/1000.0}s\n` +
+			`Reached ${test.completedCoverageMarkers} coverage markers out of ${test.coverageMarkers.length}\n`;
+		if(test.completedCoverageMarkers != test.coverageMarkers.length) {
+			for(let marker of test.coverageMarkers) {
+				if(!marker.covered) {
+					reportMessage += `  Missed coverage marker on line ${marker.line}\n`
+				}
+			}
+		}
+	}
+	return reportMessage;
 }
 
 Toaster.prototype.testAll = async function () {
-  this.startTime = Date.now();
+	this.startTime = Date.now();
 
-  for(let test of this.tests) {
-    this.currentTest++;
+	for(let test of this.tests) {
+		this.currentTest++;
 
-    await this.runTest(test);
-  }
+		await this.runTest(test);
+	}
 
-  let endTime = Date.now();
-  this.finalReport(endTime-this.startTime);
-  process.exit(1);
+	let endTime = Date.now();
+	this.finalReport(endTime-this.startTime);
+	process.exit(1);
 }
 
 Toaster.prototype.runTest = async function (test) {
-  this.writeLog('\n');
+	this.writeLog('\n');
 
-  fs.mkdirSync(test.testResultDirectory, {recursive: true});
+	fs.mkdirSync(test.testResultDirectory, {recursive: true});
 
-  test.output = fs.createWriteStream(`${test.testResultDirectory}/jlog.txt`);
+	test.output = fs.createWriteStream(`${test.testResultDirectory}/jlog.txt`);
 
-  // The directory could be included in the test object, that would make more sense
-  if(!await this.compileTest(test)) {
-    return;
-  }
-
-  //console.log(test.networkConfig);
-
-  let sleep = 750;
-  
-  // Resume as soon as one of these exits.
-  await new Promise( async (resolve) => {
-    if(test.networkConfig.netDesc) {
-      let netDesc = test.networkConfig.netDesc;
-      if('cloud' in netDesc) {
-	this.executeTest(test,
-			 NODETYPE_CLOUD,
-			 netDesc['cloud']['tags'],
-			 netDesc['cloud']['data']
-			).then(()=>{resolve()});
-	await new Promise((resolve2)=>{setTimeout(()=>{resolve2();}, sleep)});
-      }
-      
-      if('fog' in netDesc) {
-	for (let fog of netDesc['fog']) {
-	  this.executeTest(test,
-			   NODETYPE_FOG,
-			   fog['tags'],
-			   fog['data'],
-			   fog['hostLocalRegistry'],
-			   fog['loc']
-			  ).then(()=>{resolve()});
-	  await new Promise((resolve2)=>{setTimeout(()=>{resolve2();}, sleep)});
+	// The directory could be included in the test object, that would make more sense
+	if(!await this.compileTest(test)) {
+		return;
 	}
-      }
-      
-      if('device' in netDesc) {
-	for (let device of netDesc['device']) {
-	  this.executeTest(test,
-			   NODETYPE_DEVICE,
-			   device['tags'],
-			   device['data'],
-			   device['loc'],
-			   device['edge']
-			  ).then(()=>{resolve()});
-	  await new Promise((resolve2)=>{setTimeout(()=>{resolve2();}, sleep)});
-	}
-      }
-    } else {
-      if(test.networkConfig.cloud) {
-	this.executeTest(test, NODETYPE_CLOUD).then(()=>{resolve()});
-	await new Promise((resolve2)=>{setTimeout(()=>{resolve2();}, sleep)});
-      }
-      for(let _ = 0; _ < test.networkConfig.fogs; _++){
-	this.executeTest(test, NODETYPE_FOG).then(()=>{resolve()});
-	await new Promise((resolve2)=>{setTimeout(()=>{resolve2();}, sleep)});
-      }
 
-      for(let _ = 0; _ < test.networkConfig.devices; _++){
-	this.executeTest(test, NODETYPE_DEVICE).then(()=>{resolve()});
-	await new Promise((resolve2)=>{setTimeout(()=>{resolve2();}, sleep)});
-      }
-    }
-     
-  });
-  
-  this.cleanupResidualTests();
-  
-  test.output.close();
+	//console.log(test.networkConfig);
+
+	let sleep = 750;
+	
+	// Resume as soon as one of these exits.
+	await new Promise( async (resolve) => {
+		if(test.networkConfig.netDesc) {
+			let netDesc = test.networkConfig.netDesc;
+			if('cloud' in netDesc) {
+				this.executeTest(test,
+								 NODETYPE_CLOUD,
+								 netDesc['cloud']['tags'],
+								 netDesc['cloud']['data']
+								).then(()=>{resolve()});
+				await new Promise((resolve2)=>{setTimeout(()=>{resolve2();}, sleep)});
+			}
+			
+			if('fog' in netDesc) {
+				for (let fog of netDesc['fog']) {
+					this.executeTest(test,
+									 NODETYPE_FOG,
+									 fog['tags'],
+									 fog['data'],
+									 fog['hostLocalRegistry'],
+									 fog['loc']
+									).then(()=>{resolve()});
+					await new Promise((resolve2)=>{setTimeout(()=>{resolve2();}, sleep)});
+				}
+			}
+			
+			if('device' in netDesc) {
+				for (let device of netDesc['device']) {
+					this.executeTest(test,
+									 NODETYPE_DEVICE,
+									 device['tags'],
+									 device['data'],
+									 false,
+									 device['loc'],
+									 device['edge']
+									).then(()=>{resolve()});
+					await new Promise((resolve2)=>{setTimeout(()=>{resolve2();}, sleep)});
+				}
+			}
+		} else {
+			if(test.networkConfig.cloud) {
+				this.executeTest(test, NODETYPE_CLOUD).then(()=>{resolve()});
+				await new Promise((resolve2)=>{setTimeout(()=>{resolve2();}, sleep)});
+			}
+			for(let _ = 0; _ < test.networkConfig.fogs; _++){
+				this.executeTest(test, NODETYPE_FOG).then(()=>{resolve()});
+				await new Promise((resolve2)=>{setTimeout(()=>{resolve2();}, sleep)});
+			}
+
+			for(let _ = 0; _ < test.networkConfig.devices; _++){
+				this.executeTest(test, NODETYPE_DEVICE).then(()=>{resolve()});
+				await new Promise((resolve2)=>{setTimeout(()=>{resolve2();}, sleep)});
+			}
+		}
+		
+	});
+	
+	this.cleanupResidualTests();
+	
+	test.output.close();
 }
 
 Toaster.prototype.finalReport = function(duration) {
-  const total = this.tests.length;
-  let passed = 0;
+	const total = this.tests.length;
+	let passed = 0;
 
-  let allTestsFinished = true;
+	let allTestsFinished = true;
 
-  for(let test of this.tests) {
-    if(test.state == TestState.PASSED) {
-      passed++;
-    }
-    // COMPILING is the initial state.
-    // Could refactor to make that more clear to be honest.
-    if(test.state == TestState.COMPILING) {
-      allTestsFinished = false;
-    }
-  }
-
-  let exitText = `\n\n${allTestsFinished ? "All Tests Finished" : "Not All Tests Finished"} (${passed}/${total}) in ${duration/1000}s`;
-
-  if(passed == total) {
-    exitText = ansiiGreen(exitText);
-  } else if (!passed) {
-    // oopsies...
-    exitText = ansiiRed(exitText);
-  }
-
-  this.log(exitText);
-
-  this.log(`Toaster Log: ${this.resultDirectory}/log.txt`);
-
-  if(passed != total) {
-    this.log("Logs of Failed Tests:");
-    for(let test of this.tests) {
-      if(test.state == TestState.FAILED) {
-        this.log(`${ansiiRed(test.testName)} ${" ".repeat(Math.max(0,20-test.testName.length))} ${test.logFile}`);
-	for(let node of test.offendingNodes) {
-	  this.log(`${" ".repeat(20)}  ${test.logFiles.get(node).path}`);
+	for(let test of this.tests) {
+		if(test.state == TestState.PASSED) {
+			passed++;
+		}
+		// COMPILING is the initial state.
+		// Could refactor to make that more clear to be honest.
+		if(test.state == TestState.COMPILING) {
+			allTestsFinished = false;
+		}
 	}
-      }
-    }
-  }
 
-  if(this.logFile) {
-    fs.close(this.logFile);
-    this.logFile = undefined;
-  }
+	let exitText = `\n\n${allTestsFinished ? "All Tests Finished" : "Not All Tests Finished"} (${passed}/${total}) in ${duration/1000}s`;
+
+	if(passed == total) {
+		exitText = ansiiGreen(exitText);
+	} else if (!passed) {
+		// oopsies...
+		exitText = ansiiRed(exitText);
+	}
+
+	this.log(exitText);
+
+	this.log(`Toaster Log: ${this.resultDirectory}/log.txt`);
+
+	if(passed != total) {
+		this.log("Logs of Failed Tests:");
+		for(let test of this.tests) {
+			if(test.state == TestState.FAILED) {
+				this.log(`${ansiiRed(test.testName)} ${" ".repeat(Math.max(0,20-test.testName.length))} ${test.logFile}`);
+				for(let node of test.offendingNodes) {
+					this.log(`${" ".repeat(20)}  ${test.logFiles.get(node).path}`);
+				}
+			}
+		}
+	}
+
+	if(this.logFile) {
+		fs.close(this.logFile);
+		this.logFile = undefined;
+	}
 }
 
 function processArgs() {
-  let args = process.argv.slice(2);
-  let conf = {
-    testDirectory: undefined,
-    singleTest: false,
-    timeoutAmount: undefined,
-    noTimeout: false,
-    verbose: false,
-    local: false,
-    valgrind: false
-  };
+	let args = process.argv.slice(2);
+	let conf = {
+		testDirectory: undefined,
+		singleTest: false,
+		timeoutAmount: undefined,
+		noTimeout: false,
+		verbose: false,
+		local: false,
+		valgrind: false
+	};
 
-  for (var i = 0; i < args.length; i++) {
-    if (args[i].charAt(0) === "-") {
-      if (args[i] === "-t" || args[i] === "--timeout") {
-        conf.timeoutAmount = parseInt(args[i+1]);
-        if(Number.isNaN(conf.timeoutAmount)) {
-          console.error("Unable to parse timeout duration: "+args[i+1]);
-          conf.timeoutAmount = undefined;
-        }
-        i++;
-      } else if (args[i] === "-h" || args[i] === "--help") {
-	  console.log(USAGE);
-	  process.exit();
-      } else if (args[i] === "-v" || args[i] === "--verbose") {
-	conf.verbose = true;
-      } else if (args[i] === "-nt" || args[i] === "--no-timeout") {
-	conf.noTimeout = true;
-      } else if (args[i] === "-l" || args[i] === "--local") {
-	conf.local = true;
-      } else if (args[i] === "-i" || args[i] === "--ignore-error") {
-	conf.ignoreError = true;
-      } else if (args[i] === "-va" || args[i] === "--valgrind") {
-	conf.valgrind = true;
-      }
-    } else {
-      let inputPath = args[i];
-      if(conf.testDirectory != undefined) {
-        console.log("Can only provide one test folder!");
-        process.exit();
-      }
+	for (var i = 0; i < args.length; i++) {
+		if (args[i].charAt(0) === "-") {
+			if (args[i] === "-t" || args[i] === "--timeout") {
+				conf.timeoutAmount = parseInt(args[i+1]);
+				if(Number.isNaN(conf.timeoutAmount)) {
+					console.error("Unable to parse timeout duration: "+args[i+1]);
+					conf.timeoutAmount = undefined;
+				}
+				i++;
+			} else if (args[i] === "-h" || args[i] === "--help") {
+				console.log(USAGE);
+				process.exit();
+			} else if (args[i] === "-v" || args[i] === "--verbose") {
+				conf.verbose = true;
+			} else if (args[i] === "-nt" || args[i] === "--no-timeout") {
+				conf.noTimeout = true;
+			} else if (args[i] === "-l" || args[i] === "--local") {
+				conf.local = true;
+			} else if (args[i] === "-i" || args[i] === "--ignore-error") {
+				conf.ignoreError = true;
+			} else if (args[i] === "-va" || args[i] === "--valgrind") {
+				conf.valgrind = true;
+			}
+		} else {
+			let inputPath = args[i];
+			if(conf.testDirectory != undefined) {
+				console.log("Can only provide one test folder!");
+				process.exit();
+			}
 
-      if(fs.existsSync(inputPath)) {
-        conf.testDirectory = inputPath;
-      } else if (fs.existsSync(inputPath + ".js")){
-        conf.testDirectory = inputPath;
-        conf.singleTest = true;
-      } else {
-        console.log(`Folder/Test '${inputPath}' Doesn't Exist.`);
-      }
-    }
-  }
+			if(fs.existsSync(inputPath)) {
+				conf.testDirectory = inputPath;
+			} else if (fs.existsSync(inputPath + ".js")){
+				conf.testDirectory = inputPath;
+				conf.singleTest = true;
+			} else {
+				console.log(`Folder/Test '${inputPath}' Doesn't Exist.`);
+			}
+		}
+	}
 
-  return conf;
+	return conf;
 }
 
 let toaster = new Toaster(processArgs());

@@ -41,7 +41,8 @@ typedef struct _nvoid_refcount_t {
     nvoid_t* nv;
 } nvoid_refcount_t;
 
-nvoid_t* nvoid_new(uint32_t cap, uint8_t* data, uint32_t len);
+nvoid_t* nvoid_new(uint32_t maxlen, uint8_t* data, uint32_t len);
+void nvoid_init(nvoid_t* dst, uint32_t maxlen, char typefmt, uint8_t* data, uint32_t len);
 nvoid_t* nvoid_empty(uint32_t maxlen, char typefmt);
 nvoid_t* nvoid_dup(nvoid_t* src);
 nvoid_t* nvoid_cpy(nvoid_t* dst, nvoid_t* src);

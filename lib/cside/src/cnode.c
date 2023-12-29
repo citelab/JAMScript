@@ -11,10 +11,19 @@
 #include <unistd.h>
 
 cnode_t *cn;
+int jamclock = 1;
 
 int get_jamclock(cnode_t *cn)
 {
-    return 0;
+    return jamclock++;
+}
+
+int get_serial(cnode_t *cn) {
+    return cn->core->serial_num;
+}
+
+char *get_id(cnode_t *cn) {
+    return cn->core->device_id;
 }
 
 // Memory leak here

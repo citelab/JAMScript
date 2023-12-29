@@ -277,7 +277,7 @@ void msg_processor(void* serv, command_t* cmd) {
         command_free(cmd);
         return;
     default:
-        tboard_err("msg_processor: Invalid message type encountered: %d\n", cmd->cmd);
+        //tboard_err("msg_processor: Invalid message type encountered: %d\n", cmd->cmd);
         command_free(cmd);
         return;
     }

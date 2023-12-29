@@ -228,10 +228,15 @@ command_t* command_from_data(char* fmt, void* data, int len) {
     uint64_t result;
     double dresult;
 
+    // printf("command_from_data reading [%zu]", (size_t) len);
+    // for (int i=0; i < len; i++)
+    //     printf(" %.2x", i[(uint8_t*) data]);
+    // putchar('\n');
+
     command_t* cmd = (command_t*)calloc(1, sizeof(command_t));
-    memcpy(cmd->buffer, data, len);
+    //memcpy(cmd->buffer, data, len);
     cmd->length = len;
-    cbor_parser_init(cmd->buffer, len, 0, &parser, &it);
+    cbor_parser_init(data, len, 0, &parser, &it);
     cbor_value_enter_container(&it, &map);
     while (!cbor_value_at_end(&map)) {
         if (cbor_value_get_type(&map) == CborTextStringType) {
@@ -281,7 +286,7 @@ command_t* command_from_data(char* fmt, void* data, int len) {
             size_t nelems;
             assert(cbor_value_is_length_known(&map));
             cbor_value_get_array_length(&map, &nelems);
-            // printf("%u ; %s; %zu\n", cmd->cmd, cmd->fn_argsig, nelems);
+            // printf("%u; %s; %s; %zu\n", cmd->cmd, cmd->fn_name, cmd->fn_argsig, nelems);
             assert(nelems == argsiglen);
 
             cbor_value_enter_container(&map, &arr);
@@ -375,8 +380,9 @@ command_t* command_from_data(char* fmt, void* data, int len) {
                         break;
                     case CborArrayType:
                         assert(cmd->fn_argsig[i] <= 'Z' && cmd->fn_argsig[i] >= 'A');
-                        assert(cbor_value_is_length_known(&arr)); // TODO? unsure when it wouldnt be
+                        assert(cbor_value_is_length_known(&arr));
                         cbor_value_get_array_length(&arr, &length);
+                        // printf("got array length %zu\n", length);
                         CborValue arrayEnc;
                         cbor_value_enter_container(&arr, &arrayEnc);
                         char type = cmd->fn_argsig[i] - 'A' + 'a';
@@ -403,62 +409,91 @@ command_t* command_from_data(char* fmt, void* data, int len) {
                                     cbor_value_get_int(&arrayEnc, &((int*)nval->data)[j]);
                                     break;
                                 case 'u':
-                                    cbor_value_get_uint64(&arr, &tmp_uint);
+                                    cbor_value_get_uint64(&arrayEnc, &tmp_uint);
                                     ((unsigned int*)nval->data)[j] = (unsigned int)tmp_uint;
                                     break;
                                 case 'l':
-                                    cbor_value_get_int64(&arr, &((int64_t*)nval->data)[j]);
+                                    cbor_value_get_int64(&arrayEnc, &((int64_t*)nval->data)[j]);
                                     break;
                                 case 'z':
-                                    cbor_value_get_uint64(&arr, &((uint64_t*)nval->data)[j]);
+                                    cbor_value_get_uint64(&arrayEnc, &((uint64_t*)nval->data)[j]);
                                     break;
                                 default:
                                     assert(false);
                                 }
                                 break;
                             case CborTextStringType:
-                                assert(type == 'c' || type == 'b');
-                                cbor_value_calculate_string_length(&arr, &length);
+                                cbor_value_calculate_string_length(&arrayEnc, &length);
                                 assert(length == 1);
                                 length++;
-                                cbor_value_copy_text_string(&arr, tmpcharbuf, &length, NULL);
-                                nval->data[j] = (uint8_t)tmpcharbuf[0];
+                                cbor_value_copy_text_string(&arrayEnc, tmpcharbuf, &length, NULL);
+                                switch(type) {
+                                case 'c':
+                                case 'b':
+                                    nval->data[j] = (uint8_t)tmpcharbuf[0];
+                                    break;
+                                case 'i':
+                                case 'u':
+                                    ((unsigned int*)nval->data)[j] = tmpcharbuf[0];
+                                    break;
+                                case 'l':
+                                case 'z':
+                                    ((uint64_t*)nval->data)[j] = tmpcharbuf[0];
+                                    break;
+                                default:
+                                    assert(false);
+                                }
                                 break;
                             case CborByteStringType:
-                                assert(type == 'c' || type == 'b');
-                                cbor_value_calculate_string_length(&arr, &length);
+                                cbor_value_calculate_string_length(&arrayEnc, &length);
                                 assert(length == 1);
-                                cbor_value_copy_byte_string(&arr, (uint8_t*)tmpcharbuf, &length, NULL);
-                                nval->data[j] = (uint8_t)tmpcharbuf[0];
+                                cbor_value_copy_byte_string(&arrayEnc, (uint8_t*)tmpcharbuf, &length, NULL);
+                                switch(type) {
+                                case 'c':
+                                case 'b':
+                                    nval->data[j] = (uint8_t)tmpcharbuf[0];
+                                    break;
+                                case 'i':
+                                case 'u':
+                                    ((unsigned int*)nval->data)[j] = tmpcharbuf[0];
+                                    break;
+                                case 'l':
+                                case 'z':
+                                    ((uint64_t*)nval->data)[j] = tmpcharbuf[0];
+                                    break;
+                                default:
+                                    assert(false);
+                                }
                                 break;
                             case CborFloatType:
                                 if (type == 'd') {
-                                    cbor_value_get_float(&arr, &fval);
+                                    cbor_value_get_float(&arrayEnc, &fval);
                                     ((double*)nval->data)[j] = (double)fval;
                                 } else if (type == 'f')
-                                    cbor_value_get_float(&arr, &((float*)nval->data)[j]);
+                                    cbor_value_get_float(&arrayEnc, &((float*)nval->data)[j]);
                                 else
                                     assert(false);
                                 break;
                             case CborDoubleType:
                                 if (type == 'f') {
                                     double dval;
-                                    cbor_value_get_double(&arr, &dval);
+                                    cbor_value_get_double(&arrayEnc, &dval);
                                     ((float*)nval->data)[j] = (float)dval;
                                 } else if (type == 'd')
-                                    cbor_value_get_double(&arr, &((double*)nval->data)[j]);
+                                    cbor_value_get_double(&arrayEnc, &((double*)nval->data)[j]);
                                 else
                                     assert(false);
                                 break;
                             default:
+                                printf("CBOR illegal type: %d at %d\n", cbor_value_get_type(&arrayEnc), j);
                                 assert(false);
                             }
 #pragma GCC diagnostic push
                             cbor_value_advance(&arrayEnc);
                         }
-
+                        i++;
                         cbor_value_leave_container(&arr, &arrayEnc);
-                        break;
+                        continue;
                     default:
                         printf("Unrecognized CBOR %d command_from_data\n", ty);
                         assert(false);
@@ -672,10 +707,7 @@ arg_t* command_args_clone(arg_t* arg) {
     return val;
 }
 
-void command_print(command_t* cmd)
-{
-    int i;
-
+void command_print(command_t* cmd) {
     printf("\n===================================\n");
     printf("\nCommand cmd: %d\n", cmd->cmd);
     printf("\nCommand subcmd: %d\n", cmd->subcmd);
@@ -686,9 +718,11 @@ void command_print(command_t* cmd)
     printf("\nCommand old_id: %s\n", cmd->old_id);
     printf("\nCommand fn_argsig: %s\n", cmd->fn_argsig);
 
-    printf("\nCommand buffer: ");
-    for (i = 0; i < (int)strlen((char*)cmd->buffer); i++)
-        printf("%x", (int)cmd->buffer[i]);
+    printf("\nCommand buffer [%d]: ", cmd->length);
+    for (int i=0; i < cmd->length; i++)
+        printf(" %.2x", i[(uint8_t*) cmd->buffer]);
+    putchar('\n');
+
 
     command_arg_print(cmd->args);
     printf("\n===================================\n");

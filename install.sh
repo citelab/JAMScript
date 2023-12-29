@@ -134,8 +134,13 @@ elif [ $machine = Mac ]; then
     # install redis
     if ! command -v redis-server &> /dev/null; then
         echo "Redis not found: installing..."
-        brew install redis
+        brew install redis hiredis
     fi
+	# install tmux
+	if ! command -v tmux &> /dev/null; then
+		echo "Tmux not found: installing..."
+		brew install tmux
+	fi
 
 fi
 

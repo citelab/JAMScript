@@ -314,7 +314,6 @@ arg_t* remote_task_create(tboard_t* tboard, char* command, int level, char* fn_a
         } else if (rtask.status == RTASK_COMPLETED) {
             if (sizeof_args)
                 command_args_free(args); // the rtask.data value will be overwritten with return args
-
             remote_task_free(tboard, rtask.task_id);
             return rtask.data;
         }

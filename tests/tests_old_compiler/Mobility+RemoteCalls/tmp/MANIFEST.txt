@@ -1,0 +1,8 @@
+VERSION = 1.0
+DESCRIPTION = JAMScript executable file
+NAME = undefined
+CREATE-TIME = 1693357374135
+MAX-HEIGHT = 2
+JDATA = false
+C-SIDE-EFFECT = undefined
+JS-SIDE-EFFECT = undefined

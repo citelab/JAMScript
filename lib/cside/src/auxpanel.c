@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <inttypes.h>
+#include <hiredis/adapters/libevent.h>
 
 #include "auxpanel.h"
 #include "dpanel.h"
@@ -180,12 +181,13 @@ void apanel_uaddall(auxpanel_t* ap) { // add all pending uflow objects to outgoi
         if (next == NULL)
             return;
         uflow_obj_t* uobj = (uflow_obj_t*)next->data;
+
         if (last || !--overrun) {
             // send with a callback
-            redisAsyncCommand(ap->a_uctx, apanel_ucallback, ap, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %s", uobj->key, uobj->clock, ap->logical_id, ap->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
+            redisAsyncCommand(ap->a_uctx, apanel_ucallback, ap, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, ap->logical_id, ap->logical_appid, cn->width, cn->xcoord, cn->ycoord, (uint8_t*) uobj->value, (size_t) uobj->len);
         } else {
             // send without a callback for pipelining.
-            redisAsyncCommand(ap->a_uctx, apanel_uerrorcheck, NULL, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %s", uobj->key, uobj->clock, ap->logical_id, ap->logical_appid, cn->width, cn->xcoord, cn->ycoord, uobj->value);
+            redisAsyncCommand(ap->a_uctx, apanel_uerrorcheck, NULL, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, ap->logical_id, ap->logical_appid, cn->width, cn->xcoord, cn->ycoord, (uint8_t*) uobj->value, (size_t) uobj->len);
         }
         freeUObject(uobj);
         free(next);
@@ -246,7 +248,9 @@ uflow_obj_t* uflow_obj_clone(uflow_obj_t* u) {
     uo->key = u->key;
     uo->fmt = u->fmt;
     uo->clock = u->clock;
-    uo->value = strdup(u->value);
+    uo->len = u->len;
+    uo->value = malloc(u->len);
+    memcpy(uo->value, u->value, u->len);
 
     return uo;
 }
@@ -262,6 +266,7 @@ void apanel_ufwrite(auxpanel_t* ap, uflow_obj_t* u) {
 
 void apanel_send_to_fogs(arecord_t* ar, void* u) {
     int nfogs = HASH_COUNT(ar);
+    // printf("nfogs: %d\n", nfogs);
     if (nfogs == 0) return;
 
     uflow_obj_t* uo = (uflow_obj_t*)u;

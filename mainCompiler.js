@@ -175,9 +175,7 @@ function runMain(cargs) {
                 results.manifest = createManifest(cargs.outPath, results.hasJdata);
                 createZip(results.JS, results.C, results.manifest, results.jstart, tmpDir, cargs);
                 if (!cargs.debug) {
-                    for (var i = 0; i < value.length; i++) {
-                        console.log(value[i]);
-                    }
+                    console.log(value);
                     deleteFolderRecursive(tmpDir);
                 }
             }).catch(function (error) {

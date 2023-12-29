@@ -17,7 +17,10 @@
 #include "utarray.h"
 #include "uthash.h"
 
-#define __jname__jsys__sleep(X)               sleep_task_create(cnode->tboard, X)
-#define __jname__jsys__yield()                task_yield()
+#define __jname__jsys__sleep(X)                 sleep_task_create(cnode->tboard, X)
+#define __jname__jsys__yield()                  task_yield()
+#define __jname__jsys__id                       get_id(cnode)
+#define __jname__jsys__serial                   get_serial(cnode)
+#define __jname__jsys__dontyield()            ((void)0)
 
 #endif

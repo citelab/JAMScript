@@ -4,12 +4,12 @@
 #include <assert.h>
 #include <string.h>
 #include <inttypes.h>
+#include <hiredis/adapters/libevent.h>
 
 #include "cnode.h"
 #include "dpanel.h"
 #include "tboard.h"
 #include "auxpanel.h"
-
 
 /*
  * Some forward declarations
@@ -197,9 +197,11 @@ void dpanel_uaddall(dpanel_t* dp) { // add all pending uflow objects to outgoing
             if (next == NULL)
                 return;
             uflow_obj_t* uobj = (uflow_obj_t*)next->data;
+
             pthread_mutex_lock(&(dp->mutex));
             apanel_send_to_fogs(dp->apanels, uobj);
             pthread_mutex_unlock(&(dp->mutex));
+
             if (last || !--overrun) {
                 // send with a callback
                 redisAsyncCommand(dp->uctx, dpanel_ucallback, dp, "fcall uf_write 1 %s %" PRIu64 " %d %d %d %f %f %b", uobj->key, uobj->clock, dp->logical_id, dp->logical_appid, cn->width, cn->xcoord, cn->ycoord, (uint8_t*) uobj->value, (size_t) uobj->len);
@@ -425,8 +427,15 @@ void ufwrite_struct(uftable_entry_t* uf, uint8_t* buf, size_t buflen, char* fmt,
     va_end(args);
 
     dpanel_t* dp = (dpanel_t*)(uf->dpanel);
+
     int clen = cbor_encoder_get_buffer_size(&encoder, buf);
     uflow_obj_t* uobj = uflow_obj_new(uf, (char*)buf, clen);
+
+    // printf("writing uflow struct buf [%d]: ", clen);
+    // for (int i=0; i < clen; i++)
+    //     printf("%.2x", i[buf]);
+    // putchar('\n');
+
 
     struct queue_entry* e = queue_new_node(uobj);
     pthread_mutex_lock(&(dp->ufmutex));
@@ -538,10 +547,14 @@ void dflow_callback(redisAsyncContext* c, void* r, void* privdata) {
 
     HASH_FIND(hh, t->task_table, &(entry->taskid), sizeof(uint64_t), rtask);
     if (rtask != NULL) {
+        int i;
         if(rtask->status == DFLOW_TASK_COMPLETED)
             return;
 
-        redisReply* cborData = (reply->element[7]);
+        for (i = 0; i < reply->elements; i++)
+            if (strncmp(reply->element[i]->str, "value###", 8) == 0)
+                break;
+        redisReply* cborData = (reply->element[i+1]);
         rtask->data = malloc(cborData->len);
 
         memcpy(rtask->data, cborData->str, cborData->len);
