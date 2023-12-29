@@ -38,12 +38,12 @@ JAMC <: C {
     Jamparam_decl   = char "*" identifier                              -- String
                     | Jamtype identifier ( "[" "]" )?                  -- Param
 
-    Decl            += jarray Jamtype Jamarray_dlist ";"               -- JamArray
-                    |  jlist Jamtype Jamarray_dlist ";"                -- JamList
+    Decl            += jarray Jamtype Jamarray_dlist<Jarray_size> ";"  -- JamArray
+                    |  jlist Jamtype Jamarray_dlist<""> ";"            -- JamList
 
-    Jamarray_dlist  = NonemptyListOf<Jamarray_init, ",">
+    Jamarray_dlist<size>  = NonemptyListOf<Jamarray_init<size>, ",">
 
-    Jamarray_init   = identifier "[" decimalIntegerLiteral "]" ( "=" Jamarray_val )?
+    Jamarray_init<size>   = identifier size ( "=" Jamarray_val )?
 
     Jamarray_val    = Initializer_list | stringLiteral
 
