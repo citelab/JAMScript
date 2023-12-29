@@ -38,11 +38,22 @@ JAMC <: C {
     Jamparam_decl   = char "*" identifier                              -- String
                     | Jamtype identifier ( "[" "]" )?                  -- Param
 
-    Decl            += jarray Jamtype  Jamarray_dlist ";"              -- JamArray
+    Decl            += jarray Jamtype Jamarray_dlist ";"               -- JamArray
+                    |  jlist Jamtype Jamarray_dlist ";"                -- JamList
 
-    Jamarray_dlist  =  NonemptyListOf<Jamarray_init, ",">
+    Jamarray_dlist  = NonemptyListOf<Jamarray_init, ",">
 
-    Jamarray_init   =  identifier "[" decimalIntegerLiteral "]" ( "=" ( Initializer_list | stringLiteral) )?
+    Jamarray_init   = identifier "[" decimalIntegerLiteral "]" ( "=" Jamarray_val )?
+
+    Jamarray_val    = Initializer_list | stringLiteral
+
+    Param_decl      += jarray Jamtype identifier Jarray_size           -- JamArray
+                    |  jlist Jamtype identifier                        -- JamList
+
+    Function_def    += jarray Jamtype Jarray_size identifier Pcall_decl Compound_stmt       -- JamArray
+                    |  jlist Jamtype identifier Pcall_decl Compound_stmt                    -- JamList
+
+    Jarray_size     = "[" decimalIntegerLiteral "]"
 
     Jcond_decl      = ( jcond | jreuse ) "{" Jcond_entry+ "}"
 
@@ -58,11 +69,12 @@ JAMC <: C {
                     | Jcond_decl
                     | Jamprototype
 
-    keyword         += jasync | jsync | jarray | jcond | jreuse
+    keyword         += jasync | jsync | jarray | jlist | jcond | jreuse
 
     jasync = "jasync" ~identPart
     jsync = "jsync" ~identPart
     jarray = "jarray" ~identPart
+    jlist = "jlist" ~identPart
     jcond = "jcond" ~identPart
     jreuse = "jreuse" ~identPart
 

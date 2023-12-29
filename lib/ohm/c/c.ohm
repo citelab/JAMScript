@@ -294,7 +294,7 @@ C {
                     | Decl
                     | Preprocess_line
 
-    Function_def    = Decl_specs Declarator Compound_stmt
+    Function_def    = Decl_specs Declarator Compound_stmt                           -- Function
 
     keyword         =  attribute__ | asm | auto | based | bool | break | case
                     | cdecl | char | const | continue | default | do | double
