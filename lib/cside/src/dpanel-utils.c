@@ -48,27 +48,27 @@ void do_nvoid_encoding(CborEncoder* enc, nvoid_t* nv) {
     }
 }
 
-void do_basic_type_encoding(CborEncoder* enc, char type, va_list args) {
+void do_basic_type_encoding(CborEncoder* enc, char type, va_list* args) {
     switch(type) {
     case 'c':
     case 'i':
-        cbor_encode_int(enc, (int64_t)va_arg(args, int));
+        cbor_encode_int(enc, (int64_t)va_arg(*args, int));
         break;
     case 'b':
     case 'u':
-        cbor_encode_uint(enc, (uint64_t)va_arg(args, unsigned int));
+        cbor_encode_uint(enc, (uint64_t)va_arg(*args, unsigned int));
         break;
     case 'l':
-        cbor_encode_int(enc, (int64_t)va_arg(args, long long int));
+        cbor_encode_int(enc, (int64_t)va_arg(*args, long long int));
         break;
     case 'z':
-        cbor_encode_uint(enc, (uint64_t)va_arg(args, unsigned long long int));
+        cbor_encode_uint(enc, (uint64_t)va_arg(*args, unsigned long long int));
         break;
     case 'f':
-        cbor_encode_float(enc, (float)va_arg(args, double));
+        cbor_encode_float(enc, (float)va_arg(*args, double));
         break;
     case 'd':
-        cbor_encode_double(enc, va_arg(args, double));
+        cbor_encode_double(enc, va_arg(*args, double));
         break;
     case 'C':
     case 'B':
@@ -79,10 +79,10 @@ void do_basic_type_encoding(CborEncoder* enc, char type, va_list args) {
     case 'F':
     case 'D':
     case 'n':
-        do_nvoid_encoding(enc, va_arg(args, nvoid_t*));
+        do_nvoid_encoding(enc, va_arg(*args, nvoid_t*));
         break;
     case 's': // deprecated
-        cbor_encode_text_stringz(enc, va_arg(args, char*));
+        cbor_encode_text_stringz(enc, va_arg(*args, char*));
         break;
     default:
         assert(false);
@@ -100,7 +100,7 @@ void do_struct_encoding(CborEncoder* enc, char* fmt, va_list args) {
         char* label = va_arg(args, char*);
         cbor_encode_text_stringz(&mapEnc, label);
 
-        do_basic_type_encoding(&mapEnc, fmt[i], args);
+        do_basic_type_encoding(&mapEnc, fmt[i], &args);
     }
     cbor_encoder_close_container(enc, &mapEnc);
 }
