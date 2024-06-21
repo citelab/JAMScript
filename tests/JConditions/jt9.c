@@ -5,7 +5,6 @@ jcond {
 }
 
 jasync {test} localyou(int c, char *s) {
-    jarray int q[1] = {1};
     for(;1;) {
         jsys.sleep(1000000);
         printf("... ############-->>> Hello YOU  %d, %s\n", c, s);

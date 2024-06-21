@@ -4,7 +4,7 @@ let count = 0;
 
 jcond {
     fogonly(my, your) {
-        return my.machtype === 'fog' ? true : false;
+        return my.type === 'fog';
     }
 }
 

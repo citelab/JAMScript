@@ -11,7 +11,7 @@ jcond {
 
 jsync char[60] {fogonly} compyou1(str: char*) {
     count++;
-    console.log("at fog.. ", count, str);
+    console.log("at fog.. ", count, str, "  ");
     return "from fog: hello -- " + count + " " + str;
 }
 
