@@ -143,15 +143,13 @@ async function main(){
     const jamfolder = getJamFolder()
     const path = `${appFolder}/${logFiles}/${port}`
     if(arg.remote){
-        if(!fs.existsSync(`${jamfolder}/remote/localhost_${arg.remote}`)){
+        if(!fs.existsSync(`${jamfolder}/remote/${arg.remote}`)){
             console.log("there is no such remote machine available for this host")
         }
 
         const config = {
-            host: "localhost",
-            port: arg.remote,
-            username: 'admin',
-            password: 'admin' 
+            host: arg.remote,
+            username: '',
         };
         const client = await makeConnection(config);
         const pathExport ="export PATH=$PATH:/home/admin/JAMScript/node_modules/.bin"

@@ -708,10 +708,8 @@ async function main(){
     let client;
     if(remote){
         const config = {
-            host: 'localhost',
-            port: remote,
-            username: 'admin',
-            password: 'admin' 
+            host: remote,
+            username: '',
           };    
         if(resume){
             const jamfolder = getJamFolder()
@@ -720,11 +718,11 @@ async function main(){
                 console.log(`this machine is not the root for any running app`);
                 process.exit(0);
             }
-            if(!fs.existsSync(`${jamfolder}/remote/${config.host}_${config.port}/${port}`)){
-                console.log(`this machine is not the root for any running app on ${config.host}_${config.port}`);
+            if(!fs.existsSync(`${jamfolder}/remote/${config.host}/${port}`)){
+                console.log(`this machine is not the root for any running app on ${config.host}`);
                 process.exit(0);
             }
-            const remoteApps = fs.readFileSync(`${jamfolder}/remote/${config.host}_${config.port}/${port}`).toString().trim().split("\n")
+            const remoteApps = fs.readFileSync(`${jamfolder}/remote/${config.host}/${port}`).toString().trim().split("\n")
             if(!remoteApps.includes(`${fileNoext}_${app}`)){
                 console.log(`this machine is not the root for any running ${fileNoext}_${app}`);
                 process.exit(0)
@@ -769,20 +767,20 @@ async function main(){
             if(!fs.existsSync(`${jamfolder}/remote`)){
                 fs.mkdirSync(`${jamfolder}/remote`);
             }
-            if(!fs.existsSync(`${jamfolder}/remote/${config.host}_${config.port}`)){
-                fs.mkdirSync(`${jamfolder}/remote/${config.host}_${config.port}`);
+            if(!fs.existsSync(`${jamfolder}/remote/${config.host}`)){
+                fs.mkdirSync(`${jamfolder}/remote/${config.host}`);
 
             }
-            if(fs.existsSync(`${jamfolder}/remote/${config.host}_${config.port}/${myPort}`)){
-                const remoteApps = fs.readFileSync(`${jamfolder}/remote/${config.host}_${config.port}/${myPort}`).toString().trim().split("\n")
+            if(fs.existsSync(`${jamfolder}/remote/${config.host}/${myPort}`)){
+                const remoteApps = fs.readFileSync(`${jamfolder}/remote/${config.host}/${myPort}`).toString().trim().split("\n")
                 if(!remoteApps.includes(`${fileNoext}_${app}`)){
                     console.log("NOT INCLUDEDE APPEND")
-                    fs.appendFileSync(`${jamfolder}/remote/${config.host}_${config.port}/${myPort}`,`${fileNoext}_${app}\n`);
+                    fs.appendFileSync(`${jamfolder}/remote/${config.host}/${myPort}`,`${fileNoext}_${app}\n`);
                 }
             }
             else{
                 console.log("FILE DONT EXISTS")
-                fs.writeFileSync(`${jamfolder}/remote/${config.host}_${config.port}/${myPort}`,`${fileNoext}_${app}\n`)
+                fs.writeFileSync(`${jamfolder}/remote/${config.host}/${myPort}`,`${fileNoext}_${app}\n`)
             }   
         }
         process.exit(0)

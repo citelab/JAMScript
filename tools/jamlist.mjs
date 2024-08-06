@@ -380,13 +380,9 @@ async function main(update=null){
         const map = getRemoteMachines();
 
         for(let machines of map){
-
-            const [host,port] =  machines.split("_");
             const config = {
-                host: host,
-                port: port,
-                username: 'admin',
-                password: 'admin' 
+                host: machines,
+                username: '',
             };
             const client = await makeConnection(config);
             const pathExport ="export PATH=$PATH:/home/admin/JAMScript/node_modules/.bin"

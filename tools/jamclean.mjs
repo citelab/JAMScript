@@ -500,13 +500,10 @@ async function cleanRemote(toRemove){
         const removalMap = new Map()
         if(map){
             for(let machines of map.keys()){
-                const [host,port] =  machines.split("_");
                 const arg = map.get(machines);
                 const config = {
-                    host: host,
-                    port: port,
-                    username: 'admin',
-                    password: 'admin' 
+                    host: machines,
+                    username: '',
                 };
                 let client
                 try{

@@ -544,15 +544,11 @@ async function main(){
     console.log(args.pause, "IF IT IS PAUSED")
 
     for(let remote of remotes){
-        const [host,port] =  remote.split("_");
         console.log(host)
         console.log(port)
         const config = {
-            host: host,
-            port: port,
-            username: 'admin',
-            // You may need to specify a password or private key depending on your SSH server configuration
-            password: 'admin' // or use privateKey: require('fs').readFileSync('/path/to/your/key')
+            host: remote,
+            username: '',
           };          
         let client = await new Promise((resolve, reject) => {
             const client = new Client();
