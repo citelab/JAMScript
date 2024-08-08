@@ -347,7 +347,7 @@ async function main(update=null){
     catch(error){
         console.log(error)
        
-        if(error.type = "ShowUsage"){
+      
             console.log(
 
                 `
@@ -369,9 +369,6 @@ async function main(update=null){
                 `
                 
             )
-        process.exit(1);
-        }
-        console.log(error)
         throw error;
     }
     const filters = args.filters;
