@@ -1,9 +1,5 @@
 #!/usr/bin/env zx
-/**
 
- * //DISCUSS PASUING AND THE INFO WE NEED HERE +++++ 
-
- */
 import { getJamListArgs } from "./parser.mjs";
 import {getAppFolder,getJamFolder} from "./fileDirectory.mjs"
 import { dirname, resolve } from 'path';
@@ -28,16 +24,24 @@ currIP = (await $`hostname -I`.catch(() => '')).toString().trim();
 }
 
 
-
-function getRunningDirs(){
+export function getRunningDirs(){
     const jamFolder = getJamFolder()
     const appToPort = new Map()
-    if(!fs.existsSync(`${jamFolder}/ports`)){
-        return appToPort;
+    let activePorts
+    try{
+        activePorts = fs.readdirSync(`${jamFolder}/ports`)
     }
-    const activePorts = fs.readdirSync(`${jamFolder}/ports`)
+    catch(error){
+        return appToPort
+    }
     for(let port of activePorts){
-        const apps = fs.readFileSync(`${jamFolder}/ports/${port}`).toString().trim().split("\n");
+        let apps;
+        try{
+            apps = fs.readFileSync(`${jamFolder}/ports/${port}`).toString().trim().split("\n");
+        }
+        catch(error){
+            continue
+        }
         for(let app of apps){
             if(appToPort.has(app)){
                 const portList = appToPort.get(app);
@@ -54,8 +58,6 @@ function getRunningDirs(){
 function getWatchList(filters){
     const watchList = []
     const appFolder = getAppFolder()
-    console.log(filters)
-    //make sure it is watching recursively
     watchList.push(`${jamFolder}/ports`)
     if(filters.remote){
         watchList.push(`${jamFolder}/remote`)
@@ -79,7 +81,7 @@ function watch(filters) {
         await $`zx ${jamcleanPath}`
     }, 1000);
     function updateWatchList(watchList){
-        console.log(filters, "this is my filters from watch function")
+
         const newWatchList = getWatchList(filters);
         for(let item of newWatchList){
             if(!watchList.includes(item)){
@@ -122,7 +124,7 @@ function watch(filters) {
             let keysToRemove = ["root","remote","help","all" ];
             let filteredObj = Object.keys(filters).filter(key => !keysToRemove.includes(key)).reduce((acc, key) => {acc[key] = filters[key]; return acc;}, {});
             const filtered = filter(nodeinfo, filteredObj);
-            console.log("INCLUDING REMOTE?", filters.remote);
+
             if(filters.remote){
                 NODESINFO = []
                 await main(true)
@@ -146,7 +148,7 @@ function watch(filters) {
     }, 500); 
     let watchList = getWatchList(filters)
     watcher = chokidar.watch(watchList, { persistent: true, ignoreInitial: true }).on('all', (event, path) => {
-        console.log(`Event: ${event}, Path: ${path}`);
+
         watchList = updateWatchList(watchList)
         updateInfo();
     });
@@ -169,9 +171,6 @@ export function dirNameToProgramName(dirName){
 
 function getNodeInfo(root=null){
     const appToPortMap = getRunningDirs()
-
-
-    // console.log(appToPortMap)
     const jamfolder = getJamFolder()
     const appfolder  = getAppFolder();
     const nodeInfo =[]
@@ -318,7 +317,6 @@ async function executeScript(client, command){
                 resolve("closed")
             })
             stream.on("data" , (data) =>{
-                // console.log(data.toString())
                 if(data.includes("NODEINFO##")){
                     let JSONrow = data.toString().trim().split("##")[1]
                     let row;
@@ -351,17 +349,23 @@ async function main(update=null){
        
         if(error.type = "ShowUsage"){
             console.log(
-                /**
 
-                 */
-                
                 `
-                Usage: jamlist [--app=appl_name]
-                [help] to show the Usage.
-                [monitor] use this flag to turnn on the monitoring mode
-                [type=<type> | dataStore=<dataStore> | tmuxid=<tmux> | portNum=<portNum> | appName=<appName> | programName=<programName> ] 
-                the flags abouve are used for filtering the jamlist 
-                [--remote] is a flag to list the apps running on the remote machines. only for programs that chave current machine as root
+
+                Usage: 
+                jamlist --help: show this usage msg.
+                
+                jamlist has two made modes. the default is just printing the list of requested programs but if it's required to monitor the apps and update upon changes,
+                the --monitor should be used. it prints the list of requested programs, and keeps montoring them, if there is any change it will be updated.
+
+                by default jamlist only monitors or prints out locally running programs yet if it's required to monitor or list none local programs as well, --remote
+                flag should be used.
+
+                by passing the --all flag jamlist is going to list all the running apps. if there is certain restriction needs to be applied the following filters can be used:
+                [type=<type> | dataStore=<dataStore> | tmuxid=<tmux> | portNum=<portNum> | appName=<appName> | programName=<programName> ]
+                NOTE: all the abouve arguments can be used togeather but using --all will dissable them all and removes all the filters 
+
+
                 `
                 
             )
@@ -375,7 +379,7 @@ async function main(update=null){
 
     const jamfolder = getJamFolder()
     if(filters.remote || update){
-        console.log("GOT TO THE remote call SECTION")
+
 
         const map = getRemoteMachines();
 
@@ -413,7 +417,7 @@ async function main(update=null){
     }
 
     if(filters.root){
-        console.log("GOT TO THE root SECTION")
+
 
         if(filters.all){
 
@@ -453,12 +457,12 @@ async function main(update=null){
         }
     }
     else if(!update){
-        console.log("GOT TO THE LOCAL SECTION")
+
         if(filters.all){
             await $`zx ${jamcleanPath}`
             const info = getNodeInfo();
             if(info.length + NODESINFO.length === 0 ){
-                console.log("there is No program running")
+
                 if(!monitor){
                     process.exit(0)
                 }

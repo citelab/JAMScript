@@ -6,123 +6,7 @@ import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { Client } from 'ssh2';
 
-////////////////// //////// /////// //////// ////// ////// ///NOTE: NAME CAN NOT HAVE = IN IT
-/////////////what should we do when we see new? linger there? wait/force. what to do exactly?. it is for broken apps.MAKE THE JT@ FILES BREAK.
-///////Shopuld we check of reddis is running or not like we do for mqtt, JFile, Cfiles
 
-
-/**
- * //use later(ABSTRACT AWAAY)
- *  //WE SHOULD KEEP JAMRUN ALIVE UNTIL THE VALUE ASSIGNED TO THE PROCESSID
- *  while(true){
-        if(!fs.existsSync(`${processId}`)){
-            return false;
-        }
-        const pid = fs.readFileSync(`${processId}`).toString().trim();
-        if(pid === "new"){
-            if(!flag){
-                flag = true;
-                await sleep(500);
-                continue;
-            }
-        }
-        break;
-    
-    }
- * 
- * 
- */
-////////////////// //////// /////// //////// ////// ////// ///
-
-
-// async function getJobsSubDirMap(){
-//     const subDirMap = new Map()
-//     const subdirs = (((await fs.readdir(process.cwd())).map(entry => entry.split("_"))).filter(entry => entry.length > 1))
-//     for(let dir of subdirs){
-//         if(dir.length > 2){
-
-//             const head = dir[0]
-//             const tail =(dir.filter((_,index) => index !== 0)).join("_")
-//             const dirName = dir.join("_")
-
-
-
-//             subDirMap.set(tail, dirName)
-
-//         }
-//         else{
-//             const head = dir[0]
-//             const tail = dir[1];
-//             const dirName = dir.join("_")
-//             subDirMap.set(tail, dirName)
-//         }
-//     }
-//     return subDirMap;
-// }
-// async function getPortSubDir(){
-//     const ports = (((await fs.readdir(process.cwd(),{ withFileTypes: true })).filter( entry => entry.isDirectory())).map(entry => entry.name))
-//     if(ports.length !== 0){
-//         return ports
-//     }
-// }
-
-// export async function cleanUp(){
-//     try{
-//         getcleanArgs(process.argv)
-       
-//       }
-//       catch(error){
-//         if(error.type === "ShowUsage"){
-//             console.log(
-//         `
-
-//         Usage: jamclean
-//         Purges inactive JAMScript programs from the listing.
-
-//         `
-//             )
-//         }
-//         process.exit(1);
-//     }
-//     const jamfolder = getJamFolder();
-//     if(!fs.existsSync(jamfolder)){
-//         process.exit(0)
-//     }
-//     process.chdir(`${jamfolder}/apps`);
-//     const appsMap = await getJobsSubDirMap();
-//     for(let app of appsMap.keys()){
-       
-//         process.chdir(`${appsMap.get(app)}`);
-//         console.log(process.cwd(), "this is my app dir")
-//         const ports  = await getPortSubDir();
-//         console.log(process.cwd(), "this is my portDir dir")
-//         if(ports){
-//             console.log(process.cwd(), "this is my portDir dir")
-//             for(let port of ports){
-//                 console.log(process.cwd(), "this is my portDir dir")
-//                 let isRunning
-//                 console.log(port, "this is my port")
-//                 console.log(process.cwd(), "this is my portDir dir")
-//                 process.chdir(`${port}`);
-//                 const toCheck = (fs.existsSync("processId")) ? fs.readFileSync("processId") : fs.readFileSync("shellpid")
-//                 try{
-//                     const p = await $`ps -p ${toCheck} | grep node | wc -l | tr -d '[:space:]'` 
-//                     isRunning = true
-//                 }
-//                 catch(error){
-//                     isRunning = false;
-//                 }
-//                 process.chdir("..")
-//                 if(!isRunning){
-//                     await $`rm -rf ./${port}`
-//                 }
-//             }
-//         }
-//         process.chdir("..")
-//     }
-// }
-
-//////////////////////////////////////////////////////////////////////////
 
 
 const __filename = fileURLToPath(import.meta.url)
@@ -544,7 +428,6 @@ async function cleanRemote(toRemove){
                 continue
             };
             const running = fs.readFileSync(`${jamFolder}/ports/${portName}`).toString().trim();
-            console.log(running, "this is my running")
             if(!running.includes(dirName)){
                 console.log(`TOREMOVE:${dirName}/${portName}`);
                 await sleep(5)

@@ -110,25 +110,15 @@ async function main(){
     catch(error){
         if(error.type = "ShowUsage"){
             console.log(
-                /**
-                 *     {name : "help", alias : "h", type: Boolean, defaultValue : false },
-                        {name : "program", type: String, defaultValue : undefined },
-                        {name : "app", type: String, defaultValue : undefined },
-                        {name: "port", type:String, defaultValue: undefined},
-                        {name : "j", alias: "j", type: Boolean, defaultValue : false },
-                        {name : "c", alias: "c", type: Boolean, defaultValue : false },
-                        {name : "tail", alias: "t", type: Number, defaultValue : undefined },
 
-                 */
                 `
-        Usage: jamlist [--app=appl_name]
-    
         [--help] is used to show usage
-        [--program && --app && --port] all used togeather to indicate what log we want to get 
+        [--program=<programName> && --app=<appName> && --port=<portNumber> && --remote=<IPadress>] all used togeather to indicate what log we want to get (THESE ARE MANDATORY but IPAddress)
+        NOTE:  --remote is optional.
         [--c] is a flag used to only show the c file
         [--j] is a flagused to only show the j file
         [--tail=<num>] shows the last n lines of the log
-        [--all] shows all the logs
+        [--remote=<IPadress>]
                 `
                 
             )
@@ -178,9 +168,9 @@ async function main(){
             }
         }
         const finalArg = args.trim()
-        console.log(args) 
+
         const command = `${pathExport} && ${changeDir} && zx jamlog.mjs ${finalArg}`
-        console.log(command)
+
         await makeConnection(config)
         await executeScript(client, command)
         process.exit(0)

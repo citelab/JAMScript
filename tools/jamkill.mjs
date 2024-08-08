@@ -3,6 +3,7 @@ import { getAppFolder, getJamFolder } from "./fileDirectory.mjs";
 import {getKilltArgs} from "./parser.mjs"
 import { cleanByPortNumber , pauseByPortNumber} from "./cleanUp.mjs";
 import { Client } from 'ssh2';
+import { transport } from "pino";
 //can't specify what port ti jukk exactly
 let currIP;
 if (os.platform() === 'win32') {
@@ -16,9 +17,21 @@ if (os.platform() === 'win32') {
 export function getRunningDirs(){
     const jamFolder = getJamFolder()
     const appToPort = new Map()
-    const activePorts = fs.readdirSync(`${jamFolder}/ports`)
+    let activePorts
+    try{
+        activePorts = fs.readdirSync(`${jamFolder}/ports`)
+    }
+    catch(error){
+        return appToPort
+    }
     for(let port of activePorts){
-        const apps = fs.readFileSync(`${jamFolder}/ports/${port}`).toString().trim().split("\n");
+        let apps;
+        try{
+            apps = fs.readFileSync(`${jamFolder}/ports/${port}`).toString().trim().split("\n");
+        }
+        catch(error){
+            continue
+        }
         for(let app of apps){
             if(appToPort.has(app)){
                 const portList = appToPort.get(app);
@@ -51,42 +64,41 @@ function killDataByPortDir(portDir, root){
     const jamFolder = getJamFolder()
     const appFolder = getAppFolder()
     const infoList = portDir.split("/")
-    console.log("IF STATEMENT 1")
+
     if(infoList.length !== 2){
         throw new Error("Wrong Path input")
 0   }
     const dirName = infoList[0]
     const portName = infoList[1]
-    console.log("IF STATEMENT 2")
 
-    if(!fs.existsSync(`${jamFolder}/ports/${portName}`)){
+    let dirsRunning;
+    try{
+        dirsRunning = fs.readFileSync(`${jamFolder}/ports/${portName}`).toString().trim().split("\n");
+    }
+    catch(error){
         return[]
     }
-    console.log("IF STATEMENT 4")
 
-    const dirsRunning = fs.readFileSync(`${jamFolder}/ports/${portName}`).toString().trim().split("\n")
     if(!dirsRunning.includes(dirName)){
         return []
     }
-    console.log("PRE ROOT")
+
     if(root){
-        console.log("root exists")
-        console.log("portName", portName)
-        if(fs.existsSync(`${jamFolder}/ports/${portName}`)){
-            console.log("file exists")
+        try{
             const rootIP = fs.readFileSync(`${appFolder}/${portDir}/root`).toString().trim();
             if(rootIP === root){
-                console.log("root matches")
                 const info = {
                     programName : dirNameToProgramName(dirName)+".jxe",
                     appName : dirNameToAppName(dirName),
                     portNumber : portName
                 }
-                console.log(info, "this is my info")
                 return [info]
             }
+            return [];
         }
-
+        catch(error){
+            return [];
+        }
     }
     else{
         const info ={
@@ -96,37 +108,40 @@ function killDataByPortDir(portDir, root){
         }
         return [info]
     }
-   
-
-
 }
+
 function killDataByPortNum(portNum, root){
     const jamFolder = getJamFolder()
     const toClean=[];
-    const activePorts = (fs.readdirSync(`${jamFolder}/ports`)).map((entry) => Number(entry))
     const appfolder = getAppFolder()
-    if(!activePorts.includes(Number(portNum))){
-        return [];
+    let activePorts;
+    let dirsRunning;
+    try{
+        activePorts = (fs.readdirSync(`${jamFolder}/ports`)).map((entry) => Number(entry))
+        if(!activePorts.includes(Number(portNum))){
+            return [];
+        }
+        dirsRunning = fs.readFileSync(`${jamFolder}/ports/${portNum}`).toString().trim().split("\n")
     }
-    const dirsRunning = fs.readFileSync(`${jamFolder}/ports/${portNum}`).toString().trim().split("\n")
+    catch(error){
+        return []
+    }
     for(let dir of dirsRunning){
         if(root){
-            console.log("root exists from port num")
-            if(fs.existsSync(`${appfolder}/${dir}/${portNum}/root`)){
-                console.log("file exists")
+            try{
                 const rootIP = fs.readFileSync(`${appfolder}/${dir}/${portNum}/root`).toString().trim();
                 if(rootIP === root){
-                    console.log("PORT MATCHING")
                     const info ={
                         programName : dirNameToProgramName(dir)+".jxe",
                         appName : dirNameToAppName(dir),
                         portNumber : portNum
                     }
-                    console.log(info, "TO KILL")
                     toClean.push(info)
                 }
             }
-
+            catch(error){
+                continue;
+            }
         }
         else{
             const info ={
@@ -138,7 +153,6 @@ function killDataByPortNum(portNum, root){
         }
     }
     return toClean;
-
 }
 
 function killDataByAppName(appName, root){
@@ -150,12 +164,8 @@ function killDataByAppName(appName, root){
         if(currApp === appName){
             for(let port of activeDirs.get(dir)){
                 if(root){
-                    console.log("root EXISTS")
-                    if(fs.existsSync(`${appfolder}/${dir}/${port}/root`)){
-                    console.log("FILE EXISTS")
+                    try{
                         const rootIP = fs.readFileSync(`${appfolder}/${dir}/${port}/root`).toString().trim();
-                        console.log(root, "root OLD")
-                        console.log(rootIP, "root new")
                         if(rootIP === root){
                             const info ={
                                 programName : dirNameToProgramName(dir)+".jxe",
@@ -165,7 +175,9 @@ function killDataByAppName(appName, root){
                             toClean.push(info)
                         }
                     }
-
+                    catch(error){
+                        continue;
+                    }
                 }
                 else{
                     const info ={
@@ -182,7 +194,7 @@ function killDataByAppName(appName, root){
 }
 
 function killDataByProgramName(programName, root){
-    console.log("KILLING DATA BY NAME")
+
     const toClean=[];
     const activeDirs = getRunningDirs();
     const appfolder = getAppFolder()
@@ -191,23 +203,20 @@ function killDataByProgramName(programName, root){
         if(currProgram === programName){
             for(let port of activeDirs.get(dir)){
                 if(root){
-                    console.log("ROOT EXISTS")
-                    if(fs.existsSync(`${appfolder}/${dir}/${port}/root`)){
-                        console.log("file exist")
+                    try{
                         const rootIP = fs.readFileSync(`${appfolder}/${dir}/${port}/root`).toString().trim();
-                        console.log(rootIP)
-                        console.log(root)
                         if(rootIP === root){
                             const info = {
                                 programName : dirNameToProgramName(dir)+".jxe",
                                 appName : dirNameToAppName(dir),
                                 portNumber : port
                             }
-                            console.log("this is the info", info)
                             toClean.push(info)
                         }
                     }
-
+                    catch(error){
+                        continue;
+                    }
                 }
                 else{
                     const info ={
@@ -225,7 +234,7 @@ function killDataByProgramName(programName, root){
 
 
 function killDataByDirName(dirName, root){
-    console.log("KILLING BT NAME STARTED")
+
     const toClean=[];
     const activeDirs = getRunningDirs();
     const appfolder = getAppFolder()
@@ -233,22 +242,21 @@ function killDataByDirName(dirName, root){
         if(dir === dirName){
             for(let port of activeDirs.get(dir)){
                 if(root){
-                    console.log("ROOT IS HERE")
-                    if(fs.existsSync(`${appfolder}/${dir}/${port}/root`)){
-                        console.log("FILE IS HERE")
+                    try{
                         const rootIP = fs.readFileSync(`${appfolder}/${dir}/${port}/root`).toString().trim();
                         if(rootIP === root){
-                            console.log("ID MATCHED")
+
                             const info ={
                                 programName : dirNameToProgramName(dir)+".jxe",
                                 appName : dirNameToAppName(dir),
                                 portNumber : port
                             }
-                            console.log("INFO")
                             toClean.push(info)
                         }
                     }
-
+                    catch(error){
+                        continue;
+                    }
                 }
                 else{
                     const info ={
@@ -268,12 +276,11 @@ function killDataForAll(root){
     const toClean=[];
     const activeDirs = getRunningDirs();
     const appfolder = getAppFolder()
-    console.log("ACTIVE DIRS", activeDirs)
+
     for(let dir of activeDirs.keys()){
         for(let port of activeDirs.get(dir)){
             if(root){
-                console.log("root exists")
-                if(fs.existsSync(`${appfolder}/${dir}/${port}/root`)){
+                try{
                     const rootIP = fs.readFileSync(`${appfolder}/${dir}/${port}/root`).toString().trim();
                     if(rootIP === root){
                         const info ={
@@ -284,10 +291,12 @@ function killDataForAll(root){
                         toClean.push(info)
                     }
                 }
-
+                catch(error){
+                    continue;
+                }
             }
             else{
-                console.log("root does not exists")
+
                 const info ={
                     programName : dirNameToProgramName(dir)+".jxe",
                     appName : dirNameToAppName(dir),
@@ -297,7 +306,7 @@ function killDataForAll(root){
             }
         }
     }
-    console.log("TO CLEAN", toClean)
+
     return toClean
 }
 async function killJamRun(data){
@@ -306,21 +315,17 @@ async function killJamRun(data){
     const portNumber = data.portNumber
     const dirName = ((programName.split('.'))[0]) +"_"+ appName;
     const appfolder = getAppFolder()
-    if(fs.existsSync(`${appfolder}/${dirName}/${portNumber}/shellpid`)){
+    try{
         const pid = fs.readFileSync(`${appfolder}/${dirName}/${portNumber}/shellpid`).toString().trim();
-        let exists;
-        try {
-            const cwd = process.cwd()
-            const p = await $`ps -p ${pid} | grep jamrun | wc -l | tr -d '[:space:]'`
-            exists = Number(p.stdout.toString().trim());
-        } catch (error) {
-            exists = 0 
-     
-        }
-
+        const p = await $`ps -p ${pid} | grep jamrun | wc -l | tr -d '[:space:]'`
+        const exists = Number(p.stdout.toString().trim());
         if(exists){
             process.kill(pid);
+            return
         }
+    }
+    catch(error){
+        return 
     }
 }
 
@@ -330,19 +335,17 @@ async function killJFile(data){
     const portNumber = data.portNumber
     const dirName = ((programName.split('.'))[0]) +"_"+ appName;
     const appfolder = getAppFolder()
-    if(fs.existsSync(`${appfolder}/${dirName}/${portNumber}/processId`)){
+    try{
         const pid = fs.readFileSync(`${appfolder}/${dirName}/${portNumber}/processId`).toString().trim();
-        let exists;
-        try {
-            const p = await $`ps -p ${pid} | grep node | wc -l | tr -d '[:space:]'`
-            exists = Number(p.stdout.toString().trim());
-        } catch (error) {
-            exists = 0 
-        }
+        const p = await $`ps -p ${pid} | grep node | wc -l | tr -d '[:space:]'`
+        const exists = Number(p.stdout.toString().trim());
         if(exists){
             process.kill(pid);
             return;
         }
+    }
+    catch(error){
+        return
     }
 }
 
@@ -358,35 +361,35 @@ async function pauseProcess(data){
 
 async function jamKill(flag, name, pause, root)
 {   
-    console.log("KILLING PROCESS STARTING")
-    console.log("this is my flag in jamkill", flag)
+
+
     let jamData;
     if(flag === "dir"){
         jamData = killDataByDirName(name, root)
     }
     else if(flag === "app"){
         jamData = killDataByAppName(name, root)
-        console.log("data from name", jamData)
+
         
     }
     else if(flag === "program"){
-        console.log("killing by program name")
+
         jamData = killDataByProgramName(name, root)
     }
     else if(flag === "port"){
-        console.log("USING PORT TO CLEAN")
+
         jamData = killDataByPortNum(name, root)
     }
     else if(flag === "portDir"){
-        console.log("GOT TO THE PORT DIR")
+
         jamData = killDataByPortDir(name, root)
     }
     else{
-        console.log("CLEANING DATA FOR ALL")
+
         jamData = killDataForAll(root)
     }
 
-    console.log(jamData)
+
     if(jamData.length === 0 ){
         if(flag === "all"){
             console.log("no running app on local")
@@ -396,21 +399,20 @@ async function jamKill(flag, name, pause, root)
         }
         
     }
-    console.log(pause)
+
     if(pause){
-        console.log("Pausing from jam kill")
         for(let data of jamData){
-            console.log(data)
             let appfolder = getAppFolder()
             const appName = data.appName;
             const programName = data.programName
             const portNumber = data.portNumber
-            if(
-                (!fs.existsSync(`${appfolder}/${programName.split(".")[0]}_${appName}/${portNumber}/machType`)) 
-            ){
-                console.log("CAN'T PAUSE",`${appfolder}/${programName.split(".")[0]}_${appName}/${portNumber}. TRY LATER` )
+            try{
+                fs.existsSync(`${appfolder}/${programName.split(".")[0]}_${appName}/${portNumber}/machType`)
+                if(fs.readFileSync(`${appfolder}/${programName.split(".")[0]}_${appName}/${portNumber}/processId`).toString().trim() === "new"){
+                    console.log("CAN'T PAUSE",`${appfolder}/${programName.split(".")[0]}_${appName}/${portNumber}. TRY LATER` )
+                }
             }
-            if(fs.readFileSync(`${appfolder}/${programName.split(".")[0]}_${appName}/${portNumber}/processId`).toString().trim() === "new"){
+            catch(error){
                 console.log("CAN'T PAUSE",`${appfolder}/${programName.split(".")[0]}_${appName}/${portNumber}. TRY LATER` )
             }
             pauseByPortNumber(programName,appName,portNumber)
@@ -418,37 +420,26 @@ async function jamKill(flag, name, pause, root)
         }
     }
     else{
-        console.log("KILL,KILL")
         for(let data of jamData){
-            console.log("I GET HERE")
-            console.log(data)
             const appName = data.appName;
             const programName = data.programName
             const portNumber = data.portNumber
             await killProcess(data);
             cleanByPortNumber(programName,appName,portNumber)
         }
-        
     }
-    console.log("KILLING IS OVER, IT IS OVER INDEEDE")
+    //keep this LOG
     console.log("KILLING IS OVER")
 
 }
 
 async function jamKillBruteForce(){
-    console.log("KILL RESER BRUTE FORCEAS")
+
     await $`pkill node`.nothrow().quiet();
-    console.log("KILL RESER BRUTE FORCEAS")
-
     await $`pkill mosquitto`.nothrow().quiet();
-    console.log("KILL RESER BRUTE FORCEAS")
-
     await $`pkill tmux`.nothrow().quiet();
-    console.log("GOT HERE")
     await $`ps aux | grep redis-server | grep -v grep | awk '{print $2}' | xargs kill`.nothrow().quiet();
-    console.log("GOT HERE")
     const jamfolder = getJamFolder();
-    //should I remove the apps as well or that is not required
     if(fs.existsSync(`${jamfolder}/ports`))
         fs.rmSync(`${jamfolder}/ports`, { recursive: true, force: true })
     if(fs.existsSync(`${jamfolder}/apps`))
@@ -458,22 +449,18 @@ async function jamKillBruteForce(){
             
 }
 async function executeScript(client, command){
-    console.log("GOT HERE")
-    // console.log(client)
-    // console.log(command)
     return (await new Promise((resolve, reject) =>{
         client.exec(command, (err,stream) =>{
-            console.log("got here")
+
             if (err) throw err;
             let result = ''
             stream.on("close", () => {
                 resolve(result)
             })
             stream.on("data" , (data) =>{
-                console.log(data.toString())
+
                 if(data.includes("KILLING IS OVER"))
                     {
-                        console.log(data.toString())
                         resolve(data.toString())
                     }
 
@@ -483,7 +470,7 @@ async function executeScript(client, command){
 }
 
 async function main(){
-  console.log("gothere")
+
   let args;
 
   try{
@@ -491,61 +478,67 @@ async function main(){
    
   }
   catch(error){
-    console.log(error)
-    if(error.type === "ShowUsage"){
+  
+
         console.log(
-    /**
-     {name : "help", alias : "h", type: Boolean, defaultValue : false },
-    {name : 'all', type: Boolean , defaultValue: false },
-    {name : 'reset', type: Boolean , defaultValue: false },
-    {name : 'app', type: Boolean , defaultValue: false },
-    {name : 'program', type: Boolean , defaultValue: false },
-    {name : 'dir', type: Boolean , defaultValue: false },
-    {name : 'port', type: Boolean , defaultValue: false },
-    {name: "portDir", type: Boolean, defaultValue: false },
-    {name: "pause", type: Boolean, defaultValue: false },
-    {name : 'name', alias : "n" , type: String , defaultValue: undefined },
-     */
+
     `
     Kill running instances of the application.
-
-    Usage: jamkill [--all|app_id|--help]
-
-    jamkill
-    kill the program started last among the currently running ones
+    Usage: 
+    
+    jamkill --reset [--remote]
+    To kill all the programs and remove the ports, mqttpid and apps directory which would be equivelant to a hard reset
+    --reset flag should be used. have in mind uninsg the --reset flag will dissable all the other flags and do a hard reset. 
+    the only flag which can be used with --reset is --remote which runs the kill --reset on the local machine and all the remote
+    machines.
 
     jamkill --help
-    displays this help messages
+    displays this help messages.
 
-    jamkill --all
-    kills all running instances
+    jamkill --all [--remote] [--pause]
+    to kill all the programs running --all flag should be used. It differ from --reset since it just removes the running programs
+    and does no file directory cleanup. The only other flag which can be used next to --all is --remote and --pause. use --remote  to include all the remote
+    machines in the killing process. use --pause to pause all the programs instead of completly killing them.
+    
 
-    [--name && (--app=<appName> || --program=<jt2>(without ext)|| --dir=<jt2_shahin> || --port=<portNum> || --portDir<jt2_shahin/1883>)] 
-    the --name is used to set the name and the other flags are used to mention what the name associates to
+    jamkill --app --name==<appName> [--remote] [--pause]
+    to kill program with a specific appName. use --app flag as an indicator of the killing criteria(which is app name), followed by --name=<appName>
+    to specify what program should be kiiled.[--remote] and [--pause] are optional flags to include remote machines or pause instead of complete termination.
+    ex) jamkill --app --name=testingApp --remote --pause
+    
+    jamkill --program --name==<programName> [--remote] [--pause]
+    to kill program with a specific programName. use --program flag as an indicator of the killing criteria(which is program name), followed by --name=<programName>
+    to specify what program should be kiiled.[--remote] and [--pause] are optional flags to include remote machines or pause instead of complete termination.
+    ex)jamkill --program --name=jt2 [--remote] [--pause]
 
-    [--pause] is used to pause the running program 
+    jamkill --port --name==<portNum> [--remote] [--pause]
+    to kill program with on a specific portNumber, use --port flag as an indicator of the killing criteria(which is portNumbrt), followed by --name=<portNumber>
+    to specify what program on which port should be killed. [--remote] and [--pause] are optional flags to include remote machines or pause instead of complete termination.
+    ex) jamkill --app --name=1883 --remote --pause
+    
+    jamkill --dir --name==<appDirName> [--remote] [--pause]
+    Directory name is refered to the directory associated to a program under the apps folder. dirName is a combination of the --program and --name flag. 
+    If a program with specific appName and programName should be killed --dir flag should be used followed by the --name=<direcotryName>.
+    [--remote] and [--pause] are optional flags to include remote machines or pause instead of complete termination.
+    ex)jamkill --dir --name=jt2_testingApp --remote --pause
 
-    [--reset] is the hard reset. it closes all the running nodes, mosquito,tmux,reddis and remove all the directories including ports and apps
+    jamkill --portDir --name==<appPortDirName> [--remote] [--pause]
+    portDir refers to the directory in the folder for a specific program which contains the info of that program running on an specific port. 
+    portdir is a combination of --app, --program and --ports which always targetes a signle running program.
+    [--remote] and [--pause] are optional flags to include remote machines or pause instead of complete termination.
+    ex)jamkill --portDir --name==jt2_shahin/1883 [--remote] [--pause]
 
-    [--remote] is a flag to kill programs on remote machines as well if the program root is current machine
-
+    NOTE: only one of --app && --program && --dir && --portDir && --port can be used.
     `
         )
-    }
-    process.exit(1);
+    throw error
   }
   const jamfolder = getJamFolder();
   const appfolder = getAppFolder();
   if(fs.existsSync(`${jamfolder}/remote`) && args.remote && !args.root){
-    console.log("GOT HERE !")
     const remotes = fs.readdirSync(`${jamfolder}/remote`)
-    console.log(remotes)
-    console.log("GOT HERE 2")
-    console.log(args.pause, "IF IT IS PAUSED")
-
     for(let remote of remotes){
-        console.log(host)
-        console.log(port)
+
         const config = {
             host: remote,
             username: '',
@@ -583,7 +576,7 @@ async function main(){
             else
                 toExecute = `zx jamkill.mjs --${args.flag} --name=${args.name} --pause --root=${currIP}`
         }
-        console.log(toExecute)
+
 
         const command=`${pathExport} && ${changeDir} && ${toExecute}`
         await executeScript(client, command);
@@ -593,7 +586,7 @@ async function main(){
     if(args.root){
         throw new Error("DOES NOT HAVE THE PERMISSION TO RESET A REMOTE MACHINE")
     }
-    console.log("kill reset")
+
     await jamKillBruteForce()
   }
   else if( !fs.existsSync(jamfolder) ){
@@ -603,10 +596,6 @@ async function main(){
     throw new Error('.jamruns/apps folder missing. JAMScript tools not setup?')
   }
   else{
-    console.log("PRE KILL")
-    console.log("flag", args.flag)
-    console.log("name", args.name)
-    console.log("root", args.root)
     await jamKill(args.flag , args.name, args.pause, args.root);
   }
 
@@ -617,7 +606,7 @@ async function main(){
 
 
 (async() => {
-    console.log("SCRIPT STARTS")
+
     await main()
 
 })()

@@ -358,30 +358,7 @@ export function getKilltArgs(argv){
     return {"flag": flag, "name" : options.name, "pause": options.pause , "remote": options.remote , "root":options.root}
     
 }
-/**
- *{ name: 'help', alias: 'h', type: Boolean, defaultValue: false},
-  {name : 'app', type: String , defaultValue: undefined},
-  {name : 'tags', type: String , defaultValue: undefined},
-  {name : 'tmux', type: String , defaultValue: `tg-${Math.floor(Math.random() * 32768)}`},
-  {name : 'num', type: Number , defaultValue: 1},
-  {name : 'loc', type: String , defaultValue: `${long},${lat}`},
-  {name : 'edge', type: Number , defaultValue: 1},
-  {name : 'data', type: String , defaultValue: undefined},
-  {name : 'fog', type: Boolean, defaultValue: false},
-  {name : 'cloud', type: Boolean, defaultValue: false},
-  {name : 'device', type: Boolean, defaultValue: false},
-  {name : 'local_registry', type: Boolean, defaultValue: false},
-  {name : 'bg', type: Boolean, defaultValue: false},
-  {name : 'verb', type: Boolean, defaultValue: false},
-  {name : 'log', type: Boolean, defaultValue: false},
-  {name : 'old', type: Boolean, defaultValue: false},
-  {name : 'local', type: Boolean, defaultValue: false},
-  {name : 'valgrind', type: Boolean, defaultValue: false},
-  {name : 'disable_stdout_redirect', type: Boolean, defaultValue: false},
-  {name: 'resume', type: Boolean, defaultValue: false},
-  {name: "port", type: Number, defaultValue: undefined},
-  {name: "remote", type:Number, defaultValue: undefined}
- */
+
 export function getRemoteArgs(argObject){
     const args =[]
     args.push(argObject.file)

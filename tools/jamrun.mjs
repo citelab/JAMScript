@@ -7,83 +7,60 @@ import {fileDirectorySetUp, isValidExecutable, fileDirectoryMqtt, getPaths, geta
 const { spawn,spawnSync } = require('child_process');
 import { Client } from 'ssh2';
 
-/***\
-//REMOVE PARENT ID
- * ///DOES NOT CONNECT TO THE MAIN CLOSEST ONE(LET IT BE AS IS)
- * //CONNECTING TO THE SAME REDIS CAN CAUSE MULTIPLE PROBLEMS(THE INTERACT WITH EACHOTHERS IN A WEIRD WAY)
- * QUESTION:
- 
- * 9 ----> app             appid          program         tmuxid we do not need
 
- * NOTES
-    TOCHANGE: 
-             
-              
-
- 
-   
-ADD PAUSE UNPAUSE
-ADD GIT LOG
-
-
- */
-//FORE NOW DON"T RUN REMOTE TASKS ON THE FOREGROUND
-//global variables
 let app, tmux, num, edge, data, local_registry, bg, NOVERBOSE, log, old, local, valgrind, long, lat, Type, tags, file, resume, port, remote, root;
 const tmuxIds = [];
 let removablePort
 
-//SETUP CLEANING
 process.on('SIGINT', () => {
     if(removablePort){
-
-        const toPause = fs.readFileSync(`${process.cwd()}/${removablePort}/paused`).toString().trim()
-        console.log(toPause);
+        let toPause;
+        try{
+            toPause = fs.readFileSync(`${process.cwd()}/${removablePort}/paused`).toString().trim()
+        }
+        catch(error){
+            toPause = "false"
+        }
+     
         if(toPause !== "false"){
-            console.log("Cleaning")
             const fileNoext = getFileNoext(file);
             pauseByPortNumber(`${fileNoext}.jxe`,app,removablePort,NOVERBOSE)
             process.exit();
 
         }
         else{
-            console.log("Killing")
-            console.log(file)
             const fileNoext = getFileNoext(file);
             cleanByPortNumber(`${fileNoext}.jxe`,app,removablePort,NOVERBOSE); 
             process.exit();
         }
     }
     else{
-        console.log("Killing")
-        console.log(file)
-        const fileNoext = getFileNoext(file);
-        cleanByPortNumber(`${fileNoext}.jxe`,app,removablePort,NOVERBOSE); 
         process.exit();
     }
 });
 process.on('SIGTERM', () =>  {
     if(removablePort){
-        const toPause = fs.readFileSync(`${process.cwd()}/${removablePort}/paused`).toString().trim()
-        console.log(toPause);
+        let toPause;
+        try{
+            toPause = fs.readFileSync(`${process.cwd()}/${removablePort}/paused`).toString().trim()
+        }
+        catch(error){
+            toPause = "false"
+        }
+     
         if(toPause !== "false"){
-            console.log("Cleaning")
             const fileNoext = getFileNoext(file);
             pauseByPortNumber(`${fileNoext}.jxe`,app,removablePort,NOVERBOSE)
             process.exit();
 
         }
         else{
-            console.log("Killing")
             const fileNoext = getFileNoext(file);
             cleanByPortNumber(`${fileNoext}.jxe`,app,removablePort,NOVERBOSE); 
             process.exit();
         }
     }
     else{
-        console.log("Killing")
-        const fileNoext = getFileNoext(file);
-        cleanByPortNumber(`${fileNoext}.jxe`,app,removablePort,NOVERBOSE); 
         process.exit();
     }
     
@@ -91,17 +68,12 @@ process.on('SIGTERM', () =>  {
 });
 
 
-//MOVE HOME TO CONST FILE
-let mqttProcesse;
-//SET REDIS PATH UP
 const filePath = fileURLToPath(import.meta.url);
 const IDIR = path.dirname(filePath);
 const REDISFUNCS = fs.realpathSync(`${IDIR}/../deps/lua/jredlib.lua`);
 const SHELLPID = process.pid;
 
 
-//setup
-//tested.working
 const [MOSQUITTO, MOSQUITTO_PUB, TMUX] = await Promise.all(
     ["mosquitto","mosquitto_pub", "tmux"].map(
         async (entry)=> {
@@ -122,49 +94,26 @@ const [MOSQUITTO, MOSQUITTO_PUB, TMUX] = await Promise.all(
         }
     )
 )
-// async function executeScript(client, command) {
-//     return await new Promise((resolve, reject) => {
-//         client.exec(command, (err, stream) => {
-//             if (err) return reject(err);
-//             let result = '';
-//             stream.on('close', () => {
-//                 resolve(result);
-//             });
-//             stream.on('data', (data) => {
-//                 result += data.toString();
-//             });
-//             stream.stderr.on('data', (data) => {
-//                 result += data.toString();
-//             });
-//             stream.on('error', (streamErr) => {
-//                 reject(streamErr);
-//             });
-//         });
-//     });
-// }
+
 
 async function executeScript(client, command){
-    console.log("GOT HERE")
+
     return (await new Promise((resolve, reject) =>{
         client.exec(command, (err,stream) =>{
             if (err){
-                console.log(err)
                 reject(err);
             } 
             let result;
             stream.on("close", () => {
-                console.log("closed")
                 resolve(result)
             })
             stream.on("data" , async (data) =>{
-                console.log(data.toString())
                 if(data.includes("MY PORT IS:"))
                     {
                         console.log(data.toString())
                         result = data.toString().trim().split(":")[1]
                     }  
                 if(data.includes("EXIT BG")){
-                    // await sleep(5000)
                     resolve(result)
                 }  
             })
@@ -177,16 +126,14 @@ function show_usage(){
     `
     jamrun program.jxe
     Runs J and C node, one each, of a device with program.jxe
-    under a default application name 'app-N'. To run under a different
-    app name X, use the --app=X option.
+    under a app name X, use the --app=X option. It is mandatory to set the app name.
     
     jamrun program.jxe --fog
     Runs a fog node (only J node) with program.jxe. Similarly, the --cloud
     flag runs a cloud node.
     
-    By default, jamrun uses a Redis server running at 127.0.0.1:6379 as the
-    data store. The Redis server needs to be started before launching the
-    application. To use a different Redis server use the --data option.
+    By default, jamrun uses a Redis server running at 127.0.0.1:(20000+porttaken) as the
+    data store. To use a different Redis server use the --data option.
     
     jamrun program.jxe --data=127.0.0.1:7000
     Runs program.jxe and connects it to an already running Redis server at
@@ -195,12 +142,13 @@ function show_usage(){
     connections).
     
     To start more than one C node at a device use the following command.
-    jamrun program.jxe --num=4
+    jamrun program.jxe --num=4.
     
     To provide a set of tags to the program, use the following command.
     jamrun program.jxe --tag="param1, param2"
     
-    Use the --bg option to run a command in the background.fr
+    Use the --bg option to run a command in the background. the --bg is mandatory for the cases
+    that program is running on a remote machine.
     
     Use the --old option to run the previous version in .jamruns folder.
     You can edit that version and rerun a custom version of a file.
@@ -216,11 +164,17 @@ function show_usage(){
     
     Use --local to disable multicast discovery of the J node. The C node assumes that the J node in the local loopback.
     
-    Use --resume to resume the paused program. Using resume will dissable [--old | --data | --num | --fog|--cloud|--device ] flags
-
-    Use --port only with --resume (it's gonna be dissabled if --resume flag is is not on.) to resume the program on the program on the right port.
+    Use --resume to resume the paused program. Using resume will dissable [--old | --data | --num | --fog|--cloud|--device ] flags.
+    the program can be resumed only if it was pased before.
+    --resume tag have to be used with --port tag to specify exactly which program shoukd be resumed.
     
-    USE --remote to run the jamscript on another machine: --remote=<IPadress>
+    to start the c nodes and j files on a remote machine the --remote is used. 
+    the value assinge to --remote is IP addrress of the remote machine to make the connection.
+
+    by default the location assigned to a program has random long and lat values. to set a specific
+    location for the progam the --loc is used.
+    value passsed to the loc contains long and lat with a ',' seperator between them.
+
 
     Usage: jamrun file.jxe
                     [--app=appl_name]
@@ -236,13 +190,15 @@ function show_usage(){
                     [--edge=num_edge_connections]
                     [--valgrind]
                     [--local]
-                    [--resume]
+                    [--resume && port=<portNumber>]
+                    [--remote=<IPAdress>]
+                    
                     
 
     
     The jamrun command creates a run state in the $HOME/.jamruns folder.
     `;
-
+    return usageMessage;
     
 }
 
@@ -264,7 +220,7 @@ async function startmqtt(port, cFile){
             stdio: ['ignore', 'ignore', 'ignore'],
             detached: true,
         };
-        mqttProcesse =  spawn(command, args, options);
+        const mqttProcesse =  spawn(command, args, options);
         console.log(mqttProcesse.pid)
         fs.writeFileSync(`${jamfolder}/mqttpid/${port}`,`${mqttProcesse.pid}` )
         mqttProcesse.unref();
@@ -401,12 +357,11 @@ function dojamout_p2_bg(pnum, floc, jappid, group=null){
     if(!NOVERBOSE){
         console.log("Started the J node in background")
     }
-
+    //keep this log file
     console.log("EXIT BG")
     process.exit(0)
 }
 
-//linux test left, rest working
 async function doaout(num,port,group,datap,myf,jappid){
     let counter=1
     if (fs.existsSync('a.out')) {
@@ -437,40 +392,23 @@ async function doaout(num,port,group,datap,myf,jappid){
                             await $`${TMUX} send-keys -t ${tmux}-${counter} ./a.out ${cargs} C-m`;
                     
                 }
-        
-            else{
-       
-                    //check if it works on linux or nor
-                    if(valgrind)
+
+            else{      
+                   if(valgrind)
                         await $`${TMUX} send-keys -t ${tmux}-${counter} ${valgrind} ./a.out ${cargs} -f log C-m`;
                     else
-                        
-                        {
-                            console.log("WTFWTFWTF")
-                            console.log("GOT TO THE TMUX")
-                            console.log(process.cwd())
-                            console.log(myf)
-                            console.log(port)
-                            console.log(`${myf}/${port}/log.${counter}`)
-                            console.log(fs.existsSync(`${myf}/${port}`))
-                            //TMUX DOES NOT WORK FOR DOCKER CONTAINER(SCRIPT IS THE ISSUE)
-                            await $`${TMUX} send-keys -t ${tmux}-${counter} "script -a -t 1 ${myf}/${port}/log.${counter} ./a.out" ${cargs} C-m`;
-
-  
-                        }
+                        //TMUX DOES NOT WORK FOR DOCKER CONTAINER(SCRIPT IS THE ISSUE)
+                        await $`${TMUX} send-keys -t ${tmux}-${counter} "script -a -t 1 ${myf}/${port}/log.${counter} ./a.out" ${cargs} C-m`;  
                 }
             }
             tmuxIds.push(`${tmux}-${counter}`)
             counter++;
-
+    }
+        if(!NOVERBOSE)
+            console.log("Started a C node")
     }
 
-    if(!NOVERBOSE)
-        console.log("Started a C node")
-    }
 
-
-//tested. working
 async function portavailable(folder,port) {
     let porttaken;
     const jamFolder = getJamFolder()
@@ -484,7 +422,6 @@ async function portavailable(folder,port) {
     if(porttaken === 0){
         if(!fs.existsSync(`${jamFolder}/ports/${port}`)){
             const p = await $`netstat -lan -p tcp -f inet | grep ${port} | wc -l`.nothrow().quiet()
-            console.log(Number(p.stdout.trim()))
             porttaken = Number(p.stdout.trim()) === 0 ? 0 : 1;
 
         }
@@ -502,7 +439,6 @@ async function portavailable(folder,port) {
     return porttaken;
 }
 
-//tested and working
 function setuptmux(path, appfolder) {
     fs.writeFileSync(`${path}/tmuxid`,tmux.toString()+"\n");
     fs.writeFileSync(`${appfolder}/tmuxid`,tmux.toString()+"\n");
@@ -510,22 +446,16 @@ function setuptmux(path, appfolder) {
 }
 
 
-//patially tested, hopefullt works
 async function startredis(port) {
     try{
-        
         const p = $`redis-server --port ${port}`.stdio('ignore', 'ignore', 'inherit').nothrow().quiet();
-
         console.log(p)
-
     }
     catch(error){
         console.log(error)
     }
- 
 }
 
-//tested, works
 async function waitforredis(port){
     while (true) {
         try{
@@ -549,10 +479,9 @@ async function waitforredis(port){
      
 }
 
-//tested, works
+
 async function setupredis(port) {
 
-    //QUESTION: how would it work if multiple apps are using the same reddis? how would the flush work. how any of this work?
     await $`cat ${REDISFUNCS} | redis-cli -p ${port} -x FUNCTION LOAD REPLACE > /dev/null`
     await $`echo "set protected-mode no" | redis-cli -p ${port} > /dev/null`
     await $`echo 'config set save "" protected-mode no' | redis-cli -p ${port} > /dev/null`
@@ -566,21 +495,17 @@ async function setupredis(port) {
 
 }
 
-//tested, works
 async function resolvedata(Name) {
     const [host, port] = Name.split(':');
 
     await startredis(Number(port));
     await waitforredis(port);
-
     await setupredis(port);
-
-    //trim space left behind by hostname -I
     data = Name.split(/\s+/).join('');
 
 
 }
-//tested working
+
 async function unpack(file,folder){
     if(!old){
         if(!fs.existsSync("./MANIFEST.txt")){
@@ -622,13 +547,7 @@ async function unpack(file,folder){
                     console.log("The corrupted unziped files. files will be unziped again based on the existing MANIFEST.txt")
                 await cleanExecutables()
                 await $`cd ${folder} && unzip -oq ${file}`.quiet()
-
-
             }
-
-
-            
-
         }
     }
     else{
@@ -638,13 +557,10 @@ async function unpack(file,folder){
         isValidExecutable()
     }
 }
-//tested.working
-async function getjdata(folder) {
 
+async function getjdata(folder) {
     const p = await $`cd ${folder} && grep JDATA MANIFEST.txt | awk '{split($0,a, " "); print a[3]}'`.nothrow().quiet()
     return p.stdout.trim()
-    
-
 }
 
 async function runNoneDevice(iport){
@@ -652,8 +568,6 @@ async function runNoneDevice(iport){
     fileDirectoryMqtt(folder,iport,jamfolder,app)
     const jappid = getappid(jamfolder, `${folder}/${iport}`,app,appfolder)
     await dojamout(iport, folder, jappid)
-    console.log("SCRIPT RUNNING")
-
 }
 
 async function runDevice(iport,dport,group){
@@ -664,7 +578,6 @@ async function runDevice(iport,dport,group){
     setuptmux(`${folder}/${iport}`, appfolder)
     await doaout(num,iport, group, dport,folder,jappid)
     await dojamout_p2(iport, folder,jappid,group )
-    console.log("SCRIPT RUNNING")
 }
 
 
@@ -700,6 +613,7 @@ async function main(){
    
    
     catch(error){
+            show_usage()
             throw(error)
     }
     let folder;
@@ -742,7 +656,7 @@ async function main(){
             client.connect(config);
         });
         const remoteArgs = getRemoteArgs(jamrunParsArg(process.argv))
-        const pathExport ="export PATH=$PATH:/home/admin/JAMScript/node_modules/.bin"
+        // const pathExport ="export PATH=$PATH:/home/admin/JAMScript/node_modules/.bin"
         const changeDir= "cd JAMScript/tools"
         let currIP ;
         if (os.platform() === 'win32') {
@@ -752,15 +666,8 @@ async function main(){
         } else if (os.platform() === 'linux') {
           currIP = (await $`hostname -I`.catch(() => '')).toString().trim();
         }
-        const toExecute = `zx jamrun.mjs ${remoteArgs} --root=${currIP}`
-        console.log(toExecute)
-        const remoteTerminal = '/dev/pts/1';
-        // const command = `${pathExport} && ${changeDir} && ${toExecute} > > ${remoteTerminal} 2>&1`
-        // THIS SHOULD BE THE IDEAM SOLUTION!!!!!!!!!
-        // const myPort = await executeScript(client, `${changeDir} && zx jamrun.mjs ${remoteArgs} --root=${currIP} > ${remoteTerminal} 2>&1`)
         const myPort = await executeScript(client, `${changeDir} && zx jamrun.mjs ${remoteArgs} --root=${currIP}`)
 
-        console.log(myPort)
         if(!resume){
             const jamfolder = getJamFolder()
             const fileNoext = getFileNoext(file);
@@ -790,38 +697,33 @@ async function main(){
 
     if(resume){
         const fileNoExt = getFileNoext(file)
-        if(!port){
-            console.log("can't resume the app without port number")
-            process.exit(1)
-
-        }
+        if(!port)
+            throw new Error("can't resume the app without port number")
+       
         folder = getFolder(file,app);
         if(!fs.existsSync(folder)){
-            console.log("NO PAUSED INSTANCE OF", `${fileNoExt}_${app}` )
-            process.exit(1)
+            throw new Error("NO PAUSED INSTANCE OF", `${fileNoExt}_${app}` )
 
         }
         if(!fs.existsSync(`${folder}/${port}`) || !fs.existsSync(`${folder}/${port}/paused`)){
-            console.log("NO PAUSED INSTANCE OF", `${fileNoExt}_${app} on port: ${port}` )
-            process.exit(1)
+            throw new Error("NO PAUSED INSTANCE OF", `${fileNoExt}_${app} on port: ${port}` )
         }
         else{
             const isPaused = (fs.readFileSync(`${folder}/${port}/paused`).toString().trim()) === "false" ? false : true;
             if(!isPaused){
-                console.log("NO PAUSED INSTANCE OF", `${fileNoExt}_${app} on port: ${port}` )
-                process.exit(1)
+                throw new Error("NO PAUSED INSTANCE OF", `${fileNoExt}_${app} on port: ${port}` )
             }
 
         }
         if(num, data, Type){
-            console.log("IN CASE OF RESUMING, WILL NOT USE ANY OF NUM, DATA, TYPE ARGUMENTS.")
+            console.log("WARNING: IN CASE OF RESUMING, WILL NOT USE ANY OF NUM, DATA, TYPE ARGUMENTS.")
         }
-
-        // num = fs.readFileSync(`${folder}/${port}/numCnodes`).toString().trim();
-        Type = fs.readFileSync(`${folder}/${port}/machType`).toString().trim();
-        // data = fs.readFileSync(`${folder}/${port}/dataStore`).toString().trim();
-        // process.chdir(folder);
-        // iport = port;
+        try{
+            Type = fs.readFileSync(`${folder}/${port}/machType`).toString().trim();
+        }
+        catch(error){
+            throw new Error('type missing, corrupted program, it should be killed')
+        }
         process.chdir(folder);
         isValidExecutable();
         jdata = await getjdata(folder);
@@ -830,8 +732,7 @@ async function main(){
         if(port){
             console.log("Warning. If it's not to resume the port argument will not be used")
         }
-        console.log(file,"this is my file")
-        console.log(app, "this is my path")
+
         fileDirectorySetUp(file,app)
         folder = getFolder(file,app)
         ifile = path.resolve(file);
@@ -842,7 +743,6 @@ async function main(){
     }
 
     let isDevice;
-    console.log("SELECTING THE TYPE")
     switch(Type){
         case "cloud":
             if(resume){
@@ -933,13 +833,7 @@ async function main(){
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename);
 const jamcleanPath = resolve(__dirname, 'jamclean.mjs');
-
-// console.log(jamcleanPath)
-
-// await $`zx ${jamcleanPath}`
-
-
+await $`zx ${jamcleanPath}`
 await main()
-// const p = await $`redis-server --port ${port}`
-// console.log(p)
+
 
